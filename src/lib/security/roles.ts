@@ -23,6 +23,7 @@ export const PLATFORM_ADMIN_EMAILS = [
   "buildwithdamienray@gmail.com", // Damien Ray - Platform Owner
   "buildingwithdamienray@gmail.com", // Alternate email
   "damien@skaiscrape.com", // Company email
+  "damien.willingham@outlook.com", // QA Test Account — GPT agent testing
 ] as const;
 
 // Check if an email is a platform admin
