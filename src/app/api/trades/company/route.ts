@@ -133,6 +133,98 @@ export const GET = withAuth(async (req: NextRequest, { orgId, userId }) => {
         }
       }
 
+      // ── HEAL 3: Check if this email has a pending invite to an existing company ──
+      if (!membership && email) {
+        const invite = await prisma.tradesOnboardingInvite.findFirst({
+          where: { email, status: "pending" },
+          orderBy: { createdAt: "desc" },
+        });
+
+        if (invite?.companyName) {
+          // Find the company by name
+          const invitedCompany = await prisma.tradesCompany.findFirst({
+            where: { name: invite.companyName },
+            select: { id: true },
+          });
+
+          if (invitedCompany) {
+            try {
+              const firstName = user?.firstName || "";
+              const lastName = user?.lastName || "";
+
+              membership = await prisma.tradesCompanyMember.create({
+                data: {
+                  userId,
+                  companyId: invitedCompany.id,
+                  orgId: orgId || undefined,
+                  firstName: firstName || null,
+                  lastName: lastName || null,
+                  email,
+                  status: "active",
+                  isActive: true,
+                  isOwner: false,
+                  isAdmin: false,
+                  canEditCompany: false,
+                  role: "member",
+                  onboardingStep: "complete",
+                },
+                include: memberInclude,
+              });
+
+              // Mark invite as accepted
+              await prisma.tradesOnboardingInvite.update({
+                where: { id: invite.id },
+                data: { status: "accepted", acceptedAt: new Date() },
+              });
+
+              logger.info(
+                `[trades/company] Linked user to invited company: ${invite.companyName}, userId=${userId}`
+              );
+            } catch {
+              // May fail if unique constraint — continue to auto-create
+            }
+          }
+        }
+      }
+
+      // ── HEAL 4: Check if there's already a member record with this email in another company ──
+      if (!membership && email) {
+        const memberByEmail = await prisma.tradesCompanyMember.findFirst({
+          where: { email, companyId: { not: null }, isActive: true },
+          include: memberInclude,
+        });
+
+        if (memberByEmail?.companyId) {
+          try {
+            // Create a new member record for this userId linked to that company
+            membership = await prisma.tradesCompanyMember.create({
+              data: {
+                userId,
+                companyId: memberByEmail.companyId,
+                orgId: orgId || undefined,
+                firstName: memberByEmail.firstName,
+                lastName: memberByEmail.lastName,
+                email,
+                status: "active",
+                isActive: true,
+                isOwner: false,
+                isAdmin: false,
+                canEditCompany: false,
+                role: "member",
+                onboardingStep: "complete",
+              },
+              include: memberInclude,
+            });
+
+            logger.info(
+              `[trades/company] Linked userId to existing email-matched company member, userId=${userId}, email=${email}`
+            );
+          } catch {
+            // Unique constraint — the email-matched record might be for a different person
+          }
+        }
+      }
+
       // ── LAST RESORT: Auto-create a new member record ──
       if (!membership) {
         try {

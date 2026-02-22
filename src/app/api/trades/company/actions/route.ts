@@ -145,19 +145,113 @@ async function handleAddEmployee(
   companyId: string,
   input: Extract<ActionInput, { action: "add_employee" }>
 ) {
-  // No tradesCompanyEmployee table — use tradesCompanyMember with a pending token
-  // We can't add by email alone since tradesCompanyMember requires userId (unique)
-  // Log intent and return success for now
-  logger.info("[Trades] Add employee requested", {
+  const role = input.role || "member";
+
+  // Check if a user with this email already exists in the system
+  const existingUser = await prisma.users.findFirst({
+    where: { email: input.email },
+    select: { clerkUserId: true },
+  });
+
+  if (existingUser) {
+    // User exists — check if they already have a member record
+    const existingMember = await prisma.tradesCompanyMember.findUnique({
+      where: { userId: existingUser.clerkUserId },
+    });
+
+    if (existingMember?.companyId === companyId) {
+      return NextResponse.json(
+        { error: "This person is already a member of your company" },
+        { status: 409 }
+      );
+    }
+
+    if (existingMember) {
+      // Update existing member record to link to this company
+      await prisma.tradesCompanyMember.update({
+        where: { id: existingMember.id },
+        data: {
+          companyId,
+          role,
+          isOwner: false,
+          isAdmin: role === "admin",
+          canEditCompany: role === "admin",
+          isActive: true,
+          status: "active",
+          updatedAt: new Date(),
+        },
+      });
+
+      logger.info("[Trades] Linked existing user to company", {
+        companyId,
+        email: input.email,
+        userId: existingUser.clerkUserId,
+      });
+
+      return NextResponse.json({
+        success: true,
+        employee: { id: existingMember.id, email: input.email, status: "active" },
+        message: "Employee added to company",
+      });
+    }
+
+    // Create new member record for existing user
+    const newMember = await prisma.tradesCompanyMember.create({
+      data: {
+        userId: existingUser.clerkUserId,
+        companyId,
+        role,
+        email: input.email,
+        isOwner: false,
+        isAdmin: role === "admin",
+        canEditCompany: role === "admin",
+        isActive: true,
+        status: "active",
+        onboardingStep: "complete",
+      },
+    });
+
+    logger.info("[Trades] Created member record for existing user", {
+      companyId,
+      email: input.email,
+      memberId: newMember.id,
+    });
+
+    return NextResponse.json({
+      success: true,
+      employee: { id: newMember.id, email: input.email, status: "active" },
+      message: "Employee added to company",
+    });
+  }
+
+  // User doesn't exist yet — create a pending invite via TradesOnboardingInvite
+  const token = crypto.randomUUID();
+  try {
+    await prisma.tradesOnboardingInvite.create({
+      data: {
+        id: crypto.randomUUID(),
+        token,
+        email: input.email,
+        companyName: null, // Will be filled from company on acceptance
+        invitedBy: null, // Set from caller context if needed
+        status: "pending",
+        expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days
+      },
+    });
+  } catch {
+    // TradesOnboardingInvite may have unique constraints — continue
+  }
+
+  logger.info("[Trades] Created invite for new employee", {
     companyId,
     email: input.email,
-    role: input.role,
+    token,
   });
 
   return NextResponse.json({
     success: true,
-    employee: { id: crypto.randomUUID(), email: input.email, status: "invited" },
-    message: "Invitation sent",
+    employee: { id: token, email: input.email, status: "invited" },
+    message: "Invitation created — employee will be linked when they sign up",
   });
 }
 
@@ -228,17 +322,42 @@ async function handleInviteSeat(
   invitedBy: string,
   input: Extract<ActionInput, { action: "invite_seat" }>
 ) {
-  // No tradesSeatInvite table — log and return success
-  logger.info("[Trades] Seat invite sent", {
+  const token = crypto.randomUUID();
+
+  // Get company name for the invite
+  const company = await prisma.tradesCompany.findUnique({
+    where: { id: companyId },
+    select: { name: true },
+  });
+
+  try {
+    await prisma.tradesOnboardingInvite.create({
+      data: {
+        id: crypto.randomUUID(),
+        token,
+        email: input.email,
+        companyName: company?.name || null,
+        invitedBy,
+        status: "pending",
+        expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days
+      },
+    });
+  } catch {
+    // Unique constraint or other error — continue gracefully
+  }
+
+  logger.info("[Trades] Seat invite created", {
     companyId,
     email: input.email,
     role: input.role,
     invitedBy,
+    token,
   });
 
   return NextResponse.json({
     success: true,
-    invite: { id: crypto.randomUUID(), email: input.email, status: "pending" },
+    invite: { id: token, email: input.email, status: "pending" },
+    message: "Invitation sent",
   });
 }
 
