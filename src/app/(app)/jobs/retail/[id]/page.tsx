@@ -371,7 +371,7 @@ export default async function RetailJobWorkspacePage({
                 variant="outline"
                 className="border-white/20 bg-white/10 text-white hover:bg-white/20"
               >
-                <Link href={`/leads/${job.id}/edit`}>Edit Job</Link>
+                <Link href={`/leads/${job.id}/edit?returnTo=retail`}>Edit Job</Link>
               </Button>
             </div>
           </div>
@@ -755,7 +755,7 @@ export default async function RetailJobWorkspacePage({
                   </Link>
                 </Button>
                 <Button className="w-full" variant="outline" asChild>
-                  <Link href={`/leads/${job.id}/edit`}>
+                  <Link href={`/leads/${job.id}/edit?returnTo=retail`}>
                     <Wrench className="mr-2 h-4 w-4" />
                     Edit Job Details
                   </Link>

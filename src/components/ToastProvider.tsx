@@ -6,10 +6,11 @@ import { Toaster } from "sonner";
 export const ToastProvider: React.FC = () => {
   return (
     <Toaster
-      position="top-right"
+      position="bottom-right"
       expand
       richColors
       closeButton
+      duration={5000}
       toastOptions={{
         style: {
           fontFamily: "inherit",

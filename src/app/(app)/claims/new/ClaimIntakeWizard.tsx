@@ -516,7 +516,11 @@ export function ClaimIntakeWizard({ orgId }: Props) {
             {step < 5 && (
               <Button
                 type="button"
-                onClick={() => canGoNext(step) && setStep((s) => (s + 1) as Step)}
+                onClick={() => {
+                  if (canGoNext(step)) {
+                    setStep((s) => (s + 1) as Step);
+                  }
+                }}
                 disabled={!canGoNext(step) || loading}
               >
                 Next →

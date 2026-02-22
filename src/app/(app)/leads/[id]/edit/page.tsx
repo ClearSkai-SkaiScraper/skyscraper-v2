@@ -1,7 +1,7 @@
 "use client";
 
 import { useUser } from "@clerk/nextjs";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
@@ -21,6 +21,7 @@ import { logger } from "@/lib/logger";
 
 export default function EditLeadPage({ params }: { params: { id: string } }) {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { isLoaded, isSignedIn } = useUser();
 
   useEffect(() => {
@@ -110,7 +111,12 @@ export default function EditLeadPage({ params }: { params: { id: string } }) {
       }
 
       toast.success("Lead updated successfully! 🎉");
-      router.push(`/leads/${params.id}`);
+      const returnTo = searchParams?.get("returnTo");
+      if (returnTo === "retail") {
+        router.push(`/jobs/retail/${params.id}`);
+      } else {
+        router.push(`/leads/${params.id}`);
+      }
     } catch (error) {
       logger.error("Error updating lead:", error);
       toast.error(error instanceof Error ? error.message : "Failed to update lead");

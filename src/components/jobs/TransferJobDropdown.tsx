@@ -1,8 +1,8 @@
 // src/components/jobs/TransferJobDropdown.tsx
 "use client";
 
-import { Archive, ArrowRight, Briefcase, DollarSign, FileText, Shield, Wrench } from "lucide-react";
 import { logger } from "@/lib/logger";
+import { Archive, ArrowRight, Briefcase, DollarSign, FileText, Shield, Wrench } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -49,27 +49,42 @@ export function TransferJobDropdown({
 
     setTransferring(true);
     try {
-      const res = await fetch(`/api/leads/${jobId}`, {
-        method: "PATCH",
+      const res = await fetch("/api/jobs/move", {
+        method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ jobCategory: newCategory }),
+        body: JSON.stringify({
+          itemId: jobId,
+          itemType: "lead",
+          fromCategory: currentCategory,
+          toCategory: newCategory,
+        }),
       });
 
-      if (!res.ok) throw new Error("Failed to transfer job");
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.error || "Failed to transfer job");
+      }
 
+      const data = await res.json();
       onTransfer?.(newCategory);
-      toast.success(`Job transferred to ${newCategory}`);
 
-      // If transferring to claim, redirect to claims conversion
-      if (newCategory === "claim") {
-        router.push(`/claims/new?leadId=${jobId}`);
+      const targetLabel = CATEGORIES.find((c) => c.value === newCategory)?.label || newCategory;
+      toast.success(`Job transferred to ${targetLabel}`, {
+        description: data.message,
+      });
+
+      // If transferred to claim and a claimId was returned, navigate to it
+      if (newCategory === "claim" && data.claimId) {
+        router.push(`/claims/${data.claimId}`);
         return;
       }
 
       router.refresh();
     } catch (error) {
       logger.error("Failed to transfer job:", error);
-      toast.error("Failed to transfer job. Please try again.");
+      toast.error(
+        error instanceof Error ? error.message : "Failed to transfer job. Please try again."
+      );
     } finally {
       setTransferring(false);
     }

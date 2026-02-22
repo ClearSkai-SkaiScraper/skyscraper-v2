@@ -64,7 +64,7 @@ export default function ClaimFinancialPage() {
           </p>
           <button
             onClick={runAnalysis}
-            className="w-full rounded-lg bg-green-600 px-6 py-3 font-semibold text-white hover:bg-green-700"
+            className="w-full rounded-lg bg-blue-600 px-6 py-3 font-semibold text-white hover:bg-blue-700"
           >
             🧮 Generate Analysis
           </button>

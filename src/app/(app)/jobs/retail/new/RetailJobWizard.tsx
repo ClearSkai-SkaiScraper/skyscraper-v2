@@ -559,7 +559,11 @@ export function RetailJobWizard({ orgId }: Props) {
           {step < 4 && (
             <Button
               type="button"
-              onClick={() => canGoNext(step) && setStep((s) => (s + 1) as Step)}
+              onClick={() => {
+                if (canGoNext(step)) {
+                  setStep((s) => (s + 1) as Step);
+                }
+              }}
               disabled={!canGoNext(step) || loading}
               className="bg-amber-600 hover:bg-amber-700"
             >

@@ -120,8 +120,8 @@ export default function ClientLeadsPage() {
         const typeLabels: Record<string, string> = {
           claim: "Insurance Claim",
           repair: "Repair Job",
-          oop: "Out of Pocket Project",
-          financed: "Financed Project",
+          oop: "Out of Pocket Job",
+          financed: "Financed Job",
         };
 
         toast.success(`✅ Lead converted to ${typeLabels[conversionType]}!`, {
@@ -488,16 +488,16 @@ export default function ClientLeadsPage() {
         <TabsContent value="financed" className="mt-6">
           <Card className="p-12 text-center">
             <Clock className="mx-auto mb-4 h-12 w-12 text-orange-600" />
-            <h3 className="text-lg font-medium">Financed Projects</h3>
+            <h3 className="text-lg font-medium">Financed Jobs</h3>
             <p className="mt-2 text-muted-foreground">
-              Projects with payment plans or financing options
+              Jobs with payment plans or financing options
             </p>
             <Button
               className="mt-4"
               variant="outline"
               onClick={() => (window.location.href = "/jobs?stage=Financed")}
             >
-              View Financed Projects
+              View Financed Jobs
             </Button>
           </Card>
         </TabsContent>
