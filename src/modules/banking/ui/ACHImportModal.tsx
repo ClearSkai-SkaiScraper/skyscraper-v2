@@ -1,9 +1,9 @@
 // Feature 2 - ACH Import Modal UI
-'use client';
+"use client";
 
-import { useState } from 'react';
+import { useState } from "react";
 
-import type { ACHPayment, JobMatchCandidate } from '@/modules/banking/parsers/ach';
+import type { ACHPayment, JobMatchCandidate } from "@/modules/banking/parsers/ach";
 
 interface ACHImportModalProps {
   orgId: string;
@@ -17,9 +17,9 @@ interface PaymentWithMatch extends ACHPayment {
 }
 
 export function ACHImportModal({ orgId, onClose, onImportComplete }: ACHImportModalProps) {
-  const [step, setStep] = useState<'upload' | 'preview' | 'processing'>('upload');
+  const [step, setStep] = useState<"upload" | "preview" | "processing">("upload");
   const [file, setFile] = useState<File | null>(null);
-  const [csvContent, setCsvContent] = useState<string>('');
+  const [csvContent, setCsvContent] = useState<string>("");
   const [payments, setPayments] = useState<PaymentWithMatch[]>([]);
   const [errors, setErrors] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
@@ -28,8 +28,8 @@ export function ACHImportModal({ orgId, onClose, onImportComplete }: ACHImportMo
     const selectedFile = e.target.files?.[0];
     if (!selectedFile) return;
 
-    if (!selectedFile.name.endsWith('.csv')) {
-      alert('Please upload a CSV file');
+    if (!selectedFile.name.endsWith(".csv")) {
+      alert("Please upload a CSV file");
       return;
     }
 
@@ -49,24 +49,24 @@ export function ACHImportModal({ orgId, onClose, onImportComplete }: ACHImportMo
 
     setLoading(true);
     try {
-      const response = await fetch('/api/banking/import-ach', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const response = await fetch("/api/banking/import-ach", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ csvContent }),
       });
 
       if (!response.ok) {
         const error = await response.json();
-        throw new Error(error.error || 'Failed to parse CSV');
+        throw new Error(error.error || "Failed to parse CSV");
       }
 
       const data = await response.json();
       setPayments(data.payments || []);
       setErrors(data.errors || []);
-      setStep('preview');
+      setStep("preview");
     } catch (error: any) {
-      console.error('Error parsing CSV:', error);
-      alert(error.message || 'Failed to parse CSV');
+      console.error("Error parsing CSV:", error);
+      alert(error.message || "Failed to parse CSV");
     } finally {
       setLoading(false);
     }
@@ -82,17 +82,17 @@ export function ACHImportModal({ orgId, onClose, onImportComplete }: ACHImportMo
     const approvedPayments = payments.filter((p) => p.selectedJobId);
 
     if (approvedPayments.length === 0) {
-      alert('Please select at least one job match');
+      alert("Please select at least one job match");
       return;
     }
 
     setLoading(true);
-    setStep('processing');
+    setStep("processing");
 
     try {
-      const response = await fetch('/api/funding/add-batch', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const response = await fetch("/api/funding/add-batch", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           payments: approvedPayments.map((p) => ({
             jobId: p.selectedJobId,
@@ -100,15 +100,15 @@ export function ACHImportModal({ orgId, onClose, onImportComplete }: ACHImportMo
             postedDate: p.postedDate,
             memo: p.memo,
             ref: p.ref,
-            payor: 'carrier', // Default to carrier for ACH imports
-            method: 'ach',
+            payor: "carrier", // Default to carrier for ACH imports
+            method: "ach",
           })),
         }),
       });
 
       if (!response.ok) {
         const error = await response.json();
-        throw new Error(error.error || 'Failed to create funding records');
+        throw new Error(error.error || "Failed to create funding records");
       }
 
       const data = await response.json();
@@ -116,9 +116,9 @@ export function ACHImportModal({ orgId, onClose, onImportComplete }: ACHImportMo
       onImportComplete();
       onClose();
     } catch (error: any) {
-      console.error('Error importing payments:', error);
-      alert(error.message || 'Failed to import payments');
-      setStep('preview');
+      console.error("Error importing payments:", error);
+      alert(error.message || "Failed to import payments");
+      setStep("preview");
     } finally {
       setLoading(false);
     }
@@ -149,7 +149,7 @@ export function ACHImportModal({ orgId, onClose, onImportComplete }: ACHImportMo
 
         <div className="space-y-6 p-6">
           {/* Step 1: Upload */}
-          {step === 'upload' && (
+          {step === "upload" && (
             <div className="space-y-4">
               <div className="rounded-lg border-2 border-dashed border-gray-300 p-8 text-center">
                 <input
@@ -177,7 +177,7 @@ export function ACHImportModal({ orgId, onClose, onImportComplete }: ACHImportMo
                     />
                   </svg>
                   <span className="text-sm font-medium text-gray-900">
-                    {file ? file.name : 'Click to upload CSV file'}
+                    {file ? file.name : "Click to upload CSV file"}
                   </span>
                   <span className="mt-1 text-xs text-gray-500">
                     ACH remittance CSV with columns: date, amount, description, reference
@@ -195,7 +195,7 @@ export function ACHImportModal({ orgId, onClose, onImportComplete }: ACHImportMo
                     disabled={loading}
                     className="w-full rounded bg-blue-600 px-4 py-2 font-medium text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
                   >
-                    {loading ? 'Parsing & Matching...' : 'Parse & Match Jobs'}
+                    {loading ? "Parsing & Matching..." : "Parse & Match Jobs"}
                   </button>
                 </div>
               )}
@@ -203,7 +203,7 @@ export function ACHImportModal({ orgId, onClose, onImportComplete }: ACHImportMo
           )}
 
           {/* Step 2: Preview & Match */}
-          {step === 'preview' && (
+          {step === "preview" && (
             <div className="space-y-4">
               {errors.length > 0 && (
                 <div className="rounded border border-yellow-200 bg-yellow-50 p-4">
@@ -247,23 +247,25 @@ export function ACHImportModal({ orgId, onClose, onImportComplete }: ACHImportMo
                           {new Date(payment.postedDate).toLocaleDateString()}
                         </td>
                         <td className="px-4 py-3 text-sm font-medium text-gray-900">
-                          ${payment.amount.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                          ${payment.amount.toLocaleString("en-US", { minimumFractionDigits: 2 })}
                         </td>
                         <td className="px-4 py-3 text-sm text-gray-700">
-                          {payment.memo || payment.ref || 'N/A'}
+                          {payment.memo || payment.ref || "N/A"}
                         </td>
                         <td className="px-4 py-3">
                           {payment.matchCandidates && payment.matchCandidates.length > 0 ? (
                             <select
-                              value={payment.selectedJobId || ''}
+                              value={payment.selectedJobId || ""}
                               onChange={(e) => handleJobSelect(index, e.target.value)}
                               className="block w-full rounded border-gray-300 text-sm"
                             >
                               <option value="">-- Select Job --</option>
                               {payment.matchCandidates.map((candidate) => (
                                 <option key={candidate.jobId} value={candidate.jobId}>
-                                  {candidate.job.claimNumber || candidate.job.insured_name || 'Unknown'} (
-                                  {candidate.matchReason}) - Score: {candidate.score}
+                                  {candidate.job.claimNumber ||
+                                    candidate.job.insured_name ||
+                                    "Unknown"}{" "}
+                                  ({candidate.matchReason}) - Score: {candidate.score}
                                 </option>
                               ))}
                             </select>
@@ -279,7 +281,7 @@ export function ACHImportModal({ orgId, onClose, onImportComplete }: ACHImportMo
 
               <div className="flex justify-end gap-3">
                 <button
-                  onClick={() => setStep('upload')}
+                  onClick={() => setStep("upload")}
                   disabled={loading}
                   className="rounded bg-gray-100 px-4 py-2 font-medium text-gray-700 hover:bg-gray-200 disabled:opacity-50"
                 >
@@ -288,7 +290,7 @@ export function ACHImportModal({ orgId, onClose, onImportComplete }: ACHImportMo
                 <button
                   onClick={handleApproveMatches}
                   disabled={loading || payments.filter((p) => p.selectedJobId).length === 0}
-                  className="rounded bg-green-600 px-4 py-2 font-medium text-white hover:bg-green-700 disabled:cursor-not-allowed disabled:opacity-50"
+                  className="rounded bg-blue-600 px-4 py-2 font-medium text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   Approve & Import ({payments.filter((p) => p.selectedJobId).length} selected)
                 </button>
@@ -297,7 +299,7 @@ export function ACHImportModal({ orgId, onClose, onImportComplete }: ACHImportMo
           )}
 
           {/* Step 3: Processing */}
-          {step === 'processing' && (
+          {step === "processing" && (
             <div className="py-8 text-center">
               <div className="inline-block h-12 w-12 animate-spin rounded-full border-4 border-blue-600 border-t-transparent"></div>
               <p className="mt-4 text-gray-600">Importing payments...</p>

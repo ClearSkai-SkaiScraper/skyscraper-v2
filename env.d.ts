@@ -11,6 +11,12 @@ declare namespace NodeJS {
     REDIS_URL: string; // Phase 6: Upstash Redis for BullMQ
     CLERK_SECRET_KEY: string;
     NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: string;
+
+    // Twilio SMS
+    TWILIO_ACCOUNT_SID?: string;
+    TWILIO_AUTH_TOKEN?: string;
+    TWILIO_PHONE_NUMBER?: string;
+    TWILIO_MESSAGING_SERVICE_SID?: string;
   }
 }
 

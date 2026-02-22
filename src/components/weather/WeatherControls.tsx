@@ -1,10 +1,10 @@
 // src/components/weather/WeatherControls.tsx
 "use client";
 
-import React, { useState } from "react";
+import { useState } from "react";
 
-import { toast } from "sonner";
 import { useWeather } from "@/hooks/useWeather";
+import { toast } from "sonner";
 
 import { PDFPreviewModal } from "./PDFPreviewModal";
 
@@ -79,7 +79,7 @@ export function WeatherControls({ lat, lon, orgId, propertyId }: WeatherControls
         <button
           onClick={handleGeneratePdf}
           disabled={loading}
-          className="rounded bg-green-600 px-4 py-2 text-white hover:bg-green-700 disabled:opacity-50"
+          className="rounded bg-blue-600 px-4 py-2 text-white hover:bg-blue-700 disabled:opacity-50"
         >
           {loading ? "Loading..." : "Generate Weather PDF"}
         </button>

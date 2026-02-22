@@ -468,7 +468,7 @@ export function DecisionPanel({ claimId }: DecisionPanelProps) {
                     </button>
                     <button
                       onClick={() => downloadDispute(pkg)}
-                      className="flex items-center gap-1 rounded bg-green-600 px-3 py-1.5 text-sm text-white transition-colors hover:bg-green-700"
+                      className="flex items-center gap-1 rounded bg-blue-600 px-3 py-1.5 text-sm text-white transition-colors hover:bg-blue-700"
                     >
                       <Download className="h-4 w-4" />
                       Download
@@ -572,7 +572,7 @@ export function DecisionPanel({ claimId }: DecisionPanelProps) {
             <div className="mt-4 flex gap-2">
               <button
                 onClick={() => downloadDispute(viewingDispute)}
-                className="flex items-center gap-2 rounded-lg bg-green-600 px-4 py-2 text-white transition-colors hover:bg-green-700"
+                className="flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-white transition-colors hover:bg-blue-700"
               >
                 <Download className="h-4 w-4" />
                 Download

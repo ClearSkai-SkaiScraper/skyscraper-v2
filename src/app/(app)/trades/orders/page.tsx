@@ -265,7 +265,7 @@ export default function TradesOrdersPage() {
                 </p>
                 <Button
                   onClick={() => setShowNewOrder(true)}
-                  className="rounded-xl bg-emerald-600 hover:bg-emerald-700"
+                  className="rounded-xl bg-blue-600 hover:bg-blue-700"
                 >
                   <Plus className="mr-2 h-4 w-4" />
                   Create Your First Order
@@ -458,7 +458,7 @@ export default function TradesOrdersPage() {
                     Cancel
                   </Button>
                   <Button
-                    className="bg-emerald-600 hover:bg-emerald-700"
+                    className="bg-blue-600 hover:bg-blue-700"
                     onClick={handleSaveOrder}
                     disabled={saving}
                   >

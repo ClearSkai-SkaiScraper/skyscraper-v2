@@ -317,7 +317,7 @@ export default function AccuLynxMigration() {
                   setStep("idle");
                   setResult(null);
                 }}
-                className="flex items-center gap-2 rounded-xl bg-green-600 px-6 py-3 font-semibold text-white shadow-lg transition-all hover:bg-green-700"
+                className="flex items-center gap-2 rounded-xl bg-blue-600 px-6 py-3 font-semibold text-white shadow-lg transition-all hover:bg-blue-700"
               >
                 <Database className="h-5 w-5" />
                 Run Live Migration

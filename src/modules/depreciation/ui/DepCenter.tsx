@@ -5,8 +5,8 @@
  * Shows final payment workflow: status, readiness check, prepare packet, send to carrier
  */
 
-import { AlertCircle, CheckCircle2, Clock, FileText, Info,Send } from "lucide-react";
-import React, { useEffect,useState } from "react";
+import { AlertCircle, CheckCircle2, Clock, FileText, Info, Send } from "lucide-react";
+import React, { useEffect, useState } from "react";
 
 type DepStatus =
   | "not_ready"
@@ -78,7 +78,9 @@ export function DepCenter({ jobId }: DepCenterProps) {
         throw new Error(json.error || "Failed to prepare packet");
       }
       const data = await res.json();
-      alert(`Packet prepared:\n\nSubject: ${data.subject}\n\nAttachments: ${data.attachments.join(", ")}`);
+      alert(
+        `Packet prepared:\n\nSubject: ${data.subject}\n\nAttachments: ${data.attachments.join(", ")}`
+      );
       await loadReadiness();
     } catch (err: any) {
       setError(err.message);
@@ -110,18 +112,24 @@ export function DepCenter({ jobId }: DepCenterProps) {
     }
   }
 
-  const statusConfig: Record<
-    DepStatus,
-    { label: string; color: string; icon: React.ElementType }
-  > = {
-    not_ready: { label: "Not Ready", color: "bg-gray-100 text-gray-800", icon: AlertCircle },
-    ready: { label: "Ready", color: "bg-green-100 text-green-800", icon: CheckCircle2 },
-    filed: { label: "Filed", color: "bg-blue-100 text-blue-800", icon: FileText },
-    acknowledged: { label: "Acknowledged", color: "bg-indigo-100 text-indigo-800", icon: CheckCircle2 },
-    info_requested: { label: "Info Requested", color: "bg-yellow-100 text-yellow-800", icon: Info },
-    released: { label: "Released", color: "bg-green-100 text-green-800", icon: CheckCircle2 },
-    failed: { label: "Failed", color: "bg-red-100 text-red-800", icon: AlertCircle },
-  };
+  const statusConfig: Record<DepStatus, { label: string; color: string; icon: React.ElementType }> =
+    {
+      not_ready: { label: "Not Ready", color: "bg-gray-100 text-gray-800", icon: AlertCircle },
+      ready: { label: "Ready", color: "bg-green-100 text-green-800", icon: CheckCircle2 },
+      filed: { label: "Filed", color: "bg-blue-100 text-blue-800", icon: FileText },
+      acknowledged: {
+        label: "Acknowledged",
+        color: "bg-indigo-100 text-indigo-800",
+        icon: CheckCircle2,
+      },
+      info_requested: {
+        label: "Info Requested",
+        color: "bg-yellow-100 text-yellow-800",
+        icon: Info,
+      },
+      released: { label: "Released", color: "bg-green-100 text-green-800", icon: CheckCircle2 },
+      failed: { label: "Failed", color: "bg-red-100 text-red-800", icon: AlertCircle },
+    };
 
   if (loading) {
     return (
@@ -192,7 +200,8 @@ export function DepCenter({ jobId }: DepCenterProps) {
 
         {readiness.filedAt && (
           <div className="mt-2 text-sm text-gray-600">
-            <span className="font-medium">Filed:</span> {new Date(readiness.filedAt).toLocaleDateString()}
+            <span className="font-medium">Filed:</span>{" "}
+            {new Date(readiness.filedAt).toLocaleDateString()}
           </div>
         )}
       </div>
@@ -219,11 +228,9 @@ export function DepCenter({ jobId }: DepCenterProps) {
       {readiness.ready && readiness.status === "ready" && (
         <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
           <h3 className="mb-4 font-semibold text-gray-900">Prepare Packet</h3>
-          
+
           <div className="mb-4">
-            <label className="mb-2 block text-sm font-medium text-gray-700">
-              Select Carrier
-            </label>
+            <label className="mb-2 block text-sm font-medium text-gray-700">Select Carrier</label>
             <select
               value={selectedCarrier}
               onChange={(e) => setSelectedCarrier(e.target.value)}
@@ -264,7 +271,7 @@ export function DepCenter({ jobId }: DepCenterProps) {
             type="button"
             onClick={handleSend}
             disabled={sending}
-            className="flex items-center gap-2 rounded-md bg-green-600 px-4 py-2 text-sm font-medium text-white hover:bg-green-700 disabled:opacity-50"
+            className="flex items-center gap-2 rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50"
           >
             <Send className="h-4 w-4" />
             {sending ? "Sending..." : "Send to Carrier"}
@@ -272,11 +279,7 @@ export function DepCenter({ jobId }: DepCenterProps) {
         </div>
       )}
 
-      {error && (
-        <div className="rounded-md bg-red-50 p-3 text-sm text-red-700">
-          {error}
-        </div>
-      )}
+      {error && <div className="rounded-md bg-red-50 p-3 text-sm text-red-700">{error}</div>}
     </div>
   );
 }

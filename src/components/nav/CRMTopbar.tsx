@@ -126,7 +126,7 @@ export default function CRMTopbar() {
           <Link href="/claims/new">
             <Button
               size="sm"
-              className="bg-emerald-600 font-medium text-white shadow-sm hover:bg-emerald-700"
+              className="bg-blue-600 font-medium text-white shadow-sm hover:bg-blue-700"
             >
               <span className="mr-1.5 text-base">+</span>
               <span className="hidden sm:inline">New Claim</span>

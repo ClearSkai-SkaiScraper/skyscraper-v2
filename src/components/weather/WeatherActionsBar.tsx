@@ -56,19 +56,34 @@ export default function ReportActionsBar({ reportId }: any) {
 
   return (
     <div className="flex flex-wrap gap-4 border-b pb-4">
-      <button className="rounded bg-blue-600 px-4 py-2 text-white hover:bg-blue-700" onClick={downloadPDF}>
+      <button
+        className="rounded bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
+        onClick={downloadPDF}
+      >
         📄 Download PDF
       </button>
-      <button className="rounded bg-green-600 px-4 py-2 text-white hover:bg-green-700" onClick={sendEmail}>
+      <button
+        className="rounded bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
+        onClick={sendEmail}
+      >
         ✉️ Email to Adjuster
       </button>
-      <button className="rounded bg-purple-600 px-4 py-2 text-white hover:bg-purple-700" onClick={addToIntelCore}>
+      <button
+        className="rounded bg-purple-600 px-4 py-2 text-white hover:bg-purple-700"
+        onClick={addToIntelCore}
+      >
         🧠 Add to Intelligence Packet
       </button>
-      <button className="rounded bg-orange-600 px-4 py-2 text-white hover:bg-orange-700" onClick={addToSupplement}>
+      <button
+        className="rounded bg-orange-600 px-4 py-2 text-white hover:bg-orange-700"
+        onClick={addToSupplement}
+      >
         ➕ Add to Supplement Builder
       </button>
-      <button className="rounded bg-gray-600 px-4 py-2 text-white hover:bg-gray-700" onClick={sharePublic}>
+      <button
+        className="rounded bg-gray-600 px-4 py-2 text-white hover:bg-gray-700"
+        onClick={sharePublic}
+      >
         🔗 Share Public Link
       </button>
     </div>

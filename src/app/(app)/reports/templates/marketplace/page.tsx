@@ -189,6 +189,45 @@ function getUniformThumbKey(category: string | null) {
   }
 }
 
+const INITIAL_SHOW = 6;
+
+/** Show-more grid: renders first 6 templates, then expand on click */
+function CategoryGrid({
+  templates,
+  addedTemplateIds,
+  onAdded,
+}: {
+  templates: Template[];
+  addedTemplateIds: Set<string>;
+  onAdded: (slug: string) => void;
+}) {
+  const [showAll, setShowAll] = useState(false);
+  const visible = showAll ? templates : templates.slice(0, INITIAL_SHOW);
+  const hasMore = templates.length > INITIAL_SHOW;
+
+  return (
+    <>
+      <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+        {visible.map((template) => (
+          <TemplateCard
+            key={template.id}
+            template={template}
+            isAdded={addedTemplateIds.has(template.slug || template.id)}
+            onAdded={onAdded}
+          />
+        ))}
+      </div>
+      {hasMore && !showAll && (
+        <div className="mt-4 text-center">
+          <Button variant="outline" onClick={() => setShowAll(true)} className="px-6">
+            Show all {templates.length} templates
+          </Button>
+        </div>
+      )}
+    </>
+  );
+}
+
 export default function MarketplacePage() {
   const [templates, setTemplates] = useState<Template[]>([]);
   const [addedTemplateIds, setAddedTemplateIds] = useState<Set<string>>(new Set());
@@ -507,17 +546,12 @@ export default function MarketplacePage() {
                   </div>
                 </div>
 
-                {/* Templates Grid */}
-                <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-                  {categoryTemplates.map((template) => (
-                    <TemplateCard
-                      key={template.id}
-                      template={template}
-                      isAdded={addedTemplateIds.has(template.slug || template.id)}
-                      onAdded={handleTemplateAdded}
-                    />
-                  ))}
-                </div>
+                {/* Templates Grid — show 6 initially, expand on click */}
+                <CategoryGrid
+                  templates={categoryTemplates}
+                  addedTemplateIds={addedTemplateIds}
+                  onAdded={handleTemplateAdded}
+                />
               </section>
             );
           })}

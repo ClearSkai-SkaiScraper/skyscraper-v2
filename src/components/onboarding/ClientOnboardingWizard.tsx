@@ -7,8 +7,8 @@
  * Collects: user type, needs, project details, and photos.
  */
 
-import { useUser } from "@clerk/nextjs";
 import { logger } from "@/lib/logger";
+import { useUser } from "@clerk/nextjs";
 import {
   ArrowLeft,
   ArrowRight,
@@ -513,7 +513,7 @@ export function ClientOnboardingWizard({ onComplete, onSkip }: ClientOnboardingW
               <Button
                 onClick={nextStep}
                 disabled={!canProceed()}
-                className="gap-2 bg-green-600 hover:bg-green-700"
+                className="gap-2 bg-blue-600 hover:bg-blue-700"
               >
                 Next
                 <ArrowRight className="h-4 w-4" />
@@ -522,7 +522,7 @@ export function ClientOnboardingWizard({ onComplete, onSkip }: ClientOnboardingW
               <Button
                 onClick={handleSubmit}
                 disabled={isSubmitting}
-                className="gap-2 bg-green-600 hover:bg-green-700"
+                className="gap-2 bg-blue-600 hover:bg-blue-700"
               >
                 {isSubmitting ? (
                   <>

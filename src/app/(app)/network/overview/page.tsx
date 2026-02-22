@@ -139,7 +139,7 @@ export default async function NetworkOverviewPage() {
             {vendorLocations} locations with {vendorContacts} contacts across Arizona
           </p>
           <Link href="/vendors">
-            <Button className="w-full bg-green-600 hover:bg-green-700">
+            <Button className="w-full bg-blue-600 hover:bg-blue-700">
               View Vendor Network
               <ArrowRight className="ml-2 h-4 w-4" />
             </Button>

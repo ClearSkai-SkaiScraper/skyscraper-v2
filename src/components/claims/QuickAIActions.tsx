@@ -51,7 +51,7 @@ export function QuickAIActions({ claimId, onActionComplete }: QuickAIActionsProp
       label: "Draft Scope",
       description: "AI-generated line items",
       icon: <ListChecks className="h-4 w-4" />,
-      color: "bg-green-600 hover:bg-green-700",
+      color: "bg-blue-600 hover:bg-blue-700",
       task: "damage",
     },
     {

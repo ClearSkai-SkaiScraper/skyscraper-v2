@@ -730,7 +730,7 @@ export default async function RetailJobWorkspacePage({
                 <CardTitle>Quick Actions</CardTitle>
               </CardHeader>
               <CardContent className="space-y-2">
-                <Button className="w-full bg-green-600 hover:bg-green-700" asChild>
+                <Button className="w-full bg-blue-600 hover:bg-blue-700" asChild>
                   <Link href={`/appointments/schedule?retailJobId=${job.id}`}>
                     <Calendar className="mr-2 h-4 w-4" />
                     Schedule Job

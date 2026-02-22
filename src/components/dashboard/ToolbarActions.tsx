@@ -1,7 +1,7 @@
 "use client";
 
-import { Camera, CloudRain, FilePlus, FileText, Hammer, MapPin, Sparkles } from "lucide-react";
 import { logger } from "@/lib/logger";
+import { Camera, CloudRain, FilePlus, FileText, Hammer, MapPin, Sparkles } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
@@ -104,7 +104,7 @@ export default function ToolbarActions() {
       icon: MapPin,
       onClick: () => handleAIAction("dol", TOKEN_COSTS.QUICK_DOL_PULL),
       tokenCost: TOKEN_COSTS.QUICK_DOL_PULL,
-      color: "bg-emerald-600 hover:bg-emerald-700",
+      color: "bg-blue-600 hover:bg-blue-700",
     },
     {
       id: "weather",

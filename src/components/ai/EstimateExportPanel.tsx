@@ -284,11 +284,7 @@ export function EstimateExportPanel({ leadId, claimId }: EstimateExportPanelProp
                   D22 (JSON). Import directly into carrier systems.
                 </p>
               </div>
-              <Button
-                size="lg"
-                onClick={exportEstimate}
-                className="bg-green-600 hover:bg-green-700"
-              >
+              <Button size="lg" onClick={exportEstimate} className="bg-blue-600 hover:bg-blue-700">
                 <FileCode className="mr-2 h-4 w-4" />
                 Export Estimate
               </Button>

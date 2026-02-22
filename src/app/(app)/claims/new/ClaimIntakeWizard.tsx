@@ -1295,7 +1295,7 @@ function ScopeOfWorkScanner({
                   type="button"
                   onClick={onCreateClaim}
                   disabled={loading || isUploading}
-                  className="flex w-full items-center justify-center gap-2 rounded-xl bg-emerald-600 px-6 py-3 text-sm font-semibold text-white shadow-md transition-all hover:bg-emerald-700 hover:shadow-lg disabled:opacity-50"
+                  className="flex w-full items-center justify-center gap-2 rounded-xl bg-blue-600 px-6 py-3 text-sm font-semibold text-white shadow-md transition-all hover:bg-blue-700 hover:shadow-lg disabled:opacity-50"
                 >
                   {loading ? (
                     <>

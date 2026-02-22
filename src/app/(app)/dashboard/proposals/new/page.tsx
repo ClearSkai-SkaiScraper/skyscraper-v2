@@ -499,7 +499,7 @@ export default function NewProposalPage() {
                 <Button
                   onClick={handleRender}
                   disabled={isRendering || !!pdfUrl}
-                  className="min-h-[44px] flex-1 bg-green-600 hover:bg-green-700"
+                  className="min-h-[44px] flex-1 bg-blue-600 hover:bg-blue-700"
                 >
                   {isRendering ? "Rendering PDF..." : pdfUrl ? "PDF Ready" : "Render PDF"}
                 </Button>

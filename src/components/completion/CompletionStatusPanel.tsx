@@ -1,8 +1,8 @@
 "use client";
 
-import { AlertCircle, CheckCircle2, Circle, Loader2 } from "lucide-react";
 import { logger } from "@/lib/logger";
-import { useEffect,useState } from "react";
+import { AlertCircle, CheckCircle2, Circle, Loader2 } from "lucide-react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -125,13 +125,13 @@ export function CompletionStatusPanel({ claimId }: CompletionStatusPanelProps) {
                 🎉 BUILD COMPLETE - Ready for Depreciation Processing
               </h4>
               <p className="mb-4 text-sm text-green-800">
-                All requirements met. You can now generate the AI-powered timeline, detect supplements,
-                and build the final depreciation packet.
+                All requirements met. You can now generate the AI-powered timeline, detect
+                supplements, and build the final depreciation packet.
               </p>
               <Button
                 onClick={startDepreciationWorkflow}
                 disabled={analyzing}
-                className="bg-green-600 hover:bg-green-700"
+                className="bg-blue-600 hover:bg-blue-700"
               >
                 {analyzing ? (
                   <>

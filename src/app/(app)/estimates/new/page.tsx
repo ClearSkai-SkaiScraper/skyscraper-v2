@@ -391,7 +391,7 @@ supplement_002"
                   type="button"
                   onClick={saveEstimate}
                   disabled={isSaving || lineItems.length === 0}
-                  className="flex items-center gap-2 rounded-lg bg-emerald-600 px-6 py-2.5 text-sm font-medium text-white transition-colors hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-60"
+                  className="flex items-center gap-2 rounded-lg bg-blue-600 px-6 py-2.5 text-sm font-medium text-white transition-colors hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
                 >
                   {isSaving ? (
                     <>

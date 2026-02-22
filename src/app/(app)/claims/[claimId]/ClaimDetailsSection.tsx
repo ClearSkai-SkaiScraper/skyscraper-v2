@@ -104,7 +104,7 @@ export default function ClaimDetailsSection({ claimId, initialData }: ClaimDetai
             <Button
               onClick={handleSave}
               disabled={isSaving}
-              className="gap-2 bg-green-600 hover:bg-green-700"
+              className="gap-2 bg-blue-600 hover:bg-blue-700"
             >
               {isSaving ? (
                 <Loader2 className="h-4 w-4 animate-spin" />

@@ -1,6 +1,6 @@
 "use client";
 
-import { CheckCircle2,FileText, Loader2, Send } from "lucide-react";
+import { CheckCircle2, FileText, Loader2, Send } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 
@@ -39,8 +39,10 @@ export function DepreciationPackagePanel({
 
       const data = await res.json();
       setLocalPackage(data);
-      toast.success(`✅ Depreciation package generated! $${data.totalDepreciationOwed.toFixed(2)} owed`);
-      
+      toast.success(
+        `✅ Depreciation package generated! $${data.totalDepreciationOwed.toFixed(2)} owed`
+      );
+
       if (onPackageGenerated) onPackageGenerated();
     } catch (error: any) {
       toast.error(`Failed to generate package: ${error.message}`);
@@ -92,14 +94,14 @@ export function DepreciationPackagePanel({
       {!localPackage ? (
         <div>
           <p className="mb-4 text-sm text-gray-600">
-            Generate the final depreciation release packet including invoice, contractor statement, 
+            Generate the final depreciation release packet including invoice, contractor statement,
             homeowner acceptance, and all supporting documentation.
           </p>
-          
+
           <Button
             onClick={generatePackage}
             disabled={generating}
-            className="w-full bg-green-600 hover:bg-green-700"
+            className="w-full bg-blue-600 hover:bg-blue-700"
           >
             {generating ? (
               <>
@@ -121,7 +123,9 @@ export function DepreciationPackagePanel({
             <div className="flex items-start gap-3">
               <CheckCircle2 className="mt-1 h-5 w-5 flex-shrink-0 text-green-600" />
               <div className="flex-1">
-                <h4 className="mb-2 font-semibold text-green-900">Package Generated Successfully</h4>
+                <h4 className="mb-2 font-semibold text-green-900">
+                  Package Generated Successfully
+                </h4>
                 <div className="grid grid-cols-2 gap-2 text-sm">
                   <div>
                     <span className="text-green-700">Total Invoice:</span>
@@ -194,7 +198,9 @@ export function DepreciationPackagePanel({
             <h4 className="mb-3 text-sm font-semibold text-gray-700">📧 Send to Adjuster</h4>
             <div className="space-y-3">
               <div>
-                <Label htmlFor="adjuster-email" className="text-sm">Adjuster Email</Label>
+                <Label htmlFor="adjuster-email" className="text-sm">
+                  Adjuster Email
+                </Label>
                 <Input
                   id="adjuster-email"
                   type="email"

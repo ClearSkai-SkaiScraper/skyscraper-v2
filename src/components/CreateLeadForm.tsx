@@ -1,7 +1,7 @@
 "use client";
 
-import { AlertCircle, DollarSign, Zap } from "lucide-react";
 import { logger } from "@/lib/logger";
+import { AlertCircle, DollarSign, Zap } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -197,7 +197,9 @@ export default function CreateLeadForm({ onSuccess }: CreateLeadFormProps) {
             <h3 className="text-lg font-semibold">Contact Information</h3>
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
               <div>
-                <Label htmlFor="firstName">First Name *</Label>
+                <Label htmlFor="firstName">
+                  First Name<span className="ml-1 text-red-500">*</span>
+                </Label>
                 <Input
                   id="firstName"
                   required
@@ -206,7 +208,9 @@ export default function CreateLeadForm({ onSuccess }: CreateLeadFormProps) {
                 />
               </div>
               <div>
-                <Label htmlFor="lastName">Last Name *</Label>
+                <Label htmlFor="lastName">
+                  Last Name<span className="ml-1 text-red-500">*</span>
+                </Label>
                 <Input
                   id="lastName"
                   required
@@ -241,7 +245,9 @@ export default function CreateLeadForm({ onSuccess }: CreateLeadFormProps) {
           <div className="space-y-4">
             <h3 className="text-lg font-semibold">Property Information</h3>
             <div>
-              <Label htmlFor="propertyAddress">Property Address *</Label>
+              <Label htmlFor="propertyAddress">
+                Property Address<span className="ml-1 text-red-500">*</span>
+              </Label>
               <Input
                 id="propertyAddress"
                 required
@@ -251,7 +257,9 @@ export default function CreateLeadForm({ onSuccess }: CreateLeadFormProps) {
             </div>
             <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
               <div>
-                <Label htmlFor="propertyCity">City *</Label>
+                <Label htmlFor="propertyCity">
+                  City<span className="ml-1 text-red-500">*</span>
+                </Label>
                 <Input
                   id="propertyCity"
                   required
@@ -260,7 +268,9 @@ export default function CreateLeadForm({ onSuccess }: CreateLeadFormProps) {
                 />
               </div>
               <div>
-                <Label htmlFor="propertyState">State *</Label>
+                <Label htmlFor="propertyState">
+                  State<span className="ml-1 text-red-500">*</span>
+                </Label>
                 <Input
                   id="propertyState"
                   required
@@ -269,7 +279,9 @@ export default function CreateLeadForm({ onSuccess }: CreateLeadFormProps) {
                 />
               </div>
               <div>
-                <Label htmlFor="propertyZip">ZIP Code *</Label>
+                <Label htmlFor="propertyZip">
+                  ZIP Code<span className="ml-1 text-red-500">*</span>
+                </Label>
                 <Input
                   id="propertyZip"
                   required
@@ -288,7 +300,9 @@ export default function CreateLeadForm({ onSuccess }: CreateLeadFormProps) {
             </h3>
 
             <div>
-              <Label htmlFor="workType">Work Type / Need *</Label>
+              <Label htmlFor="workType">
+                Work Type / Need<span className="ml-1 text-red-500">*</span>
+              </Label>
               <Select
                 required
                 value={formData.workType}
@@ -318,7 +332,7 @@ export default function CreateLeadForm({ onSuccess }: CreateLeadFormProps) {
                 <Label htmlFor="urgency">
                   <div className="flex items-center gap-2">
                     <AlertCircle className="h-4 w-4" />
-                    Urgency Level *
+                    Urgency Level<span className="ml-1 text-red-500">*</span>
                   </div>
                 </Label>
                 <Select
@@ -403,7 +417,7 @@ export default function CreateLeadForm({ onSuccess }: CreateLeadFormProps) {
             {/* Job Category - Pipeline Routing */}
             <div className="rounded-lg border-2 border-blue-200 bg-blue-50 p-4 dark:border-blue-800 dark:bg-blue-950">
               <Label htmlFor="jobCategory" className="text-base font-semibold">
-                📁 Route to Pipeline *
+                📁 Route to Pipeline<span className="ml-1 text-red-500">*</span>
               </Label>
               <p className="mb-3 text-sm text-gray-600 dark:text-gray-400">
                 Choose where this job belongs in your workflow

@@ -50,7 +50,7 @@ export default function ClaimFinancialAnalysis({
         <button
           onClick={runAnalysis}
           disabled={loading}
-          className="rounded bg-green-600 px-6 py-3 font-semibold text-white hover:bg-green-700 disabled:bg-gray-400"
+          className="rounded bg-blue-600 px-6 py-3 font-semibold text-white hover:bg-blue-700 disabled:bg-gray-400"
         >
           {loading ? "Analyzing..." : "🧮 Run Financial Analysis"}
         </button>

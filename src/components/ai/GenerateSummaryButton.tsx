@@ -6,8 +6,8 @@
 
 "use client";
 
-import { AlertCircle,FileText, Loader2 } from "lucide-react";
 import { logger } from "@/lib/logger";
+import { AlertCircle, FileText, Loader2 } from "lucide-react";
 import { useState } from "react";
 
 interface GenerateSummaryButtonProps {
@@ -59,9 +59,9 @@ export function GenerateSummaryButton({
   };
 
   const variantClasses = {
-    primary: "bg-green-600 hover:bg-green-700 text-white",
+    primary: "bg-blue-600 hover:bg-blue-700 text-white",
     secondary: "bg-slate-600 hover:bg-slate-700 text-white",
-    outline: "border-2 border-green-600 text-green-600 hover:bg-green-50",
+    outline: "border-2 border-blue-600 text-blue-600 hover:bg-blue-50",
   };
 
   return (

@@ -730,7 +730,7 @@ export default function ClaimFinancialPage() {
                       Plain-language PDF explaining what&apos;s owed, why supplements are needed,
                       and simple pricing breakdown
                     </p>
-                    <button className="w-full rounded-lg bg-green-600 px-4 py-2 font-medium text-white hover:bg-green-700">
+                    <button className="w-full rounded-lg bg-blue-600 px-4 py-2 font-medium text-white hover:bg-blue-700">
                       📥 Download PDF (Homeowner)
                     </button>
                   </div>

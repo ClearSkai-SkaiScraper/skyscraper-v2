@@ -1,7 +1,7 @@
 "use client";
 
-import { Check, Eye, EyeOff } from "lucide-react";
 import { logger } from "@/lib/logger";
+import { Check, Eye, EyeOff } from "lucide-react";
 import { useState } from "react";
 
 import { Badge } from "@/components/ui/badge";
@@ -167,7 +167,7 @@ export function BulkShareActions({ claimId, selectedItems, onBulkUpdate }: BulkS
             variant="default"
             onClick={() => handleBulkToggle(true)}
             disabled={isLoading}
-            className="bg-green-600 text-white hover:bg-green-700"
+            className="bg-blue-600 text-white hover:bg-blue-700"
           >
             <Check className="mr-1 h-4 w-4" />
             Share All

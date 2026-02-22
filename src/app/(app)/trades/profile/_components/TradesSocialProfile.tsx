@@ -204,7 +204,7 @@ function ConnectionsTab({ isOwnProfile, memberId }: { isOwnProfile: boolean; mem
                     </Button>
                     <Button
                       size="sm"
-                      className="bg-green-600 hover:bg-green-700"
+                      className="bg-blue-600 hover:bg-blue-700"
                       onClick={async () => {
                         try {
                           const res = await fetch("/api/connections/accept", {
@@ -472,7 +472,7 @@ function ActivityNotificationsWidget() {
                   <div className="mt-2 flex gap-2">
                     <Button
                       size="sm"
-                      className="bg-green-600 hover:bg-green-700"
+                      className="bg-blue-600 hover:bg-blue-700"
                       onClick={() => handleAcceptConnection(activity.metadata!.requestId!)}
                     >
                       <CheckCircle2 className="mr-1 h-3 w-3" />

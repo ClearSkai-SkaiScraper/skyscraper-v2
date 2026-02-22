@@ -155,7 +155,7 @@ function BidCard({ bid, onWithdraw }: { bid: MyBid; onWithdraw: (bidId: string) 
 
           {bid.status === "accepted" && (
             <>
-              <Button size="sm" className="bg-green-600 hover:bg-green-700" asChild>
+              <Button size="sm" className="bg-blue-600 hover:bg-blue-700" asChild>
                 <Link href="/trades/messages">
                   <MessageSquare className="mr-1 h-4 w-4" />
                   Message Client

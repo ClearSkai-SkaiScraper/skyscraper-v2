@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
 import { logger } from "@/lib/logger";
+import { useState } from "react";
 
 interface WeatherExportButtonsProps {
   reportId: string;
@@ -22,7 +22,7 @@ export function WeatherExportButtons({ reportId }: WeatherExportButtonsProps) {
       if (!res.ok) throw new Error("Export failed");
 
       const data = await res.json();
-      
+
       // Download as JSON
       const blob = new Blob([JSON.stringify(data.packet, null, 2)], {
         type: "application/json",
@@ -58,10 +58,10 @@ export function WeatherExportButtons({ reportId }: WeatherExportButtonsProps) {
 
       const blob = await res.blob();
       const url = URL.createObjectURL(blob);
-      
+
       // Open in new tab AND download
       window.open(url, "_blank");
-      
+
       const a = document.createElement("a");
       a.href = url;
       a.download = `weather-${format.toLowerCase()}-${reportId.slice(0, 8)}.pdf`;
@@ -91,7 +91,7 @@ export function WeatherExportButtons({ reportId }: WeatherExportButtonsProps) {
       format: "HOMEOWNER" as const,
       label: "Homeowner Summary",
       icon: "🏡",
-      color: "bg-green-600 hover:bg-green-700",
+      color: "bg-blue-600 hover:bg-blue-700",
       description: "Simple, friendly, sales-ready",
     },
     {
@@ -124,13 +124,7 @@ export function WeatherExportButtons({ reportId }: WeatherExportButtonsProps) {
             <button
               onClick={() => exportPacket(btn.format)}
               disabled={exporting !== null}
-              className={`
-                relative w-full rounded-xl px-4 py-3 font-medium text-white transition-all
-                ${btn.color}
-                ${exporting === btn.format ? "cursor-wait opacity-50" : ""}
-                ${exporting && exporting !== btn.format && !exporting.includes("_PDF") ? "opacity-30" : ""}
-                disabled:cursor-not-allowed
-              `}
+              className={`relative w-full rounded-xl px-4 py-3 font-medium text-white transition-all ${btn.color} ${exporting === btn.format ? "cursor-wait opacity-50" : ""} ${exporting && exporting !== btn.format && !exporting.includes("_PDF") ? "opacity-30" : ""} disabled:cursor-not-allowed`}
             >
               <div className="flex items-center gap-3">
                 <span className="text-2xl">{btn.icon}</span>
@@ -138,9 +132,7 @@ export function WeatherExportButtons({ reportId }: WeatherExportButtonsProps) {
                   <div className="text-sm font-semibold">{btn.label}</div>
                   <div className="text-xs opacity-90">{btn.description}</div>
                 </div>
-                {exporting === btn.format && (
-                  <div className="animate-spin">⏳</div>
-                )}
+                {exporting === btn.format && <div className="animate-spin">⏳</div>}
               </div>
             </button>
 
@@ -148,20 +140,11 @@ export function WeatherExportButtons({ reportId }: WeatherExportButtonsProps) {
             <button
               onClick={() => exportPDF(btn.format)}
               disabled={exporting !== null}
-              className={`
-                relative w-full rounded-lg border-2 bg-white px-3 py-2 font-medium transition-all
-                ${btn.color.replace("bg-", "border-").replace("hover:bg-", "hover:border-")}
-                ${btn.color.replace("bg-", "text-").replace(" hover:bg-", "").split(" ")[0]}
-                ${exporting === btn.format + "_PDF" ? "cursor-wait opacity-50" : ""}
-                ${exporting && exporting !== btn.format + "_PDF" ? "opacity-30" : ""}
-                disabled:cursor-not-allowed
-              `}
+              className={`relative w-full rounded-lg border-2 bg-white px-3 py-2 font-medium transition-all ${btn.color.replace("bg-", "border-").replace("hover:bg-", "hover:border-")} ${btn.color.replace("bg-", "text-").replace("hover:bg-", "").split(" ")[0]} ${exporting === btn.format + "_PDF" ? "cursor-wait opacity-50" : ""} ${exporting && exporting !== btn.format + "_PDF" ? "opacity-30" : ""} disabled:cursor-not-allowed`}
             >
               <div className="flex items-center justify-center gap-2">
                 <span>📄 Download PDF</span>
-                {exporting === btn.format + "_PDF" && (
-                  <div className="animate-spin">⏳</div>
-                )}
+                {exporting === btn.format + "_PDF" && <div className="animate-spin">⏳</div>}
               </div>
             </button>
           </div>
@@ -169,10 +152,18 @@ export function WeatherExportButtons({ reportId }: WeatherExportButtonsProps) {
       </div>
 
       <div className="space-y-1 text-xs text-gray-500">
-        <p>• <strong>Claims-Ready:</strong> Technical language, building codes, manufacturer specs</p>
-        <p>• <strong>Homeowner:</strong> Simple explanations, next steps, safety notes</p>
-        <p>• <strong>Quick Snapshot:</strong> Bullet points, one-page, team reference</p>
-        <p>• <strong>Public Adjuster:</strong> Extreme detail, litigation support, component analysis</p>
+        <p>
+          • <strong>Claims-Ready:</strong> Technical language, building codes, manufacturer specs
+        </p>
+        <p>
+          • <strong>Homeowner:</strong> Simple explanations, next steps, safety notes
+        </p>
+        <p>
+          • <strong>Quick Snapshot:</strong> Bullet points, one-page, team reference
+        </p>
+        <p>
+          • <strong>Public Adjuster:</strong> Extreme detail, litigation support, component analysis
+        </p>
       </div>
     </div>
   );

@@ -827,7 +827,7 @@ export default function TradesJobsPage() {
                         </Button>
                         <Button
                           size="sm"
-                          className="bg-emerald-600 text-white hover:bg-emerald-700"
+                          className="bg-blue-600 text-white hover:bg-blue-700"
                           onClick={() => handleWorkRequestAction(wr.id, "accepted")}
                           disabled={respondingTo === wr.id}
                         >

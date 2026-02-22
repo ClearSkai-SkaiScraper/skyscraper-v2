@@ -26,7 +26,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
 import ReadinessScore from "@/components/claims-folder/ReadinessScore";
 import { Badge } from "@/components/ui/badge";
@@ -117,6 +117,33 @@ function getStatusColor(status: SectionStatus) {
     default:
       return "border-slate-200 bg-slate-50 dark:border-slate-800 dark:bg-slate-900";
   }
+}
+
+// ── Lazy collapsible preview for section data ──
+function SectionPreview({ data }: { data: unknown }) {
+  const [expanded, setExpanded] = useState(false);
+  const preview = useMemo(() => {
+    const full = JSON.stringify(data, null, 2);
+    if (full.length <= 300) return { full, truncated: full, isTruncated: false };
+    return { full, truncated: full.slice(0, 300) + "\n  …", isTruncated: true };
+  }, [data]);
+
+  return (
+    <div className="rounded bg-white/50 p-4 dark:bg-slate-800/50">
+      <pre className="max-h-64 overflow-auto text-xs">
+        {expanded ? preview.full : preview.truncated}
+      </pre>
+      {preview.isTruncated && (
+        <button
+          type="button"
+          onClick={() => setExpanded((v) => !v)}
+          className="mt-2 text-xs font-medium text-blue-600 hover:underline dark:text-blue-400"
+        >
+          {expanded ? "▲ Collapse" : "▼ Show full data"}
+        </button>
+      )}
+    </div>
+  );
 }
 
 export default function ClaimFolderBuilderPage() {
@@ -524,14 +551,8 @@ export default function ClaimFolderBuilderPage() {
                   </div>
                 </div>
 
-                {/* Section Data Preview */}
-                {data && typeof data === "object" && (
-                  <div className="rounded bg-white/50 p-4 dark:bg-slate-800/50">
-                    <pre className="max-h-48 overflow-auto text-xs">
-                      {JSON.stringify(data, null, 2)}
-                    </pre>
-                  </div>
-                )}
+                {/* Section Data Preview — collapsible */}
+                {data && typeof data === "object" && <SectionPreview data={data} />}
 
                 {/* Generate button for AI sections */}
                 {(section === "causeOfLossNarrative" ||

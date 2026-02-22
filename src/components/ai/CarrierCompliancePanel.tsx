@@ -378,7 +378,7 @@ export function CarrierCompliancePanel({ leadId, currentScope = [] }: CarrierCom
                 </div>
 
                 <div className="mt-4 flex gap-2">
-                  <Button className="flex-1 bg-green-600 hover:bg-green-700">
+                  <Button className="flex-1 bg-blue-600 hover:bg-blue-700">
                     <CheckCircle className="mr-2 h-4 w-4" />
                     Apply All Adjustments
                   </Button>

@@ -970,7 +970,7 @@ export default function CompanyPage() {
                       <div className="flex gap-2">
                         <Button
                           size="sm"
-                          className="flex-1 bg-green-600 hover:bg-green-700"
+                          className="flex-1 bg-blue-600 hover:bg-blue-700"
                           onClick={() => handleJoinRequest(req.id, "approve")}
                           disabled={processingRequest === req.id}
                         >

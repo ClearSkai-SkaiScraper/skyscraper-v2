@@ -14,8 +14,8 @@
  * - Database: claim_builders table (already exists)
  */
 
-import { Download, FileText, Loader2, Plus, Sparkles, Trash2 } from "lucide-react";
 import { logger } from "@/lib/logger";
+import { Download, FileText, Loader2, Plus, Sparkles, Trash2 } from "lucide-react";
 import { useState } from "react";
 
 // Types for damage detection results
@@ -531,7 +531,7 @@ export function AIBuilderActions({
       <button
         onClick={onGeneratePDF}
         disabled={disabled || isGeneratingPDF}
-        className="flex items-center gap-2 rounded-lg bg-emerald-600 px-6 py-3 font-semibold text-white transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-50"
+        className="flex items-center gap-2 rounded-lg bg-blue-600 px-6 py-3 font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
       >
         {isGeneratingPDF ? (
           <>

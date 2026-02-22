@@ -342,7 +342,7 @@ export default function CompanyInvitePage() {
                       size="sm"
                       onClick={() => handleJoinRequest(request.id, "approve")}
                       disabled={processing === request.id}
-                      className="bg-green-600 hover:bg-green-700"
+                      className="bg-blue-600 hover:bg-blue-700"
                     >
                       {processing === request.id ? (
                         <Loader2 className="h-4 w-4 animate-spin" />
@@ -509,7 +509,7 @@ export default function CompanyInvitePage() {
             <Button
               onClick={handleSendClientInvite}
               disabled={sendingClientInvite || !clientInviteEmail.trim()}
-              className="mt-4 w-full bg-emerald-600 hover:bg-emerald-700"
+              className="mt-4 w-full bg-blue-600 hover:bg-blue-700"
             >
               {sendingClientInvite ? (
                 <>

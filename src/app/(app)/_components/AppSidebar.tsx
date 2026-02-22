@@ -134,9 +134,12 @@ export function AppSidebar() {
   const t = getUiTheme(mode);
 
   // ── Collapsible sections ──
-  // Start with all sections COLLAPSED by default, persist to localStorage
-  const allCollapsed = Object.fromEntries(navSections.map((s) => [s.label, true]));
-  const [collapsedSections, setCollapsedSections] = useState<Record<string, boolean>>(allCollapsed);
+  // Start with Storm Command Center OPEN, all others collapsed. Persist to localStorage.
+  const defaultCollapsed = Object.fromEntries(
+    navSections.map((s) => [s.label, s.label !== "Storm Command Center"])
+  );
+  const [collapsedSections, setCollapsedSections] =
+    useState<Record<string, boolean>>(defaultCollapsed);
   const [hydrated, setHydrated] = useState(false);
 
   useEffect(() => {

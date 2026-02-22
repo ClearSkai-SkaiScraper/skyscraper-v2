@@ -593,14 +593,14 @@ export default function ClientOnboardingPage() {
             )}
 
             {step < 3 ? (
-              <Button onClick={handleNext} className="bg-green-600 hover:bg-green-700">
+              <Button onClick={handleNext} className="bg-blue-600 hover:bg-blue-700">
                 Continue
               </Button>
             ) : (
               <Button
                 onClick={handleSubmit}
                 disabled={loading}
-                className="bg-green-600 hover:bg-green-700"
+                className="bg-blue-600 hover:bg-blue-700"
               >
                 {loading ? (
                   <span className="flex items-center gap-2">
