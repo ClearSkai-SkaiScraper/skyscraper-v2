@@ -29,47 +29,46 @@ async function handleGET(req: NextRequest, { params }: { params: Promise<{ claim
     const documents = await prisma.$queryRaw<
       Array<{
         id: string;
-        type: string;
-        title: string;
-        description: string | null;
-        public_url: string;
-        mime_type: string;
-        file_size: number | null;
-        visible_to_client: boolean;
+        name: string;
+        url: string;
+        mime_type: string | null;
+        size_bytes: number | null;
+        uploaded_by_id: string | null;
+        is_shared_with_client: boolean;
+        is_archived: boolean;
         created_at: Date;
-        created_by: string | null;
       }>
     >`
       SELECT
         id,
-        type,
-        title,
-        description,
-        public_url,
+        name,
+        url,
         mime_type,
-        file_size,
-        visible_to_client,
-        created_at,
-        created_by
+        size_bytes,
+        uploaded_by_id,
+        is_shared_with_client,
+        is_archived,
+        created_at
       FROM claim_documents
       WHERE claim_id = ${claimId}
+        AND is_archived = FALSE
       ORDER BY created_at DESC
     `;
 
     // Transform snake_case DB columns to camelCase for front-end
     const transformed = documents.map((doc) => ({
       id: doc.id,
-      type: doc.type,
-      title: doc.title,
-      description: doc.description,
-      publicUrl: doc.public_url,
+      type: doc.mime_type?.startsWith("image/") ? "PHOTO" : "OTHER",
+      title: doc.name,
+      description: null,
+      publicUrl: doc.url,
       mimeType: doc.mime_type,
-      fileSize: doc.file_size,
-      visibleToClient: doc.visible_to_client,
+      fileSize: doc.size_bytes,
+      visibleToClient: doc.is_shared_with_client,
       createdAt:
         doc.created_at instanceof Date ? doc.created_at.toISOString() : String(doc.created_at),
       createdBy: {
-        name: doc.created_by || "System",
+        name: doc.uploaded_by_id || "System",
         email: "",
       },
     }));

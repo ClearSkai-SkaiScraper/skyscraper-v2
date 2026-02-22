@@ -6,10 +6,10 @@
  * DELETE /api/leads/[id] - Delete lead
  */
 
-import { NextRequest, NextResponse } from "next/server";
 import { logger } from "@/lib/logger";
+import { NextRequest, NextResponse } from "next/server";
 
-import { compose, safeAuth, withOrgScope, withRateLimit, withSentryApi } from "@/lib/api/wrappers";
+import { compose, withRateLimit, withSentryApi } from "@/lib/api/wrappers";
 import { getCurrentUserPermissions, requirePermission } from "@/lib/permissions";
 import prisma from "@/lib/prisma";
 
@@ -294,7 +294,10 @@ const baseDELETE = async (request: NextRequest, { params }: { params: { id: stri
   }
 };
 
-const wrap = compose(withSentryApi, withRateLimit, withOrgScope, safeAuth);
+// NOTE: withOrgScope requires x-org-id header which client-side forms don't send.
+// All handlers already resolve org via Clerk's getCurrentUserPermissions(), so
+// we only need Sentry + rate-limiting here.
+const wrap = compose(withSentryApi, withRateLimit);
 export const GET = wrap(baseGET);
 export const PATCH = wrap(basePATCH);
 export const DELETE = wrap(baseDELETE);

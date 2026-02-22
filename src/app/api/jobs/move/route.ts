@@ -33,12 +33,43 @@ export const POST = withAuth(async (req: NextRequest, { userId, orgId: userOrgId
 
       // If moving TO claim, we need to create a claim and link it
       if (toCategory === "claim" && !lead.claimId) {
+        // Resolve a property for the claim (FK required)
+        let resolvedPropertyId: string;
+        const existingProperty = await prisma.properties.findFirst({
+          where: { contactId: lead.contactId, orgId: lead.orgId },
+          select: { id: true },
+        });
+        if (existingProperty) {
+          resolvedPropertyId = existingProperty.id;
+        } else {
+          // Create a placeholder property from contact data
+          const contact = await prisma.contacts.findUnique({
+            where: { id: lead.contactId },
+          });
+          const newProperty = await prisma.properties.create({
+            data: {
+              id: `prop-from-lead-${itemId}`,
+              orgId: lead.orgId,
+              contactId: lead.contactId,
+              name: "Primary Property",
+              propertyType: "residential",
+              street: contact?.street || "TBD",
+              city: contact?.city || "TBD",
+              state: contact?.state || "AZ",
+              zipCode: contact?.zipCode || "00000",
+              createdAt: new Date(),
+              updatedAt: new Date(),
+            },
+          });
+          resolvedPropertyId = newProperty.id;
+        }
+
         // Create a new claim from this lead
         const claim = await prisma.claims.create({
           data: {
             id: `claim-from-lead-${itemId}`,
             orgId: lead.orgId,
-            propertyId: "", // TODO: resolve from contact/lead property
+            propertyId: resolvedPropertyId,
             claimNumber: `CLM-${Date.now()}`,
             title: lead.title || "Converted from Lead",
             damageType: "UNKNOWN",
@@ -47,7 +78,7 @@ export const POST = withAuth(async (req: NextRequest, { userId, orgId: userOrgId
             estimatedValue: lead.value,
             createdAt: new Date(),
             updatedAt: new Date(),
-          } as any,
+          },
         });
 
         // Link the lead to the claim

@@ -34,13 +34,15 @@ export default function ClaimReportsPage({ params }: { params: { claimId: string
 
   async function fetchReports() {
     try {
-      const res = await fetch(`/api/claims/${params.claimId}/reports`);
+      const res = await fetch(`/api/claims/${params.claimId}/reports`, {
+        credentials: "include",
+      });
       if (!res.ok) throw new Error("Failed to fetch reports");
 
       const data = await res.json();
       setReports(data.reports || []);
     } catch (err) {
-      setError(err.message);
+      setError(err instanceof Error ? err.message : "Failed to fetch reports");
     } finally {
       setLoading(false);
     }

@@ -116,7 +116,7 @@ export default function CRMTopbar() {
         {/* Right Actions */}
         <div className="flex items-center space-x-2 md:space-x-4">
           {/* + New Job Button - Hidden on small mobile */}
-          <Link href="/leads/new" className="hidden sm:block">
+          <Link href="/jobs/retail/new" className="hidden sm:block">
             <Button size="sm" variant="outline" className="font-medium">
               <span className="mr-1.5 text-base">+</span> New Job
             </Button>
