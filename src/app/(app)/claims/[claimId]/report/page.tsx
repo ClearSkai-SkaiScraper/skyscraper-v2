@@ -4,8 +4,8 @@
  */
 
 import { auth } from "@clerk/nextjs/server";
-import { notFound, redirect } from "next/navigation";
 import { Prisma } from "@prisma/client";
+import { notFound, redirect } from "next/navigation";
 
 import prisma from "@/lib/prisma";
 
@@ -18,20 +18,21 @@ export default async function UniversalReportPage({
 }: {
   params: Promise<{ claimId: string }>;
 }) {
-  const { userId: clerkUserId, orgId } = await auth();
+  const { userId: clerkUserId } = await auth();
   const { claimId } = await params;
 
-  if (!clerkUserId || !orgId) {
+  if (!clerkUserId) {
     redirect("/sign-in");
   }
-  const user = await prisma.users.findUnique({ where: { clerkUserId } });
-  if (!user) {
-    // This case should ideally not happen if the user is logged in
-    // and has gone through any org creation/selection flow.
-    // Redirecting to sign-in or an error page is a safe fallback.
+  const user = await prisma.users.findUnique({
+    where: { clerkUserId },
+    select: { id: true, name: true, orgId: true },
+  });
+  if (!user || !user.orgId) {
     redirect("/sign-in");
   }
   const { id: userId, name: userName } = user;
+  const orgId = user.orgId;
 
   // Feature flag check
   if (process.env.ENABLE_UNIVERSAL_REPORTS !== "true") {

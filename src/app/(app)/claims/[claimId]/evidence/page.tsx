@@ -3,7 +3,6 @@
  * Photo/video evidence management with section-based organization
  */
 
-import { auth } from "@clerk/nextjs/server";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
 
@@ -13,6 +12,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import prisma from "@/lib/prisma";
 import { REPORT_SECTION_REGISTRY } from "@/lib/reports/sectionRegistry";
+import { safeOrgContext } from "@/lib/safeOrgContext";
 
 import type { EvidenceAsset } from "./_components/EvidenceGrid";
 import { EvidenceGrid } from "./_components/EvidenceGrid";
@@ -69,12 +69,12 @@ async function getClaimEvidence(claimId: string, orgId: string) {
 }
 
 export default async function EvidencePage({ params }: EvidencePageProps) {
-  const { userId, orgId } = await auth();
-  if (!userId || !orgId) {
+  const ctx = await safeOrgContext();
+  if (ctx.status !== "ok" || !ctx.orgId) {
     notFound();
   }
 
-  const data = await getClaimEvidence(params.claimId, orgId);
+  const data = await getClaimEvidence(params.claimId, ctx.orgId);
   if (!data) {
     notFound();
   }

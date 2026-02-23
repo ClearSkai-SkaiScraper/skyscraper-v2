@@ -1,5 +1,5 @@
 import prisma from "@/lib/db/prisma";
-import { auth } from "@clerk/nextjs/server";
+import { safeOrgContext } from "@/lib/safeOrgContext";
 import { redirect } from "next/navigation";
 import { Suspense } from "react";
 import ClaimAppealClient from "./ClaimAppealClient";
@@ -20,8 +20,9 @@ export default async function AppealBuilderPage({
 }: {
   searchParams: Record<string, string | undefined>;
 }) {
-  const { userId, orgId } = await auth();
-  if (!userId || !orgId) redirect("/sign-in");
+  const ctx = await safeOrgContext();
+  if (ctx.status !== "ok" || !ctx.orgId) redirect("/sign-in");
+  const orgId = ctx.orgId;
   const claims = await loadClaims(orgId);
   const initialClaimId =
     searchParams.claimId && claims.find((c) => c.id === searchParams.claimId)
