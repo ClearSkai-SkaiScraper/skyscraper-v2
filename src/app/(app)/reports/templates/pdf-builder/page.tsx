@@ -88,6 +88,8 @@ export default function PdfBuilderPage() {
   const [loading, setLoading] = useState(false);
   const [generating, setGenerating] = useState(false);
   const [loadingPDFs, setLoadingPDFs] = useState(true);
+  const [loadingTemplates, setLoadingTemplates] = useState(true);
+  const [templateError, setTemplateError] = useState<string | null>(null);
   const [aiNotes, setAiNotes] = useState<string>("");
 
   useEffect(() => {
@@ -146,12 +148,27 @@ export default function PdfBuilderPage() {
 
     // Fetch org templates
     fetch("/api/templates/company")
-      .then((res) => res.json())
+      .then((res) => {
+        if (!res.ok) {
+          throw new Error(`Template fetch failed (${res.status})`);
+        }
+        return res.json();
+      })
       .then((data) => {
         if (data.ok) {
           setTemplates(data.templates || []);
+          if ((data.templates || []).length === 0) {
+            setTemplateError("No templates saved yet. Add templates from the Marketplace first.");
+          }
+        } else {
+          setTemplateError(data.error || "Failed to load templates");
         }
-      });
+      })
+      .catch((err) => {
+        console.error("[PDF Builder] Template fetch error:", err);
+        setTemplateError("Could not load templates. Please refresh the page.");
+      })
+      .finally(() => setLoadingTemplates(false));
 
     // Fetch recent PDFs (GeneratedArtifacts)
     fetch("/api/reports/recent?limit=10")
@@ -281,10 +298,23 @@ export default function PdfBuilderPage() {
             <CardContent>
               <Select value={selectedTemplate} onValueChange={setSelectedTemplate}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Choose a template..." />
+                  <SelectValue
+                    placeholder={loadingTemplates ? "Loading templates..." : "Choose a template..."}
+                  />
                 </SelectTrigger>
                 <SelectContent>
-                  {templates.length === 0 ? (
+                  {loadingTemplates ? (
+                    <div className="px-2 py-3 text-center text-sm text-muted-foreground">
+                      Loading templates...
+                    </div>
+                  ) : templateError ? (
+                    <div className="px-2 py-3 text-center text-sm text-muted-foreground">
+                      {templateError}{" "}
+                      <a href="/reports/templates/marketplace" className="text-blue-600 underline">
+                        Browse Marketplace
+                      </a>
+                    </div>
+                  ) : templates.length === 0 ? (
                     <div className="px-2 py-3 text-center text-sm text-muted-foreground">
                       No templates found.{" "}
                       <a href="/reports/templates/marketplace" className="text-blue-600 underline">

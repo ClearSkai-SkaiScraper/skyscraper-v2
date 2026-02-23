@@ -1,27 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
 
-import { getOrgIdSafe } from "@/lib/org/safeContext";
+import { withAuth } from "@/lib/auth/withAuth";
 import prisma from "@/lib/prisma";
 
 export const runtime = "nodejs";
 
-export async function GET(request: NextRequest) {
+export const GET = withAuth(async (req: NextRequest, { orgId }) => {
   try {
-    const orgId = await getOrgIdSafe();
-
-    if (!orgId) {
-      return NextResponse.json(
-        { ok: false, error: "AUTH_REQUIRED", templates: [] },
-        { status: 401 }
-      );
-    }
-
     const orgTemplates = await prisma.orgTemplate.findMany({
       where: { orgId },
       orderBy: { createdAt: "desc" },
-      include: {
-        // We don't have a relation defined yet, so we'll fetch template separately if needed
-      },
     });
 
     // Fetch the actual templates for each OrgTemplate
@@ -64,4 +52,4 @@ export async function GET(request: NextRequest) {
       { status: 500 }
     );
   }
-}
+});

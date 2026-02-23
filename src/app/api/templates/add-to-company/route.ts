@@ -1,34 +1,13 @@
 import { logger } from "@/lib/logger";
-import { auth } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
 
+import { withAuth } from "@/lib/auth/withAuth";
 import prisma from "@/lib/prisma";
 
 export const runtime = "nodejs";
 
-export async function POST(request: NextRequest) {
+export const POST = withAuth(async (request: NextRequest, { orgId, userId }) => {
   try {
-    const { userId, orgId: clerkOrgId } = await auth();
-
-    if (!userId || !clerkOrgId) {
-      return NextResponse.json({ ok: false, error: "AUTH_REQUIRED" }, { status: 401 });
-    }
-
-    logger.debug("[ADD_TO_COMPANY_REQUEST]", { clerkOrgId, userId });
-
-    // Resolve internal org ID from Clerk org ID
-    const org = await prisma.org.findUnique({
-      where: { clerkOrgId },
-      select: { id: true },
-    });
-
-    if (!org) {
-      logger.error("[ADD_TO_COMPANY_ERROR] Organization not found", { clerkOrgId });
-      return NextResponse.json({ ok: false, error: "ORG_NOT_FOUND" }, { status: 404 });
-    }
-
-    const orgId = org.id;
-
     const body = await request.json();
     const { templateId } = body;
 
@@ -97,4 +76,4 @@ export async function POST(request: NextRequest) {
       { status: 500 }
     );
   }
-}
+});

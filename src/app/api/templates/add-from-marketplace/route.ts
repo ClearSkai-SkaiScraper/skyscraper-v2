@@ -2,8 +2,8 @@ import { logger } from "@/lib/logger";
 import * as Sentry from "@sentry/nextjs";
 import { NextRequest, NextResponse } from "next/server";
 
+import { withAuth } from "@/lib/auth/withAuth";
 import prisma from "@/lib/prisma";
-import { safeOrgContext } from "@/lib/safeOrgContext";
 import { getTemplateById, getTemplateBySlug } from "@/lib/templates/templateRegistry";
 
 export const dynamic = "force-dynamic";
@@ -14,19 +14,10 @@ export const dynamic = "force-dynamic";
  * Adds a template from the marketplace to the user's org library (OrgTemplate)
  * Creates the template in DB from registry if it doesn't exist yet
  */
-export async function POST(request: NextRequest) {
-  let currentUserId: string | null = null;
+export const POST = withAuth(async (request: NextRequest, { orgId, userId }) => {
   let requestedTemplateId: string | null = null;
 
   try {
-    const ctx = await safeOrgContext();
-    if (ctx.status !== "ok" || !ctx.userId || !ctx.orgId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    currentUserId = ctx.userId;
-    const orgId = ctx.orgId;
-
     const body = await request.json();
     const { templateId } = body;
     requestedTemplateId = templateId;
@@ -35,7 +26,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Missing templateId" }, { status: 400 });
     }
 
-    logger.debug(`[ADD_TEMPLATE] User ${ctx.userId} adding template ${templateId} to org ${orgId}`);
+    logger.debug(`[ADD_TEMPLATE] User ${userId} adding template ${templateId} to org ${orgId}`);
 
     // Find the template by ID or slug in database
     let template = await prisma.template.findFirst({
@@ -126,9 +117,9 @@ export async function POST(request: NextRequest) {
     Sentry.captureException(error, {
       tags: { subsystem: "templates" },
       extra: {
-        userId: currentUserId,
+        userId,
         templateId: requestedTemplateId,
-        errorMessage: error.message,
+        errorMessage: error instanceof Error ? error.message : String(error),
       },
     });
 
@@ -137,4 +128,4 @@ export async function POST(request: NextRequest) {
       { status: 500 }
     );
   }
-}
+});

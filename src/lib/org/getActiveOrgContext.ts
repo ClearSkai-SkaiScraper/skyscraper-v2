@@ -58,13 +58,32 @@ async function ensureOrgPrimitives(orgId: string, userId: string): Promise<void>
       logger.debug("[getActiveOrgContext] Created BillingSettings for org:", orgId);
     }
 
-    // Ensure org_branding exists (raw query since it's not in Prisma schema)
+    // Ensure org_branding exists with sensible defaults
     try {
       const branding = await prisma.$queryRaw<{ id: string }[]>`
         SELECT id FROM org_branding WHERE "orgId" = ${orgId} LIMIT 1
       `;
 
       if (!branding || branding.length === 0) {
+        // Fetch org name and user email for branding defaults
+        let orgName = "My Company";
+        let userEmail: string | null = null;
+        try {
+          const org = await prisma.org.findUnique({
+            where: { id: orgId },
+            select: { name: true },
+          });
+          if (org?.name) orgName = org.name;
+
+          const user = await prisma.users.findFirst({
+            where: { clerkUserId: userId },
+            select: { email: true },
+          });
+          if (user?.email) userEmail = user.email;
+        } catch {
+          // Non-fatal — use defaults
+        }
+
         await prisma.org_branding.upsert({
           where: { orgId },
           update: {},
@@ -72,10 +91,39 @@ async function ensureOrgPrimitives(orgId: string, userId: string): Promise<void>
             id: crypto.randomUUID(),
             orgId,
             ownerId: userId ?? orgId,
+            companyName: orgName,
+            email: userEmail,
             updatedAt: new Date(),
           },
         });
         logger.debug("[getActiveOrgContext] Created org_branding for org:", orgId);
+      } else {
+        // Backfill missing companyName/email on existing branding rows
+        const existing = await prisma.org_branding.findFirst({
+          where: { orgId },
+          select: { companyName: true, email: true },
+        });
+        if (existing && (!existing.companyName || !existing.email)) {
+          const updates: Record<string, unknown> = {};
+          if (!existing.companyName) {
+            const org = await prisma.org.findUnique({
+              where: { id: orgId },
+              select: { name: true },
+            });
+            if (org?.name) updates.companyName = org.name;
+          }
+          if (!existing.email) {
+            const user = await prisma.users.findFirst({
+              where: { clerkUserId: userId },
+              select: { email: true },
+            });
+            if (user?.email) updates.email = user.email;
+          }
+          if (Object.keys(updates).length > 0) {
+            await prisma.org_branding.update({ where: { orgId }, data: updates });
+            logger.debug("[getActiveOrgContext] Backfilled org_branding for org:", orgId);
+          }
+        }
       }
     } catch (brandingErr: any) {
       // Non-fatal - table may not exist in all environments

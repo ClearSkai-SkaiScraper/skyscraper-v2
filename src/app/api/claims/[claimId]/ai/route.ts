@@ -18,6 +18,7 @@ import { checkRateLimit } from "@/lib/rate-limit";
 
 // Force Node.js runtime for OpenAI SDK
 export const runtime = "nodejs";
+export const maxDuration = 60;
 
 /**
  * POST - AI Assistant Chat OR Manual Analysis Trigger
@@ -198,10 +199,11 @@ Your goal: Help adjusters maximize accurate claim value while maintaining profes
         try {
           const openai = getOpenAI();
 
-          logger.debug("[CLAIM_AI] Calling OpenAI...");
+          logger.debug("[CLAIM_AI] Calling OpenAI with streaming...");
 
-          const completion = await openai.chat.completions.create({
-            model: "gpt-4o",
+          // Use streaming to prevent gateway timeout — bytes flow immediately
+          const stream = await openai.chat.completions.create({
+            model: "gpt-4o-mini",
             messages: [
               { role: "system", content: systemPrompt },
               { role: "system", content: contextSummary },
@@ -209,11 +211,19 @@ Your goal: Help adjusters maximize accurate claim value while maintaining profes
             ],
             temperature: 0.3,
             max_tokens: 1000,
+            stream: true,
           });
 
-          const response =
-            completion.choices[0]?.message?.content ||
-            "I couldn't generate a response. Please try again.";
+          // Collect streamed chunks into a full response
+          let fullResponse = "";
+          for await (const chunk of stream) {
+            const content = chunk.choices[0]?.delta?.content;
+            if (content) {
+              fullResponse += content;
+            }
+          }
+
+          const response = fullResponse || "I couldn't generate a response. Please try again.";
 
           logger.debug("[CLAIM_AI_SUCCESS] Generated reply:", response.substring(0, 100) + "...");
 
@@ -221,7 +231,6 @@ Your goal: Help adjusters maximize accurate claim value while maintaining profes
             ok: true,
             reply: response,
             response, // backward compatibility
-            tokensUsed: completion.usage?.total_tokens || 0,
           });
         } catch (aiError) {
           logger.error("[CLAIM_AI_FAIL] OpenAI Error:", aiError);
@@ -231,7 +240,7 @@ Your goal: Help adjusters maximize accurate claim value while maintaining profes
               error: {
                 code: "AI_SERVICE_ERROR",
                 message:
-                  aiError.message ||
+                  (aiError instanceof Error ? aiError.message : null) ||
                   "I'm having trouble connecting to the AI service right now. Please try again in a moment.",
               },
             },
@@ -280,7 +289,10 @@ Your goal: Help adjusters maximize accurate claim value while maintaining profes
       );
     } catch (error) {
       logger.error("[AI Analysis] Error:", error);
-      return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+      return NextResponse.json(
+        { success: false, error: error instanceof Error ? error.message : "Unknown error" },
+        { status: 500 }
+      );
     }
   }
 );
@@ -327,8 +339,11 @@ export const GET = withAuth(
         },
       });
     } catch (error) {
-      logger.error("[AI Analysis] Error:", error);
-      return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+      logger.error("[AI Analysis GET] Error:", error);
+      return NextResponse.json(
+        { success: false, error: error instanceof Error ? error.message : "Unknown error" },
+        { status: 500 }
+      );
     }
   }
 );
