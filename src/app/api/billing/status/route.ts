@@ -1,7 +1,7 @@
 import { logger } from "@/lib/logger";
-import { auth } from "@clerk/nextjs/server";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
+import { withAuth } from "@/lib/auth/withAuth";
 import { isBetaMode } from "@/lib/beta";
 import prisma from "@/lib/prisma";
 import { isPlatformAdmin } from "@/lib/security/roles";
@@ -23,13 +23,8 @@ async function calculateStorageUsed(orgId: string): Promise<number> {
  * - Remaining credits/tokens
  * - Whether account is limited
  */
-export async function GET() {
+export const GET = withAuth(async (req: NextRequest, { orgId, userId }) => {
   try {
-    const { userId, orgId } = await auth();
-
-    if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
 
     // ADMIN MODE: Platform admins get unlimited forever free access
     try {
@@ -73,9 +68,9 @@ export async function GET() {
       });
     }
 
-    // Get organization
+    // Get organization — orgId from withAuth is already the DB UUID
     const org = await prisma.org.findFirst({
-      where: { clerkOrgId: orgId || "" },
+      where: { id: orgId },
       include: {
         Plan: true,
       },
@@ -138,7 +133,7 @@ export async function GET() {
     logger.error("Billing status error:", error);
     return NextResponse.json({ error: "Failed to fetch billing status" }, { status: 500 });
   }
-}
+});
 
 function getPlanLimits(planKey: string) {
   const limits: Record<string, any> = {

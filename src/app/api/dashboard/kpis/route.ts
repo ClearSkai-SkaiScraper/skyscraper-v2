@@ -1,20 +1,14 @@
-import { currentUser } from "@clerk/nextjs/server";
 import { logger } from "@/lib/logger";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
+import { withAuth } from "@/lib/auth/withAuth";
 import prisma from "@/lib/prisma";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
-export async function GET() {
+export const GET = withAuth(async (req: NextRequest, { orgId }) => {
   try {
-    const user = await currentUser();
-    if (!user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    const orgId = (user.publicMetadata?.orgId as string) || user.id;
 
     const now = new Date();
     const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
@@ -106,4 +100,4 @@ export async function GET() {
     logger.error("[KPI_ERROR]", err);
     return NextResponse.json({ error: "Failed to load KPIs" }, { status: 500 });
   }
-}
+});

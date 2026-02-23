@@ -1,21 +1,15 @@
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
-import { currentUser } from "@clerk/nextjs/server";
 import { logger } from "@/lib/logger";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
+import { withAuth } from "@/lib/auth/withAuth";
 import prisma from "@/lib/prisma";
 import { toPlainJSON } from "@/lib/serialize";
 
-export async function GET() {
+export const GET = withAuth(async (req: NextRequest, { orgId }) => {
   try {
-    const user = await currentUser();
-    if (!user) {
-      return NextResponse.json({ ok: false, error: "Unauthorized" }, { status: 401 });
-    }
-
-    const orgId = (user.publicMetadata?.orgId as string) || user.id;
 
     // Claims Over Time (last 8 weeks) - build date ranges
     const weekRanges = Array.from({ length: 8 }, (_, idx) => {
@@ -79,8 +73,8 @@ export async function GET() {
   } catch (error) {
     logger.error("[GET /api/dashboard/charts] error:", error);
     return NextResponse.json(
-      { ok: false, error: error.message ?? "Unknown error" },
+      { ok: false, error: error instanceof Error ? error.message : "Unknown error" },
       { status: 500 }
     );
   }
-}
+});

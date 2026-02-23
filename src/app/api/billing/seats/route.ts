@@ -7,29 +7,16 @@
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-import { auth } from "@clerk/nextjs/server";
 import { logger } from "@/lib/logger";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
+import { withAuth } from "@/lib/auth/withAuth";
 import { checkSeatAvailability } from "@/lib/billing/seat-enforcement";
 import { monthlyFormatted, PRICE_PER_SEAT_CENTS, pricingSummary } from "@/lib/billing/seat-pricing";
 import prisma from "@/lib/prisma";
 
-export async function GET() {
+export const GET = withAuth(async (req: NextRequest, { orgId }) => {
   try {
-    const { userId } = await auth();
-    if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    const membership = await prisma.user_organizations.findFirst({
-      where: { userId },
-      select: { organizationId: true },
-    });
-    if (!membership) {
-      return NextResponse.json({ error: "No organization found" }, { status: 404 });
-    }
-    const orgId = membership.organizationId;
 
     // Get seat check
     const seatCheck = await checkSeatAvailability(orgId);
@@ -71,6 +58,9 @@ export async function GET() {
     });
   } catch (error) {
     logger.error("[billing/seats] Error:", error);
-    return NextResponse.json({ error: error?.message || "Failed to check seats" }, { status: 500 });
+    return NextResponse.json(
+      { error: error instanceof Error ? error.message : "Failed to check seats" },
+      { status: 500 }
+    );
   }
-}
+});

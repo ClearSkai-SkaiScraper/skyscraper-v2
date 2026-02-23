@@ -1,71 +1,22 @@
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 import { logger } from "@/lib/logger";
-import { currentUser } from "@clerk/nextjs/server";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
-import { ensureUserOrgContext } from "@/lib/auth/ensureUserOrgContext";
+import { withAuth } from "@/lib/auth/withAuth";
 import prisma from "@/lib/prisma";
 import { toPlainJSON } from "@/lib/serialize";
 
-export async function GET() {
+export const GET = withAuth(async (req: NextRequest, { orgId, userId }) => {
   try {
-    const user = await currentUser();
-    if (!user) {
-      return NextResponse.json({ ok: false, error: "Unauthorized" }, { status: 401 });
-    }
-
-    // Use ensureUserOrgContext for reliable org resolution — the old
-    // `user.publicMetadata?.orgId || user.id` pattern returns the Clerk userId
-    // when metadata is missing, which matches zero claims/leads and shows all-zero stats.
-    let orgId: string;
-    let companyId: string | null = null;
-    try {
-      const ctx = await ensureUserOrgContext(user.id);
-      orgId = ctx.orgId;
-    } catch {
-      // Fallback: publicMetadata → users table
-      // NEVER fall back to user.id — it matches zero records and causes all-zero stats
-      const metaOrgId = user.publicMetadata?.orgId as string | undefined;
-      if (metaOrgId) {
-        orgId = metaOrgId;
-      } else {
-        const dbUser = await prisma.users
-          .findFirst({ where: { clerkUserId: user.id }, select: { orgId: true } })
-          .catch(() => null);
-        if (dbUser?.orgId) {
-          orgId = dbUser.orgId;
-        } else {
-          logger.warn("[DASHBOARD_STATS] No org found for user:", user.id);
-          return NextResponse.json({
-            ok: true,
-            stats: {
-              claimsCount: 0,
-              leadsCount: 0,
-              tradesPostsCount: 0,
-              jobsCount: 0,
-              recentClaims: [],
-              recentLeads: [],
-              claimsTrend: "--",
-              leadsTrend: "--",
-              jobsTrend: "--",
-              postsTrend: "--",
-              pdfReportsCount: 0,
-              videoReportsCount: 0,
-              uniqueClaimsWithReports: 0,
-              totalReportsGenerated: 0,
-              noOrg: true,
-            },
-          });
-        }
-      }
-    }
+    // withAuth provides DB-backed orgId — no more fallback chains needed
 
     // Also resolve tradesCompanyMember.companyId — some data may be keyed on
     // companyId rather than orgId (e.g., client-portal threads, network posts)
+    let companyId: string | null = null;
     try {
       const membership = await prisma.tradesCompanyMember.findUnique({
-        where: { userId: user.id },
+        where: { userId },
         select: { companyId: true },
       });
       companyId = membership?.companyId || null;
@@ -77,7 +28,7 @@ export async function GET() {
     const orgFilter =
       companyId && companyId !== orgId ? { OR: [{ orgId }, { orgId: companyId }] } : { orgId };
 
-    logger.info("[DASHBOARD_STATS] resolved", { orgId, companyId, userId: user.id });
+    logger.info("[DASHBOARD_STATS] resolved", { orgId, companyId, userId });
 
     // Calculate date ranges for trends (30 days ago)
     const thirtyDaysAgo = new Date();
@@ -113,7 +64,7 @@ export async function GET() {
           NOT: { jobCategory: { in: ["out_of_pocket", "financed", "repair"] } },
         },
       }),
-      prisma.network_posts.count({ where: { userId: user.id } }),
+      prisma.network_posts.count({ where: { userId } }),
       prisma.leads.count({
         where: {
           ...orgFilter,
@@ -181,10 +132,10 @@ export async function GET() {
         },
       }),
       prisma.network_posts.count({
-        where: { userId: user.id, createdAt: { gte: thirtyDaysAgo } },
+        where: { userId, createdAt: { gte: thirtyDaysAgo } },
       }),
       prisma.network_posts.count({
-        where: { userId: user.id, createdAt: { gte: sixtyDaysAgo, lt: thirtyDaysAgo } },
+        where: { userId, createdAt: { gte: sixtyDaysAgo, lt: thirtyDaysAgo } },
       }),
       // Report Analytics - Phase 5
       prisma.$queryRaw<Array<{ count: bigint }>>`
@@ -235,8 +186,8 @@ export async function GET() {
   } catch (error) {
     logger.error("[GET /api/dashboard/stats] error:", error);
     return NextResponse.json(
-      { ok: false, error: (error as Error).message ?? "Unknown error" },
+      { ok: false, error: error instanceof Error ? error.message : "Unknown error" },
       { status: 500 }
     );
   }
-}
+});

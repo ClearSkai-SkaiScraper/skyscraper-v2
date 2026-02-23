@@ -3,20 +3,15 @@ export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
 import { logger } from "@/lib/logger";
-import { auth } from "@clerk/nextjs/server";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
+import { withAuth } from "@/lib/auth/withAuth";
 import { createBillingPortalSession } from "@/lib/billing/portal";
 import prisma from "@/lib/prisma";
 import { checkRateLimit } from "@/lib/rate-limit";
 
-export async function POST(req: Request) {
+export const POST = withAuth(async (req: NextRequest, { orgId, userId }) => {
   try {
-    const { userId, orgId } = await auth();
-    if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
     const rl = await checkRateLimit(userId, "API");
     if (!rl.success) {
       return NextResponse.json(
@@ -25,25 +20,11 @@ export async function POST(req: Request) {
       );
     }
 
-    if (!orgId) {
-      return NextResponse.json({ error: "Organization context required" }, { status: 403 });
-    }
-
-    // Resolve org from Clerk orgId — NEVER accept client-supplied orgId
+    // withAuth provides DB-backed orgId with membership already verified
     const resolvedOrg = await prisma.org.findUnique({
-      where: { clerkOrgId: orgId },
+      where: { id: orgId },
       select: { id: true, stripeCustomerId: true },
     });
-
-    // Verify user membership in this org
-    if (resolvedOrg) {
-      const membership = await prisma.user_organizations.findFirst({
-        where: { userId, organizationId: resolvedOrg.id },
-      });
-      if (!membership) {
-        return NextResponse.json({ error: "Not a member of this organization" }, { status: 403 });
-      }
-    }
 
     if (!resolvedOrg || !resolvedOrg.stripeCustomerId) {
       return NextResponse.json(
@@ -64,4 +45,4 @@ export async function POST(req: Request) {
     logger.error("Portal session error:", error);
     return NextResponse.json({ error: "Failed to create portal session" }, { status: 500 });
   }
-}
+});

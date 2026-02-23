@@ -9,20 +9,16 @@ export const revalidate = 0;
  */
 
 import { logger } from "@/lib/logger";
-import { auth } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
 
+import { withAuth } from "@/lib/auth/withAuth";
 import prisma from "@/lib/prisma";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const tradesPostModel = prisma.tradesPost as any;
 
-export async function GET(request: NextRequest) {
+export const GET = withAuth(async (req: NextRequest, { userId }) => {
   try {
-    const { userId } = await auth();
-    if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
 
     // Get the user's company to scope team posts
     const member = await prisma.tradesCompanyMember
@@ -68,16 +64,11 @@ export async function GET(request: NextRequest) {
     logger.error("Error fetching team posts:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
-}
+});
 
-export async function POST(request: NextRequest) {
+export const POST = withAuth(async (req: NextRequest, { userId }) => {
   try {
-    const { userId } = await auth();
-    if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    const { message, pinned = false } = await request.json();
+    const { message, pinned = false } = await req.json();
 
     if (!message || message.trim().length === 0) {
       return NextResponse.json({ error: "Message is required" }, { status: 400 });
@@ -115,4 +106,4 @@ export async function POST(request: NextRequest) {
     logger.error("Error creating team post:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
-}
+});
