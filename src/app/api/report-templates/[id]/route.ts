@@ -1,18 +1,14 @@
 // app/api/report-templates/[id]/route.ts
-import { auth } from "@clerk/nextjs/server";
 import { logger } from "@/lib/logger";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
+import { withAuth } from "@/lib/auth/withAuth";
 import prisma from "@/lib/prisma";
 
-export async function DELETE(req: Request, { params }: { params: { id: string } }) {
+export const DELETE = withAuth(async (req: NextRequest, { orgId }) => {
   try {
-    const { userId, orgId } = await auth();
-    if (!userId || !orgId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    const { id } = params;
+    const url = new URL(req.url);
+    const id = url.pathname.split("/").filter(Boolean).pop() || "";
 
     // Verify template belongs to Org
     const template = await prisma.report_templates.findUnique({
@@ -39,8 +35,8 @@ export async function DELETE(req: Request, { params }: { params: { id: string } 
   } catch (err) {
     logger.error("DELETE /api/report-templates/[id] error:", err);
     return NextResponse.json(
-      { error: err.message || "Failed to delete template" },
+      { error: err instanceof Error ? err.message : "Failed to delete template" },
       { status: 500 }
     );
   }
-}
+});

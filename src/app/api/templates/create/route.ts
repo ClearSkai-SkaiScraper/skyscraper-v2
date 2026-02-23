@@ -1,21 +1,15 @@
-import { auth } from "@clerk/nextjs/server";
 import { logger } from "@/lib/logger";
 import crypto from "crypto";
 import { NextRequest, NextResponse } from "next/server";
 
+import { withAuth } from "@/lib/auth/withAuth";
 import prisma from "@/lib/prisma";
 
 // Use report_templates model directly
 const Templates = prisma.report_templates;
 
-export async function POST(req: NextRequest) {
+export const POST = withAuth(async (req: NextRequest, { orgId, userId }) => {
   try {
-    const { userId, orgId } = await auth();
-
-    if (!userId || !orgId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
     const body = await req.json();
     const { name, sections } = body;
 
@@ -43,4 +37,4 @@ export async function POST(req: NextRequest) {
     logger.error("Create template error:", error);
     return NextResponse.json({ error: "Failed to create template" }, { status: 500 });
   }
-}
+});

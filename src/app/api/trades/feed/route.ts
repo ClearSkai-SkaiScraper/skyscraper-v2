@@ -11,7 +11,7 @@
  */
 
 import { logger } from "@/lib/logger";
-import { auth, currentUser } from "@clerk/nextjs/server";
+import { auth } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
 
 import prisma from "@/lib/prisma";
@@ -109,27 +109,85 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const user = await currentUser();
-    if (!user) {
-      return NextResponse.json({ error: "User not found" }, { status: 404 });
-    }
-
-    let companyId: string | null = null;
-
-    // Get the user's company
-    const member = await prisma.tradesCompanyMember.findUnique({
-      where: { userId },
-      select: { companyId: true, companyName: true },
-    });
-
-    companyId = member?.companyId || null;
-
     const body = await req.json();
-    const { content, type, title, images, tags } = body;
+    const { content, type, title, images, tags, postAs } = body;
 
     if (!content?.trim()) {
       return NextResponse.json({ error: "Content is required" }, { status: 400 });
     }
+
+    // Get the user's company membership
+    let member = await prisma.tradesCompanyMember
+      .findUnique({
+        where: { userId },
+        select: {
+          id: true,
+          companyId: true,
+          companyName: true,
+          firstName: true,
+          lastName: true,
+          isOwner: true,
+          isAdmin: true,
+          role: true,
+          company: {
+            select: { id: true, name: true, logo: true, isVerified: true },
+          },
+        },
+      })
+      .catch(() => null);
+
+    // Auto-create trades member if none exists (first-time poster)
+    if (!member) {
+      // Get basic user info from the users table
+      const dbUser = await prisma.users
+        .findFirst({
+          where: { clerkUserId: userId },
+          select: { name: true, email: true, orgId: true },
+        })
+        .catch(() => null);
+
+      try {
+        const newMember = await prisma.tradesCompanyMember.create({
+          data: {
+            userId,
+            firstName: dbUser?.name?.split(" ")[0] || "User",
+            lastName: dbUser?.name?.split(" ").slice(1).join(" ") || "",
+            email: dbUser?.email || "",
+            role: "member",
+            isOwner: false,
+            isAdmin: false,
+            isActive: true,
+            status: "active",
+          },
+        });
+        member = {
+          id: newMember.id,
+          companyId: null,
+          companyName: null,
+          firstName: newMember.firstName,
+          lastName: newMember.lastName,
+          isOwner: false,
+          isAdmin: false,
+          role: "member",
+          company: null,
+        };
+        logger.info("[POST /api/trades/feed] Auto-created trades member for:", userId);
+      } catch (createErr) {
+        logger.warn("[POST /api/trades/feed] Could not auto-create member:", createErr);
+        // Continue without company association
+      }
+    }
+
+    const companyId = member?.companyId || null;
+
+    // Determine display identity: "company" or "personal"
+    const isAdmin =
+      member?.isOwner || member?.isAdmin || member?.role === "owner" || member?.role === "admin";
+    const useCompanyIdentity = postAs === "company" && isAdmin && companyId;
+
+    const authorDisplayName = useCompanyIdentity
+      ? member?.company?.name || member?.companyName || "Company"
+      : `${member?.firstName || ""} ${member?.lastName || ""}`.trim() || "You";
 
     const post: any = await tradesPostModel.create({
       data: {
@@ -158,9 +216,10 @@ export async function POST(req: NextRequest) {
       post: {
         id: post.id,
         authorId: post.authorId,
-        authorName: post.tradesCompany?.name || member?.companyName || "You",
+        authorName: post.tradesCompany?.name || authorDisplayName,
         authorLogo: post.tradesCompany?.logo || null,
         authorVerified: post.tradesCompany?.isVerified || false,
+        postAs: useCompanyIdentity ? "company" : "personal",
         content: post.content,
         title: post.title,
         imageUrl: post.images?.[0] || null,
@@ -176,6 +235,9 @@ export async function POST(req: NextRequest) {
     });
   } catch (error) {
     logger.error("[POST /api/trades/feed]", error);
-    return NextResponse.json({ error: "Failed to create post" }, { status: 500 });
+    return NextResponse.json(
+      { error: error instanceof Error ? error.message : "Failed to create post" },
+      { status: 500 }
+    );
   }
 }

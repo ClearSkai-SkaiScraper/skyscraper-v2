@@ -1,22 +1,19 @@
-import { auth } from "@clerk/nextjs/server";
 import { logger } from "@/lib/logger";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
+
+import { withAuth } from "@/lib/auth/withAuth";
 
 /**
  * Template sections are stored as JSON in report_templates (section_order, section_enabled).
  * Individual section editing is not yet implemented.
  */
-export async function PATCH(
-  request: Request,
-  { params }: { params: Promise<{ templateId: string; sectionId: string }> }
-) {
+export const PATCH = withAuth(async (request: NextRequest) => {
   try {
-    const { userId, orgId } = await auth();
-    if (!userId || !orgId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    const { templateId, sectionId } = await params;
+    const url = new URL(request.url);
+    const segments = url.pathname.split("/").filter(Boolean);
+    // /api/templates/{templateId}/sections/{sectionId}
+    const sectionId = segments[segments.length - 1] || "";
+    const templateId = segments[segments.length - 3] || "";
     logger.debug(`[TemplateSections] PATCH stub for template ${templateId} section ${sectionId}`);
 
     // Sections are stored as JSON in report_templates.section_order / section_enabled
@@ -30,19 +27,14 @@ export async function PATCH(
     logger.error("Failed to update section:", error);
     return NextResponse.json({ error: "Failed to update section" }, { status: 500 });
   }
-}
+});
 
-export async function DELETE(
-  request: Request,
-  { params }: { params: Promise<{ templateId: string; sectionId: string }> }
-) {
+export const DELETE = withAuth(async (request: NextRequest) => {
   try {
-    const { userId, orgId } = await auth();
-    if (!userId || !orgId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    const { templateId, sectionId } = await params;
+    const url = new URL(request.url);
+    const segments = url.pathname.split("/").filter(Boolean);
+    const sectionId = segments[segments.length - 1] || "";
+    const templateId = segments[segments.length - 3] || "";
     logger.debug(`[TemplateSections] DELETE stub for template ${templateId} section ${sectionId}`);
 
     return NextResponse.json({
@@ -54,4 +46,4 @@ export async function DELETE(
     logger.error("Failed to delete section:", error);
     return NextResponse.json({ error: "Failed to delete section" }, { status: 500 });
   }
-}
+});

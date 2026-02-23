@@ -151,7 +151,15 @@ export default function TradesNetworkDashboard({ userProfile, stats }: Dashboard
   const [postVisibility, setPostVisibility] = useState<PostVisibility>("public");
   const [showVisibilityMenu, setShowVisibilityMenu] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [postError, setPostError] = useState<string | null>(null);
+  const [postAs, setPostAs] = useState<"company" | "personal">(
+    userProfile?.companyId ? "company" : "personal"
+  );
+  const [showPostAsMenu, setShowPostAsMenu] = useState(false);
   const composerRef = useRef<HTMLTextAreaElement>(null);
+
+  // Determine if user is admin (can post as company)
+  const isAdmin = true; // The page.tsx already only shows this for authed users with company access
 
   // ── Full Search State ──
   const [showSearchResults, setShowSearchResults] = useState(false);
@@ -266,6 +274,7 @@ export default function TradesNetworkDashboard({ userProfile, stats }: Dashboard
   const handleCreatePost = async () => {
     if (!postContent.trim() || submitting) return;
     setSubmitting(true);
+    setPostError(null);
     try {
       const res = await fetch("/api/trades/feed", {
         method: "POST",
@@ -274,39 +283,47 @@ export default function TradesNetworkDashboard({ userProfile, stats }: Dashboard
           content: postContent.trim(),
           type: postType,
           visibility: postVisibility,
+          postAs: postAs,
         }),
       });
-      if (res.ok) {
-        const data = await res.json();
-        const newPost: FeedPost = {
-          id: data.post?.id || Date.now().toString(),
-          authorId: userProfile?.id || "",
-          authorName: userProfile?.companyName || "You",
-          authorLogo: userProfile?.avatarUrl || null,
-          authorTitle: "Professional Contractor",
-          authorVerified: true,
-          content: postContent.trim(),
-          imageUrl: null,
-          postType: postType,
-          likes: 0,
-          comments: 0,
-          shares: 0,
-          timeAgo: "Just now",
-          hasLiked: false,
-        };
-        setFeedPosts((prev) => [newPost, ...prev]);
-        setPostContent("");
-        setPostType("update");
-        setShowComposer(false);
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({ error: "Failed to create post" }));
+        setPostError(errData.error || `Failed to create post (${res.status})`);
+        return;
       }
-    } catch {
-      /* silent */
+      const data = await res.json();
+      const newPost: FeedPost = {
+        id: data.post?.id || Date.now().toString(),
+        authorId: userProfile?.id || "",
+        authorName:
+          postAs === "company"
+            ? userProfile?.companyName || "Your Company"
+            : data.post?.authorName || "You",
+        authorLogo: userProfile?.avatarUrl || null,
+        authorTitle: "Professional Contractor",
+        authorVerified: true,
+        content: postContent.trim(),
+        imageUrl: null,
+        postType: postType,
+        likes: 0,
+        comments: 0,
+        shares: 0,
+        timeAgo: "Just now",
+        hasLiked: false,
+      };
+      setFeedPosts((prev) => [newPost, ...prev]);
+      setPostContent("");
+      setPostType("update");
+      setShowComposer(false);
+    } catch (err) {
+      setPostError(err instanceof Error ? err.message : "Network error — check your connection");
     } finally {
       setSubmitting(false);
     }
   };
 
-  const handleLike = (postId: string) => {
+  const handleLike = async (postId: string) => {
+    // Optimistic update
     setFeedPosts((posts) =>
       posts.map((p) =>
         p.id === postId
@@ -314,6 +331,23 @@ export default function TradesNetworkDashboard({ userProfile, stats }: Dashboard
           : p
       )
     );
+    // Persist to backend
+    try {
+      await fetch("/api/trades/feed/engage", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ postId, action: "like" }),
+      });
+    } catch {
+      // Revert on error
+      setFeedPosts((posts) =>
+        posts.map((p) =>
+          p.id === postId
+            ? { ...p, hasLiked: !p.hasLiked, likes: p.hasLiked ? p.likes - 1 : p.likes + 1 }
+            : p
+        )
+      );
+    }
   };
 
   return (
@@ -638,6 +672,90 @@ export default function TradesNetworkDashboard({ userProfile, stats }: Dashboard
                           </div>
                         )}
                       </div>
+
+                      {/* Post-As Identity Switcher */}
+                      {isAdmin && userProfile?.companyId && (
+                        <div className="relative">
+                          <button
+                            onClick={() => setShowPostAsMenu(!showPostAsMenu)}
+                            className="flex items-center gap-2 rounded-full border border-blue-200 bg-blue-50 px-3 py-1 text-xs font-medium text-blue-700 transition-colors hover:bg-blue-100 dark:border-blue-800 dark:bg-blue-950 dark:text-blue-300 dark:hover:bg-blue-900"
+                          >
+                            {postAs === "company" ? (
+                              <>
+                                <Building2 className="h-3 w-3" />
+                                Posting as {userProfile.companyName}
+                              </>
+                            ) : (
+                              <>
+                                <Users className="h-3 w-3" />
+                                Posting as You
+                              </>
+                            )}
+                            <ChevronDown className="h-3 w-3" />
+                          </button>
+                          {showPostAsMenu && (
+                            <div className="absolute left-0 top-8 z-50 w-64 rounded-lg border bg-white p-1 shadow-lg dark:border-slate-700 dark:bg-slate-800">
+                              <button
+                                onClick={() => {
+                                  setPostAs("company");
+                                  setShowPostAsMenu(false);
+                                }}
+                                className={`flex w-full items-center gap-3 rounded-md px-3 py-2 text-left transition-colors hover:bg-slate-100 dark:hover:bg-slate-700 ${postAs === "company" ? "bg-blue-50 dark:bg-blue-900/20" : ""}`}
+                              >
+                                <Avatar className="h-8 w-8">
+                                  <AvatarImage src={userProfile.avatarUrl || undefined} />
+                                  <AvatarFallback className="bg-gradient-to-br from-blue-600 to-indigo-600 text-sm text-white">
+                                    {userProfile.companyName?.charAt(0) || "C"}
+                                  </AvatarFallback>
+                                </Avatar>
+                                <div>
+                                  <p className="text-sm font-medium">{userProfile.companyName}</p>
+                                  <p className="text-xs text-slate-400">
+                                    Post as your company page
+                                  </p>
+                                </div>
+                                {postAs === "company" && (
+                                  <span className="ml-auto text-blue-600">✓</span>
+                                )}
+                              </button>
+                              <button
+                                onClick={() => {
+                                  setPostAs("personal");
+                                  setShowPostAsMenu(false);
+                                }}
+                                className={`flex w-full items-center gap-3 rounded-md px-3 py-2 text-left transition-colors hover:bg-slate-100 dark:hover:bg-slate-700 ${postAs === "personal" ? "bg-blue-50 dark:bg-blue-900/20" : ""}`}
+                              >
+                                <Avatar className="h-8 w-8">
+                                  <AvatarFallback className="bg-gradient-to-br from-emerald-600 to-teal-600 text-sm text-white">
+                                    You
+                                  </AvatarFallback>
+                                </Avatar>
+                                <div>
+                                  <p className="text-sm font-medium">Personal Account</p>
+                                  <p className="text-xs text-slate-400">Post as yourself</p>
+                                </div>
+                                {postAs === "personal" && (
+                                  <span className="ml-auto text-blue-600">✓</span>
+                                )}
+                              </button>
+                            </div>
+                          )}
+                        </div>
+                      )}
+
+                      {/* Post Error Display */}
+                      {postError && (
+                        <div className="flex items-center gap-2 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700 dark:border-red-800 dark:bg-red-950 dark:text-red-300">
+                          <X className="h-4 w-4 shrink-0" />
+                          <span>{postError}</span>
+                          <button
+                            onClick={() => setPostError(null)}
+                            className="ml-auto text-red-400 hover:text-red-600"
+                          >
+                            <X className="h-3 w-3" />
+                          </button>
+                        </div>
+                      )}
 
                       {/* Textarea */}
                       <Textarea

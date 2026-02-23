@@ -1,20 +1,18 @@
-import { auth } from "@clerk/nextjs/server";
 import { logger } from "@/lib/logger";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
+import { withAuth } from "@/lib/auth/withAuth";
 import { prismaMaybeModel } from "@/lib/db/prismaModel";
 
 // Use prismaMaybeModel since report_templates may not be in PRISMA_MODELS
 const Templates = prismaMaybeModel("report_templates");
 
-export async function POST(request: Request, { params }: { params: { templateId: string } }) {
+export const POST = withAuth(async (request: NextRequest, { orgId }) => {
   try {
-    const { userId, orgId } = await auth();
-    if (!userId || !orgId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    const templateId = params.templateId;
+    const url = new URL(request.url);
+    const segments = url.pathname.split("/").filter(Boolean);
+    // /api/templates/{templateId}/set-default → segments = ["api","templates","{templateId}","set-default"]
+    const templateId = segments[segments.length - 2] || "";
 
     // Verify template belongs to org
     if (!Templates) {
@@ -58,4 +56,4 @@ export async function POST(request: Request, { params }: { params: { templateId:
     logger.error("Failed to set default template:", error);
     return NextResponse.json({ error: "Failed to set default template" }, { status: 500 });
   }
-}
+});

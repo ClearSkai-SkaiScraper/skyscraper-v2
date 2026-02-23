@@ -1,22 +1,20 @@
-import { auth } from "@clerk/nextjs/server";
 import { logger } from "@/lib/logger";
 import type { Prisma } from "@prisma/client";
 import crypto from "crypto";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
+import { withAuth } from "@/lib/auth/withAuth";
 import prisma from "@/lib/prisma";
 
 // Use report_templates model directly
 const Templates = prisma.report_templates;
 
-export async function POST(request: Request, { params }: { params: { id: string } }) {
+export const POST = withAuth(async (request: NextRequest, { orgId, userId }) => {
   try {
-    const { userId, orgId } = await auth();
-    if (!userId || !orgId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    const sourceId = params.id;
+    const url = new URL(request.url);
+    const segments = url.pathname.split("/").filter(Boolean);
+    // /api/templates/{sourceId}/duplicate → segments = ["api","templates","{sourceId}","duplicate"]
+    const sourceId = segments[segments.length - 2] || "";
 
     // Get source template
     if (!Templates) {
@@ -54,4 +52,4 @@ export async function POST(request: Request, { params }: { params: { id: string 
     logger.error("Failed to duplicate template:", error);
     return NextResponse.json({ error: "Failed to duplicate template" }, { status: 500 });
   }
-}
+});

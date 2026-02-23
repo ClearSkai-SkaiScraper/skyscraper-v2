@@ -1,19 +1,14 @@
 // app/api/report-templates/route.ts
-import { auth } from "@clerk/nextjs/server";
 import { logger } from "@/lib/logger";
 import { Prisma } from "@prisma/client";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
+import { withAuth } from "@/lib/auth/withAuth";
 import prisma from "@/lib/prisma";
 import { REPORT_SECTIONS } from "@/lib/reports/templateSections";
 
-export async function GET(req: Request) {
+export const GET = withAuth(async (req: NextRequest, { orgId }) => {
   try {
-    const { userId, orgId } = await auth();
-    if (!userId || !orgId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
     const templates = await prisma.report_templates
       .findMany({
         where: {
@@ -27,19 +22,14 @@ export async function GET(req: Request) {
   } catch (err) {
     logger.error("GET /api/report-templates error:", err);
     return NextResponse.json(
-      { error: err.message || "Failed to fetch templates" },
+      { error: err instanceof Error ? err.message : "Failed to fetch templates" },
       { status: 500 }
     );
   }
-}
+});
 
-export async function POST(req: Request) {
+export const POST = withAuth(async (req: NextRequest, { orgId, userId }) => {
   try {
-    const { userId, orgId } = await auth();
-    if (!userId || !orgId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
     const body = await req.json();
     const { name, copyFromId } = body;
 
@@ -109,8 +99,8 @@ export async function POST(req: Request) {
   } catch (err) {
     logger.error("POST /api/report-templates error:", err);
     return NextResponse.json(
-      { error: err.message || "Failed to create template" },
+      { error: err instanceof Error ? err.message : "Failed to create template" },
       { status: 500 }
     );
   }
-}
+});

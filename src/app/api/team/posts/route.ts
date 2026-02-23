@@ -2,13 +2,20 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
-// NOTE: TeamPost model doesn't exist in database - this route is disabled
-// NOTE: Add TeamPost model to schema or use activities table for team posts
+/**
+ * Team Posts API
+ * Uses tradesPost model as the unified post store for all feed systems.
+ * Team posts are scoped to the user's company via tradesCompanyMember.
+ */
 
-// import prisma from "@/lib/prisma";
-import { auth } from "@clerk/nextjs/server";
 import { logger } from "@/lib/logger";
+import { auth } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
+
+import prisma from "@/lib/prisma";
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const tradesPostModel = prisma.tradesPost as any;
 
 export async function GET(request: NextRequest) {
   try {
@@ -17,13 +24,46 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    // Get the last 10 team posts
-    // const posts = await prisma.teamPost.findMany({
-    //   orderBy: [{ pinned: "desc" }, { createdAt: "desc" }],
-    //   take: 10,
-    // });
+    // Get the user's company to scope team posts
+    const member = await prisma.tradesCompanyMember
+      .findUnique({
+        where: { userId },
+        select: { companyId: true },
+      })
+      .catch(() => null);
 
-    return NextResponse.json([]);
+    const where: Record<string, unknown> = { isActive: true };
+    if (member?.companyId) {
+      where.companyId = member.companyId;
+    } else {
+      // No company — show only own posts
+      where.authorId = userId;
+    }
+
+    const posts: any[] = await tradesPostModel
+      .findMany({
+        where,
+        orderBy: { createdAt: "desc" },
+        take: 20,
+        include: {
+          tradesCompany: {
+            select: { id: true, name: true, logo: true, isVerified: true },
+          },
+        },
+      })
+      .catch(() => []);
+
+    const formatted = posts.map((p: any) => ({
+      id: p.id,
+      authorId: p.authorId,
+      description: p.content || "",
+      pinned: false,
+      companyName: p.tradesCompany?.name || null,
+      companyLogo: p.tradesCompany?.logo || null,
+      createdAt: p.createdAt,
+    }));
+
+    return NextResponse.json(formatted);
   } catch (error) {
     logger.error("Error fetching team posts:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
@@ -43,15 +83,34 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Message is required" }, { status: 400 });
     }
 
-    // const post = await prisma.teamPost.create({
-    //   data: {
-    //     authorId: userId,
-    //     description: message.trim(),
-    //     pinned,
-    //   },
-    // });
+    // Get user's company
+    const member = await prisma.tradesCompanyMember
+      .findUnique({
+        where: { userId },
+        select: { companyId: true, companyName: true },
+      })
+      .catch(() => null);
 
-    return NextResponse.json({ description: "Not implemented" }, { status: 501 });
+    const post: any = await tradesPostModel.create({
+      data: {
+        authorId: userId,
+        companyId: member?.companyId || null,
+        title: message.trim().slice(0, 100),
+        content: message.trim(),
+        images: [],
+        tags: pinned ? ["pinned"] : [],
+        postType: "update",
+        isActive: true,
+      },
+    });
+
+    return NextResponse.json({
+      id: post.id,
+      authorId: post.authorId,
+      description: post.content,
+      pinned,
+      createdAt: post.createdAt,
+    });
   } catch (error) {
     logger.error("Error creating team post:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });

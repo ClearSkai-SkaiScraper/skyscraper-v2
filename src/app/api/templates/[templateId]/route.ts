@@ -1,21 +1,17 @@
-import { auth } from "@clerk/nextjs/server";
 import { logger } from "@/lib/logger";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
+import { withAuth } from "@/lib/auth/withAuth";
 import { prismaMaybeModel } from "@/lib/db/prismaModel";
 import prisma from "@/lib/prisma";
 
 // Use prismaMaybeModel since report_templates may not be in PRISMA_MODELS
 const Templates = prismaMaybeModel("report_templates");
 
-export async function PATCH(request: Request, { params }: { params: { templateId: string } }) {
+export const PATCH = withAuth(async (request: NextRequest, { orgId }) => {
   try {
-    const { userId, orgId } = await auth();
-    if (!userId || !orgId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    const templateId = params.templateId;
+    const url = new URL(request.url);
+    const templateId = url.pathname.split("/").filter(Boolean).pop() || "";
 
     if (!Templates) {
       return NextResponse.json({ error: "Templates model unavailable" }, { status: 200 });
@@ -53,16 +49,12 @@ export async function PATCH(request: Request, { params }: { params: { templateId
     logger.error("Failed to update template:", error);
     return NextResponse.json({ error: "Failed to update template" }, { status: 500 });
   }
-}
+});
 
-export async function DELETE(request: Request, { params }: { params: { templateId: string } }) {
+export const DELETE = withAuth(async (request: NextRequest, { orgId }) => {
   try {
-    const { userId, orgId } = await auth();
-    if (!userId || !orgId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    const templateId = params.templateId;
+    const url = new URL(request.url);
+    const templateId = url.pathname.split("/").filter(Boolean).pop() || "";
 
     // Verify template exists and belongs to org
     const template = Templates
@@ -114,4 +106,4 @@ export async function DELETE(request: Request, { params }: { params: { templateI
     logger.error("Failed to delete template:", error);
     return NextResponse.json({ error: "Failed to delete template" }, { status: 500 });
   }
-}
+});
