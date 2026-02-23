@@ -100,7 +100,7 @@ export default function ClaimWeatherPage({ params }: Props) {
       }
     } catch (err) {
       logger.error("Quick DOL error:", err);
-      setError(err.message || "Failed to run Quick DOL.");
+      setError(err instanceof Error ? err.message : "Failed to run Quick DOL.");
     } finally {
       setIsQuickDolRunning(false);
     }
@@ -138,7 +138,7 @@ export default function ClaimWeatherPage({ params }: Props) {
       setReportResult(data);
     } catch (err) {
       logger.error("Weather report error:", err);
-      setError(err.message || "Failed to generate weather report.");
+      setError(err instanceof Error ? err.message : "Failed to generate weather report.");
     } finally {
       setIsReportRunning(false);
     }

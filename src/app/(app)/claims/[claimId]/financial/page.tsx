@@ -29,7 +29,7 @@ export default function ClaimFinancialPage() {
 
       setAnalysis(data.analysis);
     } catch (err) {
-      alert(err.message);
+      alert(err instanceof Error ? err.message : "Failed to run financial analysis");
     } finally {
       setLoading(false);
     }
