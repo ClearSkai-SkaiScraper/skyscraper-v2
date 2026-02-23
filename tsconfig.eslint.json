@@ -1,0 +1,16 @@
+{
+  "extends": "./tsconfig.json",
+  "include": [
+    "src/**/*.ts",
+    "src/**/*.tsx",
+    "middleware.ts",
+    "next-env.d.ts",
+    "env.d.ts",
+    "instrumentation.ts",
+    "instrumentation-client.ts",
+    "instrumentation-edge.ts",
+    "sentry.server.config.ts",
+    "sentry.edge.config.ts"
+  ],
+  "exclude": ["node_modules", ".next"]
+}

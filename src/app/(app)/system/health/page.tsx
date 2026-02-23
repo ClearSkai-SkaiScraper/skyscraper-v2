@@ -1,7 +1,7 @@
 "use client";
 
 import { useUser } from "@clerk/nextjs";
-import { Activity, AlertTriangle, CheckCircle, Server,TrendingUp, XCircle } from "lucide-react";
+import { Activity, AlertTriangle, CheckCircle, Server, TrendingUp, XCircle } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
@@ -17,16 +17,6 @@ interface HealthMetric {
 export default function SystemHealthPage() {
   const router = useRouter();
   const { isLoaded, isSignedIn } = useUser();
-
-  useEffect(() => {
-    if (isLoaded && !isSignedIn) {
-      router.push("/sign-in");
-    }
-  }, [isLoaded, isSignedIn, router]);
-
-  if (!isLoaded || !isSignedIn) {
-    return <div className="flex h-screen items-center justify-center">Loading...</div>;
-  }
 
   const [metrics] = useState<HealthMetric[]>([
     {
@@ -79,6 +69,16 @@ export default function SystemHealthPage() {
       severity: "low",
     },
   ]);
+
+  useEffect(() => {
+    if (isLoaded && !isSignedIn) {
+      router.push("/sign-in");
+    }
+  }, [isLoaded, isSignedIn, router]);
+
+  if (!isLoaded || !isSignedIn) {
+    return <div className="flex h-screen items-center justify-center">Loading...</div>;
+  }
 
   const getStatusIcon = (status: string) => {
     switch (status) {
