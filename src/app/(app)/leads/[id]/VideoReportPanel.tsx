@@ -21,13 +21,13 @@ import {
   Video,
   XCircle,
 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
+import { toast } from "sonner";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { logger } from "@/lib/logger";
-import { toast } from "sonner";
 
 interface VideoReportPanelProps {
   leadId: string;
@@ -48,7 +48,7 @@ interface VideoJob {
   title?: string;
   description?: string;
   tokensUsed?: number;
-  script?: any;
+  script?: Record<string, unknown>;
 }
 
 export function VideoReportPanel({ leadId }: VideoReportPanelProps) {
@@ -61,29 +61,32 @@ export function VideoReportPanel({ leadId }: VideoReportPanelProps) {
   const [isSharing, setIsSharing] = useState(false);
   const [videoAccessMessage, setVideoAccessMessage] = useState<string | null>(null);
 
-  // Load existing video report on mount
-  useEffect(() => {
-    loadExistingReport();
-    loadVideoAccess();
-  }, [leadId]);
-
-  const loadVideoAccess = async () => {
+  const loadVideoAccess = useCallback(async () => {
     try {
       const response = await fetch("/api/video-access");
       if (response.ok) {
-        const data = await response.json();
-        setVideoAccessMessage(data.message);
+        const data: { message?: string } = await response.json();
+        setVideoAccessMessage(data.message ?? null);
       }
     } catch (err) {
       logger.error("Error loading video access:", err);
     }
-  };
+  }, []);
 
-  const loadExistingReport = async () => {
+  const loadExistingReport = useCallback(async () => {
     try {
       const response = await fetch(`/api/video-reports?leadId=${leadId}`);
       if (response.ok) {
-        const data = await response.json();
+        const data: {
+          report?: {
+            id: string;
+            status: string;
+            videoUrl?: string;
+            title?: string;
+            isPublic?: boolean;
+            publicId?: string;
+          };
+        } = await response.json();
         if (data.report) {
           setJob({
             jobId: data.report.id,
@@ -104,7 +107,13 @@ export function VideoReportPanel({ leadId }: VideoReportPanelProps) {
     } catch (err) {
       logger.error("Error loading existing report:", err);
     }
-  };
+  }, [leadId]);
+
+  // Load existing video report on mount
+  useEffect(() => {
+    void loadExistingReport();
+    void loadVideoAccess();
+  }, [leadId, loadExistingReport, loadVideoAccess]);
 
   const generateVideo = async () => {
     try {
@@ -123,7 +132,7 @@ export function VideoReportPanel({ leadId }: VideoReportPanelProps) {
       });
 
       if (!response.ok) {
-        const data = await response.json().catch(() => ({}));
+        const data: { error?: string } = await response.json().catch(() => ({}));
 
         if (response.status === 402) {
           toast.error("Update your plan to generate video reports.");
@@ -140,7 +149,13 @@ export function VideoReportPanel({ leadId }: VideoReportPanelProps) {
         throw new Error(data.error || "We couldn't create the video job. Please try again.");
       }
 
-      const data = await response.json();
+      const data: {
+        jobId: string;
+        reportId: string;
+        status: string;
+        script?: { title?: string };
+        estimatedTokens?: number;
+      } = await response.json();
 
       setJob({
         jobId: data.jobId,
@@ -149,36 +164,38 @@ export function VideoReportPanel({ leadId }: VideoReportPanelProps) {
         stageMessage: "Queued for processing",
         progress: 10,
         status: data.status,
-        title: data.script.title,
+        title: data.script?.title,
         tokensUsed: data.estimatedTokens,
       });
 
       // Start polling for status
-      pollJobStatus(data.jobId);
+      void pollJobStatus(data.jobId);
     } catch (err) {
-      setError(err.message);
+      setError(err instanceof Error ? err.message : "An unexpected error occurred");
     } finally {
       setIsGenerating(false);
     }
   };
 
   const pollJobStatus = async (jobId: string) => {
-    const interval = setInterval(async () => {
-      try {
-        const response = await fetch(`/api/ai/skai/video/job/${jobId}`);
-        const data = await response.json();
+    const interval = setInterval(() => {
+      void (async () => {
+        try {
+          const response = await fetch(`/api/ai/skai/video/job/${jobId}`);
+          const data: VideoJob = await response.json();
 
-        if (response.ok) {
-          setJob(data);
+          if (response.ok) {
+            setJob(data);
 
-          // Stop polling when completed or failed
-          if (data.status === "COMPLETED" || data.status === "FAILED") {
-            clearInterval(interval);
+            // Stop polling when completed or failed
+            if (data.status === "COMPLETED" || data.status === "FAILED") {
+              clearInterval(interval);
+            }
           }
+        } catch (err) {
+          logger.error("Error polling job status:", err);
         }
-      } catch (err) {
-        logger.error("Error polling job status:", err);
-      }
+      })();
     }, 3000); // Poll every 3 seconds
   };
 
@@ -192,7 +209,7 @@ export function VideoReportPanel({ leadId }: VideoReportPanelProps) {
       });
 
       if (!response.ok) {
-        const data = await response.json();
+        const data: { error?: string } = await response.json();
         toast.error(data.error || "Failed to generate script");
         setIsRunning(false);
         return;
@@ -203,7 +220,7 @@ export function VideoReportPanel({ leadId }: VideoReportPanelProps) {
       // Reload report to get script/storyboard data
       await loadExistingReport();
     } catch (err) {
-      toast.error(err.message);
+      toast.error(err instanceof Error ? err.message : "An unexpected error occurred");
     } finally {
       setIsRunning(false);
     }
@@ -224,19 +241,19 @@ export function VideoReportPanel({ leadId }: VideoReportPanelProps) {
       });
 
       if (!response.ok) {
-        const data = await response.json();
+        const data: { error?: string } = await response.json();
         toast.error(data.error || "Failed to generate share link");
         setIsSharing(false);
         return;
       }
 
-      const data = await response.json();
+      const data: { shareUrl: string } = await response.json();
       setShareUrl(data.shareUrl);
       setIsPublic(true);
 
       toast.success("Anyone with this link can view the video report.");
     } catch (err) {
-      toast.error(err.message);
+      toast.error(err instanceof Error ? err.message : "An unexpected error occurred");
     } finally {
       setIsSharing(false);
     }
@@ -248,7 +265,7 @@ export function VideoReportPanel({ leadId }: VideoReportPanelProps) {
     try {
       await navigator.clipboard.writeText(shareUrl);
       toast.success("Share link copied to clipboard!");
-    } catch (err) {
+    } catch (_err) {
       toast.error("Could not copy to clipboard");
     }
   };
@@ -263,7 +280,7 @@ export function VideoReportPanel({ leadId }: VideoReportPanelProps) {
       });
 
       if (!response.ok) {
-        const data = await response.json();
+        const data: { error?: string } = await response.json();
         toast.error(data.error || "Failed to revoke link");
         setIsSharing(false);
         return;
@@ -274,7 +291,7 @@ export function VideoReportPanel({ leadId }: VideoReportPanelProps) {
 
       toast.success("Share link has been disabled.");
     } catch (err) {
-      toast.error(err.message);
+      toast.error(err instanceof Error ? err.message : "An unexpected error occurred");
     } finally {
       setIsSharing(false);
     }

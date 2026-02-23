@@ -11,7 +11,7 @@ export const prisma = prismaDefault;
 export async function bootstrapNewOrg(
   userId: string,
   orgId: string,
-  options?: {
+  _options?: {
     includeWelcomeData?: boolean;
     initialTokens?: number;
     skipBrandingSetup?: boolean;

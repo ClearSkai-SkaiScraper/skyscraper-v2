@@ -15,11 +15,11 @@ import {
   Zap,
 } from "lucide-react";
 import { useState } from "react";
+import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useAIStream } from "@/hooks/useAIStream";
-import { toast } from "sonner";
 
 import { SmartActionModal } from "./SmartActionModal";
 
@@ -144,7 +144,7 @@ export function SmartActionsPanel({ leadId }: SmartActionsPanelProps) {
         type: "smart-action",
         action: action.id,
       });
-    } catch (err) {
+    } catch (_err) {
       // Error handled by useAIStream
     }
   }
@@ -224,7 +224,7 @@ export function SmartActionsPanel({ leadId }: SmartActionsPanelProps) {
             const actionObj = actions.find((a) => a.id === modalContent.action);
             if (actionObj) {
               setModalContent(null);
-              handleAction(actionObj);
+              void handleAction(actionObj);
             }
           }}
         />
