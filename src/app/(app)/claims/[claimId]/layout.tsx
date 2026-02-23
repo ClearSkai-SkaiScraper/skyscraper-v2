@@ -9,6 +9,7 @@ import { resolveClaim } from "@/lib/claims/resolveClaim";
 import { logger } from "@/lib/logger";
 import { getOrg, isDemoRoute } from "@/lib/org/getOrg";
 
+import { ClaimHeaderActions } from "./_components/ClaimHeaderActions";
 import ClaimTabs from "./_components/ClaimTabs";
 import { getClaim } from "./loader";
 
@@ -302,24 +303,30 @@ export default async function ClaimLayout({ children, params }: ClaimLayoutProps
               </div>
             </div>
 
-            {/* Job Value Pill */}
-            {((claim as any).estimatedValue ?? 0) > 0 && (
-              <div className="hidden items-center gap-2 sm:flex">
-                <div className="rounded-xl border border-white/20 bg-white/15 px-3 py-1.5 backdrop-blur-sm">
-                  <span className="flex items-center gap-1.5 text-sm font-semibold text-white">
-                    <DollarSign className="h-3.5 w-3.5" />
-                    {((claim as any).estimatedValue ?? 0).toLocaleString("en-US", {
-                      style: "currency",
-                      currency: "USD",
-                      maximumFractionDigits: 0,
-                    })}
-                  </span>
-                  <span className="text-[10px] font-medium uppercase tracking-wide text-blue-200">
-                    Job Value
-                  </span>
+            {/* Action Buttons + Job Value */}
+            <div className="flex items-center gap-3">
+              <ClaimHeaderActions
+                claimId={claimId}
+                claimTitle={claim.title || claim.claimNumber || "Claim"}
+              />
+              {((claim as any).estimatedValue ?? 0) > 0 && (
+                <div className="hidden items-center gap-2 sm:flex">
+                  <div className="rounded-xl border border-white/20 bg-white/15 px-3 py-1.5 backdrop-blur-sm">
+                    <span className="flex items-center gap-1.5 text-sm font-semibold text-white">
+                      <DollarSign className="h-3.5 w-3.5" />
+                      {((claim as any).estimatedValue ?? 0).toLocaleString("en-US", {
+                        style: "currency",
+                        currency: "USD",
+                        maximumFractionDigits: 0,
+                      })}
+                    </span>
+                    <span className="text-[10px] font-medium uppercase tracking-wide text-blue-200">
+                      Job Value
+                    </span>
+                  </div>
                 </div>
-              </div>
-            )}
+              )}
+            </div>
           </div>
         </div>
 

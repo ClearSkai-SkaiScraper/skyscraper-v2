@@ -6,6 +6,7 @@ import {
   Camera,
   Cloud,
   DollarSign,
+  Edit,
   FileText,
   Mail,
   MapPin,
@@ -15,9 +16,12 @@ import {
   User,
 } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useCallback, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
 
 interface ClaimsSidebarProps {
   claimId: string;
@@ -38,6 +42,10 @@ interface ClaimsSidebarProps {
 }
 
 export function ClaimsSidebar({ claimId, claim }: ClaimsSidebarProps) {
+  const router = useRouter();
+  const [editing, setEditing] = useState<string | null>(null);
+  const [editValue, setEditValue] = useState("");
+
   const formatCurrency = (val: number | null | undefined) =>
     val
       ? new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(val / 100)
@@ -50,6 +58,89 @@ export function ClaimsSidebar({ claimId, claim }: ClaimsSidebarProps) {
       day: "numeric",
       year: "numeric",
     });
+  };
+
+  const startEdit = useCallback((field: string, currentValue: string) => {
+    setEditing(field);
+    setEditValue(currentValue);
+  }, []);
+
+  const saveField = useCallback(
+    async (field: string) => {
+      try {
+        await fetch(`/api/claims/${claimId}/update`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ [field]: editValue }),
+        });
+        setEditing(null);
+        router.refresh();
+      } catch {
+        setEditing(null);
+      }
+    },
+    [claimId, editValue, router]
+  );
+
+  const cancelEdit = useCallback(() => {
+    setEditing(null);
+    setEditValue("");
+  }, []);
+
+  const EditableField = ({
+    field,
+    label,
+    value,
+    icon: Icon,
+  }: {
+    field: string;
+    label: string;
+    value: string | null | undefined;
+    icon: typeof User;
+  }) => {
+    if (editing === field) {
+      return (
+        <div className="flex items-center gap-1">
+          <Input
+            value={editValue}
+            onChange={(e) => setEditValue(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") void saveField(field);
+              if (e.key === "Escape") cancelEdit();
+            }}
+            className="h-7 text-xs"
+            autoFocus
+          />
+          <Button
+            size="sm"
+            variant="ghost"
+            className="h-7 px-2 text-xs text-green-600"
+            onClick={() => void saveField(field)}
+          >
+            ✓
+          </Button>
+          <Button
+            size="sm"
+            variant="ghost"
+            className="h-7 px-2 text-xs text-red-500"
+            onClick={cancelEdit}
+          >
+            ✕
+          </Button>
+        </div>
+      );
+    }
+    return (
+      <div
+        className="group -mx-1 flex cursor-pointer items-center gap-2 rounded px-1 py-0.5 text-sm hover:bg-slate-50 dark:hover:bg-slate-800"
+        onClick={() => startEdit(field, value || "")}
+        title="Click to edit"
+      >
+        <Icon className="h-4 w-4 shrink-0 text-blue-600" />
+        <span className="flex-1 truncate font-medium">{value || "Not set"}</span>
+        <Edit className="h-3 w-3 shrink-0 text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100" />
+      </div>
+    );
   };
 
   return (
@@ -112,35 +203,19 @@ export function ClaimsSidebar({ claimId, claim }: ClaimsSidebarProps) {
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-2 pt-4">
-          {claim.adjusterName ? (
-            <>
-              <div className="flex items-center gap-2 text-sm">
-                <User className="h-4 w-4 text-blue-600" />
-                <span className="font-medium">{claim.adjusterName}</span>
-              </div>
-              {claim.adjusterPhone && (
-                <div className="flex items-center gap-2 text-sm">
-                  <Phone className="h-4 w-4 text-blue-600" />
-                  <a href={`tel:${claim.adjusterPhone}`} className="text-blue-600 hover:underline">
-                    {claim.adjusterPhone}
-                  </a>
-                </div>
-              )}
-              {claim.adjusterEmail && (
-                <div className="flex items-center gap-2 text-sm">
-                  <Mail className="h-4 w-4 text-blue-600" />
-                  <a
-                    href={`mailto:${claim.adjusterEmail}`}
-                    className="truncate text-blue-600 hover:underline"
-                  >
-                    {claim.adjusterEmail}
-                  </a>
-                </div>
-              )}
-            </>
-          ) : (
-            <p className="text-sm text-muted-foreground">No adjuster assigned yet</p>
-          )}
+          <EditableField field="adjusterName" label="Name" value={claim.adjusterName} icon={User} />
+          <EditableField
+            field="adjusterPhone"
+            label="Phone"
+            value={claim.adjusterPhone}
+            icon={Phone}
+          />
+          <EditableField
+            field="adjusterEmail"
+            label="Email"
+            value={claim.adjusterEmail}
+            icon={Mail}
+          />
         </CardContent>
       </Card>
 

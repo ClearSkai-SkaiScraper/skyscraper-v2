@@ -2,6 +2,7 @@
 
 import { Grid3x3, List, Loader2, ShoppingBag } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 import { Button } from "@/components/ui/button";
@@ -98,6 +99,11 @@ export function TemplateList({ initialTemplates, orgId }: TemplateListProps) {
     }
   };
 
+  const router = useRouter();
+  const handleEdit = (templateId: string) => {
+    router.push(`/reports/templates/${templateId}/edit`);
+  };
+
   return (
     <div>
       <div className="mb-6 flex items-center justify-between">
@@ -174,6 +180,7 @@ export function TemplateList({ initialTemplates, orgId }: TemplateListProps) {
               key={template.id}
               template={template}
               onClick={() => setPreviewTemplate(template)}
+              onEdit={handleEdit}
               onDuplicate={handleDuplicate}
               onSetDefault={handleSetDefault}
               onDelete={handleDelete}

@@ -763,6 +763,12 @@ export default function TradesNetworkDashboard({ userProfile, stats }: Dashboard
                         placeholder="Share an update, project showcase, or job posting..."
                         value={postContent}
                         onChange={(e) => setPostContent(e.target.value)}
+                        onKeyDown={(e) => {
+                          if ((e.metaKey || e.ctrlKey) && e.key === "Enter") {
+                            e.preventDefault();
+                            handleCreatePost();
+                          }
+                        }}
                         className="min-h-[100px] resize-none"
                       />
 

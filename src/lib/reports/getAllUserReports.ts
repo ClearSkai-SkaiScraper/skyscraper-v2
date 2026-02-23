@@ -83,6 +83,29 @@ export async function getAllUserReports(params?: {
     };
   });
 
+  // 2. reports table — PDF reports generated from pdf-builder
+  const pdfReports = await prisma.reports.findMany({
+    where: {
+      orgId,
+      ...(claimId ? { claimId } : {}),
+      ...(Object.keys(dateFilter).length ? { createdAt: dateFilter } : {}),
+    },
+    orderBy: { createdAt: "desc" },
+    include: { claims: { select: { claimNumber: true } } },
+  });
+
+  const pdfUnified: UnifiedReport[] = pdfReports.map((r) => ({
+    id: r.id,
+    type: "CLAIM_PDF" as UnifiedReportType,
+    claimId: r.claimId || null,
+    title: r.title || "Claim Report",
+    createdAt: r.createdAt.toISOString(),
+    url: r.pdfUrl || null,
+    source: "PDF Builder",
+    metadata: { type: r.type, sections: r.sections, pdfUrl: r.pdfUrl },
+    claimNumber: r.claims?.claimNumber || null,
+  }));
+
   // 3. weather_reports (direct query by orgId via createdById user membership)
   const weatherReports = await prisma.weather_reports.findMany({
     where: {
@@ -160,7 +183,13 @@ export async function getAllUserReports(params?: {
     );
   }
 
-  let combined = [...historyUnified, ...weatherUnified, ...fileUnified, ...retailUnified];
+  let combined = [
+    ...historyUnified,
+    ...pdfUnified,
+    ...weatherUnified,
+    ...fileUnified,
+    ...retailUnified,
+  ];
 
   // Enrich with claimNumber + address for search
   const claimIds = Array.from(new Set(combined.filter((c) => c.claimId).map((c) => c.claimId!)));

@@ -21,6 +21,7 @@ import prisma from "@/lib/prisma";
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
+import { ArchiveJobButton } from "@/components/jobs/ArchiveJobButton";
 import { TransferJobDropdown } from "@/components/jobs/TransferJobDropdown";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -189,6 +190,7 @@ export default async function LeadDetailPage({ params }: { params: Promise<{ id:
               {/* Action Buttons - Horizontal row */}
               <div className="flex items-center gap-2">
                 <TransferJobDropdown jobId={lead.id} currentCategory={jobCategory} />
+                <ArchiveJobButton jobId={lead.id} jobTitle={lead.title} type="lead" />
                 <ConvertToClaimButton
                   leadId={lead.id}
                   leadTitle={lead.title}

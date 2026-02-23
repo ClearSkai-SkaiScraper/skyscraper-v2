@@ -12,22 +12,18 @@
  */
 
 import { logger } from "@/lib/logger";
-import { auth } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
 
+import { withAuth } from "@/lib/auth/withAuth";
 import prisma from "@/lib/prisma";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+export const GET = withAuth(async (request: NextRequest, { orgId, userId }) => {
   try {
-    const { userId, orgId } = await auth();
-    if (!userId || !orgId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    const { id: leadId } = await params;
+    const url = new URL(request.url);
+    const leadId = url.pathname.split("/").slice(-2)[0]; // /api/leads/[id]/notes
 
     // Verify lead belongs to org
     const lead = await prisma.leads.findFirst({
@@ -62,16 +58,12 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     logger.error("[Lead Notes GET] Error:", error);
     return NextResponse.json({ error: "Failed to fetch notes" }, { status: 500 });
   }
-}
+});
 
-export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+export const POST = withAuth(async (request: NextRequest, { orgId, userId }) => {
   try {
-    const { userId, orgId } = await auth();
-    if (!userId || !orgId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    const { id: leadId } = await params;
+    const url = new URL(request.url);
+    const leadId = url.pathname.split("/").slice(-2)[0];
     const body = await request.json();
     const content = body.content?.trim();
 
@@ -130,4 +122,4 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     logger.error("[Lead Notes POST] Error:", error);
     return NextResponse.json({ error: "Failed to save note" }, { status: 500 });
   }
-}
+});
