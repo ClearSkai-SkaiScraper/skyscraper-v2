@@ -19,7 +19,6 @@ const tradesPostModel = prisma.tradesPost as any;
 
 export const GET = withAuth(async (req: NextRequest, { userId }) => {
   try {
-
     // Get the user's company to scope team posts
     const member = await prisma.tradesCompanyMember
       .findUnique({

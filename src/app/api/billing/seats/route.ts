@@ -17,7 +17,6 @@ import prisma from "@/lib/prisma";
 
 export const GET = withAuth(async (req: NextRequest, { orgId }) => {
   try {
-
     // Get seat check
     const seatCheck = await checkSeatAvailability(orgId);
 

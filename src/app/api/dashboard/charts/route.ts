@@ -10,7 +10,6 @@ import { toPlainJSON } from "@/lib/serialize";
 
 export const GET = withAuth(async (req: NextRequest, { orgId }) => {
   try {
-
     // Claims Over Time (last 8 weeks) - build date ranges
     const weekRanges = Array.from({ length: 8 }, (_, idx) => {
       const i = 7 - idx;

@@ -25,7 +25,6 @@ async function calculateStorageUsed(orgId: string): Promise<number> {
  */
 export const GET = withAuth(async (req: NextRequest, { orgId, userId }) => {
   try {
-
     // ADMIN MODE: Platform admins get unlimited forever free access
     try {
       const isAdmin = await isPlatformAdmin();

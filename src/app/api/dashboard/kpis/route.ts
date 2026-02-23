@@ -9,7 +9,6 @@ export const revalidate = 0;
 
 export const GET = withAuth(async (req: NextRequest, { orgId }) => {
   try {
-
     const now = new Date();
     const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
     const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);

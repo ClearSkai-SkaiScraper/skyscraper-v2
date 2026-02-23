@@ -9,7 +9,6 @@ export const revalidate = 0;
 
 export const GET = withAuth(async (req: NextRequest, { orgId }) => {
   try {
-
     // Fetch recent activities from multiple sources (with safe fallbacks for missing tables)
     type ClaimRecord = {
       id: string;
