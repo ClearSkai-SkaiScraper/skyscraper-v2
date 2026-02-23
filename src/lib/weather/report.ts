@@ -1,5 +1,6 @@
 // src/lib/weather/report.ts
 import { getOpenAI } from "@/lib/ai/client";
+import type { DOLResult, ScoredEvent } from "@/types/weather";
 
 function getOpenAIClient() {
   return getOpenAI();
@@ -11,15 +12,15 @@ export async function aiSummarizeWeather({
   lat,
   lon,
 }: {
-  scored: any[];
-  dol: any;
+  scored: ScoredEvent[];
+  dol: DOLResult;
   lat: number;
   lon: number;
 }) {
   const client = getOpenAIClient();
   const primary = scored[0];
   const severity = classifySeverity(primary?.magnitude, primary?.distance_miles);
-  const confidencePct = (dol?.confidence * 100).toFixed(1);
+  const confidencePct = (dol.confidence * 100).toFixed(1);
 
   const sys = `
 You are a meteorological claims analyst. Your job is to produce a clear, concise,
@@ -37,7 +38,7 @@ STRICT RULES:
 
   const user = {
     property: { lat, lon },
-    recommendedDateOfLoss: dol?.recommended_date_utc,
+    recommendedDateOfLoss: dol.recommended_date_utc,
     severity,
     confidencePct,
     topEvents: scored.slice(0, 5).map((e) => ({
