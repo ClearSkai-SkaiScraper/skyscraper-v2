@@ -209,11 +209,11 @@
 
 ## 📊 Sprint Velocity
 
-| Sprint | Files Changed | Key Deliverables                                              |
-| ------ | ------------- | ------------------------------------------------------------- |
-| 11     | 150           | Token removal, real AI, security hardening                    |
-| 12     | 98            | QA failures fixed, error sanitization                         |
-| 13     | 98            | Documents fix, Final Payout PDF, header polish                |
+| Sprint | Files Changed | Key Deliverables                                                   |
+| ------ | ------------- | ------------------------------------------------------------------ |
+| 11     | 150           | Token removal, real AI, security hardening                         |
+| 12     | 98            | QA failures fixed, error sanitization                              |
+| 13     | 98            | Documents fix, Final Payout PDF, header polish                     |
 | 14     | 22            | Security audit, cross-org fix, scope persistence, 23 sanitizations |
 
 **Total since lockdown:** 368 file changes, 0 TypeScript errors

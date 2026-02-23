@@ -159,6 +159,62 @@ export async function POST(req: NextRequest) {
       }
     }
 
+    // ─── Organization Membership Deleted ───────────────────────
+    // When a user is removed from an org in Clerk Dashboard,
+    // clean up their DB membership so withOrgScope rejects future requests.
+    if (eventType === "organizationMembership.deleted") {
+      const { organization, public_user_data } = evt.data;
+      const clerkOrgId = organization?.id;
+      const removedUserId = public_user_data?.user_id;
+
+      if (clerkOrgId && removedUserId) {
+        logger.info(`[Webhook] Membership removed: user ${removedUserId} from org ${clerkOrgId}`);
+
+        try {
+          // Find the DB org by Clerk org ID
+          const org = await prisma.org.findFirst({
+            where: { clerkOrgId },
+            select: { id: true },
+          });
+
+          if (org) {
+            // Find the DB user by Clerk user ID
+            const user = await prisma.users.findFirst({
+              where: { clerkUserId: removedUserId },
+              select: { id: true },
+            });
+
+            if (user) {
+              // Delete the user_organizations row → withOrgScope will reject future API calls
+              await prisma.user_organizations.deleteMany({
+                where: {
+                  userId: user.id,
+                  organizationId: org.id,
+                },
+              });
+
+              // Also remove from team_members if exists
+              try {
+                await prisma.$executeRaw`
+                  DELETE FROM team_members
+                  WHERE "userId" = ${user.id}
+                    AND "orgId" = ${org.id}
+                `;
+              } catch {
+                // team_members table may not exist in all environments
+              }
+
+              logger.info(
+                `[Webhook] ✅ Removed user ${removedUserId} from org ${clerkOrgId} in DB`
+              );
+            }
+          }
+        } catch (error) {
+          logger.error(`[Webhook] ❌ Failed to remove membership:`, error);
+        }
+      }
+    }
+
     return NextResponse.json({ success: true, eventType });
   } catch (error) {
     logger.error("[Webhook] Handler error:", error);
@@ -169,7 +225,7 @@ export async function POST(req: NextRequest) {
 export async function GET(req: NextRequest) {
   return NextResponse.json({
     status: "Clerk webhook endpoint active",
-    events: ["user.created", "organization.created"],
+    events: ["user.created", "organization.created", "organizationMembership.deleted"],
     timestamp: new Date().toISOString(),
   });
 }

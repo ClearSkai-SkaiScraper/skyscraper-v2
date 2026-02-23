@@ -1,12 +1,13 @@
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-import { NextRequest } from "next/server";
 import { logger } from "@/lib/logger";
+import { NextRequest } from "next/server";
 import { z } from "zod";
 
 import { apiError, apiOk } from "@/lib/apiError";
 import prisma from "@/lib/prisma";
+import { checkRateLimit } from "@/lib/rate-limit";
 import { safeOrgContext } from "@/lib/safeOrgContext";
 
 // ---------------------------------------------------------------------------
@@ -57,7 +58,7 @@ export async function GET(req: NextRequest) {
     return apiOk({ threads, count: Array.isArray(threads) ? threads.length : 0 });
   } catch (err) {
     logger.error("[sms-get]", err);
-    return apiError(500, "INTERNAL_ERROR", err.message);
+    return apiError(500, "INTERNAL_ERROR", "Failed to fetch SMS threads");
   }
 }
 
@@ -71,6 +72,12 @@ export async function POST(req: NextRequest) {
     const ctx = await safeOrgContext();
     if (ctx.status !== "ok" || !ctx.orgId) {
       return apiError(401, "UNAUTHORIZED", "Authentication required");
+    }
+
+    // Rate limit SMS sends (prevents abuse)
+    const rl = await checkRateLimit(ctx.userId || ctx.orgId, "API");
+    if (!rl.success) {
+      return apiError(429, "RATE_LIMIT", "Too many requests. Please try again later.");
     }
 
     const reqBody = await req.json().catch(() => null);
@@ -150,6 +157,6 @@ export async function POST(req: NextRequest) {
     return apiOk({ message, twilioStatus: status }, { status: 201 });
   } catch (err) {
     logger.error("[sms-post]", err);
-    return apiError(500, "INTERNAL_ERROR", err.message);
+    return apiError(500, "INTERNAL_ERROR", "Failed to send SMS");
   }
 }
