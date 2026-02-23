@@ -3,15 +3,15 @@ export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
 // ============================================================================
-// API: GET AI SECTION STATE
+// API: GET/POST AI SECTION STATE
 // ============================================================================
-// GET /api/reports/[id]/ai/[sectionKey]
-// Returns: AISectionState for the given section
+// GET  /api/reports/[reportId]/ai/[sectionKey] — get section state
+// POST /api/reports/[reportId]/ai/[sectionKey] — generate AI suggestion
 
-import { auth } from "@clerk/nextjs/server";
 import { logger } from "@/lib/logger";
 import { NextRequest, NextResponse } from "next/server";
 
+import { withAuth } from "@/lib/auth/withAuth";
 import prisma from "@/lib/prisma";
 import { runReportBuilder } from "@/lib/report-engine/ai";
 import { buildPayloadWithAddons } from "@/lib/report-engine/buildMasterPayload";
@@ -36,18 +36,10 @@ const SIMPLE_SECTION_PROMPTS: Record<string, string> = {
     "Explain how proposed scope aligns with carrier standards and policy language without sounding adversarial.",
 };
 
-export async function GET(
-  req: NextRequest,
-  { params }: { params: { reportId: string; sectionKey: string } }
-) {
+export const GET = withAuth(async (req: NextRequest, { orgId }, routeParams) => {
   try {
-    const { userId } = await auth();
-    if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    const reportId = params.reportId;
-    const sectionKey = params.sectionKey as AISectionKey;
+    const { reportId, sectionKey: rawKey } = await routeParams.params;
+    const sectionKey = rawKey as AISectionKey;
 
     const state = await getAISection(reportId, sectionKey);
 
@@ -58,23 +50,18 @@ export async function GET(
     return NextResponse.json(state);
   } catch (error) {
     logger.error("[AI Section API]", error);
-    return NextResponse.json({ error: error.message || "Failed to get section" }, { status: 500 });
+    return NextResponse.json(
+      { error: error instanceof Error ? error.message : "Failed to get section" },
+      { status: 500 }
+    );
   }
-}
+});
 
 // POST: Generate AI suggestion for section (retail wizard support)
-export async function POST(
-  req: Request,
-  { params }: { params: { reportId: string; sectionKey: string } }
-) {
+export const POST = withAuth(async (req: NextRequest, { orgId, userId }, routeParams) => {
   try {
-    const { userId, orgId } = await auth();
-    if (!userId || !orgId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    const { reportId, sectionKey } = params;
-    const key = sectionKey as string;
+    const { reportId, sectionKey: rawKey } = await routeParams.params;
+    const key = rawKey as string;
 
     const basePrompt = SIMPLE_SECTION_PROMPTS[key];
     if (!basePrompt) {
@@ -86,7 +73,6 @@ export async function POST(
       .findUnique({ where: { id: reportId }, select: { id: true } })
       .catch(() => null);
     if (!report) {
-      // Report doesn't exist yet - this is okay for draft suggestions
       logger.debug(`[AI Section] No existing report ${reportId}, generating suggestion anyway`);
     }
 
@@ -99,7 +85,7 @@ export async function POST(
       reportType: "RETAIL_PROPOSAL",
       audience: "HOMEOWNER",
       addonPayload: payload ?? {},
-      address: "Unknown", // Address comes from internal collector
+      address: "Unknown",
       roofType: undefined,
       lossType: undefined,
       orgId,
@@ -116,4 +102,4 @@ export async function POST(
     logger.error("[AI Section Suggest] Failure", e);
     return NextResponse.json({ error: errorMessage }, { status: 500 });
   }
-}
+});

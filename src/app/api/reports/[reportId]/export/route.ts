@@ -6,10 +6,10 @@ export const revalidate = 0;
 // EXPORT API ROUTE - /api/reports/[reportId]/export
 // ============================================================================
 
-import { auth } from "@clerk/nextjs/server";
 import { logger } from "@/lib/logger";
 import { NextRequest, NextResponse } from "next/server";
 
+import { withAuth } from "@/lib/auth/withAuth";
 import {
   useReportBranding,
   useReportClaimData,
@@ -20,21 +20,14 @@ import {
   useReportWeather,
 } from "@/modules/reports/core/DataProviders";
 import { exportReport } from "@/modules/reports/export/orchestrator";
-import type { ExportFormat, ReportContext,SectionKey } from "@/modules/reports/types";
+import type { ExportFormat, ReportContext, SectionKey } from "@/modules/reports/types";
 
-export async function POST(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export const POST = withAuth(async (req: NextRequest, { orgId, userId }, routeParams) => {
   try {
-    // Authenticate user
-    const { userId } = await auth();
-    if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    const { reportId } = await routeParams.params;
 
     // Parse request body
-    const body = await request.json();
+    const body = await req.json();
     const { format, sections } = body as {
       format: ExportFormat;
       sections: SectionKey[];
@@ -62,7 +55,7 @@ export async function POST(
 
     // Export the report
     const result = await exportReport({
-      reportId: params.id,
+      reportId,
       userId,
       format,
       sections,
@@ -70,15 +63,12 @@ export async function POST(
     });
 
     if (!result.success) {
-      return NextResponse.json(
-        { error: result.error || "Export failed" },
-        { status: 500 }
-      );
+      return NextResponse.json({ error: result.error || "Export failed" }, { status: 500 });
     }
 
     // Return file as blob
     if (result.buffer) {
-      const contentTypes = {
+      const contentTypes: Record<string, string> = {
         pdf: "application/pdf",
         docx: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
         zip: "application/zip",
@@ -86,8 +76,8 @@ export async function POST(
 
       return new NextResponse(result.buffer as any, {
         headers: {
-          "Content-Type": contentTypes[format],
-          "Content-Disposition": `attachment; filename="contractor-packet-${params.id}.${format}"`,
+          "Content-Type": contentTypes[format] || "application/octet-stream",
+          "Content-Disposition": `attachment; filename="contractor-packet-${reportId}.${format}"`,
         },
       });
     }
@@ -96,8 +86,8 @@ export async function POST(
   } catch (error) {
     logger.error("[Export API] Error:", error);
     return NextResponse.json(
-      { error: error.message || "Internal server error", stack: error.stack },
+      { error: error instanceof Error ? error.message : "Internal server error" },
       { status: 500 }
     );
   }
-}
+});

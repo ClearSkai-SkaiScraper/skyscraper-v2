@@ -6,11 +6,11 @@
  *          regenerate_links, update_status, add_note
  */
 
-import { auth } from "@clerk/nextjs/server";
 import { logger } from "@/lib/logger";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 
+import { withAuth } from "@/lib/auth/withAuth";
 import * as reportService from "@/lib/domain/reports";
 import prisma from "@/lib/prisma";
 
@@ -65,20 +65,9 @@ const ActionSchema = z.discriminatedUnion("action", [
   }),
 ]);
 
-export async function POST(
-  req: NextRequest,
-  { params }: { params: Promise<{ reportId: string }> }
-) {
+export const POST = withAuth(async (req: NextRequest, { orgId, userId }, routeParams) => {
   try {
-    // =========================================================================
-    // Auth & Validation
-    // =========================================================================
-    const { userId, orgId } = await auth();
-    if (!userId || !orgId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    const { reportId } = await params;
+    const { reportId } = await routeParams.params;
     const body = await req.json();
     const parsed = ActionSchema.safeParse(body);
 
@@ -89,19 +78,9 @@ export async function POST(
       );
     }
 
-    // Resolve org
-    const org = await prisma.org.findUnique({
-      where: { clerkOrgId: orgId },
-      select: { id: true },
-    });
-
-    if (!org) {
-      return NextResponse.json({ error: "Organization not found" }, { status: 404 });
-    }
-
     // Verify report belongs to org
     const report = await prisma.ai_reports.findFirst({
-      where: { id: reportId, orgId: org.id },
+      where: { id: reportId, orgId },
     });
 
     if (!report) {
@@ -117,7 +96,7 @@ export async function POST(
       case "approve": {
         const result = await reportService.approveReport({
           reportId,
-          orgId: org.id,
+          orgId,
           userId,
           notes: input.notes,
         });
@@ -127,7 +106,7 @@ export async function POST(
       case "reject": {
         const result = await reportService.rejectReport({
           reportId,
-          orgId: org.id,
+          orgId,
           userId,
           reason: input.reason,
           notes: input.notes,
@@ -138,7 +117,7 @@ export async function POST(
       case "send": {
         const result = await reportService.sendReport({
           reportId,
-          orgId: org.id,
+          orgId,
           userId,
           recipientEmail: input.recipientEmail,
           recipientType: input.recipientType,
@@ -150,7 +129,7 @@ export async function POST(
       case "send_packet": {
         const result = await reportService.sendPacket({
           reportId,
-          orgId: org.id,
+          orgId,
           userId,
           recipientEmail: input.recipientEmail,
           message: input.message,
@@ -205,4 +184,4 @@ export async function POST(
     logger.error("[Reports Actions] Error:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
-}
+});

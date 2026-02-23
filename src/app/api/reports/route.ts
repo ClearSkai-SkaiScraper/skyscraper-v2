@@ -3,9 +3,9 @@ export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
 import { NextRequest, NextResponse } from "next/server";
-import { logger } from "@/lib/logger";
 
-import { getActiveOrgContext } from "@/lib/org/getActiveOrgContext";
+import { withAuth } from "@/lib/auth/withAuth";
+import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 
 /**
@@ -13,16 +13,8 @@ import prisma from "@/lib/prisma";
  * Fetch claim reports for the authenticated org
  * Optionally filter by claimId
  */
-export async function GET(req: NextRequest) {
+export const GET = withAuth(async (req: NextRequest, { orgId }) => {
   try {
-    // Use org context pattern (same as dashboard/claims)
-    const orgContext = await getActiveOrgContext({ required: true });
-
-    if (!orgContext.ok) {
-      return NextResponse.json({ error: "Organization context required" }, { status: 401 });
-    }
-
-    const { orgId } = orgContext;
     const searchParams = req.nextUrl.searchParams;
     const claimId = searchParams.get("claimId");
 
@@ -47,7 +39,6 @@ export async function GET(req: NextRequest) {
       },
     });
 
-    // Return empty array (not error) if no reports
     return NextResponse.json({
       ok: true,
       reports: reports || [],
@@ -58,10 +49,10 @@ export async function GET(req: NextRequest) {
     return NextResponse.json(
       {
         ok: false,
-        error: error.message || "Failed to fetch reports",
-        reports: [], // Graceful degradation
+        error: error instanceof Error ? error.message : "Failed to fetch reports",
+        reports: [],
       },
       { status: 500 }
     );
   }
-}
+});

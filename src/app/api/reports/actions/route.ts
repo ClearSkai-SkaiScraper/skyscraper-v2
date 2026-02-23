@@ -7,11 +7,11 @@
  * Uses service layer → ai_reports model (real fields only)
  */
 
-import { auth } from "@clerk/nextjs/server";
 import { logger } from "@/lib/logger";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 
+import { withAuth } from "@/lib/auth/withAuth";
 import * as reportService from "@/lib/domain/reports";
 import prisma from "@/lib/prisma";
 
@@ -62,13 +62,8 @@ const ActionSchema = z.discriminatedUnion("action", [
   }),
 ]);
 
-export async function POST(req: NextRequest) {
+export const POST = withAuth(async (req: NextRequest, { orgId, userId }) => {
   try {
-    const { userId, orgId } = await auth();
-    if (!userId || !orgId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
     const body = await req.json();
     const parsed = ActionSchema.safeParse(body);
 
@@ -79,21 +74,11 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Resolve Clerk orgId → internal UUID
-    const org = await prisma.org.findUnique({
-      where: { clerkOrgId: orgId },
-      select: { id: true },
-    });
-
-    if (!org) {
-      return NextResponse.json({ error: "Organization not found" }, { status: 404 });
-    }
-
     const input = parsed.data;
 
     // Verify claim belongs to org
     const claim = await prisma.claims.findFirst({
-      where: { id: input.claimId, orgId: org.id },
+      where: { id: input.claimId, orgId },
     });
 
     if (!claim) {
@@ -105,7 +90,7 @@ export async function POST(req: NextRequest) {
       case "generate": {
         const result = await reportService.generateReport({
           claimId: claim.id,
-          orgId: org.id,
+          orgId,
           userId,
           reportType: input.reportType,
           options: input.options,
@@ -116,7 +101,7 @@ export async function POST(req: NextRequest) {
       case "generate_from_template": {
         const result = await reportService.generateFromTemplate({
           claimId: claim.id,
-          orgId: org.id,
+          orgId,
           userId,
           templateId: input.templateId,
           variables: input.variables,
@@ -127,7 +112,7 @@ export async function POST(req: NextRequest) {
       case "compose": {
         const result = await reportService.composeReport({
           claimId: claim.id,
-          orgId: org.id,
+          orgId,
           userId,
           sections: input.sections,
         });
@@ -137,7 +122,7 @@ export async function POST(req: NextRequest) {
       case "summary": {
         const result = await reportService.generateSummary({
           claimId: claim.id,
-          orgId: org.id,
+          orgId,
           userId,
           format: input.format,
         });
@@ -147,7 +132,7 @@ export async function POST(req: NextRequest) {
       case "supplement": {
         const result = await reportService.generateSupplement({
           claimId: claim.id,
-          orgId: org.id,
+          orgId,
           userId,
           originalReportId: input.originalReportId,
           newDamage: input.newDamage,
@@ -158,7 +143,7 @@ export async function POST(req: NextRequest) {
       case "queue": {
         const result = await reportService.queueReport({
           claimId: claim.id,
-          orgId: org.id,
+          orgId,
           userId,
           reportType: input.reportType,
           priority: input.priority,
@@ -174,4 +159,4 @@ export async function POST(req: NextRequest) {
     logger.error("[Reports Generate] Error:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
-}
+});

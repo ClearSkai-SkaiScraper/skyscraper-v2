@@ -61,7 +61,6 @@ interface PreviewResult {
   mediaCount: number;
   weatherStatus: string;
   template: {
-    id: string;
     title: string;
   };
 }
@@ -214,24 +213,24 @@ export default function PdfBuilderPage() {
         body: JSON.stringify({
           claimId: selectedClaim,
           orgTemplateId: selectedTemplate,
+          aiNotes: aiNotes || undefined,
         }),
       });
 
-      if (res.ok) {
-        const blob = await res.blob();
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement("a");
-        a.href = url;
-        a.download = `report-${selectedClaim}-${Date.now()}.pdf`;
-        a.click();
-        URL.revokeObjectURL(url);
+      const data = await res.json();
+
+      if (res.ok && data.ok) {
+        // Report record created — redirect to history or show success
+        alert(
+          `✅ Report created: ${data.reportId?.slice(0, 8)}…\nYou'll be redirected to your report history.`
+        );
+        router.push(data.redirectUrl || "/reports/history");
       } else {
-        const error = await res.json();
-        alert(`PDF generation failed: ${error.error}`);
+        alert(`PDF generation failed: ${data.error || "Unknown error"}`);
       }
     } catch (error) {
       logger.error("Generate error:", error);
-      alert("PDF generation failed");
+      alert("PDF generation failed — please try again.");
     } finally {
       setGenerating(false);
     }
