@@ -39,15 +39,31 @@ export const POST = withAuth(async (req: NextRequest, { orgId }) => {
     }
 
     // ── 2. Org branding ──────────────────────────────────────────────────
-    const org = await prisma.org.findUnique({
-      where: { id: orgId },
-      select: {
-        name: true,
-        brandLogoUrl: true,
-        pdfFooterText: true,
-        pdfHeaderText: true,
-      },
-    });
+    const [org, branding] = await Promise.all([
+      prisma.org.findUnique({
+        where: { id: orgId },
+        select: {
+          name: true,
+          brandLogoUrl: true,
+          pdfFooterText: true,
+          pdfHeaderText: true,
+        },
+      }),
+      prisma.org_branding.findUnique({
+        where: { orgId },
+        select: {
+          companyName: true,
+          logoUrl: true,
+          phone: true,
+          email: true,
+          website: true,
+          license: true,
+          colorPrimary: true,
+          colorAccent: true,
+          teamPhotoUrl: true,
+        },
+      }),
+    ]);
 
     // ── 3. Resolve template ──────────────────────────────────────────────
     let templateInfo: { title: string; sections: any } = { title: "Default Report", sections: [] };
@@ -182,10 +198,18 @@ export const POST = withAuth(async (req: NextRequest, { orgId }) => {
         squareFootage: claim.properties?.squareFootage || null,
       },
       company: {
-        name: org?.name || "Unknown",
-        logo: org?.brandLogoUrl || null,
+        name: branding?.companyName || org?.name || "Unknown",
+        logo: branding?.logoUrl || org?.brandLogoUrl || null,
+        logoUrl: branding?.logoUrl || org?.brandLogoUrl || null,
         headerText: org?.pdfHeaderText || null,
         footerText: org?.pdfFooterText || null,
+        phone: branding?.phone || null,
+        email: branding?.email || null,
+        website: branding?.website || null,
+        license: branding?.license || null,
+        colorPrimary: branding?.colorPrimary || "#117CFF",
+        colorAccent: branding?.colorAccent || "#FFC838",
+        teamPhotoUrl: branding?.teamPhotoUrl || null,
       },
       weather: weather
         ? {
@@ -208,6 +232,8 @@ export const POST = withAuth(async (req: NextRequest, { orgId }) => {
     // ── Identify missing fields ──────────────────────────────────────────
     const missingFields: string[] = [];
     if (!mergedData.company.logo) missingFields.push("company.logo");
+    if (!mergedData.company.phone) missingFields.push("company.phone");
+    if (!mergedData.company.email) missingFields.push("company.email");
     if (!mergedData.weather) missingFields.push("weather");
     if (media.length === 0) missingFields.push("media.photos");
     if (findings.length === 0) missingFields.push("findings");
