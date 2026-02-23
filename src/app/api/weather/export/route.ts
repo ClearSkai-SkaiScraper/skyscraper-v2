@@ -1,8 +1,8 @@
 // app/api/weather/export/route.ts
 import { logger } from "@/lib/logger";
-import { auth } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
 
+import { withAuth } from "@/lib/auth/withAuth";
 import prisma from "@/lib/prisma";
 import { buildWeatherPacket } from "@/lib/weather/buildWeatherPacket";
 
@@ -19,11 +19,8 @@ import { buildWeatherPacket } from "@/lib/weather/buildWeatherPacket";
  * Body: { reportId, format }
  * Returns: { success, packet }
  */
-export async function POST(req: NextRequest) {
+export const POST = withAuth(async (req: NextRequest, { orgId }) => {
   try {
-    const { userId, orgId } = await auth();
-    if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-
     const body = await req.json();
     const { reportId, format } = body;
 
@@ -54,14 +51,11 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Weather report not found" }, { status: 404 });
     }
 
-    // Verify org access — must belong to user's org
+    // Verify org access — must belong to user's org (orgId is DB-backed UUID from withAuth)
     if (report.claimId) {
       const claim = report.claims;
-      if (claim && orgId && claim.orgId !== orgId) {
+      if (claim && claim.orgId !== orgId) {
         return new NextResponse("Forbidden", { status: 403 });
-      }
-      if (!orgId) {
-        return NextResponse.json({ error: "Organization required" }, { status: 403 });
       }
     }
 
@@ -91,4 +85,4 @@ export async function POST(req: NextRequest) {
       { status: 500 }
     );
   }
-}
+});

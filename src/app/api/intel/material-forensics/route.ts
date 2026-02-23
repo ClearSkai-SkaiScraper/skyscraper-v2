@@ -2,9 +2,9 @@
 // 🧬 MATERIAL FORENSICS API — Generate engineering-grade material failure analysis
 
 import { logger } from "@/lib/logger";
-import { auth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 
+import { withAuth } from "@/lib/auth/withAuth";
 import { getDelegate } from "@/lib/db/modelAliases";
 import {
   analyzeMaterialForensics,
@@ -31,14 +31,8 @@ import prisma from "@/lib/prisma";
  *   data: MaterialForensicsOutput
  * }
  */
-export async function POST(req: Request) {
+export const POST = withAuth(async (req, { orgId, userId }) => {
   try {
-    // Auth check
-    const { userId, orgId } = await auth();
-    if (!userId || !orgId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
     // Parse request
     const { claimId } = await req.json();
 
@@ -46,9 +40,9 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "claimId required" }, { status: 400 });
     }
 
-    // Fetch claim with all related data for forensic analysis
-    const claim = await prisma.claims.findUnique({
-      where: { id: claimId },
+    // Fetch claim with all related data for forensic analysis — scoped to org
+    const claim = await prisma.claims.findFirst({
+      where: { id: claimId, orgId },
       include: {
         properties: true,
         damage_assessments: {
@@ -72,11 +66,6 @@ export async function POST(req: Request) {
 
     if (!claim) {
       return NextResponse.json({ error: "Claim not found" }, { status: 404 });
-    }
-
-    // Verify org access
-    if (claim.orgId !== orgId) {
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
     // Build forensics input
@@ -103,7 +92,7 @@ export async function POST(req: Request) {
     const overallScore = calculateOverallFailureProbability(forensicData);
     const primaryMode = getPrimaryFailureMode(forensicData);
 
-    // Save to database
+    // Save to database — uses DB-backed orgId
     const saved = await getDelegate("materialForensicReport").create({
       data: {
         claimId,
@@ -140,20 +129,15 @@ export async function POST(req: Request) {
       { status: 500 }
     );
   }
-}
+});
 
 /**
  * GET /api/intel/material-forensics?claimId={claimId}
  *
  * Retrieves existing forensic analysis for a claim
  */
-export async function GET(req: Request) {
+export const GET = withAuth(async (req, { orgId }) => {
   try {
-    const { userId, orgId } = await auth();
-    if (!userId || !orgId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
     const { searchParams } = new URL(req.url);
     const claimId = searchParams.get("claimId");
 
@@ -161,7 +145,7 @@ export async function GET(req: Request) {
       return NextResponse.json({ error: "claimId required" }, { status: 400 });
     }
 
-    // Fetch most recent forensic report for claim
+    // Fetch most recent forensic report for claim — scoped to DB-backed orgId
     const report = await getDelegate("materialForensicReport").findFirst({
       where: {
         claimId,
@@ -198,4 +182,4 @@ export async function GET(req: Request) {
     logger.error("❌ FORENSIC FETCH ERROR:", err);
     return NextResponse.json({ error: "Failed to fetch forensic report" }, { status: 500 });
   }
-}
+});

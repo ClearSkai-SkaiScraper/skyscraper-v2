@@ -44,9 +44,11 @@ interface Job {
 
 interface OrgTemplate {
   id: string;
-  title: string;
-  template: {
-    title: string;
+  name: string;
+  title?: string;
+  template?: {
+    name: string;
+    title?: string;
     category?: string;
     thumbnailUrl?: string;
   };
@@ -93,17 +95,37 @@ export default function PdfBuilderPage() {
     const params = new URLSearchParams(window.location.search);
     const claimIdParam = params.get("claimId");
 
-    // Fetch claims
+    // Fetch claims — try /api/damage-claims/list first, fallback to /api/claims
     fetch("/api/damage-claims/list")
-      .then((res) => res.json())
+      .then((res) => {
+        if (!res.ok) throw new Error("damage-claims not found");
+        return res.json();
+      })
       .then((data) => {
         if (data.ok) {
           setClaims(data.claims || []);
-          // Auto-select claim if provided in URL
           if (claimIdParam && data.claims?.some((c: Claim) => c.id === claimIdParam)) {
             setSelectedClaim(claimIdParam);
           }
         }
+      })
+      .catch(() => {
+        // Fallback to /api/claims
+        fetch("/api/claims")
+          .then((res) => res.json())
+          .then((data) => {
+            const list = (data.claims || data.data || []).map((c: any) => ({
+              id: c.id,
+              claim_number: c.claimNumber || c.claim_number || c.id?.slice(0, 8),
+              property_address: c.propertyAddress || c.property_address || "No address",
+              status: c.status || "unknown",
+            }));
+            setClaims(list);
+            if (claimIdParam && list.some((c: Claim) => c.id === claimIdParam)) {
+              setSelectedClaim(claimIdParam);
+            }
+          })
+          .catch(() => setClaims([]));
       });
 
     // Fetch jobs (leads with retail job categories)
@@ -262,11 +284,20 @@ export default function PdfBuilderPage() {
                   <SelectValue placeholder="Choose a template..." />
                 </SelectTrigger>
                 <SelectContent>
-                  {templates.map((template) => (
-                    <SelectItem key={template.id} value={template.id}>
-                      {template.title}
-                    </SelectItem>
-                  ))}
+                  {templates.length === 0 ? (
+                    <div className="px-2 py-3 text-center text-sm text-muted-foreground">
+                      No templates found.{" "}
+                      <a href="/reports/templates/marketplace" className="text-blue-600 underline">
+                        Browse Marketplace
+                      </a>
+                    </div>
+                  ) : (
+                    templates.map((t) => (
+                      <SelectItem key={t.id} value={t.id}>
+                        {t.name || t.title || t.template?.name || "Untitled"}
+                      </SelectItem>
+                    ))
+                  )}
                 </SelectContent>
               </Select>
             </CardContent>

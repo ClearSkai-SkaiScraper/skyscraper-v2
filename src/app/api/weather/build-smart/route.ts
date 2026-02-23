@@ -1,7 +1,7 @@
-import { auth } from "@clerk/nextjs/server";
 import { logger } from "@/lib/logger";
 import { NextRequest, NextResponse } from "next/server";
 
+import { withAuth } from "@/lib/auth/withAuth";
 import { getRateLimitIdentifier, rateLimiters } from "@/lib/rate-limit";
 import { GeneratedWeatherReport, WeatherWizardSchema } from "@/lib/weather/types";
 
@@ -18,11 +18,8 @@ import { GeneratedWeatherReport, WeatherWizardSchema } from "@/lib/weather/types
  *
  * For Phase 1, we return a placeholder response with the expected structure
  */
-export async function POST(req: NextRequest) {
+export const POST = withAuth(async (req: NextRequest, { userId, orgId }) => {
   try {
-    const { userId, orgId } = await auth();
-    if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-
     // Rate limiting check (20 requests per minute for weather endpoints)
     const identifier = getRateLimitIdentifier(userId, req);
     const allowed = await rateLimiters.weather.check(20, identifier);
@@ -107,4 +104,4 @@ export async function POST(req: NextRequest) {
     logger.error("Error in weather build-smart route:", err);
     return NextResponse.json({ error: "Failed to generate weather report" }, { status: 500 });
   }
-}
+});

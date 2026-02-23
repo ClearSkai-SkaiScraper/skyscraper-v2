@@ -2,23 +2,18 @@
 /**
  * 🔥 DOMINUS AUTOMATION API
  * POST /api/automation/run
- * 
+ *
  * Runs full automation pipeline for a claim
  */
 
-import { auth } from "@clerk/nextjs/server";
 import { logger } from "@/lib/logger";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
+import { withAuth } from "@/lib/auth/withAuth";
 import { runSkaiAutomations } from "@/lib/intel/automation/engine";
 
-export async function POST(req: Request) {
+export const POST = withAuth(async (req: NextRequest, { userId, orgId }) => {
   try {
-    const { userId, orgId } = await auth();
-    if (!userId || !orgId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
     const body = await req.json();
     const { claimId } = body;
 
@@ -28,7 +23,7 @@ export async function POST(req: Request) {
 
     logger.debug(`[API] Running Dominus automations for ${claimId}`);
 
-    // Run the automation engine
+    // Run the automation engine (orgId is DB-backed UUID from withAuth)
     const result = await runSkaiAutomations(claimId, orgId);
 
     return NextResponse.json({
@@ -45,4 +40,4 @@ export async function POST(req: Request) {
       { status: 500 }
     );
   }
-}
+});

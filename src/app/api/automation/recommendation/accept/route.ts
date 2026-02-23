@@ -5,11 +5,11 @@
  * Accepts and executes a recommendation
  */
 
-import { auth } from "@clerk/nextjs/server";
 import { logger } from "@/lib/logger";
 import { type Prisma } from "@prisma/client";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
+import { withAuth } from "@/lib/auth/withAuth";
 import { getDelegate } from "@/lib/db/modelAliases";
 import prisma from "@/lib/prisma";
 
@@ -29,13 +29,8 @@ interface RecommendationRecord {
   acceptedBy?: string | null;
 }
 
-export async function POST(req: Request) {
+export const POST = withAuth(async (req: NextRequest, { userId, orgId }) => {
   try {
-    const { userId, orgId } = await auth();
-    if (!userId || !orgId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
     const body = await req.json();
     const { recommendationId } = body;
 
@@ -43,7 +38,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Missing recommendationId" }, { status: 400 });
     }
 
-    // Get the recommendation
+    // orgId is DB-backed UUID from withAuth
     const recommendation = await getDelegate("automationRecommendation").findUnique({
       where: { id: recommendationId, orgId },
     });
@@ -131,4 +126,4 @@ export async function POST(req: Request) {
       { status: 500 }
     );
   }
-}
+});

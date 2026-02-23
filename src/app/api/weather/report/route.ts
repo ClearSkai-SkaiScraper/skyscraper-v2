@@ -1,9 +1,9 @@
 import { logger } from "@/lib/logger";
-import { auth } from "@clerk/nextjs/server";
 import { randomUUID } from "crypto";
 import { NextRequest, NextResponse } from "next/server";
 
 import { runWeatherReport, WeatherReportInput } from "@/lib/ai/weather";
+import { withAuth } from "@/lib/auth/withAuth";
 import {
   requireActiveSubscription,
   SubscriptionRequiredError,
@@ -13,21 +13,13 @@ import { checkRateLimit } from "@/lib/rate-limit";
 import { htmlToPdfBuffer } from "@/lib/reports/pdf-utils";
 import { saveAiPdfToStorage } from "@/lib/reports/saveAiPdfToStorage";
 
-export async function GET(req: NextRequest) {
+export const GET = withAuth(async (req: NextRequest, { userId, orgId }) => {
   try {
-    const { userId, orgId } = await auth();
-    if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-
-    // List all reports the user has access to
-    const where: any = { createdById: userId };
-    if (orgId) {
-      // Include reports from any org member
-      where.OR = [{ createdById: userId }, { claims: { orgId } }];
-      delete where.createdById;
-    }
-
+    // List all reports the user has access to (orgId is DB-backed UUID from withAuth)
     const reports = await prisma.weather_reports.findMany({
-      where,
+      where: {
+        OR: [{ createdById: userId }, { claims: { orgId } }],
+      },
       orderBy: { createdAt: "desc" },
       take: 50,
       select: {
@@ -50,26 +42,21 @@ export async function GET(req: NextRequest) {
     logger.error("[API Error] GET /api/weather/report:", err);
     return NextResponse.json({ error: "Failed to fetch reports." }, { status: 500 });
   }
-}
+});
 
-export async function POST(req: NextRequest) {
+export const POST = withAuth(async (req: NextRequest, { userId, orgId }) => {
   try {
-    const { userId, orgId } = await auth();
-    if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-
-    // ── Billing guard ──
-    if (orgId) {
-      try {
-        await requireActiveSubscription(orgId);
-      } catch (error) {
-        if (error instanceof SubscriptionRequiredError) {
-          return NextResponse.json(
-            { error: "subscription_required", message: "Active subscription required" },
-            { status: 402 }
-          );
-        }
-        throw error;
+    // ── Billing guard ── (orgId is DB-backed UUID from withAuth)
+    try {
+      await requireActiveSubscription(orgId);
+    } catch (error) {
+      if (error instanceof SubscriptionRequiredError) {
+        return NextResponse.json(
+          { error: "subscription_required", message: "Active subscription required" },
+          { status: 402 }
+        );
       }
+      throw error;
     }
 
     // ── Rate limit ──
@@ -215,4 +202,4 @@ export async function POST(req: NextRequest) {
       { status: 500 }
     );
   }
-}
+});

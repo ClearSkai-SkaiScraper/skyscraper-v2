@@ -107,7 +107,7 @@ export default function NewReportPage() {
       setPreviewUrl(url);
       setShowPreview(true);
     } catch (err) {
-      setError(err.message || "Failed to generate preview");
+      setError(err instanceof Error ? err.message : "Failed to generate preview");
     } finally {
       setIsGenerating(false);
     }
@@ -170,7 +170,7 @@ export default function NewReportPage() {
       // Redirect to canonical report history
       router.push("/reports/history");
     } catch (err) {
-      setError(err.message || "Failed to create report");
+      setError(err instanceof Error ? err.message : "Failed to create report");
       setLoading(false);
     }
   };

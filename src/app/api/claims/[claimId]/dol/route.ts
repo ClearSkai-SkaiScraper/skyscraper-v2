@@ -5,11 +5,12 @@
  * Can be triggered from weather report selection
  */
 
-import { auth } from "@clerk/nextjs/server";
 import { logger } from "@/lib/logger";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 
+import { getOrgClaimOrThrow, OrgScopeError } from "@/lib/auth/orgScope";
+import { withAuth } from "@/lib/auth/withAuth";
 import prisma from "@/lib/prisma";
 
 export const runtime = "nodejs";
@@ -23,71 +24,71 @@ const UpdateDolSchema = z.object({
   notes: z.string().optional(),
 });
 
-export async function POST(req: NextRequest, { params }: { params: { claimId: string } }) {
-  try {
-    const { userId, orgId } = await auth();
-    if (!userId || !orgId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    const body = await req.json();
-    const validated = UpdateDolSchema.parse(body);
-
-    // Verify claim exists and belongs to org
-    const claim = await prisma.claims.findFirst({
-      where: {
-        id: params.claimId,
-        orgId,
-      },
-    });
-
-    if (!claim) {
-      return NextResponse.json({ error: "Claim not found" }, { status: 404 });
-    }
-
-    // Update DOL
-    const updatedClaim = await prisma.claims.update({
-      where: { id: params.claimId },
-      data: {
-        dateOfLoss: new Date(validated.dol),
-      },
-    });
-
-    // Log activity
+export const POST = withAuth(
+  async (
+    req: NextRequest,
+    { orgId, userId },
+    routeParams: { params: Promise<{ claimId: string }> }
+  ) => {
     try {
-      await prisma.claim_activities.create({
+      const { claimId } = await routeParams.params;
+
+      const body = await req.json();
+      const validated = UpdateDolSchema.parse(body);
+
+      // Verify claim exists and belongs to org (DB-backed orgId)
+      const claim = await getOrgClaimOrThrow(orgId, claimId);
+
+      // Update DOL
+      const updatedClaim = await prisma.claims.update({
+        where: { id: claimId },
         data: {
-          id: crypto.randomUUID(),
-          claim_id: claim.id,
-          user_id: userId,
-          type: "STATUS_CHANGE",
-          message: `Date of Loss updated to ${validated.dol} (source: ${validated.source})${validated.weatherReportId ? ` - Weather Report ID: ${validated.weatherReportId}` : ""}`,
-          metadata: {
-            previousDol: claim.dateOfLoss,
-            newDol: validated.dol,
-            source: validated.source,
-            weatherReportId: validated.weatherReportId,
-          },
+          dateOfLoss: new Date(validated.dol),
         },
       });
-    } catch (activityError) {
-      logger.warn("[POST /api/claims/[id]/dol] Failed to log activity:", activityError);
-    }
 
-    return NextResponse.json({
-      success: true,
-      claim: updatedClaim,
-    });
-  } catch (error) {
-    logger.error(`[POST /api/claims/${params.claimId}/dol] Error:`, error);
+      // Log activity
+      try {
+        await prisma.claim_activities.create({
+          data: {
+            id: crypto.randomUUID(),
+            claim_id: claim.id,
+            user_id: userId,
+            type: "STATUS_CHANGE",
+            message: `Date of Loss updated to ${validated.dol} (source: ${validated.source})${validated.weatherReportId ? ` - Weather Report ID: ${validated.weatherReportId}` : ""}`,
+            metadata: {
+              previousDol: claim.dateOfLoss,
+              newDol: validated.dol,
+              source: validated.source,
+              weatherReportId: validated.weatherReportId,
+            },
+          },
+        });
+      } catch (activityError) {
+        logger.warn("[POST /api/claims/[id]/dol] Failed to log activity:", activityError);
+      }
 
-    if (error instanceof z.ZodError) {
+      return NextResponse.json({
+        success: true,
+        claim: updatedClaim,
+      });
+    } catch (error) {
+      if (error instanceof OrgScopeError) {
+        return NextResponse.json({ error: "Claim not found" }, { status: 404 });
+      }
+
+      if (error instanceof z.ZodError) {
+        return NextResponse.json(
+          { error: "Validation failed", details: error.errors },
+          { status: 400 }
+        );
+      }
+
+      logger.error("[POST /api/claims/dol]", error);
       return NextResponse.json(
-        { error: "Validation failed", details: error.errors },
-        { status: 400 }
+        { error: error instanceof Error ? error.message : "Failed to update DOL" },
+        { status: 500 }
       );
     }
-
-    return NextResponse.json({ error: error.message || "Failed to update DOL" }, { status: 500 });
   }
-}
+);

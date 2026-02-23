@@ -20,15 +20,15 @@
  * - NUCLEAR: 20-40 pages (reinspection, PA disputes, attorneys)
  */
 
-import { auth } from "@clerk/nextjs/server";
 import { logger } from "@/lib/logger";
 import type { Prisma } from "@prisma/client";
 import { NextResponse } from "next/server";
 
+import { withAuth } from "@/lib/auth/withAuth";
 import { runAIFinancialAnalysis } from "@/lib/intel/financial/ai";
 import { calculateFinancialAnalysis } from "@/lib/intel/financial/engine";
 import { buildMasterReportPayload } from "@/lib/intel/master/buildMasterPayload";
-import { type ClaimsPacketResult,generateClaimsPacket } from "@/lib/intel/reports/claims-packet";
+import { type ClaimsPacketResult, generateClaimsPacket } from "@/lib/intel/reports/claims-packet";
 import {
   type ForensicWeatherResult,
   generateForensicWeatherReport,
@@ -52,13 +52,8 @@ interface WeatherProviderRaw {
   [key: string]: unknown;
 }
 
-export async function POST(req: Request) {
+export const POST = withAuth(async (req, { orgId, userId }) => {
   try {
-    const { userId, orgId } = await auth();
-    if (!userId || !orgId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
     const body = await req.json();
     const { claimId, mode = "STANDARD" } = body as { claimId: string; mode?: PacketMode };
 
@@ -348,16 +343,11 @@ export async function POST(req: Request) {
       { status: 500 }
     );
   }
-}
+});
 
 // GET endpoint to retrieve existing super packet
-export async function GET(req: Request) {
+export const GET = withAuth(async (req, { orgId }) => {
   try {
-    const { userId, orgId } = await auth();
-    if (!userId || !orgId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
     const { searchParams } = new URL(req.url);
     const claimId = searchParams.get("claimId");
 
@@ -398,4 +388,4 @@ export async function GET(req: Request) {
       { status: 500 }
     );
   }
-}
+});

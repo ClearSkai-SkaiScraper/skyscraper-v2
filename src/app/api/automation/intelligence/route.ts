@@ -9,18 +9,13 @@ export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
 import { logger } from "@/lib/observability/logger";
-import { auth } from "@clerk/nextjs/server";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
+import { withAuth } from "@/lib/auth/withAuth";
 import { getClaimAutomationIntelligence } from "@/lib/intel/automation/engine";
 
-export async function GET(req: Request) {
+export const GET = withAuth(async (req: NextRequest, { orgId }) => {
   try {
-    const { userId, orgId } = await auth();
-    if (!userId || !orgId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
     const { searchParams } = new URL(req.url);
     const claimId = searchParams.get("claimId");
 
@@ -28,6 +23,7 @@ export async function GET(req: Request) {
       return NextResponse.json({ error: "Missing claimId" }, { status: 400 });
     }
 
+    // orgId is DB-backed UUID from withAuth
     const intelligence = await getClaimAutomationIntelligence(claimId, orgId);
 
     return NextResponse.json(intelligence);
@@ -38,4 +34,4 @@ export async function GET(req: Request) {
       { status: 500 }
     );
   }
-}
+});

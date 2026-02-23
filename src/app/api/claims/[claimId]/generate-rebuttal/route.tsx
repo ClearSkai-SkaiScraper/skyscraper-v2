@@ -5,122 +5,123 @@
  * Generates carrier-aware rebuttal letter as GeneratedDocument
  */
 
-import { auth } from "@clerk/nextjs/server";
 import { logger } from "@/lib/logger";
 import { renderToStream } from "@react-pdf/renderer";
 import { NextRequest, NextResponse } from "next/server";
 
 import { generateRebuttal } from "@/lib/ai/generateRebuttal";
+import { withAuth } from "@/lib/auth/withAuth";
 import { db } from "@/lib/db";
 import { createGeneratedDocument, updateDocumentStatus } from "@/lib/documents/manager";
 import { RebuttalPDFDocument } from "@/lib/pdf/rebuttalRenderer";
 import { getOrgBranding } from "@/lib/pdf/utils";
 
-export async function POST(req: NextRequest, context: { params: Promise<{ claimId: string }> }) {
-  try {
-    const { userId, orgId } = await auth();
-    if (!userId || !orgId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+export const POST = withAuth(
+  async (
+    req: NextRequest,
+    { orgId, userId },
+    routeParams: { params: Promise<{ claimId: string }> }
+  ) => {
+    try {
+      const { claimId } = await routeParams.params;
+      const body = await req.json();
+      const {
+        denialReason,
+        rebuttalName,
+        templateId,
+        evidenceReferences,
+      }: {
+        denialReason: string;
+        rebuttalName?: string;
+        templateId?: string;
+        evidenceReferences?: {
+          photos?: string[];
+          weatherData?: string;
+          measurements?: string[];
+          codes?: string[];
+        };
+      } = body;
+
+      if (!denialReason) {
+        return NextResponse.json({ error: "denialReason is required" }, { status: 400 });
+      }
+
+      // Fetch claim data (orgId is DB-backed UUID from withAuth)
+      const claim = await db.query(
+        `SELECT 
+          c.id,
+          c.organization_id,
+          c.property_address,
+          c.loss_date,
+          c.loss_type,
+          c.policy_number,
+          c.insured_name,
+          c.carrier_name,
+          c.adjuster_name
+        FROM claims c
+        WHERE c.id = $1 AND c.organization_id = $2`,
+        [claimId, orgId]
+      );
+
+      if (claim.rows.length === 0) {
+        return NextResponse.json({ error: "Claim not found" }, { status: 404 });
+      }
+
+      const claimData = claim.rows[0];
+
+      if (!claimData.carrier_name) {
+        return NextResponse.json({ error: "Claim must have a carrier assigned" }, { status: 400 });
+      }
+
+      // Create canonical document record
+      const documentName = rebuttalName || `Rebuttal - ${claimData.property_address}`;
+      const generatedDocumentId = await createGeneratedDocument({
+        organizationId: orgId,
+        type: "REBUTTAL",
+        documentName,
+        createdBy: userId,
+        claimId,
+        templateId,
+        sections: [
+          "OPENING",
+          "DENIAL_ACKNOWLEDGMENT",
+          "POLICY_COVERAGE_ANALYSIS",
+          "COUNTER_ARGUMENTS",
+          "EVIDENCE_PRESENTATION",
+          "INDUSTRY_STANDARDS",
+          "DAMAGE_CAUSATION",
+          "REQUESTED_ACTION",
+          "CLOSING",
+        ],
+        fileFormat: "pdf",
+      });
+
+      // Generate async (background processing)
+      generateRebuttalAsync({
+        generatedDocumentId,
+        claimId,
+        denialReason,
+        claimData,
+        evidenceReferences,
+        orgId,
+        userId,
+        documentName,
+      }).catch((err) => {
+        logger.error("Rebuttal generation failed:", err);
+      });
+
+      return NextResponse.json({
+        success: true,
+        generatedDocumentId,
+        status: "queued",
+        carrier: claimData.carrier_name,
+      });
+    } catch (error) {
+      logger.error("Rebuttal generation error:", error);
+      return NextResponse.json({ error: "Failed to generate rebuttal" }, { status: 500 });
     }
-
-    const { claimId } = await context.params;
-    const body = await req.json();
-    const {
-      denialReason,
-      rebuttalName,
-      templateId,
-      evidenceReferences,
-    }: {
-      denialReason: string;
-      rebuttalName?: string;
-      templateId?: string;
-      evidenceReferences?: {
-        photos?: string[];
-        weatherData?: string;
-        measurements?: string[];
-        codes?: string[];
-      };
-    } = body;
-
-    if (!denialReason) {
-      return NextResponse.json({ error: "denialReason is required" }, { status: 400 });
-    }
-
-    // Fetch claim data
-    const claim = await db.query(
-      `SELECT 
-        c.id,
-        c.organization_id,
-        c.property_address,
-        c.loss_date,
-        c.loss_type,
-        c.policy_number,
-        c.insured_name,
-        c.carrier_name,
-        c.adjuster_name
-      FROM claims c
-      WHERE c.id = $1 AND c.organization_id = $2`,
-      [claimId, orgId]
-    );
-
-    if (claim.rows.length === 0) {
-      return NextResponse.json({ error: "Claim not found" }, { status: 404 });
-    }
-
-    const claimData = claim.rows[0];
-
-    if (!claimData.carrier_name) {
-      return NextResponse.json({ error: "Claim must have a carrier assigned" }, { status: 400 });
-    }
-
-    // Create canonical document record
-    const documentName = rebuttalName || `Rebuttal - ${claimData.property_address}`;
-    const generatedDocumentId = await createGeneratedDocument({
-      organizationId: orgId,
-      type: "REBUTTAL",
-      documentName,
-      createdBy: userId,
-      claimId,
-      templateId,
-      sections: [
-        "OPENING",
-        "DENIAL_ACKNOWLEDGMENT",
-        "POLICY_COVERAGE_ANALYSIS",
-        "COUNTER_ARGUMENTS",
-        "EVIDENCE_PRESENTATION",
-        "INDUSTRY_STANDARDS",
-        "DAMAGE_CAUSATION",
-        "REQUESTED_ACTION",
-        "CLOSING",
-      ],
-      fileFormat: "pdf",
-    });
-
-    // Generate async (background processing)
-    generateRebuttalAsync({
-      generatedDocumentId,
-      claimId,
-      denialReason,
-      claimData,
-      evidenceReferences,
-      orgId,
-      userId,
-      documentName,
-    }).catch((err) => {
-      logger.error("Rebuttal generation failed:", err);
-    });
-
-    return NextResponse.json({
-      success: true,
-      generatedDocumentId,
-      status: "queued",
-      carrier: claimData.carrier_name,
-    });
-  } catch (error) {
-    logger.error("Rebuttal generation error:", error);
-    return NextResponse.json({ error: "Failed to generate rebuttal" }, { status: 500 });
   }
-}
+);
 
 /**
  * Async rebuttal generation worker

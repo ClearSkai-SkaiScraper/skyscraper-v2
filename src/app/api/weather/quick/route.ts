@@ -1,17 +1,12 @@
-import { auth } from "@clerk/nextjs/server";
 import { logger } from "@/lib/logger";
 import { NextRequest, NextResponse } from "next/server";
 
+import { withAuth } from "@/lib/auth/withAuth";
 import prisma from "@/lib/prisma";
 
-export async function GET(request: NextRequest) {
+export const GET = withAuth(async (req: NextRequest, { userId }) => {
   try {
-    const { userId } = await auth();
-    if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    const { searchParams } = new URL(request.url);
+    const { searchParams } = new URL(req.url);
     const leadId = searchParams.get("leadId");
 
     if (!leadId) {
@@ -44,6 +39,9 @@ export async function GET(request: NextRequest) {
     });
   } catch (error) {
     logger.error("Quick weather error:", error);
-    return NextResponse.json({ error: error.message || "Weather fetch failed" }, { status: 500 });
+    return NextResponse.json(
+      { error: error instanceof Error ? error.message : "Weather fetch failed" },
+      { status: 500 }
+    );
   }
-}
+});

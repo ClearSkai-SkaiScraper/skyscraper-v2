@@ -1,24 +1,18 @@
 // app/api/automation/alert/dismiss/route.ts
 /**
  * POST /api/automation/alert/dismiss
- * 
+ *
  * Dismisses an alert
  */
 
-import { auth } from "@clerk/nextjs/server";
 import { logger } from "@/lib/logger";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
-import { getDelegate } from '@/lib/db/modelAliases';
-import prisma from "@/lib/prisma";
+import { withAuth } from "@/lib/auth/withAuth";
+import { getDelegate } from "@/lib/db/modelAliases";
 
-export async function POST(req: Request) {
+export const POST = withAuth(async (req: NextRequest, { orgId }) => {
   try {
-    const { userId, orgId } = await auth();
-    if (!userId || !orgId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
     const body = await req.json();
     const { alertId } = body;
 
@@ -26,7 +20,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Missing alertId" }, { status: 400 });
     }
 
-    await getDelegate('automationAlert').update({
+    await getDelegate("automationAlert").update({
       where: { id: alertId, orgId },
       data: { isDismissed: true },
     });
@@ -39,4 +33,4 @@ export async function POST(req: Request) {
       { status: 500 }
     );
   }
-}
+});

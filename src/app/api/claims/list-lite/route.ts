@@ -1,21 +1,13 @@
-import { auth } from "@clerk/nextjs/server";
 import { logger } from "@/lib/logger";
 import { NextRequest, NextResponse } from "next/server";
 
+import { withAuth } from "@/lib/auth/withAuth";
 import prisma from "@/lib/prisma";
 
-export async function GET(request: NextRequest) {
+export const GET = withAuth(async (req: NextRequest, { orgId }) => {
   try {
-    const { userId, orgId } = await auth();
-    if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    const where: any = {};
-    if (orgId) where.orgId = orgId;
-
     const claims = await prisma.claims.findMany({
-      where,
+      where: { orgId },
       select: {
         id: true,
         claimNumber: true,
@@ -49,6 +41,9 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ claims: claimsLite });
   } catch (error) {
     logger.error("Claims list-lite error:", error);
-    return NextResponse.json({ error: error.message || "Failed to fetch claims" }, { status: 500 });
+    return NextResponse.json(
+      { error: error instanceof Error ? error.message : "Failed to fetch claims" },
+      { status: 500 }
+    );
   }
-}
+});

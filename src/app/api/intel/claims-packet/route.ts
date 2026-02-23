@@ -1,18 +1,13 @@
 // app/api/intel/claims-packet/route.ts
-import { auth } from "@clerk/nextjs/server";
 import { logger } from "@/lib/logger";
 import { NextResponse } from "next/server";
 
+import { withAuth } from "@/lib/auth/withAuth";
 import { ClaimsPacketInput, generateClaimsPacket } from "@/lib/intel/reports/claims-packet";
 import prisma from "@/lib/prisma";
 
-export async function POST(req: Request) {
+export const POST = withAuth(async (req, { orgId, userId }) => {
   try {
-    const { userId, orgId } = await auth();
-    if (!userId || !orgId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
     const body = await req.json();
     const { claimId } = body;
 
@@ -20,7 +15,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Missing claimId" }, { status: 400 });
     }
 
-    // Fetch comprehensive claim data
+    // Fetch comprehensive claim data — scoped to DB-backed orgId
     const claim = await prisma.claims.findFirst({
       where: {
         id: claimId,
@@ -180,15 +175,10 @@ export async function POST(req: Request) {
       { status: 500 }
     );
   }
-}
+});
 
-export async function GET(req: Request) {
+export const GET = withAuth(async (req, { orgId }) => {
   try {
-    const { userId, orgId } = await auth();
-    if (!userId || !orgId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
     const { searchParams } = new URL(req.url);
     const claimId = searchParams.get("claimId");
 
@@ -196,7 +186,7 @@ export async function GET(req: Request) {
       return NextResponse.json({ error: "Missing claimId" }, { status: 400 });
     }
 
-    // Fetch most recent claims packet
+    // Fetch most recent claims packet — scoped to DB-backed orgId
     const report = await prisma.ai_reports.findFirst({
       where: {
         claimId,
@@ -225,4 +215,4 @@ export async function GET(req: Request) {
       { status: 500 }
     );
   }
-}
+});

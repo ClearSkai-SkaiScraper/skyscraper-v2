@@ -1,7 +1,6 @@
 // src/app/api/weather/verify/route.ts
 // Full weather verification → AI summary → PDF → Storage → ai_reports
 
-import { auth } from "@clerk/nextjs/server";
 import { NextRequest } from "next/server";
 
 import { errors, ok, withErrorHandler } from "@/lib/api/response";
@@ -22,27 +21,29 @@ export const dynamic = "force-dynamic";
 async function handlePOST(req: NextRequest) {
   const startTime = Date.now();
 
-  // 1) Authenticate
-  const { userId, orgId: authOrgId } = await auth();
-  if (!userId) {
-    return errors.unauthorized();
-  }
+  // Auth is handled by withAuth wrapper — but this function is called from
+  // withErrorHandler, so we need to do auth via the canonical pattern.
+  // For now, import requireAuth directly for this complex handler.
+  const { requireAuth, isAuthError } = await import("@/lib/auth/requireAuth");
+  const authResult = await requireAuth();
+  if (isAuthError(authResult)) return authResult;
+  const { userId, orgId: dbOrgId } = authResult;
 
-  log.info("[weather-verify] Request started", { userId, orgId: authOrgId });
+  log.info("[weather-verify] Request started", { userId, orgId: dbOrgId });
 
   // 2) Rate limiting: 20 requests per minute for weather endpoints
   const identifier = getRateLimitIdentifier(userId, req);
   const allowed = await rateLimiters.weather.check(20, identifier);
   if (!allowed) {
-    log.warn("[weather-verify] Rate limit exceeded", { userId, orgId: authOrgId });
+    log.warn("[weather-verify] Rate limit exceeded", { userId, orgId: dbOrgId });
     return errors.tooManyRequests();
   }
 
   const body = await req.json();
   const { lat, lon, daysBack = 120, orgId, propertyId, claimId } = body;
 
-  // Use auth orgId if not provided
-  const finalOrgId = orgId || authOrgId;
+  // Use DB-backed orgId from auth, fall back to body orgId only if needed
+  const finalOrgId = dbOrgId || orgId;
 
   if (!lat || !lon) {
     return errors.badRequest("Latitude and longitude are required.");
