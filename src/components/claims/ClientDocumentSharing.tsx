@@ -5,9 +5,10 @@
 
 "use client";
 
-import { format } from "date-fns";
 import { logger } from "@/lib/logger";
+import { format } from "date-fns";
 import { Eye, FileText, Image as ImageIcon, Share, Users } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
@@ -51,6 +52,7 @@ export default function ClientDocumentSharing({
   clients = [],
   onClientAdded,
 }: ClientDocumentSharingProps) {
+  const router = useRouter();
   const [documents, setDocuments] = useState<Document[]>([]);
   const [selectedClientId, setSelectedClientId] = useState<string>("");
   const [loading, setLoading] = useState(true);
@@ -156,7 +158,7 @@ export default function ClientDocumentSharing({
             <p className="mb-4 text-sm text-muted-foreground">
               Add clients to this claim to share documents with them
             </p>
-            <Button onClick={onClientAdded}>
+            <Button onClick={() => router.push(`/claims/${claimId}/client`)}>
               <Users className="mr-2 h-4 w-4" />
               Add Client to Claim
             </Button>

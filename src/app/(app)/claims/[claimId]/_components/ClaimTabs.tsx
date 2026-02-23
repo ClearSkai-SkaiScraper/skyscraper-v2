@@ -16,6 +16,7 @@ const tabs = [
   { label: "Overview", href: "/overview" },
   { label: "Photos", href: "/photos" },
   { label: "Documents", href: "/documents" },
+  { label: "AI Assistant", href: "/ai" },
   { label: "Measurements", href: "/measurements" },
   { label: "Messages", href: "/messages" },
   { label: "Timeline", href: "/timeline" },
@@ -25,7 +26,6 @@ const tabs = [
   { label: "Client", href: "/client" },
   { label: "Notes", href: "/notes" },
   { label: "Final Payout", href: "/final-payout" },
-  { label: "AI Assistant", href: "/ai" },
 ];
 
 export default function ClaimTabs({ claimId }: ClaimTabsProps) {

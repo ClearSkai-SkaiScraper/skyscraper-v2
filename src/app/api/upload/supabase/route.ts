@@ -20,6 +20,7 @@ import { auth } from "@clerk/nextjs/server";
 import { createClient } from "@supabase/supabase-js";
 import { NextRequest, NextResponse } from "next/server";
 
+import { resolveOrg } from "@/lib/org/resolveOrg";
 import prisma from "@/lib/prisma";
 import {
   checkClaimFileLimit,
@@ -77,10 +78,20 @@ const UPLOAD_CONFIGS: Record<
 
 export async function POST(request: NextRequest) {
   try {
-    const { userId, orgId } = await auth();
+    const { userId, orgId: clerkOrgId } = await auth();
 
     if (!userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    // Resolve orgId from DB (matches withAuth/requireAuth pattern)
+    // This ensures uploads use the same orgId as listing queries
+    let resolvedOrgId: string | null = clerkOrgId || null;
+    try {
+      const ctx = await resolveOrg();
+      resolvedOrgId = ctx.orgId;
+    } catch {
+      // Fall through — use clerkOrgId or userId as fallback
     }
 
     const supabase = getSupabaseAdmin();
@@ -112,7 +123,7 @@ export async function POST(request: NextRequest) {
 
     if (!fileValidation.valid) {
       await logStorageEvent({
-        orgId: orgId || userId,
+        orgId: resolvedOrgId || userId,
         userId,
         action: "upload",
         filePath: file.name,
@@ -129,11 +140,11 @@ export async function POST(request: NextRequest) {
     }
 
     // 2. Check storage quota (only if orgId available)
-    if (orgId) {
-      const quotaCheck = await checkStorageCapacity(orgId, file.size);
+    if (resolvedOrgId) {
+      const quotaCheck = await checkStorageCapacity(resolvedOrgId, file.size);
       if (!quotaCheck.valid) {
         await logStorageEvent({
-          orgId,
+          orgId: resolvedOrgId,
           userId,
           action: "upload",
           filePath: file.name,
@@ -150,10 +161,10 @@ export async function POST(request: NextRequest) {
 
       // 3. Check per-claim file limit if uploading to a claim
       if (claimId) {
-        const claimLimitCheck = await checkClaimFileLimit(claimId, orgId);
+        const claimLimitCheck = await checkClaimFileLimit(claimId, resolvedOrgId);
         if (!claimLimitCheck.valid) {
           await logStorageEvent({
-            orgId,
+            orgId: resolvedOrgId,
             userId,
             action: "upload",
             filePath: file.name,
@@ -195,7 +206,7 @@ export async function POST(request: NextRequest) {
     const ext = file.name.split(".").pop() || "bin";
     const timestamp = Date.now();
     const uuid = crypto.randomUUID();
-    const safeOrgId = orgId || userId;
+    const safeOrgId = resolvedOrgId || userId;
 
     let filePath: string;
     if (claimId) {

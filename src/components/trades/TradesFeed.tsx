@@ -1,7 +1,7 @@
 "use client";
 
-import { useUser } from "@clerk/nextjs";
 import { logger } from "@/lib/logger";
+import { useUser } from "@clerk/nextjs";
 import { format } from "date-fns";
 import {
   AtSign,
@@ -188,7 +188,9 @@ export function TradesFeed({ isAuthenticated }: TradesFeedProps) {
   };
 
   const filteredPosts =
-    feedFilter === "all" ? posts : posts.filter((p) => p.type.toLowerCase().includes(feedFilter));
+    feedFilter === "all"
+      ? posts
+      : posts.filter((p) => (p.type || "").toLowerCase().includes(feedFilter));
 
   if (isLoading) {
     return (
@@ -218,6 +220,12 @@ export function TradesFeed({ isAuthenticated }: TradesFeedProps) {
                   ref={composerRef}
                   value={newPostContent}
                   onChange={handleContentChange}
+                  onKeyDown={(e) => {
+                    if ((e.metaKey || e.ctrlKey) && e.key === "Enter") {
+                      e.preventDefault();
+                      handleCreatePost();
+                    }
+                  }}
                   placeholder="Share a project update, tag a @pro, or post an opportunity..."
                   className="min-h-[80px] resize-none"
                 />

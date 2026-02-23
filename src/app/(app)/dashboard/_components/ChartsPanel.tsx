@@ -1,4 +1,5 @@
 "use client";
+import { BarChart2 as BarChart2Icon } from "lucide-react";
 import { useEffect, useState } from "react";
 import {
   Bar,
@@ -76,6 +77,25 @@ export default function ChartsPanel() {
         {Array.from({ length: 3 }).map((_, i) => (
           <div key={i} className="h-56 animate-pulse rounded-2xl bg-[var(--surface-2)]" />
         ))}
+      </div>
+    );
+  }
+
+  const isEmpty =
+    (!data?.claimsByStatus || data.claimsByStatus.length === 0) &&
+    (!data?.claimsOverTime || data.claimsOverTime.length === 0) &&
+    (!data?.leadsBySource || data.leadsBySource.length === 0);
+
+  if (isEmpty) {
+    return (
+      <div className="rounded-3xl border border-slate-200/60 bg-white/80 p-8 text-center shadow-sm backdrop-blur dark:border-slate-800 dark:bg-slate-900/70">
+        <BarChart2Icon className="mx-auto mb-3 h-10 w-10 text-slate-300 dark:text-slate-600" />
+        <h3 className="mb-1 text-sm font-semibold text-slate-700 dark:text-slate-300">
+          Charts will appear here
+        </h3>
+        <p className="text-xs text-slate-500 dark:text-slate-400">
+          Create your first claim or lead to see trends, status breakdowns, and source analytics.
+        </p>
       </div>
     );
   }

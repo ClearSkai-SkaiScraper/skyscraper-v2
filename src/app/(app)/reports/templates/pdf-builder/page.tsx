@@ -365,7 +365,7 @@ export default function PdfBuilderPage() {
           </Button>
           <Button
             onClick={handleGenerate}
-            disabled={!selectedClaim || !selectedTemplate || generating || !preview?.ok}
+            disabled={!selectedClaim || !selectedTemplate || generating}
           >
             {generating ? "Generating..." : "Generate PDF"}
           </Button>

@@ -89,6 +89,7 @@
 **Status:** ✅ Code complete. Zero code changes needed. Just set env vars.
 
 **Step 1 — Vercel Environment Variables:**
+
 ```
 TWILIO_ACCOUNT_SID=ACxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 TWILIO_AUTH_TOKEN=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
@@ -96,6 +97,7 @@ TWILIO_PHONE_NUMBER=+1XXXXXXXXXX
 ```
 
 **Step 2 — Twilio Console:**
+
 1. Go to https://console.twilio.com
 2. Buy a phone number (or use existing)
 3. Under Phone Numbers → Active Numbers → your number:
@@ -103,10 +105,12 @@ TWILIO_PHONE_NUMBER=+1XXXXXXXXXX
    - Method: POST
 
 **Step 3 — Clerk Dashboard:**
+
 1. Go to Clerk Dashboard → Webhooks
 2. Ensure `organizationMembership.deleted` is in subscribed events
 
 **What activates:**
+
 - ✅ Outbound SMS from SMS Center (`/sms`)
 - ✅ Inbound SMS reception + threading
 - ✅ Claim notification SMS (trade assignments, status updates)
@@ -122,6 +126,7 @@ TWILIO_PHONE_NUMBER=+1XXXXXXXXXX
 **Status:** ✅ Code complete. Production-grade webhook, billing guard on 27+ routes, seat management, reconciliation cron.
 
 **Step 1 — Stripe Dashboard Setup:**
+
 1. Create Products + Prices:
    - Solo plan → copy Price ID
    - Business plan → copy Price ID
@@ -131,6 +136,7 @@ TWILIO_PHONE_NUMBER=+1XXXXXXXXXX
    - Events: `checkout.session.completed`, `customer.subscription.created`, `customer.subscription.updated`, `customer.subscription.deleted`, `invoice.payment_succeeded`, `invoice.payment_failed`, `invoice.upcoming`, `customer.subscription.trial_will_end`
 
 **Step 2 — Vercel Environment Variables:**
+
 ```
 NEXT_PUBLIC_BETA_MODE=false          ← THE ACTIVATION SWITCH
 STRIPE_SECRET_KEY=sk_live_xxxxxxxx
@@ -141,6 +147,7 @@ STRIPE_PRICE_ENTERPRISE=price_xxxxxxxx
 ```
 
 **What activates when `NEXT_PUBLIC_BETA_MODE=false`:**
+
 - ✅ `requireActiveSubscription` enforces real subscription checks on 27+ premium routes
 - ✅ Checkout route accepts payment (currently returns 403 during beta)
 - ✅ Seat-based billing enforced on team invites ($80/seat/month)
@@ -157,14 +164,17 @@ STRIPE_PRICE_ENTERPRISE=price_xxxxxxxx
 ## ~~🔴 P0 — CRITICAL~~ ✅ ALL RESOLVED
 
 ~~### Auth & Security~~
+
 - [x] ~~**CSRF protection is dead code**~~ → RESOLVED Sprint 15: Deleted dead code. Clerk JWT auth provides implicit CSRF protection.
 - [x] ~~**Session invalidation**~~ → RESOLVED Sprint 15: Added `organizationMembership.deleted` webhook handler. Deletes DB rows on removal.
 
 ~~### Data Integrity~~
+
 - [x] ~~**Stripe webhook signature verification**~~ → RESOLVED Sprint 15: Verified — already uses `stripe.webhooks.constructEvent()` with HMAC. Just set `STRIPE_WEBHOOK_SECRET` env var.
 - [x] ~~**Orphan cleanup**~~ → RESOLVED Sprint 15: Created daily cron at `/api/cron/orphan-cleanup` (file_assets, WebhookEvents, Notifications).
 
 ~~### Report Generation~~
+
 - [x] ~~**Report PDF timeout**~~ → RESOLVED: Vercel `maxDuration: 60` configured. PDF generation uses `pdf-lib` (fast, no puppeteer/chromium).
 
 ---
@@ -303,13 +313,13 @@ STRIPE (when ready — see playbook above):
 
 ## 📊 SPRINT HISTORY
 
-| Sprint | Commit      | Files Changed | Focus                                            |
-| ------ | ----------- | ------------- | ------------------------------------------------ |
-| 11     | —           | ~50           | Foundation lockdown, dead code removal           |
-| 12     | —           | ~80           | QA test failures, error sanitization             |
-| 13     | —           | ~60           | Documents rewrite, Final Payout PDF, headers     |
-| 14     | `65c2d08`   | ~178          | Security audit, cross-org fix, scope persistence |
-| 15     | `708314c`   | 7             | Twilio/Stripe activation-ready, session security |
+| Sprint | Commit    | Files Changed | Focus                                            |
+| ------ | --------- | ------------- | ------------------------------------------------ |
+| 11     | —         | ~50           | Foundation lockdown, dead code removal           |
+| 12     | —         | ~80           | QA test failures, error sanitization             |
+| 13     | —         | ~60           | Documents rewrite, Final Payout PDF, headers     |
+| 14     | `65c2d08` | ~178          | Security audit, cross-org fix, scope persistence |
+| 15     | `708314c` | 7             | Twilio/Stripe activation-ready, session security |
 
 **Total: 375+ files changed, 0 TypeScript errors, 0 P0 items remaining**
 

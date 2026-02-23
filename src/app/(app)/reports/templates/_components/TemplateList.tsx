@@ -174,6 +174,9 @@ export function TemplateList({ initialTemplates, orgId }: TemplateListProps) {
               key={template.id}
               template={template}
               onClick={() => setPreviewTemplate(template)}
+              onDuplicate={handleDuplicate}
+              onSetDefault={handleSetDefault}
+              onDelete={handleDelete}
             />
           ))}
         </div>

@@ -177,6 +177,19 @@ export default async function DashboardPage() {
             <StatsCards />
           </AsyncBoundary>
 
+          {/* Charts Panel — claims by status, trend, lead sources (high visibility) */}
+          <AsyncBoundary
+            fallback={
+              <div className="grid gap-4 lg:grid-cols-3">
+                {Array.from({ length: 3 }).map((_, i) => (
+                  <div key={i} className="h-56 animate-pulse rounded-2xl bg-[var(--surface-2)]" />
+                ))}
+              </div>
+            }
+          >
+            <ChartsPanel />
+          </AsyncBoundary>
+
           {/* Work Opportunities & Network Activity Row */}
           <div className="grid gap-6 lg:grid-cols-2">
             {/* Network Activity */}
@@ -219,19 +232,6 @@ export default async function DashboardPage() {
             }
           >
             <DashboardAIPanel orgId={orgId} />
-          </AsyncBoundary>
-
-          {/* Charts Panel — claims by status, trend, lead sources */}
-          <AsyncBoundary
-            fallback={
-              <div className="grid gap-4 lg:grid-cols-3">
-                {Array.from({ length: 3 }).map((_, i) => (
-                  <div key={i} className="h-56 animate-pulse rounded-2xl bg-[var(--surface-2)]" />
-                ))}
-              </div>
-            }
-          >
-            <ChartsPanel />
           </AsyncBoundary>
 
           {/* Company Branding Quick Viewer */}
