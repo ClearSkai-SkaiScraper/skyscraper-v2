@@ -1,14 +1,13 @@
 "use client";
 
-import { useAuth } from "@clerk/nextjs";
 import { logger } from "@/lib/logger";
+import { useAuth } from "@clerk/nextjs";
 import { Paperclip, Send } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
@@ -27,7 +26,6 @@ interface MessageThreadProps {
   messages: Message[];
   participants: Array<{ userId: string; role: string }>;
   hasFullAccess?: boolean;
-  tokenBalance?: number;
   onMessageSent?: (message: Message) => void;
 }
 
@@ -36,7 +34,6 @@ export function MessageThread({
   messages,
   participants,
   hasFullAccess = false,
-  tokenBalance = 0,
   onMessageSent,
 }: MessageThreadProps) {
   const { userId } = useAuth();
@@ -61,17 +58,6 @@ export function MessageThread({
       return;
     }
 
-    if (willCostToken && tokenBalance < 1) {
-      toast.error("Insufficient tokens", {
-        description: "Purchase tokens or upgrade to Full Access",
-        action: {
-          label: "Get Tokens",
-          onClick: () => (window.location.href = "/billing"),
-        },
-      });
-      return;
-    }
-
     setIsSending(true);
 
     try {
@@ -88,14 +74,7 @@ export function MessageThread({
       const data = await response.json();
 
       if (!response.ok) {
-        if (response.status === 402) {
-          toast.error("Insufficient tokens", {
-            action: {
-              label: "Get Tokens",
-              onClick: () => (window.location.href = "/billing"),
-            },
-          });
-        } else if (response.status === 403) {
+        if (response.status === 403) {
           toast.error("You are not a participant in this thread");
         } else {
           toast.error(data.error || "Failed to send message");
@@ -103,9 +82,7 @@ export function MessageThread({
         return;
       }
 
-      toast.success("Message sent!", {
-        description: data.tokenSpent ? "1 token spent" : undefined,
-      });
+      toast.success("Message sent!");
 
       setNewMessage("");
 
@@ -195,17 +172,6 @@ export function MessageThread({
 
       {/* Message Input */}
       <div className="border-t bg-background p-4">
-        {willCostToken && (
-          <div className="mb-3 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 dark:border-amber-800 dark:bg-amber-950/20">
-            <p className="text-xs text-amber-900 dark:text-amber-100">
-              💰 Your first message will cost <strong>1 token</strong>. You have{" "}
-              <strong>
-                {tokenBalance} token{tokenBalance !== 1 ? "s" : ""}
-              </strong>
-              .
-            </p>
-          </div>
-        )}
         <div className="flex gap-2">
           <Textarea
             placeholder="Type your message... (Shift+Enter for new line)"

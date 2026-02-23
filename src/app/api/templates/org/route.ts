@@ -53,7 +53,7 @@ export async function GET() {
   } catch (error) {
     logger.error("[GET /api/templates/org] Error:", error);
     return NextResponse.json(
-      { ok: false, error: error.message || "Failed to fetch org templates" },
+      { ok: false, error: "Failed to fetch org templates" },
       { status: 500 }
     );
   }

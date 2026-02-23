@@ -60,7 +60,7 @@ export const POST = withAuth(async (req: NextRequest, { orgId, userId }) => {
       tags: { component: "claim-packet-api", orgId },
     });
     return NextResponse.json(
-      { error: error.message || "Failed to generate claim packet" },
+      { error: "Failed to generate claim packet" },
       { status: 500 }
     );
   }

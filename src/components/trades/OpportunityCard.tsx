@@ -1,7 +1,7 @@
 "use client";
 
-import { useAuth } from "@clerk/nextjs";
 import { logger } from "@/lib/logger";
+import { useAuth } from "@clerk/nextjs";
 import { Calendar, MapPin, Users } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -40,7 +40,6 @@ interface OpportunityCardProps {
   applicantCount: number;
   createdBy: string;
   hasFullAccess?: boolean;
-  tokenBalance?: number;
 }
 
 export function OpportunityCard({
@@ -54,7 +53,6 @@ export function OpportunityCard({
   applicantCount,
   createdBy,
   hasFullAccess = false,
-  tokenBalance = 0,
 }: OpportunityCardProps) {
   const router = useRouter();
   const { userId } = useAuth();
@@ -74,16 +72,6 @@ export function OpportunityCard({
   const handleApplyClick = () => {
     if (isOwnPost) {
       toast.error("You cannot apply to your own opportunity");
-      return;
-    }
-
-    if (!hasFullAccess && tokenBalance < 1) {
-      toast.error("Insufficient tokens. Purchase tokens or upgrade to Full Access.", {
-        action: {
-          label: "Get Tokens",
-          onClick: () => router.push("/billing"),
-        },
-      });
       return;
     }
 
@@ -112,15 +100,7 @@ export function OpportunityCard({
       const data = await response.json();
 
       if (!response.ok) {
-        if (response.status === 402) {
-          toast.error("Insufficient tokens", {
-            description: "Purchase tokens or upgrade to Full Access",
-            action: {
-              label: "Get Tokens",
-              onClick: () => router.push("/billing"),
-            },
-          });
-        } else if (response.status === 403) {
+        if (response.status === 403) {
           toast.error("Full Access required to apply");
         } else {
           toast.error(data.error || "Failed to apply");
@@ -128,9 +108,7 @@ export function OpportunityCard({
         return;
       }
 
-      toast.success("Application sent!", {
-        description: data.tokenSpent ? "1 token spent" : "No tokens spent (Full Access)",
-      });
+      toast.success("Application sent!");
 
       setShowApplyModal(false);
       setIntro("");
@@ -196,9 +174,7 @@ export function OpportunityCard({
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Apply to {title}</DialogTitle>
-            <DialogDescription>
-              Introduce yourself to the poster. {!hasFullAccess && "This will cost 1 token."}
-            </DialogDescription>
+            <DialogDescription>Introduce yourself to the poster.</DialogDescription>
           </DialogHeader>
 
           <div className="space-y-4 py-4">
@@ -213,18 +189,6 @@ export function OpportunityCard({
                 className="mt-2"
               />
             </div>
-
-            {!hasFullAccess && (
-              <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 dark:border-amber-800 dark:bg-amber-950/20">
-                <p className="text-xs text-amber-900 dark:text-amber-100">
-                  💰 Applying costs <strong>1 token</strong>. You have{" "}
-                  <strong>
-                    {tokenBalance} token{tokenBalance !== 1 ? "s" : ""}
-                  </strong>
-                  .
-                </p>
-              </div>
-            )}
           </div>
 
           <DialogFooter>

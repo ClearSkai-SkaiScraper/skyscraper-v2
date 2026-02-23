@@ -113,7 +113,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ profile: profileData });
   } catch (error) {
     logger.error("[GET /api/portal/profile] Error:", error);
-    return NextResponse.json({ error: error.message || "Failed to load profile" }, { status: 500 });
+    return NextResponse.json({ error: "Failed to load profile" }, { status: 500 });
   }
 }
 
@@ -227,6 +227,6 @@ export async function POST(req: NextRequest) {
     }
 
     logger.error("[POST /api/portal/profile] Error:", error);
-    return NextResponse.json({ error: error.message || "Failed to save profile" }, { status: 500 });
+    return NextResponse.json({ error: "Failed to save profile" }, { status: 500 });
   }
 }

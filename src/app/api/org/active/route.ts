@@ -53,6 +53,6 @@ export async function GET() {
     });
   } catch (e) {
     logger.error("[/api/org/active] Error:", e);
-    return NextResponse.json({ ok: false, reason: "error", error: e.message }, { status: 500 });
+    return NextResponse.json({ ok: false, reason: "error", error: "Internal server error" }, { status: 500 });
   }
 }

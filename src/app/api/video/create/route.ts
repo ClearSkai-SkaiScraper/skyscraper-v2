@@ -114,6 +114,6 @@ export async function POST(req: Request) {
     return NextResponse.json({ url });
   } catch (err) {
     logger.error("Video generation error:", err);
-    return NextResponse.json({ error: err.message || "Failed to create video" }, { status: 500 });
+    return NextResponse.json({ error: "Failed to create video" }, { status: 500 });
   }
 }

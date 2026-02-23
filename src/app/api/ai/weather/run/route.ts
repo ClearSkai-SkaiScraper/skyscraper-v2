@@ -254,7 +254,7 @@ export async function POST(req: Request) {
     if (error.message?.includes("Unauthorized") || error.message?.includes("organization")) {
       return NextResponse.json(
         {
-          error: error.message,
+          error: "Internal server error",
           timestamp: new Date().toISOString(),
         },
         { status: 401 }

@@ -31,7 +31,7 @@ export async function GET() {
     return NextResponse.json({ branding: branding ?? null });
   } catch (error) {
     logger.error("[Branding GET] Error:", error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }
 
@@ -89,6 +89,6 @@ export async function POST(req: Request) {
     }
   } catch (error) {
     logger.error("[Branding POST] Error:", error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }

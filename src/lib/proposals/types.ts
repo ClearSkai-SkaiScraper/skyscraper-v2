@@ -84,7 +84,6 @@ export interface ProposalBuildResponse {
   draftId: string;
   ai: AIDraftSections;
   context: ProposalContext;
-  tokensConsumed: number;
 }
 
 export interface ProposalRenderRequest {

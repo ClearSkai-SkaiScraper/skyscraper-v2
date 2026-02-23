@@ -19,9 +19,9 @@ async function calculateStorageUsed(orgId: string): Promise<number> {
  * GET /api/billing/status
  * Returns current user's billing status including:
  * - Plan tier
- * - Usage limits
- * - Remaining credits/tokens
+ * - Usage limits (claims, storage)
  * - Whether account is limited
+ * NOTE: Token/credit system removed — flat $80/month pricing
  */
 export const GET = withAuth(async (req: NextRequest, { orgId, userId }) => {
   try {
@@ -35,14 +35,11 @@ export const GET = withAuth(async (req: NextRequest, { orgId, userId }) => {
           planTier: "enterprise",
           isLimited: false,
           isAdmin: true,
-          tokensRemaining: 999999,
           claimsRemaining: 999999,
           claimsUsed: 0,
           claimsLimit: 999999,
           storageUsed: 0,
           storageLimit: 1024 * 1024 * 1024 * 500, // 500GB
-          aiCreditsRemaining: 999999,
-          aiCreditsLimit: 999999,
         });
       }
     } catch (adminError) {
@@ -56,14 +53,11 @@ export const GET = withAuth(async (req: NextRequest, { orgId, userId }) => {
         plan: "Beta Access",
         planTier: "enterprise",
         isLimited: false,
-        tokensRemaining: 999999,
         claimsRemaining: 999999,
         claimsUsed: 0,
         claimsLimit: 999999,
         storageUsed: 0,
         storageLimit: 1024 * 1024 * 1024 * 500, // 500GB
-        aiCreditsRemaining: 999999,
-        aiCreditsLimit: 999999,
       });
     }
 
@@ -81,20 +75,13 @@ export const GET = withAuth(async (req: NextRequest, { orgId, userId }) => {
         plan: "Free",
         planTier: "free",
         isLimited: true,
-        tokensRemaining: 0,
         claimsRemaining: 3,
         claimsUsed: 0,
         claimsLimit: 3,
         storageUsed: 0,
         storageLimit: 1024 * 1024 * 100, // 100MB
-        aiCreditsRemaining: 0,
-        aiCreditsLimit: 3,
       });
     }
-
-    // Token wallet: usage_tokens table not yet migrated — stub balance to 0
-    // TODO: replace with real query once usage_tokens model is added to schema
-    const wallet: { balance: number } | null = { balance: 0 };
 
     // Get claims count for current month
     const now = new Date();
@@ -112,21 +99,18 @@ export const GET = withAuth(async (req: NextRequest, { orgId, userId }) => {
     const planTier = org.planKey || "free";
     const limits = getPlanLimits(planTier);
 
-    // Calculate if limited (using balance for both tokens and AI credits)
-    const isLimited = claimsCount >= limits.claimsLimit || (wallet?.balance || 0) === 0;
+    // Flat $80/month — limited only if over claims limit
+    const isLimited = claimsCount >= limits.claimsLimit;
 
     return NextResponse.json({
       plan: org.Plan?.name || "Free",
       planTier,
       isLimited,
-      tokensRemaining: wallet?.balance || 0,
       claimsRemaining: Math.max(0, limits.claimsLimit - claimsCount),
       claimsUsed: claimsCount,
       claimsLimit: limits.claimsLimit,
       storageUsed: await calculateStorageUsed(org.id),
       storageLimit: limits.storageLimit,
-      aiCreditsRemaining: wallet?.balance || 0,
-      aiCreditsLimit: limits.aiCreditsLimit,
     });
   } catch (error) {
     logger.error("Billing status error:", error);
@@ -139,27 +123,22 @@ function getPlanLimits(planKey: string) {
     free: {
       claimsLimit: 3,
       storageLimit: 1024 * 1024 * 100, // 100MB
-      aiCreditsLimit: 3,
     },
     solo: {
       claimsLimit: 50,
       storageLimit: 1024 * 1024 * 1024 * 5, // 5GB
-      aiCreditsLimit: 25,
     },
     solo_plus: {
       claimsLimit: 999999,
       storageLimit: 1024 * 1024 * 1024 * 50, // 50GB
-      aiCreditsLimit: 999999,
     },
     business: {
       claimsLimit: 500,
       storageLimit: 1024 * 1024 * 1024 * 50, // 50GB
-      aiCreditsLimit: 250,
     },
     enterprise: {
       claimsLimit: 999999,
       storageLimit: 1024 * 1024 * 1024 * 500, // 500GB
-      aiCreditsLimit: 999999,
     },
   };
 

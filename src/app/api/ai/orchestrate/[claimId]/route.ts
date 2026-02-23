@@ -97,7 +97,7 @@ async function GET_INNER(
   } catch (error) {
     logger.error("AI orchestration error:", error);
     return NextResponse.json(
-      { error: error.message || "Failed to orchestrate AI intelligence" },
+      { error: "Failed to orchestrate AI intelligence" },
       { status: 500 }
     );
   }

@@ -164,7 +164,7 @@ export const POST = withAuth(async (req: NextRequest, { userId, orgId }) => {
     }
 
     return NextResponse.json(
-      { error: error.message || "Failed to create estimates" },
+      { error: "Failed to create estimates" },
       { status: 500 }
     );
   }
@@ -223,7 +223,7 @@ export const GET = withAuth(async (req: NextRequest, { userId, orgId }) => {
   } catch (error) {
     logger.error("[API] List estimates error:", error);
     return NextResponse.json(
-      { error: error.message || "Failed to fetch estimates" },
+      { error: "Failed to fetch estimates" },
       { status: 500 }
     );
   }

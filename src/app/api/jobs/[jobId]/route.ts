@@ -77,7 +77,7 @@ export async function GET(req: Request, { params }: { params: { jobId: string } 
     });
   } catch (error) {
     logger.error("[API ERROR] /api/jobs/[jobId]:", error);
-    return NextResponse.json({ error: error.message || "Internal server error" }, { status: 500 });
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   } finally {
     // IMPORTANT: Release the client back to the pool (DO NOT call pool.end()!)
     client.release();

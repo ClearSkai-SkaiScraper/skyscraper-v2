@@ -66,7 +66,7 @@ export async function POST(req: NextRequest, { params }: { params: { taskId: str
   } catch (error) {
     logger.error("Error completing task:", error);
     return NextResponse.json(
-      { error: "Failed to complete task", details: error.message },
+      { error: "Failed to complete task", details: "Internal server error" },
       { status: 500 }
     );
   }

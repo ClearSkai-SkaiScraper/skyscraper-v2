@@ -91,7 +91,7 @@ export async function GET(request: Request) {
     Sentry.captureException(error, { tags: { cron: "ai-insights" } });
 
     return NextResponse.json(
-      { ok: false, error: error.message, ms: Date.now() - started },
+      { ok: false, error: "Internal server error", ms: Date.now() - started },
       { status: 500 }
     );
   }

@@ -54,7 +54,7 @@ export async function POST(req: NextRequest) {
   } catch (error) {
     logger.error("Carrier export telemetry error:", error);
     return NextResponse.json(
-      { error: error.message || "Failed to log carrier export telemetry" },
+      { error: "Failed to log carrier export telemetry" },
       { status: 500 }
     );
   }

@@ -3,7 +3,6 @@ import { auth } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
 
 import { safeSendEmail } from "@/lib/mail";
-import prisma from "@/lib/prisma";
 import { checkRateLimit } from "@/lib/rate-limit";
 
 export const dynamic = "force-dynamic";
@@ -115,39 +114,6 @@ export async function POST(req: NextRequest) {
       message,
       timestamp: new Date(),
     });
-
-    // Optional: Auto-credit tokens during beta if user is signed in
-    if (userId && email) {
-      try {
-        // Find user by clerk ID and get their org
-        const user = await prisma.users.findFirst({
-          where: {
-            OR: [{ email: email }, { clerkUserId: userId }],
-          },
-          include: {
-            Org: true,
-          },
-        });
-
-        if (user && user.Org) {
-          // TODO: TokenWallet model removed — wire up new token system for feedback bonus
-          logger.debug(`Feedback received from org ${user.Org.name}`);
-
-          logger.info("Feedback bonus noted", {
-            timestamp: new Date().toISOString(),
-            email: user.email,
-          });
-
-          return NextResponse.json({
-            success: true,
-            description: "Thank you for your feedback!",
-          });
-        }
-      } catch (tokenError) {
-        logger.error("Token bonus failed (non-blocking):", tokenError);
-        // Continue without failing the feedback submission
-      }
-    }
 
     return NextResponse.json({
       success: true,

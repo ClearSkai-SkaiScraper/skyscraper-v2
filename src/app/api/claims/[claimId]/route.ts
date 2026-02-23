@@ -135,7 +135,7 @@ export const GET = withOrgScope(
     } catch (error) {
       logger.error(`[GET /api/claims/${params.claimId}] Error:`, error);
       return NextResponse.json(
-        { error: error.message || "Failed to fetch claim" },
+        { error: "Failed to fetch claim" },
         { status: 500 }
       );
     }
@@ -293,7 +293,7 @@ export const PATCH = withOrgScope(
     } catch (error) {
       logger.error(`[PATCH /api/claims/${params.claimId}] Error:`, error);
       return NextResponse.json(
-        { error: error.message || "Failed to update claim" },
+        { error: "Failed to update claim" },
         { status: 500 }
       );
     }
@@ -374,7 +374,7 @@ export const DELETE = withOrgScope(
     } catch (error) {
       logger.error(`[DELETE /api/claims/${params.claimId}] Error:`, error);
       return NextResponse.json(
-        { error: error.message || "Failed to delete claim" },
+        { error: "Failed to delete claim" },
         { status: 500 }
       );
     }

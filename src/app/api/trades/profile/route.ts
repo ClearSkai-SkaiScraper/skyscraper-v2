@@ -257,7 +257,7 @@ export async function POST(req: Request) {
   } catch (error) {
     const err = error instanceof Error ? error : new Error("Unknown error");
     logger.error("[trades/profile POST] ❌ Error creating profile:", {
-      message: err.message,
+      message: "Internal server error",
       stack: err.stack?.split("\n")[0],
     });
     return NextResponse.json({ error: "Failed to create profile" }, { status: 500 });
@@ -342,7 +342,7 @@ export async function PATCH(req: Request) {
   } catch (error) {
     const err = error instanceof Error ? error : new Error("Unknown error");
     logger.error("[trades/profile PATCH] ❌ Error updating profile:", {
-      message: err.message,
+      message: "Internal server error",
       stack: err.stack?.split("\n")[0],
     });
     return NextResponse.json({ error: "Failed to update profile" }, { status: 500 });

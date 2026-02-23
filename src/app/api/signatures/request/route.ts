@@ -100,7 +100,7 @@ export const POST = withAuth(async (req: NextRequest, { userId, orgId }) => {
   } catch (error) {
     logger.error("Error creating signature request:", error);
     return NextResponse.json(
-      { error: error.message || "Failed to create signature request" },
+      { error: "Failed to create signature request" },
       { status: 500 }
     );
   }

@@ -89,7 +89,7 @@ export async function POST(req: NextRequest) {
   } catch (error) {
     logger.error("Trades webhook error:", error);
     return NextResponse.json(
-      { error: error.message || "Webhook processing failed" },
+      { error: "Webhook processing failed" },
       { status: 500 }
     );
   }

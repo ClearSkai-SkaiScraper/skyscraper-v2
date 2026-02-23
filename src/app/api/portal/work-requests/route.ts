@@ -11,7 +11,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ workRequests: [] });
   } catch (error) {
     logger.error("Portal work-requests GET error:", error);
-    return NextResponse.json({ error: error.message || "Failed to fetch work requests" }, { status: 500 });
+    return NextResponse.json({ error: "Failed to fetch work requests" }, { status: 500 });
   }
 }
 
@@ -45,6 +45,6 @@ export async function POST(request: NextRequest) {
     );
   } catch (error) {
     logger.error("Portal work-requests POST error:", error);
-    return NextResponse.json({ error: error.message || "Failed to create work request" }, { status: 500 });
+    return NextResponse.json({ error: "Failed to create work request" }, { status: 500 });
   }
 }

@@ -22,7 +22,7 @@ export async function GET(request: Request) {
     logger.error("[CRON] Weather ingest failed:", error);
     Sentry.captureException(error, { tags: { component: "cron-weather" } });
     return NextResponse.json(
-      { ok: false, error: error.message || "Weather ingest failed" },
+      { ok: false, error: "Weather ingest failed" },
       { status: 500 }
     );
   }

@@ -135,7 +135,7 @@ export const POST = withAuth(async (request: NextRequest, { orgId, userId }) => 
   } catch (error) {
     logger.error("[Proposals] Failed to create proposal:", error);
     return NextResponse.json(
-      { error: error.message || "Failed to create proposal" },
+      { error: "Failed to create proposal" },
       { status: 500 }
     );
   }

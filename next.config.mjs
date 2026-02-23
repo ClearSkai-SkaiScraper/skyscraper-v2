@@ -16,13 +16,11 @@ if (process.env.ANALYZE === "true") {
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // Temporarily ignore ESLint during builds (will fix with flat config separately)
   eslint: {
-    ignoreDuringBuilds: true,
+    ignoreDuringBuilds: false,
   },
-  // Temporarily ignore TypeScript errors during builds (Prisma model naming migration in progress)
   typescript: {
-    ignoreBuildErrors: true,
+    ignoreBuildErrors: false,
   },
   // Vercel optimizations: Limit CPU usage to prevent timeouts
   experimental: {
@@ -189,7 +187,7 @@ const nextConfig = {
             key: "Content-Security-Policy",
             value: [
               "default-src 'self'",
-              "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.vercel-insights.com https://challenges.cloudflare.com https://clerk.skaiscrape.com https://*.clerk.com https://*.clerk.accounts.dev https://api.mapbox.com",
+              "script-src 'self' 'unsafe-inline' https://cdn.vercel-insights.com https://challenges.cloudflare.com https://clerk.skaiscrape.com https://*.clerk.com https://*.clerk.accounts.dev https://api.mapbox.com",
               "style-src 'self' 'unsafe-inline' https://clerk.skaiscrape.com https://*.clerk.com https://*.clerk.accounts.dev https://api.mapbox.com",
               "img-src 'self' data: https: blob: https://clerk.skaiscrape.com https://*.clerk.com https://*.clerk.accounts.dev https://*.mapbox.com",
               "font-src 'self' data: https://clerk.skaiscrape.com https://*.clerk.com https://*.clerk.accounts.dev",

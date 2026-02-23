@@ -66,7 +66,7 @@ export async function POST(req: NextRequest) {
   } catch (error) {
     logger.error("[Archive] Error:", error);
     return NextResponse.json(
-      { error: "Failed to archive", details: error.message },
+      { error: "Failed to archive", details: "Internal server error" },
       { status: 500 }
     );
   }
@@ -207,7 +207,7 @@ export async function GET(req: NextRequest) {
   } catch (error) {
     logger.error("[Archive GET] Error:", error);
     return NextResponse.json(
-      { error: "Failed to fetch archive", details: error.message },
+      { error: "Failed to fetch archive", details: "Internal server error" },
       { status: 500 }
     );
   }
@@ -266,7 +266,7 @@ export async function DELETE(req: NextRequest) {
   } catch (error) {
     logger.error("[Archive DELETE] Error:", error);
     return NextResponse.json(
-      { error: "Failed to restore", details: error.message },
+      { error: "Failed to restore", details: "Internal server error" },
       { status: 500 }
     );
   }

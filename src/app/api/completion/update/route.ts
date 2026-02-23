@@ -99,7 +99,7 @@ export async function POST(req: Request) {
   } catch (error) {
     logger.error("[Completion Update Error]", error);
     return NextResponse.json(
-      { error: error.message || "Failed to update completion status" },
+      { error: "Failed to update completion status" },
       { status: 500 }
     );
   }
@@ -132,7 +132,7 @@ export async function GET(req: Request) {
   } catch (error) {
     logger.error("[Completion Get Error]", error);
     return NextResponse.json(
-      { error: error.message || "Failed to get completion status" },
+      { error: "Failed to get completion status" },
       { status: 500 }
     );
   }

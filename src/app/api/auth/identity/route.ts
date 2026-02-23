@@ -86,7 +86,7 @@ export async function GET() {
   } catch (error) {
     logger.error("[/api/auth/identity] Error:", error);
     return NextResponse.json(
-      { error: "Failed to get identity", message: error.message },
+      { error: "Failed to get identity", message: "Internal server error" },
       { status: 500 }
     );
   }

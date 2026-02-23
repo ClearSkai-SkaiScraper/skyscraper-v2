@@ -30,7 +30,7 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     logger.error("Portal job-invite error:", error);
     return NextResponse.json(
-      { error: error.message || "Failed to send job invite" },
+      { error: "Failed to send job invite" },
       { status: 500 }
     );
   }

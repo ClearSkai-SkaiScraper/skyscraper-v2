@@ -91,7 +91,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ clai
       return NextResponse.json({ error: "Claim not found" }, { status: 404 });
     }
     logger.error("[Assets GET] Error:", error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }
 
@@ -123,7 +123,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ cla
     }
   } catch (error) {
     logger.error("[Assets POST] Error:", error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }
 

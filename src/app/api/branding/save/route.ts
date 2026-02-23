@@ -185,10 +185,10 @@ export async function POST(req: Request) {
     return NextResponse.json({ ok: true });
   } catch (error) {
     logger.error("[branding/save] ❌ Error saving branding:", {
-      message: error.message,
+      message: "Internal server error",
       code: error.code,
       stack: error.stack?.split("\n")[0], // First line of stack for context
     });
-    return NextResponse.json({ ok: false, error: error.message }, { status: 500 });
+    return NextResponse.json({ ok: false, error: "Internal server error" }, { status: 500 });
   }
 }

@@ -2,17 +2,14 @@ import { logger } from "@/lib/logger";
 import { auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 
-import { isBetaMode } from "@/lib/beta";
 import prisma from "@/lib/prisma";
 
 // Prisma singleton imported from @/lib/db/prisma
 
 export interface UserPlanAndTokens {
   plan: string;
-  tokensRemaining: number;
   subscriptionStatus: string;
   canAccessFeature: (feature: string) => boolean;
-  hasTokens: () => boolean;
 }
 
 export async function getUserPlanAndTokens(userId?: string): Promise<UserPlanAndTokens> {
@@ -22,10 +19,8 @@ export async function getUserPlanAndTokens(userId?: string): Promise<UserPlanAnd
   if (!targetUserId) {
     return {
       plan: "free",
-      tokensRemaining: 0,
       subscriptionStatus: "inactive",
       canAccessFeature: () => false,
-      hasTokens: () => false,
     };
   }
 
@@ -44,26 +39,16 @@ export async function getUserPlanAndTokens(userId?: string): Promise<UserPlanAnd
     if (!org) {
       return {
         plan: "free",
-        tokensRemaining: 0,
         subscriptionStatus: "inactive",
         canAccessFeature: (feature: string) => feature === "demo",
-        hasTokens: () => false,
       };
     }
 
-    // Get latest token balance from ledger
-    const latestTokenEntry = await (prisma as any).tokens_ledger.findFirst({
-      where: { org_id: org.id },
-      orderBy: { createdAt: "desc" },
-    });
-
     const plan = org.Plan?.slug || "free";
-    const tokensRemaining = latestTokenEntry?.balance || 0;
     const subscriptionStatus = org.Subscription?.status || "inactive";
 
     return {
       plan,
-      tokensRemaining,
       subscriptionStatus,
       canAccessFeature: (feature: string) => {
         if (feature === "demo") return true;
@@ -86,109 +71,44 @@ export async function getUserPlanAndTokens(userId?: string): Promise<UserPlanAnd
 
         return planFeatures[plan as keyof typeof planFeatures]?.includes(feature) || false;
       },
-      hasTokens: () => tokensRemaining > 0,
     };
   } catch (error) {
-    logger.error("Error getting user plan and tokens:", error);
+    logger.error("Error getting user plan:", error);
     return {
       plan: "free",
-      tokensRemaining: 0,
       subscriptionStatus: "error",
       canAccessFeature: () => false,
-      hasTokens: () => false,
     };
   }
 }
 
+/**
+ * @deprecated Token system removed — flat $80/month plan includes all features
+ */
 export async function consumeTokens(
-  count: number = 1,
-  orgId?: string
+  _count: number = 1,
+  _orgId?: string
 ): Promise<{ success: boolean; remainingTokens: number }> {
-  const { orgId: authOrgId } = await auth();
-  const targetOrgId = orgId || authOrgId;
-
-  if (!targetOrgId) {
-    return { success: false, remainingTokens: 0 };
-  }
-
-  try {
-    const org = await prisma.org.findUnique({
-      where: { clerkOrgId: targetOrgId },
-    });
-
-    if (!org) {
-      return { success: false, remainingTokens: 0 };
-    }
-
-    // Get current balance from latest ledger entry
-    const latestEntry = await (prisma as any).tokens_ledger.findFirst({
-      where: { org_id: org.id },
-      orderBy: { createdAt: "desc" },
-    });
-
-    const currentBalance = latestEntry?.balance || 0;
-
-    if (currentBalance < count) {
-      return { success: false, remainingTokens: currentBalance };
-    }
-
-    // Atomic token consumption - create ledger entry
-    await (prisma as any).tokens_ledger.create({
-      data: {
-        org_id: org.id,
-        change: -count,
-        balance: currentBalance - count,
-        reason: `Consumed ${count} token${count > 1 ? "s" : ""} for operation`,
-      },
-    });
-
-    return { success: true, remainingTokens: currentBalance - count };
-  } catch (error) {
-    logger.error("Error consuming tokens:", error);
-    return { success: false, remainingTokens: 0 };
-  }
+  return { success: true, remainingTokens: 999999 };
 }
 
-// Server-side function to check and redirect if insufficient access
-export async function requireTokens(requiredTokens: number = 1, requiredFeature?: string) {
-  // BETA MODE: Allow all access during beta testing
-  if (isBetaMode()) {
-    logger.debug("[BILLING] Beta mode active - bypassing token check");
-    return {
-      subscriptionStatus: "active" as const,
-      canAccessFeature: () => true,
-      hasTokens: () => true,
-      tokensRemaining: 999999,
-    };
-  }
-
+// Server-side function to check subscription access
+export async function requireTokens(_requiredTokens: number = 1, requiredFeature?: string) {
   const userPlan = await getUserPlanAndTokens();
 
   if (requiredFeature && !userPlan.canAccessFeature(requiredFeature)) {
     redirect("/pricing?feature=" + encodeURIComponent(requiredFeature));
   }
 
-  if (!userPlan.hasTokens() || userPlan.tokensRemaining < requiredTokens) {
-    redirect("/pricing?tokens=" + requiredTokens);
-  }
-
-  return userPlan;
+  return {
+    ...userPlan,
+    hasTokens: () => true,
+    tokensRemaining: 999999,
+  };
 }
 
 // Check subscription status for feature access
 export async function requireSubscription(feature?: string) {
-  // BETA MODE: Allow all access during beta testing
-  if (isBetaMode()) {
-    logger.debug("[BILLING] Beta mode active - bypassing subscription check");
-    return {
-      subscriptionStatus: "active" as const,
-      plan: "enterprise",
-      tokensRemaining: 999999,
-      canAccessFeature: () => true,
-      hasTokens: () => true,
-    };
-  }
-
   const userPlan = await getUserPlanAndTokens();
 
   if (userPlan.subscriptionStatus !== "active") {

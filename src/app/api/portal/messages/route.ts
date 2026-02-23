@@ -91,7 +91,7 @@ export async function GET(req: NextRequest) {
   } catch (error) {
     logger.error("[GET /api/portal/messages] Error:", error);
     return NextResponse.json(
-      { error: error.message || "Failed to fetch messages" },
+      { error: "Failed to fetch messages" },
       { status: 500 }
     );
   }
@@ -182,6 +182,6 @@ export async function POST(req: NextRequest) {
     });
   } catch (error) {
     logger.error("[POST /api/portal/messages] Error:", error);
-    return NextResponse.json({ error: error.message || "Failed to send message" }, { status: 500 });
+    return NextResponse.json({ error: "Failed to send message" }, { status: 500 });
   }
 }

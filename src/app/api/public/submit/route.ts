@@ -81,6 +81,6 @@ export async function POST(req: NextRequest) {
     );
   } catch (error) {
     logger.error("[POST /api/public/submit] Error:", error);
-    return NextResponse.json({ error: error.message || "Internal server error" }, { status: 500 });
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }

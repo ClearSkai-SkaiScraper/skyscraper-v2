@@ -94,7 +94,7 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     logger.error("Bad-faith analysis error:", error);
     return NextResponse.json(
-      { error: error.message || "Bad faith analysis failed" },
+      { error: "Bad faith analysis failed" },
       { status: 500 }
     );
   }

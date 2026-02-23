@@ -224,7 +224,7 @@ export const POST = withAuth(async (req: NextRequest, { userId, orgId: userOrgId
   } catch (error) {
     logger.error("[Move Job] Error:", error);
     return NextResponse.json(
-      { error: "Failed to move job", details: error.message },
+      { error: "Failed to move job", details: "Internal server error" },
       { status: 500 }
     );
   }

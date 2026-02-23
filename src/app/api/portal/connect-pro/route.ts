@@ -208,7 +208,7 @@ export async function POST(req: NextRequest) {
   } catch (error) {
     logger.error("[POST /api/portal/connect-pro] Error:", error);
     return NextResponse.json(
-      { error: error.message || "Failed to create connection" },
+      { error: "Failed to create connection" },
       { status: 500 }
     );
   }
@@ -289,7 +289,7 @@ export async function GET(req: NextRequest) {
   } catch (error) {
     logger.error("[GET /api/portal/connect-pro] Error:", error);
     return NextResponse.json(
-      { error: error.message || "Failed to check connection" },
+      { error: "Failed to check connection" },
       { status: 500 }
     );
   }

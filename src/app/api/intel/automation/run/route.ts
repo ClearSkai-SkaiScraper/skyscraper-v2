@@ -23,7 +23,7 @@ export async function POST(req: Request) {
   } catch (error) {
     logger.error("[Automation Run Error]", error);
     return NextResponse.json(
-      { error: error.message || "Failed to run automation" },
+      { error: "Failed to run automation" },
       { status: 500 }
     );
   }

@@ -24,6 +24,6 @@ export async function GET() {
     });
   } catch (error) {
     logger.error("[API] RBAC me error:", error);
-    return NextResponse.json({ error: error.message || "Failed to fetch role" }, { status: 500 });
+    return NextResponse.json({ error: "Failed to fetch role" }, { status: 500 });
   }
 }

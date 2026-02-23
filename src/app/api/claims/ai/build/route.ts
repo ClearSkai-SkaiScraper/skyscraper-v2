@@ -1,5 +1,5 @@
-import { auth } from "@clerk/nextjs/server";
 import { logger } from "@/lib/logger";
+import { auth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 
 import prisma from "@/lib/prisma";
@@ -161,7 +161,7 @@ export async function POST(req: Request) {
   } catch (error) {
     logger.error("[AI CLAIM BUILDER ERROR]", error);
     return NextResponse.json(
-      { ok: false, error: error.message ?? "Unknown error" },
+      { ok: false, error: "Internal server error" },
       { status: 500 }
     );
   }

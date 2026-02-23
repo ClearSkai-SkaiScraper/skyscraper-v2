@@ -96,6 +96,6 @@ export const POST = withAuth(async (req: NextRequest, { userId, orgId }) => {
     return NextResponse.json({ url: publicUrl, storage: "supabase" });
   } catch (error) {
     logger.error("[Branding Upload] Error:", error);
-    return NextResponse.json({ error: error.message || "Internal server error" }, { status: 500 });
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 });

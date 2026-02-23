@@ -101,7 +101,7 @@ export async function POST(req: NextRequest) {
   } catch (error) {
     logger.error("[/api/auth/register-client] Error:", error);
     return NextResponse.json(
-      { error: error.message || "Failed to create client account" },
+      { error: "Failed to create client account" },
       { status: 500 }
     );
   }

@@ -1,20 +1,17 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
 import { logger } from "@/lib/logger";
+import React, { useEffect, useState } from "react";
 
 export interface BillingStatus {
   plan: string;
   planTier: "solo" | "business" | "enterprise" | "free";
   isLimited: boolean;
-  tokensRemaining: number;
   claimsRemaining: number;
   claimsUsed: number;
   claimsLimit: number;
   storageUsed: number;
   storageLimit: number;
-  aiCreditsRemaining: number;
-  aiCreditsLimit: number;
 }
 
 export function useBillingStatus() {
@@ -41,14 +38,11 @@ export function useBillingStatus() {
           plan: "Free",
           planTier: "free",
           isLimited: true,
-          tokensRemaining: 0,
           claimsRemaining: 0,
           claimsUsed: 0,
           claimsLimit: 3,
           storageUsed: 0,
           storageLimit: 1024 * 1024 * 100, // 100MB
-          aiCreditsRemaining: 0,
-          aiCreditsLimit: 3,
         });
       } finally {
         setLoading(false);

@@ -170,7 +170,7 @@ export const POST = withAuth(
     } catch (error) {
       logger.error("[Depreciation Export] Error:", error);
       return NextResponse.json(
-        { error: "Failed to generate depreciation invoice", details: error.message },
+        { error: "Failed to generate depreciation invoice", details: "Internal server error" },
         { status: 500 }
       );
     }

@@ -219,6 +219,6 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
     }
 
     logger.error(`[POST /api/leads/${params.id}/convert] Error:`, error);
-    return NextResponse.json({ error: error.message || "Failed to convert lead" }, { status: 500 });
+    return NextResponse.json({ error: "Failed to convert lead" }, { status: 500 });
   }
 }

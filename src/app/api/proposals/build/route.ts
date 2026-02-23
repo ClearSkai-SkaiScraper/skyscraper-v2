@@ -24,8 +24,7 @@ import type {
 } from "@/lib/proposals/types";
 import { checkRateLimit } from "@/lib/rate-limit";
 
-// Token consumption - will be implemented when token system is integrated
-const TOKENS_REQUIRED = 2;
+// Token system removed — flat $80/month pricing includes all features
 
 export async function POST(request: Request) {
   try {
@@ -140,11 +139,6 @@ export async function POST(request: Request) {
       );
     }
 
-    // Check token balance using wallet system
-    const TOKENS_REQUIRED = 10;
-    // TODO: tokenWallet model removed — wire up new token system
-    const wallet = { aiRemaining: TOKENS_REQUIRED }; // Stub: always allow
-
     // Generate AI content with optional tone preset
     const ai = await draftProposalSections(context, packetType, tone);
 
@@ -172,9 +166,6 @@ export async function POST(request: Request) {
       },
     });
 
-    // TODO: tokenWallet + tokens_ledger models removed — wire up new token system
-    // Token consumption and ledger recording stubbed out
-
     // Track analytics: proposal_build_succeeded
     logger.info("[Analytics] proposal.build.succeeded", {
       userId: effectiveUserId,
@@ -184,21 +175,12 @@ export async function POST(request: Request) {
       packetType,
       tone: tone || "auto",
       draftId: draft.id,
-      tokensConsumed: TOKENS_REQUIRED,
-    });
-    logger.info("[Analytics] proposal_build_succeeded", {
-      userId: effectiveUserId,
-      orgId: effectiveOrgId,
-      draftId: draft.id,
-      packetType,
-      tokensConsumed: TOKENS_REQUIRED,
     });
 
     const response: ProposalBuildResponse = {
       draftId: draft.id,
       ai,
       context,
-      tokensConsumed: TOKENS_REQUIRED,
     };
 
     return NextResponse.json(response);
@@ -207,7 +189,6 @@ export async function POST(request: Request) {
     return NextResponse.json(
       {
         error: "Failed to build proposal",
-        details: error instanceof Error ? error.message : String(error),
       },
       { status: 500 }
     );

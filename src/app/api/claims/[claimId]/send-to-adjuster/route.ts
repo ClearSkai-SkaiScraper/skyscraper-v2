@@ -97,7 +97,7 @@ export async function POST(req: Request, { params }: { params: { claimId: string
   } catch (error) {
     logger.error("[Send to Adjuster] Error:", error);
     return NextResponse.json(
-      { error: "Failed to send email", details: error.message },
+      { error: "Failed to send email", details: "Internal server error" },
       { status: 500 }
     );
   }

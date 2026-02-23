@@ -124,7 +124,7 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     logger.error("[BID_SUBMIT_ERROR]", error);
     return NextResponse.json(
-      { error: "Failed to submit bid", details: error.message },
+      { error: "Failed to submit bid", details: "Internal server error" },
       { status: 500 }
     );
   }
@@ -220,7 +220,7 @@ export async function GET(request: NextRequest) {
   } catch (error) {
     logger.error("[BID_GET_ERROR]", error);
     return NextResponse.json(
-      { error: "Failed to retrieve bids", details: error.message },
+      { error: "Failed to retrieve bids", details: "Internal server error" },
       { status: 500 }
     );
   }
@@ -268,7 +268,7 @@ export async function PATCH(request: NextRequest) {
   } catch (error) {
     logger.error("[BID_UPDATE_ERROR]", error);
     return NextResponse.json(
-      { error: "Failed to update bid", details: error.message },
+      { error: "Failed to update bid", details: "Internal server error" },
       { status: 500 }
     );
   }

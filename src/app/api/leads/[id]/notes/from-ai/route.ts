@@ -84,7 +84,7 @@ const basePOST = async (
   } catch (error) {
     logger.error("Error saving note:", error);
     return NextResponse.json(
-      { error: "Failed to save note", details: error.message },
+      { error: "Failed to save note", details: "Internal server error" },
       { status: 500 }
     );
   }

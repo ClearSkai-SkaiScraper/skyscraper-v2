@@ -153,7 +153,7 @@ async function POST_INNER(
   } catch (error) {
     logger.error("Contractor Dispatch Error:", error);
     return NextResponse.json(
-      { error: error.message || "Failed to dispatch contractor" },
+      { error: "Failed to dispatch contractor" },
       { status: 500 }
     );
   }

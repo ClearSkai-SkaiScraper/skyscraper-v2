@@ -62,7 +62,7 @@ export async function GET(request: Request) {
   } catch (e) {
     Sentry.captureException(e, { tags: { cron: "user-columns" } });
     return NextResponse.json(
-      { ok: false, error: e.message, ms: Date.now() - started },
+      { ok: false, error: "Internal server error", ms: Date.now() - started },
       { status: 500 }
     );
   }

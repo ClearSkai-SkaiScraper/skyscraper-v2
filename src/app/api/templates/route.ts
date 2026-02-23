@@ -45,7 +45,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ templates, system: "legacy" });
   } catch (error) {
     return NextResponse.json(
-      { error: error.message || "Internal server error" },
+      { error: "Internal server error" },
       { status: error.message === "Unauthorized" ? 401 : 500 }
     );
   }
@@ -98,7 +98,7 @@ export async function POST(req: NextRequest) {
     });
   } catch (error) {
     return NextResponse.json(
-      { error: error.message || "Internal server error" },
+      { error: "Internal server error" },
       {
         status:
           error.message.includes("Unauthorized") || error.message.includes("Access denied")

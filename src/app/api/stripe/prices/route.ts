@@ -21,6 +21,6 @@ export async function GET() {
       missing: priceKeys.filter((k) => !prices[k]),
     });
   } catch (e) {
-    return NextResponse.json({ ok: false, error: e.message || "server-error" }, { status: 500 });
+    return NextResponse.json({ ok: false, error: "server-error" }, { status: 500 });
   }
 }

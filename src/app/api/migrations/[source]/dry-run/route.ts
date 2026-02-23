@@ -127,7 +127,7 @@ export async function POST(
     return NextResponse.json(result);
   } catch (error) {
     logger.error(`[Migration Dry-Run] ${upperSource} error:`, error);
-    return NextResponse.json({ error: error.message || "Dry run failed" }, { status: 500 });
+    return NextResponse.json({ error: "Dry run failed" }, { status: 500 });
   }
 }
 

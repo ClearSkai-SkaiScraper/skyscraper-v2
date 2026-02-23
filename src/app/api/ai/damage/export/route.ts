@@ -338,6 +338,6 @@ export async function POST(req: NextRequest) {
     });
   } catch (error) {
     logger.error("PDF export error:", error);
-    return NextResponse.json({ error: error.message || "Export failed" }, { status: 500 });
+    return NextResponse.json({ error: "Export failed" }, { status: 500 });
   }
 }

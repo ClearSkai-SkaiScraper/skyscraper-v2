@@ -129,7 +129,7 @@ export async function POST(): Promise<NextResponse> {
   } catch (error) {
     logger.error("[NUCLEAR RESET] Error:", error);
     return NextResponse.json(
-      { ok: false, error: error.message || "Reset failed" },
+      { ok: false, error: "Reset failed" },
       { status: 500 }
     );
   }
@@ -241,6 +241,6 @@ export async function GET(): Promise<NextResponse> {
       })),
     });
   } catch (error) {
-    return NextResponse.json({ ok: false, error: error.message }, { status: 500 });
+    return NextResponse.json({ ok: false, error: "Internal server error" }, { status: 500 });
   }
 }

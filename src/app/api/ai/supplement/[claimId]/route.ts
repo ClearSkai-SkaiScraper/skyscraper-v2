@@ -168,31 +168,56 @@ Be assertive but professional.
 
     const generatedSupplement = completion.choices[0].message.content;
 
-    // Log supplement generation (metadata updates handled elsewhere)
-    logger.debug(`[AI Supplement] Generated for claim ${claimId}, type: ${pushbackType}`);
+    // Persist supplement to DB
+    let savedSupplementId: string | null = null;
+    try {
+      const created = await prisma.supplements.create({
+        data: {
+          id: crypto.randomUUID(),
+          claim_id: claimId,
+          org_id: orgId,
+          created_by: userId,
+          status: "DRAFT",
+          notes: generatedSupplement || "",
+          internal_notes: `AI-generated response to ${pushbackType || "general"} pushback from ${claim.carrier || "carrier"}`,
+          updated_at: new Date(),
+        },
+      });
+      savedSupplementId = created.id;
 
-    // AI action logging (tracked via billing middleware)
-    logger.debug(`[AI Supplement] Action logged for claim ${claimId}`);
+      // Save the generated text as a supplement item
+      await prisma.supplement_items.create({
+        data: {
+          id: crypto.randomUUID(),
+          supplement_id: created.id,
+          claim_id: claimId,
+          name: `${pushbackType || "General"} Pushback Response`,
+          code: "SUP-AI",
+          description: generatedSupplement || "",
+          justification: `AI-generated response to ${pushbackType || "general"} pushback`,
+          source: "ai",
+          status: "pending",
+          updated_at: new Date(),
+        },
+      });
+    } catch (dbErr) {
+      logger.error("[AI Supplement] Failed to persist to DB:", dbErr);
+      // Continue — return the generated text even if DB save fails
+    }
 
-    // Automation event logging
     logger.info(
-      `[AI Supplement] Event: SUPPLEMENT_GENERATED, tokens: ${completion.usage?.total_tokens}`
+      `[AI Supplement] Generated for claim ${claimId}, type: ${pushbackType}, tokens: ${completion.usage?.total_tokens}`
     );
-
-    // Artifact saved via response (persistence handled by client)
 
     return NextResponse.json({
       success: true,
       supplement: generatedSupplement,
-      carrierStrategy: carrierStrategy ? true : false,
+      supplementId: savedSupplementId,
       pushbackType,
     });
   } catch (error) {
     logger.error("AI Supplement Generation Error:", error);
-    return NextResponse.json(
-      { error: error.message || "Failed to generate supplement" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Failed to generate supplement" }, { status: 500 });
   }
 }
 

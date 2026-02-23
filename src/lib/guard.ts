@@ -26,23 +26,10 @@ export async function assertPaidAccess(minPlan: "Solo" | "Business" | "Enterpris
   return org;
 }
 
-export async function checkTokenBalance(type: "ai" | "dolCheck" | "dolFull", needed: number = 1) {
-  const org = (await requireOrg()) as any;
-
-  if (!org.tokens) {
-    throw new Error("NO_TOKEN_WALLET");
-  }
-
-  const balance =
-    type === "ai"
-      ? org.tokens.aiRemaining
-      : type === "dolCheck"
-        ? org.tokens.dolCheckRemain
-        : org.tokens.dolFullRemain;
-
-  if (balance < needed) {
-    throw new Error("INSUFFICIENT_TOKENS");
-  }
-
-  return balance;
+/**
+ * @deprecated Token system removed — flat plan includes all features.
+ * Kept as no-op stub to avoid breaking imports.
+ */
+export async function checkTokenBalance(_type: "ai" | "dolCheck" | "dolFull", _needed: number = 1) {
+  return 999999;
 }

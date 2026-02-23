@@ -119,6 +119,6 @@ export const POST = withAuth(async (req: NextRequest, { userId }) => {
     );
   } catch (error) {
     logger.error("Avatar upload error:", error);
-    return NextResponse.json({ error: error.message || "Internal server error" }, { status: 500 });
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 });

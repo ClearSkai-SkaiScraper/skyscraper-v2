@@ -160,7 +160,7 @@ export async function POST(req: NextRequest) {
   } catch (error) {
     logger.error("[Client Invite Error]", error);
     return NextResponse.json(
-      { error: "Failed to send invite", details: error.message },
+      { error: "Failed to send invite", details: "Internal server error" },
       { status: 500 }
     );
   }

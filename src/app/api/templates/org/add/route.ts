@@ -81,7 +81,7 @@ export async function POST(req: NextRequest) {
   } catch (error) {
     logger.error("[POST /api/templates/org/add] Error:", error);
     return NextResponse.json(
-      { ok: false, error: error.message || "Failed to add template" },
+      { ok: false, error: "Failed to add template" },
       { status: 500 }
     );
   }

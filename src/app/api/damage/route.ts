@@ -127,7 +127,7 @@ export async function POST(req: NextRequest) {
     }
 
     return NextResponse.json(
-      { error: error.message || "Failed to save damage assessment" },
+      { error: "Failed to save damage assessment" },
       { status: 500 }
     );
   }
@@ -178,7 +178,7 @@ export async function GET(req: NextRequest) {
   } catch (error) {
     logger.error("[API] List damage assessments error:", error);
     return NextResponse.json(
-      { error: error.message || "Failed to fetch damage assessments" },
+      { error: "Failed to fetch damage assessments" },
       { status: 500 }
     );
   }

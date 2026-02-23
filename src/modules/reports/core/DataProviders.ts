@@ -1,10 +1,12 @@
 // ============================================================================
-// DATA PROVIDERS - Placeholder hooks for Phase 1
+// DATA PROVIDERS — Real DB queries (Phase 2)
 // ============================================================================
-// These are stub implementations with mock data.
-// Replace with real DB queries in Phase 2.
+// Each function accepts org/claim identifiers and queries Prisma.
+// Called from the export route after looking up the report's claimId.
 // ============================================================================
 
+import { logger } from "@/lib/logger";
+import prisma from "@/lib/prisma";
 import type {
   BrandingConfig,
   CodeCitation,
@@ -15,212 +17,206 @@ import type {
   WeatherData,
 } from "../types";
 
-/**
- * Fetch report branding (mock)
- */
-export function useReportBranding(): BrandingConfig {
+// ── helpers ───────────────────────────────────────────────────────────────
+function fmtDate(d: Date | string | null | undefined): string {
+  if (!d) return "";
+  const dt = typeof d === "string" ? new Date(d) : d;
+  return dt.toISOString().split("T")[0];
+}
+
+// ── 1. Branding ───────────────────────────────────────────────────────────
+export async function fetchReportBranding(orgId: string): Promise<BrandingConfig> {
+  const [branding, org] = await Promise.all([
+    prisma.org_branding.findUnique({ where: { orgId } }),
+    prisma.org.findFirst({ where: { id: orgId }, select: { name: true, brandLogoUrl: true } }),
+  ]);
+
   return {
-    logoUrl: "https://via.placeholder.com/200x60/1e40af/ffffff?text=SkaiScraper",
-    brandColor: "#1e40af",
-    accentColor: "#3b82f6",
-    companyName: "SkaiScraper Demo Co.",
-    licenseNumber: "ROC #123456",
-    website: "https://skaiscrape.com",
-    phone: "(555) 123-4567",
-    email: "contact@skaiscrape.com",
-    address: "123 Main St, Phoenix, AZ 85001",
+    companyName: branding?.companyName || org?.name || "Unknown Company",
+    brandColor: branding?.colorPrimary || "#117CFF",
+    accentColor: branding?.colorAccent || "#FFC838",
+    logoUrl: branding?.logoUrl || org?.brandLogoUrl || undefined,
+    licenseNumber: branding?.license || undefined,
+    website: branding?.website || undefined,
+    phone: branding?.phone || "",
+    email: branding?.email || "",
+    headshotUrl: branding?.teamPhotoUrl || undefined,
   };
 }
 
-/**
- * Fetch claim/report metadata (mock)
- */
-export function useReportClaimData(): ReportMetadata {
+// ── 2. Claim / Report metadata ────────────────────────────────────────────
+export async function fetchReportClaimData(
+  reportId: string,
+  claimId: string,
+  userId?: string
+): Promise<ReportMetadata> {
+  const claim = await prisma.claims.findFirst({
+    where: { id: claimId },
+    include: { properties: true },
+  });
+
+  if (!claim) {
+    logger.warn(`[DataProviders] Claim ${claimId} not found for report ${reportId}`);
+    return {
+      reportId,
+      claimNumber: "",
+      propertyAddress: "Unknown address",
+      clientName: "Unknown",
+      preparedBy: "SkaiScraper",
+      submittedDate: fmtDate(new Date()),
+    };
+  }
+
+  const property = claim.properties;
+  const addr = property
+    ? `${property.street}, ${property.city}, ${property.state} ${property.zipCode}`
+    : "Address not on file";
+
   return {
-    reportId: "demo-report-001",
-    claimNumber: "CLM-2025-001234",
-    policyNumber: "POL-987654321",
-    dateOfLoss: "2025-01-15",
-    adjusterName: "John Smith",
-    inspectionDate: "2025-01-20",
-    propertyAddress: "456 Oak Ave, Phoenix, AZ 85012",
-    clientName: "Jane Homeowner",
-    carrierName: "State Farm Insurance",
-    preparedBy: "Mike Contractor",
-    submittedDate: new Date().toISOString().split("T")[0],
+    reportId,
+    claimNumber: claim.claimNumber || undefined,
+    policyNumber: claim.policy_number || undefined,
+    dateOfLoss: fmtDate(claim.dateOfLoss),
+    adjusterName: claim.adjusterName || undefined,
+    propertyAddress: addr,
+    clientName: claim.insured_name || property?.name || "Homeowner",
+    carrierName: claim.carrier || undefined,
+    preparedBy: "SkaiScraper Pro",
+    submittedDate: fmtDate(new Date()),
   };
 }
 
-/**
- * Fetch weather verification data (mock)
- */
-export function useReportWeather(): WeatherData {
+// ── 3. Weather verification ───────────────────────────────────────────────
+export async function fetchReportWeather(claimId: string): Promise<WeatherData | undefined> {
+  const wr = await prisma.weather_reports.findFirst({
+    where: { claimId },
+    orderBy: { createdAt: "desc" },
+  });
+
+  if (!wr) return undefined;
+
+  // Extract hail/wind from the events JSON if available
+  const events = (wr.events as Record<string, unknown>[] | null) ?? [];
+  let hailSize: string | undefined;
+  let windSpeed: string | undefined;
+
+  for (const ev of events) {
+    if (typeof ev === "object" && ev !== null) {
+      if ("hailSize" in ev && ev.hailSize) hailSize = String(ev.hailSize);
+      if ("windSpeed" in ev && ev.windSpeed) windSpeed = String(ev.windSpeed);
+    }
+  }
+
   return {
-    dateOfLoss: "2025-01-15",
-    hailSize: "1.5 inches",
-    windSpeed: "65 mph",
-    source: "NOAA / Stormersite",
+    dateOfLoss: fmtDate(wr.dol),
+    hailSize,
+    windSpeed,
+    source: "NOAA / SkaiScraper Weather Intelligence",
     verificationStatement:
-      "A qualifying hail/wind event occurred within 6 hours of claimed loss on January 15, 2025.",
-    mapUrls: [
-      "https://via.placeholder.com/600x400/1e40af/ffffff?text=Hail+Map",
-      "https://via.placeholder.com/600x400/3b82f6/ffffff?text=Wind+Contour",
-    ],
+      wr.overallAssessment ||
+      `Weather verification completed for ${fmtDate(wr.dol)} at ${wr.address || "property address"}.`,
   };
 }
 
-/**
- * Fetch photo evidence (mock)
- */
-export function useReportPhotos(): PhotoItem[] {
-  return [
-    {
-      id: "photo-001",
-      url: "https://via.placeholder.com/800x600/1e40af/ffffff?text=Roof+Damage+1",
-      caption: "Hail impact on shingle surface - field area",
-      category: "field",
-      locationTag: "North slope",
-      takenAt: "2025-01-20T10:30:00Z",
+// ── 4. Photo evidence ─────────────────────────────────────────────────────
+export async function fetchReportPhotos(claimId: string, orgId: string): Promise<PhotoItem[]> {
+  const assets = await prisma.file_assets.findMany({
+    where: {
+      orgId,
+      claimId,
+      mimeType: { startsWith: "image/" },
     },
-    {
-      id: "photo-002",
-      url: "https://via.placeholder.com/800x600/3b82f6/ffffff?text=Roof+Damage+2",
-      caption: "Wind-lifted shingles - ridge area",
-      category: "field",
-      locationTag: "Ridge cap",
-      takenAt: "2025-01-20T10:35:00Z",
-    },
-    {
-      id: "photo-003",
-      url: "https://via.placeholder.com/800x600/1e40af/ffffff?text=Soft+Metals",
-      caption: "Hail dents on gutter and flashing",
-      category: "soft-metals",
-      locationTag: "East gutter",
-      takenAt: "2025-01-20T10:40:00Z",
-    },
-    {
-      id: "photo-004",
-      url: "https://via.placeholder.com/800x600/3b82f6/ffffff?text=Test+Cut",
-      caption: "Test cut revealing brittle granule loss",
-      category: "test-cuts",
-      locationTag: "West slope",
-      takenAt: "2025-01-20T11:00:00Z",
-    },
-  ];
+    orderBy: { createdAt: "asc" },
+    take: 100, // cap for PDF sanity
+  });
+
+  return assets.map((a) => ({
+    id: a.id,
+    url: a.publicUrl,
+    caption: a.note || a.filename,
+    category: a.category || "other",
+    locationTag: a.photo_angle || undefined,
+    takenAt: a.createdAt.toISOString(),
+  }));
 }
 
-/**
- * Fetch line items (mock)
- */
-export function useReportLineItems(): LineItem[] {
-  return [
-    {
-      id: "line-001",
-      description: "Tear-off existing roof system (30 sq)",
-      quantity: 30,
-      unit: "SQ",
-      contractorPrice: 4500,
-      carrierPrice: 3900,
-      status: "approved",
-      variance: 600,
+// ── 5. Scope line items ───────────────────────────────────────────────────
+export async function fetchReportLineItems(claimId: string): Promise<LineItem[]> {
+  const scopes = await prisma.scopes.findMany({
+    where: { claim_id: claimId },
+    include: {
+      scope_areas: {
+        include: {
+          scope_items: {
+            where: { included: true },
+            orderBy: { sort_order: "asc" },
+          },
+        },
+        orderBy: { sort_order: "asc" },
+      },
     },
-    {
-      id: "line-002",
-      description: "Install GAF Timberline HDZ shingles",
-      quantity: 30,
-      unit: "SQ",
-      contractorPrice: 12000,
-      carrierPrice: 11500,
-      status: "approved",
-      variance: 500,
-    },
-    {
-      id: "line-003",
-      description: "Ice & water shield (3' eave + valleys)",
-      quantity: 8,
-      unit: "ROLL",
-      contractorPrice: 1200,
-      carrierPrice: 800,
-      status: "pending",
-      variance: 400,
-    },
-    {
-      id: "line-004",
-      description: "Synthetic underlayment",
-      quantity: 30,
-      unit: "SQ",
-      contractorPrice: 900,
-      status: "new",
-    },
-    {
-      id: "line-005",
-      description: "Haul-off & dump fees",
-      quantity: 1,
-      unit: "LOT",
-      contractorPrice: 750,
-      carrierPrice: 500,
-      status: "denied",
-      variance: 250,
-    },
-  ];
+    orderBy: { created_at: "desc" },
+    take: 1, // latest scope
+  });
+
+  const items: LineItem[] = [];
+  for (const scope of scopes) {
+    for (const area of scope.scope_areas) {
+      for (const si of area.scope_items) {
+        items.push({
+          id: si.id,
+          description: si.description,
+          quantity: si.quantity || 1,
+          unit: si.unit || "EA",
+          contractorPrice: 0, // price data lives in estimates, not scope_items
+          status: "new",
+        });
+      }
+    }
+  }
+  return items;
 }
 
-/**
- * Fetch code compliance citations (mock)
- */
-export function useReportCodes(): CodeCitation[] {
-  return [
-    {
-      code: "IRC R905.2.7",
-      description: "Ice Barrier Requirement",
-      jurisdictionType: "IRC",
-      requirementText:
-        "Ice barrier required in areas where average daily temperature in January is 25°F or less.",
-    },
-    {
-      code: "IBC 1507.2.8.1",
-      description: "Underlayment Replacement",
-      jurisdictionType: "IBC",
-      requirementText:
-        "Where the existing roof is removed down to the deck, new underlayment shall be installed per code.",
-    },
-    {
-      code: "GAF Installation Manual",
-      description: "Manufacturer Warranty Requirements",
-      jurisdictionType: "Manufacturer",
-      requirementText:
-        "Use of GAF-approved synthetic underlayment is required to maintain warranty coverage.",
-    },
-    {
-      code: "Phoenix Building Code 106.3",
-      description: "Local Steep-Slope Requirements",
-      jurisdictionType: "Local",
-      requirementText:
-        "Additional safety measures and fall protection required for roofs exceeding 6:12 pitch.",
-    },
-  ];
+// ── 6. Code compliance citations ──────────────────────────────────────────
+export async function fetchReportCodes(orgId: string): Promise<CodeCitation[]> {
+  const codes = await prisma.code_requirements.findMany({
+    where: { orgId },
+  });
+
+  return codes.map((c) => ({
+    code: c.code,
+    description: c.summary,
+    jurisdictionType: (c.region?.includes("IRC")
+      ? "IRC"
+      : c.region?.includes("IBC")
+        ? "IBC"
+        : c.region?.includes("Local") || c.region?.includes("local")
+          ? "Local"
+          : "Manufacturer") as CodeCitation["jurisdictionType"],
+    requirementText: c.summary,
+  }));
 }
 
-/**
- * Fetch supplements (mock)
- */
-export function useReportSupplements(): SupplementItem[] {
-  return [
-    {
-      description: "Additional decking replacement (hidden damage)",
-      reasonCode: "Unseen damage discovered during tear-off",
-      amount: 1250,
-      justification:
-        '12 sheets of 1/2" OSB required due to water damage not visible from exterior inspection.',
-      attachments: ["decking-damage-photos.pdf"],
+// ── 7. Supplements ────────────────────────────────────────────────────────
+export async function fetchReportSupplements(claimId: string): Promise<SupplementItem[]> {
+  const supplements = await prisma.supplements.findMany({
+    where: { claim_id: claimId },
+    include: {
+      supplement_items: true,
     },
-    {
-      description: "Code upgrade: Ice & water shield extension",
-      reasonCode: "Code compliance upgrade",
-      amount: 600,
-      justification:
-        'Local jurisdiction requires ice barrier to extend 36" past interior wall line. Original estimate only included eaves.',
-      attachments: ["code-citation-106-3.pdf"],
-    },
-  ];
+    orderBy: { created_at: "desc" },
+  });
+
+  const items: SupplementItem[] = [];
+  for (const supp of supplements) {
+    for (const si of supp.supplement_items) {
+      items.push({
+        description: si.name || si.description || "Supplement item",
+        reasonCode: si.justification || "Supplement",
+        amount: si.total ? Number(si.total) : si.price_cents ? si.price_cents / 100 : 0,
+        justification: si.justification || si.code_reference || "",
+      });
+    }
+  }
+  return items;
 }

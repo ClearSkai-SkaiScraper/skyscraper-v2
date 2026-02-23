@@ -266,7 +266,7 @@ export async function GET(request: NextRequest, { params }: { params: { claimId:
       {
         error: "Internal server error",
         code: "INTERNAL_ERROR",
-        message: error.message,
+        message: "Internal server error",
         errorId,
         where: "api/claims/[claimId]/workspace",
       },

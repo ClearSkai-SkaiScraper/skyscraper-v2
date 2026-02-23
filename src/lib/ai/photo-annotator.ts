@@ -1,18 +1,19 @@
+import { getOpenAI } from "@/lib/ai/client";
 import { logger } from "@/lib/logger";
 
 /**
  * AI Photo Annotation Engine
  *
- * Processes damage photos with computer vision.
- * Generates bounding boxes, damage markers, severity labels.
+ * Processes damage photos with GPT-4o Vision.
+ * Generates bounding box regions, damage markers, severity labels.
  * Creates descriptive captions for each damaged area.
  */
 
 export interface BoundingBox {
-  x: number; // pixels from left
-  y: number; // pixels from top
-  width: number; // pixels
-  height: number; // pixels
+  x: number; // percentage from left (0-100)
+  y: number; // percentage from top (0-100)
+  width: number; // percentage
+  height: number; // percentage
   confidence: number; // 0-1
 }
 
@@ -51,151 +52,148 @@ export interface AnnotatedPhoto {
   };
 }
 
+const VISION_SYSTEM_PROMPT = `You are a professional roofing damage assessment AI. Analyze the provided photo for property damage.
+
+Return a JSON object with this exact structure:
+{
+  "annotations": [
+    {
+      "type": "hail" | "wind" | "structural" | "missing" | "wear" | "debris",
+      "region": { "x": <% from left 0-100>, "y": <% from top 0-100>, "width": <% 0-100>, "height": <% 0-100> },
+      "severity": "minor" | "moderate" | "severe" | "catastrophic",
+      "confidence": <0.0-1.0>,
+      "description": "<concise damage description with measurements if visible>",
+      "measurements": { "diameter": <inches|null>, "length": <inches|null>, "area": <sqft|null> },
+      "location": { "roof": "north"|"south"|"east"|"west"|"ridge"|"valley"|"eave", "feature": "shingle"|"flashing"|"vent"|"chimney"|"skylight"|"gutter"|null },
+      "urgency": "immediate" | "high" | "medium" | "low"
+    }
+  ],
+  "overallSeverity": "minor" | "moderate" | "severe" | "catastrophic",
+  "caption": "<one-line summary of all damage found>"
+}
+
+Rules:
+- Be precise and conservative with confidence scores
+- Only report damage you can actually see in the image
+- If no damage is visible, return an empty annotations array
+- Measurements should only be included when you can reasonably estimate them from visual cues
+- Return ONLY valid JSON, no markdown fences`;
+
 /**
- * Annotate photos with AI-detected damage
+ * Annotate photos with AI-detected damage using GPT-4o Vision
  */
 export async function annotatePhotos(
   photos: Array<{ id: string; url: string }>
 ): Promise<{ success: boolean; data?: AnnotatedPhoto[]; error?: string }> {
   try {
-    // In production, integrate with computer vision API
-    // For now, generate realistic mock annotations
+    const openai = getOpenAI();
+    const annotatedPhotos: AnnotatedPhoto[] = [];
 
-    const annotatedPhotos: AnnotatedPhoto[] = photos.map((photo, idx) => {
-      // Generate varied annotations based on photo index
-      const annotations: DamageAnnotation[] = [];
+    for (const photo of photos) {
+      try {
+        const response = await openai.chat.completions.create({
+          model: "gpt-4o",
+          messages: [
+            { role: "system", content: VISION_SYSTEM_PROMPT },
+            {
+              role: "user",
+              content: [
+                { type: "text", text: "Analyze this property photo for damage. Return JSON only." },
+                { type: "image_url", image_url: { url: photo.url, detail: "high" } },
+              ],
+            },
+          ],
+          max_tokens: 2000,
+          temperature: 0.1,
+          response_format: { type: "json_object" },
+        });
 
-      if (idx === 0) {
-        // Roof overview - multiple hail impacts
-        annotations.push({
-          id: `ann-${Date.now()}-1`,
-          type: "hail",
-          boundingBox: { x: 120, y: 80, width: 40, height: 40, confidence: 0.95 },
-          severity: "severe",
-          confidence: 0.95,
-          description: "Hail impact - 1.75 inch diameter - circular damage pattern",
-          measurements: { diameter: 1.75 },
-          location: { roof: "north", feature: "shingle" },
-          urgency: "high",
+        const raw = response.choices[0]?.message?.content?.trim();
+        if (!raw) {
+          logger.warn(`[Photo Annotator] Empty response for photo ${photo.id}`);
+          annotatedPhotos.push(createEmptyAnnotation(photo));
+          continue;
+        }
+
+        const parsed = JSON.parse(raw);
+        const annotations: DamageAnnotation[] = (parsed.annotations || []).map(
+          (ann: any, idx: number) => ({
+            id: `ann-${photo.id}-${idx}`,
+            type: ann.type || "wear",
+            boundingBox: {
+              x: ann.region?.x ?? 0,
+              y: ann.region?.y ?? 0,
+              width: ann.region?.width ?? 10,
+              height: ann.region?.height ?? 10,
+              confidence: ann.confidence ?? 0.5,
+            },
+            severity: ann.severity || "minor",
+            confidence: ann.confidence ?? 0.5,
+            description: ann.description || "Damage detected",
+            measurements: ann.measurements || undefined,
+            location: {
+              roof: ann.location?.roof || "north",
+              feature: ann.location?.feature || undefined,
+            },
+            urgency: ann.urgency || "medium",
+          })
+        );
+
+        const criticalCount = annotations.filter((a) => a.urgency === "immediate").length;
+
+        annotatedPhotos.push({
+          photoId: photo.id,
+          photoUrl: photo.url,
+          originalUrl: photo.url,
+          annotations,
+          overallSeverity: parsed.overallSeverity || computeSeverity(annotations),
+          caption:
+            parsed.caption || generatePhotoCaption(annotations, parsed.overallSeverity || "minor"),
+          timestamp: new Date(),
+          metadata: {
+            width: 1920,
+            height: 1080,
+            totalAnnotations: annotations.length,
+            criticalDamage: criticalCount,
+          },
         });
-        annotations.push({
-          id: `ann-${Date.now()}-2`,
-          type: "hail",
-          boundingBox: { x: 280, y: 150, width: 35, height: 35, confidence: 0.92 },
-          severity: "moderate",
-          confidence: 0.92,
-          description: "Hail impact - 1.5 inch diameter - granule loss visible",
-          measurements: { diameter: 1.5 },
-          location: { roof: "north", feature: "shingle" },
-          urgency: "medium",
-        });
-        annotations.push({
-          id: `ann-${Date.now()}-3`,
-          type: "hail",
-          boundingBox: { x: 450, y: 200, width: 38, height: 38, confidence: 0.89 },
-          severity: "severe",
-          confidence: 0.89,
-          description: "Hail impact - 1.75 inch diameter - shingle mat exposed",
-          measurements: { diameter: 1.75 },
-          location: { roof: "north", feature: "shingle" },
-          urgency: "high",
-        });
-      } else if (idx === 1) {
-        // Ridge cap damage
-        annotations.push({
-          id: `ann-${Date.now()}-4`,
-          type: "wind",
-          boundingBox: { x: 200, y: 100, width: 150, height: 60, confidence: 0.88 },
-          severity: "severe",
-          confidence: 0.88,
-          description: "Wind damage - ridge cap lifted and torn - 18 inch section",
-          measurements: { length: 18, area: 2.25 },
-          location: { roof: "ridge", feature: "shingle" },
-          urgency: "immediate",
-        });
-        annotations.push({
-          id: `ann-${Date.now()}-5`,
-          type: "missing",
-          boundingBox: { x: 350, y: 110, width: 80, height: 50, confidence: 0.94 },
-          severity: "catastrophic",
-          confidence: 0.94,
-          description: "Missing shingles - ridge cap - 8 linear feet exposed",
-          measurements: { length: 96, area: 6 },
-          location: { roof: "ridge", feature: "shingle" },
-          urgency: "immediate",
-        });
-      } else if (idx === 2) {
-        // Flashing damage
-        annotations.push({
-          id: `ann-${Date.now()}-6`,
-          type: "structural",
-          boundingBox: { x: 180, y: 220, width: 100, height: 80, confidence: 0.91 },
-          severity: "severe",
-          confidence: 0.91,
-          description: "Damaged flashing - chimney - separation from structure",
-          location: { roof: "west", feature: "flashing" },
-          urgency: "immediate",
-        });
-        annotations.push({
-          id: `ann-${Date.now()}-7`,
-          type: "debris",
-          boundingBox: { x: 300, y: 180, width: 60, height: 50, confidence: 0.85 },
-          severity: "moderate",
-          confidence: 0.85,
-          description: "Debris accumulation - valley area - drainage obstruction",
-          location: { roof: "west", feature: "chimney" },
-          urgency: "high",
-        });
+      } catch (photoErr) {
+        logger.error(`[Photo Annotator] Failed on photo ${photo.id}:`, photoErr);
+        annotatedPhotos.push(createEmptyAnnotation(photo));
       }
-
-      // Calculate overall severity
-      const severityScores = {
-        minor: 1,
-        moderate: 2,
-        severe: 3,
-        catastrophic: 4,
-      };
-      const avgSeverity =
-        annotations.reduce((sum, ann) => sum + severityScores[ann.severity], 0) /
-        annotations.length;
-      const overallSeverity =
-        avgSeverity >= 3.5
-          ? "catastrophic"
-          : avgSeverity >= 2.5
-            ? "severe"
-            : avgSeverity >= 1.5
-              ? "moderate"
-              : "minor";
-
-      // Generate caption
-      const criticalCount = annotations.filter((a) => a.urgency === "immediate").length;
-      const caption = generatePhotoCaption(annotations, overallSeverity);
-
-      return {
-        photoId: photo.id,
-        photoUrl: photo.url, // In production, generate annotated image URL
-        originalUrl: photo.url,
-        annotations,
-        overallSeverity,
-        caption,
-        timestamp: new Date(),
-        metadata: {
-          width: 1920,
-          height: 1080,
-          totalAnnotations: annotations.length,
-          criticalDamage: criticalCount,
-        },
-      };
-    });
+    }
 
     return { success: true, data: annotatedPhotos };
   } catch (error) {
     logger.error("[Photo Annotator] Failed to annotate photos:", error);
     return {
       success: false,
-      error: error instanceof Error ? error.message : "Unknown error",
+      error: "Photo annotation failed",
     };
   }
+}
+
+function createEmptyAnnotation(photo: { id: string; url: string }): AnnotatedPhoto {
+  return {
+    photoId: photo.id,
+    photoUrl: photo.url,
+    originalUrl: photo.url,
+    annotations: [],
+    overallSeverity: "minor",
+    caption: "No significant damage detected",
+    timestamp: new Date(),
+    metadata: { width: 1920, height: 1080, totalAnnotations: 0, criticalDamage: 0 },
+  };
+}
+
+function computeSeverity(annotations: DamageAnnotation[]): AnnotatedPhoto["overallSeverity"] {
+  if (annotations.length === 0) return "minor";
+  const scores = { minor: 1, moderate: 2, severe: 3, catastrophic: 4 };
+  const avg = annotations.reduce((s, a) => s + (scores[a.severity] || 1), 0) / annotations.length;
+  if (avg >= 3.5) return "catastrophic";
+  if (avg >= 2.5) return "severe";
+  if (avg >= 1.5) return "moderate";
+  return "minor";
 }
 
 /**

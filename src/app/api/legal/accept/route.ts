@@ -90,7 +90,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ ok: true, acceptances, count: acceptances.length });
   } catch (error) {
     logger.error("[Legal Accept] ❌ Error:", {
-      message: error.message,
+      message: "Internal server error",
       stack: error.stack,
       name: error.name,
     });

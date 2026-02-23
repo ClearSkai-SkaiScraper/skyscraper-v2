@@ -23,12 +23,6 @@ export const maxDuration = 300; // 5 minutes — iterates up to 1000 orgs + Stri
 
 const stripe = getStripeClient()!;
 
-const PLAN_TOKENS: Record<string, number> = {
-  solo: 200,
-  business: 1200,
-  enterprise: 4000,
-};
-
 export async function GET(req: Request) {
   const authError = verifyCronSecret(req);
   if (authError) return authError;
@@ -68,20 +62,11 @@ export async function GET(req: Request) {
 
         checked++;
 
-        // Determine expected token balance
-        const planKey = Org.planKey || "solo";
-        const expectedTokens = PLAN_TOKENS[planKey] || 200;
-        const currentBalance = 0; // TODO: TokenWallet model removed — wire up new token system
-
-        // If balance is significantly lower than expected, top up
-        if (currentBalance < expectedTokens * 0.5) {
-          // TODO: usage_tokens model removed — wire up new token system
-          fixed++;
-
-          logger.debug(`Reconciled Org ${Org.id}: ${currentBalance} → ${expectedTokens} tokens`);
-        }
+        // Subscription verified as active in Stripe
+        logger.debug(`Org ${Org.id}: Stripe subscription verified active`);
       } catch (error) {
-        errors.push(`Org ${Org.id}: ${error.message}`);
+        const errMsg = error instanceof Error ? error.message : "Unknown error";
+        errors.push(`Org ${Org.id}: ${errMsg}`);
         logger.error(`Reconciliation error for Org ${Org.id}:`, error);
       }
     }
@@ -112,7 +97,7 @@ export async function GET(req: Request) {
 
     return NextResponse.json(
       {
-        error: error instanceof Error ? error.message : "Reconciliation failed",
+        error: "Reconciliation failed",
       },
       { status: 500 }
     );

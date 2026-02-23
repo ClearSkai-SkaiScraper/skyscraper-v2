@@ -82,7 +82,7 @@ export async function GET(req: Request) {
       },
     });
   } catch (error) {
-    log.error("[clients/find-pro] Search failed", { error: error.message });
+    log.error("[clients/find-pro] Search failed", { error: "Internal server error" });
     return NextResponse.json({ error: "Search failed" }, { status: 500 });
   }
 }
@@ -170,7 +170,7 @@ export async function POST(req: Request) {
       message: "Connection request sent! The contractor will review your request.",
     });
   } catch (error) {
-    log.error("[clients/find-pro] Connection request failed", { error: error.message });
+    log.error("[clients/find-pro] Connection request failed", { error: "Internal server error" });
     return NextResponse.json({ error: "Request failed" }, { status: 500 });
   }
 }

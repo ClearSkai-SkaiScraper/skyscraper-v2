@@ -198,7 +198,7 @@ export const POST = withAuth(
         return NextResponse.json({ error: "Claim not found" }, { status: 404 });
       }
       logger.error("[Claim Mutate] Error:", error);
-      return NextResponse.json({ error: error.message || "Internal error" }, { status: 500 });
+      return NextResponse.json({ error: "Internal error" }, { status: 500 });
     }
   }
 );

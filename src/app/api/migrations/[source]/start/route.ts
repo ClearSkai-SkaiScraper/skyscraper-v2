@@ -128,7 +128,7 @@ export async function POST(
         controller.enqueue(encoder.encode(finalEvent));
       } catch (error) {
         // Send error event
-        const errorEvent = `data: ${JSON.stringify({ type: "error", message: error.message })}\n\n`;
+        const errorEvent = `data: ${JSON.stringify({ type: "error", message: "Internal server error" })}\n\n`;
         controller.enqueue(encoder.encode(errorEvent));
       } finally {
         controller.close();

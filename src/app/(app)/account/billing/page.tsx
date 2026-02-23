@@ -2,11 +2,10 @@
 
 import { logger } from "@/lib/logger";
 import { useOrganization, useUser } from "@clerk/nextjs";
-import { Clock, CreditCard, ExternalLink, FileText, Loader2, Settings } from "lucide-react";
+import { Clock, CreditCard, ExternalLink, FileText, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { toast } from "sonner";
 
 interface BillingData {
   org: {
@@ -37,10 +36,6 @@ interface BillingData {
     invoicePdf: string | null;
     description: string | null;
   }>;
-  autoRefill: {
-    enabled: boolean;
-    threshold: number;
-  };
 }
 
 function getStatusBadge(status: string | null) {
@@ -116,38 +111,6 @@ export default function BillingPage() {
       logger.error("Failed to open billing portal:", error);
     } finally {
       setPortalLoading(false);
-    }
-  };
-
-  const toggleAutoRefill = async () => {
-    if (!data) return;
-
-    try {
-      const res = await fetch("/api/billing/auto-refill", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          orgId: organization?.id,
-          autoRefill: !data.autoRefill.enabled,
-          refillThreshold: data.autoRefill.threshold,
-        }),
-      });
-
-      if (res.ok) {
-        setData({
-          ...data,
-          autoRefill: {
-            ...data.autoRefill,
-            enabled: !data.autoRefill.enabled,
-          },
-        });
-        toast.success("Auto-refill settings updated");
-      } else {
-        toast.error("Auto-refill settings are not yet available");
-      }
-    } catch (error) {
-      logger.error("Failed to toggle auto-refill:", error);
-      toast.error("Auto-refill settings are not yet available");
     }
   };
 
@@ -293,47 +256,6 @@ export default function BillingPage() {
               <p className="text-sm text-slate-700 dark:text-slate-300">
                 No payment methods on file
               </p>
-            )}
-          </div>
-        )}
-
-        {/* Auto-Refill Settings */}
-        {hasSubscription && (
-          <div className="rounded-lg border bg-[var(--surface-1)] p-6 shadow">
-            <div className="mb-4 flex items-center justify-between">
-              <div>
-                <h2 className="text-lg font-semibold text-[color:var(--text)]">Auto-Refill</h2>
-                <p className="mt-1 text-sm text-slate-700 dark:text-slate-300">
-                  Automatically purchase tokens when balance is low
-                </p>
-              </div>
-              <Settings className="h-5 w-5 text-slate-700 dark:text-slate-300" />
-            </div>
-
-            <div className="flex items-center justify-between rounded-lg bg-[var(--surface-2)] p-4">
-              <span className="font-medium">Enable Auto-Refill</span>
-              <button
-                onClick={toggleAutoRefill}
-                aria-label="Toggle auto-refill"
-                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                  data.autoRefill.enabled ? "bg-sky-600" : "bg-gray-300"
-                }`}
-              >
-                <span
-                  className={`inline-block h-4 w-4 transform rounded-full bg-[var(--surface-1)] transition-transform ${
-                    data.autoRefill.enabled ? "translate-x-6" : "translate-x-1"
-                  }`}
-                />
-              </button>
-            </div>
-
-            {data.autoRefill.enabled && (
-              <div className="mt-4 rounded-lg bg-blue-50 p-4">
-                <p className="text-sm text-blue-900">
-                  We'll automatically purchase tokens when your balance drops below{" "}
-                  {data.autoRefill.threshold} tokens.
-                </p>
-              </div>
             )}
           </div>
         )}

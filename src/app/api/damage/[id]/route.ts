@@ -48,7 +48,7 @@ export async function GET(
   } catch (error) {
     logger.error("[API] Get damage assessment error:", error);
     return NextResponse.json(
-      { error: error.message || "Failed to fetch damage assessment" },
+      { error: "Failed to fetch damage assessment" },
       { status: 500 }
     );
   }
@@ -95,7 +95,7 @@ export async function DELETE(
   } catch (error) {
     logger.error("[API] Delete damage assessment error:", error);
     return NextResponse.json(
-      { error: error.message || "Failed to delete damage assessment" },
+      { error: "Failed to delete damage assessment" },
       { status: 500 }
     );
   }

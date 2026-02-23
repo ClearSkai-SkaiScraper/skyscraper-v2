@@ -56,7 +56,7 @@ export const GET = withOrgScope(
     } catch (error) {
       logger.error("[GET /api/contacts/:id] Error:", error);
       return NextResponse.json(
-        { error: error.message || "Failed to fetch contact" },
+        { error: "Failed to fetch contact" },
         { status: 500 }
       );
     }
@@ -150,7 +150,7 @@ export const PATCH = withOrgScope(
     } catch (error) {
       logger.error("[PATCH /api/contacts/:id] Error:", error);
       return NextResponse.json(
-        { error: error.message || "Failed to update contact" },
+        { error: "Failed to update contact" },
         { status: 500 }
       );
     }

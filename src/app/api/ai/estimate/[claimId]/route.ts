@@ -255,7 +255,7 @@ Format as professional insurance estimate ready for submission.
   } catch (error) {
     logger.error("AI Estimate Generation Error:", error);
     return NextResponse.json(
-      { error: error.message || "Failed to generate estimate" },
+      { error: "Failed to generate estimate" },
       { status: 500 }
     );
   }

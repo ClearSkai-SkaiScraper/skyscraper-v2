@@ -80,7 +80,7 @@ async function POST_INNER(request: NextRequest, ctx: AiBillingContext) {
   } catch (error) {
     logger.error("[Domain Adaptation AI] Error:", error);
 
-    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+    return NextResponse.json({ success: false, error: "Internal server error" }, { status: 500 });
   }
 }
 
@@ -121,7 +121,7 @@ export async function GET() {
       },
     });
   } catch (error) {
-    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+    return NextResponse.json({ success: false, error: "Internal server error" }, { status: 500 });
   }
 }
 

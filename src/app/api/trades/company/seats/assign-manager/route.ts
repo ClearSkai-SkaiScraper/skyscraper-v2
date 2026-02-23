@@ -166,7 +166,7 @@ export async function POST(req: NextRequest) {
   } catch (error: any) {
     logger.error("[assign-manager] Error:", error);
     return NextResponse.json(
-      { error: error.message || "Failed to update manager assignment" },
+      { error: "Failed to update manager assignment" },
       { status: 500 }
     );
   }
@@ -249,7 +249,7 @@ export async function GET(req: NextRequest) {
   } catch (error: any) {
     logger.error("[assign-manager] GET Error:", error);
     return NextResponse.json(
-      { error: error.message || "Failed to fetch hierarchy" },
+      { error: "Failed to fetch hierarchy" },
       { status: 500 }
     );
   }

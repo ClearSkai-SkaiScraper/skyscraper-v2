@@ -272,7 +272,7 @@ async function POST_INNER(req: NextRequest, ctx: { userId: string; orgId: string
     });
   } catch (error) {
     logger.error("[Rebuttal Export PDF Error]", error);
-    return NextResponse.json({ error: error.message || "Failed to export PDF" }, { status: 500 });
+    return NextResponse.json({ error: "Failed to export PDF" }, { status: 500 });
   }
 }
 

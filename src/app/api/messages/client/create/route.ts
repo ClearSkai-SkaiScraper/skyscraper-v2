@@ -150,7 +150,7 @@ export async function POST(req: NextRequest) {
   } catch (error) {
     logger.error("[messages/client/create] Error:", error);
     return NextResponse.json(
-      { error: error.message || "Failed to create message" },
+      { error: "Failed to create message" },
       { status: 500 }
     );
   }

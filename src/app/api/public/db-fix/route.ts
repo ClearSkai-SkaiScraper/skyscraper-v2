@@ -177,7 +177,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.json(
       {
         ok: false,
-        error: error.message,
+        error: "Internal server error",
         stack: error.stack?.split("\n").slice(0, 5),
         steps,
       },

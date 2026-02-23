@@ -272,6 +272,6 @@ export async function POST(req: NextRequest) {
     });
   } catch (error) {
     logger.error("[Supplement Export PDF Error]", error);
-    return NextResponse.json({ error: error.message || "Failed to export PDF" }, { status: 500 });
+    return NextResponse.json({ error: "Failed to export PDF" }, { status: 500 });
   }
 }

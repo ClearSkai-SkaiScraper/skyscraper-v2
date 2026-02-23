@@ -154,7 +154,7 @@ export const POST = withAuth(async (req: NextRequest, { userId, orgId }) => {
   } catch (error) {
     logger.error("[API] /api/messages/create error:", error);
     return NextResponse.json(
-      { error: error.message || "Failed to create message" },
+      { error: "Failed to create message" },
       { status: 500 }
     );
   }

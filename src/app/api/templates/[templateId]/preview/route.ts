@@ -105,7 +105,7 @@ export const GET = withOrgScope(
     } catch (error) {
       logger.error(`[TEMPLATE_PREVIEW] Error:`, error);
       return NextResponse.json(
-        { error: error.message || "Failed to load template preview" },
+        { error: "Failed to load template preview" },
         { status: 500 }
       );
     }

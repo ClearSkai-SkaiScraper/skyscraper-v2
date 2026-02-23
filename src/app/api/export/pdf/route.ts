@@ -86,7 +86,7 @@ export async function POST(req: NextRequest) {
     Sentry.captureException(error, {
       tags: { component: "pdf-export" },
     });
-    return NextResponse.json({ error: error.message || "PDF export failed" }, { status: 500 });
+    return NextResponse.json({ error: "PDF export failed" }, { status: 500 });
   }
 }
 
@@ -108,7 +108,7 @@ export async function GET() {
   } catch (error) {
     logger.error("[PDF_EXPORT] Capability check failed:", error);
     return NextResponse.json(
-      { error: error.message || "Capability check failed" },
+      { error: "Capability check failed" },
       { status: 500 }
     );
   }

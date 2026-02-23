@@ -8,7 +8,6 @@ export interface DashboardKpis {
   totalRevenue: number;
   pendingTasks: number;
   recentActivity: number;
-  tokenBalance: number;
   activeLeads: number;
   openClaims: number;
   revenueMtdCents: number;
@@ -27,6 +26,5 @@ export async function loadKpis(orgId: string): Promise<DashboardKpis> {
     openClaims: 0,
     revenueMtdCents: 0,
     conversionRate: 0,
-    tokenBalance: 0,
   };
 }

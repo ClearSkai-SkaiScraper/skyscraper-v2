@@ -106,7 +106,7 @@ export async function GET(req: NextRequest, { params }: { params: { slug: string
   } catch (error) {
     logger.error(`[GET /api/templates/marketplace/${params.slug}] Error:`, error);
     return NextResponse.json(
-      { ok: false, error: error.message || "Failed to fetch template" },
+      { ok: false, error: "Failed to fetch template" },
       { status: 500 }
     );
   }

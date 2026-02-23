@@ -98,7 +98,7 @@ export async function GET(req: NextRequest) {
   } catch (error) {
     logger.error("[Network GET] Error:", error);
     return NextResponse.json(
-      { connections: [], error: error.message || "Failed to fetch connections" },
+      { connections: [], error: "Failed to fetch connections" },
       { status: 200 }
     );
   }
@@ -198,7 +198,7 @@ export async function POST(req: NextRequest) {
   } catch (error) {
     logger.error("[Network POST] Error:", error);
     return NextResponse.json(
-      { error: error.message || "Failed to update connection" },
+      { error: "Failed to update connection" },
       { status: 500 }
     );
   }

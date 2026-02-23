@@ -97,9 +97,6 @@ export const POST = withSentryApi(async function POST(req: Request) {
     return NextResponse.json({ ok: true, results });
   } catch (error) {
     // Sentry captured via wrapper; still return structured error
-    return NextResponse.json(
-      { ok: false, error: error.message ?? "Unknown error" },
-      { status: 500 }
-    );
+    return NextResponse.json({ ok: false, error: "Internal server error" }, { status: 500 });
   }
 });

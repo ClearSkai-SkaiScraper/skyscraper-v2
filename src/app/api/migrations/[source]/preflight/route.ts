@@ -72,7 +72,7 @@ export const POST = withAuth(async (request: NextRequest, { orgId }) => {
     return NextResponse.json(result);
   } catch (error) {
     logger.error(`[Migration Preflight] ${upperSource} error:`, error);
-    return NextResponse.json({ error: error.message || "Preflight check failed" }, { status: 500 });
+    return NextResponse.json({ error: "Preflight check failed" }, { status: 500 });
   }
 });
 

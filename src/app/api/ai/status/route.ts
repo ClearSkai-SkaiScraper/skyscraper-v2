@@ -31,7 +31,7 @@ async function GET_INNER(req: NextRequest, ctx: AiBillingContext) {
     return NextResponse.json(job);
   } catch (error) {
     logger.error("[AI Status API]", error);
-    return NextResponse.json({ error: error.message || "Failed to get status" }, { status: 500 });
+    return NextResponse.json({ error: "Failed to get status" }, { status: 500 });
   }
 }
 

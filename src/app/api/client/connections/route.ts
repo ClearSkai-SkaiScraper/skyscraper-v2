@@ -145,7 +145,7 @@ export async function GET(req: NextRequest) {
   } catch (error) {
     logger.error("[client/connections] Error:", error);
     return NextResponse.json(
-      { error: error.message || "Failed to fetch connections" },
+      { error: "Failed to fetch connections" },
       { status: 500 }
     );
   }

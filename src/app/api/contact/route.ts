@@ -15,6 +15,6 @@ export async function POST(req: Request) {
     logger.debug("Contact submission", body); // placeholder logging
     return NextResponse.json({ ok: true });
   } catch (e: any) {
-    return NextResponse.json({ ok: false, error: e.message }, { status: 400 });
+    return NextResponse.json({ ok: false, error: "Internal server error" }, { status: 400 });
   }
 }

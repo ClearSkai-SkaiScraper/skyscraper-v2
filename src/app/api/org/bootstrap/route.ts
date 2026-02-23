@@ -166,7 +166,7 @@ export async function POST(req: Request) {
   } catch (error) {
     logger.error("[bootstrap] Error:", error);
     return NextResponse.json(
-      { ok: false, error: error.message || "Bootstrap failed" },
+      { ok: false, error: "Bootstrap failed" },
       { status: 500 }
     );
   }

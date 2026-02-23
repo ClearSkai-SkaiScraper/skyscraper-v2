@@ -54,7 +54,7 @@ export async function POST(req: NextRequest) {
   } catch (error) {
     logger.error("[GenerateAddresses] Error:", error);
     return NextResponse.json(
-      { error: error.message || "Failed to generate addresses" },
+      { error: "Failed to generate addresses" },
       { status: 500 }
     );
   }

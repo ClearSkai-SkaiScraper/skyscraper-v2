@@ -223,7 +223,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json(
       {
         ok: false,
-        error: error.message || "generation-failed",
+        error: "generation-failed",
         details: process.env.NODE_ENV === "development" ? error.stack : undefined,
       },
       { status: 200 } // Return 200 to prevent demo crashes

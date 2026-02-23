@@ -10,14 +10,15 @@ import { logger } from "@/lib/logger";
 import { NextRequest, NextResponse } from "next/server";
 
 import { withAuth } from "@/lib/auth/withAuth";
+import prisma from "@/lib/prisma";
 import {
-  useReportBranding,
-  useReportClaimData,
-  useReportCodes,
-  useReportLineItems,
-  useReportPhotos,
-  useReportSupplements,
-  useReportWeather,
+  fetchReportBranding,
+  fetchReportClaimData,
+  fetchReportCodes,
+  fetchReportLineItems,
+  fetchReportPhotos,
+  fetchReportSupplements,
+  fetchReportWeather,
 } from "@/modules/reports/core/DataProviders";
 import { exportReport } from "@/modules/reports/export/orchestrator";
 import type { ExportFormat, ReportContext, SectionKey } from "@/modules/reports/types";
@@ -25,6 +26,21 @@ import type { ExportFormat, ReportContext, SectionKey } from "@/modules/reports/
 export const POST = withAuth(async (req: NextRequest, { orgId, userId }, routeParams) => {
   try {
     const { reportId } = await routeParams.params;
+
+    // Look up the report to get its claimId
+    const report = await prisma.reports.findFirst({
+      where: { id: reportId, orgId },
+      select: { claimId: true },
+    });
+
+    if (!report?.claimId) {
+      return NextResponse.json(
+        { error: "Report not found or has no linked claim" },
+        { status: 404 }
+      );
+    }
+
+    const claimId = report.claimId;
 
     // Parse request body
     const body = await req.json();
@@ -40,17 +56,30 @@ export const POST = withAuth(async (req: NextRequest, { orgId, userId }, routePa
       );
     }
 
-    // Build report context with mock data (replace with real DB queries in Phase 2)
+    // Build report context with REAL DB queries
+    const [branding, metadata, weather, photos, lineItems, codes, supplements] = await Promise.all([
+      fetchReportBranding(orgId),
+      fetchReportClaimData(reportId, claimId, userId),
+      fetchReportWeather(claimId),
+      fetchReportPhotos(claimId, orgId),
+      fetchReportLineItems(claimId),
+      fetchReportCodes(orgId),
+      fetchReportSupplements(claimId),
+    ]);
+
     const context: ReportContext = {
-      branding: useReportBranding(),
-      metadata: useReportClaimData(),
-      weather: useReportWeather(),
-      photos: useReportPhotos(),
-      lineItems: useReportLineItems(),
-      codes: useReportCodes(),
-      supplements: useReportSupplements(),
-      executiveSummary: `This report documents storm damage to the property. A qualifying weather event occurred, resulting in damage requiring full roof replacement.`,
-      adjusterNotes: "Contractor notes and rebuttals will appear here.",
+      reportId,
+      orgId,
+      userId,
+      branding,
+      metadata,
+      weather,
+      photos,
+      lineItems,
+      codes,
+      supplements,
+      executiveSummary: `This report documents storm damage to the property at ${metadata.propertyAddress}. All findings are based on field inspection and weather verification data.`,
+      adjusterNotes: "",
     };
 
     // Export the report
@@ -85,9 +114,6 @@ export const POST = withAuth(async (req: NextRequest, { orgId, userId }, routePa
     return NextResponse.json({ error: "No file generated" }, { status: 500 });
   } catch (error) {
     logger.error("[Export API] Error:", error);
-    return NextResponse.json(
-      { error: error instanceof Error ? error.message : "Internal server error" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 });

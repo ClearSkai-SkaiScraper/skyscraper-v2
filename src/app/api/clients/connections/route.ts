@@ -176,7 +176,7 @@ export async function GET() {
 
     return NextResponse.json({ clients: clientsWithStatus });
   } catch (error) {
-    log.error("[clients/connections] Failed to fetch", { error: error.message });
+    log.error("[clients/connections] Failed to fetch", { error: "Internal server error" });
     return NextResponse.json({ error: "Failed to fetch clients" }, { status: 500 });
   }
 }
@@ -309,7 +309,7 @@ export async function POST(req: Request) {
       emailSent,
     });
   } catch (error) {
-    log.error("[clients/connections] Failed to invite", { error: error.message });
+    log.error("[clients/connections] Failed to invite", { error: "Internal server error" });
     return NextResponse.json({ error: "Failed to invite client" }, { status: 500 });
   }
 }

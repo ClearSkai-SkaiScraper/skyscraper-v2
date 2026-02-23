@@ -184,7 +184,7 @@ export async function POST(req: Request) {
   } catch (error) {
     logger.error("[parse-scope] Error:", error);
     return NextResponse.json(
-      { error: error.message || "Failed to parse scope of work" },
+      { error: "Failed to parse scope of work" },
       { status: 500 }
     );
   }

@@ -3,7 +3,7 @@
 **Generated:** February 23, 2026  
 **Objective:** Get SkaiScraper Pro fully production-ready for live DAU  
 **Total Routes:** 516 API routes audited  
-**Auth Coverage:** 98 routes on `withAuth` · 418 routes still on legacy/raw/no auth  
+**Auth Coverage:** 98 routes on `withAuth` · 418 routes still on legacy/raw/no auth
 
 ---
 
@@ -35,7 +35,7 @@
 
 ### Token/Credits System — COMPLETELY BROKEN
 
-- [ ] **TODO-009** · Create `/api/tokens/balance` route — frontend calls this but **no route exists** (404 in production). 
+- [ ] **TODO-009** · Create `/api/tokens/balance` route — frontend calls this but **no route exists** (404 in production).
 - [ ] **TODO-010** · Fix `billing/status` token balance — hardcoded to `0` with TODO comment. **File:** `src/app/api/billing/status/route.ts`
 - [ ] **TODO-011** · Fix field name mismatch in token ledger — Prisma helper uses `amount`/`type` but SQL schema uses `delta`/`reason`. Writes silently fail. **File:** `src/lib/tokens/index.ts`
 - [ ] **TODO-012** · Fix `stripe-reconcile` cron — token reconciliation is stubbed out with `TODO: usage_tokens model removed — wire up new token system`. **File:** `src/app/api/cron/stripe-reconcile/route.ts`
@@ -68,6 +68,7 @@
 > These routes have no auth at all — no `withAuth`, no `requireAuth`, no `auth()`, nothing.
 
 #### AI Routes (12 routes — CRITICAL: claim data accessible without auth)
+
 - [ ] **TODO-021** · Add auth to `/api/ai/damage-builder` — no auth, operates on claim data
 - [ ] **TODO-022** · Add auth to `/api/ai/dispatch/[claimId]` — no auth, accesses claim by ID
 - [ ] **TODO-023** · Add auth to `/api/ai/enhanced-report-builder` — no auth
@@ -82,6 +83,7 @@
 - [ ] **TODO-032** · Add auth to `/api/ai/usage` — no auth, exposes usage data
 
 #### Data Routes (11 routes — claim/lead/project data exposed)
+
 - [ ] **TODO-033** · Add auth to `/api/invoices/[id]` — no auth, exposes invoice data
 - [ ] **TODO-034** · Add auth to `/api/leads/[id]/convert` — no auth, can convert leads
 - [ ] **TODO-035** · Add auth to `/api/leads/[id]` — no auth, full lead CRUD
@@ -97,12 +99,14 @@
 - [ ] **TODO-045** · Add auth to `/api/sms` — no auth, can send SMS messages
 
 #### Template Routes (4 routes — template data exposed)
+
 - [ ] **TODO-046** · Add auth to `/api/templates/[templateId]/placeholders` — no auth
 - [ ] **TODO-047** · Add auth to `/api/templates/[templateId]/thumbnail` — no auth
 - [ ] **TODO-048** · Review `/api/templates/[templateId]/public` — intentionally public? Add rate limiting
 - [ ] **TODO-049** · Add rate limiting to `/api/templates/marketplace/**` — 3 routes, public but need protection
 
 #### Intentionally Public (verify these are safe)
+
 - [ ] **TODO-050** · Verify `/api/public/diag-org` is safe — diagnostic route, may expose org internals
 - [ ] **TODO-051** · Verify `/api/public/claims` is safe — what claim data does it expose?
 - [ ] **TODO-052** · Verify `/api/v1/leads/ingest` has API key auth — public lead ingestion endpoint
@@ -110,6 +114,7 @@
 - [ ] **TODO-054** · Verify `/api/carrier/track/[trackingId]/[action]` is properly scoped
 
 #### Webhook Routes (need signature verification)
+
 - [ ] **TODO-055** · Add signature verification to `/api/integrations/quickbooks/webhook`
 - [ ] **TODO-056** · Add signature verification to `/api/measurements/webhook`
 - [ ] **TODO-057** · Add rate limiting to `/api/uploadthing` — no auth visible
@@ -119,6 +124,7 @@
 > These bypass org DB resolution, may use Clerk orgId directly, and lack standardized error handling. Converting all 233 is a long-term goal — prioritize by traffic and data sensitivity.
 
 #### Claims CRUD (highest traffic — convert FIRST)
+
 - [ ] **TODO-058** · Convert `/api/claims/[claimId]/route.ts` — GET/PUT/DELETE, raw `auth()`
 - [ ] **TODO-059** · Convert `/api/claims/[claimId]/photos/route.ts` — raw `auth()`
 - [ ] **TODO-060** · Convert `/api/claims/[claimId]/notes/route.ts` — raw `auth()`
@@ -165,6 +171,7 @@
 - [ ] **TODO-101** · Convert `/api/claims-folder/generate/*/route.ts` — 3 routes, raw `auth()`
 
 #### Properties & Contacts
+
 - [ ] **TODO-102** · Convert `/api/properties/route.ts` — raw `auth()`
 - [ ] **TODO-103** · Convert `/api/properties/map/route.ts` — raw `auth()`
 - [ ] **TODO-104** · Convert `/api/contacts/route.ts` — uses `getActiveOrgContext()`
@@ -172,6 +179,7 @@
 - [ ] **TODO-106** · Convert `/api/contacts/search/route.ts` — raw `auth()`
 
 #### Leads
+
 - [ ] **TODO-107** · Convert `/api/leads/route.ts` — uses `getCurrentUserPermissions()`
 - [ ] **TODO-108** · Convert `/api/leads/[id]/files/route.ts` — raw `auth()`
 - [ ] **TODO-109** · Convert `/api/leads/[id]/files/[fileId]/share/route.ts` — raw `auth()`
@@ -179,12 +187,14 @@
 - [ ] **TODO-111** · Convert `/api/leads/[id]/timeline/route.ts` — raw `auth()`
 
 #### Settings
+
 - [ ] **TODO-112** · Convert `/api/settings/export/route.ts` — raw `auth()`, uses Clerk orgId directly
 - [ ] **TODO-113** · Convert `/api/settings/notifications/route.ts` — uses `getActiveOrgContext()`
 - [ ] **TODO-114** · Convert `/api/settings/organization/route.ts` — uses `currentUser()` + raw lookups
 - [ ] **TODO-115** · Add RBAC to settings/organization POST — any org member can rename the org, should require ADMIN/OWNER
 
 #### Weather
+
 - [ ] **TODO-116** · Convert `/api/weather/verify/route.ts` — raw `auth()`
 - [ ] **TODO-117** · Convert `/api/weather/report/route.ts` — raw `auth()`
 - [ ] **TODO-118** · Convert `/api/weather/quick/route.ts` — raw `auth()`
@@ -196,6 +206,7 @@
 - [ ] **TODO-124** · Convert `/api/weather/share/route.ts` — raw `auth()`
 
 #### AI Routes (already authed but using raw patterns)
+
 - [ ] **TODO-125** · Convert `/api/ai/analyze-damage/route.ts` — raw `auth()`
 - [ ] **TODO-126** · Convert `/api/ai/analyze-photo/route.ts` — raw `auth()`
 - [ ] **TODO-127** · Convert `/api/ai/chat/route.ts` — raw `auth()`
@@ -221,6 +232,7 @@
 - [ ] **TODO-147** · Convert `/api/ai/mockup/generate/route.ts` — if exists
 
 #### Branding
+
 - [ ] **TODO-148** · Convert `/api/branding/save/route.ts` — uses manual `currentUser()` + `getActiveOrgContext()`, should be `withAuth`
 - [ ] **TODO-149** · Convert `/api/branding/route.ts` (GET/POST) — legacy duplicate of `branding/get`
 - [ ] **TODO-150** · Convert `/api/branding/upload/route.ts` — raw `auth()`, no RBAC, no rate limiting
@@ -228,6 +240,7 @@
 - [ ] **TODO-152** · Deduplicate branding GET routes — `branding/route.ts` GET and `branding/get/route.ts` GET both fetch branding with different auth and query logic. Pick one, deprecate other.
 
 #### Team & Invitations
+
 - [ ] **TODO-153** · Convert `/api/team/invitations/[id]/revoke/route.ts` — raw `auth()` + `getActiveOrgContext()`
 - [ ] **TODO-154** · Convert `/api/team/invitations/[id]/resend/route.ts` — raw `auth()` + `getActiveOrgContext()`
 - [ ] **TODO-155** · Fix invitation resend — doesn't actually send email, just extends expiration. **File:** `team/invitations/[id]/resend/route.ts`
@@ -236,6 +249,7 @@
 - [ ] **TODO-158** · Convert `/api/teams/invite/route.ts` — check if duplicate of `team/invitations`
 
 #### Estimates
+
 - [ ] **TODO-159** · Convert `/api/estimates/route.ts` — raw `auth()`
 - [ ] **TODO-160** · Convert `/api/estimates/[id]/route.ts` — raw `auth()`
 - [ ] **TODO-161** · Convert `/api/estimates/build/route.ts` — raw `auth()`
@@ -247,6 +261,7 @@
 - [ ] **TODO-167** · Convert `/api/estimate/priced/route.ts` — raw `auth()`
 
 #### Messages
+
 - [ ] **TODO-168** · Convert `/api/messages/threads/route.ts` — raw `auth()`
 - [ ] **TODO-169** · Convert `/api/messages/[threadId]/route.ts` — raw `auth()`
 - [ ] **TODO-170** · Convert `/api/messages/create/route.ts` — raw `auth()`
@@ -256,6 +271,7 @@
 - [ ] **TODO-174** · Convert `/api/messages/pro-to-client/create/route.ts` — raw `auth()`
 
 #### Uploads & Files
+
 - [ ] **TODO-175** · Convert `/api/uploads/route.ts` — uses `getActiveOrgContext()`
 - [ ] **TODO-176** · Convert `/api/upload/avatar/route.ts` — raw `auth()`
 - [ ] **TODO-177** · Convert `/api/upload/branding/route.ts` — raw `auth()`
@@ -264,6 +280,7 @@
 - [ ] **TODO-180** · Convert `/api/upload/supabase/route.ts` — raw `auth()`
 
 #### Trades Network
+
 - [ ] **TODO-181** · Convert `/api/trades/route.ts` — raw `auth()`
 - [ ] **TODO-182** · Convert `/api/trades/[id]/route.ts` — raw `auth()`
 - [ ] **TODO-183** · Convert `/api/trades/actions/route.ts` — raw `auth()`
@@ -286,6 +303,7 @@
 - [ ] **TODO-200** · Convert `/api/trades/jobs/route.ts` — raw `auth()`
 
 #### Notifications
+
 - [ ] **TODO-201** · Convert `/api/notifications/route.ts` — raw `auth()`
 - [ ] **TODO-202** · Convert `/api/notifications/[id]/route.ts` — raw `auth()`
 - [ ] **TODO-203** · Convert `/api/notifications/[id]/read/route.ts` — raw `auth()`
@@ -296,6 +314,7 @@
 - [ ] **TODO-208** · Convert `/api/notifications/client-delivery/route.ts` — raw `auth()`
 
 #### Finance & Commissions
+
 - [ ] **TODO-209** · Convert `/api/finance/overview/route.ts` — raw `auth()`
 - [ ] **TODO-210** · Convert `/api/finance/leaderboard/route.ts` — raw `auth()`
 - [ ] **TODO-211** · Convert `/api/finance/commission-plans/route.ts` — raw `auth()`
@@ -304,6 +323,7 @@
 - [ ] **TODO-214** · Convert `/api/invoices/route.ts` — raw `auth()`
 
 #### Proposals & E-Sign
+
 - [ ] **TODO-215** · Convert `/api/proposals/route.ts` — raw `auth()`
 - [ ] **TODO-216** · Convert `/api/proposals/[id]/route.ts` — raw `auth()`
 - [ ] **TODO-217** · Convert `/api/proposals/[id]/publish/route.ts` — raw `auth()`
@@ -315,6 +335,7 @@
 - [ ] **TODO-223** · Convert `/api/smart-docs/envelopes/route.ts` — raw `auth()`
 
 #### Misc High-Traffic
+
 - [ ] **TODO-224** · Convert `/api/nav/badges/route.ts` — raw `auth()` (called on every page load)
 - [ ] **TODO-225** · Convert `/api/appointments/**` — 4 routes, raw `auth()`
 - [ ] **TODO-226** · Convert `/api/damage/**` — 3 routes, raw `auth()`
@@ -540,77 +561,77 @@
 
 ### Auth Coverage Breakdown (516 total routes)
 
-| Pattern | Count | Status |
-|---------|-------|--------|
-| `withAuth` / `withAdmin` / `withManager` | 98 | ✅ Converted |
-| `requireAuth` (older, no org scope) | 36 | ⚠️ Needs review |
-| Raw `auth()` from `@clerk/nextjs` | 233 | 🔴 Needs conversion |
-| `getActiveOrgContext()` | 20 | ⚠️ Manual pattern |
-| `currentUser()` direct | 59 | 🔴 Needs conversion |
-| `verifyCronSecret` | 8 | ✅ Cron-specific |
-| **No auth at all** | **58** | **🔴 CRITICAL** |
-| Health/public (intentional) | ~15 | ✅ OK |
+| Pattern                                  | Count  | Status              |
+| ---------------------------------------- | ------ | ------------------- |
+| `withAuth` / `withAdmin` / `withManager` | 98     | ✅ Converted        |
+| `requireAuth` (older, no org scope)      | 36     | ⚠️ Needs review     |
+| Raw `auth()` from `@clerk/nextjs`        | 233    | 🔴 Needs conversion |
+| `getActiveOrgContext()`                  | 20     | ⚠️ Manual pattern   |
+| `currentUser()` direct                   | 59     | 🔴 Needs conversion |
+| `verifyCronSecret`                       | 8      | ✅ Cron-specific    |
+| **No auth at all**                       | **58** | **🔴 CRITICAL**     |
+| Health/public (intentional)              | ~15    | ✅ OK               |
 
 ### Error Exposure
 
-| Issue | Count |
-|-------|-------|
-| Routes exposing `error.message` in responses | 59 |
-| Routes exposing `error.stack` in responses | 1+ |
+| Issue                                        | Count |
+| -------------------------------------------- | ----- |
+| Routes exposing `error.message` in responses | 59    |
+| Routes exposing `error.stack` in responses   | 1+    |
 
 ### Sprint History
 
-| Sprint | Focus | Routes Fixed | Key Fix | Status |
-|--------|-------|-------------|---------|--------|
-| 8b | CRM QA Lockdown | — | Auth + org isolation | ✅ Deployed |
-| 8c | Report Builder Auth | 9 | `PREVIEW FAILED: AUTH_REQUIRED` → `withAuth` | ✅ Deployed |
-| 9 | Route Conversions | 10 | `user.id` fallback bugs, trades data corruption | ✅ Deployed |
-| 10 | Branding Merge Fix | 1 | Preview reads `org_branding` table | ✅ Deployed |
-| 11+ | This TODO | 341 items | Full production readiness | 🔲 Planned |
+| Sprint | Focus               | Routes Fixed | Key Fix                                         | Status      |
+| ------ | ------------------- | ------------ | ----------------------------------------------- | ----------- |
+| 8b     | CRM QA Lockdown     | —            | Auth + org isolation                            | ✅ Deployed |
+| 8c     | Report Builder Auth | 9            | `PREVIEW FAILED: AUTH_REQUIRED` → `withAuth`    | ✅ Deployed |
+| 9      | Route Conversions   | 10           | `user.id` fallback bugs, trades data corruption | ✅ Deployed |
+| 10     | Branding Merge Fix  | 1            | Preview reads `org_branding` table              | ✅ Deployed |
+| 11+    | This TODO           | 341 items    | Full production readiness                       | 🔲 Planned  |
 
 ### Systems Grade Card
 
-| System | Grade | Blocking? |
-|--------|-------|-----------|
-| Auth (withAuth routes) | B+ | No |
-| Auth (remaining 418 routes) | D | **YES** |
-| Report Preview | A | No |
-| Report PDF Export | F | **YES** |
-| Token/Credits | F | **YES** |
-| Stripe Webhooks | A- | No |
-| Billing Routes | B- | Partial |
-| Branding | B | No |
-| Team Management | B | No |
-| Onboarding | B+ | No |
-| Settings | C+ | Partial |
-| Org Resolution | C | Partial |
-| Plan/Pricing | C- | Partial |
-| Email System | B+ | No |
-| Cron Jobs | B+ | No |
-| Security Headers | B+ | No |
-| Error Handling | D | **YES** |
-| Testing | D | **YES** |
+| System                      | Grade | Blocking? |
+| --------------------------- | ----- | --------- |
+| Auth (withAuth routes)      | B+    | No        |
+| Auth (remaining 418 routes) | D     | **YES**   |
+| Report Preview              | A     | No        |
+| Report PDF Export           | F     | **YES**   |
+| Token/Credits               | F     | **YES**   |
+| Stripe Webhooks             | A-    | No        |
+| Billing Routes              | B-    | Partial   |
+| Branding                    | B     | No        |
+| Team Management             | B     | No        |
+| Onboarding                  | B+    | No        |
+| Settings                    | C+    | Partial   |
+| Org Resolution              | C     | Partial   |
+| Plan/Pricing                | C-    | Partial   |
+| Email System                | B+    | No        |
+| Cron Jobs                   | B+    | No        |
+| Security Headers            | B+    | No        |
+| Error Handling              | D     | **YES**   |
+| Testing                     | D     | **YES**   |
 
 ---
 
 ## 📁 KEY FILES REFERENCE
 
-| File | Purpose |
-|------|---------|
-| `src/lib/auth/withAuth.ts` | ✅ Canonical auth wrapper |
-| `src/lib/auth/requireAuth.ts` | Older auth pattern (pre-withAuth) |
-| `src/lib/org/resolveOrg.ts` | Primary org resolver |
-| `src/lib/org/getActiveOrgContext.ts` | Manual org context (9 files total) |
-| `src/app/api/reports/preview/route.ts` | ✅ Preview merge — FIXED Sprint 10 |
-| `src/modules/reports/core/DataProviders.ts` | 🔴 MOCK data — 7 functions need real DB |
-| `src/modules/reports/types/index.ts` | `BrandingConfig` / `ReportContext` types |
-| `src/app/api/branding/save/route.ts` | Saves branding to `org_branding` |
-| `src/app/api/billing/status/route.ts` | 🔴 Token balance hardcoded to 0 |
-| `src/app/api/billing/auto-refill/route.ts` | 🔴 No-op mock |
-| `src/lib/config/tokens.ts` | 🔴 All costs set to 0 |
-| `prisma/schema.prisma` (line 4018) | `org_branding` model |
-| `middleware.ts` | Clerk auth middleware |
-| `next.config.mjs` | CSP, security headers, build config |
-| `vercel.json` | Cron jobs, function config |
-| `scripts/AI_AGENT_TESTING_PLAYBOOK.md` | 12-phase testing playbook |
-| `scripts/sprint8c-regression-test.sh` | Regression test suite (65+ tests) |
+| File                                        | Purpose                                  |
+| ------------------------------------------- | ---------------------------------------- |
+| `src/lib/auth/withAuth.ts`                  | ✅ Canonical auth wrapper                |
+| `src/lib/auth/requireAuth.ts`               | Older auth pattern (pre-withAuth)        |
+| `src/lib/org/resolveOrg.ts`                 | Primary org resolver                     |
+| `src/lib/org/getActiveOrgContext.ts`        | Manual org context (9 files total)       |
+| `src/app/api/reports/preview/route.ts`      | ✅ Preview merge — FIXED Sprint 10       |
+| `src/modules/reports/core/DataProviders.ts` | 🔴 MOCK data — 7 functions need real DB  |
+| `src/modules/reports/types/index.ts`        | `BrandingConfig` / `ReportContext` types |
+| `src/app/api/branding/save/route.ts`        | Saves branding to `org_branding`         |
+| `src/app/api/billing/status/route.ts`       | 🔴 Token balance hardcoded to 0          |
+| `src/app/api/billing/auto-refill/route.ts`  | 🔴 No-op mock                            |
+| `src/lib/config/tokens.ts`                  | 🔴 All costs set to 0                    |
+| `prisma/schema.prisma` (line 4018)          | `org_branding` model                     |
+| `middleware.ts`                             | Clerk auth middleware                    |
+| `next.config.mjs`                           | CSP, security headers, build config      |
+| `vercel.json`                               | Cron jobs, function config               |
+| `scripts/AI_AGENT_TESTING_PLAYBOOK.md`      | 12-phase testing playbook                |
+| `scripts/sprint8c-regression-test.sh`       | Regression test suite (65+ tests)        |

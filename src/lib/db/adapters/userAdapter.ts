@@ -48,7 +48,6 @@ export interface OrgDTO {
   updatedAt: Date;
 
   // Computed
-  aiCreditsRemaining: number;
   isTrialing: boolean;
 }
 
@@ -130,7 +129,6 @@ export function adaptOrg(row: Org): OrgDTO {
     updatedAt: r.updatedAt,
 
     // Computed
-    aiCreditsRemaining: aiCredits - aiCreditsUsed,
     isTrialing: trialEndsAt ? new Date(trialEndsAt) > new Date() : false,
   };
 }

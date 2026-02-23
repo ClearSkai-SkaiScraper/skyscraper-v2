@@ -36,7 +36,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ clai
     }
     logger.error("[permissions] Error:", error);
     return NextResponse.json(
-      { error: error.message || "Failed to fetch permissions" },
+      { error: "Failed to fetch permissions" },
       { status: 500 }
     );
   }

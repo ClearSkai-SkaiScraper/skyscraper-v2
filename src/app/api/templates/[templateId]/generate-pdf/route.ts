@@ -53,7 +53,7 @@ export const POST = withOrgScope(
           {
             success: false,
             error: "PDF generation setup required",
-            message: error.message,
+            message: "Internal server error",
             instructions: {
               puppeteer: "Run: pnpm add puppeteer",
               reactPDF: "Run: pnpm add @react-pdf/renderer",
@@ -67,7 +67,7 @@ export const POST = withOrgScope(
       return NextResponse.json(
         {
           success: false,
-          error: error.message || "Failed to generate PDF",
+          error: "Failed to generate PDF",
         },
         { status: 500 }
       );

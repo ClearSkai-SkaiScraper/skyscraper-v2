@@ -23,7 +23,7 @@ export async function POST(req: Request) {
   } catch (error) {
     logger.error("[Supplement Packet Error]", error);
     return NextResponse.json(
-      { error: error.message || "Failed to generate supplement packet" },
+      { error: "Failed to generate supplement packet" },
       { status: 500 }
     );
   }

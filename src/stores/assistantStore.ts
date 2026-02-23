@@ -13,7 +13,6 @@ interface AssistantContext {
   lastError?: string;
   userIdle?: boolean;
   recentUpload?: string;
-  tokenBalance?: number;
 }
 
 interface AssistantStore {
