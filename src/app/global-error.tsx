@@ -35,13 +35,13 @@ export default function GlobalError({
             </svg>
           </div>
         </div>
-        <h2 className="mb-2 text-lg font-semibold text-gray-900">Something went wrong</h2>
-        <p className="mb-4 text-sm text-gray-600">
-          {error.message || "An unexpected error occurred"}
+        <h2 className="mb-2 text-lg font-semibold text-white">Something went wrong</h2>
+        <p className="mb-4 text-sm text-slate-400">
+          An unexpected error occurred. Please try again.
         </p>
         {process.env.NODE_ENV === "development" && (
-          <pre className="mb-4 overflow-auto rounded bg-gray-100 p-2 text-left text-xs">
-            {error.stack}
+          <pre className="mb-4 overflow-auto rounded bg-slate-800 p-2 text-left text-xs text-slate-300">
+            {error.message}
           </pre>
         )}
         <div className="space-y-2">

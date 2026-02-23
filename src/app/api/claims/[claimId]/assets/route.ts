@@ -29,8 +29,8 @@
  * ============================================================================
  */
 
-import { nanoid } from "nanoid";
 import { logger } from "@/lib/logger";
+import { nanoid } from "nanoid";
 import { NextRequest, NextResponse } from "next/server";
 
 import { requireApiAuth, verifyClaimAccess } from "@/lib/auth/apiAuth";
@@ -238,6 +238,12 @@ async function handleFileUpload(req: NextRequest, claimId: string, orgId: string
 
   if (!file) {
     return NextResponse.json({ error: "No file provided" }, { status: 400 });
+  }
+
+  // Enforce server-side file size limit (20MB)
+  const MAX_FILE_SIZE = 20 * 1024 * 1024;
+  if (file.size > MAX_FILE_SIZE) {
+    return NextResponse.json({ error: "File too large. Maximum size is 20MB." }, { status: 400 });
   }
 
   // Validate file type based on asset type

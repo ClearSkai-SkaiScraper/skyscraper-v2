@@ -265,7 +265,6 @@ export async function POST(req: Request) {
     return NextResponse.json(
       {
         error: "Internal server error",
-        cause: error.message,
         timestamp: new Date().toISOString(),
       },
       { status: 500 }

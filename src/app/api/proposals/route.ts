@@ -134,10 +134,7 @@ export const POST = withAuth(async (request: NextRequest, { orgId, userId }) => 
     });
   } catch (error) {
     logger.error("[Proposals] Failed to create proposal:", error);
-    return NextResponse.json(
-      { error: "Failed to create proposal" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Failed to create proposal" }, { status: 500 });
   }
 });
 
@@ -181,13 +178,13 @@ async function generateProposalAsync(
     // Update proposal with error
     await prisma.$executeRaw`UPDATE proposals SET 
         status = ${"failed"}, 
-        error_message = ${error.message}, 
+        error_message = ${"Generation failed"}, 
         updated_at = NOW() 
       WHERE id = ${proposalId}`;
 
     // Update canonical document with error
     await updateDocumentStatus(generatedDocumentId, "error", {
-      errorMessage: error.message,
+      errorMessage: "Generation failed",
     });
   }
 }

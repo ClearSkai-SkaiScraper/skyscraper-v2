@@ -221,10 +221,7 @@ Always respond with valid JSON matching the requested schema.`,
   } catch (error) {
     logger.error("Damage analysis error:", error);
     Sentry.captureException(error);
-    return NextResponse.json(
-      aiFail(error.message || "Analysis failed", "ANALYSIS_ERROR", { stack: error.stack }),
-      { status: 500 }
-    );
+    return NextResponse.json(aiFail("Analysis failed", "ANALYSIS_ERROR"), { status: 500 });
   }
 }
 

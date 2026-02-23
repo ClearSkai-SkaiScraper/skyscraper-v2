@@ -104,10 +104,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ task
       );
     }
 
-    return NextResponse.json(
-      { error: "Failed to update task", description: error.message },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Failed to update task" }, { status: 500 });
   }
 }
 
@@ -146,9 +143,6 @@ export async function DELETE(
     return NextResponse.json({ success: true });
   } catch (error) {
     logger.error("[Task Delete] DELETE error:", error);
-    return NextResponse.json(
-      { error: "Failed to delete task", description: error.message },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Failed to delete task" }, { status: 500 });
   }
 }

@@ -50,6 +50,6 @@ export async function GET() {
     });
   } catch (error) {
     logger.error("[Legal Pending] Error:", error);
-    return NextResponse.json({ error: "Internal server error: " + error.message }, { status: 500 });
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }

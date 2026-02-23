@@ -302,7 +302,7 @@ export async function POST(request: NextRequest) {
         logger.error("[Firebase Upload] Fallback failed:", firebaseError);
       }
 
-      return NextResponse.json({ error: `Upload failed: ${error.message}` }, { status: 500 });
+      return NextResponse.json({ error: "Upload failed" }, { status: 500 });
     }
 
     // Get public URL from Supabase
@@ -362,9 +362,6 @@ export async function POST(request: NextRequest) {
     });
   } catch (error) {
     logger.error("[Supabase Upload] Error:", error);
-    return NextResponse.json(
-      { error: "Upload failed" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Upload failed" }, { status: 500 });
   }
 }

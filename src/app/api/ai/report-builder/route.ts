@@ -72,9 +72,9 @@ async function POST_INNER(req: NextRequest, ctx: { userId: string; orgId: string
     logger.debug("[Report Builder] Request received for claimId:", claimId);
     logger.debug("[Report Builder] Images count:", images?.length);
 
-    // Fetch claim details
-    const claim = await prisma.claims.findUnique({
-      where: { id: claimId },
+    // Fetch claim details — scoped to org for security
+    const claim = await prisma.claims.findFirst({
+      where: { id: claimId, ...(orgId ? { orgId } : {}) },
       include: {
         properties: true,
       },
@@ -85,7 +85,7 @@ async function POST_INNER(req: NextRequest, ctx: { userId: string; orgId: string
     }
 
     // Get org context
-    const claimOrgId = claim.orgId || "unknown";
+    const claimOrgId = claim.orgId || orgId || "unknown";
 
     // Validate images are valid URLs or data URIs
     const validImages = images.filter((img: string) => {

@@ -57,10 +57,7 @@ export async function GET() {
       .limit(1);
 
     if (error) {
-      return NextResponse.json(
-        { ok: false, reason: "QUERY_FAILED", detail: error.message },
-        { status: 200 }
-      );
+      return NextResponse.json({ ok: false, reason: "QUERY_FAILED" }, { status: 200 });
     }
 
     if (!data || data.length === 0) {

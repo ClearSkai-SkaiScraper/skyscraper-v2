@@ -209,10 +209,7 @@ const basePATCH = async (request: NextRequest, { params }: { params: { id: strin
           { status: 409 }
         );
       }
-      return NextResponse.json(
-        { error: `Failed to update lead: ${error.message}` },
-        { status: 500 }
-      );
+      return NextResponse.json({ error: "Failed to update lead" }, { status: 500 });
     }
 
     return NextResponse.json({ error: "Failed to update lead" }, { status: 500 });

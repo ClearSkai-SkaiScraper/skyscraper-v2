@@ -171,9 +171,9 @@ export async function POST(request: NextRequest) {
     logger.error("[Branding Upload] Error:", error);
 
     if (error instanceof Error) {
-      return NextResponse.json({ error: `Upload failed: ${error.message}` }, { status: 500 });
+      return NextResponse.json({ error: "Upload failed" }, { status: 500 });
     }
 
-    return NextResponse.json({ error: "Upload failed: Unknown error" }, { status: 500 });
+    return NextResponse.json({ error: "Upload failed" }, { status: 500 });
   }
 }

@@ -199,10 +199,7 @@ https://skaiscrape.com`
 
     if (error) {
       logger.error("[CompletePacket] Upload error:", error);
-      return NextResponse.json(
-        { error: `Failed to upload ZIP: ${error.message}` },
-        { status: 500 }
-      );
+      return NextResponse.json({ error: "Failed to upload export" }, { status: 500 });
     }
 
     // Get signed URL (valid for 7 days)
@@ -235,9 +232,6 @@ https://skaiscrape.com`
     });
   } catch (error) {
     logger.error("[CompletePacket] Error:", error);
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }

@@ -85,13 +85,9 @@ export const POST = withOrgScope(async (req, { userId, orgId }) => {
     try {
       await requirePermission("claims:create");
     } catch (error) {
-      return createForbiddenResponse(
-        error.message || "You don't have permission to create claims",
-        {
-          currentRole: error.currentRole,
-          requiredPermission: "claims:create",
-        }
-      );
+      return createForbiddenResponse("You don't have permission to create claims", {
+        requiredPermission: "claims:create",
+      });
     }
 
     const body = await req.json();
@@ -281,7 +277,7 @@ export const POST = withOrgScope(async (req, { userId, orgId }) => {
     }
 
     logger.error("[POST /api/claims] Error:", error);
-    return apiError(500, "INTERNAL_ERROR", error.message || "Failed to create claim");
+    return apiError(500, "INTERNAL_ERROR", "Failed to create claim");
   }
 });
 
@@ -329,6 +325,6 @@ export const GET = withOrgScope(async (req, { orgId }) => {
     );
   } catch (error) {
     logger.error("[GET /api/claims] Error:", error);
-    return apiError(500, "INTERNAL_ERROR", error.message || "Failed to fetch claims");
+    return apiError(500, "INTERNAL_ERROR", "Failed to fetch claims");
   }
 });

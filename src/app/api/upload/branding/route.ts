@@ -67,7 +67,7 @@ export const POST = withAuth(async (req: NextRequest, { userId, orgId }) => {
 
     if (error) {
       logger.error("[Branding Upload] Supabase error:", error);
-      return NextResponse.json({ error: "Upload failed: " + error.message }, { status: 500 });
+      return NextResponse.json({ error: "Upload failed" }, { status: 500 });
     }
 
     const {

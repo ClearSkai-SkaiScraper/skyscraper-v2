@@ -89,11 +89,7 @@ const baseGET = async (request: NextRequest) => {
     });
   } catch (error) {
     logger.error("Error fetching leads:", error);
-    return apiError(
-      500,
-      "INTERNAL_ERROR",
-      "Failed to fetch leads"
-    );
+    return apiError(500, "INTERNAL_ERROR", "Failed to fetch leads");
   }
 };
 
@@ -344,7 +340,7 @@ const basePOST = async (request: NextRequest) => {
           "Invalid reference data. Please refresh and try again."
         );
       }
-      return apiError(500, "LEAD_CREATE_FAILED", `Failed to create lead: ${error.message}`);
+      return apiError(500, "LEAD_CREATE_FAILED", "Failed to create lead");
     }
     return apiError(
       500,

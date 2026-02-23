@@ -134,10 +134,7 @@ export const GET = withOrgScope(
       return NextResponse.json({ claim }, { headers: { "Cache-Control": "no-store" } });
     } catch (error) {
       logger.error(`[GET /api/claims/${params.claimId}] Error:`, error);
-      return NextResponse.json(
-        { error: "Failed to fetch claim" },
-        { status: 500 }
-      );
+      return NextResponse.json({ error: "Failed to fetch claim" }, { status: 500 });
     }
   }
 );
@@ -153,13 +150,9 @@ export const PATCH = withOrgScope(
       try {
         await requirePermission("claims:edit");
       } catch (error) {
-        return createForbiddenResponse(
-          error.message || "You don't have permission to edit claims",
-          {
-            currentRole: error.currentRole,
-            requiredPermission: "claims:edit",
-          }
-        );
+        return createForbiddenResponse("You don't have permission to edit claims", {
+          requiredPermission: "claims:edit",
+        });
       }
 
       // Verify claim exists and belongs to org
@@ -292,10 +285,7 @@ export const PATCH = withOrgScope(
       return NextResponse.json({ claim }, { headers: { "Cache-Control": "no-store" } });
     } catch (error) {
       logger.error(`[PATCH /api/claims/${params.claimId}] Error:`, error);
-      return NextResponse.json(
-        { error: "Failed to update claim" },
-        { status: 500 }
-      );
+      return NextResponse.json({ error: "Failed to update claim" }, { status: 500 });
     }
   }
 );
@@ -311,13 +301,9 @@ export const DELETE = withOrgScope(
       try {
         await requirePermission("claims:delete");
       } catch (error) {
-        return createForbiddenResponse(
-          error.message || "You don't have permission to delete claims",
-          {
-            currentRole: error.currentRole,
-            requiredPermission: "claims:delete",
-          }
-        );
+        return createForbiddenResponse("You don't have permission to delete claims", {
+          requiredPermission: "claims:delete",
+        });
       }
 
       // Verify claim exists and belongs to org
@@ -373,10 +359,7 @@ export const DELETE = withOrgScope(
       });
     } catch (error) {
       logger.error(`[DELETE /api/claims/${params.claimId}] Error:`, error);
-      return NextResponse.json(
-        { error: "Failed to delete claim" },
-        { status: 500 }
-      );
+      return NextResponse.json({ error: "Failed to delete claim" }, { status: 500 });
     }
   }
 );
