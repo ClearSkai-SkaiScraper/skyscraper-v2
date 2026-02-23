@@ -118,14 +118,14 @@ export default function ClaimWeatherPage({ params }: Props) {
     }
 
     try {
-      const res = await fetch("/api/weather/report-ai", {
+      const res = await fetch("/api/weather/report", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          claimId,
           address,
-          lossType: lossType === "none" ? null : lossType,
           dol: selectedDol || null,
+          lossType: lossType === "none" ? null : lossType,
+          claim_id: claimId,
         }),
       });
 

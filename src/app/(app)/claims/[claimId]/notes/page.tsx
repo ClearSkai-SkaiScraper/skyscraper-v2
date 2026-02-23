@@ -23,7 +23,6 @@ export default function NotesPage() {
   const params = useParams();
   const claimIdParam = params?.claimId;
   const claimId = Array.isArray(claimIdParam) ? claimIdParam[0] : claimIdParam;
-  if (!claimId) return null;
   const [notes, setNotes] = useState<Note[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -33,7 +32,10 @@ export default function NotesPage() {
 
   useEffect(() => {
     fetchNotes();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [claimId]);
+
+  if (!claimId) return null;
 
   const fetchNotes = async () => {
     try {

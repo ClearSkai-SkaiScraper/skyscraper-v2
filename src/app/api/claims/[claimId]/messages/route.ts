@@ -36,7 +36,19 @@ export const GET = withAuth(
         orderBy: { updatedAt: "desc" },
       });
 
-      return NextResponse.json({ success: true, threads });
+      // Normalize Prisma's `Message` (capital) → `messages` (lowercase) for frontend
+      const normalizedThreads = threads.map((thread) => ({
+        ...thread,
+        messages: thread.Message.map((m) => ({
+          id: m.id,
+          body: m.body,
+          senderName: m.senderType === "pro" ? "You" : "Client",
+          createdAt: m.createdAt,
+        })),
+        Message: undefined,
+      }));
+
+      return NextResponse.json({ success: true, threads: normalizedThreads });
     } catch (error) {
       logger.error("Failed to fetch message threads:", error);
       return NextResponse.json({ error: "Failed to fetch threads" }, { status: 500 });

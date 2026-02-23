@@ -44,12 +44,13 @@ export default function TimelinePage() {
   });
   const [deleteTarget, setDeleteTarget] = useState<{ id: string; label?: string } | null>(null);
 
-  // SECURITY: Early return AFTER all hooks to avoid React Hook ordering violation
-  if (!claimId) return null;
-
   useEffect(() => {
     fetchTimeline();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [claimId]);
+
+  // SECURITY: Early return AFTER all hooks to avoid React Hook ordering violation
+  if (!claimId) return null;
 
   const fetchTimeline = async () => {
     try {

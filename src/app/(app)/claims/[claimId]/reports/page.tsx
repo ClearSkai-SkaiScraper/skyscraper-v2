@@ -52,7 +52,7 @@ export default function ClaimReportsPage({ params }: { params: { claimId: string
     if (!confirm("Are you sure you want to delete this report?")) return;
 
     try {
-      const res = await fetch(`/api/reports/view/${reportId}`, {
+      const res = await fetch(`/api/reports/${reportId}`, {
         method: "DELETE",
       });
 
@@ -61,7 +61,7 @@ export default function ClaimReportsPage({ params }: { params: { claimId: string
       // Refresh list
       fetchReports();
     } catch (err) {
-      alert(`Error: ${err.message}`);
+      alert(`Error: ${err instanceof Error ? err.message : "Failed to delete report"}`);
     }
   }
 

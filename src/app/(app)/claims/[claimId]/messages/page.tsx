@@ -28,7 +28,6 @@ export default function MessagesPage() {
   const params = useParams();
   const claimIdParam = params?.claimId;
   const claimId = Array.isArray(claimIdParam) ? claimIdParam[0] : claimIdParam;
-  if (!claimId) return null;
   const [threads, setThreads] = useState<MessageThread[]>([]);
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
@@ -38,7 +37,10 @@ export default function MessagesPage() {
 
   useEffect(() => {
     fetchMessages();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [claimId]);
+
+  if (!claimId) return null;
 
   const fetchMessages = async () => {
     try {

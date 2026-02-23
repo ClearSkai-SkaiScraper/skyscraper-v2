@@ -116,7 +116,10 @@ export const PATCH = withAuth(async (req: NextRequest, { userId }) => {
 
     // Prevent demoting the owner
     if (target.isOwner && isAdmin === false) {
-      return NextResponse.json({ error: "Cannot remove admin from company owner" }, { status: 400 });
+      return NextResponse.json(
+        { error: "Cannot remove admin from company owner" },
+        { status: 400 }
+      );
     }
 
     // Build update data

@@ -40,7 +40,6 @@ export default function TradesPage() {
   const params = useParams();
   const claimIdParam = params?.claimId;
   const claimId = Array.isArray(claimIdParam) ? claimIdParam[0] : claimIdParam;
-  if (!claimId) return null;
   const [trades, setTrades] = useState<Trade[]>([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
@@ -56,7 +55,10 @@ export default function TradesPage() {
 
   useEffect(() => {
     fetchTrades();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [claimId]);
+
+  if (!claimId) return null;
 
   const fetchTrades = async () => {
     try {
