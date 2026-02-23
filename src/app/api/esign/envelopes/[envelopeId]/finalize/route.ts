@@ -87,7 +87,7 @@ export async function POST(req: NextRequest, { params }: { params: { envelopeId:
   } catch (error) {
     logger.error("[ENVELOPE_FINALIZE_ERROR]", error);
     return NextResponse.json(
-      { ok: false, message: error instanceof Error ? error.message : "Failed to finalize" },
+      { ok: false, message: "Failed to finalize" },
       { status: 500 }
     );
   }

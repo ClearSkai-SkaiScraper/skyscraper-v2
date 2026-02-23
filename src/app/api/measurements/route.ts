@@ -51,7 +51,7 @@ export async function GET(request: NextRequest) {
   } catch (error) {
     logger.error("[MEASUREMENTS_LIST_ERROR]", error);
     return NextResponse.json(
-      { ok: false, message: error instanceof Error ? error.message : "Failed to load" },
+      { ok: false, message: "Failed to load" },
       { status: 500 }
     );
   }
@@ -117,7 +117,7 @@ export async function POST(req: NextRequest) {
   } catch (error) {
     logger.error("[MEASUREMENTS_CREATE_ERROR]", error);
     return NextResponse.json(
-      { ok: false, message: error instanceof Error ? error.message : "Failed to create order" },
+      { ok: false, message: "Failed to create order" },
       { status: 500 }
     );
   }

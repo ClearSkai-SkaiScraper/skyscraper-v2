@@ -39,7 +39,7 @@ export async function GET(_req: NextRequest, { params }: RouteContext) {
   } catch (error) {
     logger.error("[MEASUREMENTS_GET_ERROR]", error);
     return NextResponse.json(
-      { ok: false, message: error instanceof Error ? error.message : "Failed" },
+      { ok: false, message: "Failed" },
       { status: 500 }
     );
   }
@@ -85,7 +85,7 @@ export async function PATCH(req: NextRequest, { params }: RouteContext) {
   } catch (error) {
     logger.error("[MEASUREMENTS_UPDATE_ERROR]", error);
     return NextResponse.json(
-      { ok: false, message: error instanceof Error ? error.message : "Failed" },
+      { ok: false, message: "Failed" },
       { status: 500 }
     );
   }
@@ -120,7 +120,7 @@ export async function DELETE(_req: NextRequest, { params }: RouteContext) {
   } catch (error) {
     logger.error("[MEASUREMENTS_DELETE_ERROR]", error);
     return NextResponse.json(
-      { ok: false, message: error instanceof Error ? error.message : "Failed" },
+      { ok: false, message: "Failed" },
       { status: 500 }
     );
   }

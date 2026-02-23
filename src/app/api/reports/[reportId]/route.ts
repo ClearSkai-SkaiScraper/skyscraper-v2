@@ -35,7 +35,7 @@ export const GET = withAuth(async (req: NextRequest, { orgId }, routeParams) => 
   } catch (error) {
     logger.error("Report detail error:", error);
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : "Failed to fetch report" },
+      { error: "Failed to fetch report" },
       { status: 500 }
     );
   }
@@ -62,7 +62,7 @@ export const DELETE = withAuth(async (req: NextRequest, { orgId }, routeParams) 
   } catch (error) {
     logger.error("Report delete error:", error);
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : "Failed to delete report" },
+      { error: "Failed to delete report" },
       { status: 500 }
     );
   }

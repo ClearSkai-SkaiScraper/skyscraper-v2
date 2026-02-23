@@ -3,8 +3,8 @@
  * Generate a PDF from a premium template for a specific claim
  */
 
-import fs from "fs/promises";
 import { logger } from "@/lib/logger";
+import fs from "fs/promises";
 import { NextRequest, NextResponse } from "next/server";
 import path from "path";
 
@@ -218,7 +218,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json(
       {
         error: "Failed to generate PDF",
-        details: error instanceof Error ? error.message : String(error),
+        details: "Internal error",
       },
       { status: 500 }
     );

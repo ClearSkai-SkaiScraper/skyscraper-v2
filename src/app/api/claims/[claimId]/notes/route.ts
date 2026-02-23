@@ -66,7 +66,7 @@ export const GET = withAuth(
       }
       logger.error("[Notes GET] Error:", error);
       return NextResponse.json(
-        { error: error instanceof Error ? error.message : "Failed to fetch notes" },
+        { error: "Failed to fetch notes" },
         { status: 500 }
       );
     }
@@ -126,7 +126,7 @@ export const POST = withAuth(
       }
       logger.error("[Notes POST] Error:", error);
       return NextResponse.json(
-        { error: error instanceof Error ? error.message : "Failed to add note" },
+        { error: "Failed to add note" },
         { status: 500 }
       );
     }

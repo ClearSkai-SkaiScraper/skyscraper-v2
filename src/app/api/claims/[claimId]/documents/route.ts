@@ -7,7 +7,7 @@ import prisma from "@/lib/prisma";
 
 /**
  * GET /api/claims/[claimId]/documents
- * Fetch all documents for a claim from claim_documents table (raw SQL — not in Prisma schema)
+ * Fetch all documents for a claim from file_assets table (Prisma-managed)
  */
 export const GET = withAuth(
   async (req: NextRequest, { orgId }, routeParams: { params: Promise<{ claimId: string }> }) => {
@@ -17,65 +17,60 @@ export const GET = withAuth(
       // Verify claim belongs to org (uses DB-backed orgId)
       await getOrgClaimOrThrow(orgId, claimId);
 
-      // claim_documents is a raw SQL table, not in Prisma schema
-      const documents = await prisma.$queryRaw<
-        Array<{
-          id: string;
-          name: string;
-          url: string;
-          mime_type: string | null;
-          size_bytes: number | null;
-          uploaded_by_id: string | null;
-          is_shared_with_client: boolean;
-          is_archived: boolean;
-          created_at: Date;
-        }>
-      >`
-        SELECT
-          id,
-          name,
-          url,
-          mime_type,
-          size_bytes,
-          uploaded_by_id,
-          is_shared_with_client,
-          is_archived,
-          created_at
-        FROM claim_documents
-        WHERE claim_id = ${claimId}
-          AND is_archived = FALSE
-        ORDER BY created_at DESC
-      `;
+      // Use Prisma-managed file_assets table instead of raw SQL claim_documents
+      const assets = await prisma.file_assets.findMany({
+        where: { claimId, orgId },
+        orderBy: { createdAt: "desc" },
+        select: {
+          id: true,
+          filename: true,
+          publicUrl: true,
+          mimeType: true,
+          sizeBytes: true,
+          category: true,
+          note: true,
+          visibleToClient: true,
+          createdAt: true,
+          ownerId: true,
+        },
+      });
 
-      // Transform snake_case DB columns to camelCase for front-end
-      const transformed = documents.map((doc) => ({
+      // Map category to document type
+      const categoryToType = (cat: string, mime: string): string => {
+        if (mime?.startsWith("image/")) return "PHOTO";
+        const map: Record<string, string> = {
+          report: "DEPRECIATION",
+          supplement: "SUPPLEMENT",
+          certificate: "CERTIFICATE",
+          invoice: "INVOICE",
+          contract: "CONTRACT",
+        };
+        return map[cat] || "OTHER";
+      };
+
+      const documents = assets.map((doc) => ({
         id: doc.id,
-        type: doc.mime_type?.startsWith("image/") ? "PHOTO" : "OTHER",
-        title: doc.name,
-        description: null,
-        publicUrl: doc.url,
-        mimeType: doc.mime_type,
-        fileSize: doc.size_bytes,
-        visibleToClient: doc.is_shared_with_client,
-        createdAt:
-          doc.created_at instanceof Date ? doc.created_at.toISOString() : String(doc.created_at),
+        type: categoryToType(doc.category, doc.mimeType),
+        title: doc.filename,
+        description: doc.note,
+        publicUrl: doc.publicUrl,
+        mimeType: doc.mimeType,
+        fileSize: doc.sizeBytes,
+        visibleToClient: doc.visibleToClient,
+        createdAt: doc.createdAt.toISOString(),
         createdBy: {
-          name: doc.uploaded_by_id || "System",
+          name: doc.ownerId || "System",
           email: "",
         },
       }));
 
-      return NextResponse.json({ documents: transformed });
+      return NextResponse.json({ documents });
     } catch (error) {
       if (error instanceof OrgScopeError) {
         return NextResponse.json({ error: "Claim not found" }, { status: 404 });
       }
-      // Table may not exist yet or other DB errors — return empty gracefully
-      logger.warn(
-        "[GET /api/claims/[claimId]/documents] Error (returning empty):",
-        error instanceof Error ? error.message : error
-      );
-      return NextResponse.json({ documents: [], message: "Documents system not yet initialized" });
+      logger.warn("[GET /api/claims/[claimId]/documents] Error:", error);
+      return NextResponse.json({ documents: [] });
     }
   }
 );

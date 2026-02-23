@@ -100,7 +100,7 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
       expiresAt: updatedShareMetadata.shareExpiresAt,
     });
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Unknown error";
+    const message = "Unknown error";
     logger.error("Error sharing video report:", error);
     return NextResponse.json(
       { error: "Failed to create share link", details: message },

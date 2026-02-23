@@ -7,8 +7,8 @@ export const revalidate = 0;
  * Fetches a proposal draft with metadata and files
  */
 
-import { auth } from "@clerk/nextjs/server";
 import { logger } from "@/lib/logger";
+import { auth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 
 import prisma from "@/lib/prisma";
@@ -48,7 +48,7 @@ export async function GET(request: Request, { params }: { params: { id: string }
     return NextResponse.json(
       {
         error: "Failed to fetch proposal",
-        details: error instanceof Error ? error.message : String(error),
+        details: "Internal error",
       },
       { status: 500 }
     );

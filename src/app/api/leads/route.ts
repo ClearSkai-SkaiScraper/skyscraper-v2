@@ -92,7 +92,7 @@ const baseGET = async (request: NextRequest) => {
     return apiError(
       500,
       "INTERNAL_ERROR",
-      error instanceof Error ? error.message : "Failed to fetch leads"
+      "Failed to fetch leads"
     );
   }
 };

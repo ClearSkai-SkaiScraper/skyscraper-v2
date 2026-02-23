@@ -63,7 +63,7 @@ export const POST = withAuth(async (req: NextRequest, { userId, orgId }) => {
       { status: 501 }
     );
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Failed to send mailers";
+    const message = "Failed to send mailers";
     logger.error("[Mailers] Send error:", error);
     return NextResponse.json(
       {

@@ -254,7 +254,7 @@ export const POST = withAuth(async (req: NextRequest, { orgId }) => {
   } catch (error) {
     logger.error("[PREVIEW] Error:", error);
     return NextResponse.json(
-      { ok: false, error: error instanceof Error ? error.message : "UNKNOWN_ERROR" },
+      { ok: false, error: "UNKNOWN_ERROR" },
       { status: 500 }
     );
   }

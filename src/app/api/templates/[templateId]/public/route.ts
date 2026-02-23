@@ -47,7 +47,7 @@ export async function GET(request: NextRequest, { params }: { params: { template
     return NextResponse.json(
       {
         ok: false,
-        error: error instanceof Error ? error.message : "UNKNOWN_ERROR",
+        error: "UNKNOWN_ERROR",
       },
       { status: 500 }
     );

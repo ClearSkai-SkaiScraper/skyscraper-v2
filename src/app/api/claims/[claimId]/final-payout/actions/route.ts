@@ -172,11 +172,22 @@ async function handleGeneratePacket(
       includeSupplements: payload.includeSupplements,
     });
 
+    // Convert PDF bytes to base64 for client download
+    let pdfBase64: string | null = null;
+    if (packet.pdfBytes) {
+      const buffer = Buffer.from(packet.pdfBytes);
+      pdfBase64 = buffer.toString("base64");
+    }
+
     return NextResponse.json({
       success: true,
       packet: {
-        url: (packet as any).url || null,
-        generatedAt: new Date().toISOString(),
+        id: packet.id,
+        url: packet.url || null,
+        pdfBase64,
+        generatedAt: packet.generatedAt.toISOString(),
+        totalPayout: packet.totalPayout,
+        breakdown: packet.breakdown,
       },
     });
   } catch (error) {
@@ -184,7 +195,6 @@ async function handleGeneratePacket(
     return NextResponse.json(
       {
         error: "Failed to generate packet",
-        details: error instanceof Error ? error.message : "Unknown error",
       },
       { status: 500 }
     );

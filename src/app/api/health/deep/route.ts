@@ -30,7 +30,7 @@ export async function GET() {
     return NextResponse.json(
       {
         status: "unhealthy",
-        error: error instanceof Error ? error.message : "Health check failed",
+        error: "Health check failed",
         timestamp: new Date().toISOString(),
       },
       { status: 503 }

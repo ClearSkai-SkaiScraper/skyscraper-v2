@@ -38,39 +38,27 @@ async function handleGET(req: NextRequest) {
   }
 
   try {
-    const documents = await prisma.$queryRaw<
-      Array<{
-        id: string;
-        name: string;
-        mime_type: string | null;
-        size_bytes: number | null;
-        is_shared_with_client: boolean;
-        shared_at: Date | null;
-        created_at: Date;
-      }>
-    >`
-      SELECT
-        id,
-        name,
-        mime_type,
-        size_bytes,
-        is_shared_with_client,
-        shared_at,
-        created_at
-      FROM claim_documents
-      WHERE claim_id = ${claimId}
-        AND is_archived = FALSE
-      ORDER BY created_at DESC
-    `;
+    const documents = await prisma.file_assets.findMany({
+      where: { claimId, orgId },
+      orderBy: { createdAt: "desc" },
+      select: {
+        id: true,
+        filename: true,
+        mimeType: true,
+        sizeBytes: true,
+        visibleToClient: true,
+        createdAt: true,
+      },
+    });
 
     const transformed = documents.map((doc) => {
       // Derive a user-friendly type from mime_type
       let type: "photo" | "report" | "estimate" | "other" = "other";
-      if (doc.mime_type?.startsWith("image/")) type = "photo";
-      else if (doc.mime_type === "application/pdf") type = "report";
+      if (doc.mimeType?.startsWith("image/")) type = "photo";
+      else if (doc.mimeType === "application/pdf") type = "report";
 
       // Human-readable size
-      const sizeBytes = doc.size_bytes ?? 0;
+      const sizeBytes = doc.sizeBytes ?? 0;
       const size =
         sizeBytes > 1_000_000
           ? `${(sizeBytes / 1_000_000).toFixed(1)} MB`
@@ -80,15 +68,11 @@ async function handleGET(req: NextRequest) {
 
       return {
         id: doc.id,
-        name: doc.name,
+        name: doc.filename,
         type,
         size,
-        shared: doc.is_shared_with_client,
-        sharedAt: doc.shared_at
-          ? doc.shared_at instanceof Date
-            ? doc.shared_at.toISOString()
-            : String(doc.shared_at)
-          : undefined,
+        shared: doc.visibleToClient,
+        sharedAt: undefined,
       };
     });
 
@@ -134,15 +118,10 @@ async function handlePOST(req: NextRequest) {
   }
 
   try {
-    await prisma.$executeRaw`
-      UPDATE claim_documents
-      SET
-        is_shared_with_client = ${shared ? true : false},
-        shared_at = ${shared ? new Date() : null},
-        shared_by_user_id = ${shared ? userId : null}
-      WHERE id = ${documentId}
-        AND claim_id = ${claimId}
-    `;
+    await prisma.file_assets.updateMany({
+      where: { id: documentId, claimId, orgId },
+      data: { visibleToClient: shared ? true : false },
+    });
 
     return ok({
       message: shared ? "Document shared with client" : "Document unshared",

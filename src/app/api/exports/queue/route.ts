@@ -35,7 +35,7 @@ export async function GET(req: NextRequest) {
   } catch (error) {
     logger.error("[Export Queue GET]", error);
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : "Failed to get queue" },
+      { error: "Failed to get queue" },
       { status: 500 }
     );
   }

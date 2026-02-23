@@ -17,12 +17,14 @@ import { getOrgLocation } from "@/lib/org/getOrgLocation";
 import { safeOrgContext } from "@/lib/safeOrgContext";
 import { getDashboardWeather } from "@/lib/weather/weatherstack";
 
-// ChartsPanel moved to Analytics page
+// ChartsPanel — re-imported for DAU dashboard
+import nextDynamic from "next/dynamic";
 import CompanyBrandingPreview from "./_components/CompanyBrandingPreview";
 import DashboardAIPanel from "./_components/DashboardAIPanel";
 import NetworkActivity from "./_components/NetworkActivity";
 import StatsCards from "./_components/StatsCards";
 import WorkOpportunityNotifications from "./_components/WorkOpportunityNotifications";
+const ChartsPanel = nextDynamic(() => import("./_components/ChartsPanel"), { ssr: false });
 // DashboardAssistantDock temporarily disabled
 // const DashboardAssistantDock = nextDynamic(() => import("./_components/DashboardAssistantDock"), {
 //   ssr: false,
@@ -219,7 +221,18 @@ export default async function DashboardPage() {
             <DashboardAIPanel orgId={orgId} />
           </AsyncBoundary>
 
-          {/* Charts Panel Removed - consolidated to Analytics page for cleaner dashboard */}
+          {/* Charts Panel — claims by status, trend, lead sources */}
+          <AsyncBoundary
+            fallback={
+              <div className="grid gap-4 lg:grid-cols-3">
+                {Array.from({ length: 3 }).map((_, i) => (
+                  <div key={i} className="h-56 animate-pulse rounded-2xl bg-[var(--surface-2)]" />
+                ))}
+              </div>
+            }
+          >
+            <ChartsPanel />
+          </AsyncBoundary>
 
           {/* Company Branding Quick Viewer */}
           <CompanyBrandingPreview />

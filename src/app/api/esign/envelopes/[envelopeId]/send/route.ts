@@ -78,7 +78,7 @@ export async function POST(
   } catch (error) {
     logger.error("[ENVELOPE_SEND_ERROR]", error);
     return NextResponse.json(
-      { ok: false, message: error instanceof Error ? error.message : "Failed to send" },
+      { ok: false, message: "Failed to send" },
       { status: 500 }
     );
   }

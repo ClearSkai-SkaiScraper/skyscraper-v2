@@ -128,7 +128,7 @@ export async function GET() {
         version: "v3",
         timestamp: Date.now(),
         status: "offline",
-        error: error instanceof Error ? error.message : "Unknown error",
+        error: "Unknown error",
       },
       { status: 503 }
     );

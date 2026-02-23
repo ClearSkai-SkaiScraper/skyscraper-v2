@@ -169,7 +169,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(
       {
         error: "Failed to export estimate",
-        details: error instanceof Error ? error.message : "Unknown error",
+        details: "Unknown error",
       },
       { status: 500 }
     );

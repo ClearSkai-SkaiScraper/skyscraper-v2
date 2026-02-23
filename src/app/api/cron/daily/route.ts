@@ -76,7 +76,7 @@ export async function GET(req: Request) {
       tasks,
     });
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Unknown error";
+    const message = "Unknown error";
     log.error("[cron/daily] Daily maintenance failed", error instanceof Error ? error : undefined, {
       message,
     });

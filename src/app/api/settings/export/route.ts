@@ -51,7 +51,7 @@ export async function GET(request: NextRequest) {
   } catch (error) {
     logger.error("Settings export error:", error);
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : "Export failed" },
+      { error: "Export failed" },
       { status: 500 }
     );
   }

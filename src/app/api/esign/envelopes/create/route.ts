@@ -101,7 +101,7 @@ export async function POST(req: NextRequest) {
   } catch (error) {
     logger.error("[ENVELOPE_CREATE_ERROR]", error);
     return NextResponse.json(
-      { ok: false, message: error instanceof Error ? error.message : "Failed to create envelope" },
+      { ok: false, message: "Failed to create envelope" },
       { status: 500 }
     );
   }

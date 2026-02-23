@@ -83,7 +83,7 @@ export async function GET() {
           database: "failed",
           prisma: "failed",
         },
-        error: error instanceof Error ? error.message : "Database connection failed",
+        error: "Database connection failed",
         service: "skaiscraper",
         version: "3.0.0",
       },

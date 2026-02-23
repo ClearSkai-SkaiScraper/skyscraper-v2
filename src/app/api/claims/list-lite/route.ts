@@ -42,7 +42,7 @@ export const GET = withAuth(async (req: NextRequest, { orgId }) => {
   } catch (error) {
     logger.error("Claims list-lite error:", error);
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : "Failed to fetch claims" },
+      { error: "Failed to fetch claims" },
       { status: 500 }
     );
   }

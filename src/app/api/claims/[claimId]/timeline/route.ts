@@ -65,7 +65,7 @@ export const GET = withAuth(
       }
       logger.error("[Timeline GET] Error:", error);
       return NextResponse.json(
-        { error: error instanceof Error ? error.message : "Failed to fetch timeline" },
+        { error: "Failed to fetch timeline" },
         { status: 500 }
       );
     }
@@ -124,7 +124,7 @@ export const POST = withAuth(
       }
       logger.error("[Timeline POST] Error:", error);
       return NextResponse.json(
-        { error: error instanceof Error ? error.message : "Failed to add event" },
+        { error: "Failed to add event" },
         { status: 500 }
       );
     }
@@ -172,7 +172,7 @@ export const DELETE = withAuth(
       }
       logger.error("[Timeline DELETE] Error:", error);
       return NextResponse.json(
-        { error: error instanceof Error ? error.message : "Failed to delete event" },
+        { error: "Failed to delete event" },
         { status: 500 }
       );
     }

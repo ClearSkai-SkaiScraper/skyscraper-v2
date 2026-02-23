@@ -52,7 +52,7 @@ export const DELETE = withAuth(
       }
       logger.error("[Notes DELETE] Error:", error);
       return NextResponse.json(
-        { error: error instanceof Error ? error.message : "Failed to delete note" },
+        { error: "Failed to delete note" },
         { status: 500 }
       );
     }

@@ -89,7 +89,7 @@ export const GET = withAuth(
       }
       logger.error("[Trades GET] Error:", error);
       return NextResponse.json(
-        { error: error instanceof Error ? error.message : "Failed to fetch trades" },
+        { error: "Failed to fetch trades" },
         { status: 500 }
       );
     }
@@ -131,7 +131,7 @@ export const POST = withAuth(
       }
       logger.error("[Trades POST] Error:", error);
       return NextResponse.json(
-        { error: error instanceof Error ? error.message : "Failed to add trade" },
+        { error: "Failed to add trade" },
         { status: 500 }
       );
     }
@@ -171,7 +171,7 @@ export const DELETE = withAuth(
       }
       logger.error("[Trades DELETE] Error:", error);
       return NextResponse.json(
-        { error: error instanceof Error ? error.message : "Failed to delete trade" },
+        { error: "Failed to delete trade" },
         { status: 500 }
       );
     }

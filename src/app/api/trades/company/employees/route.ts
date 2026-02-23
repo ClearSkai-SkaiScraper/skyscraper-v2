@@ -75,7 +75,7 @@ export const GET = withAuth(async (req: NextRequest, { userId, orgId }) => {
   } catch (error) {
     logger.error("[GET /api/trades/company/employees] Error:", error);
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : "Failed to fetch employees" },
+      { error: "Failed to fetch employees" },
       { status: 500 }
     );
   }
@@ -141,7 +141,7 @@ export const PATCH = withAuth(async (req: NextRequest, { userId }) => {
   } catch (error) {
     logger.error("[PATCH /api/trades/company/employees] Error:", error);
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : "Failed to update employee" },
+      { error: "Failed to update employee" },
       { status: 500 }
     );
   }
@@ -202,7 +202,7 @@ export const DELETE = withAuth(async (req: NextRequest, { userId }) => {
   } catch (error) {
     logger.error("[DELETE /api/trades/company/employees] Error:", error);
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : "Failed to remove employee" },
+      { error: "Failed to remove employee" },
       { status: 500 }
     );
   }

@@ -1,6 +1,6 @@
 "use client";
 
-import { Eye, FileText, MoreVertical, Sparkles, Trash2 } from "lucide-react";
+import { Copy, Edit, Eye, FileText, MoreVertical, Sparkles, Star, Trash2 } from "lucide-react";
 import { useState } from "react";
 
 import { Badge } from "@/components/ui/badge";
@@ -102,6 +102,22 @@ export function TemplateCard({ template, onSetDefault, onDuplicate, onDelete }: 
                   <Eye className="mr-2 h-4 w-4" />
                   Preview
                 </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <a href={`/reports/templates/${template.id}/edit`}>
+                    <Edit className="mr-2 h-4 w-4" />
+                    Edit Template
+                  </a>
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => onDuplicate(template.id)}>
+                  <Copy className="mr-2 h-4 w-4" />
+                  Duplicate
+                </DropdownMenuItem>
+                {!template.isDefault && (
+                  <DropdownMenuItem onClick={() => onSetDefault(template.id)}>
+                    <Star className="mr-2 h-4 w-4" />
+                    Set as Default
+                  </DropdownMenuItem>
+                )}
                 <DropdownMenuSeparator />
                 <DropdownMenuItem
                   onClick={() => onDelete(template.id)}

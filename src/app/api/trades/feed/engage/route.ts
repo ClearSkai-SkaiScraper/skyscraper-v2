@@ -108,7 +108,7 @@ export async function POST(req: NextRequest) {
   } catch (error) {
     logger.error("[POST /api/trades/feed/engage]", error);
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : "Failed to engage" },
+      { error: "Failed to engage" },
       { status: 500 }
     );
   }

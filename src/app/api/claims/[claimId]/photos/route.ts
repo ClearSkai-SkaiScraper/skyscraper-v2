@@ -69,7 +69,7 @@ export const GET = withAuth(
       }
       logger.error("[Photos GET] Error:", error);
       return NextResponse.json(
-        { error: error instanceof Error ? error.message : "Failed to fetch photos" },
+        { error: "Failed to fetch photos" },
         { status: 500 }
       );
     }

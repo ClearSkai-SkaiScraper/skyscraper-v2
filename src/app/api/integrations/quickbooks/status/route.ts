@@ -71,7 +71,7 @@ export async function GET() {
   } catch (error) {
     logger.error("[QB_STATUS_ERROR]", error);
     return NextResponse.json(
-      { ok: false, message: error instanceof Error ? error.message : "Failed" },
+      { ok: false, message: "Failed" },
       { status: 500 }
     );
   }
@@ -112,7 +112,7 @@ export async function POST(req: NextRequest) {
   } catch (error) {
     logger.error("[QB_DISCONNECT_ERROR]", error);
     return NextResponse.json(
-      { ok: false, message: error instanceof Error ? error.message : "Failed" },
+      { ok: false, message: "Failed" },
       { status: 500 }
     );
   }

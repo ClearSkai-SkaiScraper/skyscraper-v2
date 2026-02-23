@@ -62,7 +62,7 @@ export async function POST(req: NextRequest, { params }: { params: { templateId:
   } catch (error) {
     logger.error(`[GenerateThumbnail] Error for ${templateId}:`, error);
     return NextResponse.json(
-      { ok: false, error: error instanceof Error ? error.message : "UNKNOWN_ERROR" },
+      { ok: false, error: "UNKNOWN_ERROR" },
       { status: 500 }
     );
   }
@@ -96,7 +96,7 @@ export async function GET(req: NextRequest, { params }: { params: { templateId: 
   } catch (error) {
     logger.error(`[GenerateThumbnail] Error for ${templateId}:`, error);
     return NextResponse.json(
-      { ok: false, error: error instanceof Error ? error.message : "UNKNOWN_ERROR" },
+      { ok: false, error: "UNKNOWN_ERROR" },
       { status: 500 }
     );
   }

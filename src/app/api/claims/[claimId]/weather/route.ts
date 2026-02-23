@@ -209,7 +209,7 @@ export const GET = withAuth(
       return NextResponse.json(
         {
           error: "Failed to fetch weather data",
-          details: error instanceof Error ? error.message : "Unknown error",
+          details: "Unknown error",
         },
         { status: 500 }
       );

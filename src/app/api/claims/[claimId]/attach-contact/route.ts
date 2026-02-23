@@ -66,7 +66,7 @@ export const POST = withAuth(
       logger.error("[attach-contact] Error:", error);
       return NextResponse.json(
         {
-          error: error instanceof Error ? error.message : "Failed to attach contact",
+          error: "Failed to attach contact",
         },
         { status: 500 }
       );

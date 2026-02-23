@@ -59,7 +59,7 @@ export async function GET(request: NextRequest, { params }: { params: { assetId:
     return NextResponse.json(
       {
         error: "Failed to generate signed URL",
-        details: error instanceof Error ? error.message : "Unknown error",
+        details: "Unknown error",
       },
       { status: 500 }
     );

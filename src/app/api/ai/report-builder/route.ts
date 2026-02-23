@@ -173,7 +173,7 @@ async function POST_INNER(req: NextRequest, ctx: { userId: string; orgId: string
     return NextResponse.json(
       {
         success: false,
-        error: error instanceof Error ? error.message : "Unknown error occurred",
+        error: "Unknown error occurred",
       },
       { status: 500 }
     );

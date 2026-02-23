@@ -82,7 +82,7 @@ export const PATCH = withAuth(
       }
       logger.error("[PATCH /api/claims/[claimId]/update] Error:", error);
       return NextResponse.json(
-        { error: error instanceof Error ? error.message : "Failed to update claim" },
+        { error: "Failed to update claim" },
         { status: 500 }
       );
     }

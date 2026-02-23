@@ -51,7 +51,7 @@ export const GET = withAuth(async (req: NextRequest, { orgId }, routeParams) => 
   } catch (error) {
     logger.error("[AI Section API]", error);
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : "Failed to get section" },
+      { error: "Failed to get section" },
       { status: 500 }
     );
   }

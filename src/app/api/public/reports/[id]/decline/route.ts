@@ -44,7 +44,7 @@ export async function POST(req: Request, { params }: { params: { id: string } })
   } catch (error) {
     logger.error("Decline report error:", error);
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : "Decline failed" },
+      { error: "Decline failed" },
       { status: 500 }
     );
   }

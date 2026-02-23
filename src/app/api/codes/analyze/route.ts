@@ -178,7 +178,7 @@ export const POST = withAuth(async (req: NextRequest, { orgId }) => {
   } catch (error) {
     logger.error("[POST /api/codes/analyze] Error:", error);
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : "Code analysis failed" },
+      { error: "Code analysis failed" },
       { status: 500 }
     );
   }

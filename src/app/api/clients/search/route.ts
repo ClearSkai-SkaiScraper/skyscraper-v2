@@ -96,7 +96,7 @@ export async function GET(req: NextRequest) {
   } catch (error) {
     logger.error("[clients/search] Error:", error);
     return NextResponse.json(
-      { error: "Search failed", details: error instanceof Error ? error.message : "Unknown error" },
+      { error: "Search failed", details: "Unknown error" },
       { status: 500 }
     );
   }

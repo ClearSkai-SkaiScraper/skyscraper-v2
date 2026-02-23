@@ -72,7 +72,7 @@ export const GET = withAuth(async (req: NextRequest, { orgId }) => {
   } catch (error) {
     logger.error("[GET /api/dashboard/charts] error:", error);
     return NextResponse.json(
-      { ok: false, error: error instanceof Error ? error.message : "Unknown error" },
+      { ok: false, error: "Unknown error" },
       { status: 500 }
     );
   }

@@ -58,7 +58,7 @@ export const GET = withAuth(async (req: NextRequest, { orgId }) => {
   } catch (error) {
     logger.error("[billing/seats] Error:", error);
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : "Failed to check seats" },
+      { error: "Failed to check seats" },
       { status: 500 }
     );
   }

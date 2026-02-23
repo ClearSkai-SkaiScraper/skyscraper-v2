@@ -40,7 +40,7 @@ export const GET = withAuth(async (req: NextRequest, { userId }) => {
   } catch (error) {
     logger.error("Quick weather error:", error);
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : "Weather fetch failed" },
+      { error: "Weather fetch failed" },
       { status: 500 }
     );
   }

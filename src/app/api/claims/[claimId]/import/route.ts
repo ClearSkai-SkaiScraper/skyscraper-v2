@@ -60,7 +60,7 @@ export const POST = withAuth(
       return NextResponse.json(
         {
           error: "Failed to import estimate",
-          details: error instanceof Error ? error.message : "Unknown error",
+          details: "Unknown error",
         },
         { status: 500 }
       );
@@ -115,7 +115,7 @@ export const GET = withAuth(
       return NextResponse.json(
         {
           error: "Failed to fetch line items",
-          details: error instanceof Error ? error.message : "Unknown error",
+          details: "Unknown error",
         },
         { status: 500 }
       );

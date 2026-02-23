@@ -317,20 +317,14 @@ export function FinalPayoutClient({ claim, orgId, userId }: FinalPayoutClientPro
   const handleGenerateInvoice = async () => {
     setIsGeneratingInvoice(true);
     try {
-      // Call API to generate PDF packet
-      const res = await fetch(`/api/claims/${claim.id}/final-payout/generate-packet`, {
+      // Call unified actions endpoint
+      const res = await fetch(`/api/claims/${claim.id}/final-payout/actions`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          notesToCarrier,
+          action: "generate_packet",
           includePhotos: true,
-          includeLienWaiver: true,
-          includeCompletionCert: true,
-          lineItems: lineItems.map((item) => ({
-            ...item,
-            completed: item.completed,
-            recoverable: item.recoverable,
-          })),
+          includeSupplements: true,
         }),
       });
 
@@ -340,12 +334,33 @@ export function FinalPayoutClient({ claim, orgId, userId }: FinalPayoutClientPro
       }
 
       const data = await res.json();
-      setGeneratedPacketUrl(data.url);
+
+      // Download PDF if base64 bytes returned
+      if (data.packet?.pdfBase64) {
+        const byteCharacters = atob(data.packet.pdfBase64);
+        const byteNumbers = new Array(byteCharacters.length);
+        for (let i = 0; i < byteCharacters.length; i++) {
+          byteNumbers[i] = byteCharacters.charCodeAt(i);
+        }
+        const byteArray = new Uint8Array(byteNumbers);
+        const blob = new Blob([byteArray], { type: "application/pdf" });
+        const url = URL.createObjectURL(blob);
+        setGeneratedPacketUrl(url);
+
+        // Auto-download
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `Final_Payout_${claim.claimNumber || claim.id}.pdf`;
+        a.click();
+      } else if (data.packet?.url) {
+        setGeneratedPacketUrl(data.packet.url);
+      }
+
       setPayoutStatus("invoice_generated");
       toast.success("Final payout packet generated successfully!");
     } catch (error) {
       logger.error("Generate packet error:", error);
-      toast.error(error.message || "Failed to generate invoice");
+      toast.error("Failed to generate invoice");
     } finally {
       setIsGeneratingInvoice(false);
     }
@@ -359,16 +374,17 @@ export function FinalPayoutClient({ claim, orgId, userId }: FinalPayoutClientPro
 
     setIsSubmitting(true);
     try {
-      // Call API to submit to carrier
-      const res = await fetch(`/api/claims/${claim.id}/final-payout/submit`, {
+      // Call unified actions endpoint
+      const res = await fetch(`/api/claims/${claim.id}/final-payout/actions`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          certificationSigned: true,
-          signedBy: claim.insured_name || "Property Owner",
-          signedAt: new Date().toISOString(),
-          notesToCarrier,
-          sendEmail: true,
+          action: "submit",
+          confirmationChecks: {
+            workCompleted: true,
+            documentsUploaded: true,
+            invoiceGenerated: true,
+          },
         }),
       });
 
@@ -377,14 +393,11 @@ export function FinalPayoutClient({ claim, orgId, userId }: FinalPayoutClientPro
         throw new Error(err.error || "Failed to submit");
       }
 
-      const data = await res.json();
       setPayoutStatus("submitted");
-      toast.success(
-        `Submitted to carrier successfully!${data.emailSent ? " Email notification sent." : ""}`
-      );
+      toast.success("Submitted to carrier successfully!");
     } catch (error) {
       logger.error("Submit error:", error);
-      toast.error(error.message || "Failed to submit to carrier");
+      toast.error("Failed to submit to carrier");
     } finally {
       setIsSubmitting(false);
     }
@@ -404,41 +417,65 @@ export function FinalPayoutClient({ claim, orgId, userId }: FinalPayoutClientPro
 
   return (
     <div className="space-y-6 p-6">
-      {/* Page Header */}
-      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-        <div>
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <Link href="/claims" className="hover:text-foreground">
-              Claims
-            </Link>
-            <ChevronRight className="h-4 w-4" />
-            <Link href={`/claims/${claim.id}/overview`} className="hover:text-foreground">
-              {claim.claimNumber}
-            </Link>
-            <ChevronRight className="h-4 w-4" />
-            <span className="text-foreground">Final Payout</span>
+      {/* Page Header — Green gradient */}
+      <div className="-mx-6 -mt-6 mb-6 rounded-b-2xl bg-gradient-to-r from-emerald-600 via-green-600 to-teal-600 px-6 py-6 text-white shadow-lg">
+        <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+          <div>
+            <div className="flex items-center gap-2 text-sm text-emerald-100">
+              <Link href="/claims" className="hover:text-white">
+                Claims
+              </Link>
+              <ChevronRight className="h-4 w-4" />
+              <Link href={`/claims/${claim.id}/overview`} className="hover:text-white">
+                {claim.claimNumber}
+              </Link>
+              <ChevronRight className="h-4 w-4" />
+              <span className="text-white">Final Payout</span>
+            </div>
+            <h1 className="mt-2 flex items-center gap-3 text-2xl font-bold">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/20 backdrop-blur-sm">
+                <Receipt className="h-6 w-6 text-white" />
+              </div>
+              Recoverable Depreciation & Final Payout
+            </h1>
+            <p className="mt-1 text-emerald-100">
+              {claim.propertyAddress}, {claim.propertyCity}, {claim.propertyState}
+            </p>
           </div>
-          <h1 className="mt-2 flex items-center gap-3 text-2xl font-bold">
-            <Receipt className="h-7 w-7 text-green-600" />
-            Recoverable Depreciation & Final Payout
-          </h1>
-          <p className="mt-1 text-muted-foreground">
-            {claim.propertyAddress}, {claim.propertyCity}, {claim.propertyState}
-          </p>
-        </div>
-        <div className="flex gap-2">
-          <Button variant="outline" asChild>
-            <Link href={`/claims/${claim.id}/overview`}>
-              <ArrowRight className="mr-2 h-4 w-4 rotate-180" />
-              Back to Claim
-            </Link>
-          </Button>
-          {payoutStatus === "invoice_generated" && (
-            <Button onClick={handleSubmitToCarrier} disabled={isSubmitting}>
-              <Send className="mr-2 h-4 w-4" />
-              {isSubmitting ? "Submitting..." : "Submit to Carrier"}
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              className="border-white/30 bg-white/10 text-white hover:bg-white/20"
+              asChild
+            >
+              <Link href={`/claims/${claim.id}/overview`}>
+                <ArrowRight className="mr-2 h-4 w-4 rotate-180" />
+                Back to Claim
+              </Link>
             </Button>
-          )}
+            {generatedPacketUrl && (
+              <Button
+                variant="outline"
+                className="border-white/30 bg-white/10 text-white hover:bg-white/20"
+                asChild
+              >
+                <a href={generatedPacketUrl} download>
+                  <Download className="mr-2 h-4 w-4" />
+                  Download PDF
+                </a>
+              </Button>
+            )}
+            {payoutStatus === "invoice_generated" && (
+              <Button
+                className="bg-white text-emerald-700 hover:bg-emerald-50"
+                onClick={handleSubmitToCarrier}
+                disabled={isSubmitting}
+              >
+                <Send className="mr-2 h-4 w-4" />
+                {isSubmitting ? "Submitting..." : "Submit to Carrier"}
+              </Button>
+            )}
+          </div>
         </div>
       </div>
 
@@ -560,7 +597,7 @@ export function FinalPayoutClient({ claim, orgId, userId }: FinalPayoutClientPro
                   <div className="rounded-lg bg-amber-50 p-3 text-center dark:bg-amber-950">
                     <p className="text-xs text-muted-foreground">Coverage B</p>
                     <p className="text-lg font-bold text-amber-700">
-                      ${(claim.coverageB || 1800).toLocaleString()}
+                      ${(claim.coverageB || 0).toLocaleString()}
                     </p>
                   </div>
                   <div className="rounded-lg bg-purple-50 p-3 text-center dark:bg-purple-950">

@@ -101,7 +101,7 @@ export async function POST(
   } catch (error) {
     logger.error("[SIGNATURE_SAVE_ERROR]", error);
     return NextResponse.json(
-      { ok: false, message: error instanceof Error ? error.message : "Failed to save signature" },
+      { ok: false, message: "Failed to save signature" },
       { status: 500 }
     );
   }

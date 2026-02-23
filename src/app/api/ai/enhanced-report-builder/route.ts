@@ -250,7 +250,7 @@ async function POST_INNER(req: NextRequest, ctx: { userId: string; orgId: string
     return NextResponse.json(
       {
         error: "Failed to generate enhanced report",
-        details: error instanceof Error ? error.message : "Unknown error",
+        details: "Unknown error",
       },
       { status: 500 }
     );

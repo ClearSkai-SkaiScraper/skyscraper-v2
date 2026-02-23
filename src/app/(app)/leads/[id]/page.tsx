@@ -27,6 +27,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ConvertToClaimButton } from "./_components/ConvertToClaimButton";
 import { EditableLeadSummary } from "./_components/EditableLeadSummary";
+import LeadDetailTabs from "./_components/LeadDetailTabs";
 
 // Prisma singleton imported from @/lib/db/prisma
 
@@ -234,6 +235,9 @@ export default async function LeadDetailPage({ params }: { params: Promise<{ id:
                 updatedAt: lead.updatedAt,
               }}
             />
+
+            {/* Notes / Timeline / Files tabs */}
+            <LeadDetailTabs leadId={lead.id} />
           </div>
 
           <div className="space-y-6">

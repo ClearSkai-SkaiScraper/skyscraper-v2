@@ -76,9 +76,6 @@ export async function GET(req: NextRequest) {
     return apiSuccess({ history: formattedHistory, total: formattedHistory.length });
   } catch (error) {
     logger.error("[AI History Error]", error);
-    return apiError(
-      "Failed to fetch AI history",
-      error instanceof Error ? error.message : undefined
-    );
+    return apiError("Failed to fetch AI history", undefined);
   }
 }

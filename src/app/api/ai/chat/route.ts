@@ -291,7 +291,7 @@ Be conversational, helpful, and specific. Reference real data when available. If
 
     // Provide detailed error information
     const errorDetails = {
-      message: error instanceof Error ? error.message : "Unknown error",
+      message: "Unknown error",
       type: error instanceof Error ? error.constructor.name : typeof error,
       processingTimeMs: processingTime,
     };

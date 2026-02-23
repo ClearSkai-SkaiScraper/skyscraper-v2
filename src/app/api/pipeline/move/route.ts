@@ -117,9 +117,6 @@ export const POST = withAuth(async (req: NextRequest, { orgId: userOrgId, userId
     return NextResponse.json({ error: "claimId or leadId required" }, { status: 400 });
   } catch (error) {
     logger.error("[PIPELINE_MOVE]", error);
-    return NextResponse.json(
-      { error: "Failed to move job: " + (error instanceof Error ? error.message : String(error)) },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Failed to move job" }, { status: 500 });
   }
 });

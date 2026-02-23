@@ -86,7 +86,7 @@ export const POST = withAuth(
 
       logger.error("[POST /api/claims/dol]", error);
       return NextResponse.json(
-        { error: error instanceof Error ? error.message : "Failed to update DOL" },
+        { error: "Failed to update DOL" },
         { status: 500 }
       );
     }

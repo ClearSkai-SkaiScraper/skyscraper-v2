@@ -65,7 +65,7 @@ export async function GET(req: Request) {
         // Subscription verified as active in Stripe
         logger.debug(`Org ${Org.id}: Stripe subscription verified active`);
       } catch (error) {
-        const errMsg = error instanceof Error ? error.message : "Unknown error";
+        const errMsg = "Unknown error";
         errors.push(`Org ${Org.id}: ${errMsg}`);
         logger.error(`Reconciliation error for Org ${Org.id}:`, error);
       }

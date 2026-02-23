@@ -227,7 +227,7 @@ export const POST = withAuth(
       return NextResponse.json(
         {
           error: "Failed to refresh weather data",
-          details: error instanceof Error ? error.message : "Unknown error",
+          details: "Unknown error",
         },
         { status: 500 }
       );

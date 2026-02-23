@@ -173,7 +173,7 @@ export async function POST(req: Request) {
   try {
     orgId = (await ensureUserOrgContext(userId)).orgId;
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Unknown error";
+    const message = "Unknown error";
     logger.error("[trades/profile POST] ❌ Failed to resolve orgId", message);
     return NextResponse.json({ error: "Organization context missing" }, { status: 403 });
   }
@@ -282,7 +282,7 @@ export async function PATCH(req: Request) {
   try {
     orgId = (await ensureUserOrgContext(userId)).orgId;
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Unknown error";
+    const message = "Unknown error";
     logger.error("[trades/profile PATCH] ❌ Failed to resolve orgId", message);
     return NextResponse.json({ error: "Organization context required" }, { status: 403 });
   }

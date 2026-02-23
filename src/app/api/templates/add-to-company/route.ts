@@ -71,7 +71,7 @@ export const POST = withAuth(async (request: NextRequest, { orgId, userId }) => 
     return NextResponse.json(
       {
         ok: false,
-        error: error instanceof Error ? error.message : "UNKNOWN_ERROR",
+        error: "UNKNOWN_ERROR",
       },
       { status: 500 }
     );

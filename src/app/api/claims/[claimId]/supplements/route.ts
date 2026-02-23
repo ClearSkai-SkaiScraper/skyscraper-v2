@@ -98,7 +98,7 @@ export const POST = withAuth(
 
       logger.error("[POST /api/claims/supplements]", error);
       return NextResponse.json(
-        { error: error instanceof Error ? error.message : "Failed to create supplement" },
+        { error: "Failed to create supplement" },
         { status: 500 }
       );
     }
@@ -128,7 +128,7 @@ export const GET = withAuth(
       }
       logger.error("[GET /api/claims/supplements]", error);
       return NextResponse.json(
-        { error: error instanceof Error ? error.message : "Failed to fetch supplements" },
+        { error: "Failed to fetch supplements" },
         { status: 500 }
       );
     }

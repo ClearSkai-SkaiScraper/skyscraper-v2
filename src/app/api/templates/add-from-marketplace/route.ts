@@ -119,13 +119,10 @@ export const POST = withAuth(async (request: NextRequest, { orgId, userId }) => 
       extra: {
         userId,
         templateId: requestedTemplateId,
-        errorMessage: error instanceof Error ? error.message : String(error),
+        errorMessage: "Internal error",
       },
     });
 
-    return NextResponse.json(
-      { error: error instanceof Error ? error.message : "Failed to add template" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Failed to add template" }, { status: 500 });
   }
 });

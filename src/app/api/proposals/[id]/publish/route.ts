@@ -128,7 +128,7 @@ export const POST = withAuth(
       return NextResponse.json(
         {
           error: "Failed to publish proposal",
-          details: error instanceof Error ? error.message : String(error),
+          details: "Internal error",
         },
         { status: 500 }
       );

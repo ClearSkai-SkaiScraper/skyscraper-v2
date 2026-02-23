@@ -102,7 +102,7 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
     return NextResponse.json(
       {
         error: "Failed to route lead",
-        details: error instanceof Error ? error.message : "Unknown error",
+        details: "Unknown error",
       },
       { status: 500 }
     );

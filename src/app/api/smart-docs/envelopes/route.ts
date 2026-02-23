@@ -55,7 +55,7 @@ export async function GET() {
     return NextResponse.json(
       {
         ok: false,
-        message: error instanceof Error ? error.message : "Failed to load documents",
+        message: "Failed to load documents",
       },
       { status: 500 }
     );

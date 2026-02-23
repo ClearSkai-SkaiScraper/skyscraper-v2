@@ -134,7 +134,7 @@ export async function POST(req: Request, { params }: { params: { id: string } })
   } catch (error) {
     logger.error("Accept report error:", error);
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : "Accept failed" },
+      { error: "Accept failed" },
       { status: 500 }
     );
   }

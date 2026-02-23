@@ -46,7 +46,7 @@ export const GET = withAuth(async (req: NextRequest, { orgId }) => {
     return NextResponse.json(
       {
         ok: false,
-        error: error instanceof Error ? error.message : "UNKNOWN_ERROR",
+        error: "UNKNOWN_ERROR",
         templates: [],
       },
       { status: 500 }

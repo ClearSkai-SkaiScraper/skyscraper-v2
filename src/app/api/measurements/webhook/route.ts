@@ -86,7 +86,7 @@ export async function POST(req: NextRequest) {
   } catch (error) {
     logger.error("[MEASUREMENTS_WEBHOOK_ERROR]", error);
     return NextResponse.json(
-      { ok: false, message: error instanceof Error ? error.message : "Webhook processing failed" },
+      { ok: false, message: "Webhook processing failed" },
       { status: 500 }
     );
   }

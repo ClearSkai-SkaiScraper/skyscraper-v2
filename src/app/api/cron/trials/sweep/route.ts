@@ -250,7 +250,7 @@ export async function GET(request: NextRequest) {
       {
         success: false,
         error: "Cron job failed",
-        details: error instanceof Error ? error.message : String(error),
+        details: "Internal error",
       },
       { status: 500 }
     );

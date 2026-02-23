@@ -54,7 +54,7 @@ export const GET = withAuth(
       // Graceful fallback for DB errors
       logger.warn(
         "[GET /api/claims/[claimId]/reports] Error (returning empty):",
-        error instanceof Error ? error.message : error
+        "Failed to fetch reports"
       );
       return NextResponse.json({ reports: [], message: "Reports system not yet initialized" });
     }

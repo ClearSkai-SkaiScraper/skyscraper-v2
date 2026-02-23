@@ -77,32 +77,35 @@ export default async function ClaimLayout({ children, params }: ClaimLayoutProps
 
       return (
         <div className="flex h-screen flex-col overflow-hidden bg-slate-50 dark:bg-slate-950">
-          {/* Modern Header — inspired by SandboxClaimWorkspace */}
-          <header className="sticky top-0 z-20 border-b border-slate-200/60 bg-white/80 backdrop-blur-xl dark:border-slate-800 dark:bg-slate-900/80">
+          {/* Modern Header — Blue gradient */}
+          <header className="sticky top-0 z-20 border-b border-blue-700/30 bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-700 shadow-lg">
             <div className="mx-auto max-w-7xl px-4 py-3 md:px-6">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3 md:gap-4">
                   <Link
                     href="/claims"
-                    className="rounded-xl bg-slate-100 p-2 text-slate-500 transition-colors hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700"
+                    className="rounded-xl bg-white/15 p-2 text-white/80 backdrop-blur-sm transition-colors hover:bg-white/25"
                   >
                     <ArrowLeft className="h-5 w-5" />
                   </Link>
+                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/20 backdrop-blur-sm">
+                    <Shield className="h-5 w-5 text-white" />
+                  </div>
                   <div className="min-w-0">
                     <div className="flex flex-wrap items-center gap-2">
-                      <h1 className="max-w-[200px] truncate text-lg font-bold text-slate-900 dark:text-white sm:max-w-[320px]">
+                      <h1 className="max-w-[200px] truncate text-lg font-bold text-white sm:max-w-[320px]">
                         {claim.title || claim.claimNumber}
                       </h1>
-                      <Badge className="border-blue-200 bg-blue-50 text-blue-700 dark:border-blue-800 dark:bg-blue-900/30 dark:text-blue-400">
+                      <Badge className="border-white/30 bg-white/15 text-white backdrop-blur-sm">
                         {claim.lifecycle_stage || claim.status}
                       </Badge>
                       {claim.damageType && (
-                        <Badge className="border-purple-200 bg-purple-50 text-purple-700 dark:border-purple-800 dark:bg-purple-900/30 dark:text-purple-400">
+                        <Badge className="border-white/30 bg-white/15 text-white backdrop-blur-sm">
                           {claim.damageType}
                         </Badge>
                       )}
                     </div>
-                    <div className="mt-0.5 flex flex-wrap items-center gap-x-3 gap-y-0.5 text-xs text-slate-500 dark:text-slate-400">
+                    <div className="mt-0.5 flex flex-wrap items-center gap-x-3 gap-y-0.5 text-xs text-blue-100">
                       <span className="flex items-center gap-1">
                         <User className="h-3 w-3" />
                         {claim.insured_name || "Unknown Insured"}
@@ -126,8 +129,8 @@ export default async function ClaimLayout({ children, params }: ClaimLayoutProps
                 {/* Job Value Pill */}
                 {(claim.estimatedValue ?? 0) > 0 && (
                   <div className="hidden items-center gap-2 sm:flex">
-                    <div className="rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-1.5 dark:border-emerald-800 dark:bg-emerald-900/30">
-                      <span className="flex items-center gap-1.5 text-sm font-semibold text-emerald-700 dark:text-emerald-400">
+                    <div className="rounded-xl border border-white/20 bg-white/15 px-3 py-1.5 backdrop-blur-sm">
+                      <span className="flex items-center gap-1.5 text-sm font-semibold text-white">
                         <DollarSign className="h-3.5 w-3.5" />
                         {(claim.estimatedValue ?? 0).toLocaleString("en-US", {
                           style: "currency",
@@ -135,7 +138,7 @@ export default async function ClaimLayout({ children, params }: ClaimLayoutProps
                           maximumFractionDigits: 0,
                         })}
                       </span>
-                      <span className="text-[10px] font-medium uppercase tracking-wide text-emerald-500 dark:text-emerald-500">
+                      <span className="text-[10px] font-medium uppercase tracking-wide text-blue-200">
                         Job Value
                       </span>
                     </div>
@@ -247,35 +250,38 @@ export default async function ClaimLayout({ children, params }: ClaimLayoutProps
 
   return (
     <div className="flex h-screen flex-col overflow-hidden bg-slate-50 dark:bg-slate-950">
-      {/* Modern Header — inspired by SandboxClaimWorkspace */}
-      <header className="sticky top-0 z-20 border-b border-slate-200/60 bg-white/80 backdrop-blur-xl dark:border-slate-800 dark:bg-slate-900/80">
+      {/* Modern Header — Blue gradient */}
+      <header className="sticky top-0 z-20 border-b border-blue-700/30 bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-700 shadow-lg">
         <div className="mx-auto max-w-7xl px-4 py-3 md:px-6">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3 md:gap-4">
               <Link
                 href="/claims"
-                className="rounded-xl bg-slate-100 p-2 text-slate-500 transition-colors hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700"
+                className="rounded-xl bg-white/15 p-2 text-white/80 backdrop-blur-sm transition-colors hover:bg-white/25"
               >
                 <ArrowLeft className="h-5 w-5" />
               </Link>
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/20 backdrop-blur-sm">
+                <Shield className="h-5 w-5 text-white" />
+              </div>
               <div className="min-w-0">
                 <div className="flex flex-wrap items-center gap-2">
                   <h1
-                    className="max-w-[200px] truncate text-lg font-bold text-slate-900 dark:text-white sm:max-w-[320px]"
+                    className="max-w-[200px] truncate text-lg font-bold text-white sm:max-w-[320px]"
                     title={claim.title || claim.claimNumber || ""}
                   >
                     {claim.title || claim.claimNumber}
                   </h1>
-                  <Badge className="border-blue-200 bg-blue-50 text-blue-700 dark:border-blue-800 dark:bg-blue-900/30 dark:text-blue-400">
+                  <Badge className="border-white/30 bg-white/15 text-white backdrop-blur-sm">
                     {claim.lifecycle_stage || claim.status}
                   </Badge>
                   {claim.damageType && (
-                    <Badge className="border-purple-200 bg-purple-50 text-purple-700 dark:border-purple-800 dark:bg-purple-900/30 dark:text-purple-400">
+                    <Badge className="border-white/30 bg-white/15 text-white backdrop-blur-sm">
                       {claim.damageType}
                     </Badge>
                   )}
                 </div>
-                <div className="mt-0.5 flex flex-wrap items-center gap-x-3 gap-y-0.5 text-xs text-slate-500 dark:text-slate-400">
+                <div className="mt-0.5 flex flex-wrap items-center gap-x-3 gap-y-0.5 text-xs text-blue-100">
                   <span className="flex items-center gap-1">
                     <User className="h-3 w-3" />
                     {(claim as any).insured_name || "Unknown Insured"}
@@ -299,8 +305,8 @@ export default async function ClaimLayout({ children, params }: ClaimLayoutProps
             {/* Job Value Pill */}
             {((claim as any).estimatedValue ?? 0) > 0 && (
               <div className="hidden items-center gap-2 sm:flex">
-                <div className="rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-1.5 dark:border-emerald-800 dark:bg-emerald-900/30">
-                  <span className="flex items-center gap-1.5 text-sm font-semibold text-emerald-700 dark:text-emerald-400">
+                <div className="rounded-xl border border-white/20 bg-white/15 px-3 py-1.5 backdrop-blur-sm">
+                  <span className="flex items-center gap-1.5 text-sm font-semibold text-white">
                     <DollarSign className="h-3.5 w-3.5" />
                     {((claim as any).estimatedValue ?? 0).toLocaleString("en-US", {
                       style: "currency",
@@ -308,7 +314,7 @@ export default async function ClaimLayout({ children, params }: ClaimLayoutProps
                       maximumFractionDigits: 0,
                     })}
                   </span>
-                  <span className="text-[10px] font-medium uppercase tracking-wide text-emerald-500 dark:text-emerald-500">
+                  <span className="text-[10px] font-medium uppercase tracking-wide text-blue-200">
                     Job Value
                   </span>
                 </div>

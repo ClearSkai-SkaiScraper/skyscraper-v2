@@ -33,6 +33,15 @@ export const POST = withAuth(async (req: NextRequest, { orgId, userId }) => {
       return NextResponse.json({ error: "claimId is required" }, { status: 400 });
     }
 
+    // Resolve DB user UUID from Clerk userId (FK requires users.id, not clerkUserId)
+    const dbUser = await prisma.users.findFirst({
+      where: { clerkUserId: userId },
+      select: { id: true },
+    });
+    if (!dbUser) {
+      return NextResponse.json({ error: "User not found" }, { status: 404 });
+    }
+
     // Verify claim belongs to org
     const claim = await prisma.claims.findFirst({
       where: { id: claimId, orgId },
@@ -65,7 +74,7 @@ export const POST = withAuth(async (req: NextRequest, { orgId, userId }) => {
         id: crypto.randomUUID(),
         orgId,
         claimId,
-        createdById: userId,
+        createdById: dbUser.id,
         type: templateName,
         title: reportTitle,
         sections: sections || addOns || [],
@@ -102,9 +111,6 @@ export const POST = withAuth(async (req: NextRequest, { orgId, userId }) => {
     });
   } catch (error) {
     logger.error("[POST /api/reports/generate] Error:", error);
-    return NextResponse.json(
-      { error: error instanceof Error ? error.message : "Failed to generate report" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Failed to generate report" }, { status: 500 });
   }
 });

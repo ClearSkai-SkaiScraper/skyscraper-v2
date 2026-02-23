@@ -56,7 +56,7 @@ export async function GET(request: NextRequest) {
       source: "user_organizations",
     });
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Failed to fetch team members";
+    const message = "Failed to fetch team members";
     logger.error("[GET /api/team/members] Error:", error);
     return NextResponse.json({ error: message }, { status: 500 });
   }

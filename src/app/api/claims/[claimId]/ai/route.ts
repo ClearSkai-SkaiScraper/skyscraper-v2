@@ -290,7 +290,7 @@ Your goal: Help adjusters maximize accurate claim value while maintaining profes
     } catch (error) {
       logger.error("[AI Analysis] Error:", error);
       return NextResponse.json(
-        { success: false, error: error instanceof Error ? error.message : "Unknown error" },
+        { success: false, error: "Unknown error" },
         { status: 500 }
       );
     }
@@ -341,7 +341,7 @@ export const GET = withAuth(
     } catch (error) {
       logger.error("[AI Analysis GET] Error:", error);
       return NextResponse.json(
-        { success: false, error: error instanceof Error ? error.message : "Unknown error" },
+        { success: false, error: "Unknown error" },
         { status: 500 }
       );
     }

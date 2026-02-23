@@ -61,7 +61,7 @@ export async function PATCH(request: NextRequest, { params }: { params: { assetI
     return NextResponse.json(
       {
         error: "Failed to update asset",
-        details: error instanceof Error ? error.message : "Unknown error",
+        details: "Unknown error",
       },
       { status: 500 }
     );

@@ -40,7 +40,7 @@ export async function GET(req: Request) {
     logger.error("Admin metrics error:", error);
     return NextResponse.json(
       {
-        error: error instanceof Error ? error.message : "Failed to fetch metrics",
+        error: "Failed to fetch metrics",
       },
       { status: 500 }
     );

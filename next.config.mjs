@@ -97,8 +97,7 @@ const nextConfig = {
       },
       { source: "/ai/rebuttal-builder", destination: "/ai/tools/rebuttal", permanent: true },
       { source: "/ai/supplement-builder", destination: "/ai/tools/supplement", permanent: true },
-      { source: "/ai/tools", destination: "/ai-tools", permanent: true },
-      { source: "/ai", destination: "/ai-tools", permanent: true },
+      { source: "/ai/tools", destination: "/ai", permanent: true },
       { source: "/ai-video-reports", destination: "/ai/video", permanent: true },
       { source: "/ai/video-reports", destination: "/ai/video", permanent: true },
 

@@ -138,7 +138,7 @@ export async function GET() {
         timestamp: new Date().toISOString(),
         service: "skaiscraper",
         version: getVersion(),
-        error: error instanceof Error ? error.message : "Unknown error",
+        error: "Unknown error",
         uptime: process.uptime(),
         responseMs: Date.now() - start,
       },

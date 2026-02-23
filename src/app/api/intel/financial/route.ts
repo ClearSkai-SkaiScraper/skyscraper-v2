@@ -116,7 +116,7 @@ export const POST = withAuth(async (req: NextRequest, { orgId }) => {
     }
     logger.error("[POST /api/intel/financial] Error:", error);
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : "Failed to run financial analysis" },
+      { error: "Failed to run financial analysis" },
       { status: 500 }
     );
   }

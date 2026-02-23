@@ -49,7 +49,7 @@ export const GET = withAuth(async (req: NextRequest, { orgId }) => {
     return NextResponse.json(
       {
         ok: false,
-        error: error instanceof Error ? error.message : "Failed to fetch reports",
+        error: "Failed to fetch reports",
         reports: [],
       },
       { status: 500 }

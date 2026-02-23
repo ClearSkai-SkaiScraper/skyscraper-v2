@@ -67,7 +67,7 @@ export async function GET(
   } catch (error) {
     logger.error("[ENVELOPE_GET_ERROR]", error);
     return NextResponse.json(
-      { ok: false, message: error instanceof Error ? error.message : "Failed to get envelope" },
+      { ok: false, message: "Failed to get envelope" },
       { status: 500 }
     );
   }

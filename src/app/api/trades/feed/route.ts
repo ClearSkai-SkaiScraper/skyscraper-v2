@@ -235,9 +235,6 @@ export async function POST(req: NextRequest) {
     });
   } catch (error) {
     logger.error("[POST /api/trades/feed]", error);
-    return NextResponse.json(
-      { error: error instanceof Error ? error.message : "Failed to create post" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Failed to create post" }, { status: 500 });
   }
 }
