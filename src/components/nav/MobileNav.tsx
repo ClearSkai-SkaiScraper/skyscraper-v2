@@ -24,6 +24,7 @@ import {
   Landmark,
   LayoutDashboard,
   Mail,
+  MapPin,
   Menu,
   MessageSquare,
   Package,
@@ -70,6 +71,7 @@ const navSections: NavSection[] = [
   {
     label: "Jobs & Claims",
     items: [
+      { label: "Map View", href: "/maps/map-view", icon: MapPin },
       { label: "Claims Workspace", href: "/claims", icon: ClipboardList },
       { label: "Retail Workspace", href: "/jobs/retail", icon: Store },
       { label: "Lead Routing", href: "/leads", icon: Zap },
