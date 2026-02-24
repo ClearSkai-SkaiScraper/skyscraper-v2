@@ -70,19 +70,19 @@ export default async function PublicProfilePage({ params }: ProfilePageProps) {
   try {
     const feedPosts = await prisma.tradesPost.findMany({
       where: {
-        profileId: profile.id,
-        visibility: "public",
+        companyId: company?.id ?? undefined,
+        isActive: true,
       },
       orderBy: { createdAt: "desc" },
       take: 10,
       select: {
         id: true,
         content: true,
-        type: true,
+        postType: true,
         images: true,
-        comments: true,
+        title: true,
         createdAt: true,
-      } as any,
+      },
     });
     posts = feedPosts;
   } catch {

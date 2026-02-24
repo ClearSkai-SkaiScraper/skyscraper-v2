@@ -4,11 +4,6 @@
  * GET    /api/trades/posts — Fetch posts (by companyId or profileId)
  * POST   /api/trades/posts — Create a new post
  * DELETE /api/trades/posts — Delete a post
- *
- * NOTE: Prisma schema has two TradesPost models (PascalCase + camelCase).
- * The runtime DB table matches the camelCase model (companyId, postType, isActive).
- * We cast `prisma.tradesPost as any` to bypass the TS mismatch — same pattern
- * used in /network/trades/page.tsx.
  */
 
 import { logger } from "@/lib/logger";
@@ -18,9 +13,6 @@ import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 
 export const dynamic = "force-dynamic";
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const tradesPostModel = prisma.tradesPost as any;
 
 export async function GET(req: NextRequest) {
   try {
@@ -66,7 +58,7 @@ export async function GET(req: NextRequest) {
       }
     }
 
-    const posts: any[] = await tradesPostModel.findMany({
+    const posts = await prisma.tradesPost.findMany({
       where,
       orderBy: { createdAt: "desc" },
       take: limit,
@@ -127,7 +119,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Content is required" }, { status: 400 });
     }
 
-    const post: any = await tradesPostModel.create({
+    const post = await prisma.tradesPost.create({
       data: {
         authorId: userId,
         companyId,
@@ -172,7 +164,7 @@ export async function DELETE(req: NextRequest) {
     }
 
     // Verify ownership
-    const post: any = await tradesPostModel.findUnique({
+    const post = await prisma.tradesPost.findUnique({
       where: { id: postId },
     });
 
@@ -184,7 +176,7 @@ export async function DELETE(req: NextRequest) {
       return NextResponse.json({ error: "Not authorized to delete this post" }, { status: 403 });
     }
 
-    await tradesPostModel.update({
+    await prisma.tradesPost.update({
       where: { id: postId },
       data: { isActive: false },
     });

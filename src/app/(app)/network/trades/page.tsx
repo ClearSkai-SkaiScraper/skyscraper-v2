@@ -102,7 +102,7 @@ export default async function TradesNetworkPage() {
     });
 
     // Get recent posts from trades network (using any[] due to model complexity)
-    const posts: any[] = await (prisma.tradesPost as any)
+    const posts = await prisma.tradesPost
       .findMany({
         where: { isActive: true },
         orderBy: { createdAt: "desc" },

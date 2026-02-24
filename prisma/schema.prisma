@@ -1393,41 +1393,8 @@ model TradesMessage {
   @@index([toProfileId])
 }
 
-model TradesPost {
-  id            String        @id
-  profileId     String
-  authorId      String
-  type          String
-  title         String?
-  content       String
-  location      String?
-  city          String?
-  state         String?
-  tags          String[]
-  images        String[]
-  startDate     DateTime?
-  endDate       DateTime?
-  payRate       String?
-  requirements  String?
-  contactEmail  String?
-  contactPhone  String?
-  visibility    String        @default("public")
-  active        Boolean       @default(true)
-  featured      Boolean       @default(false)
-  viewCount     Int           @default(0)
-  responseCount Int           @default(0)
-  likeCount     Int           @default(0)
-  createdAt     DateTime      @default(now())
-  updatedAt     DateTime
-  TradesProfile TradesProfile @relation(fields: [profileId], references: [id], onDelete: Cascade)
-
-  @@index([authorId])
-  @@index([city, state])
-  @@index([createdAt(sort: Desc)])
-  @@index([featured, active])
-  @@index([profileId])
-  @@index([type, active])
-}
+/// TradesPost (PascalCase) removed — it collided with camelCase tradesPost on the
+/// same Prisma accessor `prisma.tradesPost`. All runtime code targets the camelCase model.
 
 model TradesProfile {
   id                                                           String             @id
@@ -1462,7 +1429,6 @@ model TradesProfile {
   TradesConnection_TradesConnection_followingIdToTradesProfile TradesConnection[] @relation("TradesConnection_followingIdToTradesProfile")
   TradesMessage_TradesMessage_fromProfileIdToTradesProfile     TradesMessage[]    @relation("TradesMessage_fromProfileIdToTradesProfile")
   TradesMessage_TradesMessage_toProfileIdToTradesProfile       TradesMessage[]    @relation("TradesMessage_toProfileIdToTradesProfile")
-  TradesPost                                                   TradesPost[]
 
   @@index([city, state])
   @@index([orgId])
@@ -5488,10 +5454,10 @@ model tradesPost {
   id            String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   companyId     String?        @db.Uuid
   authorId      String
-  title         String
+  title         String         @default("")
   content       String?
-  images        String[]
-  tags          String[]
+  images        String[]       @default([])
+  tags          String[]       @default([])
   postType      String?        @default("update")
   isActive      Boolean?       @default(true)
   createdAt     DateTime?      @default(now()) @db.Timestamptz(6)

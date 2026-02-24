@@ -4,10 +4,8 @@
  * GET  /api/trades/feed — Fetch feed posts for the authenticated user
  * POST /api/trades/feed — Create a new feed post
  *
- * NOTE: Prisma schema has two TradesPost models (PascalCase + camelCase).
- * The runtime DB table matches the camelCase model (companyId, postType, isActive).
- * We cast `prisma.tradesPost as any` to bypass the TS mismatch — same pattern
- * used in /network/trades/page.tsx.
+ * Sprint 21: Removed PascalCase TradesPost model from schema so the accessor
+ * now cleanly resolves to the camelCase tradesPost model.
  */
 
 import { logger } from "@/lib/logger";
@@ -17,9 +15,6 @@ import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 
 export const dynamic = "force-dynamic";
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const tradesPostModel = prisma.tradesPost as any;
 
 export async function GET(req: NextRequest) {
   try {
@@ -41,7 +36,7 @@ export async function GET(req: NextRequest) {
       where.postType = type;
     }
 
-    const posts: any[] = await tradesPostModel.findMany({
+    const posts = await prisma.tradesPost.findMany({
       where,
       orderBy: { createdAt: "desc" },
       take: limit,
@@ -197,7 +192,7 @@ export async function POST(req: NextRequest) {
     // Create the post — use try-catch for actionable error messages
     let post: any;
     try {
-      post = await tradesPostModel.create({
+      post = await prisma.tradesPost.create({
         data: {
           authorId: userId,
           companyId: companyId,

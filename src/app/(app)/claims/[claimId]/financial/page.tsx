@@ -743,14 +743,10 @@ export default function ClaimFinancialPage() {
                           ),
                           "",
                           "=== REQUIRED SUPPLEMENTS ===",
-                          ...(a.requiredSupplements || []).map(
-                            (s, i) => `${i + 1}. ${s}`
-                          ),
+                          ...(a.requiredSupplements || []).map((s, i) => `${i + 1}. ${s}`),
                           "",
                           "=== UNDERPAYMENT REASONS ===",
-                          ...(a.underpaymentReasons || []).map(
-                            (r, i) => `${i + 1}. ${r}`
-                          ),
+                          ...(a.underpaymentReasons || []).map((r, i) => `${i + 1}. ${r}`),
                           "",
                           "=== LINE ITEM ANALYSIS ===",
                           ...(a.lineItemAnalysis || []).map(
@@ -798,9 +794,7 @@ export default function ClaimFinancialPage() {
                           a.requiredSupplements?.length
                             ? "ADDITIONAL WORK NEEDED:"
                             : "No additional supplements needed at this time.",
-                          ...(a.requiredSupplements || []).map(
-                            (s, i) => `  ${i + 1}. ${s}`
-                          ),
+                          ...(a.requiredSupplements || []).map((s, i) => `  ${i + 1}. ${s}`),
                           "",
                           "If you have any questions, please contact your contractor.",
                         ];

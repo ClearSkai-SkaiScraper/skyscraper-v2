@@ -14,9 +14,6 @@ import { NextRequest, NextResponse } from "next/server";
 import { withAuth } from "@/lib/auth/withAuth";
 import prisma from "@/lib/prisma";
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const tradesPostModel = prisma.tradesPost as any;
-
 export const GET = withAuth(async (req: NextRequest, { userId }) => {
   try {
     // Get the user's company to scope team posts
@@ -35,7 +32,7 @@ export const GET = withAuth(async (req: NextRequest, { userId }) => {
       where.authorId = userId;
     }
 
-    const posts: any[] = await tradesPostModel
+    const posts = await prisma.tradesPost
       .findMany({
         where,
         orderBy: { createdAt: "desc" },
@@ -81,7 +78,7 @@ export const POST = withAuth(async (req: NextRequest, { userId }) => {
       })
       .catch(() => null);
 
-    const post: any = await tradesPostModel.create({
+    const post = await prisma.tradesPost.create({
       data: {
         authorId: userId,
         companyId: member?.companyId || null,
