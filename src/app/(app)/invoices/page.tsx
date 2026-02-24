@@ -154,10 +154,12 @@ export default async function InvoicesPage() {
             {invoices.map((inv) => (
               <tr
                 key={inv.id}
-                className="transition-colors hover:bg-slate-50/60 dark:hover:bg-slate-800/40"
+                className="cursor-pointer transition-colors hover:bg-slate-50/60 dark:hover:bg-slate-800/40"
               >
                 <Td mono className="font-medium text-blue-600 dark:text-blue-400">
-                  {inv.invoiceNo}
+                  <Link href={`/invoices/${inv.id}`} className="underline-offset-2 hover:underline">
+                    {inv.invoiceNo}
+                  </Link>
                 </Td>
                 <Td>{inv.jobName}</Td>
                 <Td>

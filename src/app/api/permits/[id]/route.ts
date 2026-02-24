@@ -9,9 +9,31 @@ import prisma from "@/lib/prisma";
 import { safeOrgContext } from "@/lib/safeOrgContext";
 
 // ---------------------------------------------------------------------------
+// GET    /api/permits/[id] — Get a single permit
 // PATCH  /api/permits/[id] — Update a permit
 // DELETE /api/permits/[id] — Delete a permit
 // ---------------------------------------------------------------------------
+
+export async function GET(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  try {
+    const { id } = await params;
+    const ctx = await safeOrgContext();
+    if (ctx.status !== "ok" || !ctx.orgId) {
+      return apiError(401, "UNAUTHORIZED", "Authentication required");
+    }
+
+    const permit = await prisma.permits.findFirst({
+      where: { id, orgId: ctx.orgId },
+    });
+    if (!permit) {
+      return apiError(404, "NOT_FOUND", "Permit not found");
+    }
+
+    return apiOk({ permit });
+  } catch (err: any) {
+    return apiError(500, "INTERNAL_ERROR", err.message);
+  }
+}
 
 const UpdatePermitSchema = z.object({
   status: z
@@ -73,7 +95,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     });
 
     return apiOk({ permit: updated });
-  } catch (err) {
+  } catch (err: any) {
     return apiError(500, "INTERNAL_ERROR", err.message);
   }
 }

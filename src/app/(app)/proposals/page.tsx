@@ -3,10 +3,13 @@ import { redirect } from "next/navigation";
 
 import { PageContainer } from "@/components/layout/PageContainer";
 import { PageHero } from "@/components/layout/PageHero";
+import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 
 import { ProposalCreationForm } from "./_components/ProposalCreationForm";
 import { ProposalList } from "./_components/ProposalList";
+
+export const dynamic = "force-dynamic";
 
 export const metadata = {
   title: "Proposals | SkaiScraper",
@@ -30,9 +33,44 @@ export default async function ProposalEnginePage() {
     })
     .catch(() => []);
 
-  // Fetch recent proposals (we'll create this table in a moment)
-  // For now, pass empty array
-  const proposals: any[] = [];
+  // Fetch recent proposals from proposal_drafts
+  let proposals: any[] = [];
+  try {
+    const drafts = await prisma.proposal_drafts.findMany({
+      where: { org_id: orgId },
+      orderBy: { created_at: "desc" },
+      take: 50,
+      select: {
+        id: true,
+        packet_type: true,
+        status: true,
+        ai_summary: true,
+        context_json: true,
+        created_at: true,
+        updated_at: true,
+      },
+    });
+
+    proposals = drafts.map((d) => {
+      const ctx = d.context_json as any;
+      return {
+        id: d.id,
+        projectName: ctx?.projectName || ctx?.title || d.packet_type || "Untitled Proposal",
+        status:
+          d.status === "ready"
+            ? "ready"
+            : d.status === "failed"
+              ? "failed"
+              : d.status === "generating"
+                ? "generating"
+                : "ready",
+        createdAt: d.created_at,
+        updatedAt: d.updated_at,
+      };
+    });
+  } catch (err) {
+    logger.error("[proposals] Failed to load proposal drafts:", err);
+  }
 
   return (
     <PageContainer>

@@ -1,4 +1,5 @@
 import { AlertCircle, CheckCircle2, ClipboardList, Clock, FileCheck, Shield } from "lucide-react";
+import Link from "next/link";
 import { redirect } from "next/navigation";
 
 import { PageContainer } from "@/components/layout/PageContainer";
@@ -139,13 +140,19 @@ export default async function PermitsPage() {
             {permits.map((p) => (
               <tr
                 key={p.id}
-                className="transition-colors hover:bg-slate-50/60 dark:hover:bg-slate-800/40"
+                className="cursor-pointer transition-colors hover:bg-slate-50/60 dark:hover:bg-slate-800/40"
               >
                 <Td mono className="font-medium text-blue-600 dark:text-blue-400">
-                  {p.permitNumber}
+                  <Link href={`/permits/${p.id}`} className="underline-offset-2 hover:underline">
+                    {p.permitNumber}
+                  </Link>
                 </Td>
-                <Td className="capitalize">{p.permitType}</Td>
-                <Td>{p.jurisdiction || "—"}</Td>
+                <Td className="capitalize">
+                  <Link href={`/permits/${p.id}`}>{p.permitType}</Link>
+                </Td>
+                <Td>
+                  <Link href={`/permits/${p.id}`}>{p.jurisdiction || "—"}</Link>
+                </Td>
                 <Td align="center">
                   <span
                     className={`inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-medium capitalize ${statusColors[p.status] || ""}`}

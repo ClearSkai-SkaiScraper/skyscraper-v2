@@ -3,6 +3,7 @@
 import { Plus } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { toast } from "sonner";
 
 export default function PermitForm() {
   const router = useRouter();
@@ -21,7 +22,7 @@ export default function PermitForm() {
     e.preventDefault();
     setLoading(true);
     try {
-      await fetch("/api/permits", {
+      const res = await fetch("/api/permits", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -29,11 +30,16 @@ export default function PermitForm() {
           fee: form.fee ? Number(form.fee) : undefined,
         }),
       });
+      if (!res.ok) {
+        const err = await res.json().catch(() => null);
+        throw new Error(err?.error?.message || "Failed to save permit");
+      }
+      toast.success("Permit created successfully");
       setOpen(false);
       setForm({ permitNumber: "", permitType: "roofing", jurisdiction: "", fee: "", notes: "" });
       router.refresh();
-    } catch {
-      // Error
+    } catch (err: any) {
+      toast.error(err.message || "Failed to save permit");
     } finally {
       setLoading(false);
     }

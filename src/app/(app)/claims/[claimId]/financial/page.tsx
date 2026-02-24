@@ -717,8 +717,58 @@ export default function ClaimFinancialPage() {
                       Professional PDF with full financial audit, depreciation analysis, and
                       supplement justifications
                     </p>
-                    <button className="w-full rounded-lg bg-blue-600 px-4 py-2 font-medium text-white hover:bg-blue-700">
-                      📥 Download PDF (Adjuster)
+                    <button
+                      onClick={() => {
+                        const a = analysis!;
+                        const lines = [
+                          "FINANCIAL ANALYSIS — ADJUSTER REPORT",
+                          `Claim: ${claimId}`,
+                          `Generated: ${new Date().toLocaleString()}`,
+                          "",
+                          "=== TOTALS ===",
+                          `Carrier RCV: $${a.totals.rcvCarrier.toLocaleString()}`,
+                          `Contractor RCV: $${a.totals.rcvContractor.toLocaleString()}`,
+                          `Overage: $${a.totals.overage.toLocaleString()}`,
+                          `Underpayment: $${a.totals.underpayment.toLocaleString()}`,
+                          `Deductible: $${a.totals.deductible.toLocaleString()}`,
+                          `Net Owed: $${a.totals.netOwed.toLocaleString()}`,
+                          "",
+                          "=== SUMMARY ===",
+                          a.summary,
+                          "",
+                          "=== AUDIT FINDINGS ===",
+                          ...(a.auditFindings || []).map(
+                            (f, i) =>
+                              `${i + 1}. [${f.severity}] ${f.category}: ${f.issue} (impact: $${f.impact.toLocaleString()})`
+                          ),
+                          "",
+                          "=== REQUIRED SUPPLEMENTS ===",
+                          ...(a.requiredSupplements || []).map(
+                            (s, i) => `${i + 1}. ${s}`
+                          ),
+                          "",
+                          "=== UNDERPAYMENT REASONS ===",
+                          ...(a.underpaymentReasons || []).map(
+                            (r, i) => `${i + 1}. ${r}`
+                          ),
+                          "",
+                          "=== LINE ITEM ANALYSIS ===",
+                          ...(a.lineItemAnalysis || []).map(
+                            (li) =>
+                              `• ${li.description}: Carrier $${li.carrier.toLocaleString()} vs Contractor $${li.contractor.toLocaleString()}${li.underpaid > 0 ? ` (underpaid $${li.underpaid.toLocaleString()})` : ""}`
+                          ),
+                        ];
+                        const blob = new Blob([lines.join("\n")], { type: "text/plain" });
+                        const url = URL.createObjectURL(blob);
+                        const link = document.createElement("a");
+                        link.href = url;
+                        link.download = `adjuster-report-${claimId}.txt`;
+                        link.click();
+                        URL.revokeObjectURL(url);
+                      }}
+                      className="w-full rounded-lg bg-blue-600 px-4 py-2 font-medium text-white hover:bg-blue-700"
+                    >
+                      📥 Download Report (Adjuster)
                     </button>
                   </div>
 
@@ -727,11 +777,44 @@ export default function ClaimFinancialPage() {
                     <div className="mb-2 text-2xl">🏠</div>
                     <h4 className="mb-2 text-lg font-bold text-gray-900">Homeowner Summary</h4>
                     <p className="mb-4 text-sm text-gray-600">
-                      Plain-language PDF explaining what&apos;s owed, why supplements are needed,
-                      and simple pricing breakdown
+                      Plain-language summary explaining what&apos;s owed, why supplements are
+                      needed, and simple pricing breakdown
                     </p>
-                    <button className="w-full rounded-lg bg-blue-600 px-4 py-2 font-medium text-white hover:bg-blue-700">
-                      📥 Download PDF (Homeowner)
+                    <button
+                      onClick={() => {
+                        const a = analysis!;
+                        const lines = [
+                          "YOUR CLAIM FINANCIAL SUMMARY",
+                          `Date: ${new Date().toLocaleDateString()}`,
+                          "",
+                          "Here is a summary of your insurance claim finances:",
+                          "",
+                          `Total Claim Value: $${a.totals.rcvContractor.toLocaleString()}`,
+                          `Insurance Carrier Estimate: $${a.totals.rcvCarrier.toLocaleString()}`,
+                          `Underpayment Gap: $${a.totals.underpayment.toLocaleString()}`,
+                          `Deductible: $${a.totals.deductible.toLocaleString()}`,
+                          `Net Owed to You: $${a.totals.netOwed.toLocaleString()}`,
+                          "",
+                          a.requiredSupplements?.length
+                            ? "ADDITIONAL WORK NEEDED:"
+                            : "No additional supplements needed at this time.",
+                          ...(a.requiredSupplements || []).map(
+                            (s, i) => `  ${i + 1}. ${s}`
+                          ),
+                          "",
+                          "If you have any questions, please contact your contractor.",
+                        ];
+                        const blob = new Blob([lines.join("\n")], { type: "text/plain" });
+                        const url = URL.createObjectURL(blob);
+                        const link = document.createElement("a");
+                        link.href = url;
+                        link.download = `homeowner-summary-${claimId}.txt`;
+                        link.click();
+                        URL.revokeObjectURL(url);
+                      }}
+                      className="w-full rounded-lg bg-blue-600 px-4 py-2 font-medium text-white hover:bg-blue-700"
+                    >
+                      📥 Download Summary (Homeowner)
                     </button>
                   </div>
 
@@ -767,7 +850,14 @@ export default function ClaimFinancialPage() {
                       Email complete supplement packet directly to carrier adjuster with all
                       documentation
                     </p>
-                    <button className="w-full rounded-lg bg-orange-600 px-4 py-2 font-medium text-white hover:bg-orange-700">
+                    <button
+                      onClick={() => {
+                        alert(
+                          "Email integration coming soon. Use the Download buttons to export your report and attach it to an email manually."
+                        );
+                      }}
+                      className="w-full rounded-lg bg-orange-600 px-4 py-2 font-medium text-white hover:bg-orange-700"
+                    >
                       ✉️ Send to Adjuster
                     </button>
                   </div>
