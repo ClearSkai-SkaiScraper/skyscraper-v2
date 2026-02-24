@@ -99,11 +99,16 @@ export default function ClaimsAnalysisPage() {
         body: JSON.stringify({ claimId, modes }),
       });
 
-      // Check content type before parsing
+      // Guard against HTML responses (auth redirect, error page, or edge proxy)
+      if (response.redirected) {
+        setError("Your session may have expired. Please refresh the page.");
+        setLoading(false);
+        return;
+      }
+
       const contentType = response.headers.get("content-type");
       if (!contentType?.includes("application/json")) {
-        // Server returned HTML (likely auth redirect or error page)
-        setError("Session expired. Please refresh the page and try again.");
+        setError("Unexpected server response. Please refresh and try again.");
         setLoading(false);
         return;
       }
@@ -117,8 +122,8 @@ export default function ClaimsAnalysisPage() {
       }
 
       setResult(data);
-    } catch (err) {
-      setError(err.message || "Failed to analyze claim");
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "Failed to analyze claim");
     } finally {
       setLoading(false);
     }

@@ -1,9 +1,8 @@
-import { FileStack, Map } from "lucide-react";
+import { Map } from "lucide-react";
 import nextDynamic from "next/dynamic";
 
 import { PageContainer } from "@/components/layout/PageContainer";
 import { PageHero } from "@/components/layout/PageHero";
-import EmptyState from "@/components/ui/EmptyState";
 import { getMapboxToken } from "@/lib/debug/mapboxDebug";
 import { logger } from "@/lib/logger";
 import { getActiveOrgContext } from "@/lib/org/getActiveOrgContext";
@@ -170,15 +169,23 @@ export default async function MapViewPage() {
 
   if (!mapboxToken) {
     return (
-      <div className="flex h-[calc(100vh-4rem)] flex-col items-center justify-center p-6">
-        <EmptyState
-          icon={<FileStack />}
-          title="Map token missing"
-          description="Set NEXT_PUBLIC_MAPBOX_TOKEN in your environment to enable map features."
-          ctaLabel="View Setup Guide"
-          ctaHref="https://docs.mapbox.com/help/getting-started/access-tokens/"
+      <PageContainer>
+        <PageHero
+          section="jobs"
+          title="Map View"
+          subtitle="Interactive map of your claims and vendor locations"
+          icon={<Map className="h-6 w-6" />}
+          size="compact"
         />
-      </div>
+        <div className="mt-6 flex h-[60vh] flex-col items-center justify-center rounded-xl border border-border bg-muted/20 p-6">
+          <div className="mb-4 text-5xl">🗺️</div>
+          <h3 className="mb-2 text-lg font-semibold text-foreground">Map Coming Soon</h3>
+          <p className="max-w-md text-center text-sm text-muted-foreground">
+            The interactive map is being configured for your account. Contact support if you need
+            this feature enabled.
+          </p>
+        </div>
+      </PageContainer>
     );
   }
 

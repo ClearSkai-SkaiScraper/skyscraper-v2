@@ -214,6 +214,12 @@ export default clerkMiddleware((auth, req) => {
     res.headers.set("x-auth-mode", "beta-passthrough");
   }
 
+  // Redirect authenticated users from landing page to dashboard
+  if (pathname === "/" && userId) {
+    const dest = userType === "client" ? "/portal" : "/dashboard";
+    return NextResponse.redirect(new URL(dest, req.url));
+  }
+
   if (isPublicRoute(req)) {
     res.headers.set("x-auth-mode", "public");
     return res;

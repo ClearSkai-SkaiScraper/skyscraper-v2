@@ -32,6 +32,19 @@ export default function DepreciationPage() {
   const [pdfUrl, setPdfUrl] = useState("");
   const [error, setError] = useState("");
 
+  // Load claims on mount (must be before any conditional return to avoid hooks violation)
+  useEffect(() => {
+    if (!isLoaded || !isSignedIn) return;
+    fetch("/api/claims")
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.claims) {
+          setClaims(data.claims);
+        }
+      })
+      .catch((err) => logger.error("Failed to load claims:", err));
+  }, [isLoaded, isSignedIn]);
+
   useEffect(() => {
     if (isLoaded && !isSignedIn) {
       router.push("/sign-in");
@@ -41,18 +54,6 @@ export default function DepreciationPage() {
   if (!isLoaded || !isSignedIn) {
     return <div className="flex h-screen items-center justify-center">Loading...</div>;
   }
-
-  // Load claims on mount
-  useEffect(() => {
-    fetch("/api/claims")
-      .then((res) => res.json())
-      .then((data) => {
-        if (data.claims) {
-          setClaims(data.claims);
-        }
-      })
-      .catch((err) => logger.error("Failed to load claims:", err));
-  }, []);
 
   // Handle PDF generation
   const handleGeneratePackage = async () => {
@@ -86,8 +87,8 @@ export default function DepreciationPage() {
       }
 
       setPdfUrl(data.url);
-    } catch (err) {
-      setError(err.message);
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "Failed to generate package");
     } finally {
       setLoading(false);
     }
