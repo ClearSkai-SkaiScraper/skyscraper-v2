@@ -22,6 +22,7 @@ import { useCallback, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { toast } from "sonner";
 
 interface ClaimsSidebarProps {
   claimId: string;
@@ -68,14 +69,17 @@ export function ClaimsSidebar({ claimId, claim }: ClaimsSidebarProps) {
   const saveField = useCallback(
     async (field: string) => {
       try {
-        await fetch(`/api/claims/${claimId}/update`, {
+        const res = await fetch(`/api/claims/${claimId}/update`, {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ [field]: editValue }),
         });
+        if (!res.ok) throw new Error(`Save failed (${res.status})`);
         setEditing(null);
+        toast.success("Field saved");
         router.refresh();
-      } catch {
+      } catch (err) {
+        toast.error("Failed to save — please try again");
         setEditing(null);
       }
     },

@@ -1,7 +1,7 @@
 "use server";
-import { auth } from "@clerk/nextjs/server";
 
 import { getDelegate } from "@/lib/db/modelAliases";
+import { resolveOrgSafe } from "@/lib/org/resolveOrg";
 import prisma from "@/lib/prisma";
 import { createSupabaseServerClient } from "@/lib/supabase-server";
 
@@ -34,8 +34,9 @@ export async function getAllUserReports(params?: {
   claimId?: string;
   leadId?: string;
 }): Promise<UnifiedReport[]> {
-  const { orgId, userId } = await auth();
-  if (!orgId || !userId) return [];
+  const resolved = await resolveOrgSafe();
+  if (!resolved) return [];
+  const { orgId, userId } = resolved;
 
   const { type, from, to, search, claimId, leadId } = params || {};
 
@@ -43,114 +44,145 @@ export async function getAllUserReports(params?: {
   if (from) dateFilter.gte = from;
   if (to) dateFilter.lte = to;
 
-  // 1. ai_reports — primary source for all AI-generated report history
-  const history = await prisma.ai_reports.findMany({
-    where: {
-      orgId,
-      ...(claimId ? { claimId } : {}),
-      ...(Object.keys(dateFilter).length ? { createdAt: dateFilter } : {}),
-    },
-    orderBy: { createdAt: "desc" },
-  });
+  // Each data source is wrapped in try-catch so one failure
+  // doesn't prevent the others from returning results.
 
-  const historyUnified: UnifiedReport[] = history.map((r) => {
-    const mappedType: UnifiedReportType =
-      r.type === "claim_pdf"
-        ? "CLAIM_PDF"
-        : r.type.startsWith("AI_CLAIM_SCOPE") || r.type === "claim_scope"
-          ? "AI_CLAIM_SCOPE"
-          : r.type.includes("retail")
-            ? "RETAIL_PROPOSAL"
-            : r.type.includes("weather")
-              ? "WEATHER_REPORT"
-              : r.type.includes("video") || r.type === "video_report"
-                ? "VIDEO_REPORT"
-                : "OTHER";
-    return {
-      id: r.id,
-      type: mappedType,
-      claimId: r.claimId || null,
-      title: r.title || fallbackTitle(mappedType),
-      createdAt: r.createdAt.toISOString(),
-      url: null,
-      source: sourceLabel(mappedType),
-      metadata: {
-        ...((r.attachments as Record<string, any>) || {}),
-        status: r.status,
-        tokensUsed: r.tokensUsed,
-        model: r.model,
+  // 1. ai_reports — primary source for all AI-generated report history
+  let historyUnified: UnifiedReport[] = [];
+  try {
+    const history = await prisma.ai_reports.findMany({
+      where: {
+        orgId,
+        ...(claimId ? { claimId } : {}),
+        ...(Object.keys(dateFilter).length ? { createdAt: dateFilter } : {}),
       },
-    };
-  });
+      orderBy: { createdAt: "desc" },
+    });
+
+    historyUnified = history.map((r) => {
+      const mappedType: UnifiedReportType =
+        r.type === "claim_pdf"
+          ? "CLAIM_PDF"
+          : r.type.startsWith("AI_CLAIM_SCOPE") || r.type === "claim_scope"
+            ? "AI_CLAIM_SCOPE"
+            : r.type.includes("retail")
+              ? "RETAIL_PROPOSAL"
+              : r.type.includes("weather")
+                ? "WEATHER_REPORT"
+                : r.type.includes("video") || r.type === "video_report"
+                  ? "VIDEO_REPORT"
+                  : "OTHER";
+      return {
+        id: r.id,
+        type: mappedType,
+        claimId: r.claimId || null,
+        title: r.title || fallbackTitle(mappedType),
+        createdAt: r.createdAt.toISOString(),
+        url: null,
+        source: sourceLabel(mappedType),
+        metadata: {
+          ...((r.attachments as Record<string, any>) || {}),
+          status: r.status,
+          tokensUsed: r.tokensUsed,
+          model: r.model,
+        },
+      };
+    });
+  } catch (e) {
+    console.warn(
+      "[getAllUserReports] ai_reports fetch failed:",
+      e instanceof Error ? e.message : e
+    );
+  }
 
   // 2. reports table — PDF reports generated from pdf-builder
-  const pdfReports = await prisma.reports.findMany({
-    where: {
-      orgId,
-      ...(claimId ? { claimId } : {}),
-      ...(Object.keys(dateFilter).length ? { createdAt: dateFilter } : {}),
-    },
-    orderBy: { createdAt: "desc" },
-    include: { claims: { select: { claimNumber: true } } },
-  });
+  let pdfUnified: UnifiedReport[] = [];
+  try {
+    const pdfReports = await prisma.reports.findMany({
+      where: {
+        orgId,
+        ...(claimId ? { claimId } : {}),
+        ...(Object.keys(dateFilter).length ? { createdAt: dateFilter } : {}),
+      },
+      orderBy: { createdAt: "desc" },
+    });
 
-  const pdfUnified: UnifiedReport[] = pdfReports.map((r) => ({
-    id: r.id,
-    type: "CLAIM_PDF" as UnifiedReportType,
-    claimId: r.claimId || null,
-    title: r.title || "Claim Report",
-    createdAt: r.createdAt.toISOString(),
-    url: r.pdfUrl || null,
-    source: "PDF Builder",
-    metadata: { type: r.type, sections: r.sections, pdfUrl: r.pdfUrl },
-    claimNumber: r.claims?.claimNumber || null,
-  }));
+    pdfUnified = pdfReports.map((r) => ({
+      id: r.id,
+      type: "CLAIM_PDF" as UnifiedReportType,
+      claimId: r.claimId || null,
+      title: r.title || "Claim Report",
+      createdAt: r.createdAt.toISOString(),
+      url: r.pdfUrl || null,
+      source: "PDF Builder",
+      metadata: { type: r.type, sections: r.sections, pdfUrl: r.pdfUrl },
+      claimNumber: null,
+    }));
+  } catch (e) {
+    console.warn("[getAllUserReports] reports fetch failed:", e instanceof Error ? e.message : e);
+  }
 
-  // 3. weather_reports (direct query by orgId via createdById user membership)
-  const weatherReports = await prisma.weather_reports.findMany({
-    where: {
-      ...(claimId ? { claimId } : {}),
-      ...(leadId ? { leadId } : {}),
-      ...(Object.keys(dateFilter).length ? { createdAt: dateFilter } : {}),
-    },
-    orderBy: { createdAt: "desc" },
-    take: 100,
-  });
+  // 3. weather_reports (scoped by createdById membership)
+  let weatherUnified: UnifiedReport[] = [];
+  try {
+    const weatherReports = await prisma.weather_reports.findMany({
+      where: {
+        ...(claimId ? { claimId } : {}),
+        ...(leadId ? { leadId } : {}),
+        ...(Object.keys(dateFilter).length ? { createdAt: dateFilter } : {}),
+      },
+      orderBy: { createdAt: "desc" },
+      take: 100,
+    });
 
-  const weatherUnified: UnifiedReport[] = weatherReports.map((w) => ({
-    id: w.id,
-    type: "WEATHER_REPORT",
-    claimId: w.claimId ?? null,
-    leadId: w.leadId ?? null,
-    title: "Weather Verification",
-    createdAt: w.createdAt.toISOString(),
-    url: null,
-    source: "Weather Verify",
-    metadata: { address: w.address, mode: w.mode, overallAssessment: w.overallAssessment },
-  }));
+    weatherUnified = weatherReports.map((w) => ({
+      id: w.id,
+      type: "WEATHER_REPORT",
+      claimId: w.claimId ?? null,
+      leadId: w.leadId ?? null,
+      title: "Weather Verification",
+      createdAt: w.createdAt.toISOString(),
+      url: null,
+      source: "Weather Verify",
+      metadata: { address: w.address, mode: w.mode, overallAssessment: w.overallAssessment },
+    }));
+  } catch (e) {
+    console.warn(
+      "[getAllUserReports] weather_reports fetch failed:",
+      e instanceof Error ? e.message : e
+    );
+  }
 
   // 4. file_assets (claim/lead attachments)
-  const files = await getDelegate("fileAsset").findMany({
-    where: {
-      orgId,
-      OR: [{ claimId: { not: null } }, { leadId: { not: null } }],
-      ...(claimId ? { claimId } : {}),
-      ...(leadId ? { leadId } : {}),
-      ...(Object.keys(dateFilter).length ? { createdAt: dateFilter } : {}),
-    },
-    orderBy: { createdAt: "desc" },
-  });
-  const fileUnified: UnifiedReport[] = files.map((f) => ({
-    id: f.id,
-    type: "OTHER",
-    claimId: f.claimId || null,
-    leadId: f.leadId || null,
-    title: f.filename,
-    createdAt: f.createdAt.toISOString(),
-    url: f.publicUrl,
-    source: "File Asset",
-    metadata: { mimeType: f.mimeType, sizeBytes: f.sizeBytes, category: f.category },
-  }));
+  let fileUnified: UnifiedReport[] = [];
+  try {
+    const files = await getDelegate("fileAsset").findMany({
+      where: {
+        orgId,
+        OR: [{ claimId: { not: null } }, { leadId: { not: null } }],
+        ...(claimId ? { claimId } : {}),
+        ...(leadId ? { leadId } : {}),
+        ...(Object.keys(dateFilter).length ? { createdAt: dateFilter } : {}),
+      },
+      orderBy: { createdAt: "desc" },
+    });
+    fileUnified = files.map((f) => ({
+      id: f.id,
+      type: "OTHER",
+      claimId: f.claimId || null,
+      leadId: f.leadId || null,
+      title: f.filename,
+      createdAt: f.createdAt.toISOString(),
+      url: f.publicUrl,
+      source: "File Asset",
+      metadata: { mimeType: f.mimeType, sizeBytes: f.sizeBytes, category: f.category },
+    }));
+  } catch (e) {
+    console.warn(
+      "[getAllUserReports] file_assets fetch failed:",
+      e instanceof Error ? e.message : e
+    );
+  }
 
   // 5. Retail Proposal Packets (Supabase)
   let retailUnified: UnifiedReport[] = [];

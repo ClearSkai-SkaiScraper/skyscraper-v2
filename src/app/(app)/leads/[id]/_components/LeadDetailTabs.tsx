@@ -48,6 +48,8 @@ export default function LeadDetailTabs({ leadId }: { leadId: string }) {
   const [loading, setLoading] = useState(false);
   const [newNote, setNewNote] = useState("");
   const [saving, setSaving] = useState(false);
+  // Counter to force timeline refetch after mutations (e.g., note add)
+  const [refreshKey, setRefreshKey] = useState(0);
 
   useEffect(() => {
     setLoading(true);
@@ -90,7 +92,7 @@ export default function LeadDetailTabs({ leadId }: { leadId: string }) {
     })();
 
     return () => controller.abort();
-  }, [activeTab, leadId]);
+  }, [activeTab, leadId, refreshKey]);
 
   const handleAddNote = async () => {
     if (!newNote.trim() || saving) return;
@@ -105,6 +107,9 @@ export default function LeadDetailTabs({ leadId }: { leadId: string }) {
         const data = await res.json();
         setNotes((prev) => [data.note || data, ...prev]);
         setNewNote("");
+        // Invalidate timeline so it refetches (note creates a LeadPipelineEvent)
+        setTimeline([]);
+        setRefreshKey((k) => k + 1);
       }
     } catch {
       console.warn("Failed to save note");

@@ -116,9 +116,13 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Content is required" }, { status: 400 });
     }
 
+    // Ensure title is never empty (Prisma requires it)
+    const safeTitle = (title || content.trim().slice(0, 100) || "Post").trim();
+
     // Get the user's company membership
-    let member = await prisma.tradesCompanyMember
-      .findUnique({
+    let member: any = null;
+    try {
+      member = await prisma.tradesCompanyMember.findUnique({
         where: { userId },
         select: {
           id: true,
@@ -133,12 +137,13 @@ export async function POST(req: NextRequest) {
             select: { id: true, name: true, logo: true, isVerified: true },
           },
         },
-      })
-      .catch(() => null);
+      });
+    } catch {
+      // tradesCompanyMember table may not exist — continue without
+    }
 
     // Auto-create trades member if none exists (first-time poster)
     if (!member) {
-      // Get basic user info from the users table
       const dbUser = await prisma.users
         .findFirst({
           where: { clerkUserId: userId },
@@ -189,43 +194,52 @@ export async function POST(req: NextRequest) {
       ? member?.company?.name || member?.companyName || "Company"
       : `${member?.firstName || ""} ${member?.lastName || ""}`.trim() || "You";
 
-    const post: any = await tradesPostModel.create({
-      data: {
-        authorId: userId,
-        companyId: companyId,
-        title: title || content.trim().slice(0, 100),
-        content: content.trim(),
-        images: images || [],
-        tags: tags || [],
-        postType: type || "update",
-        isActive: true,
-      },
-      include: {
-        tradesCompany: {
-          select: {
-            id: true,
-            name: true,
-            logo: true,
-            isVerified: true,
-          },
+    // Create the post — use try-catch for actionable error messages
+    let post: any;
+    try {
+      post = await tradesPostModel.create({
+        data: {
+          authorId: userId,
+          companyId: companyId,
+          title: safeTitle,
+          content: content.trim(),
+          images: images || [],
+          tags: tags || [],
+          postType: type || "update",
+          isActive: true,
         },
-      },
-    });
+      });
+    } catch (dbErr: any) {
+      const msg = dbErr?.message || "Unknown database error";
+      logger.error("[POST /api/trades/feed] DB create failed:", msg);
+
+      // Surface actionable info based on Prisma error codes
+      if (msg.includes("does not exist") || msg.includes("P2021")) {
+        return NextResponse.json(
+          { error: "Trades database table has not been provisioned yet. Run migrations first." },
+          { status: 503 }
+        );
+      }
+      return NextResponse.json(
+        { error: `Failed to create post: ${msg.slice(0, 200)}` },
+        { status: 500 }
+      );
+    }
 
     return NextResponse.json({
       post: {
         id: post.id,
         authorId: post.authorId,
         authorName: post.tradesCompany?.name || authorDisplayName,
-        authorLogo: post.tradesCompany?.logo || null,
-        authorVerified: post.tradesCompany?.isVerified || false,
+        authorLogo: post.tradesCompany?.logo || member?.company?.logo || null,
+        authorVerified: post.tradesCompany?.isVerified || member?.company?.isVerified || false,
         postAs: useCompanyIdentity ? "company" : "personal",
-        content: post.content,
-        title: post.title,
+        content: post.content || content.trim(),
+        title: post.title || safeTitle,
         imageUrl: post.images?.[0] || null,
         images: post.images || [],
         tags: post.tags || [],
-        postType: post.postType,
+        postType: post.postType || "update",
         likes: 0,
         comments: 0,
         shares: 0,
