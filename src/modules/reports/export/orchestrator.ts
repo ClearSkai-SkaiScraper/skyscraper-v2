@@ -4,13 +4,15 @@
 // Composes sections, applies branding, generates PDF/DOCX/ZIP
 // ============================================================================
 
-import { PDFDocument, rgb, StandardFonts } from "pdf-lib";
+import { PDFDocument, PDFImage, PDFPage, rgb, StandardFonts } from "pdf-lib";
 
 import { getAllAISections } from "@/modules/ai/jobs/persist";
 import { logAction } from "@/modules/audit/core/logger";
 
 import { applyBrandingColors } from "../core/BrandingProvider";
 import { getSectionsByKeys, validateSectionData } from "../core/SectionRegistry";
+import { renderCoverPage } from "../sections/CoverPage";
+import { renderExecutiveSummary } from "../sections/ExecutiveSummary";
 import type { ExportOptions, ExportResult, ReportContext, Section } from "../types";
 
 /**
@@ -179,6 +181,30 @@ export async function exportReport(options: ExportOptions): Promise<ExportResult
 }
 
 /**
+ * Fetch and embed a logo image into the PDF document.
+ * Supports PNG, JPG, and common web image formats.
+ * Returns null if the logo can't be fetched/embedded (non-fatal).
+ */
+async function embedLogo(pdfDoc: PDFDocument, logoUrl?: string): Promise<PDFImage | null> {
+  if (!logoUrl) return null;
+  try {
+    const res = await fetch(logoUrl, { signal: AbortSignal.timeout(8000) });
+    if (!res.ok) return null;
+    const buf = new Uint8Array(await res.arrayBuffer());
+    // Detect format from content-type or magic bytes
+    const ct = res.headers.get("content-type") || "";
+    if (ct.includes("png") || buf[0] === 0x89) {
+      return await pdfDoc.embedPng(buf);
+    }
+    // Default to JPEG for jpg/webp/other
+    return await pdfDoc.embedJpg(buf);
+  } catch {
+    console.warn("[Export] Could not embed logo from:", logoUrl);
+    return null;
+  }
+}
+
+/**
  * Export as PDF using pdf-lib
  */
 async function exportPDF(sections: Section[], context: ReportContext): Promise<ExportResult> {
@@ -188,6 +214,9 @@ async function exportPDF(sections: Section[], context: ReportContext): Promise<E
 
   const { brandRgb, accentRgb } = applyBrandingColors(context.branding);
 
+  // Embed company logo (non-blocking)
+  const logoImage = await embedLogo(pdfDoc, context.branding.logoUrl);
+
   // Render each section
   for (const section of sections) {
     await renderSection(pdfDoc, section, context, {
@@ -195,6 +224,7 @@ async function exportPDF(sections: Section[], context: ReportContext): Promise<E
       fontBold,
       brandRgb,
       accentRgb,
+      logoImage,
     });
   }
 
@@ -216,11 +246,45 @@ async function renderSection(
   pdfDoc: PDFDocument,
   section: Section,
   context: ReportContext,
-  fonts: any
+  fonts: {
+    font: any;
+    fontBold: any;
+    brandRgb: { r: number; g: number; b: number };
+    accentRgb: { r: number; g: number; b: number };
+    logoImage: PDFImage | null;
+  }
 ) {
-  const page = pdfDoc.addPage([612, 792]); // Letter size
-  const { width, height } = page.getSize();
-  const { font, fontBold, brandRgb, accentRgb: _accentRgb } = fonts;
+  const { font, fontBold, brandRgb, accentRgb, logoImage } = fonts;
+
+  // ── Use polished renderers for cover and executive-summary ──────────
+  if (section.key === "cover") {
+    const page = pdfDoc.addPage([612, 792]);
+    // Draw logo on cover if available
+    if (logoImage) {
+      const logoDims = logoImage.scale(Math.min(120 / logoImage.width, 60 / logoImage.height));
+      page.drawImage(logoImage, {
+        x: 612 - 60 - logoDims.width,
+        y: 792 - 30 - logoDims.height,
+        width: logoDims.width,
+        height: logoDims.height,
+      });
+    }
+    await renderCoverPage(page, context, { font, fontBold }, { brandRgb, accentRgb });
+    await section.renderFn(context);
+    return;
+  }
+
+  if (section.key === "executive-summary") {
+    const page = pdfDoc.addPage([612, 792]);
+    await renderExecutiveSummary(page, context, { font, fontBold }, { brandRgb, accentRgb });
+    await section.renderFn(context);
+    return;
+  }
+
+  // ── Generic section rendering with overflow handling ─────────────────
+  let page: PDFPage = pdfDoc.addPage([612, 792]);
+  const width = 612;
+  const height = 792;
 
   // Section header bar
   page.drawRectangle({
@@ -241,78 +305,45 @@ async function renderSection(
 
   // ── Real section content based on key ──────────────────────────────────
   let yPos = height - 90;
-  const _lineHeight = 16;
   const margin = 40;
-  const _maxWidth = width - margin * 2;
 
   const drawLine = (
     text: string,
     opts?: { bold?: boolean; size?: number; color?: { r: number; g: number; b: number } }
   ) => {
-    if (yPos < 50) {
-      // Add a new page if we run out of space
-      const _newPage = pdfDoc.addPage([612, 792]);
+    const lineSize = opts?.size || 11;
+    if (yPos < 60) {
+      // Overflow: add a new page and continue drawing there
+      page = pdfDoc.addPage([612, 792]);
       yPos = 792 - 50;
-      // Draw on newPage instead — for simplicity we just cap content per section page
-      return;
+      // Draw a continuation header
+      page.drawRectangle({
+        x: 0,
+        y: 792 - 30,
+        width,
+        height: 30,
+        color: rgb(brandRgb.r, brandRgb.g, brandRgb.b),
+      });
+      page.drawText(`${section.title} (continued)`, {
+        x: 40,
+        y: 792 - 22,
+        size: 10,
+        font: fontBold,
+        color: rgb(1, 1, 1),
+      });
+      yPos = 792 - 60;
     }
     page.drawText(text.substring(0, 90), {
       x: margin,
       y: yPos,
-      size: opts?.size || 11,
+      size: lineSize,
       font: opts?.bold ? fontBold : font,
       color: opts?.color ? rgb(opts.color.r, opts.color.g, opts.color.b) : rgb(0.1, 0.1, 0.1),
     });
-    yPos -= (opts?.size || 11) + 5;
+    yPos -= lineSize + 5;
   };
 
   switch (section.key) {
-    case "cover": {
-      yPos = height - 100;
-      drawLine(context.branding.companyName, { bold: true, size: 22 });
-      drawLine("");
-      drawLine("Contractor Packet / Inspection Report", {
-        size: 14,
-        color: { r: 0.3, g: 0.3, b: 0.3 },
-      });
-      drawLine("");
-      drawLine(`Prepared for: ${context.metadata.clientName}`, { size: 13 });
-      drawLine(`Property: ${context.metadata.propertyAddress}`, { size: 13 });
-      if (context.metadata.claimNumber)
-        drawLine(`Claim #: ${context.metadata.claimNumber}`, { size: 13 });
-      if (context.metadata.carrierName)
-        drawLine(`Carrier: ${context.metadata.carrierName}`, { size: 13 });
-      if (context.metadata.dateOfLoss)
-        drawLine(`Date of Loss: ${context.metadata.dateOfLoss}`, { size: 13 });
-      drawLine("");
-      drawLine(`Prepared by: ${context.metadata.preparedBy}`, { size: 12 });
-      drawLine(`Date: ${context.metadata.submittedDate}`, { size: 12 });
-      if (context.branding.phone) drawLine(`Phone: ${context.branding.phone}`, { size: 12 });
-      if (context.branding.email) drawLine(`Email: ${context.branding.email}`, { size: 12 });
-      if (context.branding.licenseNumber)
-        drawLine(`License: ${context.branding.licenseNumber}`, { size: 12 });
-      break;
-    }
-
-    case "executive-summary": {
-      drawLine("Executive Summary", { bold: true, size: 14 });
-      drawLine("");
-      const summary = context.executiveSummary || "No executive summary available.";
-      // Word-wrap the summary
-      const words = summary.split(" ");
-      let line = "";
-      for (const word of words) {
-        if ((line + " " + word).length > 80) {
-          drawLine(line);
-          line = word;
-        } else {
-          line = line ? line + " " + word : word;
-        }
-      }
-      if (line) drawLine(line);
-      break;
-    }
-
     case "weather-verification": {
       drawLine("Weather Verification Report", { bold: true, size: 14 });
       drawLine("");
@@ -351,15 +382,50 @@ async function renderSection(
       if (context.photos && context.photos.length > 0) {
         drawLine(`Total Photos: ${context.photos.length}`, { size: 12 });
         drawLine("");
-        for (const photo of context.photos.slice(0, 20)) {
-          drawLine(`• ${photo.caption}`, { size: 10 });
+        // Embed actual photo images (up to 12 per report for size)
+        const photosToEmbed = context.photos.slice(0, 12);
+        for (const photo of photosToEmbed) {
+          try {
+            if (photo.url) {
+              const imgRes = await fetch(photo.url, { signal: AbortSignal.timeout(6000) });
+              if (imgRes.ok) {
+                const imgBuf = new Uint8Array(await imgRes.arrayBuffer());
+                const ct = imgRes.headers.get("content-type") || "";
+                let img: PDFImage | null = null;
+                if (ct.includes("png") || imgBuf[0] === 0x89) {
+                  img = await pdfDoc.embedPng(imgBuf);
+                } else {
+                  img = await pdfDoc.embedJpg(imgBuf);
+                }
+                if (img) {
+                  // Check if we need a new page for the image
+                  if (yPos < 220) {
+                    page = pdfDoc.addPage([612, 792]);
+                    yPos = 792 - 50;
+                  }
+                  const imgDims = img.scale(Math.min(250 / img.width, 180 / img.height));
+                  page.drawImage(img, {
+                    x: margin,
+                    y: yPos - imgDims.height,
+                    width: imgDims.width,
+                    height: imgDims.height,
+                  });
+                  yPos -= imgDims.height + 5;
+                }
+              }
+            }
+          } catch {
+            // Non-fatal — continue with text fallback
+          }
+          drawLine(`📷 ${photo.caption}`, { size: 10 });
           drawLine(
             `  Category: ${photo.category || "General"} | Location: ${photo.locationTag || "N/A"}`,
             { size: 9, color: { r: 0.4, g: 0.4, b: 0.4 } }
           );
+          drawLine("");
         }
-        if (context.photos.length > 20) {
-          drawLine(`  ... and ${context.photos.length - 20} more photos`, {
+        if (context.photos.length > 12) {
+          drawLine(`  ... and ${context.photos.length - 12} additional photos on file`, {
             size: 10,
             color: { r: 0.4, g: 0.4, b: 0.4 },
           });
@@ -487,7 +553,7 @@ function addPageNumbers(
   const pages = pdfDoc.getPages();
   pages.forEach((page, index) => {
     const { width, height: _height } = page.getSize();
-    const pageNum = `Page ${index + 1} of ${pages.length}`;
+    const pageNum = `Page ${index + 1} of ${pages.length}  |  ${new Date().toLocaleDateString()}`;
 
     // Footer bar
     page.drawRectangle({

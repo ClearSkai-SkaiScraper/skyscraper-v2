@@ -81,6 +81,7 @@ export default function BadFaithDetectorPage() {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<BadFaithResult | null>(null);
   const [error, setError] = useState("");
+  const [exportingPdf, setExportingPdf] = useState(false);
 
   // Additional analysis tabs
   const [activeTab, setActiveTab] = useState<AnalysisTab>("bad-faith");
@@ -128,6 +129,58 @@ export default function BadFaithDetectorPage() {
     },
     [claimId]
   );
+
+  /** Export bad-faith analysis as a branded PDF */
+  const handleExportPdf = useCallback(async () => {
+    if (!result) return;
+    setExportingPdf(true);
+    try {
+      const res = await fetch("/api/agents/bad-faith/export", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ claimId, analysis: result }),
+      });
+      if (!res.ok) {
+        // Fallback: create a simple text-based download
+        const text = [
+          `BAD FAITH ANALYSIS REPORT — Claim ${claimId}`,
+          `Generated: ${new Date().toLocaleString()}`,
+          "",
+          `Overall Severity: ${result.overallSeverity.toUpperCase()}`,
+          `Bad Faith Indicators: ${result.hasBadFaithIndicators ? "YES" : "NO"}`,
+          `Legal Action Recommended: ${result.legalActionRecommended ? "YES" : "NO"}`,
+          "",
+          "SUMMARY:",
+          result.summary,
+          "",
+          "INDICATORS:",
+          ...result.indicators.map(
+            (ind, i) =>
+              `${i + 1}. [${ind.severity.toUpperCase()}] ${ind.type}\n   ${ind.description}\n   Action: ${ind.recommendedAction}`
+          ),
+        ].join("\n");
+        const blob = new Blob([text], { type: "text/plain" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `bad-faith-analysis-${claimId}.txt`;
+        a.click();
+        URL.revokeObjectURL(url);
+        return;
+      }
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `bad-faith-analysis-${claimId}.pdf`;
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch {
+      setError("Export failed. Please try again.");
+    } finally {
+      setExportingPdf(false);
+    }
+  }, [claimId, result]);
 
   // Policy Coverage Analysis
   const handlePolicyAnalysis = useCallback(async () => {
@@ -454,9 +507,13 @@ export default function BadFaithDetectorPage() {
                     </p>
                   </div>
                 </div>
-                <button className="flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700">
+                <button
+                  onClick={() => void handleExportPdf()}
+                  disabled={exportingPdf}
+                  className="flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-50 disabled:opacity-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
+                >
                   <Download className="h-4 w-4" />
-                  Export
+                  {exportingPdf ? "Exporting..." : "Export PDF"}
                 </button>
               </div>
 

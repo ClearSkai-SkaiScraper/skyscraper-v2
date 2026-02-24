@@ -20,6 +20,13 @@ import { withAuth } from "@/lib/auth/withAuth";
 import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 import { uploadPdf } from "@/lib/storage/uploadPdf";
+import {
+  fetchReportCodes,
+  fetchReportLineItems,
+  fetchReportPhotos,
+  fetchReportSupplements,
+  fetchReportWeather,
+} from "@/modules/reports/core/DataProviders";
 import { exportReport } from "@/modules/reports/export/orchestrator";
 import type { ReportContext, SectionKey } from "@/modules/reports/types";
 
@@ -124,6 +131,15 @@ export const POST = withAuth(async (req: NextRequest, { orgId, userId }) => {
           .join(", ")
       : "N/A";
 
+    // Fetch all real data in parallel (weather, photos, scope, codes, supplements)
+    const [weather, photos, lineItems, codes, supplements] = await Promise.all([
+      fetchReportWeather(claimId).catch(() => undefined),
+      fetchReportPhotos(claimId, orgId).catch(() => []),
+      fetchReportLineItems(claimId).catch(() => []),
+      fetchReportCodes(orgId).catch(() => []),
+      fetchReportSupplements(claimId).catch(() => []),
+    ]);
+
     const reportContext: ReportContext = {
       reportId: report.id,
       orgId,
@@ -151,6 +167,13 @@ export const POST = withAuth(async (req: NextRequest, { orgId, userId }) => {
         preparedBy: dbUserFull?.name || "SkaiScraper",
         submittedDate: new Date().toISOString().split("T")[0],
       },
+      weather,
+      photos,
+      lineItems,
+      codes,
+      supplements,
+      executiveSummary: `This report documents storm damage to the property at ${propertyAddress}. All findings are based on field inspection and weather verification data.`,
+      adjusterNotes: "",
     };
 
     // Determine which sections to render

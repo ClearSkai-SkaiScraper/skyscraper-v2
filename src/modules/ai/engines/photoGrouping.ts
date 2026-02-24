@@ -1,80 +1,140 @@
 // ============================================================================
 // AI PHOTO GROUPING ENGINE
 // ============================================================================
-// Auto-tags and groups photos by damage type and location
+// Pulls real photo data from file_assets and groups by category.
+// Falls back to empty state when no photos are available.
+
+import prisma from "@/lib/prisma";
 
 import type { AIField, AISectionKey, AISectionState } from "../types";
 
 export async function runPhotoGrouping(
   reportId: string,
   sectionKey: AISectionKey,
-  _context?: any
+  _context?: { claimId?: string; orgId?: string }
 ): Promise<AISectionState> {
-  // TODO: Integrate with Vision AI (OpenAI Vision / Google Vision / AWS Rekognition)
-  // TODO: Pull photos from report
-  // TODO: Classify each photo into categories
-  // TODO: Generate group summaries
-
   const now = new Date().toISOString();
 
-  // Stub implementation - classify photos into groups
+  // Attempt to resolve claimId/orgId from reportId
+  let claimId = _context?.claimId;
+  let orgId = _context?.orgId;
+  if ((!claimId || !orgId) && reportId) {
+    try {
+      const report = await prisma.reports.findFirst({
+        where: { id: reportId },
+        select: { claimId: true, orgId: true },
+      });
+      if (!claimId) claimId = report?.claimId || undefined;
+      if (!orgId) orgId = report?.orgId || undefined;
+    } catch {
+      // Non-fatal
+    }
+  }
+
+  // Pull real photos from DB and group by category
+  if (claimId && orgId) {
+    try {
+      const assets = await prisma.file_assets.findMany({
+        where: {
+          orgId,
+          claimId,
+          mimeType: { startsWith: "image/" },
+        },
+        orderBy: { createdAt: "asc" },
+        take: 100,
+      });
+
+      if (assets.length > 0) {
+        // Group photos by category
+        const groups: Record<string, { title: string; photoIds: string[]; count: number }> = {};
+        const photoTags: Record<string, string[]> = {};
+
+        for (const asset of assets) {
+          const category = asset.category || "uncategorized";
+          if (!groups[category]) {
+            groups[category] = {
+              title: category.charAt(0).toUpperCase() + category.slice(1).replace(/-/g, " "),
+              photoIds: [],
+              count: 0,
+            };
+          }
+          groups[category].photoIds.push(asset.id);
+          groups[category].count++;
+
+          // Build tags from available metadata
+          const tags = [category];
+          if (asset.photo_angle) tags.push(asset.photo_angle);
+          photoTags[asset.id] = tags;
+        }
+
+        const fields: Record<string, AIField> = {
+          photoGroups: {
+            value: groups,
+            aiGenerated: false,
+            approved: true,
+            source: "file_assets",
+            confidence: 1.0,
+            generatedAt: now,
+          },
+          photoTags: {
+            value: photoTags,
+            aiGenerated: false,
+            approved: true,
+            source: "file_assets",
+            confidence: 1.0,
+            generatedAt: now,
+          },
+          groupSummary: {
+            value:
+              `${assets.length} photos organized into ${Object.keys(groups).length} categories: ` +
+              Object.entries(groups)
+                .map(([, g]) => `${g.title} (${g.count})`)
+                .join(", ") +
+              ".",
+            aiGenerated: false,
+            approved: true,
+            source: "file_assets",
+            confidence: 1.0,
+            generatedAt: now,
+          },
+        };
+
+        return {
+          sectionKey,
+          status: "succeeded",
+          fields,
+          updatedAt: now,
+        };
+      }
+    } catch (err) {
+      console.warn("[AI Photo Grouping] DB query failed:", err);
+    }
+  }
+
+  // Fallback: no photos on file
   const fields: Record<string, AIField> = {
     photoGroups: {
-      value: {
-        softMetals: {
-          title: "Soft Metals (Gutters, Flashing, Vents)",
-          photoIds: ["photo-003"],
-          count: 1,
-        },
-        field: {
-          title: "Roof Field Damage",
-          photoIds: ["photo-001", "photo-002"],
-          count: 2,
-        },
-        testCuts: {
-          title: "Test Cuts & Cores",
-          photoIds: ["photo-004"],
-          count: 1,
-        },
-        collateral: {
-          title: "Collateral Damage",
-          photoIds: [],
-          count: 0,
-        },
-        interior: {
-          title: "Interior Water Damage",
-          photoIds: [],
-          count: 0,
-        },
-      },
+      value: {},
       aiGenerated: true,
       approved: false,
       source: "photoGrouping",
-      confidence: 0.9,
+      confidence: 0,
       generatedAt: now,
     },
     photoTags: {
-      value: {
-        "photo-001": ["field", "hail-damage", "shingle-bruising"],
-        "photo-002": ["field", "wind-damage", "ridge-cap"],
-        "photo-003": ["soft-metals", "gutter", "hail-dent"],
-        "photo-004": ["test-cut", "granule-loss", "brittleness"],
-      },
+      value: {},
       aiGenerated: true,
       approved: false,
       source: "photoGrouping",
-      confidence: 0.87,
+      confidence: 0,
       generatedAt: now,
     },
     groupSummary: {
-      value:
-        "Photos organized into 3 primary categories: Roof Field Damage (2 photos), " +
-        "Soft Metals (1 photo), and Test Cuts (1 photo). " +
-        "Primary damage types detected: hail impact, wind lifting, and granule loss.",
+      value: "No photos uploaded for this claim. Upload photos to enable auto-grouping.",
       aiGenerated: true,
       approved: false,
       source: "photoGrouping",
-      confidence: 0.91,
+      confidence: 0,
       generatedAt: now,
     },
   };

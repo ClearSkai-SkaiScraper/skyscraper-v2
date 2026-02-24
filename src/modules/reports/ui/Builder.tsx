@@ -282,6 +282,14 @@ export default function Builder() {
   const [currentJobId, setCurrentJobId] = useState<string | null>(null);
   const [systemError, _setSystemError] = useState<string | null>(null);
   const [activeSidePanel, setActiveSidePanel] = useState<SectionKey | null>(null);
+  const [weatherStatus, setWeatherStatus] = useState<"idle" | "loading" | "ready" | "error">(
+    "idle"
+  );
+  const [weatherData, setWeatherData] = useState<{
+    hailSize?: string;
+    windSpeed?: string;
+    eventDate?: string;
+  } | null>(null);
 
   // Editable field values for each section (keyed by sectionKey -> fieldName)
   const [sectionFieldValues, setSectionFieldValues] = useState<
@@ -337,6 +345,60 @@ export default function Builder() {
       setError(err.message);
     } finally {
       setRunningAI(false);
+    }
+  };
+
+  /** Quick DOL Pull — fetch weather verification for the selected claim */
+  const handleQuickDolPull = async () => {
+    const claimId = selection.resolvedClaimId || selection.claimId;
+    if (!claimId) {
+      setError("Select a claim first to pull weather data.");
+      return;
+    }
+    setWeatherStatus("loading");
+    setError(null);
+    try {
+      // First check if weather data already exists for this claim
+      const checkRes = await fetch(`/api/claims/${claimId}/weather`);
+      if (checkRes.ok) {
+        const checkData = await checkRes.json();
+        if (checkData?.weather || checkData?.data) {
+          const w = checkData.weather || checkData.data;
+          setWeatherData({
+            hailSize: w.hailSize || w.maxHailInches ? `${w.maxHailInches}"` : undefined,
+            windSpeed: w.windSpeed || w.maxWindGustMph ? `${w.maxWindGustMph} mph` : undefined,
+            eventDate: w.dateOfLoss || w.date,
+          });
+          setWeatherStatus("ready");
+          // Auto-add weather section if not already selected
+          if (!selectedSections.includes("weather-verification")) {
+            setSelectedSections((prev) => [...prev, "weather-verification"]);
+          }
+          return;
+        }
+      }
+
+      // No cached data — trigger a fresh weather fetch
+      const refreshRes = await fetch(`/api/claims/${claimId}/weather?refresh=true`);
+      if (refreshRes.ok) {
+        const refreshData = await refreshRes.json();
+        const w = refreshData.weather || refreshData.data || refreshData;
+        setWeatherData({
+          hailSize: w.hailSize || w.maxHailInches ? `${w.maxHailInches}"` : undefined,
+          windSpeed: w.windSpeed || w.maxWindGustMph ? `${w.maxWindGustMph} mph` : undefined,
+          eventDate: w.dateOfLoss || w.date,
+        });
+        setWeatherStatus("ready");
+        if (!selectedSections.includes("weather-verification")) {
+          setSelectedSections((prev) => [...prev, "weather-verification"]);
+        }
+      } else {
+        setWeatherStatus("error");
+        setError("Weather data fetch failed. Try running Weather Verification from AI controls.");
+      }
+    } catch (err: any) {
+      setWeatherStatus("error");
+      setError(err.message || "Failed to pull weather data.");
     }
   };
 
@@ -618,6 +680,25 @@ export default function Builder() {
                   {runningAI ? "Running AI..." : "Run All AI"}
                 </Button>
 
+                {/* Quick DOL Pull Button */}
+                <Button
+                  onClick={() => void handleQuickDolPull()}
+                  disabled={weatherStatus === "loading" || !selection.resolvedClaimId}
+                  className="gap-2 bg-cyan-600 hover:bg-cyan-700"
+                  title={
+                    !selection.resolvedClaimId
+                      ? "Select a claim first"
+                      : "Fetch weather data for this claim"
+                  }
+                >
+                  <CloudSun className="h-5 w-5" />
+                  {weatherStatus === "loading"
+                    ? "Pulling Weather..."
+                    : weatherStatus === "ready"
+                      ? "✓ Weather Ready"
+                      : "Quick DOL Pull"}
+                </Button>
+
                 <div className="group relative">
                   <Button
                     disabled={runningAI}
@@ -679,6 +760,31 @@ export default function Builder() {
                   </div>
                 )}
               </div>
+
+              {/* Weather Data Status */}
+              {weatherStatus === "ready" && weatherData && (
+                <div className="flex items-center gap-4 rounded-lg border border-cyan-200 bg-cyan-50 px-4 py-3 text-sm dark:border-cyan-800 dark:bg-cyan-900/20">
+                  <CloudSun className="h-5 w-5 text-cyan-600" />
+                  <span className="font-medium text-cyan-800 dark:text-cyan-200">
+                    Weather Verified
+                  </span>
+                  {weatherData.hailSize && (
+                    <span className="text-cyan-700 dark:text-cyan-300">
+                      Hail: {weatherData.hailSize}
+                    </span>
+                  )}
+                  {weatherData.windSpeed && (
+                    <span className="text-cyan-700 dark:text-cyan-300">
+                      Wind: {weatherData.windSpeed}
+                    </span>
+                  )}
+                  {weatherData.eventDate && (
+                    <span className="text-cyan-700 dark:text-cyan-300">
+                      DOL: {weatherData.eventDate}
+                    </span>
+                  )}
+                </div>
+              )}
 
               {/* Export buttons */}
               <div className="flex gap-3">
