@@ -5,7 +5,7 @@
 // ============================================================================
 // Load and manage report draft state with resume option
 
-import { useEffect,useState } from "react";
+import { useEffect, useState } from "react";
 import useSWR from "swr";
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json());
@@ -26,14 +26,10 @@ export function useReportDraft({ reportId, onResume }: UseDraftOptions) {
   const [showResumeModal, setShowResumeModal] = useState(false);
   const [draft, setDraft] = useState<DraftState | null>(null);
 
-  const { data, error, mutate } = useSWR<DraftState>(
-    `/api/reports/${reportId}/draft`,
-    fetcher,
-    {
-      revalidateOnFocus: false,
-      revalidateOnReconnect: false,
-    }
-  );
+  const { data, error, mutate } = useSWR<DraftState>(`/api/reports/${reportId}/draft`, fetcher, {
+    revalidateOnFocus: false,
+    revalidateOnReconnect: false,
+  });
 
   useEffect(() => {
     if (data && data.lastAutosave) {
@@ -64,7 +60,7 @@ export function useReportDraft({ reportId, onResume }: UseDraftOptions) {
 
     setDraft(null);
     setShowResumeModal(false);
-    mutate(undefined, false);
+    void mutate(undefined, false);
   };
 
   const dismissModal = () => {
@@ -89,13 +85,7 @@ interface ResumeModalProps {
   onDismiss: () => void;
 }
 
-export function ResumeModal({
-  show,
-  draft,
-  onResume,
-  onStartFresh,
-  onDismiss,
-}: ResumeModalProps) {
+export function ResumeModal({ show, draft, onResume, onStartFresh, onDismiss }: ResumeModalProps) {
   if (!show || !draft) return null;
 
   const lastSave = new Date(draft.lastAutosave);
@@ -105,12 +95,9 @@ export function ResumeModal({
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
       <div className="mx-4 w-full max-w-md rounded-lg bg-white shadow-xl">
         <div className="p-6">
-          <h3 className="mb-2 text-lg font-semibold text-gray-900">
-            Resume Draft?
-          </h3>
+          <h3 className="mb-2 text-lg font-semibold text-gray-900">Resume Draft?</h3>
           <p className="mb-4 text-sm text-gray-600">
-            A draft version of this report was found. It was last saved{" "}
-            <strong>{timeAgo}</strong>.
+            A draft version of this report was found. It was last saved <strong>{timeAgo}</strong>.
           </p>
 
           {draft.selectedSections && (

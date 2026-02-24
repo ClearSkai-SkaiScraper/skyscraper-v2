@@ -5,8 +5,8 @@
  * Uses WorkflowAction table with actionType field
  */
 
-import prisma from "@/lib/prisma";
 import { logger } from "@/lib/logger";
+import prisma from "@/lib/prisma";
 
 export interface WorkflowTrigger {
   type: string;
@@ -244,7 +244,7 @@ export async function executeWorkflow(
 async function executeEmailAction(
   leadId: string,
   config: { template?: string; to?: string; subject?: string },
-  orgId: string
+  _orgId: string
 ) {
   const claim = await prisma.claims.findUnique({
     where: { id: leadId },

@@ -145,13 +145,13 @@ export default function ClaimsAnalysisPage() {
   useEffect(() => {
     // Only auto-run if claimId is explicitly provided in URL AND is valid
     if (claimIdFromUrl && claimIdFromUrl.trim() && modes.length > 0) {
-      handleAnalyze();
+      void handleAnalyze();
     }
 
     function onKey(e: KeyboardEvent) {
       if (e.metaKey && e.shiftKey && e.key.toLowerCase() === "a") {
         e.preventDefault();
-        handleAnalyze();
+        void handleAnalyze();
       }
     }
     window.addEventListener("keydown", onKey);

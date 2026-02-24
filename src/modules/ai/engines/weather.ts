@@ -3,12 +3,12 @@
 // ============================================================================
 // Generates weather verification summary from NOAA/hail swath data
 
-import type { AIField,AISectionKey, AISectionState } from "../types";
+import type { AIField, AISectionKey, AISectionState } from "../types";
 
 export async function runWeather(
   reportId: string,
   sectionKey: AISectionKey,
-  context?: any
+  _context?: any
 ): Promise<AISectionState> {
   // TODO: Integrate with NOAA API / Stormersite / HailTrace
   // TODO: Pull address, lat/lon, claimed DOL from report

@@ -1,15 +1,6 @@
 "use client";
 
-import {
-  Brain,
-  Clock,
-  DollarSign,
-  FileText,
-  Image,
-  LayoutDashboard,
-  MessageSquare,
-  Wrench,
-} from "lucide-react";
+import { Brain, Clock, DollarSign, FileText, Image, LayoutDashboard, Wrench } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 

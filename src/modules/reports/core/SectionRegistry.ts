@@ -12,7 +12,7 @@
 import type { ReportContext, Section, SectionKey } from "../types";
 
 // Placeholder render functions (will be implemented in /sections/*.ts)
-const placeholderRender = (sectionName: string) => async (ctx: ReportContext) => {
+const placeholderRender = (sectionName: string) => async (_ctx: ReportContext) => {
   console.log(`[Section Renderer] ${sectionName} - placeholder`);
 };
 

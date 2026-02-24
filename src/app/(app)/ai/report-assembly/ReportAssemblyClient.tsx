@@ -10,8 +10,8 @@ import {
   Sparkles,
   Wand2,
 } from "lucide-react";
-import { useTheme } from "next-themes";
 import { useSearchParams } from "next/navigation";
+import { useTheme } from "next-themes";
 import { useState } from "react";
 
 import { getUiTheme } from "@/config/uiTheme";
@@ -161,7 +161,7 @@ export default function ReportAssemblyClient() {
   }
 
   // Deprecated original assemble() retained for backward compatibility
-  async function assembleLegacy() {
+  async function _assembleLegacy() {
     return assemble(retailMode ? "retail" : "insurance");
   }
 

@@ -179,7 +179,7 @@ function BidCard({ bid, onWithdraw }: { bid: MyBid; onWithdraw: (bidId: string) 
 }
 
 export default function ProMyBidsPage() {
-  const { user, isLoaded } = useUser();
+  const { user: _user, isLoaded } = useUser();
   const [bids, setBids] = useState<MyBid[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [filter, setFilter] = useState("all");
@@ -217,7 +217,7 @@ export default function ProMyBidsPage() {
       }
       setIsLoading(false);
     };
-    loadBids();
+    void loadBids();
   }, []);
 
   const handleWithdraw = async (bidId: string) => {
@@ -234,7 +234,7 @@ export default function ProMyBidsPage() {
         prev.map((b) => (b.id === bidId ? { ...b, status: "withdrawn" as const } : b))
       );
       toast.success("Quote withdrawn successfully");
-    } catch (error) {
+    } catch {
       toast.error("Failed to withdraw quote");
     }
   };

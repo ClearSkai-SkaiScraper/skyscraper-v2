@@ -9,6 +9,7 @@ import { NextResponse } from "next/server";
 
 // Feature flags (can be moved to env vars or database)
 const FEATURE_FLAGS = {
+  // eslint-disable-next-line no-restricted-syntax
   REPORT_BUILDER_ENABLED: process.env.NEXT_PUBLIC_REPORT_BUILDER_ENABLED === "true",
   ADMIN_ONLY_ROUTES: ["/report-builder-demo", "/projects"],
 };

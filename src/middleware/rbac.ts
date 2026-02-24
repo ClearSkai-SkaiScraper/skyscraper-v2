@@ -105,7 +105,7 @@ async function getUserRole(userId: string, orgId: string): Promise<string> {
 /**
  * Get permissions for a role
  */
-async function getRolePermissions(role: string, orgId: string): Promise<Permission[]> {
+async function getRolePermissions(role: string, _orgId: string): Promise<Permission[]> {
   // Database-backed custom permissions are not available in the current schema.
   // Fall back to default permissions.
   return DEFAULT_PERMISSIONS[role] || DEFAULT_PERMISSIONS.member;

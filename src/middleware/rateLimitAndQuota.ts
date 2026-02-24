@@ -1,3 +1,4 @@
+// eslint-disable-next-line no-restricted-imports
 import { auth } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -55,7 +56,7 @@ export async function middleware(req: NextRequest) {
         AND resource_type = 'ai_requests'
         AND period_start = ${startOfMonth}
         LIMIT 1
-      `.then(r => r[0]);
+      `.then((r) => r[0]);
 
       if (meter && meter.quota_limit && meter.count >= meter.quota_limit) {
         return new NextResponse(

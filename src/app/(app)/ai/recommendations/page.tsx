@@ -142,7 +142,7 @@ export default function AIRecommendationsPage() {
   };
 
   useEffect(() => {
-    if (isLoaded && isSignedIn) fetchRecommendations();
+    if (isLoaded && isSignedIn) void fetchRecommendations();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isLoaded, isSignedIn]);
 

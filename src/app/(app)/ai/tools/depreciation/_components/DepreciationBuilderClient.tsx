@@ -70,8 +70,8 @@ import {
 } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
-
 import { logger } from "@/lib/logger";
+
 import { CertificateOfCompletion } from "./CertificateOfCompletion";
 import { FinalInvoice } from "./FinalInvoice";
 
@@ -188,11 +188,11 @@ const PAYOUT_STAGES = [
 export function DepreciationBuilderClient({
   claim,
   claims,
-  orgId,
-  userId,
+  orgId: _orgId,
+  userId: _userId,
 }: DepreciationBuilderClientProps) {
   const router = useRouter();
-  const searchParams = useSearchParams();
+  const _searchParams = useSearchParams();
 
   const [activeTab, setActiveTab] = useState("summary");
   const [payoutStatus, setPayoutStatus] = useState<PayoutStatus>("not_started");
@@ -352,7 +352,7 @@ export function DepreciationBuilderClient({
       }
     };
 
-    fetchPayoutData();
+    void fetchPayoutData();
   }, [claim.id, claim.rcvTotal, claim.depreciationTotal, claim.acvTotal]);
 
   // Calculate totals
@@ -1246,7 +1246,7 @@ export function DepreciationBuilderClient({
               onClick={() => {
                 setShowCertificationDialog(false);
                 if (certificationSigned) {
-                  handleSubmitToCarrier();
+                  void handleSubmitToCarrier();
                 }
               }}
               disabled={!certificationSigned}

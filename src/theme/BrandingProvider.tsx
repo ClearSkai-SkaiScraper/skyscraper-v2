@@ -74,7 +74,7 @@ export const BrandingProvider: React.FC<React.PropsWithChildren> = ({ children }
   };
 
   useEffect(() => {
-    refresh();
+    void refresh();
   }, []);
 
   return <BrandingCtx.Provider value={{ branding, refresh }}>{children}</BrandingCtx.Provider>;

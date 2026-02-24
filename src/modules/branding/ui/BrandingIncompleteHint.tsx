@@ -14,7 +14,7 @@ export function BrandingIncompleteHint() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    checkBrandingStatus();
+    void checkBrandingStatus();
   }, []);
 
   async function checkBrandingStatus() {

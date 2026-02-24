@@ -2,7 +2,7 @@
 // COVER PAGE RENDERER
 // ============================================================================
 
-import { PDFDocument, PDFFont, PDFPage, rgb } from "pdf-lib";
+import { PDFFont, PDFPage, rgb } from "pdf-lib";
 
 import type { ReportContext } from "../types";
 
@@ -39,7 +39,7 @@ export async function renderCoverPage(
   const contactLine = [branding.licenseNumber, branding.phone, branding.email]
     .filter(Boolean)
     .join("  |  ");
-  
+
   page.drawText(contactLine, {
     x: 60,
     y: height - 90,

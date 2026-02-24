@@ -6,6 +6,7 @@
 // For now, the service is stubbed to prevent runtime errors.
 
 import crypto from "crypto";
+
 import { logger } from "@/lib/logger";
 
 interface WebhookPayload {

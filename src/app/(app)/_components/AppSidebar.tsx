@@ -1,8 +1,8 @@
 "use client";
 
-import { useTheme } from "next-themes";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useTheme } from "next-themes";
 import { useEffect, useState } from "react";
 
 import { getUiTheme } from "@/config/uiTheme";
@@ -140,7 +140,7 @@ export function AppSidebar() {
   );
   const [collapsedSections, setCollapsedSections] =
     useState<Record<string, boolean>>(defaultCollapsed);
-  const [hydrated, setHydrated] = useState(false);
+  const [_hydrated, setHydrated] = useState(false);
 
   useEffect(() => {
     try {
@@ -180,7 +180,7 @@ export function AppSidebar() {
       }
     };
 
-    fetchBadges();
+    void fetchBadges();
     // Refresh badges every 30 seconds
     const interval = setInterval(fetchBadges, 30000);
     return () => clearInterval(interval);

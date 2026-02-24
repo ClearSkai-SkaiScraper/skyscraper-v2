@@ -52,7 +52,7 @@ export default async function CarrierExportHistoryPage() {
         <div className="space-y-4">
           {history.map((run) => {
             const input = typeof run.input === "string" ? JSON.parse(run.input) : run.input;
-            const output = typeof run.output === "string" ? JSON.parse(run.output) : run.output;
+            const _output = typeof run.output === "string" ? JSON.parse(run.output) : run.output;
 
             return (
               <Card key={run.id} className="p-4">

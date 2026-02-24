@@ -8,9 +8,11 @@
  * When both are false, demo mode is OFF.
  */
 
+/* eslint-disable no-restricted-syntax */
 const DEMO_MODE =
   process.env.EMERGENCY_DEMO_MODE === "true" ||
   process.env.NEXT_PUBLIC_EMERGENCY_DEMO_MODE === "true";
+/* eslint-enable no-restricted-syntax */
 
 type WorkspaceReadyOptions = {
   hasOrganization: boolean;

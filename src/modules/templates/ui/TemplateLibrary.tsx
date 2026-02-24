@@ -1,11 +1,11 @@
-'use client';
+"use client";
 
 // ============================================================================
 // TEMPLATE LIBRARY - Phase 5 Feature 5: Template Save/Apply/Delete
 // ============================================================================
 
-import { useState } from 'react';
-import useSWR from 'swr';
+import { useState } from "react";
+import useSWR from "swr";
 
 interface TemplateLibraryProps {
   reportId?: string;
@@ -22,26 +22,26 @@ export default function TemplateLibrary({
   onClose,
   onApply,
 }: TemplateLibraryProps) {
-  const { data, mutate } = useSWR('/api/templates/list', fetcher);
+  const { data, mutate } = useSWR("/api/templates/list", fetcher);
   const templates = data?.templates || [];
 
   const [savingAs, setSavingAs] = useState(false);
-  const [newTemplateName, setNewTemplateName] = useState('');
-  const [error, setError] = useState('');
+  const [newTemplateName, setNewTemplateName] = useState("");
+  const [error, setError] = useState("");
 
   const handleSaveCurrentAsTemplate = async () => {
     if (!newTemplateName.trim()) {
-      setError('Please enter a template name');
+      setError("Please enter a template name");
       return;
     }
 
     setSavingAs(true);
-    setError('');
+    setError("");
 
     try {
-      const res = await fetch('/api/templates/save', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const res = await fetch("/api/templates/save", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           name: newTemplateName,
           sectionConfig: currentSections || [],
@@ -51,13 +51,13 @@ export default function TemplateLibrary({
 
       if (!res.ok) {
         const data = await res.json();
-        throw new Error(data.error || 'Failed to save template');
+        throw new Error(data.error || "Failed to save template");
       }
 
-      setNewTemplateName('');
-      mutate();
+      setNewTemplateName("");
+      void mutate();
     } catch (err: any) {
-      setError(err.message || 'Failed to save template');
+      setError(err.message || "Failed to save template");
     } finally {
       setSavingAs(false);
     }
@@ -65,9 +65,9 @@ export default function TemplateLibrary({
 
   const handleApplyTemplate = async (template: any) => {
     try {
-      const res = await fetch('/api/templates/apply', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const res = await fetch("/api/templates/apply", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           templateId: template.id,
           reportId,
@@ -75,7 +75,7 @@ export default function TemplateLibrary({
       });
 
       if (!res.ok) {
-        throw new Error('Failed to apply template');
+        throw new Error("Failed to apply template");
       }
 
       if (onApply) {
@@ -83,41 +83,41 @@ export default function TemplateLibrary({
       }
       onClose();
     } catch (err) {
-      console.error('[TemplateLibrary] Apply failed:', err);
-      alert('Failed to apply template');
+      console.error("[TemplateLibrary] Apply failed:", err);
+      alert("Failed to apply template");
     }
   };
 
   const handleSetDefault = async (templateId: string) => {
     try {
-      await fetch('/api/templates/save', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      await fetch("/api/templates/save", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           templateId,
           isDefault: true,
         }),
       });
 
-      mutate();
+      void mutate();
     } catch (err) {
-      console.error('[TemplateLibrary] Set default failed:', err);
+      console.error("[TemplateLibrary] Set default failed:", err);
     }
   };
 
   const handleDelete = async (templateId: string) => {
-    if (!confirm('Are you sure you want to delete this template?')) {
+    if (!confirm("Are you sure you want to delete this template?")) {
       return;
     }
 
     try {
       await fetch(`/api/templates/${templateId}`, {
-        method: 'DELETE',
+        method: "DELETE",
       });
 
-      mutate();
+      void mutate();
     } catch (err) {
-      console.error('[TemplateLibrary] Delete failed:', err);
+      console.error("[TemplateLibrary] Delete failed:", err);
     }
   };
 
@@ -156,12 +156,10 @@ export default function TemplateLibrary({
                 disabled={savingAs || !newTemplateName.trim()}
                 className="rounded bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50"
               >
-                {savingAs ? 'Saving...' : 'Save Template'}
+                {savingAs ? "Saving..." : "Save Template"}
               </button>
             </div>
-            {error && (
-              <div className="mt-2 text-sm text-red-600">{error}</div>
-            )}
+            {error && <div className="mt-2 text-sm text-red-600">{error}</div>}
           </div>
 
           {/* Templates List */}
@@ -184,9 +182,7 @@ export default function TemplateLibrary({
                     <div className="flex items-start justify-between">
                       <div className="flex-1">
                         <div className="flex items-center gap-2">
-                          <h4 className="font-semibold text-gray-900">
-                            {template.name}
-                          </h4>
+                          <h4 className="font-semibold text-gray-900">{template.name}</h4>
                           {template.isDefault && (
                             <span className="rounded bg-purple-100 px-2 py-0.5 text-xs font-medium text-purple-800">
                               Default
@@ -194,8 +190,8 @@ export default function TemplateLibrary({
                           )}
                         </div>
                         <div className="mt-1 text-sm text-gray-600">
-                          {template.sectionConfig?.length || 0} sections •
-                          Created {new Date(template.createdAt).toLocaleDateString()}
+                          {template.sectionConfig?.length || 0} sections • Created{" "}
+                          {new Date(template.createdAt).toLocaleDateString()}
                         </div>
                       </div>
 
@@ -226,11 +222,11 @@ export default function TemplateLibrary({
                     {/* Section Preview */}
                     <div className="mt-3 border-t border-gray-100 pt-3">
                       <div className="text-xs text-gray-600">
-                        <strong>Sections:</strong>{' '}
+                        <strong>Sections:</strong>{" "}
                         {template.sectionConfig
                           ?.slice(0, 5)
                           .map((s: any) => s.title || s.type)
-                          .join(', ')}
+                          .join(", ")}
                         {template.sectionConfig?.length > 5 &&
                           ` +${template.sectionConfig.length - 5} more`}
                       </div>

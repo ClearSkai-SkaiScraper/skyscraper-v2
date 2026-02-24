@@ -184,7 +184,7 @@ export function sanitizeFilename(filename: string): string {
 export async function validateFileUpload(
   file: File,
   category: string,
-  options?: {
+  _options?: {
     maxSize?: number;
     allowedTypes?: string[];
   }

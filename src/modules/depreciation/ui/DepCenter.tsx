@@ -40,7 +40,7 @@ export function DepCenter({ jobId }: DepCenterProps) {
   const [selectedCarrier, setSelectedCarrier] = useState<string>("");
 
   useEffect(() => {
-    loadReadiness();
+    void loadReadiness();
   }, [jobId]);
 
   async function loadReadiness() {

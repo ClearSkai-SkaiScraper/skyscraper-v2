@@ -7,6 +7,7 @@
 
 import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
+
 import type {
   BrandingConfig,
   CodeCitation,
@@ -48,7 +49,7 @@ export async function fetchReportBranding(orgId: string): Promise<BrandingConfig
 export async function fetchReportClaimData(
   reportId: string,
   claimId: string,
-  userId?: string
+  _userId?: string
 ): Promise<ReportMetadata> {
   const claim = await prisma.claims.findFirst({
     where: { id: claimId },

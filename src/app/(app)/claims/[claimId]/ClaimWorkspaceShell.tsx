@@ -138,7 +138,7 @@ export function ClaimWorkspaceShell({
   photos = [],
 }: ClaimWorkspaceProps) {
   const [activeTab, setActiveTab] = useState<TabId>("overview");
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [sidebarCollapsed, _setSidebarCollapsed] = useState(false);
   const [aiPanelOpen, setAiPanelOpen] = useState(true);
   const [claim, setClaim] = useState(initialClaim);
   const [saving, setSaving] = useState(false);
@@ -190,7 +190,7 @@ export function ClaimWorkspaceShell({
         return;
       }
 
-      const data = await response.json();
+      const _data = await response.json();
       setClaim({ ...claim, [fieldName]: value });
       setSaveMessage("✓ Saved");
       setTimeout(() => setSaveMessage(null), 2000);
@@ -476,8 +476,8 @@ function Card({
 function OverviewSection({
   claim,
   aiReports = [],
-  onSave,
-  saving,
+  onSave: _onSave,
+  saving: _saving,
 }: {
   claim: ClaimWorkspaceProps["claim"];
   aiReports?: ClaimWorkspaceProps["aiReports"];
@@ -645,7 +645,7 @@ function ActionItem({
 }
 
 function EditableField({
-  label,
+  label: _label,
   value,
   field,
   onSave,
@@ -720,7 +720,7 @@ function EditableField({
   );
 }
 
-function DetailsSection({
+function _DetailsSection({
   claim,
   onSave,
   saving,
@@ -813,8 +813,8 @@ function DetailsSection({
 
 function ContactsSection({
   claim,
-  onSave,
-  saving,
+  onSave: _onSave,
+  saving: _saving,
 }: {
   claim: ClaimWorkspaceProps["claim"];
   onSave: (field: string, value: any) => Promise<void>;
@@ -1310,7 +1310,7 @@ function PhotosSection({ claimId }: { claimId: string }) {
 
   // Fetch photos on mount
   React.useEffect(() => {
-    fetchPhotos();
+    void fetchPhotos();
   }, [claimId]);
 
   async function fetchPhotos() {
@@ -1386,7 +1386,7 @@ function PhotosSection({ claimId }: { claimId: string }) {
     e.stopPropagation();
     setDragActive(false);
     if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
-      handleFileUpload(e.dataTransfer.files);
+      void handleFileUpload(e.dataTransfer.files);
     }
   };
 
@@ -1671,8 +1671,8 @@ function AISection({
 
 function FinancialsSection({
   claim,
-  onSave,
-  saving,
+  onSave: _onSave,
+  saving: _saving,
 }: {
   claim: ClaimWorkspaceProps["claim"];
   onSave: (field: string, value: any) => Promise<void>;
@@ -1774,7 +1774,7 @@ function FinancialsSection({
   );
 }
 
-function TimelineSection({ claimId }: { claimId: string }) {
+function _TimelineSection({ claimId }: { claimId: string }) {
   const [events, setEvents] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 

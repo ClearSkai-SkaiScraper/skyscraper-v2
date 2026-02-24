@@ -94,7 +94,7 @@ export async function explainPrediction(
 /**
  * Make prediction
  */
-async function makePrediction(modelId: string, input: any): Promise<any> {
+async function makePrediction(_modelId: string, _input: any): Promise<any> {
   // Simulate model prediction
   return {
     class: Math.random() > 0.5 ? "positive" : "negative",
@@ -220,11 +220,11 @@ function fitLinearRegression(features: number[], targets: number[], weights: num
     sumWY = 0,
     sumWXY = 0,
     sumWX2 = 0,
-    sumW = 0;
+    _sumW = 0;
 
   for (let i = 0; i < n; i++) {
     const w = 1 / (1 + weights[i]);
-    sumW += w;
+    _sumW += w;
     sumWX += w * features[i];
     sumWY += w * targets[i];
     sumWXY += w * features[i] * targets[i];

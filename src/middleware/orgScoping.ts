@@ -25,7 +25,7 @@ export interface OrgScopeContext {
  * Throws 401 if not authenticated
  * Throws 403 if no org context
  */
-export async function enforceOrgScope(req: NextRequest): Promise<OrgScopeContext> {
+export async function enforceOrgScope(_req: NextRequest): Promise<OrgScopeContext> {
   const permissions = await getCurrentUserPermissions();
 
   if (!permissions.userId) {
@@ -95,7 +95,7 @@ export async function verifyOrgOwnership(orgId: string, resourceOrgId: string): 
 /**
  * Extract orgId from request (for routes that don't use enforceOrgScope)
  */
-export async function getOrgIdFromRequest(req: NextRequest): Promise<string | null> {
+export async function getOrgIdFromRequest(_req: NextRequest): Promise<string | null> {
   try {
     const permissions = await getCurrentUserPermissions();
     return permissions.orgId || null;

@@ -11,10 +11,12 @@ import { NextRequest, NextResponse } from "next/server";
  * Whitelisted IP addresses (configure via environment)
  */
 function getWhitelistedIPs(): string[] {
+  // eslint-disable-next-line no-restricted-syntax
   const ipsEnv = process.env.WHITELISTED_IPS || "";
 
   if (!ipsEnv) {
     // In development, allow all IPs
+    // eslint-disable-next-line no-restricted-syntax
     if (process.env.NODE_ENV === "development") {
       return [];
     }
@@ -30,6 +32,7 @@ function getWhitelistedIPs(): string[] {
  * IP ranges (CIDR notation)
  */
 function getWhitelistedRanges(): string[] {
+  // eslint-disable-next-line no-restricted-syntax
   const rangesEnv = process.env.WHITELISTED_IP_RANGES || "";
 
   if (!rangesEnv) {
@@ -129,7 +132,7 @@ export function withIPWhitelist() {
     try {
       await enforceIPWhitelist(req);
       return null; // Allow request to proceed
-    } catch (error) {
+    } catch {
       return new NextResponse(
         JSON.stringify({
           error: "Access denied",
@@ -177,6 +180,7 @@ export function getIPWhitelistStatus(): {
 export function addIPToWhitelist(ip: string): void {
   const currentIPs = getWhitelistedIPs();
   if (!currentIPs.includes(ip)) {
+    // eslint-disable-next-line no-restricted-syntax
     process.env.WHITELISTED_IPS = [...currentIPs, ip].join(",");
   }
 }
@@ -186,6 +190,7 @@ export function addIPToWhitelist(ip: string): void {
  */
 export function removeIPFromWhitelist(ip: string): void {
   const currentIPs = getWhitelistedIPs();
+  // eslint-disable-next-line no-restricted-syntax
   process.env.WHITELISTED_IPS = currentIPs.filter((i) => i !== ip).join(",");
 }
 

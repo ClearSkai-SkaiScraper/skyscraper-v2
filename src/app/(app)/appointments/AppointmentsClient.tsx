@@ -18,8 +18,11 @@ interface AppointmentsClientProps {
   orgId: string;
 }
 
-export function AppointmentsClient({ currentUserId, orgId }: AppointmentsClientProps) {
-  const router = useRouter();
+export function AppointmentsClient({
+  currentUserId: _currentUserId,
+  orgId: _orgId,
+}: AppointmentsClientProps) {
+  const _router = useRouter();
   const [appointments, setAppointments] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -32,7 +35,7 @@ export function AppointmentsClient({ currentUserId, orgId }: AppointmentsClientP
     if (filter === "COMPLETED" || filter === "CANCELLED") {
       setViewMode("list");
     }
-    fetchAppointments();
+    void fetchAppointments();
   }, [filter]);
 
   const fetchAppointments = async () => {
@@ -68,7 +71,7 @@ export function AppointmentsClient({ currentUserId, orgId }: AppointmentsClientP
     }
   };
 
-  const handleEdit = (id: string) => {
+  const handleEdit = (_id: string) => {
     // TODO: Open edit modal
     toast.info("Edit modal coming soon");
   };
@@ -86,7 +89,7 @@ export function AppointmentsClient({ currentUserId, orgId }: AppointmentsClientP
       if (!res.ok) throw new Error("Failed to cancel appointment");
 
       toast.success("Appointment cancelled");
-      fetchAppointments();
+      void fetchAppointments();
     } catch (error) {
       logger.error("Failed to cancel appointment:", error);
       toast.error("Failed to cancel appointment");
@@ -104,7 +107,7 @@ export function AppointmentsClient({ currentUserId, orgId }: AppointmentsClientP
       if (!res.ok) throw new Error("Failed to mark appointment as complete");
 
       toast.success("Appointment marked as complete");
-      fetchAppointments();
+      void fetchAppointments();
     } catch (error) {
       logger.error("Failed to complete appointment:", error);
       toast.error("Failed to complete appointment");
@@ -146,7 +149,7 @@ export function AppointmentsClient({ currentUserId, orgId }: AppointmentsClientP
           <Button
             onClick={() => {
               setLoading(true);
-              fetchAppointments();
+              void fetchAppointments();
             }}
             variant="outline"
           >

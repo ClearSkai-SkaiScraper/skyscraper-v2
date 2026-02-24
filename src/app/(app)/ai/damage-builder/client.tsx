@@ -53,7 +53,7 @@ interface DamageFinding {
 type Step = "upload" | "analyze" | "annotate" | "caption" | "export";
 
 export default function DamageBuilderClient({ leadId, jobId }: DamageBuilderClientProps) {
-  const router = useRouter();
+  const _router = useRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
@@ -284,7 +284,7 @@ export default function DamageBuilderClient({ leadId, jobId }: DamageBuilderClie
     }
   }
 
-  async function handleShare() {
+  async function _handleShare() {
     try {
       const res = await fetch("/api/share/create", {
         method: "POST",

@@ -1,8 +1,6 @@
 // NOTE: Placeholder draft module intentionally disabled (no JobDraft model).
 // Removed deprecated jobDraft references to reduce schema mismatch noise.
 
-import prisma from "@/lib/prisma";
-
 // Prisma singleton imported from @/lib/db/prisma
 
 export type UpsertDraftPayload = {
@@ -15,9 +13,9 @@ export type UpsertDraftPayload = {
  * Upsert a job draft for the given user
  */
 export async function upsertDraft(
-  userId: string,
-  orgId: string | null,
-  payload: UpsertDraftPayload
+  _userId: string,
+  _orgId: string | null,
+  _payload: UpsertDraftPayload
 ): Promise<any> {
   // const { draftId, step, data } = payload;
   throw new Error("Draft system not implemented");
@@ -74,7 +72,7 @@ export async function upsertDraft(
 /**
  * Get the most recent draft for a user
  */
-export async function getLatestDraft(userId: string, orgId: string | null): Promise<any> {
+export async function getLatestDraft(_userId: string, _orgId: string | null): Promise<any> {
   throw new Error("Draft system not implemented");
 
   // return prisma.jobDraft.findFirst({
@@ -91,7 +89,7 @@ export async function getLatestDraft(userId: string, orgId: string | null): Prom
 /**
  * Delete a draft
  */
-export async function deleteDraft(draftId: string, userId: string): Promise<any> {
+export async function deleteDraft(_draftId: string, _userId: string): Promise<any> {
   throw new Error("Draft system not implemented");
 
   // return prisma.jobDraft.delete({

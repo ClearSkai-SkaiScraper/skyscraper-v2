@@ -220,7 +220,7 @@ async function renderSection(
 ) {
   const page = pdfDoc.addPage([612, 792]); // Letter size
   const { width, height } = page.getSize();
-  const { font, fontBold, brandRgb, accentRgb } = fonts;
+  const { font, fontBold, brandRgb, accentRgb: _accentRgb } = fonts;
 
   // Section header bar
   page.drawRectangle({
@@ -241,9 +241,9 @@ async function renderSection(
 
   // ── Real section content based on key ──────────────────────────────────
   let yPos = height - 90;
-  const lineHeight = 16;
+  const _lineHeight = 16;
   const margin = 40;
-  const maxWidth = width - margin * 2;
+  const _maxWidth = width - margin * 2;
 
   const drawLine = (
     text: string,
@@ -251,7 +251,7 @@ async function renderSection(
   ) => {
     if (yPos < 50) {
       // Add a new page if we run out of space
-      const newPage = pdfDoc.addPage([612, 792]);
+      const _newPage = pdfDoc.addPage([612, 792]);
       yPos = 792 - 50;
       // Draw on newPage instead — for simplicity we just cap content per section page
       return;
@@ -486,7 +486,7 @@ function addPageNumbers(
 ) {
   const pages = pdfDoc.getPages();
   pages.forEach((page, index) => {
-    const { width, height } = page.getSize();
+    const { width, height: _height } = page.getSize();
     const pageNum = `Page ${index + 1} of ${pages.length}`;
 
     // Footer bar

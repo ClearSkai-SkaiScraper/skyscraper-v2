@@ -132,7 +132,11 @@ interface ScheduledJobClientProps {
   userId: string;
 }
 
-export function ScheduledJobClient({ job, orgId, userId }: ScheduledJobClientProps) {
+export function ScheduledJobClient({
+  job,
+  orgId: _orgId,
+  userId: _userId,
+}: ScheduledJobClientProps) {
   const [checklist, setChecklist] = useState(job.checklist || []);
   const [status, setStatus] = useState(job.status);
 
@@ -146,7 +150,7 @@ export function ScheduledJobClient({ job, orgId, userId }: ScheduledJobClientPro
 
   const typeConfig = getJobTypeConfig(job.jobType);
   const statusConfig = getStatusConfig(status);
-  const TypeIcon = typeConfig.icon;
+  const _TypeIcon = typeConfig.icon;
   const StatusIcon = statusConfig.icon;
 
   const completedTasks = checklist.filter((c) => c.completed).length;

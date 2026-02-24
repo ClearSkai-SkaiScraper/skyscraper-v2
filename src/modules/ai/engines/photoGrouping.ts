@@ -3,12 +3,12 @@
 // ============================================================================
 // Auto-tags and groups photos by damage type and location
 
-import type { AIField,AISectionKey, AISectionState } from "../types";
+import type { AIField, AISectionKey, AISectionState } from "../types";
 
 export async function runPhotoGrouping(
   reportId: string,
   sectionKey: AISectionKey,
-  context?: any
+  _context?: any
 ): Promise<AISectionState> {
   // TODO: Integrate with Vision AI (OpenAI Vision / Google Vision / AWS Rekognition)
   // TODO: Pull photos from report
@@ -50,7 +50,7 @@ export async function runPhotoGrouping(
       aiGenerated: true,
       approved: false,
       source: "photoGrouping",
-      confidence: 0.90,
+      confidence: 0.9,
       generatedAt: now,
     },
     photoTags: {

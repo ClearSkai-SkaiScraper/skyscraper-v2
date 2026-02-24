@@ -7,8 +7,9 @@ export function getAssetVersion(): string {
     // @ts-ignore
     const mod = require("../config/assetVersion.generated");
     if (mod && mod.ASSET_VERSION) return mod.ASSET_VERSION;
-  } catch (e) {
+  } catch {
     // ignore
   }
+  // eslint-disable-next-line no-restricted-syntax
   return process.env.ASSET_VERSION || "2025-10-26";
 }

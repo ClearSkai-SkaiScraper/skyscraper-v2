@@ -20,16 +20,6 @@ export default function AgentAuditPage() {
   const router = useRouter();
   const { isLoaded, isSignedIn } = useUser();
 
-  useEffect(() => {
-    if (isLoaded && !isSignedIn) {
-      router.push("/sign-in");
-    }
-  }, [isLoaded, isSignedIn, router]);
-
-  if (!isLoaded || !isSignedIn) {
-    return <div className="flex h-screen items-center justify-center">Loading...</div>;
-  }
-
   const [filters, setFilters] = useState({ jobId: "", missionId: "", eventType: "" });
   const qs = useMemo(() => {
     const p = new URLSearchParams();
@@ -43,6 +33,16 @@ export default function AgentAuditPage() {
   const { data, isLoading, mutate } = useSWR(`/api/agent/audit?${qs}`, fetcher, {
     refreshInterval: 8000,
   });
+
+  useEffect(() => {
+    if (isLoaded && !isSignedIn) {
+      void router.push("/sign-in");
+    }
+  }, [isLoaded, isSignedIn, router]);
+
+  if (!isLoaded || !isSignedIn) {
+    return <div className="flex h-screen items-center justify-center">Loading...</div>;
+  }
 
   return (
     <div className="space-y-4 p-6">

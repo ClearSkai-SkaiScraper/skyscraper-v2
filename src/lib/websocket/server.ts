@@ -10,8 +10,9 @@
  */
 
 import { Server as HTTPServer } from "http";
-import { logger } from "@/lib/logger";
 import { Server as SocketIOServer } from "socket.io";
+
+import { logger } from "@/lib/logger";
 
 let io: SocketIOServer | null = null;
 

@@ -15,10 +15,10 @@
  */
 
 import { useEffect, useState } from "react";
-import { logger } from "@/lib/logger";
 import { io, Socket } from "socket.io-client";
 
 import { APP_URL } from "@/lib/env";
+import { logger } from "@/lib/logger";
 
 interface ClaimEvents {
   timeline?: any;

@@ -41,7 +41,7 @@ export function withAiBilling<T = any>(
   config: AiBillingConfig,
   handler: (req: NextRequest, ctx: AiBillingContext) => Promise<NextResponse<T> | NextResponse<any>>
 ) {
-  return async (req: NextRequest, routeParams?: any) => {
+  return async (req: NextRequest, _routeParams?: any) => {
     const startTime = Date.now();
 
     try {

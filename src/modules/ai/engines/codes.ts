@@ -3,12 +3,12 @@
 // ============================================================================
 // Generates IRC/IBC citations and manufacturer requirements
 
-import type { AIField,AISectionKey, AISectionState } from "../types";
+import type { AIField, AISectionKey, AISectionState } from "../types";
 
 export async function runCodes(
   reportId: string,
   sectionKey: AISectionKey,
-  context?: any
+  _context?: any
 ): Promise<AISectionState> {
   // TODO: Integrate with jurisdiction lookup (address → city/county code requirements)
   // TODO: Pull roof system, accessories, slope from report
@@ -29,7 +29,7 @@ export async function runCodes(
             "In areas where the average daily temperature in January is 25°F (-4°C) or less, " +
             "an ice barrier that consists of at least two layers of underlayment cemented together " +
             "or a self-adhering polymer-modified bitumen sheet shall be used in lieu of normal underlayment.",
-          applicability: "Required for Phoenix climate zone - extends 24\" past interior wall line",
+          applicability: 'Required for Phoenix climate zone - extends 24" past interior wall line',
         },
         {
           code: "IBC 1507.2.8.1",

@@ -5,15 +5,7 @@
 // ============================================================================
 // View and manage export jobs with retry/download
 
-import {
-  CheckCircle,
-  Clock,
-  Download,
-  Loader2,
-  RefreshCw,
-  XCircle,
-} from "lucide-react";
-import { useState } from "react";
+import { CheckCircle, Clock, Download, Loader2, RefreshCw, XCircle } from "lucide-react";
 import useSWR from "swr";
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json());
@@ -30,20 +22,20 @@ interface ExportJob {
 }
 
 export default function ExportQueue() {
-  const { data: jobs, error, mutate } = useSWR<ExportJob[]>(
-    "/api/exports/queue",
-    fetcher,
-    {
-      refreshInterval: 3000, // Poll every 3s
-    }
-  );
+  const {
+    data: jobs,
+    error,
+    mutate,
+  } = useSWR<ExportJob[]>("/api/exports/queue", fetcher, {
+    refreshInterval: 3000, // Poll every 3s
+  });
 
   const handleRetry = async (jobId: string) => {
     try {
       await fetch(`/api/exports/${jobId}/retry`, {
         method: "POST",
       });
-      mutate();
+      void mutate();
     } catch (error) {
       console.error("[Export Retry]", error);
     }
@@ -56,7 +48,7 @@ export default function ExportQueue() {
     a.click();
   };
 
-  const getStatusIcon = (status: string) => {
+  const _getStatusIcon = (status: string) => {
     switch (status) {
       case "queued":
         return <Clock className="h-5 w-5 text-gray-400" />;
@@ -71,7 +63,7 @@ export default function ExportQueue() {
     }
   };
 
-  const getStatusLabel = (status: string) => {
+  const _getStatusLabel = (status: string) => {
     switch (status) {
       case "queued":
         return "Queued";
@@ -110,9 +102,7 @@ export default function ExportQueue() {
     );
   }
 
-  const activeJobs = jobs.filter(
-    (j) => j.status === "queued" || j.status === "running"
-  );
+  const activeJobs = jobs.filter((j) => j.status === "queued" || j.status === "running");
   const completedJobs = jobs.filter((j) => j.status === "complete");
   const failedJobs = jobs.filter((j) => j.status === "failed");
 
@@ -140,9 +130,7 @@ export default function ExportQueue() {
           <div className="flex flex-col items-center justify-center py-12 text-center">
             <Download className="mb-3 h-12 w-12 text-gray-400" />
             <p className="font-medium text-gray-600">No exports yet</p>
-            <p className="mt-1 text-sm text-gray-500">
-              Export a report to see it here
-            </p>
+            <p className="mt-1 text-sm text-gray-500">Export a report to see it here</p>
           </div>
         )}
 
@@ -151,12 +139,15 @@ export default function ExportQueue() {
             {/* Active Jobs */}
             {activeJobs.length > 0 && (
               <div>
-                <h3 className="mb-2 text-sm font-semibold text-gray-700">
-                  Active
-                </h3>
+                <h3 className="mb-2 text-sm font-semibold text-gray-700">Active</h3>
                 <div className="divide-y divide-gray-200 rounded-lg border border-gray-200 bg-white">
                   {activeJobs.map((job) => (
-                    <JobRow key={job.id} job={job} onRetry={handleRetry} onDownload={handleDownload} />
+                    <JobRow
+                      key={job.id}
+                      job={job}
+                      onRetry={handleRetry}
+                      onDownload={handleDownload}
+                    />
                   ))}
                 </div>
               </div>
@@ -165,12 +156,15 @@ export default function ExportQueue() {
             {/* Completed Jobs */}
             {completedJobs.length > 0 && (
               <div>
-                <h3 className="mb-2 text-sm font-semibold text-gray-700">
-                  Completed
-                </h3>
+                <h3 className="mb-2 text-sm font-semibold text-gray-700">Completed</h3>
                 <div className="divide-y divide-gray-200 rounded-lg border border-gray-200 bg-white">
                   {completedJobs.map((job) => (
-                    <JobRow key={job.id} job={job} onRetry={handleRetry} onDownload={handleDownload} />
+                    <JobRow
+                      key={job.id}
+                      job={job}
+                      onRetry={handleRetry}
+                      onDownload={handleDownload}
+                    />
                   ))}
                 </div>
               </div>
@@ -179,12 +173,15 @@ export default function ExportQueue() {
             {/* Failed Jobs */}
             {failedJobs.length > 0 && (
               <div>
-                <h3 className="mb-2 text-sm font-semibold text-gray-700">
-                  Failed
-                </h3>
+                <h3 className="mb-2 text-sm font-semibold text-gray-700">Failed</h3>
                 <div className="divide-y divide-gray-200 rounded-lg border border-gray-200 bg-white">
                   {failedJobs.map((job) => (
-                    <JobRow key={job.id} job={job} onRetry={handleRetry} onDownload={handleDownload} />
+                    <JobRow
+                      key={job.id}
+                      job={job}
+                      onRetry={handleRetry}
+                      onDownload={handleDownload}
+                    />
                   ))}
                 </div>
               </div>
@@ -221,9 +218,7 @@ function JobRow({ job, onRetry, onDownload }: JobRowProps) {
         <p className="text-xs text-gray-500">
           {job.format.toUpperCase()} · {timeAgo}
         </p>
-        {job.error && (
-          <p className="mt-1 text-xs text-red-600">{job.error}</p>
-        )}
+        {job.error && <p className="mt-1 text-xs text-red-600">{job.error}</p>}
       </div>
 
       <div className="flex items-center gap-2">
@@ -248,9 +243,7 @@ function JobRow({ job, onRetry, onDownload }: JobRowProps) {
         )}
 
         {job.status === "running" && (
-          <span className="text-xs font-medium text-gray-500">
-            Processing...
-          </span>
+          <span className="text-xs font-medium text-gray-500">Processing...</span>
         )}
 
         {job.status === "queued" && (

@@ -238,7 +238,7 @@ const SECTION_DETAILS: Record<
 export default function Builder() {
   const { fieldMode } = useTheme();
   const searchParams = useSearchParams();
-  const canEdit = true; // TODO: Wire to actual role check from auth context
+  const _canEdit = true; // TODO: Wire to actual role check from auth context
 
   // Pre-populate from URL params (e.g. ?jobContext=claim:xxx or ?contextId=xxx&contextType=claim)
   const urlContextId = searchParams?.get("contextId") || "";
@@ -280,7 +280,7 @@ export default function Builder() {
   const [exportSuccess, setExportSuccess] = useState<{ claimId?: string } | null>(null);
   const [runningAI, setRunningAI] = useState(false);
   const [currentJobId, setCurrentJobId] = useState<string | null>(null);
-  const [systemError, setSystemError] = useState<string | null>(null);
+  const [systemError, _setSystemError] = useState<string | null>(null);
   const [activeSidePanel, setActiveSidePanel] = useState<SectionKey | null>(null);
 
   // Editable field values for each section (keyed by sectionKey -> fieldName)

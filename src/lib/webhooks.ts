@@ -1,10 +1,7 @@
 import crypto from "crypto";
-import { logger } from "@/lib/logger";
-import { NextResponse } from "next/server";
 
-import { getTenant } from "@/lib/auth/tenant";
-import { getDelegate } from '@/lib/db/modelAliases';
-import prisma from "@/lib/prisma";
+import { getDelegate } from "@/lib/db/modelAliases";
+import { logger } from "@/lib/logger";
 
 import { fetchWithRetry } from "./net/fetchWithRetry";
 // Cast helper to bypass union delegate type limitations for dynamic model names
@@ -38,7 +35,7 @@ export async function triggerWebhooks(
 ) {
   try {
     // Find all active webhooks for this org that are subscribed to this event
-    const webhooks = await delegate('webhooks').findMany({
+    const webhooks = await delegate("webhooks").findMany({
       where: {
         orgId,
         status: "active",
@@ -67,10 +64,7 @@ export async function triggerWebhooks(
     // Log results
     results.forEach((result, index) => {
       if (result.status === "rejected") {
-        console.error(
-          `Webhook ${webhooks[index].id} failed:`,
-          result.reason
-        );
+        console.error(`Webhook ${webhooks[index].id} failed:`, result.reason);
       }
     });
   } catch (error) {
@@ -81,10 +75,7 @@ export async function triggerWebhooks(
 /**
  * Deliver a webhook to a single endpoint with retry logic
  */
-async function deliverWebhook(
-  webhook: any,
-  payload: WebhookPayload
-): Promise<void> {
+async function deliverWebhook(webhook: any, payload: WebhookPayload): Promise<void> {
   const maxRetries = 3;
   let lastError: Error | null = null;
 
@@ -111,14 +102,14 @@ async function deliverWebhook(
       }
 
       // Success - update webhook stats
-      await delegate('webhooks').update({
+      await delegate("webhooks").update({
         where: { id: webhook.id },
         data: {
           lastTriggeredAt: new Date(),
           failureCount: 0, // Reset on success
         },
       });
-          await delegate('webhook_logs').create({
+      await delegate("webhook_logs").create({
         data: {
           webhookId: webhook.id,
           event: payload.event,
@@ -131,16 +122,11 @@ async function deliverWebhook(
       return; // Success - exit
     } catch (error) {
       lastError = error as Error;
-      console.error(
-        `Webhook ${webhook.id} attempt ${attempt} failed:`,
-        error
-      );
+      console.error(`Webhook ${webhook.id} attempt ${attempt} failed:`, error);
 
       // Wait before retry (exponential backoff)
       if (attempt < maxRetries) {
-        await new Promise((resolve) =>
-          setTimeout(resolve, Math.pow(2, attempt) * 1000)
-        );
+        await new Promise((resolve) => setTimeout(resolve, Math.pow(2, attempt) * 1000));
       }
     }
   }
@@ -151,7 +137,7 @@ async function deliverWebhook(
   // Disable webhook after 10 consecutive failures
   const shouldDisable = newFailureCount >= 10;
 
-  await delegate('webhooks').update({
+  await delegate("webhooks").update({
     where: { id: webhook.id },
     data: {
       failureCount: newFailureCount,
@@ -160,7 +146,7 @@ async function deliverWebhook(
   });
 
   // Log failure
-  await delegate('webhook_logs').create({
+  await delegate("webhook_logs").create({
     data: {
       webhookId: webhook.id,
       event: payload.event,
@@ -193,8 +179,5 @@ export function verifyWebhookSignature(
   const hmac = crypto.createHmac("sha256", secret);
   hmac.update(payload);
   const expectedSignature = `sha256=${hmac.digest("hex")}`;
-  return crypto.timingSafeEqual(
-    Buffer.from(signature),
-    Buffer.from(expectedSignature)
-  );
+  return crypto.timingSafeEqual(Buffer.from(signature), Buffer.from(expectedSignature));
 }

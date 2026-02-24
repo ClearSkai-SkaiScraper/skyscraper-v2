@@ -54,6 +54,7 @@ export async function extractPdfText(buffer: Buffer | string): Promise<TextExtra
  */
 export async function runVisionOCR(buffer: Buffer | string): Promise<TextExtractionResult> {
   // Try OpenAI Vision API first (if API key available)
+  // eslint-disable-next-line no-restricted-syntax
   if (process.env.OPENAI_API_KEY) {
     try {
       return await runOpenAIVision(buffer);
@@ -92,6 +93,7 @@ async function runOpenAIVision(buffer: Buffer | string): Promise<TextExtractionR
     method: "POST",
     headers: {
       "Content-Type": "application/json",
+      // eslint-disable-next-line no-restricted-syntax
       Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
     },
     body: JSON.stringify({

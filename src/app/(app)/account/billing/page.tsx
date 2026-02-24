@@ -1,11 +1,12 @@
 "use client";
 
-import { logger } from "@/lib/logger";
 import { useOrganization, useUser } from "@clerk/nextjs";
 import { Clock, CreditCard, ExternalLink, FileText, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+
+import { logger } from "@/lib/logger";
 
 interface BillingData {
   org: {
@@ -56,7 +57,7 @@ function getStatusBadge(status: string | null) {
 }
 
 export default function BillingPage() {
-  const router = useRouter();
+  const _router = useRouter();
   const { isLoaded, isSignedIn } = useUser();
   const { organization } = useOrganization();
   const [loading, setLoading] = useState(true);
@@ -87,7 +88,7 @@ export default function BillingPage() {
       }
     };
 
-    fetchBillingData();
+    void fetchBillingData();
   }, [organization]);
 
   if (!isLoaded) {

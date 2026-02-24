@@ -46,7 +46,7 @@ export default function RebuttalBuilderPage() {
       const data = await response.json();
       setGeneratedRebuttal(data.letter || data.rebuttal || data.content || "");
       toast.success("Rebuttal generated successfully!");
-    } catch (error) {
+    } catch {
       toast.error("Failed to generate rebuttal. Please try again.");
     } finally {
       setIsGenerating(false);
@@ -80,7 +80,7 @@ export default function RebuttalBuilderPage() {
       document.body.removeChild(a);
 
       toast.success("PDF exported successfully!");
-    } catch (error) {
+    } catch {
       toast.error("Failed to export PDF");
     } finally {
       setIsExporting(false);

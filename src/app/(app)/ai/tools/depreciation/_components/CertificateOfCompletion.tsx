@@ -39,7 +39,7 @@ interface CertificateOfCompletionProps {
 }
 
 export function CertificateOfCompletion({
-  claimId,
+  claimId: _claimId,
   claimNumber,
   propertyOwner,
   propertyAddress,

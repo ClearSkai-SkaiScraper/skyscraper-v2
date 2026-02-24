@@ -7,8 +7,8 @@
  * Accepts:
  *   { claimId, orgTemplateId, template?, sections?, addOns?, inputs?, aiNotes? }
  *
- * Delegates to /api/reports/actions with action: "generate_from_template"
- * or creates a basic report if no template system is set up.
+ * Pipeline: create DB record → render PDF via orchestrator → upload to
+ * Supabase Storage → persist pdfUrl back on the report row.
  */
 
 export const runtime = "nodejs";
@@ -19,6 +19,9 @@ import { NextRequest, NextResponse } from "next/server";
 import { withAuth } from "@/lib/auth/withAuth";
 import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
+import { uploadPdf } from "@/lib/storage/uploadPdf";
+import { exportReport } from "@/modules/reports/export/orchestrator";
+import type { ReportContext, SectionKey } from "@/modules/reports/types";
 
 export const POST = withAuth(async (req: NextRequest, { orgId, userId }) => {
   try {
@@ -103,10 +106,109 @@ export const POST = withAuth(async (req: NextRequest, { orgId, userId }) => {
       });
     }
 
+    // ── Build ReportContext from claim + org branding ─────────────────────
+    const branding = await prisma.org_branding.findUnique({ where: { orgId } });
+    const dbUserFull = await prisma.users.findFirst({
+      where: { id: dbUser.id },
+      select: { name: true, email: true },
+    });
+
+    const propertyAddress = claim.properties
+      ? [
+          claim.properties.street,
+          claim.properties.city,
+          claim.properties.state,
+          claim.properties.zipCode,
+        ]
+          .filter(Boolean)
+          .join(", ")
+      : "N/A";
+
+    const reportContext: ReportContext = {
+      reportId: report.id,
+      orgId,
+      userId,
+      userName: dbUserFull?.name || "Unknown",
+      branding: {
+        companyName: branding?.companyName || "SkaiScraper",
+        brandColor: branding?.colorPrimary || "#117CFF",
+        accentColor: branding?.colorAccent || "#FFC838",
+        logoUrl: branding?.logoUrl || undefined,
+        licenseNumber: branding?.license || undefined,
+        phone: branding?.phone || "",
+        email: branding?.email || "",
+        website: branding?.website || undefined,
+      },
+      metadata: {
+        reportId: report.id,
+        claimNumber: claim.claimNumber,
+        policyNumber: claim.policy_number || undefined,
+        dateOfLoss: claim.dateOfLoss?.toISOString().split("T")[0],
+        adjusterName: claim.adjusterName || undefined,
+        propertyAddress,
+        clientName: claim.insured_name || claim.title || "Homeowner",
+        carrierName: claim.carrier || undefined,
+        preparedBy: dbUserFull?.name || "SkaiScraper",
+        submittedDate: new Date().toISOString().split("T")[0],
+      },
+    };
+
+    // Determine which sections to render
+    const defaultSections: SectionKey[] = ["cover", "executive-summary", "scope-matrix"];
+    const sectionKeys: SectionKey[] =
+      (sections && sections.length > 0 ? sections : null) ||
+      (addOns && addOns.length > 0 ? addOns : null) ||
+      defaultSections;
+
+    // ── Generate PDF via orchestrator ────────────────────────────────────
+    const exportResult = await exportReport({
+      reportId: report.id,
+      userId,
+      format: "pdf",
+      sections: sectionKeys,
+      context: reportContext,
+    });
+
+    if (!exportResult.success || !exportResult.buffer) {
+      logger.error("[POST /api/reports/generate] PDF generation failed:", exportResult.error);
+      // Still return the report ID — user can retry PDF later
+      return NextResponse.json({
+        ok: true,
+        reportId: report.id,
+        message: "Report record created but PDF generation failed",
+        pdfError: exportResult.error || "Unknown error",
+        redirectUrl: `/reports/history`,
+      });
+    }
+
+    // ── Upload PDF to Supabase Storage ───────────────────────────────────
+    let pdfUrl: string | null = null;
+    try {
+      const storagePath = `${orgId}/reports/${report.id}.pdf`;
+      const uploadResult = await uploadPdf({
+        buffer: exportResult.buffer,
+        path: storagePath,
+        orgId,
+      });
+      pdfUrl = uploadResult.url;
+    } catch (uploadErr) {
+      logger.error("[POST /api/reports/generate] PDF upload failed:", uploadErr);
+      // Non-fatal — report record still exists
+    }
+
+    // ── Persist pdfUrl back on the report row ────────────────────────────
+    if (pdfUrl) {
+      await prisma.reports.update({
+        where: { id: report.id },
+        data: { pdfUrl, updatedAt: new Date() },
+      });
+    }
+
     return NextResponse.json({
       ok: true,
       reportId: report.id,
-      message: "Report created successfully",
+      pdfUrl,
+      message: pdfUrl ? "Report generated successfully" : "Report created (PDF upload pending)",
       redirectUrl: `/reports/history`,
     });
   } catch (error) {

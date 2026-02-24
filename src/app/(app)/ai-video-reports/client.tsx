@@ -22,7 +22,7 @@ interface Claim {
 }
 
 export default function VideoReportsClient() {
-  const router = useRouter();
+  const _router = useRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [videos, setVideos] = useState<VideoItem[]>([]);
@@ -49,7 +49,7 @@ export default function VideoReportsClient() {
         setLoadingClaims(false);
       }
     }
-    fetchClaims();
+    void fetchClaims();
   }, []);
 
   // Cleanup preview URLs on unmount

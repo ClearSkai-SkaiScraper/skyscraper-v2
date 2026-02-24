@@ -5,7 +5,7 @@
 // ============================================================================
 // Auto-saves draft state every 5 seconds or on blur
 
-import { useCallback,useEffect, useRef } from "react";
+import { useCallback, useEffect, useRef } from "react";
 import { useDebounce } from "use-debounce";
 
 interface AutosaveOptions {
@@ -68,7 +68,7 @@ export function useAutosave({
   // Auto-save on data change (debounced)
   useEffect(() => {
     if (enabled && debouncedData) {
-      saveDraft(debouncedData);
+      void saveDraft(debouncedData);
     }
   }, [debouncedData, enabled, saveDraft]);
 
@@ -77,7 +77,7 @@ export function useAutosave({
     return () => {
       if (enabled && data) {
         // Immediate save without debounce
-        saveDraft(data);
+        void saveDraft(data);
       }
     };
   }, []);

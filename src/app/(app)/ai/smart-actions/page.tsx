@@ -120,7 +120,7 @@ export default function SmartActionsPage() {
 
   useEffect(() => {
     if (!isLoaded || !isSignedIn) return;
-    fetchActions();
+    void fetchActions();
   }, [isLoaded, isSignedIn]);
 
   if (!isLoaded || !isSignedIn) {

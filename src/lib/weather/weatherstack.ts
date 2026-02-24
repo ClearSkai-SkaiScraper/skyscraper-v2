@@ -1,8 +1,11 @@
 import "server-only";
+
 import { logger } from "@/lib/logger";
 
 // Visual Crossing is the primary provider (Weatherstack hit usage limit)
+// eslint-disable-next-line no-restricted-syntax
 const VISUALCROSSING_API_KEY = process.env.VISUALCROSSING_API_KEY;
+// eslint-disable-next-line no-restricted-syntax
 const WEATHERSTACK_API_KEY = process.env.WEATHERSTACK_API_KEY || process.env.WEATHER_STACK_API_KEY;
 
 if (!VISUALCROSSING_API_KEY && !WEATHERSTACK_API_KEY) {

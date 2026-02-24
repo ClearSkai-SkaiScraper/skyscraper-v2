@@ -5,15 +5,7 @@
 // ============================================================================
 // Grid/list view with upload, delete, tag, and drag-to-group
 
-import {
-  Download,
-  Grid,
-  List,
-  Loader2,
-  Tag,
-  Trash2,
-  Upload,
-} from "lucide-react";
+import { Grid, List, Loader2, Trash2, Upload } from "lucide-react";
 import Image from "next/image";
 import { useState } from "react";
 
@@ -111,9 +103,7 @@ export default function PhotoManager({ reportId }: PhotoManagerProps) {
         body: JSON.stringify({ category }),
       });
 
-      setPhotos((prev) =>
-        prev.map((p) => (p.id === photoId ? { ...p, category } : p))
-      );
+      setPhotos((prev) => prev.map((p) => (p.id === photoId ? { ...p, category } : p)));
     } catch (error) {
       console.error("[Photo Update]", error);
     }
@@ -121,9 +111,7 @@ export default function PhotoManager({ reportId }: PhotoManagerProps) {
 
   const toggleSelection = (photoId: string) => {
     setSelectedPhotos((prev) =>
-      prev.includes(photoId)
-        ? prev.filter((id) => id !== photoId)
-        : [...prev, photoId]
+      prev.includes(photoId) ? prev.filter((id) => id !== photoId) : [...prev, photoId]
     );
   };
 
@@ -132,9 +120,7 @@ export default function PhotoManager({ reportId }: PhotoManagerProps) {
       {/* Header */}
       <div className="flex items-center justify-between border-b border-gray-200 bg-white px-6 py-4">
         <div>
-          <h2 className="text-xl font-semibold text-gray-900">
-            Photo Manager
-          </h2>
+          <h2 className="text-xl font-semibold text-gray-900">Photo Manager</h2>
           <p className="mt-1 text-sm text-gray-600">
             {photos.length} photo{photos.length !== 1 ? "s" : ""}
             {selectedPhotos.length > 0 && (
@@ -151,9 +137,7 @@ export default function PhotoManager({ reportId }: PhotoManagerProps) {
             <button
               onClick={() => setViewMode("grid")}
               className={`rounded p-2 ${
-                viewMode === "grid"
-                  ? "bg-white text-gray-900 shadow"
-                  : "text-gray-600"
+                viewMode === "grid" ? "bg-white text-gray-900 shadow" : "text-gray-600"
               }`}
               title="Grid view"
             >
@@ -162,9 +146,7 @@ export default function PhotoManager({ reportId }: PhotoManagerProps) {
             <button
               onClick={() => setViewMode("list")}
               className={`rounded p-2 ${
-                viewMode === "list"
-                  ? "bg-white text-gray-900 shadow"
-                  : "text-gray-600"
+                viewMode === "list" ? "bg-white text-gray-900 shadow" : "text-gray-600"
               }`}
               title="List view"
             >
@@ -210,9 +192,7 @@ export default function PhotoManager({ reportId }: PhotoManagerProps) {
           <div className="flex flex-col items-center justify-center py-12 text-center">
             <Upload className="mb-3 h-12 w-12 text-gray-400" />
             <p className="font-medium text-gray-600">No photos yet</p>
-            <p className="mt-1 text-sm text-gray-500">
-              Upload photos to get started
-            </p>
+            <p className="mt-1 text-sm text-gray-500">Upload photos to get started</p>
           </div>
         )}
 
@@ -242,7 +222,7 @@ export default function PhotoManager({ reportId }: PhotoManagerProps) {
                     value={photo.category || ""}
                     onChange={(e) => {
                       e.stopPropagation();
-                      handleCategoryChange(photo.id, e.target.value);
+                      void handleCategoryChange(photo.id, e.target.value);
                     }}
                     className="w-full rounded border border-gray-300 px-2 py-1 text-xs"
                     onClick={(e) => e.stopPropagation()}
@@ -263,10 +243,7 @@ export default function PhotoManager({ reportId }: PhotoManagerProps) {
         {!uploading && photos.length > 0 && viewMode === "list" && (
           <div className="divide-y divide-gray-200 rounded-lg border border-gray-200 bg-white">
             {photos.map((photo) => (
-              <div
-                key={photo.id}
-                className="flex items-center gap-4 p-4 hover:bg-gray-50"
-              >
+              <div key={photo.id} className="flex items-center gap-4 p-4 hover:bg-gray-50">
                 <input
                   type="checkbox"
                   checked={selectedPhotos.includes(photo.id)}

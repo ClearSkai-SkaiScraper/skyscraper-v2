@@ -205,7 +205,7 @@ export default function BadFaithDetectorPage() {
     function onKey(e: KeyboardEvent) {
       if (e.metaKey && e.shiftKey && e.key.toLowerCase() === "b") {
         e.preventDefault();
-        if (!loading) handleAnalyze(forceRefresh);
+        if (!loading) void handleAnalyze(forceRefresh);
       }
     }
     window.addEventListener("keydown", onKey);

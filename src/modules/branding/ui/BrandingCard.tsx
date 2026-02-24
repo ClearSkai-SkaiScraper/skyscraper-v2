@@ -25,7 +25,7 @@ export function BrandingCard() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    loadBrandingStatus();
+    void loadBrandingStatus();
   }, []);
 
   async function loadBrandingStatus() {

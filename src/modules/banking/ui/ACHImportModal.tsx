@@ -16,7 +16,7 @@ interface PaymentWithMatch extends ACHPayment {
   matchCandidates?: JobMatchCandidate[];
 }
 
-export function ACHImportModal({ orgId, onClose, onImportComplete }: ACHImportModalProps) {
+export function ACHImportModal({ orgId: _orgId, onClose, onImportComplete }: ACHImportModalProps) {
   const [step, setStep] = useState<"upload" | "preview" | "processing">("upload");
   const [file, setFile] = useState<File | null>(null);
   const [csvContent, setCsvContent] = useState<string>("");

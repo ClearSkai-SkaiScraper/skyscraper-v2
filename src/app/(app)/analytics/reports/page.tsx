@@ -77,7 +77,7 @@ export default async function ReportAnalyticsPage() {
   const thirtyDaysAgo = new Date();
   thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
-  const reportsOverTime = await guarded(
+  const _reportsOverTime = await guarded(
     "reports-analytics-over-time",
     () =>
       getDelegate("reportRecord").groupBy({

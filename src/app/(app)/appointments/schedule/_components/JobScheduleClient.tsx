@@ -147,7 +147,11 @@ interface JobScheduleClientProps {
   };
 }
 
-export function JobScheduleClient({ orgId, userId, prefillData }: JobScheduleClientProps) {
+export function JobScheduleClient({
+  orgId: _orgId,
+  userId: _userId,
+  prefillData,
+}: JobScheduleClientProps) {
   const [jobs, setJobs] = useState<ScheduledJob[]>([]);
   const [loading, setLoading] = useState(true);
   const [viewMode, setViewMode] = useState<"calendar" | "list">("calendar");
@@ -190,7 +194,7 @@ export function JobScheduleClient({ orgId, userId, prefillData }: JobScheduleCli
   // Load dropdown data when dialog opens
   useEffect(() => {
     if (isNewJobDialogOpen) {
-      loadDropdownData();
+      void loadDropdownData();
     }
   }, [isNewJobDialogOpen]);
 
@@ -273,7 +277,7 @@ export function JobScheduleClient({ orgId, userId, prefillData }: JobScheduleCli
   };
 
   useEffect(() => {
-    fetchJobs();
+    void fetchJobs();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filter, selectedDate]);
 
@@ -383,7 +387,7 @@ export function JobScheduleClient({ orgId, userId, prefillData }: JobScheduleCli
 
         toast.success("Job scheduled successfully");
         setIsNewJobDialogOpen(false);
-        fetchJobs();
+        void fetchJobs();
         // Reset form with all fields
         setNewJob({
           title: "",

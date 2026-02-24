@@ -5,7 +5,7 @@
 // ============================================================================
 // Preset templates for Roofing, Mitigation, Full Restoration
 
-import { BookOpen,Check, FileText } from "lucide-react";
+import { BookOpen, Check } from "lucide-react";
 import { useState } from "react";
 
 import TemplateLibrary from "@/modules/templates/ui/TemplateLibrary";
@@ -108,9 +108,7 @@ export default function TemplatesMenu({
       <div className="mx-4 max-h-[80vh] w-full max-w-2xl overflow-auto rounded-lg bg-white shadow-xl">
         {/* Header */}
         <div className="border-b border-gray-200 px-6 py-4">
-          <h3 className="text-lg font-semibold text-gray-900">
-            Choose Template
-          </h3>
+          <h3 className="text-lg font-semibold text-gray-900">Choose Template</h3>
           <p className="mt-1 text-sm text-gray-600">
             Select a preset to quickly configure your report sections
           </p>
@@ -125,17 +123,11 @@ export default function TemplatesMenu({
               className="flex flex-col items-start rounded-lg border-2 border-gray-200 p-4 text-left transition-all hover:border-blue-600 hover:bg-blue-50"
             >
               <div className="mb-2 flex items-center gap-3">
-                {template.icon && (
-                  <span className="text-2xl">{template.icon}</span>
-                )}
-                <h4 className="font-semibold text-gray-900">
-                  {template.name}
-                </h4>
+                {template.icon && <span className="text-2xl">{template.icon}</span>}
+                <h4 className="font-semibold text-gray-900">{template.name}</h4>
               </div>
 
-              <p className="mb-3 text-sm text-gray-600">
-                {template.description}
-              </p>
+              <p className="mb-3 text-sm text-gray-600">{template.description}</p>
 
               <div className="flex items-center gap-1 text-xs text-gray-500">
                 <Check className="h-3 w-3" />

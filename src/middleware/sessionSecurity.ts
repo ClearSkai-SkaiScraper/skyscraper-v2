@@ -218,7 +218,7 @@ export function withSession() {
 export function getUserSessions(userId: string): SessionData[] {
   const sessions: SessionData[] = [];
 
-  for (const [sessionId, session] of sessionStore.entries()) {
+  for (const [_sessionId, session] of sessionStore.entries()) {
     if (session.userId === userId) {
       sessions.push(session);
     }

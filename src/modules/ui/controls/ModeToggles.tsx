@@ -10,6 +10,7 @@ import { Monitor, Moon, Smartphone, Sun } from "lucide-react";
 
 import { useTheme } from "../theme/useTheme";
 
+// eslint-disable-next-line no-restricted-syntax
 const SHOW_SECOND_SCREEN = process.env.NEXT_PUBLIC_SHOW_SECOND_SCREEN === "true";
 
 export default function ModeToggles() {

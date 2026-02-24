@@ -95,7 +95,7 @@ export default function SupplementBuilderPage() {
       document.body.removeChild(a);
 
       toast.success("PDF exported successfully!");
-    } catch (error) {
+    } catch {
       toast.error("Failed to export PDF");
     } finally {
       setIsExporting(false);

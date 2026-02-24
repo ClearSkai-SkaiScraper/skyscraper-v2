@@ -1,14 +1,14 @@
-'use client';
+"use client";
 
 // ============================================================================
 // CARRIER PICKER - Phase 5 Feature 4: Carrier Presets Dropdown + Depreciation Modal
 // ============================================================================
 
-import { useEffect,useState } from 'react';
+import { useEffect, useState } from "react";
 
-import { audit } from '@/lib/audit';
-import { CARRIERS, getCarrierById } from '@/lib/carriers';
-import { DepreciationModal, type DepreciationValues } from '@/modules/exports/ui/DepreciationModal';
+import { audit } from "@/lib/audit";
+import { getCarrierById } from "@/lib/carriers";
+import { DepreciationModal, type DepreciationValues } from "@/modules/exports/ui/DepreciationModal";
 
 interface CarrierPickerProps {
   onSelect: (preset: any) => void;
@@ -35,14 +35,14 @@ export default function CarrierPicker({
   const [carrierName, setCarrierName] = useState<string | undefined>();
 
   useEffect(() => {
-    fetch('/api/carriers/presets')
+    fetch("/api/carriers/presets")
       .then((r) => r.json())
       .then((data) => {
         setPresets(data.presets || []);
         setLoading(false);
       })
       .catch((err) => {
-        console.error('[CarrierPicker] Load failed:', err);
+        console.error("[CarrierPicker] Load failed:", err);
         setLoading(false);
       });
   }, []);
@@ -50,15 +50,15 @@ export default function CarrierPicker({
   const handleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const carrierId = e.target.value;
     const preset = presets.find((p) => p.id === carrierId);
-    
+
     if (preset) {
       onSelect(preset);
-      
+
       // Get carrier info from static list
       const carrier = getCarrierById(carrierId);
       if (carrier) {
         setCarrierName(carrier.name);
-        
+
         // Open depreciation modal if carrier has depreciation logic
         if (carrier.terms.hasDep) {
           setDepOpen(true);
@@ -70,10 +70,10 @@ export default function CarrierPicker({
   const handleDepreciationSave = (values: DepreciationValues) => {
     // Update parent component
     onDepreciationChange?.(values);
-    
+
     // Log audit event
-    audit({
-      action: 'CARRIER_DEPRECIATION_SET',
+    void audit({
+      action: "CARRIER_DEPRECIATION_SET",
       orgId,
       jobId,
       userName,
@@ -88,9 +88,7 @@ export default function CarrierPicker({
   };
 
   if (loading) {
-    return (
-      <div className="text-sm text-gray-500">Loading carriers...</div>
-    );
+    return <div className="text-sm text-gray-500">Loading carriers...</div>;
   }
 
   return (
@@ -100,7 +98,7 @@ export default function CarrierPicker({
           Insurance Carrier (Optional)
         </label>
         <select
-          value={selectedCarrierId || ''}
+          value={selectedCarrierId || ""}
           onChange={handleChange}
           className="w-full rounded border border-gray-300 px-3 py-2 text-sm"
         >
@@ -112,8 +110,8 @@ export default function CarrierPicker({
           ))}
         </select>
         <div className="mt-1 text-xs text-gray-500">
-          Selecting a carrier will automatically adjust depreciation terminology
-          and email phrasing to match their preferences.
+          Selecting a carrier will automatically adjust depreciation terminology and email phrasing
+          to match their preferences.
         </div>
       </div>
 

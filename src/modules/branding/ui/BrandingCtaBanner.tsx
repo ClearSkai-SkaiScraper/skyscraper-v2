@@ -15,7 +15,7 @@ export function BrandingCtaBanner() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    checkBrandingStatus();
+    void checkBrandingStatus();
 
     // Also check if branding-complete class was added by BrandingProvider
     const checkInterval = setInterval(() => {

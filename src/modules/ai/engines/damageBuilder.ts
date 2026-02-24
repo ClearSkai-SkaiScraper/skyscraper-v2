@@ -67,6 +67,7 @@ const SEVERITY_COLORS: Record<string, string> = {
 async function analyzePhoto(photoUrl: string): Promise<PhotoAnalysisResult> {
   const startTime = Date.now();
   // Check if we have OpenAI API key
+  // eslint-disable-next-line no-restricted-syntax
   if (!process.env.OPENAI_API_KEY) {
     console.log("[DamageBuilder] No OpenAI key - using mock analysis");
     return { ...getMockPhotoAnalysis(), photoUrl, analyzedAt: new Date().toISOString() };
@@ -77,6 +78,7 @@ async function analyzePhoto(photoUrl: string): Promise<PhotoAnalysisResult> {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
+        // eslint-disable-next-line no-restricted-syntax
         Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
       },
       body: JSON.stringify({

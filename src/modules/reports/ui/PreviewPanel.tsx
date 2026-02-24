@@ -6,7 +6,7 @@
 // Live PDF preview with iframe or blob URL
 
 import { Download, Eye, EyeOff, Loader2 } from "lucide-react";
-import { useEffect,useState } from "react";
+import { useEffect, useState } from "react";
 
 import type { SectionKey } from "../types";
 
@@ -30,7 +30,7 @@ export default function PreviewPanel({
   useEffect(() => {
     // Auto-regenerate preview when sections change
     if (sections.length > 0) {
-      generatePreview();
+      void generatePreview();
     }
   }, [sections, showAIMarkers]);
 
@@ -90,9 +90,7 @@ export default function PreviewPanel({
           <button
             onClick={onToggleMarkers}
             className={`flex items-center gap-2 rounded px-3 py-1.5 text-sm font-medium ${
-              showAIMarkers
-                ? "bg-yellow-100 text-yellow-700"
-                : "bg-gray-100 text-gray-600"
+              showAIMarkers ? "bg-yellow-100 text-yellow-700" : "bg-gray-100 text-gray-600"
             }`}
             title={showAIMarkers ? "Hide AI markers" : "Show AI markers"}
           >
@@ -152,19 +150,13 @@ export default function PreviewPanel({
           <div className="absolute inset-0 flex items-center justify-center bg-white">
             <div className="px-4 text-center">
               <p className="mb-2 text-gray-600">No preview available</p>
-              <p className="text-sm text-gray-500">
-                Select sections to generate preview
-              </p>
+              <p className="text-sm text-gray-500">Select sections to generate preview</p>
             </div>
           </div>
         )}
 
         {previewUrl && !loading && !error && (
-          <iframe
-            src={previewUrl}
-            className="h-full w-full border-0"
-            title="PDF Preview"
-          />
+          <iframe src={previewUrl} className="h-full w-full border-0" title="PDF Preview" />
         )}
       </div>
     </div>

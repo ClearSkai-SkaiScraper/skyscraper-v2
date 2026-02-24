@@ -122,7 +122,7 @@ ${formData.documents || "No additional documents provided."}
     }
   };
 
-  const generateMaterialsList = (trade: string, jobType: string) => {
+  const generateMaterialsList = (trade: string, _jobType: string) => {
     const materials: Record<string, string> = {
       roofing:
         "- Shingles/roofing material\n- Underlayment\n- Fasteners and nails\n- Ridge cap\n- Ventilation components",
@@ -145,6 +145,7 @@ ${formData.documents || "No additional documents provided."}
     return materials[trade] || "- Materials to be determined based on project scope";
   };
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const generateCostEstimate = (trade: string, jobType: string, budget: string) => {
     if (budget) {
       return `Estimated Budget: ${budget}\n- Labor: ~40-50% of total\n- Materials: ~40-50% of total\n- Permits & Fees: ~5-10% of total`;
@@ -152,11 +153,11 @@ ${formData.documents || "No additional documents provided."}
     return `Budget not specified. Typical ${trade} ${jobType} projects vary widely based on scope and location.`;
   };
 
-  const generateMilestones = (trade: string, jobType: string) => {
+  const generateMilestones = (_trade: string, _jobType: string) => {
     return "Site prep, material delivery, main work execution, inspection, completion";
   };
 
-  const getPitchDegrees = (pitch: string) => {
+  const _getPitchDegrees = (pitch: string) => {
     const pitchMap: Record<string, number> = {
       "2-12": 9.5,
       "4-12": 18.4,

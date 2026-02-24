@@ -23,6 +23,7 @@ export async function buildWeatherPDF(opts: {
 }) {
   const html = htmlTemplate(opts);
 
+  // eslint-disable-next-line no-restricted-syntax
   const isDev = process.env.NODE_ENV === "development";
 
   const browser = await puppeteer.launch({

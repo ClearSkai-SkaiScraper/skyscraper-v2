@@ -6,10 +6,11 @@
 "use client";
 
 import useSWR from "swr";
+
 import type {
   AIJob,
-  AISectionState,
   AISectionKey,
+  AISectionState,
   AIUsageSummary,
 } from "../types";
 

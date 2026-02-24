@@ -5,17 +5,14 @@
 // ============================================================================
 // Combines DragBuilder, PreviewPanel, AI controls, templates, autosave
 
-import { Download, Eye, Layout, Sparkles } from "lucide-react";
-import { useEffect,useState } from "react";
+import { Download, Eye, Sparkles } from "lucide-react";
+import { useState } from "react";
 
-import { approveFields,runAI } from "@/modules/ai/core/hooks";
+import { approveFields, runAI } from "@/modules/ai/core/hooks";
 import { useAutosave } from "@/modules/state/core/useAutosave";
-import {
-  ResumeModal,
-  useReportDraft,
-} from "@/modules/state/core/useReportDraft";
+import { ResumeModal, useReportDraft } from "@/modules/state/core/useReportDraft";
 
-import type { ExportFormat,SectionKey } from "../types";
+import type { ExportFormat, SectionKey } from "../types";
 import DragBuilder from "./DragBuilder";
 import PreviewPanel from "./PreviewPanel";
 import RightPanel from "./RightPanel";
@@ -35,8 +32,7 @@ const DEFAULT_SECTIONS: SectionKey[] = [
 export default function EnhancedBuilder() {
   const reportId = "demo-report-001";
 
-  const [selectedSections, setSelectedSections] =
-    useState<SectionKey[]>(DEFAULT_SECTIONS);
+  const [selectedSections, setSelectedSections] = useState<SectionKey[]>(DEFAULT_SECTIONS);
   const [exportFormat, setExportFormat] = useState<ExportFormat>("pdf");
   const [showPreview, setShowPreview] = useState(false);
   const [showAIMarkers, setShowAIMarkers] = useState(true);
@@ -45,18 +41,17 @@ export default function EnhancedBuilder() {
   const [error, setError] = useState<string | null>(null);
 
   // Draft management
-  const { showResumeModal, draft, resumeDraft, startFresh, dismissModal } =
-    useReportDraft({
-      reportId,
-      onResume: (draftData) => {
-        if (draftData.selectedSections) {
-          setSelectedSections(draftData.selectedSections as SectionKey[]);
-        }
-      },
-    });
+  const { showResumeModal, draft, resumeDraft, startFresh, dismissModal } = useReportDraft({
+    reportId,
+    onResume: (draftData) => {
+      if (draftData.selectedSections) {
+        setSelectedSections(draftData.selectedSections as SectionKey[]);
+      }
+    },
+  });
 
   // Autosave
-  const { saveDraft } = useAutosave({
+  const { saveDraft: _saveDraft } = useAutosave({
     reportId,
     data: {
       selectedSections,
@@ -132,9 +127,7 @@ export default function EnhancedBuilder() {
           <div className="border-b border-gray-200 bg-white px-6 py-4">
             <div className="flex items-center justify-between">
               <div>
-                <h1 className="text-2xl font-bold text-gray-900">
-                  Universal Contractor Packet
-                </h1>
+                <h1 className="text-2xl font-bold text-gray-900">Universal Contractor Packet</h1>
                 <p className="mt-1 text-sm text-gray-600">
                   Build, preview, and export professional reports
                 </p>
