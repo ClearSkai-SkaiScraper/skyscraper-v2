@@ -1,10 +1,10 @@
-import { auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 
 import { PageContainer } from "@/components/layout/PageContainer";
 import { PageHero } from "@/components/layout/PageHero";
 import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
+import { safeOrgContext } from "@/lib/safeOrgContext";
 
 import { ProposalCreationForm } from "./_components/ProposalCreationForm";
 import { ProposalList } from "./_components/ProposalList";
@@ -17,11 +17,10 @@ export const metadata = {
 };
 
 export default async function ProposalEnginePage() {
-  const { userId, orgId } = await auth();
-
-  if (!userId || !orgId) {
-    redirect("/sign-in");
-  }
+  const ctx = await safeOrgContext();
+  if (ctx.status === "unauthenticated") redirect("/sign-in");
+  if (ctx.status !== "ok" || !ctx.orgId) redirect("/dashboard");
+  const orgId = ctx.orgId!;
 
   // Fetch templates for picker
   const templates = await prisma.report_templates

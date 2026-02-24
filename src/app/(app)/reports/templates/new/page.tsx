@@ -1,14 +1,13 @@
-import { auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
+
+import { safeOrgContext } from "@/lib/safeOrgContext";
 
 import { TemplateEditor } from "../_components/TemplateEditor";
 
 export default async function NewTemplatePage() {
-  const { userId, orgId } = await auth();
+  const ctx = await safeOrgContext();
+  if (ctx.status === "unauthenticated" || !ctx.userId) redirect("/sign-in");
+  if (ctx.status !== "ok" || !ctx.orgId) redirect("/dashboard");
 
-  if (!userId || !orgId) {
-    redirect("/sign-in");
-  }
-
-  return <TemplateEditor orgId={orgId} userId={userId} />;
+  return <TemplateEditor orgId={ctx.orgId} userId={ctx.userId} />;
 }

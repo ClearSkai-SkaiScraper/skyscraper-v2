@@ -1,18 +1,18 @@
 // src/app/(app)/exports/supplements/[supplementId]/homeowner/page.tsx
-import { auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 
 import { buildSupplementHomeownerPayload } from "@/lib/export/payloads";
+import { safeOrgContext } from "@/lib/safeOrgContext";
 
 type PageProps = { params: { supplementId: string } };
 
 export default async function SupplementHomeownerPage({ params }: PageProps) {
-  const { userId, orgId } = await auth();
-  if (!userId) redirect("/sign-in");
+  const ctx = await safeOrgContext();
+  if (ctx.status === "unauthenticated") redirect("/sign-in");
 
   const supplementId = params.supplementId;
 
-  const summary = await buildSupplementHomeownerPayload(supplementId, orgId ?? null);
+  const summary = await buildSupplementHomeownerPayload(supplementId, ctx.orgId ?? null);
 
   const {
     claim,

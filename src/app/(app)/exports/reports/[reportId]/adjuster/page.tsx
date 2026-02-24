@@ -1,18 +1,18 @@
 // src/app/(app)/exports/reports/[reportId]/adjuster/page.tsx
-import { auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 
 import { buildReportAdjusterPayload } from "@/lib/export/payloads";
+import { safeOrgContext } from "@/lib/safeOrgContext";
 
 type PageProps = { params: { reportId: string } };
 
 export default async function AdjusterPacketPage({ params }: PageProps) {
-  const { userId, orgId } = await auth();
-  if (!userId) redirect("/sign-in");
+  const ctx = await safeOrgContext();
+  if (ctx.status === "unauthenticated") redirect("/sign-in");
 
   const reportId = params.reportId;
 
-  const payload = await buildReportAdjusterPayload(reportId, orgId ?? null);
+  const payload = await buildReportAdjusterPayload(reportId, ctx.orgId ?? null);
 
   const { claim, report, damageAssessments, weatherReports, estimates, supplements, scopes } =
     payload;

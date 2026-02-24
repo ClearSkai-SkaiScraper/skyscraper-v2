@@ -126,7 +126,8 @@ export default function PermitDetailPage() {
       });
       if (!res.ok) throw new Error("Failed to update");
       toast.success("Permit updated successfully");
-      fetchPermit(); // refresh
+      router.refresh(); // invalidate Router Cache so list page shows updated values
+      fetchPermit(); // refresh detail view
     } catch {
       toast.error("Failed to save permit");
     } finally {

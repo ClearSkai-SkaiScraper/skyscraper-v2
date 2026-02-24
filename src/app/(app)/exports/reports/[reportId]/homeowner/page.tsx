@@ -1,18 +1,18 @@
 // src/app/(app)/exports/reports/[reportId]/homeowner/page.tsx
-import { auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 
 import { buildHomeownerSummaryPayload } from "@/lib/export/payloads";
+import { safeOrgContext } from "@/lib/safeOrgContext";
 
 type PageProps = { params: { reportId: string } };
 
 export default async function HomeownerSummaryPage({ params }: PageProps) {
-  const { userId, orgId } = await auth();
-  if (!userId) redirect("/sign-in");
+  const ctx = await safeOrgContext();
+  if (ctx.status === "unauthenticated") redirect("/sign-in");
 
   const reportId = params.reportId;
 
-  const summary = await buildHomeownerSummaryPayload(reportId, orgId ?? null);
+  const summary = await buildHomeownerSummaryPayload(reportId, ctx.orgId ?? null);
 
   const { claim } = summary;
 

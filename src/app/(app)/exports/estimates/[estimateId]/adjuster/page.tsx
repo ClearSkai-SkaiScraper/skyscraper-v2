@@ -1,18 +1,18 @@
 // src/app/(app)/exports/estimates/[estimateId]/adjuster/page.tsx
-import { auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 
 import { buildEstimatePacketPayload } from "@/lib/export/payloads";
+import { safeOrgContext } from "@/lib/safeOrgContext";
 
 type PageProps = { params: { estimateId: string } };
 
 export default async function EstimateAdjusterPacketPage({ params }: PageProps) {
-  const { userId, orgId } = await auth();
-  if (!userId) redirect("/sign-in");
+  const ctx = await safeOrgContext();
+  if (ctx.status === "unauthenticated") redirect("/sign-in");
 
   const estimateId = params.estimateId;
 
-  const payload = await buildEstimatePacketPayload(estimateId, orgId ?? null);
+  const payload = await buildEstimatePacketPayload(estimateId, ctx.orgId ?? null);
   const {
     claim,
     estimates: estimate,

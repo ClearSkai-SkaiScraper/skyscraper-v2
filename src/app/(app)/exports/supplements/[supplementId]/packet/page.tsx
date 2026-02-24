@@ -1,18 +1,18 @@
 // src/app/(app)/exports/supplements/[supplementId]/packet/page.tsx
-import { auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 
 import { buildSupplementPacketPayload } from "@/lib/export/payloads";
+import { safeOrgContext } from "@/lib/safeOrgContext";
 
 type PageProps = { params: { supplementId: string } };
 
 export default async function SupplementPacketPage({ params }: PageProps) {
-  const { userId, orgId } = await auth();
-  if (!userId) redirect("/sign-in");
+  const ctx = await safeOrgContext();
+  if (ctx.status === "unauthenticated") redirect("/sign-in");
 
   const supplementId = params.supplementId;
 
-  const payload = await buildSupplementPacketPayload(supplementId, orgId ?? null);
+  const payload = await buildSupplementPacketPayload(supplementId, ctx.orgId ?? null);
   const {
     claim,
     supplements: supplement,
