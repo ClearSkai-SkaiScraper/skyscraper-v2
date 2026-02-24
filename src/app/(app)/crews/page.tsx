@@ -115,7 +115,7 @@ export default async function CrewsPage() {
     <PageContainer maxWidth="7xl">
       <PageHero
         title="Crew Manager"
-        subtitle="Schedule crews, track availability, and manage labor assignments"
+        subtitle="Schedule labor crews, material deliveries, and track availability"
         icon={<HardHat className="h-5 w-5" />}
         section="trades"
       >
@@ -182,8 +182,7 @@ export default async function CrewsPage() {
           <div className="rounded-2xl border border-[color:var(--border)] bg-[var(--surface-glass)] p-12 text-center backdrop-blur-xl">
             <HardHat className="mx-auto mb-3 h-12 w-12 text-slate-400" />
             <p className="text-slate-500">
-              No crew schedules yet. Use the buttons above to schedule labor, deliveries, or
-              inspections.
+              No crew schedules yet. Use the buttons above to schedule labor or deliveries.
             </p>
           </div>
         )}

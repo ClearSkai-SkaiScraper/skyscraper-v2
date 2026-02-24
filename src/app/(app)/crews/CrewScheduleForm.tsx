@@ -1,6 +1,6 @@
 "use client";
 
-import { Calendar, Clock, HardHat, Package, Plus, Truck, X } from "lucide-react";
+import { Calendar, Clock, HardHat, Plus, Truck, X } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -21,7 +21,7 @@ interface CrewScheduleFormProps {
   teamMembers: TeamMember[];
 }
 
-type ScheduleType = "labor" | "delivery" | "inspection";
+type ScheduleType = "labor" | "delivery";
 
 export function CrewScheduleForm({ claims, teamMembers }: CrewScheduleFormProps) {
   const router = useRouter();
@@ -71,13 +71,7 @@ export function CrewScheduleForm({ claims, teamMembers }: CrewScheduleFormProps)
         const err = await res.json().catch(() => ({ message: "Failed" }));
         throw new Error(err.message || "Failed to create schedule");
       }
-      toast.success(
-        scheduleType === "delivery"
-          ? "Delivery scheduled!"
-          : scheduleType === "inspection"
-            ? "Inspection scheduled!"
-            : "Crew scheduled!"
-      );
+      toast.success(scheduleType === "delivery" ? "Delivery scheduled!" : "Crew scheduled!");
       setOpen(false);
       setForm({
         claimId: "",
@@ -123,33 +117,13 @@ export function CrewScheduleForm({ claims, teamMembers }: CrewScheduleFormProps)
           <Truck className="h-4 w-4" />
           Schedule Delivery
         </button>
-        <button
-          onClick={() => {
-            setScheduleType("inspection");
-            setOpen(true);
-          }}
-          className="inline-flex items-center gap-2 rounded-lg bg-amber-600 px-5 py-3 font-semibold text-white shadow transition hover:bg-amber-700"
-        >
-          <Plus className="h-4 w-4" />
-          <Package className="h-4 w-4" />
-          Schedule Inspection
-        </button>
       </div>
     );
   }
 
-  const typeLabel =
-    scheduleType === "delivery"
-      ? "Material Delivery"
-      : scheduleType === "inspection"
-        ? "Inspection"
-        : "Crew Labor";
+  const typeLabel = scheduleType === "delivery" ? "Material Delivery" : "Crew Labor";
   const typeColor =
-    scheduleType === "delivery"
-      ? "from-emerald-600 to-teal-600"
-      : scheduleType === "inspection"
-        ? "from-amber-600 to-orange-600"
-        : "from-blue-600 to-indigo-600";
+    scheduleType === "delivery" ? "from-emerald-600 to-teal-600" : "from-blue-600 to-indigo-600";
 
   return (
     <form
