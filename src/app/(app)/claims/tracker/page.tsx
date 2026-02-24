@@ -84,11 +84,12 @@ async function getClaimsForPipeline(orgId: string) {
     else if (status === "build") lifecycleStage = "BUILD";
     else if (status === "completed") lifecycleStage = "COMPLETED";
 
-    // Derive insured name from property contact
-    const contacts = claim.properties?.contacts;
-    const contact = Array.isArray(contacts) ? contacts[0] : null;
-    const insured_name = contact
-      ? `${contact.firstName || ""} ${contact.lastName || ""}`.trim()
+    // Derive insured name from first property contact (contacts is a one-to-many relation)
+    const contactsList = claim.properties?.contacts;
+    const firstContact =
+      Array.isArray(contactsList) && contactsList.length > 0 ? contactsList[0] : null;
+    const insured_name = firstContact
+      ? `${firstContact.firstName || ""} ${firstContact.lastName || ""}`.trim() || null
       : null;
 
     return {

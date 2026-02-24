@@ -49,7 +49,7 @@ export const POST = withAuth(async (req: NextRequest, { orgId }) => {
         .catch(() => []),
     ]);
 
-    // Build analysis
+    // Build analysis conforming to FinancialAnalysisResult type
     const estimatedValue = claim.estimatedValue || 0;
     const approvedValue = claim.approvedValue || 0;
     const deductible = claim.deductible || 0;
@@ -60,53 +60,100 @@ export const POST = withAuth(async (req: NextRequest, { orgId }) => {
       0
     );
 
+    const underpayment = Math.max(0, estimatedValue - approvedValue);
+    const taxRate = 0.089;
+    const carrierTax = approvedValue * taxRate;
+    const contractorTax = estimatedValue * taxRate;
+
     const analysis = {
-      summary: {
-        estimatedRCV: estimatedValue,
-        approvedRCV: approvedValue,
+      totals: {
+        rcvCarrier: approvedValue,
+        rcvContractor: estimatedValue,
+        acvCarrier: Math.round(approvedValue * 0.85),
+        acvContractor: Math.round(estimatedValue * 0.85),
+        overage: Math.max(0, approvedValue - estimatedValue),
+        underpayment,
         deductible,
-        netClaimValue: approvedValue - deductible,
-        totalPaymentsReceived: totalPayments / 100,
-        totalSupplementValue: totalSupplements / 100,
-        outstandingBalance: approvedValue - deductible - totalPayments / 100,
-        collectionRate:
-          approvedValue > 0
-            ? Math.round((totalPayments / 100 / (approvedValue - deductible)) * 100)
-            : 0,
+        tax: Math.round(carrierTax),
+        netOwed: approvedValue - deductible - totalPayments / 100,
       },
       depreciation: {
-        totalDepreciation: Math.round(estimatedValue * 0.15),
-        recoverableDepreciation: Math.round(estimatedValue * 0.12),
-        nonRecoverableDepreciation: Math.round(estimatedValue * 0.03),
-        depreciationRate: 15,
-        ageOfRoof: null,
-        items: [],
+        type: "flat" as const,
+        carrierApplied: Math.round(approvedValue * 0.15),
+        correctAmount: Math.round(estimatedValue * 0.15),
+        difference: Math.round((estimatedValue - approvedValue) * 0.15),
+        explanation: `Standard 15% depreciation applied. Carrier: $${Math.round(approvedValue * 0.15).toLocaleString()}, Contractor estimate: $${Math.round(estimatedValue * 0.15).toLocaleString()}.`,
+        violations: [],
       },
-      lineItems: [],
-      supplements: supplements.map((s: any) => ({
-        id: s.id,
-        status: s.status,
-        totalCents: s.total_cents,
-        createdAt: s.created_at,
-      })),
-      projection: {
-        expectedTotalRecovery: approvedValue + totalSupplements / 100,
-        projectedProfit: approvedValue + totalSupplements / 100 - deductible - estimatedValue * 0.7,
-        projectedMargin: estimatedValue > 0 ? 30 : 0,
-        riskLevel:
-          approvedValue === 0 ? "high" : approvedValue < estimatedValue * 0.8 ? "medium" : "low",
-        recommendations: [
-          approvedValue === 0 && "Submit initial estimate to carrier",
-          totalSupplements === 0 && approvedValue > 0 && "Consider supplement for missed items",
-          totalPayments === 0 && approvedValue > 0 && "Follow up on initial payment release",
-        ].filter(Boolean),
+      lineItemAnalysis: [],
+      settlementProjection: {
+        min: Math.round((approvedValue + totalSupplements / 100) * 0.85),
+        max: Math.round((estimatedValue + totalSupplements / 100) * 1.1),
+        expected: approvedValue + totalSupplements / 100,
+        confidence: approvedValue > 0 ? 70 : 30,
+        factors: [
+          approvedValue === 0
+            ? "No carrier approval yet — high uncertainty"
+            : "Carrier estimate approved",
+          totalSupplements > 0
+            ? `${supplements.length} supplement(s) on file`
+            : "No supplements filed",
+          totalPayments > 0
+            ? `$${(totalPayments / 100).toLocaleString()} in payments received`
+            : "No payments received yet",
+        ],
       },
-      payments: payments.map((p: any) => ({
-        id: p.id,
-        amountCents: p.amount_cents,
-        type: p.type,
-        createdAt: p.created_at,
-      })),
+      requiredSupplements: supplements
+        .filter((s: any) => s.status === "pending" || s.status === "submitted")
+        .map(
+          (s: any) =>
+            `Supplement #${s.id?.slice(0, 8)} — $${((s.total_cents || 0) / 100).toLocaleString()} (${s.status})`
+        ),
+      summary:
+        underpayment > 0
+          ? `Carrier approved $${approvedValue.toLocaleString()} vs contractor estimate of $${estimatedValue.toLocaleString()}, an underpayment of $${underpayment.toLocaleString()}. Deductible is $${deductible.toLocaleString()}. ${totalPayments > 0 ? `$${(totalPayments / 100).toLocaleString()} in payments received.` : "No payments received yet."}`
+          : approvedValue === 0
+            ? `Claim has a contractor estimate of $${estimatedValue.toLocaleString()} but no carrier approval yet. Deductible is $${deductible.toLocaleString()}.`
+            : `Carrier approved $${approvedValue.toLocaleString()} matching or exceeding the contractor estimate. Deductible is $${deductible.toLocaleString()}. ${totalPayments > 0 ? `$${(totalPayments / 100).toLocaleString()} paid.` : "No payments yet."}`,
+      underpaymentReasons:
+        underpayment > 0
+          ? [
+              `Carrier RCV ($${approvedValue.toLocaleString()}) is below contractor RCV ($${estimatedValue.toLocaleString()})`,
+              ...(totalPayments === 0 ? ["No payments have been released"] : []),
+            ]
+          : [],
+      auditFindings: [
+        ...(approvedValue === 0
+          ? [
+              {
+                category: "Missing Data",
+                issue: "No carrier approval on file",
+                impact: estimatedValue,
+                severity: "high" as const,
+              },
+            ]
+          : []),
+        ...(totalPayments === 0 && approvedValue > 0
+          ? [
+              {
+                category: "Collections",
+                issue: "No payments received despite carrier approval",
+                impact: approvedValue - deductible,
+                severity: "high" as const,
+              },
+            ]
+          : []),
+        ...(totalSupplements === 0 && approvedValue > 0
+          ? [
+              {
+                category: "Revenue Opportunity",
+                issue: "No supplements filed — review for missed items",
+                impact: Math.round(estimatedValue * 0.1),
+                severity: "medium" as const,
+              },
+            ]
+          : []),
+      ],
     };
 
     return NextResponse.json({ analysis });
@@ -115,9 +162,6 @@ export const POST = withAuth(async (req: NextRequest, { orgId }) => {
       return NextResponse.json({ error: "Claim not found" }, { status: 404 });
     }
     logger.error("[POST /api/intel/financial] Error:", error);
-    return NextResponse.json(
-      { error: "Failed to run financial analysis" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Failed to run financial analysis" }, { status: 500 });
   }
 });
