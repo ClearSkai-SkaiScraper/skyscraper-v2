@@ -57,9 +57,48 @@ export const POST = withAuth(async (req: NextRequest, { userId, orgId }) => {
       const { recipientUserId, recipientName, subject, body: messageBody } = data;
 
       // Verify the recipient is in the same org
-      const recipient = await prisma.user_organizations.findFirst({
+      // Check both user_organizations.userId AND users.clerkUserId since IDs may vary
+      let resolvedRecipientId = recipientUserId;
+      let recipient = await prisma.user_organizations.findFirst({
         where: { userId: recipientUserId, organizationId: orgId },
       });
+
+      // Fallback: recipientUserId may be a Clerk ID stored in users.clerkUserId
+      if (!recipient) {
+        try {
+          const userByClerk = await prisma.users.findFirst({
+            where: { clerkUserId: recipientUserId },
+            select: { id: true },
+          });
+          if (userByClerk) {
+            recipient = await prisma.user_organizations.findFirst({
+              where: { userId: userByClerk.id, organizationId: orgId },
+            });
+            if (recipient) resolvedRecipientId = userByClerk.id;
+          }
+        } catch {
+          // users table lookup is supplementary
+        }
+      }
+
+      // Fallback: check if recipientUserId is an internal DB user ID mapped to a clerkUserId in user_organizations
+      if (!recipient) {
+        try {
+          const userById = await prisma.users.findFirst({
+            where: { id: recipientUserId },
+            select: { clerkUserId: true },
+          });
+          if (userById?.clerkUserId) {
+            recipient = await prisma.user_organizations.findFirst({
+              where: { userId: userById.clerkUserId, organizationId: orgId },
+            });
+            if (recipient) resolvedRecipientId = userById.clerkUserId;
+          }
+        } catch {
+          // supplementary lookup
+        }
+      }
+
       if (!recipient) {
         return NextResponse.json(
           { error: "Team member not found in your organization" },
@@ -73,7 +112,7 @@ export const POST = withAuth(async (req: NextRequest, { userId, orgId }) => {
           orgId,
           claimId: null,
           clientId: null,
-          participants: [userId, recipientUserId],
+          participants: [userId, resolvedRecipientId],
           subject: subject || `Team Message to ${recipientName || "teammate"}`,
           isPortalThread: false,
         },

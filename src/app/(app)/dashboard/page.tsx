@@ -86,25 +86,12 @@ export default async function DashboardPage() {
       // and can use onboarding if needed
     }
 
-    // If org resolution failed but user is authenticated, show error
+    // If org resolution failed but user is authenticated, continue with
+    // degraded dashboard instead of blocking the entire page.
     if (!orgId) {
-      logger.error("[DASHBOARD] CRITICAL: Org resolution failed:", orgCtx.status);
-      return (
-        <div className="flex min-h-screen items-center justify-center p-8">
-          <div className="max-w-md space-y-4 rounded-lg border border-red-500 bg-red-50 p-6">
-            <h2 className="text-xl font-bold text-red-900">⚠️ Dashboard Unavailable</h2>
-            <p className="text-sm text-red-800">
-              We&apos;re having trouble loading your workspace. This is usually temporary.
-            </p>
-            <div className="flex gap-2">
-              <Link href="/dashboard">
-                <Button variant="default" size="sm">
-                  Retry
-                </Button>
-              </Link>
-            </div>
-          </div>
-        </div>
+      logger.warn(
+        "[DASHBOARD] Org resolution returned no orgId — rendering degraded dashboard:",
+        orgCtx.status
       );
     }
 
@@ -124,7 +111,7 @@ export default async function DashboardPage() {
       source: "default",
     };
     try {
-      location = await getOrgLocation(orgId);
+      if (orgId) location = await getOrgLocation(orgId);
     } catch (e) {
       logger.warn("[DASHBOARD] Location fetch failed (non-critical):", e);
     }
@@ -231,7 +218,7 @@ export default async function DashboardPage() {
               </div>
             }
           >
-            <DashboardAIPanel orgId={orgId} />
+            <DashboardAIPanel orgId={orgId || ""} />
           </AsyncBoundary>
 
           {/* Company Branding Quick Viewer */}

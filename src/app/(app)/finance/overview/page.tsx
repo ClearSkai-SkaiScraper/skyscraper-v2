@@ -480,7 +480,7 @@ export default function FinancialOverviewPage() {
           </div>
         </Link>
         <Link
-          href="/settings/commission-plans"
+          href="/commissions"
           className="flex items-center gap-3 rounded-xl bg-[var(--surface-glass)] p-4 shadow-sm transition-all hover:bg-green-50/50 dark:hover:bg-green-950/20"
         >
           <TrendingUp className="h-6 w-6 text-green-500" />

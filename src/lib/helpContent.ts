@@ -70,7 +70,7 @@ export const helpContentRegistry: Record<string, HelpContent> = {
     ],
     tips: [
       "Pin your most active claims for quick access",
-      "Use the Claims-Ready Folder to package documents for carrier submission",
+      "Use the Claim Packet to package documents for carrier submission",
       "Bad Faith Analysis tool helps identify unfair claim denials",
       "Each claim has its own workspace with photos, documents, reports, and notes",
     ],
@@ -124,8 +124,8 @@ export const helpContentRegistry: Record<string, HelpContent> = {
     ],
   },
   "/claims-ready-folder": {
-    title: "Claims-Ready Folder",
-    description: "Package all your claim documents into a submission-ready folder for the carrier.",
+    title: "Claim Packet",
+    description: "Package all your claim documents into a submission-ready packet for the carrier.",
     steps: [
       "Open a claim's ready folder",
       "Review all attached documents, photos, and reports",
@@ -244,7 +244,7 @@ export const helpContentRegistry: Record<string, HelpContent> = {
     ],
   },
   "/reports/builder": {
-    title: "Report Builder",
+    title: "Quick Reports",
     description: "Build custom reports with drag-and-drop sections and templates.",
     steps: [
       "Select a base template or start from scratch",
@@ -717,7 +717,7 @@ export const helpContentRegistry: Record<string, HelpContent> = {
       "Clear, well-lit photos produce the most accurate AI analysis",
       "The AI cross-references local building codes for the job address automatically",
       "Use the History button to view past inspections and reports",
-      "You can link this directly to a claim and export to the Claims-Ready Folder",
+      "You can link this directly to a claim and export to the Claim Packet",
     ],
   },
   "/supplement": {
@@ -990,7 +990,7 @@ export const helpContentRegistry: Record<string, HelpContent> = {
     ],
     tips: [
       "NOAA data is the gold standard for carrier weather verification",
-      "Save reports directly to the claim's Claims-Ready Folder",
+      "Save reports directly to the claim's Claim Packet",
       "Use the map view to see storm path and affected area",
     ],
   },
@@ -1167,7 +1167,7 @@ export const helpContentRegistry: Record<string, HelpContent> = {
   },
 
   "/reports/templates/pdf-builder": {
-    title: "Report Builder",
+    title: "Quick Reports",
     description:
       "Build custom PDF reports with drag-and-drop. Combine text, photos, tables, and charts into professional carrier-ready documents.",
     steps: [
@@ -1175,7 +1175,7 @@ export const helpContentRegistry: Record<string, HelpContent> = {
       "Drag sections to arrange your report layout",
       "Add photos, measurement data, and narrative text",
       "Preview the PDF and make final adjustments",
-      "Export or share directly to the Claims-Ready Folder",
+      "Export or share directly to the Claim Packet",
     ],
     tips: [
       "Use the photo grid layout for damage documentation sections",
@@ -1185,9 +1185,9 @@ export const helpContentRegistry: Record<string, HelpContent> = {
   },
 
   "/reports/contractor-packet": {
-    title: "Contractor Packet",
+    title: "Bid Package",
     description:
-      "Assemble complete contractor packets for homeowners and carriers. Includes licenses, insurance, certifications, and scope of work.",
+      "Assemble complete bid packages for homeowners and carriers. Includes licenses, insurance, certifications, and scope of work.",
     steps: [
       "Select the claim or job for the packet",
       "Choose which documents to include (license, insurance COI, W-9, etc.)",
@@ -1354,7 +1354,7 @@ export const helpContentRegistry: Record<string, HelpContent> = {
     quickTips: [
       "Select a claim first to auto-detect the carrier",
       "Xactimate XML is the industry standard for most carriers",
-      "Use with Claims-Ready Folder for complete submissions",
+      "Use with Claim Packet for complete submissions",
     ],
     useCases: [
       "Exporting claim data in Xactimate XML format",
@@ -1368,7 +1368,7 @@ export const helpContentRegistry: Record<string, HelpContent> = {
         a: "Most carriers accept Xactimate XML or PDF. Check with your adjuster if unsure — State Farm and Allstate typically prefer Xactimate.",
       },
       {
-        q: "Do I need to generate this before Claims-Ready Folder?",
+        q: "Do I need to generate this before Claim Packet?",
         a: "It's optional but recommended. The AI can auto-include your carrier export when generating the full submission package.",
       },
     ],
@@ -1400,36 +1400,6 @@ export const helpContentRegistry: Record<string, HelpContent> = {
       {
         q: "Can I use my own templates?",
         a: "Yes! Upload any PDF or Word document as a template, then add signature fields and reuse it for future claims.",
-      },
-    ],
-  },
-
-  // ─────────────────────────────────────────────────────────────────────────────
-  // AI PROPOSALS
-  // ─────────────────────────────────────────────────────────────────────────────
-  "/ai-proposals": {
-    icon: "Sparkles",
-    title: "AI Proposal Generator",
-    description: "Build professional proposals using AI assistance from your existing data.",
-    quickTips: [
-      "Start by selecting the proposal type you need",
-      "AI pulls data from your claims, leads, or jobs",
-      "Review and customize before sending to clients",
-    ],
-    useCases: [
-      "Creating insurance claim proposals from claim data",
-      "Building retail roofing proposals for leads",
-      "Generating quick estimates from job records",
-      "Preparing professional bid documents",
-    ],
-    commonQuestions: [
-      {
-        q: "What's the difference between proposal types?",
-        a: "Insurance proposals are formatted for carrier submission with scope details. Retail proposals are customer-facing with pricing. Quick estimates are simplified one-page summaries.",
-      },
-      {
-        q: "Where does the AI get data from?",
-        a: "The AI pulls from your selected claim, lead, or job record — including inspection notes, photos, measurements, and any attached documents.",
       },
     ],
   },

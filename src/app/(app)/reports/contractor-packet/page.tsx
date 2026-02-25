@@ -18,7 +18,7 @@ const SafeBuilder = dynamic(() => import("@/modules/reports/ui/Builder"), {
 });
 
 export const metadata: Metadata = {
-  title: "Master Contractor Packet Builder • SkaiScraper",
+  title: "Bid Package Builder • SkaiScraper",
   description:
     "Comprehensive packet builder with all options - insurance claims, retail proposals, documentation, specifications, and more",
 };
@@ -33,8 +33,8 @@ export default async function ContractorPacketBuilderPage() {
       <PageContainer>
         <PageHero
           section="reports"
-          title="Contractor Packet Builder"
-          subtitle="Sign in to build contractor packets"
+          title="Bid Package Builder"
+          subtitle="Sign in to build bid packages"
           icon={<FileStack className="h-5 w-5" />}
         />
         <PageSectionCard>
@@ -42,7 +42,7 @@ export default async function ContractorPacketBuilderPage() {
             <Lock className="mx-auto mb-4 h-12 w-12 text-slate-400" />
             <h2 className="mb-2 text-xl font-bold">Sign In Required</h2>
             <p className="mb-4 text-sm text-slate-500">
-              Please sign in to access the contractor packet builder.
+              Please sign in to access the Bid Package builder.
             </p>
             <Link
               href="/sign-in?redirect_url=/reports/contractor-packet"
@@ -61,8 +61,8 @@ export default async function ContractorPacketBuilderPage() {
     <PageContainer maxWidth="7xl">
       <PageHero
         section="reports"
-        title="Master Contractor Packet Builder"
-        subtitle="The ultimate all-in-one builder - select any sections, use any templates, generate comprehensive packets for insurance claims, retail proposals, and contractor documentation"
+        title="Bid Package Builder"
+        subtitle="The ultimate all-in-one builder — select any sections, use any templates, generate comprehensive bid packages for retail proposals and contractor documentation"
         icon={<FileStack className="h-5 w-5" />}
       >
         <div className="flex gap-2">

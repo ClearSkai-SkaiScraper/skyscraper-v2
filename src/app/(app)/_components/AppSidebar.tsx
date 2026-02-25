@@ -54,7 +54,7 @@ const navSections: NavSection[] = [
     items: [
       { label: "Active Claims", href: "/claims" },
       { label: "Claims Timeline", href: "/analytics/claims-timeline" },
-      { label: "Claims-Ready Folder", href: "/claims-ready-folder" },
+      { label: "Claim Packet", href: "/claims-ready-folder" },
       { label: "Supplement Builder", href: "/ai/tools/supplement" },
       { label: "Supplement Tracker", href: "/supplements" },
       { label: "Depreciation Builder", href: "/ai/tools/depreciation" },
@@ -88,10 +88,9 @@ const navSections: NavSection[] = [
     label: "Reports & Documents",
     items: [
       { label: "Reports Hub", href: "/reports/hub" },
-      { label: "Report Builder", href: "/reports/templates/pdf-builder" },
+      { label: "Quick Reports", href: "/reports/templates/pdf-builder" },
       { label: "Templates & Marketplace", href: "/reports/templates" },
-      { label: "Contractor Packet", href: "/reports/contractor-packet" },
-      { label: "AI Proposals", href: "/ai-proposals" },
+      { label: "Bid Package", href: "/reports/contractor-packet" },
       { label: "Smart Documents", href: "/smart-docs" },
       { label: "Carrier Exports", href: "/ai/exports" },
       { label: "Company Documents", href: "/settings/company-documents" },

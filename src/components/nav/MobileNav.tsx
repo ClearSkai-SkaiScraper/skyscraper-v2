@@ -75,7 +75,7 @@ const navSections: NavSection[] = [
     items: [
       { label: "Active Claims", href: "/claims", icon: ClipboardList },
       { label: "Claims Timeline", href: "/analytics/claims-timeline", icon: Clock },
-      { label: "Claims-Ready Folder", href: "/claims-ready-folder", icon: FolderOpen },
+      { label: "Claim Packet", href: "/claims-ready-folder", icon: FolderOpen },
       { label: "Supplement Builder", href: "/ai/tools/supplement", icon: Wrench },
       { label: "Supplement Tracker", href: "/supplements", icon: History },
       { label: "Depreciation Builder", href: "/ai/tools/depreciation", icon: Wrench },
@@ -109,10 +109,9 @@ const navSections: NavSection[] = [
     label: "Reports & Documents",
     items: [
       { label: "Reports Hub", href: "/reports/hub", icon: FileText },
-      { label: "Report Builder", href: "/reports/templates/pdf-builder", icon: FileText },
+      { label: "Quick Reports", href: "/reports/templates/pdf-builder", icon: FileText },
       { label: "Templates & Marketplace", href: "/reports/templates", icon: FolderOpen },
-      { label: "Contractor Packet", href: "/reports/contractor-packet", icon: FileText },
-      { label: "AI Proposals", href: "/ai-proposals", icon: Sparkles },
+      { label: "Bid Package", href: "/reports/contractor-packet", icon: FileText },
       { label: "Smart Documents", href: "/smart-docs", icon: FileText },
       { label: "Carrier Exports", href: "/ai/exports", icon: FileText },
       { label: "Company Documents", href: "/settings/company-documents", icon: FileText },

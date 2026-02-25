@@ -41,7 +41,6 @@ const PRO_ROUTES = [
   "/maps",
   "/weather",
   "/ai",
-  "/ai-proposals",
   "/smart-docs",
   "/quick-dol",
   "/property-profiles",

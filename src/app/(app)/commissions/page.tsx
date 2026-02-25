@@ -18,6 +18,7 @@ import prisma from "@/lib/prisma";
 import { safeOrgContext } from "@/lib/safeOrgContext";
 
 import CommissionActions from "./CommissionActions";
+import CommissionPlansPanel from "./CommissionPlansPanel";
 
 export const dynamic = "force-dynamic";
 
@@ -114,6 +115,9 @@ export default async function CommissionsPage() {
           description="With commission data"
         />
       </div>
+
+      {/* Commission Plans — inline settings panel */}
+      <CommissionPlansPanel />
 
       {/* Commission Table */}
       <ContentCard header="Commission Records" noPadding>

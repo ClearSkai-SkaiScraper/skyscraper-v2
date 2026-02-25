@@ -1,10 +1,60 @@
 # 🏗️ MASTER TODO — SkaiScraper Pro CRM
 
-> **Last Updated:** February 20, 2026  
+> **Last Updated:** February 25, 2026  
 > **Current State:** Production-deployed at [skaiscrape.com](https://skaiscrape.com)  
-> **HEAD Commit:** `a78fc46` (Sprint 2 stabilization)  
+> **HEAD Commit:** Sprint 28 (post `140e758`)  
 > **AI Brand:** SkaiPDF (formerly "Dominus AI" — fully renamed)  
 > **Pricing:** $80/seat/month
+
+---
+
+## 🔥 SPRINT 28 — COMPLETED (Feb 25, 2026)
+
+### Tool Renaming (User-Facing)
+
+- [x] **Claims-Ready Folder → Claim Packet** — sidebar, mobile nav, page titles, hero cards, help content
+- [x] **Contractor Packet → Bid Package** — sidebar, mobile nav, page titles, hero cards, help content, error pages
+- [x] **Report Builder → Quick Reports** — sidebar, mobile nav, page titles, hero cards, help content
+
+### Reports Hub Upgrade
+
+- [x] Added 3 hero feature cards: Claim Packet, Bid Package, Quick Reports
+- [x] Each card: gradient icon, title, description, 3 checklist features, slide-under hover animation
+- [x] CTA buttons updated to match new names
+
+### AI Proposals Complete Removal
+
+- [x] Deleted all AI Proposals pages (`ai-proposals/`, `proposals/`, `proposals/[id]/`)
+- [x] Deleted all proposal API routes (~8 routes: build, render, publish, download, status)
+- [x] Deleted all proposal templates (retail/v1, claims/v1, contractor/v1)
+- [x] Deleted all proposal lib files (ai.ts, context.ts, render.ts, types.ts, proposalPresets.ts)
+- [x] Cleaned sidebar, mobile nav, sectionThemes, helpContent references
+- [x] Stubbed proposalRenderer.tsx for backward compat with generated_documents
+
+### Remote View Access Control
+
+- [x] Restricted `canRemoteView` to `hasMinRole("admin")` in client permissions
+- [x] Restricted `canUseRemoteView()` to `hasMinRole(role, "admin")` in server constants
+- [x] Removed `remote_view:view` from manager role in ROLE_PERMISSIONS matrix
+- [x] Employee/team/manager seats no longer see Remote View
+
+### Material Estimator Upgrade
+
+- [x] Added ClaimJobSelect — link estimates to a job or claim
+- [x] Added "Save Estimate" with localStorage persistence
+- [x] Added Saved Estimates panel with card grid, material summaries, slide-under animation
+- [x] Added 3-dot action menu: Transfer to ABC Supply, Request Vendor Quote, Email to Partner
+- [x] Email actions auto-generate materials list as mailto body
+
+### Dashboard & UI Fixes (Sprint 27-28)
+
+- [x] Dashboard: Removed "Dashboard Unavailable" blocking render when orgId null
+- [x] KPI Dashboard: Wrapped in outer try-catch, still renders client on error
+- [x] Claims Timeline: Complete rewrite with real Prisma data, pipeline stages, KPIs
+- [x] AI Mockup: Theme token CSS fix (`bg-[var(--surface-glass)]`)
+- [x] Commission Plans: Merged into main commissions page as collapsible panel (368 lines)
+- [x] Finance Overview: Updated commission plans link to /commissions
+- [x] Messages Create API: 3-strategy recipient ID resolution (direct, Clerk lookup, internal lookup)
 
 ---
 
@@ -147,6 +197,14 @@
 ## 🔲 REMAINING WORK
 
 ### P0 — Must Do Before Demo (Feb 27)
+
+#### Material Estimator — DB Persistence (Next Sprint)
+
+- [ ] Create `MaterialEstimate` Prisma model (or use `material_carts`) for server-side persistence
+- [ ] API endpoint: `POST /api/materials/estimate` with `action: "save"` → writes to DB
+- [ ] API endpoint: `GET /api/materials/estimate?jobId=xxx` → fetch saved estimates for a job
+- [ ] Migrate from localStorage to DB-backed persistence
+- [ ] Pull job zip code from property address for ABC Supply routing
 
 #### 🧪 Manual Product Testing (YOU DO THIS)
 

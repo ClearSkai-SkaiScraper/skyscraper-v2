@@ -24,10 +24,10 @@ export default function ContractorPacketError({
           <AlertTriangle className="h-8 w-8 text-red-600 dark:text-red-400" />
         </div>
         <h2 className="mb-2 text-xl font-bold text-gray-900 dark:text-gray-100">
-          Contractor Packet Builder Error
+          Bid Package Builder Error
         </h2>
         <p className="mb-6 text-sm text-gray-600 dark:text-gray-400">
-          Something went wrong loading the Contractor Packet Builder. Try refreshing — if the issue
+          Something went wrong loading the Bid Package Builder. Try refreshing — if the issue
           persists, contact support.
         </p>
         <div className="flex items-center justify-center gap-3">

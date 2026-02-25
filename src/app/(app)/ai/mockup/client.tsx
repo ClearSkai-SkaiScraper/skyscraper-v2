@@ -136,7 +136,10 @@ export default function MockupClient() {
       <div className="space-y-2">
         <Label htmlFor="project-type">Project Type</Label>
         <Select value={projectType} onValueChange={handleProjectTypeChange}>
-          <SelectTrigger id="project-type" className="w-full">
+          <SelectTrigger
+            id="project-type"
+            className="w-full border-slate-300 bg-white dark:border-slate-600 dark:bg-slate-900"
+          >
             <SelectValue placeholder="Select project type..." />
           </SelectTrigger>
           <SelectContent>
@@ -163,7 +166,7 @@ export default function MockupClient() {
             value={projectDescription}
             onChange={(e) => setProjectDescription(e.target.value)}
             placeholder="Describe what the finished project should look like. Be specific about materials, colors, and style preferences..."
-            className="min-h-[120px] resize-none"
+            className="min-h-[120px] resize-none border-slate-300 bg-white dark:border-slate-600 dark:bg-slate-900"
             rows={4}
           />
         </div>
@@ -181,7 +184,7 @@ export default function MockupClient() {
       </div>
 
       {/* Before/After Panels */}
-      <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-700 dark:bg-slate-800">
+      <div className="rounded-2xl border border-[color:var(--border)] bg-[var(--surface-glass)] p-6 shadow-sm backdrop-blur-xl">
         <div className="grid gap-6 md:grid-cols-2">
           {/* BEFORE Panel */}
           <div className="space-y-3">

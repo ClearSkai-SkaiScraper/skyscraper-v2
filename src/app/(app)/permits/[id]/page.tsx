@@ -1,11 +1,15 @@
 "use client";
 
 import {
+  AlertCircle,
   ArrowLeft,
   Calendar,
   CheckCircle2,
+  Clock,
   DollarSign,
+  ExternalLink,
   FileCheck,
+  FileText,
   Loader2,
   MapPin,
   Save,
@@ -15,6 +19,10 @@ import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
+
+import { PageContainer } from "@/components/layout/PageContainer";
+import { PageHero } from "@/components/layout/PageHero";
+import { Button } from "@/components/ui/button";
 
 interface Permit {
   id: string;
@@ -43,15 +51,52 @@ const statuses = [
   "expired",
 ] as const;
 
-const statusColors: Record<string, string> = {
-  applied: "bg-blue-500/20 text-blue-600",
-  approved: "bg-green-500/20 text-green-600",
-  issued: "bg-emerald-500/20 text-emerald-600",
-  inspection_scheduled: "bg-yellow-500/20 text-yellow-700",
-  passed: "bg-green-600/20 text-green-700",
-  failed: "bg-red-500/20 text-red-600",
-  expired: "bg-slate-500/20 text-slate-600",
+const statusConfig: Record<string, { color: string; bgColor: string; icon: React.ReactNode }> = {
+  applied: {
+    color: "text-blue-600 dark:text-blue-400",
+    bgColor: "bg-blue-100 dark:bg-blue-900/30",
+    icon: <Clock className="h-4 w-4" />,
+  },
+  approved: {
+    color: "text-green-600 dark:text-green-400",
+    bgColor: "bg-green-100 dark:bg-green-900/30",
+    icon: <CheckCircle2 className="h-4 w-4" />,
+  },
+  issued: {
+    color: "text-emerald-600 dark:text-emerald-400",
+    bgColor: "bg-emerald-100 dark:bg-emerald-900/30",
+    icon: <FileCheck className="h-4 w-4" />,
+  },
+  inspection_scheduled: {
+    color: "text-yellow-700 dark:text-yellow-400",
+    bgColor: "bg-yellow-100 dark:bg-yellow-900/30",
+    icon: <Calendar className="h-4 w-4" />,
+  },
+  passed: {
+    color: "text-green-700 dark:text-green-400",
+    bgColor: "bg-green-100 dark:bg-green-900/30",
+    icon: <CheckCircle2 className="h-4 w-4" />,
+  },
+  failed: {
+    color: "text-red-600 dark:text-red-400",
+    bgColor: "bg-red-100 dark:bg-red-900/30",
+    icon: <AlertCircle className="h-4 w-4" />,
+  },
+  expired: {
+    color: "text-slate-600 dark:text-slate-400",
+    bgColor: "bg-slate-100 dark:bg-slate-800",
+    icon: <Clock className="h-4 w-4" />,
+  },
 };
+
+// Timeline step order for the progress tracker
+const TIMELINE_STEPS = [
+  { key: "applied", label: "Applied" },
+  { key: "approved", label: "Approved" },
+  { key: "issued", label: "Issued" },
+  { key: "inspection_scheduled", label: "Inspection" },
+  { key: "passed", label: "Passed" },
+];
 
 export default function PermitDetailPage() {
   const params = useParams<{ id: string }>();
@@ -111,7 +156,6 @@ export default function PermitDetailPage() {
       if (form.inspectionDate) body.inspectionDate = form.inspectionDate;
       if (form.expiresAt) body.expiresAt = form.expiresAt;
 
-      // Auto-set date fields based on status
       if (form.status === "approved" && !permit?.approvedAt) {
         body.approvedAt = new Date().toISOString();
       }
@@ -126,8 +170,8 @@ export default function PermitDetailPage() {
       });
       if (!res.ok) throw new Error("Failed to update");
       toast.success("Permit updated successfully");
-      router.refresh(); // invalidate Router Cache so list page shows updated values
-      fetchPermit(); // refresh detail view
+      router.refresh();
+      fetchPermit();
     } catch {
       toast.error("Failed to save permit");
     } finally {
@@ -161,65 +205,191 @@ export default function PermitDetailPage() {
   if (!permit) return null;
 
   const dateStr = (d: string | null) => (d ? new Date(d).toLocaleDateString() : "—");
+  const currentStatus = statusConfig[permit.status] || statusConfig.applied;
+  const currentStepIdx = TIMELINE_STEPS.findIndex((s) => s.key === permit.status);
+
+  // Calculate days since applied
+  const daysSinceApplied = Math.floor(
+    (Date.now() - new Date(permit.appliedAt).getTime()) / (1000 * 60 * 60 * 24)
+  );
+
+  // Check expiration warning
+  const isExpiringSoon =
+    permit.expiresAt &&
+    new Date(permit.expiresAt).getTime() - Date.now() < 30 * 24 * 60 * 60 * 1000 &&
+    new Date(permit.expiresAt).getTime() > Date.now();
+  const isExpired = permit.expiresAt && new Date(permit.expiresAt).getTime() < Date.now();
 
   return (
-    <div className="mx-auto max-w-4xl space-y-6 px-4 py-8 sm:px-6">
+    <PageContainer>
       {/* Back link */}
       <Link
         href="/permits"
-        className="inline-flex items-center gap-2 text-sm text-slate-500 transition hover:text-blue-600"
+        className="inline-flex items-center gap-2 text-sm text-slate-500 transition hover:text-[color:var(--primary)]"
       >
         <ArrowLeft className="h-4 w-4" /> Back to Permits
       </Link>
 
-      {/* Title row */}
-      <div className="flex flex-wrap items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-[color:var(--text)]">
-            Permit #{permit.permitNumber}
-          </h1>
-          <p className="mt-1 text-sm capitalize text-slate-500">
-            {permit.permitType} · {permit.jurisdiction || "No jurisdiction"}
-          </p>
+      {/* Hero */}
+      <PageHero
+        section="jobs"
+        title={`Permit #${permit.permitNumber}`}
+        subtitle={`${permit.permitType} · ${permit.jurisdiction || "No jurisdiction"} · ${daysSinceApplied} days since applied`}
+        icon={<FileCheck className="h-5 w-5" />}
+      >
+        <div className="flex items-center gap-2">
+          <span
+            className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm font-semibold capitalize ${currentStatus.bgColor} ${currentStatus.color}`}
+          >
+            {currentStatus.icon}
+            {permit.status.replace(/_/g, " ")}
+          </span>
         </div>
-        <span
-          className={`rounded-full px-4 py-1.5 text-sm font-semibold capitalize ${statusColors[permit.status] || ""}`}
+      </PageHero>
+
+      {/* Expiration Warning Banner */}
+      {(isExpiringSoon || isExpired) && (
+        <div
+          className={`flex items-center gap-3 rounded-xl border p-4 ${
+            isExpired
+              ? "border-red-300 bg-red-50 dark:border-red-800 dark:bg-red-950/30"
+              : "border-yellow-300 bg-yellow-50 dark:border-yellow-800 dark:bg-yellow-950/30"
+          }`}
         >
-          {permit.status.replace("_", " ")}
-        </span>
+          <AlertCircle className={`h-5 w-5 ${isExpired ? "text-red-500" : "text-yellow-600"}`} />
+          <div>
+            <p
+              className={`text-sm font-medium ${isExpired ? "text-red-700 dark:text-red-400" : "text-yellow-700 dark:text-yellow-400"}`}
+            >
+              {isExpired
+                ? `This permit expired on ${dateStr(permit.expiresAt)}`
+                : `This permit expires on ${dateStr(permit.expiresAt)} — renew soon`}
+            </p>
+          </div>
+        </div>
+      )}
+
+      {/* Progress Tracker */}
+      <div className="rounded-2xl border border-[color:var(--border)] bg-[var(--surface-glass)] p-6 backdrop-blur-xl">
+        <h3 className="mb-4 text-sm font-semibold text-slate-500 dark:text-slate-400">
+          PERMIT PROGRESS
+        </h3>
+        <div className="flex items-center justify-between">
+          {TIMELINE_STEPS.map((step, idx) => {
+            const isCompleted = idx <= currentStepIdx && currentStepIdx >= 0;
+            const isCurrent = idx === currentStepIdx;
+            return (
+              <div key={step.key} className="flex flex-1 items-center">
+                <div className="flex flex-col items-center">
+                  <div
+                    className={`flex h-10 w-10 items-center justify-center rounded-full border-2 transition-all ${
+                      isCompleted
+                        ? isCurrent
+                          ? "border-[color:var(--primary)] bg-[color:var(--primary)] text-white shadow-lg shadow-blue-500/30"
+                          : "border-green-500 bg-green-500 text-white"
+                        : "border-slate-300 bg-[var(--surface-2)] text-slate-400 dark:border-slate-600"
+                    }`}
+                  >
+                    {isCompleted && !isCurrent ? (
+                      <CheckCircle2 className="h-5 w-5" />
+                    ) : (
+                      <span className="text-xs font-bold">{idx + 1}</span>
+                    )}
+                  </div>
+                  <span
+                    className={`mt-2 text-xs font-medium ${
+                      isCompleted
+                        ? "text-[color:var(--text)]"
+                        : "text-slate-400 dark:text-slate-500"
+                    }`}
+                  >
+                    {step.label}
+                  </span>
+                </div>
+                {idx < TIMELINE_STEPS.length - 1 && (
+                  <div
+                    className={`mx-1 h-0.5 flex-1 ${
+                      idx < currentStepIdx ? "bg-green-500" : "bg-slate-200 dark:bg-slate-700"
+                    }`}
+                  />
+                )}
+              </div>
+            );
+          })}
+        </div>
       </div>
 
-      {/* Timeline */}
+      {/* Key Info Cards */}
       <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
-        {[
-          { label: "Applied", date: permit.appliedAt, icon: Calendar },
-          { label: "Approved", date: permit.approvedAt, icon: CheckCircle2 },
-          { label: "Issued", date: permit.issuedAt, icon: FileCheck },
-          { label: "Expires", date: permit.expiresAt, icon: Calendar },
-        ].map((item) => (
-          <div
-            key={item.label}
-            className="rounded-xl border border-[color:var(--border)] bg-[var(--surface-glass)] p-4 backdrop-blur-xl"
-          >
-            <div className="mb-1 flex items-center gap-2 text-xs text-slate-500">
-              <item.icon className="h-3.5 w-3.5" /> {item.label}
-            </div>
-            <div className="text-sm font-medium text-[color:var(--text)]">{dateStr(item.date)}</div>
+        <div className="rounded-xl border border-[color:var(--border)] bg-gradient-to-br from-blue-50 to-sky-50 p-4 dark:from-blue-950/30 dark:to-sky-950/30">
+          <div className="mb-1 flex items-center gap-2 text-xs font-medium text-blue-600 dark:text-blue-400">
+            <Calendar className="h-3.5 w-3.5" /> Applied
           </div>
-        ))}
+          <div className="text-sm font-semibold text-[color:var(--text)]">
+            {dateStr(permit.appliedAt)}
+          </div>
+        </div>
+        <div className="rounded-xl border border-[color:var(--border)] bg-gradient-to-br from-green-50 to-emerald-50 p-4 dark:from-green-950/30 dark:to-emerald-950/30">
+          <div className="mb-1 flex items-center gap-2 text-xs font-medium text-green-600 dark:text-green-400">
+            <CheckCircle2 className="h-3.5 w-3.5" /> Approved
+          </div>
+          <div className="text-sm font-semibold text-[color:var(--text)]">
+            {dateStr(permit.approvedAt)}
+          </div>
+        </div>
+        <div className="rounded-xl border border-[color:var(--border)] bg-gradient-to-br from-emerald-50 to-teal-50 p-4 dark:from-emerald-950/30 dark:to-teal-950/30">
+          <div className="mb-1 flex items-center gap-2 text-xs font-medium text-emerald-600 dark:text-emerald-400">
+            <FileCheck className="h-3.5 w-3.5" /> Issued
+          </div>
+          <div className="text-sm font-semibold text-[color:var(--text)]">
+            {dateStr(permit.issuedAt)}
+          </div>
+        </div>
+        <div className="rounded-xl border border-[color:var(--border)] bg-gradient-to-br from-amber-50 to-orange-50 p-4 dark:from-amber-950/30 dark:to-orange-950/30">
+          <div className="mb-1 flex items-center gap-2 text-xs font-medium text-amber-600 dark:text-amber-400">
+            <DollarSign className="h-3.5 w-3.5" /> Fee
+          </div>
+          <div className="text-sm font-semibold text-[color:var(--text)]">
+            {permit.fee != null ? `$${Number(permit.fee).toLocaleString()}` : "—"}
+          </div>
+        </div>
       </div>
+
+      {/* Document Link */}
+      {permit.documentUrl && (
+        <div className="flex items-center gap-3 rounded-xl border border-[color:var(--border)] bg-[var(--surface-glass)] p-4 backdrop-blur-xl">
+          <FileText className="h-5 w-5 text-blue-500" />
+          <div className="flex-1">
+            <p className="text-sm font-medium text-[color:var(--text)]">Permit Document</p>
+            <p className="truncate text-xs text-slate-500">{permit.documentUrl}</p>
+          </div>
+          <a
+            href={permit.documentUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-1 rounded-lg bg-blue-100 px-3 py-1.5 text-xs font-medium text-blue-700 transition hover:bg-blue-200 dark:bg-blue-900/30 dark:text-blue-400 dark:hover:bg-blue-900/50"
+          >
+            <ExternalLink className="h-3.5 w-3.5" /> Open
+          </a>
+        </div>
+      )}
 
       {/* Edit Form */}
       <div className="rounded-2xl border border-[color:var(--border)] bg-[var(--surface-glass)] p-6 backdrop-blur-xl">
-        <h2 className="mb-4 text-lg font-semibold text-[color:var(--text)]">Edit Permit</h2>
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+        <h2 className="mb-5 flex items-center gap-2 text-lg font-semibold text-[color:var(--text)]">
+          <Save className="h-5 w-5 text-[color:var(--primary)]" />
+          Edit Permit Details
+        </h2>
+        <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
           {/* Status */}
           <div>
-            <label className="mb-1 block text-xs font-medium text-slate-500">Status</label>
+            <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-slate-500">
+              Status
+            </label>
             <select
               value={form.status}
               onChange={(e) => setForm({ ...form, status: e.target.value })}
-              className="w-full rounded-xl border border-[color:var(--border)] bg-[var(--surface-2)] px-4 py-3 text-sm capitalize text-[color:var(--text)]"
+              className="w-full rounded-xl border border-[color:var(--border)] bg-[var(--surface-2)] px-4 py-3 text-sm capitalize text-[color:var(--text)] transition-colors focus:border-[color:var(--primary)] focus:outline-none focus:ring-2 focus:ring-blue-500/20"
             >
               {statuses.map((s) => (
                 <option key={s} value={s}>
@@ -231,7 +401,9 @@ export default function PermitDetailPage() {
 
           {/* Fee */}
           <div>
-            <label className="mb-1 block text-xs font-medium text-slate-500">Fee ($)</label>
+            <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-slate-500">
+              Fee ($)
+            </label>
             <div className="relative">
               <DollarSign className="pointer-events-none absolute left-3 top-3.5 h-4 w-4 text-slate-400" />
               <input
@@ -239,7 +411,7 @@ export default function PermitDetailPage() {
                 step="0.01"
                 value={form.fee}
                 onChange={(e) => setForm({ ...form, fee: e.target.value })}
-                className="w-full rounded-xl border border-[color:var(--border)] bg-[var(--surface-2)] py-3 pl-9 pr-4 text-sm text-[color:var(--text)]"
+                className="w-full rounded-xl border border-[color:var(--border)] bg-[var(--surface-2)] py-3 pl-9 pr-4 text-sm text-[color:var(--text)] transition-colors focus:border-[color:var(--primary)] focus:outline-none focus:ring-2 focus:ring-blue-500/20"
                 placeholder="0.00"
               />
             </div>
@@ -247,49 +419,55 @@ export default function PermitDetailPage() {
 
           {/* Inspection Date */}
           <div>
-            <label className="mb-1 block text-xs font-medium text-slate-500">Inspection Date</label>
+            <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-slate-500">
+              Inspection Date
+            </label>
             <input
               type="date"
               value={form.inspectionDate}
               onChange={(e) => setForm({ ...form, inspectionDate: e.target.value })}
-              className="w-full rounded-xl border border-[color:var(--border)] bg-[var(--surface-2)] px-4 py-3 text-sm text-[color:var(--text)]"
+              className="w-full rounded-xl border border-[color:var(--border)] bg-[var(--surface-2)] px-4 py-3 text-sm text-[color:var(--text)] transition-colors focus:border-[color:var(--primary)] focus:outline-none focus:ring-2 focus:ring-blue-500/20"
             />
           </div>
 
           {/* Expires At */}
           <div>
-            <label className="mb-1 block text-xs font-medium text-slate-500">Expiration Date</label>
+            <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-slate-500">
+              Expiration Date
+            </label>
             <input
               type="date"
               value={form.expiresAt}
               onChange={(e) => setForm({ ...form, expiresAt: e.target.value })}
-              className="w-full rounded-xl border border-[color:var(--border)] bg-[var(--surface-2)] px-4 py-3 text-sm text-[color:var(--text)]"
+              className="w-full rounded-xl border border-[color:var(--border)] bg-[var(--surface-2)] px-4 py-3 text-sm text-[color:var(--text)] transition-colors focus:border-[color:var(--primary)] focus:outline-none focus:ring-2 focus:ring-blue-500/20"
             />
           </div>
 
           {/* Inspection Notes */}
           <div className="md:col-span-2">
-            <label className="mb-1 block text-xs font-medium text-slate-500">
+            <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-slate-500">
               Inspection Notes
             </label>
             <textarea
-              rows={2}
+              rows={3}
               value={form.inspectionNotes}
               onChange={(e) => setForm({ ...form, inspectionNotes: e.target.value })}
-              className="w-full rounded-xl border border-[color:var(--border)] bg-[var(--surface-2)] px-4 py-3 text-sm text-[color:var(--text)]"
+              className="w-full rounded-xl border border-[color:var(--border)] bg-[var(--surface-2)] px-4 py-3 text-sm text-[color:var(--text)] transition-colors focus:border-[color:var(--primary)] focus:outline-none focus:ring-2 focus:ring-blue-500/20"
               placeholder="Notes from the inspector..."
             />
           </div>
 
           {/* Document URL */}
           <div className="md:col-span-2">
-            <label className="mb-1 block text-xs font-medium text-slate-500">Document URL</label>
+            <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-slate-500">
+              Document URL
+            </label>
             <div className="relative">
               <MapPin className="pointer-events-none absolute left-3 top-3.5 h-4 w-4 text-slate-400" />
               <input
                 value={form.documentUrl}
                 onChange={(e) => setForm({ ...form, documentUrl: e.target.value })}
-                className="w-full rounded-xl border border-[color:var(--border)] bg-[var(--surface-2)] py-3 pl-9 pr-4 text-sm text-[color:var(--text)]"
+                className="w-full rounded-xl border border-[color:var(--border)] bg-[var(--surface-2)] py-3 pl-9 pr-4 text-sm text-[color:var(--text)] transition-colors focus:border-[color:var(--primary)] focus:outline-none focus:ring-2 focus:ring-blue-500/20"
                 placeholder="https://..."
               />
             </div>
@@ -297,36 +475,35 @@ export default function PermitDetailPage() {
 
           {/* Notes */}
           <div className="md:col-span-2">
-            <label className="mb-1 block text-xs font-medium text-slate-500">General Notes</label>
+            <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-slate-500">
+              General Notes
+            </label>
             <textarea
               rows={3}
               value={form.notes}
               onChange={(e) => setForm({ ...form, notes: e.target.value })}
-              className="w-full rounded-xl border border-[color:var(--border)] bg-[var(--surface-2)] px-4 py-3 text-sm text-[color:var(--text)]"
-              placeholder="Additional notes..."
+              className="w-full rounded-xl border border-[color:var(--border)] bg-[var(--surface-2)] px-4 py-3 text-sm text-[color:var(--text)] transition-colors focus:border-[color:var(--primary)] focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+              placeholder="Additional notes about this permit..."
             />
           </div>
         </div>
 
         {/* Action bar */}
-        <div className="mt-6 flex flex-wrap items-center gap-3">
-          <button
-            onClick={handleSave}
-            disabled={saving}
-            className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 px-6 py-3 text-sm font-semibold text-white shadow-lg transition hover:shadow-xl disabled:opacity-50"
-          >
+        <div className="mt-6 flex flex-wrap items-center gap-3 border-t border-[color:var(--border)] pt-5">
+          <Button onClick={handleSave} disabled={saving} className="gap-2">
             {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
             Save Changes
-          </button>
-          <button
+          </Button>
+          <Button
+            variant="outline"
             onClick={handleDelete}
             disabled={saving}
-            className="inline-flex items-center gap-2 rounded-xl border border-red-300 px-6 py-3 text-sm font-medium text-red-600 transition hover:bg-red-50 dark:border-red-800 dark:text-red-400 dark:hover:bg-red-900/20"
+            className="gap-2 border-red-300 text-red-600 hover:bg-red-50 dark:border-red-800 dark:text-red-400 dark:hover:bg-red-900/20"
           >
             <Trash2 className="h-4 w-4" /> Delete Permit
-          </button>
+          </Button>
         </div>
       </div>
-    </div>
+    </PageContainer>
   );
 }

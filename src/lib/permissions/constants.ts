@@ -133,7 +133,6 @@ export const ROLE_PERMISSIONS: Record<AppRole, Permission[]> = {
     "billing:view",
     "integrations:view",
     "settings:view",
-    "remote_view:view", // Can view direct reports only
   ],
   member: [
     // Members: create + edit assigned, archive but NOT delete, read most
@@ -228,11 +227,10 @@ export function canArchive(role: AppRole): boolean {
 /**
  * Check if a role can use Remote View.
  * - owner/admin: can view any team member
- * - manager: can view direct reports only
- * - member/viewer: no access
+ * - manager/member/viewer: no access
  */
 export function canUseRemoteView(role: AppRole): boolean {
-  return hasMinRole(role, "manager");
+  return hasMinRole(role, "admin");
 }
 
 /**

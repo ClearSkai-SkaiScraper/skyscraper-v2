@@ -240,7 +240,7 @@ export default function PdfBuilderPage() {
     <PageContainer>
       <PageHero
         section="reports"
-        title="Report Builder"
+        title="Quick Reports"
         subtitle="Select a claim or job and template to generate a professional branded report"
         icon={<FileText className="h-6 w-6" />}
       />

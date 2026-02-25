@@ -344,7 +344,7 @@ export default function ClaimsReadyFolderPage() {
       {/* Hero Section */}
       <div className="mb-12">
         <PageHero
-          title="Claims-Ready Folder"
+          title="Claim Packet"
           subtitle="Carrier-compliant insurance packets—auto-assembled from inspection to submission."
           icon={<FolderOpen className="h-5 w-5" />}
         />

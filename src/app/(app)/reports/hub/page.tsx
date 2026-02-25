@@ -2,6 +2,7 @@ import {
   BarChart3,
   BookOpen,
   Calculator,
+  CheckCircle,
   ClipboardCheck,
   FileBarChart,
   FileCheck,
@@ -15,6 +16,7 @@ import {
   Sparkles,
   TrendingUp,
   Wrench,
+  Zap,
 } from "lucide-react";
 import Link from "next/link";
 
@@ -37,8 +39,8 @@ export default async function ReportsHubPage() {
   const claimsTools = [
     {
       href: "/claims-ready-folder",
-      title: "AI Claims Builder",
-      desc: "Generate adjuster-ready insurance claim reports with AI-powered analysis and documentation.",
+      title: "Claim Packet",
+      desc: "Generate adjuster-ready insurance claim packets with AI-powered analysis and documentation.",
       icon: Sparkles,
       color: "from-blue-500 to-blue-600",
     },
@@ -82,7 +84,7 @@ export default async function ReportsHubPage() {
   const retailTools = [
     {
       href: "/reports/contractor-packet",
-      title: "AI Retail Proposal Builder",
+      title: "Bid Package",
       desc: "Create polished homeowner-facing proposals with professional layouts and branding.",
       icon: PenLine,
       color: "from-emerald-500 to-emerald-600",
@@ -192,13 +194,13 @@ export default async function ReportsHubPage() {
           <Button asChild className="bg-white text-blue-600 hover:bg-blue-50">
             <Link href="/claims-ready-folder">
               <ClipboardCheck className="mr-2 h-4 w-4" />
-              AI Claims Builder
+              Claim Packet
             </Link>
           </Button>
           <Button asChild className="bg-white text-emerald-600 hover:bg-emerald-50">
             <Link href="/reports/contractor-packet">
               <PenLine className="mr-2 h-4 w-4" />
-              AI Retail Proposal
+              Bid Package
             </Link>
           </Button>
           <Button
@@ -220,6 +222,96 @@ export default async function ReportsHubPage() {
           <span>Initialize workspace to enable live report data.</span>
         </div>
       )}
+
+      {/* ───────── QUICK START — 3 Hero Cards ───────── */}
+      <div className="mb-10 grid gap-5 md:grid-cols-3">
+        {/* Insurance Claims Card */}
+        <Link
+          href="/claims-ready-folder"
+          className="group relative overflow-hidden rounded-2xl border-2 border-slate-200 bg-white p-6 transition-all hover:border-blue-400 hover:shadow-xl dark:border-slate-700 dark:bg-slate-800 dark:hover:border-blue-500"
+        >
+          <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 shadow-lg shadow-blue-500/25">
+            <ClipboardCheck className="h-7 w-7 text-white" />
+          </div>
+          <h3 className="text-lg font-bold text-slate-900 group-hover:text-blue-600 dark:text-white dark:group-hover:text-blue-400">
+            Claim Packet
+          </h3>
+          <p className="mt-1.5 text-sm leading-relaxed text-slate-500 dark:text-slate-400">
+            Generate carrier-compliant claim packets with weather reports, damage documentation,
+            code citations, and adjuster-ready formatting.
+          </p>
+          <ul className="mt-4 space-y-1.5">
+            <li className="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
+              <CheckCircle className="h-3.5 w-3.5 text-green-500" /> Weather verification
+            </li>
+            <li className="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
+              <CheckCircle className="h-3.5 w-3.5 text-green-500" /> Photo evidence grids
+            </li>
+            <li className="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
+              <CheckCircle className="h-3.5 w-3.5 text-green-500" /> Code compliance docs
+            </li>
+          </ul>
+          <div className="absolute bottom-0 left-0 h-1 w-0 bg-gradient-to-r from-blue-500 to-indigo-500 transition-all group-hover:w-full" />
+        </Link>
+
+        {/* Retail Proposal Card */}
+        <Link
+          href="/reports/contractor-packet"
+          className="group relative overflow-hidden rounded-2xl border-2 border-slate-200 bg-white p-6 transition-all hover:border-emerald-400 hover:shadow-xl dark:border-slate-700 dark:bg-slate-800 dark:hover:border-emerald-500"
+        >
+          <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-xl bg-gradient-to-br from-emerald-500 to-emerald-600 shadow-lg shadow-emerald-500/25">
+            <PenLine className="h-7 w-7 text-white" />
+          </div>
+          <h3 className="text-lg font-bold text-slate-900 group-hover:text-emerald-600 dark:text-white dark:group-hover:text-emerald-400">
+            Bid Package
+          </h3>
+          <p className="mt-1.5 text-sm leading-relaxed text-slate-500 dark:text-slate-400">
+            Create polished homeowner-facing proposals with your company branding, pricing, project
+            timelines, and professional layouts.
+          </p>
+          <ul className="mt-4 space-y-1.5">
+            <li className="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
+              <CheckCircle className="h-3.5 w-3.5 text-green-500" /> Company branding
+            </li>
+            <li className="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
+              <CheckCircle className="h-3.5 w-3.5 text-green-500" /> Material specs
+            </li>
+            <li className="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
+              <CheckCircle className="h-3.5 w-3.5 text-green-500" /> Digital signatures
+            </li>
+          </ul>
+          <div className="absolute bottom-0 left-0 h-1 w-0 bg-gradient-to-r from-emerald-500 to-teal-500 transition-all group-hover:w-full" />
+        </Link>
+
+        {/* Quick Reports Card */}
+        <Link
+          href="/reports/templates/pdf-builder"
+          className="group relative overflow-hidden rounded-2xl border-2 border-slate-200 bg-white p-6 transition-all hover:border-purple-400 hover:shadow-xl dark:border-slate-700 dark:bg-slate-800 dark:hover:border-purple-500"
+        >
+          <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-xl bg-gradient-to-br from-purple-500 to-purple-600 shadow-lg shadow-purple-500/25">
+            <Zap className="h-7 w-7 text-white" />
+          </div>
+          <h3 className="text-lg font-bold text-slate-900 group-hover:text-purple-600 dark:text-white dark:group-hover:text-purple-400">
+            Quick Reports
+          </h3>
+          <p className="mt-1.5 text-sm leading-relaxed text-slate-500 dark:text-slate-400">
+            Generate fast AI-powered reports and estimates with minimal inputs — perfect for on-site
+            quotes and quick turnarounds.
+          </p>
+          <ul className="mt-4 space-y-1.5">
+            <li className="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
+              <CheckCircle className="h-3.5 w-3.5 text-green-500" /> AI-generated content
+            </li>
+            <li className="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
+              <CheckCircle className="h-3.5 w-3.5 text-green-500" /> Live preview
+            </li>
+            <li className="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
+              <CheckCircle className="h-3.5 w-3.5 text-green-500" /> Instant PDF export
+            </li>
+          </ul>
+          <div className="absolute bottom-0 left-0 h-1 w-0 bg-gradient-to-r from-purple-500 to-pink-500 transition-all group-hover:w-full" />
+        </Link>
+      </div>
 
       {/* ───────── CLAIMS REPORTS ───────── */}
       <div className="mb-10">

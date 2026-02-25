@@ -1,12 +1,33 @@
 "use client";
 
-import { Calculator, DollarSign, Package, RotateCcw, Truck } from "lucide-react";
-import { useState } from "react";
+import {
+  Bookmark,
+  Calculator,
+  CheckCircle,
+  Clock,
+  DollarSign,
+  Mail,
+  MoreVertical,
+  Package,
+  RotateCcw,
+  Send,
+  Trash2,
+  Truck,
+} from "lucide-react";
+import { useCallback, useEffect, useState } from "react";
 
 import { PageContainer } from "@/components/layout/PageContainer";
 import { PageHero } from "@/components/layout/PageHero";
+import { ClaimJobSelect, type ClaimJobSelection } from "@/components/selectors/ClaimJobSelect";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -38,6 +59,22 @@ interface EstimateResult {
     pitch: string;
   };
 }
+
+interface SavedEstimate {
+  id: string;
+  jobId?: string;
+  claimId?: string;
+  jobLabel: string;
+  createdAt: string;
+  totalArea: number;
+  pitch: string;
+  shingleType: string;
+  materials: MaterialLine[];
+  totalCost: number;
+  wasteFactor: number;
+}
+
+const STORAGE_KEY = "skai_material_estimates";
 
 // ── Pitch options — value is the actual pitch string the API expects ────────
 const ROOF_PITCHES = [
@@ -78,11 +115,34 @@ export default function MaterialEstimatorPage() {
   // Shingle
   const [shingleType, setShingleType] = useState("ARCHITECTURAL");
 
+  // Job context
+  const [jobContext, setJobContext] = useState<ClaimJobSelection>({});
+  const [jobLabel, setJobLabel] = useState("");
+
   // State
   const [result, setResult] = useState<EstimateResult | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const [routeStatus, setRouteStatus] = useState<"idle" | "routing" | "routed">("idle");
+
+  // Saved estimates
+  const [savedEstimates, setSavedEstimates] = useState<SavedEstimate[]>([]);
+  const [saveSuccess, setSaveSuccess] = useState(false);
+
+  // ── Load saved estimates from localStorage on mount ───────────────────────
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem(STORAGE_KEY);
+      if (stored) setSavedEstimates(JSON.parse(stored));
+    } catch {
+      /* ignore corrupt data */
+    }
+  }, []);
+
+  const persistEstimates = useCallback((estimates: SavedEstimate[]) => {
+    setSavedEstimates(estimates);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(estimates));
+  }, []);
 
   // ── Auto-estimate linear feet from area if user leaves them blank ────────
   function deriveLinearFeet(areaNum: number) {
@@ -179,6 +239,87 @@ export default function MaterialEstimatorPage() {
     setRouteStatus("idle");
   };
 
+  // ── Save current estimate ─────────────────────────────────────────────────
+  const handleSaveEstimate = () => {
+    if (!result) return;
+    const saved: SavedEstimate = {
+      id: crypto.randomUUID(),
+      jobId: jobContext.jobId,
+      claimId: jobContext.claimId || jobContext.resolvedClaimId,
+      jobLabel: jobLabel || "Unlinked Estimate",
+      createdAt: new Date().toISOString(),
+      totalArea: result.measurements.totalArea,
+      pitch: result.measurements.pitch,
+      shingleType,
+      materials: result.materials,
+      totalCost: result.totalCost,
+      wasteFactor: result.wasteFactor,
+    };
+    persistEstimates([saved, ...savedEstimates]);
+    setSaveSuccess(true);
+    setTimeout(() => setSaveSuccess(false), 2000);
+  };
+
+  const handleDeleteEstimate = (id: string) => {
+    persistEstimates(savedEstimates.filter((e) => e.id !== id));
+  };
+
+  // ── Transfer estimate to ABC Supply order ──────────────────────────────────
+  const handleTransferToOrder = async (est: SavedEstimate) => {
+    try {
+      const res = await fetch("/api/materials/estimate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "route",
+          estimate: {
+            materials: est.materials,
+            totalCost: est.totalCost,
+            wasteFactor: est.wasteFactor,
+            measurements: { totalArea: est.totalArea, pitch: est.pitch },
+          },
+          jobSiteZip: "86001",
+        }),
+      });
+      if (!res.ok) throw new Error("Route failed");
+      alert("✅ Estimate transferred to ABC Supply!");
+    } catch {
+      alert("Failed to route — try again.");
+    }
+  };
+
+  // ── Build materials text for email ─────────────────────────────────────────
+  const buildMaterialsText = (est: SavedEstimate) => {
+    const lines = est.materials.map(
+      (m) => `${m.productName}: ${m.quantity} ${m.unit} ($${m.totalPrice.toLocaleString()})`
+    );
+    return [
+      `Material Estimate — ${est.jobLabel}`,
+      `Date: ${new Date(est.createdAt).toLocaleDateString()}`,
+      `Roof: ${est.totalArea} sq ft • ${est.pitch} pitch`,
+      ``,
+      ...lines,
+      ``,
+      `Total: $${est.totalCost.toLocaleString()}`,
+      ``,
+      `— Generated by SkaiScraper`,
+    ].join("%0A");
+  };
+
+  const handleRequestQuote = (est: SavedEstimate) => {
+    const subject = encodeURIComponent(
+      `Quote Request — ${est.jobLabel} (${est.materials.length} items)`
+    );
+    const body = buildMaterialsText(est);
+    window.open(`mailto:?subject=${subject}&body=${body}`, "_blank");
+  };
+
+  const handleEmailPartner = (est: SavedEstimate) => {
+    const subject = encodeURIComponent(`Materials List — ${est.jobLabel}`);
+    const body = buildMaterialsText(est);
+    window.open(`mailto:?subject=${subject}&body=${body}`, "_blank");
+  };
+
   // ── Derived stats for the results header ─────────────────────────────────
   const totalSquares = result ? (result.measurements.totalArea / 100).toFixed(1) : null;
   const wasteLabel = result?.wasteFactor ? `${Math.round((result.wasteFactor - 1) * 100)}%` : null;
@@ -201,6 +342,23 @@ export default function MaterialEstimatorPage() {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-5">
+            {/* Link to Job / Claim */}
+            <div className="space-y-2">
+              <Label>Link to Job / Claim (optional)</Label>
+              <ClaimJobSelect
+                value={jobContext}
+                onValueChange={(next) => {
+                  setJobContext(next);
+                  // Derive label for saved estimates
+                  const el = document.querySelector(
+                    "[data-radix-select-viewport] [data-state=checked]"
+                  );
+                  setJobLabel(el?.textContent || "Linked Job");
+                }}
+                placeholder="Link estimate to a job or claim…"
+              />
+            </div>
+
             {/* Total Area */}
             <div className="space-y-2">
               <Label htmlFor="sqft">Total Roof Area (sq ft) *</Label>
@@ -407,25 +565,44 @@ export default function MaterialEstimatorPage() {
                   </span>
                 </div>
 
-                {/* Route to ABC Supply */}
-                <Button
-                  onClick={handleRouteToABC}
-                  disabled={routeStatus !== "idle"}
-                  className="w-full bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700"
-                >
-                  {routeStatus === "routing" ? (
-                    "Routing to ABC Supply..."
-                  ) : routeStatus === "routed" ? (
-                    <>
-                      <Truck className="mr-2 h-4 w-4" />✅ Routed to ABC Supply
-                    </>
-                  ) : (
-                    <>
-                      <Truck className="mr-2 h-4 w-4" />
-                      Route to ABC Supply
-                    </>
-                  )}
-                </Button>
+                {/* Actions row */}
+                <div className="grid grid-cols-2 gap-3">
+                  <Button
+                    onClick={handleRouteToABC}
+                    disabled={routeStatus !== "idle"}
+                    className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700"
+                  >
+                    {routeStatus === "routing" ? (
+                      "Routing..."
+                    ) : routeStatus === "routed" ? (
+                      <>
+                        <Truck className="mr-2 h-4 w-4" />✅ Routed
+                      </>
+                    ) : (
+                      <>
+                        <Truck className="mr-2 h-4 w-4" />
+                        ABC Supply
+                      </>
+                    )}
+                  </Button>
+                  <Button
+                    onClick={handleSaveEstimate}
+                    variant={saveSuccess ? "default" : "outline"}
+                    className={saveSuccess ? "bg-green-600 hover:bg-green-700" : ""}
+                  >
+                    {saveSuccess ? (
+                      <>
+                        <CheckCircle className="mr-2 h-4 w-4" />
+                        Saved!
+                      </>
+                    ) : (
+                      <>
+                        <Bookmark className="mr-2 h-4 w-4" />
+                        Save Estimate
+                      </>
+                    )}
+                  </Button>
+                </div>
               </div>
             ) : (
               <div className="flex flex-col items-center justify-center py-16 text-center">
@@ -438,6 +615,118 @@ export default function MaterialEstimatorPage() {
           </CardContent>
         </Card>
       </div>
+
+      {/* ───────── SAVED ESTIMATES HOLDER ───────── */}
+      {savedEstimates.length > 0 && (
+        <div className="mt-8">
+          <div className="mb-4 flex items-center gap-3">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-orange-100 dark:bg-orange-900/30">
+              <Bookmark className="h-5 w-5 text-orange-600 dark:text-orange-400" />
+            </div>
+            <div>
+              <h2 className="text-xl font-bold text-slate-900 dark:text-white">Saved Estimates</h2>
+              <p className="text-sm text-slate-500">
+                {savedEstimates.length} estimate{savedEstimates.length !== 1 ? "s" : ""} — transfer
+                to orders, request quotes, or email to partners
+              </p>
+            </div>
+          </div>
+
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            {savedEstimates.map((est) => (
+              <div
+                key={est.id}
+                className="group relative overflow-hidden rounded-xl border border-slate-200 bg-white p-5 transition-all hover:border-orange-300 hover:shadow-lg dark:border-slate-700 dark:bg-slate-800"
+              >
+                {/* Header row */}
+                <div className="mb-3 flex items-start justify-between">
+                  <div className="flex-1">
+                    <h3 className="font-semibold text-slate-900 dark:text-white">{est.jobLabel}</h3>
+                    <p className="mt-0.5 flex items-center gap-1 text-xs text-slate-500">
+                      <Clock className="h-3 w-3" />
+                      {new Date(est.createdAt).toLocaleDateString()}
+                    </p>
+                  </div>
+
+                  {/* 3-dot action menu */}
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <button className="rounded-md p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-700">
+                        <MoreVertical className="h-4 w-4" />
+                      </button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="w-52">
+                      <DropdownMenuItem onClick={() => handleTransferToOrder(est)}>
+                        <Truck className="mr-2 h-4 w-4 text-orange-500" />
+                        Transfer to ABC Supply
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => handleRequestQuote(est)}>
+                        <Send className="mr-2 h-4 w-4 text-blue-500" />
+                        Request Vendor Quote
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => handleEmailPartner(est)}>
+                        <Mail className="mr-2 h-4 w-4 text-emerald-500" />
+                        Email to Partner
+                      </DropdownMenuItem>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem
+                        onClick={() => handleDeleteEstimate(est.id)}
+                        className="text-red-600 focus:text-red-600"
+                      >
+                        <Trash2 className="mr-2 h-4 w-4" />
+                        Delete Estimate
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </div>
+
+                {/* Specs */}
+                <div className="mb-3 flex flex-wrap gap-2">
+                  <span className="rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-medium text-slate-600 dark:bg-slate-700 dark:text-slate-300">
+                    {est.totalArea.toLocaleString()} sq ft
+                  </span>
+                  <span className="rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-medium text-slate-600 dark:bg-slate-700 dark:text-slate-300">
+                    {est.pitch}
+                  </span>
+                  <span className="rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-medium text-slate-600 dark:bg-slate-700 dark:text-slate-300">
+                    {est.materials.length} items
+                  </span>
+                </div>
+
+                {/* Material summary (first 3 items) */}
+                <div className="mb-3 space-y-1">
+                  {est.materials.slice(0, 3).map((m, i) => (
+                    <div key={i} className="flex items-center justify-between text-xs">
+                      <span className="truncate text-slate-600 dark:text-slate-400">
+                        {m.productName}
+                      </span>
+                      <span className="ml-2 font-medium text-slate-900 dark:text-white">
+                        {m.quantity} {m.unit}
+                      </span>
+                    </div>
+                  ))}
+                  {est.materials.length > 3 && (
+                    <p className="text-xs text-slate-400">+{est.materials.length - 3} more items</p>
+                  )}
+                </div>
+
+                {/* Total */}
+                <div className="flex items-center justify-between rounded-lg bg-slate-50 px-3 py-2 dark:bg-slate-700/50">
+                  <span className="text-xs font-medium text-slate-500 dark:text-slate-400">
+                    Estimated Total
+                  </span>
+                  <span className="text-sm font-bold text-slate-900 dark:text-white">
+                    ${est.totalCost.toLocaleString()}
+                  </span>
+                </div>
+
+                {/* Bottom slide animation */}
+                <div className="absolute bottom-0 left-0 h-1 w-0 bg-gradient-to-r from-orange-500 to-amber-500 transition-all group-hover:w-full" />
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </PageContainer>
   );
 }
