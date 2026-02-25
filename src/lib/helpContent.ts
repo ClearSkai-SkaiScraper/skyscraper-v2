@@ -351,6 +351,22 @@ export const helpContentRegistry: Record<string, HelpContent> = {
       "Export analytics data for your accountant or business meetings",
     ],
   },
+  "/analytics/claims-timeline": {
+    title: "Claims Timeline",
+    description:
+      "Visualize claim lifecycle stages from New through Closed. Identify bottlenecks, track average stage durations, and spot overdue claims.",
+    steps: [
+      "Review the 4 KPI cards: Avg Time to Close, Active Claims, Overdue, and Closed This Month",
+      "Check the pipeline stages — New, Inspection, Estimate, Approval, Payment, Closed",
+      "Click a stage to filter claims currently at that point in the lifecycle",
+      "Use the Filter button to narrow by date range, carrier, or rep",
+    ],
+    tips: [
+      "Claims stuck in Estimate or Approval stages may need supplement escalation",
+      "Use this alongside the Analytics Dashboard for a full picture of pipeline health",
+      "Overdue claims turn red — address them before they impact cash flow",
+    ],
+  },
   "/settings/branding": {
     title: "Company Branding",
     description: "Customize your logo, colors, and branding across all reports and documents.",
@@ -429,38 +445,7 @@ export const helpContentRegistry: Record<string, HelpContent> = {
       "Properties can have multiple claims over time",
     ],
   },
-  "/teams": {
-    title: "Company Seats & Team",
-    description: "Manage your team members, roles, and seat assignments.",
-    steps: [
-      "View all team members and their current roles",
-      "Click 'Invite' to add new team members via email",
-      "Set roles: Admin, Sales Rep, Project Manager, Viewer",
-      "Remove or deactivate seats as needed",
-    ],
-    tips: [
-      "Your Business plan includes 10 seats",
-      "Admins can access all features including settings and integrations",
-      "Sales Reps see claims, leads, and their commission data",
-    ],
-  },
-  "/finance/overview": {
-    title: "Financial Overview",
-    description:
-      "Executive-level view of your company's financial health — revenue, profit, AR, and commissions.",
-    steps: [
-      "Review total revenue vs. costs in the summary cards",
-      "Check accounts receivable for outstanding payments",
-      "Monitor commission payouts and pending approvals",
-      "Track gross profit margin across all jobs",
-      "View revenue breakdown by status: Invoiced, Collected, Outstanding",
-    ],
-    tips: [
-      "Link job financials by updating cost data on each job",
-      "Outstanding AR should stay below 30% of total revenue",
-      "Commission data flows from your configured plans automatically",
-    ],
-  },
+
   "/permits": {
     title: "Permits Manager",
     description: "Track building permits for your roofing and construction projects.",
@@ -501,20 +486,7 @@ export const helpContentRegistry: Record<string, HelpContent> = {
       "Color-coded by type: Inspections, Follow-ups, Meetings",
     ],
   },
-  "/messages": {
-    title: "Message Center",
-    description: "Send and receive messages with your team, clients, and network connections.",
-    steps: [
-      "Select a conversation from the sidebar",
-      "Type your message and click Send",
-      "Attach files, photos, or documents",
-      "Start new conversations with the '+' button",
-    ],
-    tips: [
-      "Messages are organized by contact or team thread",
-      "You can send messages to homeowners about their claim status",
-    ],
-  },
+
   "/crm": {
     title: "CRM Pipeline",
     description: "Manage your sales pipeline with Kanban boards, lists, and deal tracking.",
@@ -630,21 +602,7 @@ export const helpContentRegistry: Record<string, HelpContent> = {
       "Monitor the full payment lifecycle",
     ],
   },
-  "/vendor-network": {
-    title: "Vendor & Supplier Network",
-    description: "Browse, order from, and manage relationships with material suppliers.",
-    steps: [
-      "Browse vendors by category: Roofing, Siding, Gutters, etc.",
-      "View vendor details, pricing, and delivery areas",
-      "Place orders directly through the platform",
-      "Track order history and spending by vendor",
-    ],
-    tips: [
-      "Set preferred vendors for one-click ordering",
-      "Compare pricing across multiple suppliers",
-      "Vendor receipts flow into your job cost tracking",
-    ],
-  },
+
   "/integrations": {
     title: "Integrations & API",
     description: "Connect external services, import data from AccuLynx, and manage API access.",
@@ -658,16 +616,6 @@ export const helpContentRegistry: Record<string, HelpContent> = {
       "AccuLynx migration imports contacts, jobs, and pipeline data automatically",
       "API keys should be treated as secrets — never share them publicly",
       "Webhooks notify your external systems when events happen in SkaiScraper",
-    ],
-  },
-  "/settings": {
-    title: "Organization Settings",
-    description: "Configure your company profile, billing, team permissions, and app preferences.",
-    steps: [
-      "Update company info, logo, and branding",
-      "Manage team seats and role permissions",
-      "Configure commission plans and financial settings",
-      "Set up service areas and lead routing rules",
     ],
   },
   "/settings/billing": {
@@ -750,13 +698,22 @@ export const helpContentRegistry: Record<string, HelpContent> = {
     ],
   },
   "/ai/damage-builder": {
-    title: "AI Damage Assessment",
-    description: "Upload photos and let AI identify and document damage for your scope.",
+    title: "Damage & Inspection Builder",
+    description:
+      "Upload inspection photos, then AI analyzes damage with building codes, material specs, and compliance references matched to the job's property address.",
     steps: [
-      "Upload clear photos of the damaged area",
-      "AI identifies damage type, severity, and affected components",
-      "Review the generated damage assessment",
-      "Add to your claim scope or export as a report",
+      "Upload your field inspection photos (roof, siding, gutters, interiors, etc.)",
+      "Enter or confirm the property address for code lookup",
+      "Toggle Code Compliance and Material Specs options",
+      "Click Analyze — AI identifies damage types, severity, locations, and relevant building codes",
+      "Review findings per photo with code references and material specifications",
+      "Export a professional damage & inspection report",
+    ],
+    tips: [
+      "Clear, well-lit photos produce the most accurate AI analysis",
+      "The AI cross-references local building codes for the job address automatically",
+      "Use the History button to view past inspections and reports",
+      "You can link this directly to a claim and export to the Claims-Ready Folder",
     ],
   },
   "/supplement": {
@@ -790,16 +747,7 @@ export const helpContentRegistry: Record<string, HelpContent> = {
       "Plan door-knocking routes based on map clusters",
     ],
   },
-  "/tasks": {
-    title: "Task Manager",
-    description: "Track to-dos, follow-ups, and action items across all your projects.",
-    steps: [
-      "Create tasks and assign to team members",
-      "Set due dates and priority levels",
-      "Link tasks to claims, leads, or jobs",
-      "Mark complete as you work through your list",
-    ],
-  },
+
   "/tokens": {
     title: "AI Token Balance",
     description: "View your AI token usage and purchase additional tokens.",
@@ -985,6 +933,410 @@ export const helpContentRegistry: Record<string, HelpContent> = {
     tips: [
       "Complete profiles get 5x more service requests",
       "Add verified badges to increase trust",
+    ],
+  },
+
+  // ────────────────────────────────────────────────
+  // Sprint 26c — Fill all sidebar routes
+  // ────────────────────────────────────────────────
+
+  "/storm-center": {
+    title: "Storm Command Center",
+    description:
+      "Your real-time war room for storm season. Monitor active claims, revenue pipeline, material orders, and weather alerts in one view.",
+    steps: [
+      "Review the 6 KPI cards — Active Claims, Pending Supplements, Approved Supplements, Revenue Pipeline, Material Orders, and Claim Velocity",
+      "Click any KPI card to drill into its detail page",
+      "Check Recent Activity for the latest claim updates — click a card to open it",
+      "Monitor weather alerts for your service area",
+      "Use Quick Actions to create claims, verify weather, or estimate materials",
+    ],
+    tips: [
+      "This is your homepage — bookmark it for instant access",
+      "Recent Activity shows the last 5 updated claims, clickable for quick access",
+      "Claim Velocity measures average days from creation to closeout",
+    ],
+  },
+
+  "/ai/smart-actions": {
+    title: "Smart Actions",
+    description:
+      "AI-powered quick actions for common tasks. Generate reports, analyze claims, and automate workflows with one click.",
+    steps: [
+      "Browse available smart actions organized by category",
+      "Click an action card to start the AI-powered workflow",
+      "Review the AI output and approve or edit before saving",
+    ],
+    tips: [
+      "Smart Actions use your AI tokens — check your balance before bulk processing",
+      "Custom actions can be created in Settings",
+    ],
+  },
+
+  "/quick-dol": {
+    title: "Quick Date of Loss Lookup",
+    description:
+      "Instantly verify weather events for any date and location. Essential for validating insurance claims with carrier-grade weather data.",
+    steps: [
+      "Enter the property address or select from existing claims",
+      "Select the date of loss",
+      "Click Search to pull historical weather data",
+      "Review wind speeds, hail size, and storm details",
+      "Download the weather verification report as PDF",
+    ],
+    tips: [
+      "NOAA data is the gold standard for carrier weather verification",
+      "Save reports directly to the claim's Claims-Ready Folder",
+      "Use the map view to see storm path and affected area",
+    ],
+  },
+
+  "/ai/tools/supplement": {
+    title: "Supplement Builder",
+    description:
+      "Generate professional supplement requests powered by AI. Include supporting evidence, code references, and line-item details.",
+    steps: [
+      "Select the claim to supplement",
+      "Choose the supplement type (additional damage, code upgrade, etc.)",
+      "Upload supporting photos or documents",
+      "Click Generate to create the supplement package",
+      "Review, edit, and submit to the carrier",
+    ],
+    tips: [
+      "AI auto-includes relevant building codes and manufacturer specs",
+      "Attach before/after photos for strongest supplement packages",
+      "Track supplement status in the Supplement Tracker",
+    ],
+  },
+
+  "/supplements": {
+    title: "Supplement Tracker",
+    description:
+      "Track all supplement requests across your claims. Monitor status, carrier responses, and approval amounts.",
+    steps: [
+      "View all supplements sorted by status: Draft, Requested, Approved, Denied",
+      "Click a supplement to view full details and carrier correspondence",
+      "Use filters to narrow by carrier, status, or date range",
+      "Track approval rates and response times",
+    ],
+    tips: [
+      "Set up notifications to get alerted when carriers respond",
+      "Export supplement data for accounting and reporting",
+    ],
+  },
+
+  "/ai/tools/depreciation": {
+    title: "Depreciation Builder",
+    description:
+      "Calculate and challenge depreciation amounts on claims. AI-powered analysis of recoverable vs. non-recoverable depreciation.",
+    steps: [
+      "Select the claim to analyze",
+      "Upload the carrier's estimate with depreciation line items",
+      "Click Analyze to identify over-depreciated items",
+      "Generate a depreciation recovery letter",
+      "Submit to carrier with supporting documentation",
+    ],
+    tips: [
+      "Many carriers over-depreciate by 15-30% — always check",
+      "Include manufacturer expected life data to strengthen your case",
+    ],
+  },
+
+  "/ai/tools/rebuttal": {
+    title: "Rebuttal Builder",
+    description:
+      "Generate professional rebuttal letters to fight carrier denials. AI includes relevant codes, specs, and industry standards.",
+    steps: [
+      "Select the claim to rebut",
+      "Paste the denial text from the carrier",
+      "Choose your tone: Professional, Firm, or Legal",
+      "Click Generate to create the rebuttal letter",
+      "Review, edit, and download as PDF",
+    ],
+    tips: [
+      "The AI includes relevant building codes and industry standards",
+      "Use 'Legal' tone for repeated denials or bad faith situations",
+      "Rebuttals are saved to your Report History automatically",
+    ],
+  },
+
+  "/ai/bad-faith": {
+    title: "Bad Faith Analysis",
+    description:
+      "Detect potential bad faith claim handling by insurance carriers. AI analyzes patterns, delays, and compliance issues.",
+    steps: [
+      "Select a claim to analyze for bad faith indicators",
+      "Review the AI-generated timeline of carrier actions",
+      "Check flagged delays, underpayments, and policy violations",
+      "Generate a bad faith demand letter if warranted",
+      "Export evidence package for legal review",
+    ],
+    tips: [
+      "Document every carrier interaction — timestamps matter for bad faith",
+      "State insurance regulations vary — check your jurisdiction",
+      "Consult with a public adjuster or attorney for confirmed bad faith",
+    ],
+  },
+
+  "/maps/map-view": {
+    title: "Map View",
+    description:
+      "Visualize all your jobs, crews, and properties on an interactive map. Great for routing, territory planning, and identifying clusters.",
+    steps: [
+      "View pins for active claims, leads, and crew locations",
+      "Click a pin to see property details and claim status",
+      "Use filters to show only specific job types or statuses",
+      "Plan routes between appointments using the route tool",
+    ],
+    tips: [
+      "Color-coded pins show claim status at a glance",
+      "Use map view to identify storm damage clusters in neighborhoods",
+      "Pair with crew scheduling for efficient field operations",
+    ],
+  },
+
+  "/ai/roofplan-builder": {
+    title: "Project Plan Builder",
+    description:
+      "AI-powered project planning for roofing and restoration jobs. Generate detailed scope of work, timelines, and material lists.",
+    steps: [
+      "Select the claim or job to plan",
+      "Upload roof measurements or use satellite data",
+      "AI generates a complete project plan with materials and labor",
+      "Review and customize the scope, timeline, and costs",
+      "Export as a proposal or work order",
+    ],
+    tips: [
+      "Accurate measurements lead to better material estimates",
+      "Link directly to Material Estimator for instant ordering",
+    ],
+  },
+
+  "/ai/mockup": {
+    title: "Mockup Generator",
+    description:
+      "Generate photorealistic mockups of proposed repairs and improvements. Show homeowners what their property will look like.",
+    steps: [
+      "Upload a current photo of the property",
+      "Select the shingle color, style, or material",
+      "AI generates a realistic before/after mockup",
+      "Download or share with the homeowner",
+    ],
+    tips: [
+      "Mockups dramatically improve homeowner approval rates",
+      "Use multiple shingle colors to give homeowners options",
+      "Include mockups in your proposals for a professional touch",
+    ],
+  },
+
+  "/vendors/orders": {
+    title: "Material Orders",
+    description:
+      "Track and manage material orders across all your jobs. Monitor delivery status, costs, and vendor performance.",
+    steps: [
+      "View all active orders sorted by delivery status",
+      "Click an order to see full details and tracking info",
+      "Create new orders from job estimates or material lists",
+      "Track delivery dates and coordinate with crew schedules",
+    ],
+    tips: [
+      "Set up delivery alerts so crews know when materials arrive",
+      "Compare vendor pricing to optimize material costs",
+      "Link orders to specific claims for accurate job costing",
+    ],
+  },
+
+  "/reports/templates": {
+    title: "Templates & Marketplace",
+    description:
+      "Browse report templates and marketplace items. Use pre-built templates or create your own for consistent, professional documents.",
+    steps: [
+      "Browse available templates by category (inspection, estimate, close-out, etc.)",
+      "Preview a template before using it",
+      "Customize with your company branding and logo",
+      "Save custom templates for reuse across all claims",
+    ],
+    tips: [
+      "Custom templates save hours on recurring report types",
+      "Share templates across your team for consistency",
+    ],
+  },
+
+  "/reports/templates/pdf-builder": {
+    title: "Report Builder",
+    description:
+      "Build custom PDF reports with drag-and-drop. Combine text, photos, tables, and charts into professional carrier-ready documents.",
+    steps: [
+      "Start with a blank report or select a template",
+      "Drag sections to arrange your report layout",
+      "Add photos, measurement data, and narrative text",
+      "Preview the PDF and make final adjustments",
+      "Export or share directly to the Claims-Ready Folder",
+    ],
+    tips: [
+      "Use the photo grid layout for damage documentation sections",
+      "Include your company header/footer for professional branding",
+      "Reports auto-save — no work is ever lost",
+    ],
+  },
+
+  "/reports/contractor-packet": {
+    title: "Contractor Packet",
+    description:
+      "Assemble complete contractor packets for homeowners and carriers. Includes licenses, insurance, certifications, and scope of work.",
+    steps: [
+      "Select the claim or job for the packet",
+      "Choose which documents to include (license, insurance COI, W-9, etc.)",
+      "AI organizes everything into a professional packet",
+      "Download as PDF or share via email",
+    ],
+    tips: [
+      "Keep your licenses and insurance documents up to date in Settings",
+      "Pre-built packets speed up the signing process",
+      "Include your warranty information for added credibility",
+    ],
+  },
+
+  // ────────────────────────────────────────────────
+  // Sprint 26c-2 — Tasks, Settings, Teams, Archive & more
+  // ────────────────────────────────────────────────
+
+  "/tasks": {
+    title: "Task Manager",
+    description:
+      "Track and manage all team tasks in one place. Create, assign, and prioritize work across claims, projects, and field operations.",
+    steps: [
+      "View all tasks filtered by status: To Do, In Progress, Done, Cancelled",
+      "Click the + button or use the floating Task button to create new tasks",
+      "Assign tasks to team members with due dates and priority levels",
+      "Link tasks to specific claims or projects for context",
+      "Update task status directly from the list view",
+    ],
+    tips: [
+      "Use the floating Task button (bottom-right) on any page to create tasks instantly",
+      "High-priority tasks appear at the top of your list",
+      "Tasks can be created from claim pages, permit pages, and commission pages too",
+    ],
+  },
+
+  "/settings": {
+    title: "Company Settings",
+    description:
+      "Configure your account, organization preferences, and workspace. Manage team access, demo data, and company details.",
+    steps: [
+      "Review your account information at the top",
+      "Update display name, organization name, and timezone",
+      "Toggle Demo Mode to populate sample data for training",
+      "Use Quick Links to jump to Team, Documents, Trades Profile, or Archive",
+      "Admins: Access Data Migration and Archive add-on settings",
+    ],
+    tips: [
+      "Admin users see extra sections for Data Migration and Archive management",
+      "Billing is managed from Team & Company Seats — find it in Quick Links",
+      "Export your data anytime from the Data & Privacy section",
+    ],
+  },
+
+  "/settings/migrations": {
+    title: "CRM Data Migration",
+    description:
+      "Import your existing data from AccuLynx, JobNimbus, or other CRM platforms. A 5-step wizard guides you through the entire process.",
+    steps: [
+      "Select your source CRM (AccuLynx, JobNimbus, or CSV upload)",
+      "Upload your exported data file",
+      "Map fields from your old CRM to SkaiScraper fields",
+      "Review the import preview to verify data accuracy",
+      "Confirm and run the migration — progress is tracked in real-time",
+    ],
+    tips: [
+      "Export from your old CRM first — check their help docs for CSV export",
+      "Migration is non-destructive — existing data is never overwritten",
+      "Large imports may take a few minutes — don't close the browser",
+    ],
+  },
+
+  "/archive": {
+    title: "Archive & Cold Storage",
+    description:
+      "View and restore archived claims, leads, and projects. Items older than 30 days move to cold storage.",
+    steps: [
+      "Browse recently archived items in the main tab",
+      "Switch to Cold Storage to see older archived items",
+      "Click Restore to bring any item back to active status",
+      "Cold Storage access requires the Archive add-on ($5/member/month)",
+    ],
+    tips: [
+      "Archiving keeps your active workspace clean without losing data",
+      "Restored items appear back in their original location",
+      "Admins can enable Cold Storage access from Company Settings",
+    ],
+  },
+
+  "/teams": {
+    title: "Team & Company Seats",
+    description:
+      "Manage your company seats, invite team members, handle billing, and configure the org chart with manager assignments.",
+    steps: [
+      "View your subscription status and seat count at the top",
+      "Adjust seats using the + / – buttons, then click Update",
+      "Invite new team members by email address",
+      "Manage roles (Admin, Member) and deactivate/remove seats",
+      "Assign managers to create your org hierarchy",
+      "Open the Stripe Billing Portal for invoices and payment methods",
+    ],
+    tips: [
+      "Each seat costs $80/month — adjust up or down anytime with prorated billing",
+      "Pending invites count toward your seat total",
+      "Admins have access to all company settings and migration tools",
+    ],
+  },
+
+  "/finance/overview": {
+    title: "Financial Overview",
+    description:
+      "Track revenue, outstanding invoices, commission payouts, and mortgage check status across your entire organization.",
+    steps: [
+      "Review the KPI cards for total revenue, outstanding, and collected amounts",
+      "Check the revenue trend chart for month-over-month growth",
+      "Drill into Invoices, Commissions, or Mortgage Checks from the quick links",
+    ],
+    tips: [
+      "Filter by date range to see seasonal patterns",
+      "Compare revenue against claim count for profitability analysis",
+    ],
+  },
+
+  "/messages": {
+    title: "Messages Hub",
+    description:
+      "Send and receive messages with team members, connected clients, and trades network pros — all in one inbox.",
+    steps: [
+      "View all message threads sorted by most recent",
+      "Click a thread to read the full conversation",
+      "Use 'New Message' to start a conversation with a team member, client, or connected pro",
+      "Choose the recipient type — Team Member, Client/Contact, or Connected Pro",
+      "Attach messages to specific claims for context tracking",
+    ],
+    tips: [
+      "Team messages are internal — only your company members can see them",
+      "Client messages are visible in the homeowner portal",
+      "Pro messages go through the Trades Network messaging system",
+    ],
+  },
+
+  "/vendor-network": {
+    title: "Vendor Intelligence",
+    description:
+      "Discover and manage vendor relationships. Compare pricing, performance, and availability across your supply chain.",
+    steps: [
+      "Browse vendors by category (materials, labor, equipment)",
+      "View vendor ratings, reviews, and pricing",
+      "Add preferred vendors to your network",
+      "Track order history and delivery performance",
+    ],
+    tips: [
+      "Preferred vendors appear first when placing material orders",
+      "Vendor Intelligence data improves as you place more orders",
     ],
   },
 };

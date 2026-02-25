@@ -7,6 +7,7 @@ import { AutoInitWrapper } from "@/components/AutoInitWrapper";
 import BrandingProvider from "@/components/BrandingProvider";
 import { LegalGate } from "@/components/legal/LegalGate";
 import { RouteGroupProvider } from "@/components/RouteGroupProvider";
+import { TaskSlideOverProvider } from "@/components/tasks/TaskSlideOverContext";
 import { TokenGateProvider } from "@/components/TokenGate";
 import { usePresenceHeartbeat } from "@/hooks/usePresenceHeartbeat";
 import { PHProvider } from "@/lib/analytics.tsx";
@@ -33,7 +34,9 @@ export function AppProviders({
             <TokenGateProvider orgId={orgId}>
               <BrandingProvider>
                 <AssistantProvider>
-                  <LegalGate initialPending={pendingLegal}>{children}</LegalGate>
+                  <TaskSlideOverProvider>
+                    <LegalGate initialPending={pendingLegal}>{children}</LegalGate>
+                  </TaskSlideOverProvider>
                 </AssistantProvider>
               </BrandingProvider>
             </TokenGateProvider>

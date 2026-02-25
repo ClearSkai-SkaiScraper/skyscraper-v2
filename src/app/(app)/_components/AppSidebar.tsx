@@ -40,6 +40,7 @@ const navSections: NavSection[] = [
     label: "Storm Command Center",
     items: [
       { label: "Dashboard", href: "/dashboard" },
+      { label: "KPI Dashboard", href: "/dashboard/kpis" },
       { label: "Storm Center", href: "/storm-center" },
       { label: "Job Pipeline", href: "/pipeline" },
       { label: "Analytics Dashboard", href: "/analytics/dashboard" },
@@ -51,6 +52,7 @@ const navSections: NavSection[] = [
     label: "Claims & Supplements",
     items: [
       { label: "Active Claims", href: "/claims" },
+      { label: "Claims Timeline", href: "/analytics/claims-timeline" },
       { label: "Claims-Ready Folder", href: "/claims-ready-folder" },
       { label: "Supplement Builder", href: "/ai/tools/supplement" },
       { label: "Supplement Tracker", href: "/supplements" },
@@ -73,7 +75,7 @@ const navSections: NavSection[] = [
   {
     label: "Build Tools & Materials",
     items: [
-      { label: "Damage Report Builder", href: "/ai/damage-builder" },
+      { label: "Damage & Inspection Builder", href: "/ai/damage-builder" },
       { label: "Project Plan Builder", href: "/ai/roofplan-builder" },
       { label: "Mockup Generator", href: "/ai/mockup", featureFlag: "FEATURE_MOCKUP_GENERATOR" },
       { label: "Vision Labs", href: "/vision-lab", featureFlag: "FEATURE_VISION_AI" },
@@ -88,6 +90,9 @@ const navSections: NavSection[] = [
       { label: "Report Builder", href: "/reports/templates/pdf-builder" },
       { label: "Templates & Marketplace", href: "/reports/templates" },
       { label: "Contractor Packet", href: "/reports/contractor-packet" },
+      { label: "AI Proposals", href: "/ai-proposals" },
+      { label: "Smart Documents", href: "/smart-docs" },
+      { label: "Carrier Exports", href: "/ai/exports" },
       { label: "Company Documents", href: "/settings/company-documents" },
     ],
   },
@@ -109,8 +114,7 @@ const navSections: NavSection[] = [
       { label: "Job Board", href: "/trades/jobs" },
       { label: "Vendor Intelligence", href: "/vendor-network" },
       { label: "Company Settings", href: "/settings" },
-      { label: "Billing & Plans", href: "/settings/billing" },
-      { label: "Team & Seats", href: "/teams" },
+      { label: "Team & Company Seats", href: "/teams" },
     ],
   },
 ];

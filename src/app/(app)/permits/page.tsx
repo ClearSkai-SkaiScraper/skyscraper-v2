@@ -18,6 +18,7 @@ import { guarded } from "@/lib/buildPhase";
 import prisma from "@/lib/prisma";
 import { safeOrgContext } from "@/lib/safeOrgContext";
 
+import PermitActions from "./PermitActions";
 import PermitForm from "./PermitForm";
 
 export const dynamic = "force-dynamic";
@@ -129,11 +130,12 @@ export default async function PermitsPage() {
             <Th>Applied</Th>
             <Th>Inspection</Th>
             <Th align="right">Fee</Th>
+            <Th align="right">Actions</Th>
           </DataTableHead>
           <DataTableBody>
             {permits.length === 0 && (
               <EmptyRow
-                colSpan={7}
+                colSpan={8}
                 message="No permits tracked yet. Add your first permit above."
               />
             )}
@@ -164,6 +166,13 @@ export default async function PermitsPage() {
                 <Td className="text-xs text-slate-500">{p.inspectionDate || "—"}</Td>
                 <Td align="right" mono>
                   {p.fee ? `$${p.fee.toFixed(2)}` : "—"}
+                </Td>
+                <Td align="right">
+                  <PermitActions
+                    permitId={p.id}
+                    currentStatus={p.status}
+                    permitNumber={p.permitNumber}
+                  />
                 </Td>
               </tr>
             ))}

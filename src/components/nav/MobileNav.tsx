@@ -14,6 +14,7 @@ import {
   Calendar,
   Camera,
   ClipboardList,
+  Clock,
   Cloud,
   CreditCard,
   FileText,
@@ -61,6 +62,7 @@ const navSections: NavSection[] = [
     label: "Storm Command Center",
     items: [
       { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
+      { label: "KPI Dashboard", href: "/dashboard/kpis", icon: BarChart3 },
       { label: "Storm Center", href: "/storm-center", icon: Cloud },
       { label: "Job Pipeline", href: "/pipeline", icon: Briefcase },
       { label: "Analytics Dashboard", href: "/analytics/dashboard", icon: BarChart3 },
@@ -72,6 +74,7 @@ const navSections: NavSection[] = [
     label: "Claims & Supplements",
     items: [
       { label: "Active Claims", href: "/claims", icon: ClipboardList },
+      { label: "Claims Timeline", href: "/analytics/claims-timeline", icon: Clock },
       { label: "Claims-Ready Folder", href: "/claims-ready-folder", icon: FolderOpen },
       { label: "Supplement Builder", href: "/ai/tools/supplement", icon: Wrench },
       { label: "Supplement Tracker", href: "/supplements", icon: History },
@@ -94,7 +97,7 @@ const navSections: NavSection[] = [
   {
     label: "Build Tools & Materials",
     items: [
-      { label: "Damage Report Builder", href: "/ai/damage-builder", icon: Hammer },
+      { label: "Damage & Inspection Builder", href: "/ai/damage-builder", icon: Hammer },
       { label: "Project Plan Builder", href: "/ai/roofplan-builder", icon: Sparkles },
       { label: "Mockup Generator", href: "/ai/mockup", icon: Sparkles },
       { label: "Vision Labs", href: "/vision-lab", icon: Camera },
@@ -109,6 +112,9 @@ const navSections: NavSection[] = [
       { label: "Report Builder", href: "/reports/templates/pdf-builder", icon: FileText },
       { label: "Templates & Marketplace", href: "/reports/templates", icon: FolderOpen },
       { label: "Contractor Packet", href: "/reports/contractor-packet", icon: FileText },
+      { label: "AI Proposals", href: "/ai-proposals", icon: Sparkles },
+      { label: "Smart Documents", href: "/smart-docs", icon: FileText },
+      { label: "Carrier Exports", href: "/ai/exports", icon: FileText },
       { label: "Company Documents", href: "/settings/company-documents", icon: FileText },
     ],
   },
@@ -130,8 +136,7 @@ const navSections: NavSection[] = [
       { label: "Job Board", href: "/trades/jobs", icon: Briefcase },
       { label: "Vendor Intelligence", href: "/vendor-network", icon: Building2 },
       { label: "Company Settings", href: "/settings", icon: Settings },
-      { label: "Billing & Plans", href: "/settings/billing", icon: CreditCard },
-      { label: "Team & Seats", href: "/teams", icon: Users },
+      { label: "Team & Company Seats", href: "/teams", icon: Users },
     ],
   },
 ];

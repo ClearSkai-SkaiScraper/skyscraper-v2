@@ -182,6 +182,7 @@ export default async function CommissionsPage() {
                     recordId={r.id}
                     pending={r.commissionPending}
                     owed={r.commissionOwed}
+                    repName={r.user?.name || undefined}
                   />
                 </td>
               </tr>

@@ -6,12 +6,25 @@ import { withAuth } from "@/lib/auth/withAuth";
 import prisma from "@/lib/prisma";
 import { checkRateLimit } from "@/lib/rate-limit";
 
-const createMessageSchema = z.object({
-  contactId: z.string().min(1),
-  claimId: z.string().optional(),
-  subject: z.string().optional(),
-  body: z.string().min(1),
-});
+const createMessageSchema = z.discriminatedUnion("isInternal", [
+  // Standard contact/client message
+  z.object({
+    isInternal: z.literal(false).optional().default(false),
+    contactId: z.string().min(1),
+    claimId: z.string().optional(),
+    subject: z.string().optional(),
+    body: z.string().min(1),
+  }),
+  // Internal team message
+  z.object({
+    isInternal: z.literal(true),
+    recipientUserId: z.string().min(1),
+    recipientName: z.string().optional(),
+    recipientEmail: z.string().optional(),
+    subject: z.string().optional(),
+    body: z.string().min(1),
+  }),
+]);
 
 /**
  * POST /api/messages/create
@@ -37,15 +50,56 @@ export const POST = withAuth(async (req: NextRequest, { userId, orgId }) => {
         { status: 400 }
       );
     }
-    const { contactId, claimId, subject, body: messageBody } = parsed.data;
+    const data = parsed.data;
 
-    // Validate required fields
-    if (!contactId || !messageBody) {
-      return NextResponse.json(
-        { error: "Missing required fields: contactId, body" },
-        { status: 400 }
-      );
+    // ── Internal team message path ────────────────────────────────────
+    if (data.isInternal === true) {
+      const { recipientUserId, recipientName, subject, body: messageBody } = data;
+
+      // Verify the recipient is in the same org
+      const recipient = await prisma.user_organizations.findFirst({
+        where: { userId: recipientUserId, organizationId: orgId },
+      });
+      if (!recipient) {
+        return NextResponse.json(
+          { error: "Team member not found in your organization" },
+          { status: 404 }
+        );
+      }
+
+      const thread = await prisma.messageThread.create({
+        data: {
+          id: crypto.randomUUID(),
+          orgId,
+          claimId: null,
+          clientId: null,
+          participants: [userId, recipientUserId],
+          subject: subject || `Team Message to ${recipientName || "teammate"}`,
+          isPortalThread: false,
+        },
+      });
+
+      const message = await prisma.message.create({
+        data: {
+          id: crypto.randomUUID(),
+          threadId: thread.id,
+          senderUserId: userId,
+          senderType: "pro",
+          body: messageBody,
+          read: false,
+          fromPortal: false,
+        },
+      });
+
+      return NextResponse.json({
+        success: true,
+        thread: { id: thread.id, subject: thread.subject, createdAt: thread.createdAt },
+        message: { id: message.id, body: message.body, createdAt: message.createdAt },
+      });
     }
+
+    // ── Standard contact/client message path ─────────────────────────
+    const { contactId, claimId, subject, body: messageBody } = data;
 
     // Verify contact belongs to org — check contacts table first, then Client table
     let contact = await prisma.contacts.findFirst({
@@ -153,9 +207,6 @@ export const POST = withAuth(async (req: NextRequest, { userId, orgId }) => {
     });
   } catch (error) {
     logger.error("[API] /api/messages/create error:", error);
-    return NextResponse.json(
-      { error: "Failed to create message" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Failed to create message" }, { status: 500 });
   }
 });

@@ -29,7 +29,7 @@ export const metadata = {
     siteName: "SkaiScraper",
     images: [
       {
-        url: "/brand/og-image.jpg",
+        url: "/brand/og-cover-1200x630.png",
         width: 1200,
         height: 630,
         alt: "SkaiScraper - Let's Take Your Company to New Heights",
@@ -43,12 +43,16 @@ export const metadata = {
     title: "SkaiScraper",
     description:
       "AI-powered operations hub for trades professionals. Take your company to new heights.",
-    images: ["/brand/og-image.jpg"],
+    images: ["/brand/og-cover-1200x630.png"],
     creator: "@skaiscraper",
   },
   icons: {
-    icon: "/favicon.ico",
-    apple: "/brand/apple-touch-icon.png",
+    icon: [
+      { url: "/favicon.ico", sizes: "48x48" },
+      { url: "/brand/pro_portal_logo.png", sizes: "192x192", type: "image/png" },
+    ],
+    apple: "/brand/pro_portal_logo.png",
+    shortcut: "/favicon.ico",
   },
   manifest: "/manifest.json",
   other: {

@@ -1,7 +1,7 @@
 "use client";
 
-import { Loader2 } from "lucide-react";
 import { logger } from "@/lib/logger";
+import { Loader2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
@@ -25,7 +25,7 @@ interface NewMessageModalProps {
   onSuccess?: () => void;
   initialSubject?: string;
   initialBody?: string;
-  initialRecipientType?: "contact" | "pro";
+  initialRecipientType?: "contact" | "pro" | "team";
   initialContactId?: string;
   initialProProfileId?: string;
 }
@@ -44,9 +44,12 @@ export default function NewMessageModal({
   const [contacts, setContacts] = useState<any[]>([]);
   const [claims, setClaims] = useState<any[]>([]);
   const [connectedPros, setConnectedPros] = useState<any[]>([]);
+  const [teamMembers, setTeamMembers] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
-  const [recipientType, setRecipientType] = useState<"contact" | "pro">(initialRecipientType);
+  const [recipientType, setRecipientType] = useState<"contact" | "pro" | "team">(
+    initialRecipientType
+  );
 
   const [formData, setFormData] = useState({
     contactId: "",
@@ -54,6 +57,7 @@ export default function NewMessageModal({
     subject: "",
     body: "",
     proProfileId: "",
+    teamMemberId: "",
   });
 
   useEffect(() => {
@@ -66,6 +70,7 @@ export default function NewMessageModal({
         subject: initialSubject || "",
         body: initialBody || "",
         proProfileId: initialProProfileId || "",
+        teamMemberId: "",
       });
     }
   }, [
@@ -132,6 +137,17 @@ export default function NewMessageModal({
         const prosData = await prosRes.json();
         setConnectedPros(prosData.trades || []);
       }
+
+      // Fetch team members for internal messaging
+      try {
+        const teamRes = await fetch("/api/team/members");
+        if (teamRes.ok) {
+          const teamData = await teamRes.json();
+          setTeamMembers(teamData.members || []);
+        }
+      } catch {
+        // Team members fetch is non-critical
+      }
     } catch (error) {
       logger.error("Failed to load data:", error);
       toast.error("Failed to load recipients and claims");
@@ -153,6 +169,11 @@ export default function NewMessageModal({
       return;
     }
 
+    if (recipientType === "team" && !formData.teamMemberId) {
+      toast.error("Team member is required");
+      return;
+    }
+
     if (!formData.body) {
       toast.error("Message body is required");
       return;
@@ -166,7 +187,22 @@ export default function NewMessageModal({
 
       let res: Response;
 
-      if (recipientType === "pro") {
+      if (recipientType === "team") {
+        // Internal team message via messages/create
+        const member = teamMembers.find((m: any) => m.id === formData.teamMemberId);
+        res = await fetch("/api/messages/create", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            isInternal: true,
+            recipientUserId: formData.teamMemberId,
+            recipientName: member?.name || member?.email || "Team Member",
+            recipientEmail: member?.email,
+            subject: formData.subject || "Internal Message",
+            body: formData.body,
+          }),
+        });
+      } else if (recipientType === "pro") {
         // Pro-to-pro via trades network
         res = await fetch("/api/trades/messages", {
           method: "POST",
@@ -215,6 +251,7 @@ export default function NewMessageModal({
         subject: "",
         body: "",
         proProfileId: "",
+        teamMemberId: "",
       });
       onOpenChange(false);
       onSuccess?.();
@@ -243,12 +280,13 @@ export default function NewMessageModal({
               <Label htmlFor="recipient-type">Recipient Type</Label>
               <Select
                 value={recipientType}
-                onValueChange={(value) => setRecipientType(value as "contact" | "pro")}
+                onValueChange={(value) => setRecipientType(value as "contact" | "pro" | "team")}
               >
                 <SelectTrigger id="recipient-type">
                   <SelectValue placeholder="Select recipient type" />
                 </SelectTrigger>
                 <SelectContent>
+                  <SelectItem value="team">Team Member</SelectItem>
                   <SelectItem value="contact">Client / Contact</SelectItem>
                   <SelectItem value="pro">Connected Pro</SelectItem>
                 </SelectContent>
@@ -256,9 +294,34 @@ export default function NewMessageModal({
             </div>
             <div className="space-y-2">
               <Label htmlFor="contact">
-                {recipientType === "pro" ? "Connected Pro *" : "Contact *"}
+                {recipientType === "team"
+                  ? "Team Member *"
+                  : recipientType === "pro"
+                    ? "Connected Pro *"
+                    : "Contact *"}
               </Label>
-              {recipientType === "pro" ? (
+              {recipientType === "team" ? (
+                <Select
+                  value={formData.teamMemberId}
+                  onValueChange={(value) => setFormData({ ...formData, teamMemberId: value })}
+                >
+                  <SelectTrigger id="contact">
+                    <SelectValue placeholder="Select a team member" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {teamMembers.length === 0 ? (
+                      <div className="p-2 text-sm text-slate-500">No team members found</div>
+                    ) : (
+                      teamMembers.map((member) => (
+                        <SelectItem key={member.id} value={member.id}>
+                          {member.name || member.email}
+                          {member.role && ` • ${member.role}`}
+                        </SelectItem>
+                      ))
+                    )}
+                  </SelectContent>
+                </Select>
+              ) : recipientType === "pro" ? (
                 <Select
                   value={formData.proProfileId}
                   onValueChange={(value) => setFormData({ ...formData, proProfileId: value })}

@@ -14,14 +14,28 @@ export const DASHBOARD_ROUTES = {
   // Pro (contractor) dashboard routes
   pro: ["/dashboard", "/claims", "/pipeline", "/proposals", "/analytics", "/vendors", "/settings"],
 
-  // Client (homeowner) portal routes
+  // Client (homeowner) portal routes — all portal sub-routes
   client: [
     "/portal",
-    "/portal/projects",
+    "/portal/claims",
     "/portal/contractors",
-    "/portal/bids",
+    "/portal/feed",
+    "/portal/find-a-pro",
+    "/portal/invite",
+    "/portal/jobs",
     "/portal/messages",
+    "/portal/my-jobs",
+    "/portal/my-pros",
+    "/portal/network",
+    "/portal/notifications",
+    "/portal/onboarding",
+    "/portal/products",
+    "/portal/profile",
+    "/portal/profiles",
+    "/portal/projects",
+    "/portal/request",
     "/portal/settings",
+    "/portal/work-request",
   ],
 
   // Shared routes (accessible by both)

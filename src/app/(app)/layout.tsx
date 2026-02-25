@@ -11,6 +11,8 @@ import { FeatureHelp } from "@/components/FeatureHelp";
 import { CRMFooter } from "@/components/nav/CRMFooter";
 import CRMTopbar from "@/components/nav/CRMTopbar";
 import { ErrorBoundary } from "@/components/system/ErrorBoundary";
+import { TaskButton } from "@/components/tasks/TaskButton";
+import { TaskSlideOver } from "@/components/tasks/TaskSlideOver";
 import { ToastProvider } from "@/components/ToastProvider";
 import { PostHogPageview } from "@/lib/analytics.tsx";
 import { getActiveOrgSafe } from "@/lib/auth/getActiveOrgSafe";
@@ -161,6 +163,8 @@ export default async function AppLayout({ children }: { children: React.ReactNod
             </div>
           </Suspense>
           <FeatureHelp />
+          <TaskButton variant="floating" label="New Task" />
+          <TaskSlideOver />
         </div>
       </AppProviders>
     );

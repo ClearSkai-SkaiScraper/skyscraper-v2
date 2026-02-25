@@ -32,17 +32,19 @@ export async function GET(req: NextRequest) {
     const orgId = ctx.orgId;
 
     // ── Billing guard ──
+    // ── Billing guard (soft) — allow viewing analytics even without subscription ──
+    // Weather analytics shows data the user already generated; gating it
+    // behind billing creates a poor UX. AI generation endpoints still enforce billing.
     if (orgId) {
       try {
         await requireActiveSubscription(orgId);
       } catch (error) {
         if (error instanceof SubscriptionRequiredError) {
-          return NextResponse.json(
-            { error: "subscription_required", message: "Active subscription required" },
-            { status: 402 }
-          );
+          // Log but don't block — user can see their existing data
+          console.info("[Weather Analytics] No active subscription, allowing read-only access");
+        } else {
+          throw error;
         }
-        throw error;
       }
     }
 

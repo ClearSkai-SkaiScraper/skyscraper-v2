@@ -1,18 +1,24 @@
 "use client";
 
+import { ListTodo } from "lucide-react";
 import { useState } from "react";
+
+import { useTaskSlideOver } from "@/components/tasks/TaskSlideOverContext";
 
 export default function CommissionActions({
   recordId,
   pending,
   owed,
+  repName,
 }: {
   recordId: string;
   pending: number;
   owed: number;
+  repName?: string;
 }) {
   const [loading, setLoading] = useState(false);
   const [status, setStatus] = useState<string | null>(null);
+  const { openTaskPanel } = useTaskSlideOver();
 
   async function handleAction(action: "approve" | "mark_paid") {
     setLoading(true);
@@ -58,6 +64,19 @@ export default function CommissionActions({
           Pay
         </button>
       )}
+      <button
+        onClick={() =>
+          openTaskPanel({
+            prefillTitle: `Review commission for ${repName || "rep"}`,
+            prefillDescription: `Commission record ${recordId} — Pending: $${pending.toFixed(2)}, Owed: $${owed.toFixed(2)}`,
+            context: "commissions",
+          })
+        }
+        className="rounded-lg bg-blue-600/20 px-2 py-1 text-xs font-medium text-blue-600 transition-colors hover:bg-blue-600/30 dark:text-blue-400"
+        title="Create task"
+      >
+        <ListTodo className="h-3.5 w-3.5" />
+      </button>
     </div>
   );
 }

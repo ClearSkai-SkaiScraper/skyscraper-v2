@@ -36,6 +36,8 @@ import {
   type VendorListItem,
 } from "@/lib/vendors/vin-types";
 
+import { VendorLogo } from "./VendorLogo";
+
 const TRADE_ICONS: Record<string, string> = {
   roofing: "🏠",
   plumbing: "🔧",
@@ -456,28 +458,6 @@ export function VendorNetworkClient() {
 
 // ── Vendor Card ──
 function VendorNetworkCard({ vendor }: { vendor: VendorListItem }) {
-  const [imgError, setImgError] = useState(false);
-
-  // Generate initials for fallback
-  const initials = vendor.name
-    .split(" ")
-    .map((w) => w[0])
-    .join("")
-    .slice(0, 2)
-    .toUpperCase();
-
-  // Generate a deterministic color based on vendor name
-  const colors = [
-    "from-blue-500 to-indigo-600",
-    "from-emerald-500 to-teal-600",
-    "from-purple-500 to-violet-600",
-    "from-amber-500 to-orange-600",
-    "from-rose-500 to-pink-600",
-    "from-cyan-500 to-sky-600",
-  ];
-  const colorIndex = vendor.name.charCodeAt(0) % colors.length;
-  const gradientClass = colors[colorIndex];
-
   return (
     <Card className="group relative overflow-hidden transition-all hover:shadow-lg">
       <div className="p-5">
@@ -499,22 +479,7 @@ function VendorNetworkCard({ vendor }: { vendor: VendorListItem }) {
 
         {/* Header */}
         <div className="mb-3 flex items-start gap-3">
-          {vendor.logo && !imgError ? (
-            <div className="relative flex h-12 w-12 flex-shrink-0 items-center justify-center overflow-hidden rounded-lg border bg-white">
-              <img
-                src={vendor.logo}
-                alt={vendor.name}
-                className="h-full w-full object-contain p-1"
-                onError={() => setImgError(true)}
-              />
-            </div>
-          ) : (
-            <div
-              className={`flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-lg bg-gradient-to-br ${gradientClass} font-bold text-white shadow-sm`}
-            >
-              {initials}
-            </div>
-          )}
+          <VendorLogo logo={vendor.logo} name={vendor.name} size="sm" />
           <div className="min-w-0 flex-1">
             <h3 className="truncate text-base font-semibold">{vendor.name}</h3>
             <p className="text-xs text-muted-foreground">{vendor.category || "Vendor"}</p>

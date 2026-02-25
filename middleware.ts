@@ -41,6 +41,8 @@ const PRO_ROUTES = [
   "/maps",
   "/weather",
   "/ai",
+  "/ai-proposals",
+  "/smart-docs",
   "/quick-dol",
   "/property-profiles",
   "/vision-lab",
@@ -63,6 +65,9 @@ const PRO_ROUTES = [
   "/inspections",
   "/governance",
   "/mobile",
+  "/carrier",
+  "/estimates",
+  "/tasks",
 ];
 
 const CLIENT_ROUTES = ["/portal"];

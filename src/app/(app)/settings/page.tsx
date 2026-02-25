@@ -1,5 +1,18 @@
 import { currentUser } from "@clerk/nextjs/server";
-import { Calendar, Mail, Settings as SettingsIcon, Shield, User } from "lucide-react";
+import {
+  Archive,
+  ArrowRight,
+  Calendar,
+  Database,
+  FileText,
+  Mail,
+  Settings as SettingsIcon,
+  Shield,
+  Upload,
+  User,
+  Users,
+  Wrench,
+} from "lucide-react";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
@@ -76,6 +89,8 @@ export default async function Settings() {
   const orgCtx = await safeOrgContext();
   const organizationId = orgCtx.orgId || null;
   const userId = orgCtx.userId;
+  const userRole = orgCtx.role; // "owner" | "admin" | "member"
+  const isAdmin = userRole === "owner" || userRole === "admin" || userRole === "ADMIN";
 
   // Demo mode: allow access if org exists
   const demoReady = isDemoWorkspaceReady({ hasOrganization: !!organizationId });
@@ -240,53 +255,148 @@ export default async function Settings() {
         <PageSectionCard title="Quick Links">
           <div className="grid gap-4 md:grid-cols-2">
             <Link
-              href="/settings/billing"
-              className={`flex items-center justify-between rounded-lg ${panelGhost} p-4 transition-colors hover:bg-[var(--surface-1)]`}
-            >
-              <div>
-                <div className="font-medium text-[color:var(--text)]">
-                  💳 Billing & Subscription
-                </div>
-                <div className="text-sm text-slate-700 dark:text-slate-300">
-                  Manage your plan and payment methods
-                </div>
-              </div>
-            </Link>
-            <Link
               href="/teams"
-              className={`flex items-center justify-between rounded-lg ${panelGhost} p-4 transition-colors hover:bg-[var(--surface-1)]`}
+              className={`group flex items-center justify-between rounded-lg ${panelGhost} p-4 transition-all hover:bg-[var(--surface-1)] hover:shadow-sm`}
             >
-              <div>
-                <div className="font-medium text-[color:var(--text)]">👥 Team Members</div>
-                <div className="text-sm text-slate-700 dark:text-slate-300">
-                  Invite and manage team seats
+              <div className="flex items-center gap-3">
+                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-100 dark:bg-blue-900/40">
+                  <Users className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                </div>
+                <div>
+                  <div className="font-medium text-[color:var(--text)]">Team & Company Seats</div>
+                  <div className="text-sm text-slate-600 dark:text-slate-400">
+                    Manage seats, billing & invitations
+                  </div>
                 </div>
               </div>
+              <ArrowRight className="h-4 w-4 text-slate-400 transition-transform group-hover:translate-x-1" />
             </Link>
             <Link
               href="/settings/company-documents"
-              className={`flex items-center justify-between rounded-lg ${panelGhost} p-4 transition-colors hover:bg-[var(--surface-1)]`}
+              className={`group flex items-center justify-between rounded-lg ${panelGhost} p-4 transition-all hover:bg-[var(--surface-1)] hover:shadow-sm`}
             >
-              <div>
-                <div className="font-medium text-[color:var(--text)]">📄 Company Documents</div>
-                <div className="text-sm text-slate-700 dark:text-slate-300">
-                  Upload W9, insurance, and licenses
+              <div className="flex items-center gap-3">
+                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-amber-100 dark:bg-amber-900/40">
+                  <FileText className="h-5 w-5 text-amber-600 dark:text-amber-400" />
+                </div>
+                <div>
+                  <div className="font-medium text-[color:var(--text)]">Company Documents</div>
+                  <div className="text-sm text-slate-600 dark:text-slate-400">
+                    Upload W9, insurance & licenses
+                  </div>
                 </div>
               </div>
+              <ArrowRight className="h-4 w-4 text-slate-400 transition-transform group-hover:translate-x-1" />
             </Link>
             <Link
               href="/trades/profile"
-              className={`flex items-center justify-between rounded-lg ${panelGhost} p-4 transition-colors hover:bg-[var(--surface-1)]`}
+              className={`group flex items-center justify-between rounded-lg ${panelGhost} p-4 transition-all hover:bg-[var(--surface-1)] hover:shadow-sm`}
             >
-              <div>
-                <div className="font-medium text-[color:var(--text)]">🔧 Trades Profile</div>
-                <div className="text-sm text-slate-700 dark:text-slate-300">
-                  Set up your contractor profile
+              <div className="flex items-center gap-3">
+                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-emerald-100 dark:bg-emerald-900/40">
+                  <Wrench className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
+                </div>
+                <div>
+                  <div className="font-medium text-[color:var(--text)]">Trades Profile</div>
+                  <div className="text-sm text-slate-600 dark:text-slate-400">
+                    Set up your contractor profile
+                  </div>
                 </div>
               </div>
+              <ArrowRight className="h-4 w-4 text-slate-400 transition-transform group-hover:translate-x-1" />
+            </Link>
+            <Link
+              href="/archive"
+              className={`group flex items-center justify-between rounded-lg ${panelGhost} p-4 transition-all hover:bg-[var(--surface-1)] hover:shadow-sm`}
+            >
+              <div className="flex items-center gap-3">
+                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-violet-100 dark:bg-violet-900/40">
+                  <Archive className="h-5 w-5 text-violet-600 dark:text-violet-400" />
+                </div>
+                <div>
+                  <div className="font-medium text-[color:var(--text)]">Archive & Cold Storage</div>
+                  <div className="text-sm text-slate-600 dark:text-slate-400">
+                    Restore archived claims, leads & projects
+                  </div>
+                </div>
+              </div>
+              <ArrowRight className="h-4 w-4 text-slate-400 transition-transform group-hover:translate-x-1" />
             </Link>
           </div>
         </PageSectionCard>
+
+        {/* ─── Admin Only: Data Migration ─── */}
+        {isAdmin && (
+          <PageSectionCard title="🔒 Admin — Data Migration">
+            <div className="space-y-4">
+              <p className="text-sm text-slate-600 dark:text-slate-400">
+                Migrate your existing data from AccuLynx, JobNimbus, or other CRM platforms. This
+                wizard will guide you through importing contacts, claims, and project data.
+              </p>
+              <div
+                className={`flex items-center justify-between rounded-lg ${panelGhost} p-4 transition-all hover:bg-[var(--surface-1)]`}
+              >
+                <div className="flex items-center gap-3">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-indigo-100 dark:bg-indigo-900/40">
+                    <Database className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
+                  </div>
+                  <div>
+                    <div className="font-medium text-[color:var(--text)]">CRM Migration Wizard</div>
+                    <div className="text-sm text-slate-600 dark:text-slate-400">
+                      Import from AccuLynx, JobNimbus & more
+                    </div>
+                  </div>
+                </div>
+                <Link
+                  href="/settings/migrations"
+                  className="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm transition-colors hover:bg-indigo-700"
+                >
+                  <Upload className="h-4 w-4" />
+                  Start Migration
+                </Link>
+              </div>
+            </div>
+          </PageSectionCard>
+        )}
+
+        {/* ─── Admin Only: Archive Add-on ─── */}
+        {isAdmin && (
+          <PageSectionCard title="🔒 Admin — Archive & Cold Storage Add-on">
+            <div className="space-y-4">
+              <p className="text-sm text-slate-600 dark:text-slate-400">
+                Enable long-term archival access for your entire organization. When active, all
+                company seats can archive and retrieve cold storage data.
+              </p>
+              <div className="rounded-xl border border-violet-200 bg-gradient-to-br from-violet-50 to-indigo-50 p-5 dark:border-violet-800 dark:from-violet-950/40 dark:to-indigo-950/40">
+                <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <Archive className="h-5 w-5 text-violet-600 dark:text-violet-400" />
+                      <h4 className="font-semibold text-[color:var(--text)]">
+                        Cold Storage Access
+                      </h4>
+                    </div>
+                    <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
+                      $5 / member / month — Enables all company seats to archive and restore data
+                      older than 30 days
+                    </p>
+                  </div>
+                  <Link
+                    href="/archive"
+                    className="inline-flex items-center gap-2 rounded-lg bg-violet-600 px-4 py-2 text-sm font-medium text-white shadow-sm transition-colors hover:bg-violet-700"
+                  >
+                    <Archive className="h-4 w-4" />
+                    Manage Archive
+                  </Link>
+                </div>
+              </div>
+              <p className="text-xs text-slate-500">
+                💡 Once enabled, billing appears on your Team & Company Seats page alongside seat
+                pricing. Configure the Stripe add-on product in your Stripe Dashboard.
+              </p>
+            </div>
+          </PageSectionCard>
+        )}
 
         <PageSectionCard title="Data & Privacy">
           <div className="space-y-4">

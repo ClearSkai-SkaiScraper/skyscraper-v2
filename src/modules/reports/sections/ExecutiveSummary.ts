@@ -1,9 +1,19 @@
 // ============================================================================
-// EXECUTIVE SUMMARY RENDERER
+// EXECUTIVE SUMMARY RENDERER — Professional executive overview
 // ============================================================================
 
-import { PDFFont, PDFPage, rgb } from "pdf-lib";
+import { PDFFont, PDFPage } from "pdf-lib";
 
+import {
+  brandColor,
+  COLOR,
+  drawDivider,
+  drawPanel,
+  FONT_SIZE,
+  PAGE,
+  SPACING,
+  wordWrap,
+} from "../export/pdfTheme";
 import type { ReportContext } from "../types";
 
 export async function renderExecutiveSummary(
@@ -14,94 +24,142 @@ export async function renderExecutiveSummary(
 ) {
   const { width, height } = page.getSize();
   const { font, fontBold } = fonts;
-  const { accentRgb } = colors;
+  const { brandRgb, accentRgb } = colors;
+  const { metadata } = context;
 
-  // Title
+  const brand = brandColor(brandRgb);
+  const accent = brandColor(accentRgb);
+
+  // ── Section header bar ─────────────────────────────────────────────
+  page.drawRectangle({
+    x: 0,
+    y: height - SPACING.HEADER_BAR_HEIGHT,
+    width,
+    height: SPACING.HEADER_BAR_HEIGHT,
+    color: brand,
+  });
+
   page.drawText("EXECUTIVE SUMMARY", {
-    x: 60,
-    y: height - 80,
-    size: 20,
+    x: PAGE.MARGIN.LEFT,
+    y: height - 34,
+    size: FONT_SIZE.HEADER_BAR,
     font: fontBold,
-    color: rgb(accentRgb.r, accentRgb.g, accentRgb.b),
+    color: COLOR.TEXT_WHITE,
   });
 
-  // Summary content
-  const summary = context.executiveSummary || 
-    `This report documents storm damage to the property located at ${context.metadata.propertyAddress}. ` +
-    `A qualifying weather event occurred on ${context.metadata.dateOfLoss}, resulting in damage requiring full roof replacement. ` +
-    `All work will be performed in compliance with IRC/IBC codes and manufacturer requirements.`;
+  // ── Summary paragraph ──────────────────────────────────────────────
+  const summary =
+    context.executiveSummary ||
+    `This report documents storm damage to the property located at ${metadata.propertyAddress}. ` +
+      `A qualifying weather event occurred on ${metadata.dateOfLoss || "the reported date"}, ` +
+      `resulting in damage requiring professional restoration. ` +
+      `All proposed work will be performed in full compliance with IRC/IBC building codes, ` +
+      `local jurisdiction requirements, and manufacturer installation specifications.`;
 
-  // Word wrap summary
-  const words = summary.split(" ");
-  let line = "";
-  let yPos = height - 130;
-  const maxWidth = width - 120;
+  let y = height - SPACING.HEADER_BAR_HEIGHT - 30;
+  const maxWidth = PAGE.CONTENT_WIDTH;
 
-  words.forEach((word) => {
-    const testLine = line + word + " ";
-    const textWidth = font.widthOfTextAtSize(testLine, 12);
-    
-    if (textWidth > maxWidth && line !== "") {
-      page.drawText(line, {
-        x: 60,
-        y: yPos,
-        size: 12,
-        font,
-        color: rgb(0.2, 0.2, 0.2),
-      });
-      line = word + " ";
-      yPos -= 18;
-    } else {
-      line = testLine;
-    }
-  });
-
-  // Draw remaining line
-  if (line.trim()) {
+  const lines = wordWrap(summary, font, FONT_SIZE.BODY_LARGE, maxWidth);
+  for (const line of lines) {
     page.drawText(line, {
-      x: 60,
-      y: yPos,
-      size: 12,
+      x: PAGE.MARGIN.LEFT,
+      y,
+      size: FONT_SIZE.BODY_LARGE,
       font,
-      color: rgb(0.2, 0.2, 0.2),
+      color: COLOR.TEXT_PRIMARY,
     });
+    y -= 18;
   }
 
-  // Bullet points
-  yPos -= 40;
-  page.drawText("KEY DECISION POINTS:", {
-    x: 60,
-    y: yPos,
-    size: 13,
+  // ── Divider ────────────────────────────────────────────────────────
+  y -= SPACING.DIVIDER_PADDING;
+  drawDivider(page, y);
+  y -= SPACING.SECTION_GAP;
+
+  // ── Key Decision Points (paneled) ──────────────────────────────────
+  page.drawText("KEY DECISION POINTS", {
+    x: PAGE.MARGIN.LEFT,
+    y,
+    size: FONT_SIZE.SUBTITLE,
     font: fontBold,
-    color: rgb(0.2, 0.2, 0.2),
+    color: COLOR.TEXT_PRIMARY,
   });
 
-  yPos -= 30;
+  y -= 20;
+
   const bullets = [
-    "Qualifying weather event confirmed via NOAA / Stormersite data",
-    "Damage assessment performed by licensed contractor",
-    "All work meets or exceeds code requirements",
-    "Manufacturer warranty compliance ensured",
+    "Qualifying weather event confirmed via NOAA / Stormersite verification data",
+    "On-site damage assessment performed by licensed, insured contractor",
+    "All proposed work meets or exceeds applicable building codes (IRC / IBC)",
+    "Manufacturer warranty compliance and installation specs ensured",
+    "Full photographic documentation and scope of work attached",
   ];
 
+  // Panel background
+  const panelHeight = bullets.length * 22 + 16;
+  drawPanel(page, PAGE.MARGIN.LEFT, y - panelHeight + 10, PAGE.CONTENT_WIDTH, panelHeight);
+
   bullets.forEach((bullet) => {
-    page.drawText("•", {
-      x: 80,
-      y: yPos,
-      size: 14,
+    page.drawText("\u25B8", {
+      x: PAGE.MARGIN.LEFT + 12,
+      y,
+      size: FONT_SIZE.BODY,
       font: fontBold,
-      color: rgb(accentRgb.r, accentRgb.g, accentRgb.b),
+      color: accent,
     });
 
     page.drawText(bullet, {
-      x: 100,
-      y: yPos,
-      size: 11,
+      x: PAGE.MARGIN.LEFT + 28,
+      y,
+      size: FONT_SIZE.BODY,
       font,
-      color: rgb(0.2, 0.2, 0.2),
+      color: COLOR.TEXT_PRIMARY,
     });
+    y -= 22;
+  });
 
-    yPos -= 24;
+  // ── Quick Stats Row ────────────────────────────────────────────────
+  y -= SPACING.SECTION_GAP;
+  drawDivider(page, y);
+  y -= 20;
+
+  page.drawText("CLAIM SNAPSHOT", {
+    x: PAGE.MARGIN.LEFT,
+    y,
+    size: FONT_SIZE.SUBTITLE,
+    font: fontBold,
+    color: COLOR.TEXT_PRIMARY,
+  });
+  y -= 22;
+
+  const stats: [string, string][] = [
+    ["Property", metadata.propertyAddress?.split(",")[0] || "\u2014"],
+    ["Carrier", metadata.carrierName || "\u2014"],
+    ["Claim #", metadata.claimNumber || "\u2014"],
+    ["Date of Loss", metadata.dateOfLoss || "\u2014"],
+  ];
+
+  // Draw stats in a 2x2 grid
+  const colWidth = PAGE.CONTENT_WIDTH / 2;
+  stats.forEach(([label, value], i) => {
+    const col = i % 2;
+    const row = Math.floor(i / 2);
+    const sx = PAGE.MARGIN.LEFT + col * colWidth;
+    const sy = y - row * 36;
+
+    page.drawText(label.toUpperCase(), {
+      x: sx,
+      y: sy,
+      size: FONT_SIZE.TINY,
+      font: fontBold,
+      color: COLOR.TEXT_MUTED,
+    });
+    page.drawText(value, {
+      x: sx,
+      y: sy - 13,
+      size: FONT_SIZE.BODY,
+      font: fontBold,
+      color: COLOR.TEXT_PRIMARY,
+    });
   });
 }

@@ -14,6 +14,65 @@ import { getSectionsByKeys, validateSectionData } from "../core/SectionRegistry"
 import { renderCoverPage } from "../sections/CoverPage";
 import { renderExecutiveSummary } from "../sections/ExecutiveSummary";
 import type { ExportOptions, ExportResult, ReportContext, Section } from "../types";
+import {
+  brandColor,
+  COLOR,
+  drawDivider,
+  drawPanel,
+  FONT_SIZE,
+  PAGE,
+  SPACING,
+  wordWrap,
+} from "./pdfTheme";
+
+/**
+ * Render Table of Contents page
+ */
+async function renderTOC(
+  page: PDFPage,
+  _context: ReportContext,
+  sections: Section[],
+  fonts: { font: any; fontBold: any },
+  colors: {
+    brandRgb: { r: number; g: number; b: number };
+    accentRgb: { r: number; g: number; b: number };
+  }
+) {
+  const { font, fontBold } = fonts;
+  const brand = brandColor(colors.brandRgb);
+
+  // Header bar
+  page.drawRectangle({
+    x: 0,
+    y: PAGE.HEIGHT - SPACING.HEADER_BAR_HEIGHT,
+    width: PAGE.WIDTH,
+    height: SPACING.HEADER_BAR_HEIGHT,
+    color: brand,
+  });
+  page.drawText("Table of Contents", {
+    x: PAGE.MARGIN.LEFT,
+    y: PAGE.HEIGHT - 34,
+    size: FONT_SIZE.HEADER_BAR,
+    font: fontBold,
+    color: COLOR.TEXT_WHITE,
+  });
+
+  let yPos = PAGE.HEIGHT - SPACING.HEADER_BAR_HEIGHT - 30;
+
+  for (let i = 0; i < sections.length; i++) {
+    const section = sections[i];
+    const label = `${i + 1}.  ${section.title}`;
+    page.drawText(label, {
+      x: PAGE.MARGIN.LEFT + 8,
+      y: yPos,
+      size: FONT_SIZE.BODY,
+      font,
+      color: COLOR.TEXT_PRIMARY,
+    });
+    yPos -= 22;
+    if (yPos < PAGE.MARGIN.BOTTOM + 40) break;
+  }
+}
 
 /**
  * Check for unapproved AI fields
@@ -217,19 +276,33 @@ async function exportPDF(sections: Section[], context: ReportContext): Promise<E
   // Embed company logo (non-blocking)
   const logoImage = await embedLogo(pdfDoc, context.branding.logoUrl);
 
-  // Render each section
-  for (const section of sections) {
-    await renderSection(pdfDoc, section, context, {
-      font,
-      fontBold,
-      brandRgb,
-      accentRgb,
-      logoImage,
+  const renderOpts = { font, fontBold, brandRgb, accentRgb, logoImage };
+
+  // ── 1. Cover page ───────────────────────────────────────────────────
+  const coverPage = pdfDoc.addPage([PAGE.WIDTH, PAGE.HEIGHT]);
+  if (logoImage) {
+    const logoDims = logoImage.scale(Math.min(120 / logoImage.width, 50 / logoImage.height));
+    coverPage.drawImage(logoImage, {
+      x: PAGE.WIDTH - PAGE.MARGIN.RIGHT - logoDims.width,
+      y: PAGE.HEIGHT - 8 - logoDims.height - 10,
+      width: logoDims.width,
+      height: logoDims.height,
     });
+  }
+  await renderCoverPage(coverPage, context, { font, fontBold }, { brandRgb, accentRgb });
+
+  // ── 2. Table of contents ────────────────────────────────────────────
+  const tocPage = pdfDoc.addPage([PAGE.WIDTH, PAGE.HEIGHT]);
+  await renderTOC(tocPage, context, sections, { font, fontBold }, { brandRgb, accentRgb });
+
+  // ── 3. Render each content section ──────────────────────────────────
+  for (const section of sections) {
+    if (section.key === "cover") continue; // already rendered
+    await renderSection(pdfDoc, section, context, renderOpts);
   }
 
   // Add page numbers
-  addPageNumbers(pdfDoc, font, brandRgb);
+  addPageNumbers(pdfDoc, font, fontBold, brandRgb);
 
   const pdfBytes = await pdfDoc.save();
 
@@ -240,7 +313,7 @@ async function exportPDF(sections: Section[], context: ReportContext): Promise<E
 }
 
 /**
- * Render a single section into the PDF
+ * Render a single section into the PDF — professional layout
  */
 async function renderSection(
   pdfDoc: PDFDocument,
@@ -255,135 +328,164 @@ async function renderSection(
   }
 ) {
   const { font, fontBold, brandRgb, accentRgb, logoImage } = fonts;
+  const brand = brandColor(brandRgb);
+  const accent = brandColor(accentRgb);
+  const maxTextWidth = PAGE.CONTENT_WIDTH;
 
-  // ── Use polished renderers for cover and executive-summary ──────────
-  if (section.key === "cover") {
-    const page = pdfDoc.addPage([612, 792]);
-    // Draw logo on cover if available
-    if (logoImage) {
-      const logoDims = logoImage.scale(Math.min(120 / logoImage.width, 60 / logoImage.height));
-      page.drawImage(logoImage, {
-        x: 612 - 60 - logoDims.width,
-        y: 792 - 30 - logoDims.height,
-        width: logoDims.width,
-        height: logoDims.height,
-      });
-    }
-    await renderCoverPage(page, context, { font, fontBold }, { brandRgb, accentRgb });
-    await section.renderFn(context);
-    return;
-  }
-
+  // ── Executive summary has its own renderer ─────────────────────────
   if (section.key === "executive-summary") {
-    const page = pdfDoc.addPage([612, 792]);
+    const page = pdfDoc.addPage([PAGE.WIDTH, PAGE.HEIGHT]);
     await renderExecutiveSummary(page, context, { font, fontBold }, { brandRgb, accentRgb });
     await section.renderFn(context);
     return;
   }
 
-  // ── Generic section rendering with overflow handling ─────────────────
-  let page: PDFPage = pdfDoc.addPage([612, 792]);
-  const width = 612;
-  const height = 792;
+  // ── Generic section setup ──────────────────────────────────────────
+  let page: PDFPage = pdfDoc.addPage([PAGE.WIDTH, PAGE.HEIGHT]);
+  let yPos = PAGE.HEIGHT;
 
-  // Section header bar
-  page.drawRectangle({
-    x: 0,
-    y: height - 60,
-    width,
-    height: 60,
-    color: rgb(brandRgb.r, brandRgb.g, brandRgb.b),
-  });
-
-  page.drawText(section.title, {
-    x: 40,
-    y: height - 40,
-    size: 20,
-    font: fontBold,
-    color: rgb(1, 1, 1),
-  });
-
-  // ── Real section content based on key ──────────────────────────────────
-  let yPos = height - 90;
-  const margin = 40;
-
-  const drawLine = (
-    text: string,
-    opts?: { bold?: boolean; size?: number; color?: { r: number; g: number; b: number } }
-  ) => {
-    const lineSize = opts?.size || 11;
-    if (yPos < 60) {
-      // Overflow: add a new page and continue drawing there
-      page = pdfDoc.addPage([612, 792]);
-      yPos = 792 - 50;
-      // Draw a continuation header
-      page.drawRectangle({
-        x: 0,
-        y: 792 - 30,
-        width,
-        height: 30,
-        color: rgb(brandRgb.r, brandRgb.g, brandRgb.b),
-      });
-      page.drawText(`${section.title} (continued)`, {
-        x: 40,
-        y: 792 - 22,
-        size: 10,
-        font: fontBold,
-        color: rgb(1, 1, 1),
-      });
-      yPos = 792 - 60;
-    }
-    page.drawText(text.substring(0, 90), {
-      x: margin,
-      y: yPos,
-      size: lineSize,
-      font: opts?.bold ? fontBold : font,
-      color: opts?.color ? rgb(opts.color.r, opts.color.g, opts.color.b) : rgb(0.1, 0.1, 0.1),
+  /** Draw the section header bar */
+  const drawSectionHeader = (p: PDFPage, title: string) => {
+    p.drawRectangle({
+      x: 0,
+      y: PAGE.HEIGHT - SPACING.HEADER_BAR_HEIGHT,
+      width: PAGE.WIDTH,
+      height: SPACING.HEADER_BAR_HEIGHT,
+      color: brand,
     });
-    yPos -= lineSize + 5;
+    p.drawText(title, {
+      x: PAGE.MARGIN.LEFT,
+      y: PAGE.HEIGHT - 34,
+      size: FONT_SIZE.HEADER_BAR,
+      font: fontBold,
+      color: COLOR.TEXT_WHITE,
+    });
   };
 
+  drawSectionHeader(page, section.title);
+  yPos = PAGE.HEIGHT - SPACING.HEADER_BAR_HEIGHT - 24;
+
+  /** Ensure space; create continuation page if needed */
+  const ensureSpace = (needed: number): void => {
+    if (yPos < SPACING.FOOTER_BAR_HEIGHT + needed + 20) {
+      page = pdfDoc.addPage([PAGE.WIDTH, PAGE.HEIGHT]);
+      // Continuation header (smaller)
+      page.drawRectangle({
+        x: 0,
+        y: PAGE.HEIGHT - 30,
+        width: PAGE.WIDTH,
+        height: 30,
+        color: brand,
+      });
+      page.drawText(`${section.title} (continued)`, {
+        x: PAGE.MARGIN.LEFT,
+        y: PAGE.HEIGHT - 22,
+        size: FONT_SIZE.LABEL,
+        font: fontBold,
+        color: COLOR.TEXT_WHITE,
+      });
+      yPos = PAGE.HEIGHT - 60;
+    }
+  };
+
+  /** Draw a text line and advance yPos */
+  const drawText = (
+    text: string,
+    opts?: { bold?: boolean; size?: number; color?: any; indent?: number }
+  ) => {
+    const fontSize = opts?.size || FONT_SIZE.BODY;
+    ensureSpace(fontSize + 6);
+    page.drawText(text.substring(0, 120), {
+      x: PAGE.MARGIN.LEFT + (opts?.indent || 0),
+      y: yPos,
+      size: fontSize,
+      font: opts?.bold ? fontBold : font,
+      color: opts?.color || COLOR.TEXT_PRIMARY,
+    });
+    yPos -= fontSize + 5;
+  };
+
+  /** Draw wrapped paragraph */
+  const drawParagraph = (
+    text: string,
+    opts?: { size?: number; color?: any; indent?: number; bold?: boolean }
+  ) => {
+    const fontSize = opts?.size || FONT_SIZE.BODY;
+    const indent = opts?.indent || 0;
+    const lines = wordWrap(text, opts?.bold ? fontBold : font, fontSize, maxTextWidth - indent);
+    for (const line of lines) {
+      drawText(line, opts);
+    }
+  };
+
+  // ── Real section content based on key ──────────────────────────────
   switch (section.key) {
     case "weather-verification": {
-      drawLine("Weather Verification Report", { bold: true, size: 14 });
-      drawLine("");
+      drawText("Weather Verification Report", { bold: true, size: FONT_SIZE.SUBTITLE });
+      yPos -= 8;
+      drawDivider(page, yPos, COLOR.DIVIDER_LIGHT);
+      yPos -= 12;
+
       if (context.weather) {
-        drawLine(`Date of Loss: ${context.weather.dateOfLoss}`, { size: 12 });
-        if (context.weather.hailSize)
-          drawLine(`Hail Size: ${context.weather.hailSize}`, { size: 12 });
-        if (context.weather.windSpeed)
-          drawLine(`Wind Speed: ${context.weather.windSpeed}`, { size: 12 });
-        drawLine(`Source: ${context.weather.source}`, { size: 12 });
-        drawLine("");
-        drawLine("Verification Statement:", { bold: true, size: 12 });
-        const stmt = context.weather.verificationStatement;
-        const stmtWords = stmt.split(" ");
-        let stmtLine = "";
-        for (const w of stmtWords) {
-          if ((stmtLine + " " + w).length > 80) {
-            drawLine(stmtLine);
-            stmtLine = w;
-          } else {
-            stmtLine = stmtLine ? stmtLine + " " + w : w;
-          }
+        const weatherFields: [string, string | undefined][] = [
+          ["Date of Loss", context.weather.dateOfLoss],
+          ["Hail Size", context.weather.hailSize],
+          ["Wind Speed", context.weather.windSpeed],
+          ["Source", context.weather.source],
+        ];
+
+        // Info panel
+        const panelH = weatherFields.filter(([, v]) => v).length * 20 + 12;
+        drawPanel(page, PAGE.MARGIN.LEFT, yPos - panelH, maxTextWidth, panelH);
+
+        for (const [label, value] of weatherFields) {
+          if (!value) continue;
+          page.drawText(`${label}:`, {
+            x: PAGE.MARGIN.LEFT + 10,
+            y: yPos - 4,
+            size: FONT_SIZE.BODY,
+            font: fontBold,
+            color: COLOR.TEXT_SECONDARY,
+          });
+          page.drawText(value, {
+            x: PAGE.MARGIN.LEFT + 130,
+            y: yPos - 4,
+            size: FONT_SIZE.BODY,
+            font,
+            color: COLOR.TEXT_PRIMARY,
+          });
+          yPos -= 20;
         }
-        if (stmtLine) drawLine(stmtLine);
+        yPos -= 16;
+
+        if (context.weather.verificationStatement) {
+          drawText("Verification Statement", { bold: true, size: FONT_SIZE.BODY_LARGE });
+          yPos -= 4;
+          drawParagraph(context.weather.verificationStatement);
+        }
       } else {
-        drawLine("Weather data not available for this claim.", {
-          color: { r: 0.5, g: 0.5, b: 0.5 },
-        });
+        drawText("Weather data not available for this claim.", { color: COLOR.TEXT_MUTED });
       }
       break;
     }
 
     case "photo-evidence": {
-      drawLine("Photo Evidence Documentation", { bold: true, size: 14 });
-      drawLine("");
+      drawText("Photo Evidence Documentation", { bold: true, size: FONT_SIZE.SUBTITLE });
+      yPos -= 4;
+
       if (context.photos && context.photos.length > 0) {
-        drawLine(`Total Photos: ${context.photos.length}`, { size: 12 });
-        drawLine("");
-        // Embed actual photo images (up to 12 per report for size)
+        drawText(`Total Photos: ${context.photos.length}`, {
+          size: FONT_SIZE.BODY,
+          color: COLOR.TEXT_SECONDARY,
+        });
+        yPos -= 8;
+        drawDivider(page, yPos, COLOR.DIVIDER_LIGHT);
+        yPos -= 16;
+
+        // 2-column photo grid
         const photosToEmbed = context.photos.slice(0, 12);
+        let colIndex = 0;
+
         for (const photo of photosToEmbed) {
           try {
             if (photo.url) {
@@ -398,141 +500,260 @@ async function renderSection(
                   img = await pdfDoc.embedJpg(imgBuf);
                 }
                 if (img) {
-                  // Check if we need a new page for the image
-                  if (yPos < 220) {
-                    page = pdfDoc.addPage([612, 792]);
-                    yPos = 792 - 50;
-                  }
-                  const imgDims = img.scale(Math.min(250 / img.width, 180 / img.height));
+                  const maxW = (PAGE.CONTENT_WIDTH - 16) / 2;
+                  const maxH = 160;
+                  const imgDims = img.scale(Math.min(maxW / img.width, maxH / img.height));
+                  const xOffset = colIndex === 0 ? PAGE.MARGIN.LEFT : PAGE.MARGIN.LEFT + maxW + 16;
+
+                  ensureSpace(imgDims.height + 30);
+
                   page.drawImage(img, {
-                    x: margin,
+                    x: xOffset,
                     y: yPos - imgDims.height,
                     width: imgDims.width,
                     height: imgDims.height,
                   });
-                  yPos -= imgDims.height + 5;
+
+                  // Caption below image
+                  const caption = (photo.caption || "Untitled").substring(0, 45);
+                  page.drawText(caption, {
+                    x: xOffset,
+                    y: yPos - imgDims.height - 12,
+                    size: FONT_SIZE.SMALL,
+                    font,
+                    color: COLOR.TEXT_SECONDARY,
+                  });
+
+                  if (colIndex === 1) {
+                    yPos -= imgDims.height + 28;
+                    colIndex = 0;
+                  } else {
+                    colIndex = 1;
+                  }
+                  continue;
                 }
               }
             }
           } catch {
-            // Non-fatal — continue with text fallback
+            // Non-fatal — text fallback
           }
-          drawLine(`📷 ${photo.caption}`, { size: 10 });
-          drawLine(
+          // Text-only fallback
+          drawText(`\u{1F4F7} ${photo.caption || "Photo"}`, { size: FONT_SIZE.LABEL });
+          drawText(
             `  Category: ${photo.category || "General"} | Location: ${photo.locationTag || "N/A"}`,
-            { size: 9, color: { r: 0.4, g: 0.4, b: 0.4 } }
+            { size: FONT_SIZE.SMALL, color: COLOR.TEXT_MUTED }
           );
-          drawLine("");
+          yPos -= 4;
         }
+
+        if (colIndex === 1) yPos -= 180; // Flush last row
+
         if (context.photos.length > 12) {
-          drawLine(`  ... and ${context.photos.length - 12} additional photos on file`, {
-            size: 10,
-            color: { r: 0.4, g: 0.4, b: 0.4 },
+          yPos -= 8;
+          drawText(`+ ${context.photos.length - 12} additional photos on file`, {
+            size: FONT_SIZE.LABEL,
+            color: COLOR.TEXT_MUTED,
           });
         }
       } else {
-        drawLine("No photos uploaded for this claim.", { color: { r: 0.5, g: 0.5, b: 0.5 } });
+        drawText("No photos uploaded for this claim.", { color: COLOR.TEXT_MUTED });
       }
       break;
     }
 
     case "scope-matrix": {
-      drawLine("Scope of Work / Line Items", { bold: true, size: 14 });
-      drawLine("");
+      drawText("Scope of Work / Line Items", { bold: true, size: FONT_SIZE.SUBTITLE });
+      yPos -= 4;
+      drawDivider(page, yPos, COLOR.DIVIDER_LIGHT);
+      yPos -= 12;
+
       if (context.lineItems && context.lineItems.length > 0) {
-        drawLine("Description                                      Qty    Unit   Price", {
-          bold: true,
-          size: 9,
+        // Table header
+        const cols = { desc: PAGE.MARGIN.LEFT, qty: 370, unit: 410, price: 470 };
+
+        drawPanel(page, PAGE.MARGIN.LEFT, yPos - 14, maxTextWidth, 18, COLOR.BG_STRIPE);
+        page.drawText("Description", {
+          x: cols.desc + 4,
+          y: yPos - 10,
+          size: FONT_SIZE.TABLE_HEADER,
+          font: fontBold,
+          color: COLOR.TEXT_SECONDARY,
         });
-        drawLine("─".repeat(75), { size: 9 });
-        for (const item of context.lineItems) {
-          const desc = item.description.substring(0, 45).padEnd(45);
-          const qty = String(item.quantity).padStart(5);
-          const unit = (item.unit || "EA").padEnd(6);
-          const price = item.contractorPrice ? `$${item.contractorPrice.toLocaleString()}` : "TBD";
-          drawLine(`${desc} ${qty}  ${unit} ${price}`, { size: 9 });
+        page.drawText("Qty", {
+          x: cols.qty,
+          y: yPos - 10,
+          size: FONT_SIZE.TABLE_HEADER,
+          font: fontBold,
+          color: COLOR.TEXT_SECONDARY,
+        });
+        page.drawText("Unit", {
+          x: cols.unit,
+          y: yPos - 10,
+          size: FONT_SIZE.TABLE_HEADER,
+          font: fontBold,
+          color: COLOR.TEXT_SECONDARY,
+        });
+        page.drawText("Price", {
+          x: cols.price,
+          y: yPos - 10,
+          size: FONT_SIZE.TABLE_HEADER,
+          font: fontBold,
+          color: COLOR.TEXT_SECONDARY,
+        });
+        yPos -= 20;
+
+        let totalPrice = 0;
+
+        for (let i = 0; i < context.lineItems.length; i++) {
+          const item = context.lineItems[i];
+          ensureSpace(SPACING.TABLE_ROW_HEIGHT + 4);
+
+          // Zebra stripe
+          if (i % 2 === 0) {
+            drawPanel(
+              page,
+              PAGE.MARGIN.LEFT,
+              yPos - 12,
+              maxTextWidth,
+              SPACING.TABLE_ROW_HEIGHT,
+              COLOR.BG_LIGHT
+            );
+          }
+
+          const desc = item.description.substring(0, 50);
+          page.drawText(desc, {
+            x: cols.desc + 4,
+            y: yPos - 8,
+            size: FONT_SIZE.TABLE_CELL,
+            font,
+            color: COLOR.TEXT_PRIMARY,
+          });
+          page.drawText(String(item.quantity), {
+            x: cols.qty,
+            y: yPos - 8,
+            size: FONT_SIZE.TABLE_CELL,
+            font,
+            color: COLOR.TEXT_PRIMARY,
+          });
+          page.drawText(item.unit || "EA", {
+            x: cols.unit,
+            y: yPos - 8,
+            size: FONT_SIZE.TABLE_CELL,
+            font,
+            color: COLOR.TEXT_PRIMARY,
+          });
+
+          const price = item.contractorPrice || 0;
+          totalPrice += price;
+          page.drawText(price ? `$${price.toLocaleString()}` : "TBD", {
+            x: cols.price,
+            y: yPos - 8,
+            size: FONT_SIZE.TABLE_CELL,
+            font,
+            color: COLOR.TEXT_PRIMARY,
+          });
+          yPos -= SPACING.TABLE_ROW_HEIGHT;
         }
+
+        // Total row
+        yPos -= 4;
+        drawDivider(page, yPos, brand);
+        yPos -= 14;
+        page.drawText("TOTAL", {
+          x: cols.desc + 4,
+          y: yPos,
+          size: FONT_SIZE.TABLE_HEADER,
+          font: fontBold,
+          color: COLOR.TEXT_PRIMARY,
+        });
+        page.drawText(`$${totalPrice.toLocaleString()}`, {
+          x: cols.price,
+          y: yPos,
+          size: FONT_SIZE.TABLE_HEADER,
+          font: fontBold,
+          color: COLOR.TEXT_PRIMARY,
+        });
       } else {
-        drawLine("No line items available. Scope pending.", { color: { r: 0.5, g: 0.5, b: 0.5 } });
+        drawText("No line items available. Scope pending.", { color: COLOR.TEXT_MUTED });
       }
       break;
     }
 
     case "code-compliance": {
-      drawLine("Building Code Compliance", { bold: true, size: 14 });
-      drawLine("");
+      drawText("Building Code Compliance", { bold: true, size: FONT_SIZE.SUBTITLE });
+      yPos -= 4;
+      drawDivider(page, yPos, COLOR.DIVIDER_LIGHT);
+      yPos -= 12;
+
       if (context.codes && context.codes.length > 0) {
         for (const code of context.codes) {
-          drawLine(`${code.code} — ${code.description}`, { bold: true, size: 11 });
-          drawLine(`  Jurisdiction: ${code.jurisdictionType}`, {
-            size: 10,
-            color: { r: 0.3, g: 0.3, b: 0.3 },
+          ensureSpace(60);
+          drawText(`${code.code} \u2014 ${code.description}`, { bold: true, size: FONT_SIZE.BODY });
+          drawText(`Jurisdiction: ${code.jurisdictionType}`, {
+            size: FONT_SIZE.SMALL,
+            color: COLOR.TEXT_SECONDARY,
+            indent: 8,
           });
-          const reqWords = code.requirementText.split(" ");
-          let reqLine = "  ";
-          for (const w of reqWords) {
-            if ((reqLine + " " + w).length > 85) {
-              drawLine(reqLine, { size: 10 });
-              reqLine = "  " + w;
-            } else {
-              reqLine = reqLine + " " + w;
-            }
-          }
-          if (reqLine.trim()) drawLine(reqLine, { size: 10 });
-          drawLine("");
+          drawParagraph(code.requirementText, { size: FONT_SIZE.LABEL, indent: 8 });
+          yPos -= 8;
+          drawDivider(page, yPos, COLOR.DIVIDER_LIGHT);
+          yPos -= 8;
         }
       } else {
-        drawLine("No code citations on file.", { color: { r: 0.5, g: 0.5, b: 0.5 } });
+        drawText("No code citations on file.", { color: COLOR.TEXT_MUTED });
       }
       break;
     }
 
     case "supplements": {
-      drawLine("Supplement Items", { bold: true, size: 14 });
-      drawLine("");
+      drawText("Supplement Items", { bold: true, size: FONT_SIZE.SUBTITLE });
+      yPos -= 4;
+      drawDivider(page, yPos, COLOR.DIVIDER_LIGHT);
+      yPos -= 12;
+
       if (context.supplements && context.supplements.length > 0) {
         for (const supp of context.supplements) {
-          drawLine(`• ${supp.description}  —  $${supp.amount.toLocaleString()}`, {
+          ensureSpace(50);
+          drawText(`${supp.description}  \u2014  $${supp.amount.toLocaleString()}`, {
             bold: true,
-            size: 11,
+            size: FONT_SIZE.BODY,
           });
-          drawLine(`  Reason: ${supp.reasonCode}`, { size: 10, color: { r: 0.3, g: 0.3, b: 0.3 } });
+          drawText(`Reason: ${supp.reasonCode}`, {
+            size: FONT_SIZE.SMALL,
+            color: COLOR.TEXT_SECONDARY,
+            indent: 8,
+          });
           if (supp.justification) {
-            drawLine(`  ${supp.justification.substring(0, 85)}`, { size: 10 });
+            drawParagraph(supp.justification, { size: FONT_SIZE.LABEL, indent: 8 });
           }
-          drawLine("");
+          yPos -= 8;
         }
       } else {
-        drawLine("No supplements filed for this claim.", { color: { r: 0.5, g: 0.5, b: 0.5 } });
+        drawText("No supplements filed for this claim.", { color: COLOR.TEXT_MUTED });
       }
       break;
     }
 
     case "adjuster-notes": {
-      drawLine("Adjuster Notes & Rebuttals", { bold: true, size: 14 });
-      drawLine("");
+      drawText("Adjuster Notes & Rebuttals", { bold: true, size: FONT_SIZE.SUBTITLE });
+      yPos -= 4;
+      drawDivider(page, yPos, COLOR.DIVIDER_LIGHT);
+      yPos -= 12;
+
       const notes = context.adjusterNotes || "No adjuster notes available.";
-      const noteWords = notes.split(" ");
-      let noteLine = "";
-      for (const w of noteWords) {
-        if ((noteLine + " " + w).length > 80) {
-          drawLine(noteLine);
-          noteLine = w;
-        } else {
-          noteLine = noteLine ? noteLine + " " + w : w;
-        }
-      }
-      if (noteLine) drawLine(noteLine);
+      drawParagraph(notes);
       break;
     }
 
     default: {
-      // For sections not yet implemented (toc, test-cuts, pricing-comparison, etc.)
-      drawLine(`${section.title}`, { bold: true, size: 14 });
-      drawLine("");
-      drawLine("This section is available in the full report.", {
-        size: 11,
-        color: { r: 0.4, g: 0.4, b: 0.4 },
+      // For sections not yet implemented (test-cuts, pricing-comparison, etc.)
+      drawText(section.title, { bold: true, size: FONT_SIZE.SUBTITLE });
+      yPos -= 4;
+      drawDivider(page, yPos, COLOR.DIVIDER_LIGHT);
+      yPos -= 12;
+      drawText("This section is available in the full report.", {
+        size: FONT_SIZE.BODY,
+        color: COLOR.TEXT_MUTED,
       });
       break;
     }
@@ -543,34 +764,66 @@ async function renderSection(
 }
 
 /**
- * Add page numbers to all pages
+ * Add professional page numbers and footer to all pages
  */
 function addPageNumbers(
   pdfDoc: PDFDocument,
   font: any,
+  fontBold: any,
   brandRgb: { r: number; g: number; b: number }
 ) {
   const pages = pdfDoc.getPages();
+  const brand = brandColor(brandRgb);
+  const dateStr = new Date().toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
+
   pages.forEach((page, index) => {
-    const { width, height: _height } = page.getSize();
-    const pageNum = `Page ${index + 1} of ${pages.length}  |  ${new Date().toLocaleDateString()}`;
+    const { width } = page.getSize();
 
     // Footer bar
     page.drawRectangle({
       x: 0,
       y: 0,
       width,
-      height: 30,
-      color: rgb(brandRgb.r, brandRgb.g, brandRgb.b),
+      height: SPACING.FOOTER_BAR_HEIGHT,
+      color: brand,
     });
 
-    page.drawText(pageNum, {
-      x: width / 2 - 30,
-      y: 10,
-      size: 10,
+    // Page number (right)
+    const pageText = `Page ${index + 1} of ${pages.length}`;
+    const pageTextWidth = font.widthOfTextAtSize(pageText, FONT_SIZE.PAGE_NUMBER);
+    page.drawText(pageText, {
+      x: width - PAGE.MARGIN.RIGHT - pageTextWidth,
+      y: 9,
+      size: FONT_SIZE.PAGE_NUMBER,
       font,
-      color: rgb(1, 1, 1),
+      color: COLOR.TEXT_WHITE,
     });
+
+    // Date (left)
+    page.drawText(dateStr, {
+      x: PAGE.MARGIN.LEFT,
+      y: 9,
+      size: FONT_SIZE.PAGE_NUMBER,
+      font,
+      color: COLOR.TEXT_WHITE,
+    });
+
+    // "CONFIDENTIAL" center text (skip cover page)
+    if (index > 0) {
+      const confText = "CONFIDENTIAL";
+      const confWidth = font.widthOfTextAtSize(confText, FONT_SIZE.TINY);
+      page.drawText(confText, {
+        x: (width - confWidth) / 2,
+        y: 10,
+        size: FONT_SIZE.TINY,
+        font,
+        color: rgb(1, 1, 1),
+      });
+    }
   });
 }
 

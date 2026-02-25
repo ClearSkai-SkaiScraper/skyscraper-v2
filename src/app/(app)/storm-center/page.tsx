@@ -95,11 +95,13 @@ function ActivityItem({
   description,
   time,
   type,
+  href,
 }: {
   title: string;
   description: string;
   time: string;
   type: "claim" | "supplement" | "order" | "payment" | "weather";
+  href?: string;
 }) {
   const typeColors = {
     claim: "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400",
@@ -109,20 +111,37 @@ function ActivityItem({
     weather: "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400",
   };
 
-  return (
-    <div className="flex items-start gap-3 rounded-lg border border-slate-100 bg-white p-4 dark:border-slate-800 dark:bg-slate-900">
+  const inner = (
+    <div className="group flex cursor-pointer items-start gap-3 rounded-lg border border-slate-100 bg-white p-4 transition-all hover:border-blue-200 hover:bg-blue-50/30 hover:shadow-md dark:border-slate-800 dark:bg-slate-900 dark:hover:border-blue-700 dark:hover:bg-blue-950/20">
       <span
         className={`mt-0.5 shrink-0 rounded-full px-2 py-0.5 text-[10px] font-bold uppercase ${typeColors[type]}`}
       >
         {type}
       </span>
       <div className="flex-1">
-        <p className="text-sm font-semibold text-slate-900 dark:text-white">{title}</p>
+        <p className="text-sm font-semibold text-slate-900 transition-colors group-hover:text-blue-700 dark:text-white dark:group-hover:text-blue-400">
+          {title}
+        </p>
         <p className="text-sm text-slate-500 dark:text-slate-400">{description}</p>
       </div>
-      <span className="shrink-0 text-xs text-slate-400">{time}</span>
+      <div className="flex items-center gap-2">
+        <span className="shrink-0 text-xs text-slate-400">{time}</span>
+        <svg
+          className="h-4 w-4 text-slate-300 transition-colors group-hover:text-blue-500"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+        >
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+        </svg>
+      </div>
     </div>
   );
+
+  if (href) {
+    return <Link href={href}>{inner}</Link>;
+  }
+  return inner;
 }
 
 export default async function StormCenterPage() {
@@ -147,6 +166,7 @@ export default async function StormCenterPage() {
     description: string;
     time: string;
     type: "claim" | "supplement" | "order" | "payment" | "weather";
+    href?: string;
   }[] = [];
 
   if (orgCtx.orgId) {
@@ -239,6 +259,7 @@ export default async function StormCenterPage() {
         description: `Status: ${c.status ?? "new"}`,
         time: timeAgo(c.updatedAt),
         type: "claim" as const,
+        href: `/claims/${c.id}`,
       }));
     } catch {
       // Graceful degradation — keep zeros

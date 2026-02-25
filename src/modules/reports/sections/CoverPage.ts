@@ -1,9 +1,10 @@
 // ============================================================================
-// COVER PAGE RENDERER
+// COVER PAGE RENDERER — Professional contractor packet cover
 // ============================================================================
 
 import { PDFFont, PDFPage, rgb } from "pdf-lib";
 
+import { brandColor, COLOR, drawDivider, FONT_SIZE, PAGE, SPACING } from "../export/pdfTheme";
 import type { ReportContext } from "../types";
 
 export async function renderCoverPage(
@@ -14,102 +15,205 @@ export async function renderCoverPage(
 ) {
   const { width, height } = page.getSize();
   const { font, fontBold } = fonts;
-  const { brandRgb } = colors;
+  const { brandRgb, accentRgb } = colors;
   const { branding, metadata } = context;
 
-  // Header bar
+  const brand = brandColor(brandRgb);
+  const accent = brandColor(accentRgb);
+
+  // ── Top accent stripe ──────────────────────────────────────────────
   page.drawRectangle({
     x: 0,
-    y: height - 120,
+    y: height - 8,
     width,
-    height: 120,
-    color: rgb(brandRgb.r, brandRgb.g, brandRgb.b),
+    height: 8,
+    color: accent,
   });
 
-  // Company name
+  // ── Header band ────────────────────────────────────────────────────
+  page.drawRectangle({
+    x: 0,
+    y: height - SPACING.COVER_HEADER_HEIGHT - 8,
+    width,
+    height: SPACING.COVER_HEADER_HEIGHT,
+    color: brand,
+  });
+
+  // Company name (large, white, uppercase)
   page.drawText(branding.companyName.toUpperCase(), {
-    x: 60,
-    y: height - 60,
-    size: 28,
+    x: PAGE.MARGIN.LEFT,
+    y: height - 55,
+    size: 26,
     font: fontBold,
-    color: rgb(1, 1, 1),
+    color: COLOR.TEXT_WHITE,
   });
 
-  // License / Contact
+  // Contact info line
   const contactLine = [branding.licenseNumber, branding.phone, branding.email]
     .filter(Boolean)
-    .join("  |  ");
+    .join("   •   ");
 
-  page.drawText(contactLine, {
-    x: 60,
-    y: height - 90,
-    size: 10,
-    font,
-    color: rgb(0.9, 0.9, 0.9),
-  });
+  if (contactLine) {
+    page.drawText(contactLine, {
+      x: PAGE.MARGIN.LEFT,
+      y: height - 80,
+      size: FONT_SIZE.LABEL,
+      font,
+      color: rgb(0.85, 0.88, 0.92),
+    });
+  }
 
-  // Report title
+  // Website (right-aligned)
+  if (branding.website) {
+    const siteWidth = font.widthOfTextAtSize(branding.website, FONT_SIZE.LABEL);
+    page.drawText(branding.website, {
+      x: width - PAGE.MARGIN.RIGHT - siteWidth,
+      y: height - 80,
+      size: FONT_SIZE.LABEL,
+      font,
+      color: rgb(0.85, 0.88, 0.92),
+    });
+  }
+
+  // ── Report title area ──────────────────────────────────────────────
+  let y = height - 160;
+
   page.drawText("CONTRACTOR PACKET", {
-    x: 60,
-    y: height - 180,
-    size: 24,
+    x: PAGE.MARGIN.LEFT,
+    y,
+    size: FONT_SIZE.TITLE,
     font: fontBold,
-    color: rgb(0.2, 0.2, 0.2),
+    color: COLOR.TEXT_PRIMARY,
   });
 
-  // Metadata grid
-  let yPos = height - 240;
-  const metaData = [
-    ["Property Address:", metadata.propertyAddress],
-    ["Client Name:", metadata.clientName],
-    ["Claim Number:", metadata.claimNumber || "N/A"],
-    ["Policy Number:", metadata.policyNumber || "N/A"],
-    ["Date of Loss:", metadata.dateOfLoss || "N/A"],
-    ["Inspection Date:", metadata.inspectionDate || "N/A"],
-    ["Adjuster:", metadata.adjusterName || "N/A"],
-    ["Carrier:", metadata.carrierName || "N/A"],
+  y -= 6;
+  page.drawText("Property Damage Assessment & Scope of Work", {
+    x: PAGE.MARGIN.LEFT,
+    y,
+    size: FONT_SIZE.BODY_LARGE,
+    font,
+    color: COLOR.TEXT_SECONDARY,
+  });
+
+  // ── Divider ─────────────────────────────────────────────────────────
+  y -= 16;
+  drawDivider(page, y, brand);
+  y -= 20;
+
+  // ── Metadata grid ──────────────────────────────────────────────────
+  const metaRows: [string, string][] = [
+    ["Property Address", metadata.propertyAddress],
+    ["Client Name", metadata.clientName],
+    ["Claim Number", metadata.claimNumber || "N/A"],
+    ["Policy Number", metadata.policyNumber || "N/A"],
+    ["Date of Loss", metadata.dateOfLoss || "N/A"],
+    ["Inspection Date", metadata.inspectionDate || "N/A"],
+    ["Insurance Carrier", metadata.carrierName || "N/A"],
+    ["Field Adjuster", metadata.adjusterName || "N/A"],
   ];
 
-  metaData.forEach(([label, value]) => {
+  const labelX = PAGE.MARGIN.LEFT + 10;
+  const valueX = PAGE.MARGIN.LEFT + 160;
+
+  // Light background panel
+  const panelHeight = metaRows.length * SPACING.METADATA_ROW + 16;
+  page.drawRectangle({
+    x: PAGE.MARGIN.LEFT,
+    y: y - panelHeight + 6,
+    width: PAGE.CONTENT_WIDTH,
+    height: panelHeight,
+    color: COLOR.BG_LIGHT,
+  });
+
+  metaRows.forEach(([label, value], i) => {
+    const rowY = y - i * SPACING.METADATA_ROW - 4;
+
+    // Alternating subtle stripe
+    if (i % 2 === 1) {
+      page.drawRectangle({
+        x: PAGE.MARGIN.LEFT,
+        y: rowY - 6,
+        width: PAGE.CONTENT_WIDTH,
+        height: SPACING.METADATA_ROW,
+        color: COLOR.BG_STRIPE,
+      });
+    }
+
     page.drawText(label, {
-      x: 60,
-      y: yPos,
-      size: 11,
+      x: labelX,
+      y: rowY,
+      size: FONT_SIZE.BODY,
       font: fontBold,
-      color: rgb(0.3, 0.3, 0.3),
+      color: COLOR.TEXT_SECONDARY,
     });
     page.drawText(value, {
-      x: 220,
-      y: yPos,
-      size: 11,
+      x: valueX,
+      y: rowY,
+      size: FONT_SIZE.BODY,
       font,
-      color: rgb(0.1, 0.1, 0.1),
+      color: COLOR.TEXT_PRIMARY,
     });
-    yPos -= 24;
   });
 
-  // Footer
-  page.drawText(`Prepared by: ${metadata.preparedBy}`, {
-    x: 60,
-    y: 80,
-    size: 10,
+  y -= panelHeight + 24;
+
+  // ── Divider ─────────────────────────────────────────────────────────
+  drawDivider(page, y, COLOR.DIVIDER_LIGHT);
+  y -= 20;
+
+  // ── Prepared by block ──────────────────────────────────────────────
+  page.drawText("Prepared by", {
+    x: PAGE.MARGIN.LEFT,
+    y,
+    size: FONT_SIZE.SMALL,
     font,
-    color: rgb(0.4, 0.4, 0.4),
+    color: COLOR.TEXT_MUTED,
   });
 
-  page.drawText(`Submitted on behalf of homeowner / insured`, {
-    x: 60,
-    y: 60,
-    size: 9,
-    font,
-    color: rgb(0.5, 0.5, 0.5),
+  y -= 16;
+  page.drawText(branding.companyName, {
+    x: PAGE.MARGIN.LEFT,
+    y,
+    size: FONT_SIZE.SUBTITLE,
+    font: fontBold,
+    color: COLOR.TEXT_PRIMARY,
   });
 
-  page.drawText(`Date: ${metadata.submittedDate}`, {
-    x: 60,
-    y: 40,
-    size: 10,
+  y -= 16;
+  page.drawText(`Inspector: ${metadata.preparedBy}`, {
+    x: PAGE.MARGIN.LEFT,
+    y,
+    size: FONT_SIZE.BODY,
     font,
-    color: rgb(0.4, 0.4, 0.4),
+    color: COLOR.TEXT_SECONDARY,
+  });
+
+  y -= 14;
+  page.drawText(`Submitted: ${metadata.submittedDate}`, {
+    x: PAGE.MARGIN.LEFT,
+    y,
+    size: FONT_SIZE.BODY,
+    font,
+    color: COLOR.TEXT_SECONDARY,
+  });
+
+  // ── Bottom accent bar ──────────────────────────────────────────────
+  page.drawRectangle({
+    x: 0,
+    y: 0,
+    width,
+    height: 6,
+    color: accent,
+  });
+
+  // Disclaimer
+  const disclaimer = "Submitted on behalf of homeowner / insured for insurance claim purposes.";
+  const disclaimerWidth = font.widthOfTextAtSize(disclaimer, FONT_SIZE.TINY);
+  page.drawText(disclaimer, {
+    x: (width - disclaimerWidth) / 2,
+    y: 14,
+    size: FONT_SIZE.TINY,
+    font,
+    color: COLOR.TEXT_LIGHT,
   });
 }

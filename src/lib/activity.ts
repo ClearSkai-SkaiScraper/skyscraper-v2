@@ -61,21 +61,27 @@ export async function getRecentActivity(orgId: string, limit = 6) {
 
 // New: Get tool history for a user
 export async function getToolHistory(clerkUserId: string, tool?: string, limit = 50) {
-  const query = tool
-    ? `select id, tool, status, tokens_used, created_at, input, output
-       from tool_runs
-       where clerk_user_id = $1 and tool = $2
-       order by created_at desc
-       limit $3`
-    : `select id, tool, status, tokens_used, created_at, input, output
-       from tool_runs
-       where clerk_user_id = $1
-       order by created_at desc
-       limit $2`;
+  try {
+    const query = tool
+      ? `select id, tool, status, tokens_used, created_at, input, output
+         from tool_runs
+         where clerk_user_id = $1 and tool = $2
+         order by created_at desc
+         limit $3`
+      : `select id, tool, status, tokens_used, created_at, input, output
+         from tool_runs
+         where clerk_user_id = $1
+         order by created_at desc
+         limit $2`;
 
-  const params = tool ? [clerkUserId, tool, limit] : [clerkUserId, limit];
-  const result = await db.query(query, params);
-  return result.rows || [];
+    const params = tool ? [clerkUserId, tool, limit] : [clerkUserId, limit];
+    const result = await db.query(query, params);
+    return result.rows || [];
+  } catch (error: any) {
+    // table may not exist yet — return empty gracefully
+    logger.warn("[getToolHistory] Query failed (table may not exist):", error.message);
+    return [];
+  }
 }
 
 export async function getActivitiesForEntity(
