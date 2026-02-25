@@ -74,8 +74,6 @@ interface SavedEstimate {
   wasteFactor: number;
 }
 
-const STORAGE_KEY = "skai_material_estimates";
-
 // ── Pitch options — value is the actual pitch string the API expects ────────
 const ROOF_PITCHES = [
   { label: "Flat (2/12)", value: "2/12" },
@@ -128,21 +126,26 @@ export default function MaterialEstimatorPage() {
   // Saved estimates
   const [savedEstimates, setSavedEstimates] = useState<SavedEstimate[]>([]);
   const [saveSuccess, setSaveSuccess] = useState(false);
+  const [estimatesLoading, setEstimatesLoading] = useState(true);
 
-  // ── Load saved estimates from localStorage on mount ───────────────────────
-  useEffect(() => {
+  // ── Fetch saved estimates from DB on mount ────────────────────────────────
+  const loadEstimates = useCallback(async () => {
     try {
-      const stored = localStorage.getItem(STORAGE_KEY);
-      if (stored) setSavedEstimates(JSON.parse(stored));
+      const res = await fetch("/api/materials/estimates");
+      const data = await res.json();
+      if (data.ok && data.estimates) {
+        setSavedEstimates(data.estimates);
+      }
     } catch {
-      /* ignore corrupt data */
+      /* silently fail — estimates panel just stays empty */
+    } finally {
+      setEstimatesLoading(false);
     }
   }, []);
 
-  const persistEstimates = useCallback((estimates: SavedEstimate[]) => {
-    setSavedEstimates(estimates);
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(estimates));
-  }, []);
+  useEffect(() => {
+    loadEstimates();
+  }, [loadEstimates]);
 
   // ── Auto-estimate linear feet from area if user leaves them blank ────────
   function deriveLinearFeet(areaNum: number) {
@@ -239,29 +242,43 @@ export default function MaterialEstimatorPage() {
     setRouteStatus("idle");
   };
 
-  // ── Save current estimate ─────────────────────────────────────────────────
-  const handleSaveEstimate = () => {
+  // ── Save current estimate to DB ────────────────────────────────────────────
+  const handleSaveEstimate = async () => {
     if (!result) return;
-    const saved: SavedEstimate = {
-      id: crypto.randomUUID(),
-      jobId: jobContext.jobId,
-      claimId: jobContext.claimId || jobContext.resolvedClaimId,
-      jobLabel: jobLabel || "Unlinked Estimate",
-      createdAt: new Date().toISOString(),
-      totalArea: result.measurements.totalArea,
-      pitch: result.measurements.pitch,
-      shingleType,
-      materials: result.materials,
-      totalCost: result.totalCost,
-      wasteFactor: result.wasteFactor,
-    };
-    persistEstimates([saved, ...savedEstimates]);
-    setSaveSuccess(true);
-    setTimeout(() => setSaveSuccess(false), 2000);
+    try {
+      const res = await fetch("/api/materials/estimates", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          jobId: jobContext.jobId,
+          claimId: jobContext.claimId || jobContext.resolvedClaimId,
+          jobLabel: jobLabel || "Unlinked Estimate",
+          totalArea: result.measurements.totalArea,
+          pitch: result.measurements.pitch,
+          shingleType,
+          wasteFactor: result.wasteFactor,
+          materials: result.materials,
+        }),
+      });
+      const data = await res.json();
+      if (!data.ok) throw new Error(data.error);
+      await loadEstimates(); // re-fetch full list from DB
+      setSaveSuccess(true);
+      setTimeout(() => setSaveSuccess(false), 2000);
+    } catch {
+      setError("Failed to save estimate");
+    }
   };
 
-  const handleDeleteEstimate = (id: string) => {
-    persistEstimates(savedEstimates.filter((e) => e.id !== id));
+  const handleDeleteEstimate = async (id: string) => {
+    try {
+      const res = await fetch(`/api/materials/estimates?id=${id}`, { method: "DELETE" });
+      const data = await res.json();
+      if (!data.ok) throw new Error(data.error);
+      setSavedEstimates((prev) => prev.filter((e) => e.id !== id));
+    } catch {
+      setError("Failed to delete estimate");
+    }
   };
 
   // ── Transfer estimate to ABC Supply order ──────────────────────────────────
@@ -617,7 +634,7 @@ export default function MaterialEstimatorPage() {
       </div>
 
       {/* ───────── SAVED ESTIMATES HOLDER ───────── */}
-      {savedEstimates.length > 0 && (
+      {(savedEstimates.length > 0 || estimatesLoading) && (
         <div className="mt-8">
           <div className="mb-4 flex items-center gap-3">
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-orange-100 dark:bg-orange-900/30">
@@ -626,8 +643,9 @@ export default function MaterialEstimatorPage() {
             <div>
               <h2 className="text-xl font-bold text-slate-900 dark:text-white">Saved Estimates</h2>
               <p className="text-sm text-slate-500">
-                {savedEstimates.length} estimate{savedEstimates.length !== 1 ? "s" : ""} — transfer
-                to orders, request quotes, or email to partners
+                {estimatesLoading
+                  ? "Loading saved estimates…"
+                  : `${savedEstimates.length} estimate${savedEstimates.length !== 1 ? "s" : ""} — transfer to orders, request quotes, or email to partners`}
               </p>
             </div>
           </div>
