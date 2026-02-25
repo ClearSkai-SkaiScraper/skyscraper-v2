@@ -147,7 +147,9 @@ export async function GET(request: NextRequest) {
     }
 
     // ── Guarantee current user is always in the list ─────────────
-    if (ctx.userId && !seenIds.has(ctx.userId)) {
+    // AND enrich with Clerk profile if their DB profile data is missing
+    if (ctx.userId) {
+      const existingIdx = formattedMembers.findIndex((m) => m.id === ctx.userId);
       const clerkEmail =
         clerkUser?.emailAddresses?.[0]?.emailAddress ||
         clerkUser?.primaryEmailAddress?.emailAddress;
@@ -155,13 +157,28 @@ export async function GET(request: NextRequest) {
         ? [clerkUser.firstName, clerkUser.lastName].filter(Boolean).join(" ") || null
         : null;
 
-      formattedMembers.unshift({
-        id: ctx.userId,
-        name: clerkName || "You",
-        email: clerkEmail || "Unknown",
-        role: "Admin",
-        avatarUrl: clerkUser?.imageUrl || null,
-      });
+      if (existingIdx >= 0) {
+        // User is already in the list but may have null/Unknown profile data
+        const existing = formattedMembers[existingIdx];
+        if (!existing.name || existing.name === "Unknown") {
+          existing.name = clerkName || "You";
+        }
+        if (!existing.email || existing.email === "Unknown") {
+          existing.email = clerkEmail || "Unknown";
+        }
+        if (!existing.avatarUrl) {
+          existing.avatarUrl = clerkUser?.imageUrl || null;
+        }
+      } else {
+        // User not in list at all — inject from Clerk session
+        formattedMembers.unshift({
+          id: ctx.userId,
+          name: clerkName || "You",
+          email: clerkEmail || "Unknown",
+          role: "Admin",
+          avatarUrl: clerkUser?.imageUrl || null,
+        });
+      }
     }
 
     return NextResponse.json({

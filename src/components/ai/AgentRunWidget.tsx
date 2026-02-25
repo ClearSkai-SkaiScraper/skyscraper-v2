@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from 'react';
+import { useEffect, useState } from "react";
 
 interface AgentRun {
   id: string;
@@ -12,39 +12,59 @@ interface AgentRun {
   errorMsg?: string;
 }
 
-export function AgentRunWidget(){
-  const [runs,setRuns] = useState<AgentRun[]>([]);
-  const [loading,setLoading] = useState(true);
-  const [error,setError] = useState('');
+export function AgentRunWidget() {
+  const [runs, setRuns] = useState<AgentRun[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
-  useEffect(()=>{
+  useEffect(() => {
     let active = true;
-    (async()=>{
+    (async () => {
       try {
-        const res = await fetch('/api/agents/runs');
+        const res = await fetch("/api/agents/runs");
+        if (!res.ok) {
+          if (active) setError("");
+          setLoading(false);
+          return;
+        }
+        const contentType = res.headers.get("content-type");
+        if (!contentType?.includes("application/json")) {
+          if (active) setLoading(false);
+          return;
+        }
         const data = await res.json();
-        if (!res.ok) throw new Error(data.error||'Failed');
-        if (active) setRuns(data.runs||[]);
-      } catch(e:any){ setError(e.message); }
-      finally { if (active) setLoading(false); }
+        if (active) setRuns(data.runs || []);
+      } catch (e: any) {
+        if (active) setError("");
+      } finally {
+        if (active) setLoading(false);
+      }
     })();
-    const interval = setInterval(()=>{
-      (async()=>{
+    const interval = setInterval(() => {
+      (async () => {
         try {
-          const res = await fetch('/api/agents/runs');
+          const res = await fetch("/api/agents/runs");
+          if (!res.ok) return;
+          const contentType = res.headers.get("content-type");
+          if (!contentType?.includes("application/json")) return;
           const data = await res.json();
-          if (res.ok) setRuns(data.runs||[]);
+          if (res.ok) setRuns(data.runs || []);
         } catch {}
       })();
     }, 15000);
-    return ()=>{ active=false; clearInterval(interval); };
-  },[]);
+    return () => {
+      active = false;
+      clearInterval(interval);
+    };
+  }, []);
 
   if (loading) return <div className="p-4 text-xs text-gray-500">Loading agent activity...</div>;
   if (error) return <div className="p-4 text-xs text-red-600">{error}</div>;
 
-  const recentFailures = runs.filter(r=>!r.success).length;
-  const avgDuration = runs.length ? Math.round(runs.reduce((a,b)=>a+b.durationMs,0)/runs.length) : 0;
+  const recentFailures = runs.filter((r) => !r.success).length;
+  const avgDuration = runs.length
+    ? Math.round(runs.reduce((a, b) => a + b.durationMs, 0) / runs.length)
+    : 0;
 
   return (
     <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
@@ -67,11 +87,18 @@ export function AgentRunWidget(){
         </div>
       </div>
       <div className="max-h-40 space-y-1 overflow-y-auto text-xs">
-        {runs.map(r=> (
-          <div key={r.id} className={`flex items-center justify-between rounded px-2 py-1 ${r.success?'bg-green-50':'bg-red-50'}`}>
+        {runs.map((r) => (
+          <div
+            key={r.id}
+            className={`flex items-center justify-between rounded px-2 py-1 ${r.success ? "bg-green-50" : "bg-red-50"}`}
+          >
             <span className="max-w-[120px] truncate font-mono text-[11px]">{r.agentName}</span>
             <span className="text-gray-500">{r.durationMs}ms</span>
-            <span className={`text-[10px] font-medium ${r.success?'text-green-700':'text-red-700'}`}>{r.success?'OK':r.errorType||'ERR'}</span>
+            <span
+              className={`text-[10px] font-medium ${r.success ? "text-green-700" : "text-red-700"}`}
+            >
+              {r.success ? "OK" : r.errorType || "ERR"}
+            </span>
           </div>
         ))}
       </div>
