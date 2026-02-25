@@ -48,11 +48,9 @@ export {
   roleBadgeColor,
   roleHasPermission,
   roleLabel,
-
+  type Permission as AppPermission,
   // Types
   type AppRole,
-  type Permission as AppPermission,
   type PermissionAction,
   type PermissionResource,
 } from "./constants";
-

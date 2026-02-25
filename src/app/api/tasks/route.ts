@@ -2,10 +2,11 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
-import { NextRequest } from "next/server";
 import { logger } from "@/lib/logger";
+import { NextRequest } from "next/server";
 
 import { getCurrentUserPermissions, requirePermission } from "@/lib/permissions";
+import { sendTemplatedNotification } from "@/lib/notifications/templates";
 import prisma from "@/lib/prisma";
 
 // Prisma singleton imported from @/lib/db/prisma
@@ -173,6 +174,26 @@ export async function POST(request: NextRequest) {
         updatedAt: new Date(),
       },
     });
+
+    // ── Sprint 27: Send TASK_ASSIGNED notification ───────────────
+    const effectiveAssignee = assigneeId || userId;
+    if (effectiveAssignee && effectiveAssignee !== userId) {
+      // Only notify if the task is assigned to someone OTHER than the creator
+      try {
+        await sendTemplatedNotification("TASK_ASSIGNED", effectiveAssignee, {
+          taskName: title,
+          taskId: task.id,
+          projectId: projectId || null,
+          assignedBy: userId,
+        });
+        logger.info(
+          `[POST /api/tasks] TASK_ASSIGNED notification sent to ${effectiveAssignee} for task "${title}"`
+        );
+      } catch (notifError) {
+        // Notification failure should NOT block task creation
+        logger.error("[POST /api/tasks] Failed to send TASK_ASSIGNED notification:", notifError);
+      }
+    }
 
     return Response.json(task, { status: 201 });
   } catch (error) {
