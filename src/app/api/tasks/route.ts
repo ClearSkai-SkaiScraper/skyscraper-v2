@@ -5,8 +5,8 @@ export const revalidate = 0;
 import { logger } from "@/lib/logger";
 import { NextRequest } from "next/server";
 
-import { getCurrentUserPermissions, requirePermission } from "@/lib/permissions";
 import { sendTemplatedNotification } from "@/lib/notifications/templates";
+import { getCurrentUserPermissions, requirePermission } from "@/lib/permissions";
 import prisma from "@/lib/prisma";
 
 // Prisma singleton imported from @/lib/db/prisma
