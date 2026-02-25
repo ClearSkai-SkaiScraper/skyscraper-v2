@@ -43,51 +43,60 @@ import {
 import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
-import type { ClaimFolder, FolderSection, SectionStatus } from "@/lib/claims-folder/folderSchema";
-import { SECTION_METADATA } from "@/lib/claims-folder/folderSchema";
+import type {
+  ClaimFolder,
+  FolderSectionKey,
+  SectionStatus,
+} from "@/lib/claims-folder/folderSchema";
+import { FOLDER_SECTIONS, SECTION_METADATA } from "@/lib/claims-folder/folderSchema";
 import { logger } from "@/lib/logger";
 
-// Section icon mapping
-const SECTION_ICONS: Record<FolderSection, React.ReactNode> = {
-  coverSheet: <FileText className="h-5 w-5" />,
-  weatherCauseOfLoss: <CloudRain className="h-5 w-5" />,
-  annotatedPhotos: <ImageIcon className="h-5 w-5" />,
-  codeCompliance: <FileCode className="h-5 w-5" />,
-  scopePricing: <Wrench className="h-5 w-5" />,
-  repairJustification: <Sparkles className="h-5 w-5" />,
-  causeOfLossNarrative: <MessageSquare className="h-5 w-5" />,
+// Sections that have actual route pages under /sections/[key]
+const ROUTED_SECTIONS = new Set<FolderSectionKey>([
+  FOLDER_SECTIONS.COVER_SHEET,
+  FOLDER_SECTIONS.TABLE_OF_CONTENTS,
+  FOLDER_SECTIONS.EXECUTIVE_SUMMARY,
+  FOLDER_SECTIONS.WEATHER_CAUSE_OF_LOSS,
+  FOLDER_SECTIONS.INSPECTION_OVERVIEW,
+  FOLDER_SECTIONS.DAMAGE_GRIDS,
+  FOLDER_SECTIONS.PHOTO_EVIDENCE,
+  FOLDER_SECTIONS.CODE_COMPLIANCE,
+  FOLDER_SECTIONS.SCOPE_PRICING,
+  FOLDER_SECTIONS.REPAIR_JUSTIFICATION,
+  FOLDER_SECTIONS.CONTRACTOR_SUMMARY,
+  FOLDER_SECTIONS.TIMELINE,
+  FOLDER_SECTIONS.HOMEOWNER_STATEMENT,
+  FOLDER_SECTIONS.ADJUSTER_COVER_LETTER,
+  FOLDER_SECTIONS.CLAIM_CHECKLIST,
+  FOLDER_SECTIONS.DIGITAL_SIGNATURES,
+  FOLDER_SECTIONS.ATTACHMENTS,
+]);
+
+// Section icon mapping — keyed by FolderSectionKey (kebab-case)
+const SECTION_ICONS: Partial<Record<FolderSectionKey, React.ReactNode>> = {
+  "cover-sheet": <FileText className="h-5 w-5" />,
+  "table-of-contents": <FileText className="h-5 w-5" />,
+  "executive-summary": <MessageSquare className="h-5 w-5" />,
+  "weather-cause-of-loss": <CloudRain className="h-5 w-5" />,
+  "inspection-overview": <Eye className="h-5 w-5" />,
+  "damage-grids": <MapPin className="h-5 w-5" />,
+  "photo-evidence": <ImageIcon className="h-5 w-5" />,
+  "test-cuts": <Wrench className="h-5 w-5" />,
+  "code-compliance": <FileCode className="h-5 w-5" />,
+  "scope-pricing": <Wrench className="h-5 w-5" />,
+  "supplements-variances": <RefreshCw className="h-5 w-5" />,
+  "repair-justification": <Sparkles className="h-5 w-5" />,
+  "contractor-summary": <Shield className="h-5 w-5" />,
   timeline: <Clock className="h-5 w-5" />,
-  homeownerStatement: <User className="h-5 w-5" />,
-  priorCondition: <Eye className="h-5 w-5" />,
-  vendorNetwork: <MapPin className="h-5 w-5" />,
-  supplementHistory: <RefreshCw className="h-5 w-5" />,
-  communicationLog: <Send className="h-5 w-5" />,
-  carrierCoverLetter: <FileText className="h-5 w-5" />,
-  legalProtection: <Shield className="h-5 w-5" />,
-  badFaithIndicators: <AlertCircle className="h-5 w-5" />,
-  auditTrail: <Zap className="h-5 w-5" />,
+  "homeowner-statement": <User className="h-5 w-5" />,
+  "adjuster-cover-letter": <Send className="h-5 w-5" />,
+  "claim-checklist": <AlertCircle className="h-5 w-5" />,
+  "digital-signatures": <Zap className="h-5 w-5" />,
+  attachments: <FileText className="h-5 w-5" />,
 };
 
-// Map old camelCase section keys to URL slugs for the new section pages
-const SECTION_SLUGS: Record<FolderSection, string> = {
-  coverSheet: "cover-sheet",
-  weatherCauseOfLoss: "weather-cause-of-loss",
-  annotatedPhotos: "photo-evidence",
-  codeCompliance: "code-compliance",
-  scopePricing: "scope-pricing",
-  repairJustification: "repair-justification",
-  causeOfLossNarrative: "executive-summary",
-  timeline: "timeline",
-  homeownerStatement: "homeowner-statement",
-  priorCondition: "inspection-overview",
-  vendorNetwork: "contractor-summary",
-  supplementHistory: "attachments",
-  communicationLog: "timeline",
-  carrierCoverLetter: "adjuster-cover-letter",
-  legalProtection: "code-compliance",
-  badFaithIndicators: "claim-checklist",
-  auditTrail: "digital-signatures",
-};
+// Section keys (FolderSectionKey) are already kebab-case URL slugs
+// e.g. "cover-sheet", "weather-cause-of-loss" — no mapping needed
 
 function getStatusIcon(status: SectionStatus) {
   switch (status) {
@@ -154,13 +163,15 @@ export default function ClaimFolderBuilderPage() {
   const [folder, setFolder] = useState<ClaimFolder | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [selectedSections, setSelectedSections] = useState<Set<FolderSection>>(
-    new Set(Object.keys(SECTION_METADATA) as FolderSection[])
+  const [selectedSections, setSelectedSections] = useState<Set<FolderSectionKey>>(
+    new Set(
+      (Object.keys(SECTION_METADATA) as FolderSectionKey[]).filter((s) => ROUTED_SECTIONS.has(s))
+    )
   );
   const [activeTab, setActiveTab] = useState("overview");
   const [exportDialogOpen, setExportDialogOpen] = useState(false);
   const [exporting, setExporting] = useState(false);
-  const [generating, setGenerating] = useState<FolderSection | null>(null);
+  const [generating, setGenerating] = useState<FolderSectionKey | null>(null);
 
   const fetchFolder = useCallback(async () => {
     if (!claimId) return;
@@ -192,7 +203,7 @@ export default function ClaimFolderBuilderPage() {
     fetchFolder();
   }, [fetchFolder]);
 
-  const handleSectionToggle = (section: FolderSection) => {
+  const handleSectionToggle = (section: FolderSectionKey) => {
     setSelectedSections((prev) => {
       const next = new Set(prev);
       if (next.has(section)) {
@@ -205,7 +216,11 @@ export default function ClaimFolderBuilderPage() {
   };
 
   const handleSelectAll = () => {
-    setSelectedSections(new Set(Object.keys(SECTION_METADATA) as FolderSection[]));
+    setSelectedSections(
+      new Set(
+        (Object.keys(SECTION_METADATA) as FolderSectionKey[]).filter((s) => ROUTED_SECTIONS.has(s))
+      )
+    );
   };
 
   const handleSelectNone = () => {
@@ -214,16 +229,16 @@ export default function ClaimFolderBuilderPage() {
 
   const handleSelectComplete = () => {
     if (!folder || !folder.sectionStatus) return;
-    const complete = new Set<FolderSection>();
+    const complete = new Set<FolderSectionKey>();
     for (const [key, status] of Object.entries(folder.sectionStatus)) {
       if (status === "complete") {
-        complete.add(key as FolderSection);
+        complete.add(key as FolderSectionKey);
       }
     }
     setSelectedSections(complete);
   };
 
-  const handleGenerateSection = async (section: FolderSection) => {
+  const handleGenerateSection = async (section: FolderSectionKey) => {
     if (!claimId) return;
 
     setGenerating(section);
@@ -232,13 +247,13 @@ export default function ClaimFolderBuilderPage() {
       // Call appropriate AI generator based on section
       let endpoint = "";
       switch (section) {
-        case "causeOfLossNarrative":
+        case "executive-summary":
           endpoint = `/api/claims-folder/generate/cause-of-loss`;
           break;
-        case "repairJustification":
+        case "repair-justification":
           endpoint = `/api/claims-folder/generate/repair-justification`;
           break;
-        case "carrierCoverLetter":
+        case "adjuster-cover-letter":
           endpoint = `/api/claims-folder/generate/cover-letter`;
           break;
         default:
@@ -328,8 +343,10 @@ export default function ClaimFolderBuilderPage() {
     );
   }
 
-  const allSections = Object.keys(SECTION_METADATA) as FolderSection[];
-  const sectionStatus = folder.sectionStatus || ({} as Record<FolderSection, SectionStatus>);
+  const allSections = (Object.keys(SECTION_METADATA) as FolderSectionKey[]).filter((s) =>
+    ROUTED_SECTIONS.has(s)
+  );
+  const sectionStatus = folder.sectionStatus || ({} as Record<FolderSectionKey, SectionStatus>);
   const completeCount = allSections.filter((s) => sectionStatus[s] === "complete").length;
   const partialCount = allSections.filter((s) => sectionStatus[s] === "partial").length;
   const missingCount = allSections.filter((s) => sectionStatus[s] === "missing").length;
@@ -470,12 +487,11 @@ export default function ClaimFolderBuilderPage() {
                 const status = sectionStatus[section] || "missing";
                 const isSelected = selectedSections.has(section);
                 const isGenerating = generating === section;
-                const sectionSlug = SECTION_SLUGS[section];
 
                 return (
                   <Link
                     key={section}
-                    href={`/claims-ready-folder/${claimId}/sections/${sectionSlug}`}
+                    href={`/claims-ready-folder/${claimId}/sections/${section}`}
                     className={`block rounded-lg border p-4 transition-all hover:shadow-md ${getStatusColor(status)} ${
                       isSelected ? "ring-2 ring-blue-500" : ""
                     }`}
@@ -492,7 +508,7 @@ export default function ClaimFolderBuilderPage() {
                       <div className="flex-1">
                         <div className="flex items-center gap-2">
                           {SECTION_ICONS[section]}
-                          <span className="font-medium">{meta.label}</span>
+                          <span className="font-medium">{meta.title}</span>
                         </div>
                         <p className="mt-1 text-xs text-slate-500">{meta.description}</p>
                         <div className="mt-2 flex items-center gap-2">
@@ -523,7 +539,6 @@ export default function ClaimFolderBuilderPage() {
             const meta = SECTION_METADATA[section];
             const status = sectionStatus[section] || "missing";
             const data = folder[section as keyof ClaimFolder];
-            const sectionSlug = SECTION_SLUGS[section];
 
             return (
               <div key={section} className={`rounded-lg border p-6 ${getStatusColor(status)}`}>
@@ -531,7 +546,7 @@ export default function ClaimFolderBuilderPage() {
                   <div className="flex items-center gap-3">
                     {SECTION_ICONS[section]}
                     <div>
-                      <h3 className="font-semibold">{meta.label}</h3>
+                      <h3 className="font-semibold">{meta.title}</h3>
                       <p className="text-sm text-slate-500">{meta.description}</p>
                     </div>
                   </div>
@@ -542,7 +557,7 @@ export default function ClaimFolderBuilderPage() {
                         {status}
                       </Badge>
                     </div>
-                    <Link href={`/claims-ready-folder/${claimId}/sections/${sectionSlug}`}>
+                    <Link href={`/claims-ready-folder/${claimId}/sections/${section}`}>
                       <Button variant="outline" size="sm">
                         <Eye className="mr-2 h-4 w-4" />
                         View Details
@@ -555,9 +570,9 @@ export default function ClaimFolderBuilderPage() {
                 {data && typeof data === "object" && <SectionPreview data={data} />}
 
                 {/* Generate button for AI sections */}
-                {(section === "causeOfLossNarrative" ||
-                  section === "repairJustification" ||
-                  section === "carrierCoverLetter") &&
+                {(section === "executive-summary" ||
+                  section === "repair-justification" ||
+                  section === "adjuster-cover-letter") &&
                   status !== "complete" && (
                     <div className="mt-4">
                       <Button
@@ -603,11 +618,11 @@ export default function ClaimFolderBuilderPage() {
                 cause of loss narrative for carrier submission.
               </p>
               <Button
-                onClick={() => handleGenerateSection("causeOfLossNarrative")}
-                disabled={generating === "causeOfLossNarrative"}
+                onClick={() => handleGenerateSection("executive-summary")}
+                disabled={generating === "executive-summary"}
                 className="w-full"
               >
-                {generating === "causeOfLossNarrative" ? (
+                {generating === "executive-summary" ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                     Analyzing...
@@ -637,11 +652,11 @@ export default function ClaimFolderBuilderPage() {
                 manufacturer specifications.
               </p>
               <Button
-                onClick={() => handleGenerateSection("repairJustification")}
-                disabled={generating === "repairJustification"}
+                onClick={() => handleGenerateSection("repair-justification")}
+                disabled={generating === "repair-justification"}
                 className="w-full"
               >
-                {generating === "repairJustification" ? (
+                {generating === "repair-justification" ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                     Generating...
@@ -671,11 +686,11 @@ export default function ClaimFolderBuilderPage() {
                 review, highlighting key evidence.
               </p>
               <Button
-                onClick={() => handleGenerateSection("carrierCoverLetter")}
-                disabled={generating === "carrierCoverLetter"}
+                onClick={() => handleGenerateSection("adjuster-cover-letter")}
+                disabled={generating === "adjuster-cover-letter"}
                 className="w-full"
               >
-                {generating === "carrierCoverLetter" ? (
+                {generating === "adjuster-cover-letter" ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                     Writing...
@@ -712,7 +727,7 @@ export default function ClaimFolderBuilderPage() {
                   >
                     <div className="flex items-center gap-3">
                       {SECTION_ICONS[section]}
-                      <span>{meta.label}</span>
+                      <span>{meta.title}</span>
                     </div>
                     <div className="flex items-center gap-2">
                       {getStatusIcon(status)}

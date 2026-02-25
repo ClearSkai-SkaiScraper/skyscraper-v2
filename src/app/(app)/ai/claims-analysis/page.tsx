@@ -22,7 +22,7 @@ import {
   XCircle,
 } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useCallback, useEffect, useState } from "react";
+import { Suspense, useCallback, useEffect, useState } from "react";
 
 import { AgentRunWidget } from "@/components/ai/AgentRunWidget";
 import { ClaimSelect } from "@/components/claims/ClaimSelect";
@@ -52,7 +52,7 @@ interface ClaimsAnalysisResult {
   tokensUsed?: number;
 }
 
-export default function ClaimsAnalysisPage() {
+function ClaimsAnalysisContent() {
   const router = useRouter();
   const { isLoaded, isSignedIn } = useUser();
   const searchParams = useSearchParams();
@@ -433,5 +433,21 @@ export default function ClaimsAnalysisPage() {
         )}
       </div>
     </PageContainer>
+  );
+}
+
+export default function ClaimsAnalysisPage() {
+  return (
+    <Suspense
+      fallback={
+        <PageContainer>
+          <div className="flex min-h-[40vh] items-center justify-center">
+            <div className="animate-pulse text-muted-foreground">Loading AI Claims Analysis…</div>
+          </div>
+        </PageContainer>
+      }
+    >
+      <ClaimsAnalysisContent />
+    </Suspense>
   );
 }

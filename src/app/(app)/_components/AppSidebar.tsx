@@ -33,8 +33,8 @@ interface NavSection {
   items: NavItem[];
 }
 
-// Information Architecture (Consolidated v5 — Jan 2026)
-// 8 sections organized by user intent, not feature taxonomy
+// Information Architecture (Consolidated v6 — Feb 2026)
+// 7 sections organized by user workflow
 const navSections: NavSection[] = [
   {
     label: "Storm Command Center",
@@ -43,13 +43,12 @@ const navSections: NavSection[] = [
       { label: "Storm Center", href: "/storm-center" },
       { label: "Job Pipeline", href: "/pipeline" },
       { label: "Analytics Dashboard", href: "/analytics/dashboard" },
-      { label: "Weather Analytics", href: "/weather/analytics" },
-      { label: "Quick DOL", href: "/quick-dol" },
       { label: "Smart Actions", href: "/ai/smart-actions" },
+      { label: "Quick DOL", href: "/quick-dol" },
     ],
   },
   {
-    label: "Claims Workspace",
+    label: "Claims & Supplements",
     items: [
       { label: "Active Claims", href: "/claims" },
       { label: "Claims-Ready Folder", href: "/claims-ready-folder" },
@@ -61,27 +60,25 @@ const navSections: NavSection[] = [
     ],
   },
   {
-    label: "Operations",
+    label: "Jobs & Field Ops",
     items: [
-      { label: "Map View", href: "/maps/map-view" },
       { label: "Retail Workspace", href: "/jobs/retail" },
       { label: "Lead Routing", href: "/leads" },
-      { label: "Appointments & Scheduling", href: "/appointments" },
+      { label: "Appointments & Inspections", href: "/appointments" },
       { label: "Crew Manager", href: "/crews" },
-      { label: "Damage Report Builder", href: "/ai/damage-builder" },
-      { label: "Project Plan Builder", href: "/ai/roofplan-builder" },
-      { label: "Mockup Generator", href: "/ai/mockup", featureFlag: "FEATURE_MOCKUP_GENERATOR" },
-      { label: "Vision Labs", href: "/vision-lab", featureFlag: "FEATURE_VISION_AI" },
+      { label: "Map View", href: "/maps/map-view" },
       { label: "Permits", href: "/permits" },
     ],
   },
   {
-    label: "Materials & Vendors",
+    label: "Build Tools & Materials",
     items: [
+      { label: "Damage Report Builder", href: "/ai/damage-builder" },
+      { label: "Project Plan Builder", href: "/ai/roofplan-builder" },
+      { label: "Mockup Generator", href: "/ai/mockup", featureFlag: "FEATURE_MOCKUP_GENERATOR" },
+      { label: "Vision Labs", href: "/vision-lab", featureFlag: "FEATURE_VISION_AI" },
       { label: "Material Estimator", href: "/materials/estimator" },
       { label: "Material Orders", href: "/vendors/orders" },
-      { label: "Vendor Intelligence", href: "/vendor-network" },
-      { label: "Contractor Packet", href: "/reports/contractor-packet" },
     ],
   },
   {
@@ -90,40 +87,30 @@ const navSections: NavSection[] = [
       { label: "Reports Hub", href: "/reports/hub" },
       { label: "Report Builder", href: "/reports/templates/pdf-builder" },
       { label: "Templates & Marketplace", href: "/reports/templates" },
+      { label: "Contractor Packet", href: "/reports/contractor-packet" },
       { label: "Company Documents", href: "/settings/company-documents" },
-      { label: "Report History", href: "/reports/history" },
     ],
   },
   {
-    label: "Finance & Comms",
+    label: "Finance & Messages",
     items: [
       { label: "Financial Overview", href: "/finance/overview" },
       { label: "Invoices", href: "/invoices" },
       { label: "Commissions", href: "/commissions" },
       { label: "Mortgage Checks", href: "/mortgage-checks" },
-      { label: "SMS Center", href: "/sms" },
-      { label: "Messages", href: "/trades/messages" },
-      { label: "Client Notifications", href: "/notifications/delivery" },
+      { label: "Messages Hub", href: "/messages" },
     ],
   },
   {
-    label: "Network",
+    label: "Company & Network",
     items: [
       { label: "My Profile & Company", href: "/trades/profile" },
-      { label: "Company Contacts", href: "/contacts" },
       { label: "Trades Network Hub", href: "/trades" },
       { label: "Job Board", href: "/trades/jobs" },
-    ],
-  },
-  {
-    label: "Settings",
-    items: [
-      { label: "Billing", href: "/settings/billing" },
+      { label: "Vendor Intelligence", href: "/vendor-network" },
       { label: "Company Settings", href: "/settings" },
-      { label: "Company Branding", href: "/settings/branding" },
-      { label: "Company Seats", href: "/teams" },
-      { label: "Migrations", href: "/settings/migrations" },
-      { label: "Archive", href: "/archive" },
+      { label: "Billing & Plans", href: "/settings/billing" },
+      { label: "Team & Seats", href: "/teams" },
     ],
   },
 ];

@@ -15,7 +15,9 @@ export default async function ClaimsTimelinePage() {
   let user;
   try {
     user = await currentUser();
-  } catch {
+  } catch (error: unknown) {
+    // Re-throw redirect/navigation errors so Next.js can handle them
+    if (error instanceof Error && error.message === "NEXT_REDIRECT") throw error;
     redirect("/sign-in");
   }
   if (!user) redirect("/sign-in");

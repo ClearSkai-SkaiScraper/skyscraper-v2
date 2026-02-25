@@ -15,12 +15,18 @@ export const metadata: Metadata = {
 export const dynamic = "force-dynamic";
 
 export default async function AppointmentsPage() {
-  // Soft gate: do not block page; auto-create org when possible
-  const ctx = await getActiveOrgContext({ required: true });
-
-  // Extract userId and orgId safely from the context result
-  const userId = ctx.ok ? ctx.userId : "";
-  const orgId = ctx.ok ? ctx.orgId : "";
+  // Soft gate: do not block page; gracefully handle missing org
+  let userId = "";
+  let orgId = "";
+  try {
+    const ctx = await getActiveOrgContext({ required: true });
+    userId = ctx.ok ? ctx.userId : "";
+    orgId = ctx.ok ? ctx.orgId : "";
+  } catch (error: unknown) {
+    // Re-throw redirect errors (Next.js uses these for navigation)
+    if (error instanceof Error && error.message === "NEXT_REDIRECT") throw error;
+    // Swallow org-resolution failures — page renders with empty state
+  }
 
   return (
     <PageContainer>

@@ -23,12 +23,10 @@ import {
   History,
   Landmark,
   LayoutDashboard,
-  Mail,
   MapPin,
   Menu,
   MessageSquare,
   Package,
-  Palette,
   Receipt,
   Settings,
   Shield,
@@ -57,48 +55,51 @@ interface NavSection {
   items: NavItem[];
 }
 
-// SYNCED with AppSidebar.tsx — Information Architecture (Consolidated v5)
+// SYNCED with AppSidebar.tsx — Information Architecture (Consolidated v6)
 const navSections: NavSection[] = [
   {
-    label: "Command Center",
+    label: "Storm Command Center",
     items: [
       { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
-      { label: "Analytics Dashboard", href: "/analytics/dashboard", icon: BarChart3 },
+      { label: "Storm Center", href: "/storm-center", icon: Cloud },
       { label: "Job Pipeline", href: "/pipeline", icon: Briefcase },
+      { label: "Analytics Dashboard", href: "/analytics/dashboard", icon: BarChart3 },
       { label: "Smart Actions", href: "/ai/smart-actions", icon: Sparkles },
+      { label: "Quick DOL", href: "/quick-dol", icon: Cloud },
     ],
   },
   {
-    label: "Jobs & Claims",
+    label: "Claims & Supplements",
     items: [
-      { label: "Map View", href: "/maps/map-view", icon: MapPin },
-      { label: "Claims Workspace", href: "/claims", icon: ClipboardList },
-      { label: "Retail Workspace", href: "/jobs/retail", icon: Store },
-      { label: "Lead Routing", href: "/leads", icon: Zap },
-      { label: "Appointments & Scheduling", href: "/appointments", icon: Calendar },
-      { label: "Crew Manager", href: "/crews", icon: HardHat },
-    ],
-  },
-  {
-    label: "Claims Toolkit",
-    items: [
+      { label: "Active Claims", href: "/claims", icon: ClipboardList },
       { label: "Claims-Ready Folder", href: "/claims-ready-folder", icon: FolderOpen },
       { label: "Supplement Builder", href: "/ai/tools/supplement", icon: Wrench },
+      { label: "Supplement Tracker", href: "/supplements", icon: History },
       { label: "Depreciation Builder", href: "/ai/tools/depreciation", icon: Wrench },
       { label: "Rebuttal Builder", href: "/ai/tools/rebuttal", icon: Shield },
       { label: "Bad Faith Analysis", href: "/ai/bad-faith", icon: Shield },
-      { label: "Quick DOL", href: "/quick-dol", icon: Cloud },
-      { label: "Weather Analytics", href: "/weather/analytics", icon: Cloud },
     ],
   },
   {
-    label: "Trades Toolkit",
+    label: "Jobs & Field Ops",
+    items: [
+      { label: "Retail Workspace", href: "/jobs/retail", icon: Store },
+      { label: "Lead Routing", href: "/leads", icon: Zap },
+      { label: "Appointments & Inspections", href: "/appointments", icon: Calendar },
+      { label: "Crew Manager", href: "/crews", icon: HardHat },
+      { label: "Map View", href: "/maps/map-view", icon: MapPin },
+      { label: "Permits", href: "/permits", icon: ClipboardList },
+    ],
+  },
+  {
+    label: "Build Tools & Materials",
     items: [
       { label: "Damage Report Builder", href: "/ai/damage-builder", icon: Hammer },
       { label: "Project Plan Builder", href: "/ai/roofplan-builder", icon: Sparkles },
       { label: "Mockup Generator", href: "/ai/mockup", icon: Sparkles },
       { label: "Vision Labs", href: "/vision-lab", icon: Camera },
-      { label: "Contractor Packet", href: "/reports/contractor-packet", icon: FileText },
+      { label: "Material Estimator", href: "/materials/estimator", icon: Package },
+      { label: "Material Orders", href: "/vendors/orders", icon: Package },
     ],
   },
   {
@@ -107,42 +108,30 @@ const navSections: NavSection[] = [
       { label: "Reports Hub", href: "/reports/hub", icon: FileText },
       { label: "Report Builder", href: "/reports/templates/pdf-builder", icon: FileText },
       { label: "Templates & Marketplace", href: "/reports/templates", icon: FolderOpen },
+      { label: "Contractor Packet", href: "/reports/contractor-packet", icon: FileText },
       { label: "Company Documents", href: "/settings/company-documents", icon: FileText },
-      { label: "Report History", href: "/reports/history", icon: History },
     ],
   },
   {
-    label: "Network",
-    items: [
-      { label: "Trades Network Hub", href: "/trades", icon: Users },
-      { label: "My Profile & Company", href: "/trades/profile", icon: Users },
-      { label: "Job Board", href: "/trades/jobs", icon: Briefcase },
-      { label: "Vendor Intelligence", href: "/vendor-network", icon: Building2 },
-      { label: "Company Contacts", href: "/contacts", icon: Users },
-      { label: "Material Orders", href: "/vendors/orders", icon: Package },
-    ],
-  },
-  {
-    label: "Finance & Comms",
+    label: "Finance & Messages",
     items: [
       { label: "Financial Overview", href: "/finance/overview", icon: CreditCard },
       { label: "Invoices", href: "/invoices", icon: Receipt },
       { label: "Commissions", href: "/commissions", icon: CreditCard },
       { label: "Mortgage Checks", href: "/mortgage-checks", icon: Landmark },
-      { label: "SMS Center", href: "/sms", icon: MessageSquare },
-      { label: "Messages", href: "/trades/messages", icon: Mail },
-      { label: "Client Notifications", href: "/notifications/delivery", icon: Mail },
+      { label: "Messages Hub", href: "/messages", icon: MessageSquare },
     ],
   },
   {
-    label: "Settings",
+    label: "Company & Network",
     items: [
+      { label: "My Profile & Company", href: "/trades/profile", icon: Users },
+      { label: "Trades Network Hub", href: "/trades", icon: Users },
+      { label: "Job Board", href: "/trades/jobs", icon: Briefcase },
+      { label: "Vendor Intelligence", href: "/vendor-network", icon: Building2 },
       { label: "Company Settings", href: "/settings", icon: Settings },
-      { label: "Billing", href: "/settings/billing", icon: CreditCard },
-      { label: "Branding & Cover Page", href: "/settings/branding", icon: Palette },
+      { label: "Billing & Plans", href: "/settings/billing", icon: CreditCard },
       { label: "Team & Seats", href: "/teams", icon: Users },
-      { label: "Permits", href: "/permits", icon: ClipboardList },
-      { label: "Archive", href: "/archive", icon: FolderOpen },
     ],
   },
 ];
