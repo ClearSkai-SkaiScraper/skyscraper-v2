@@ -1,4 +1,7 @@
+import { redirect } from "next/navigation";
+
 import { PageContainer } from "@/components/layout/PageContainer";
+import { logger } from "@/lib/logger";
 import { getActiveOrgContext } from "@/lib/org/getActiveOrgContext";
 
 import { RetailJobWizard } from "./RetailJobWizard";
@@ -6,8 +9,19 @@ import { RetailJobWizard } from "./RetailJobWizard";
 export const dynamic = "force-dynamic";
 
 export default async function NewRetailJobPage() {
-  const orgResult = await getActiveOrgContext({ required: true });
-  const orgId = orgResult.ok ? orgResult.orgId : "";
+  let orgId = "";
+  try {
+    const orgResult = await getActiveOrgContext({ required: true });
+    if (!orgResult.ok) {
+      redirect("/sign-in");
+    }
+    orgId = orgResult.orgId;
+  } catch (error: unknown) {
+    // redirect() throws a special error that must be re-thrown
+    if (error && typeof error === "object" && "digest" in error) throw error;
+    logger.error("[NewRetailJobPage] Org context error:", error);
+    redirect("/sign-in");
+  }
 
   return (
     <PageContainer maxWidth="5xl">

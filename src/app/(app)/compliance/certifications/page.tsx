@@ -1,7 +1,7 @@
 "use client";
 
 import { useUser } from "@clerk/nextjs";
-import { AlertTriangle, Calendar, CheckCircle,FileCheck, Shield } from "lucide-react";
+import { AlertTriangle, Calendar, CheckCircle, FileCheck, Shield } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
@@ -20,16 +20,6 @@ interface Certification {
 export default function CompliancePage() {
   const router = useRouter();
   const { isLoaded, isSignedIn } = useUser();
-
-  useEffect(() => {
-    if (isLoaded && !isSignedIn) {
-      router.push("/sign-in");
-    }
-  }, [isLoaded, isSignedIn, router]);
-
-  if (!isLoaded || !isSignedIn) {
-    return <div className="flex h-screen items-center justify-center">Loading...</div>;
-  }
 
   const [certifications] = useState<Certification[]>([
     {
@@ -61,18 +51,15 @@ export default function CompliancePage() {
     },
   ]);
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "valid":
-        return "green";
-      case "expiring":
-        return "yellow";
-      case "expired":
-        return "red";
-      default:
-        return "gray";
+  useEffect(() => {
+    if (isLoaded && !isSignedIn) {
+      router.push("/sign-in");
     }
-  };
+  }, [isLoaded, isSignedIn, router]);
+
+  if (!isLoaded || !isSignedIn) {
+    return <div className="flex h-screen items-center justify-center">Loading...</div>;
+  }
 
   const getStatusIcon = (status: string) => {
     switch (status) {
@@ -172,7 +159,6 @@ export default function CompliancePage() {
             </thead>
             <tbody className="divide-y">
               {certifications.map((cert) => {
-                const statusColor = getStatusColor(cert.status);
                 const daysLeft = getDaysUntilExpiry(cert.expiryDate);
                 return (
                   <tr key={cert.id} className="hover:bg-gray-50">
@@ -203,7 +189,13 @@ export default function CompliancePage() {
                     </td>
                     <td className="px-6 py-4">
                       <span
-                        className={`bg- px-3 py-1${statusColor}-100 text-${statusColor}-700 flex w-fit items-center gap-1 rounded-full text-xs font-medium capitalize`}
+                        className={`flex w-fit items-center gap-1 rounded-full px-3 py-1 text-xs font-medium capitalize ${
+                          cert.status === "valid"
+                            ? "bg-green-100 text-green-700"
+                            : cert.status === "expiring"
+                              ? "bg-yellow-100 text-yellow-700"
+                              : "bg-red-100 text-red-700"
+                        }`}
                       >
                         {getStatusIcon(cert.status)}
                         {cert.status}

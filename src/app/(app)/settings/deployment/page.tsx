@@ -3,6 +3,8 @@ import { redirect } from "next/navigation";
 
 import { EndpointHealthCheck } from "@/components/deployment/EndpointHealthCheck";
 
+export const dynamic = "force-dynamic";
+
 export const metadata = {
   title: "Deployment Status | Skai",
   description: "View deployment health and build information",

@@ -21,6 +21,8 @@ export const metadata: Metadata = {
     "Browse dealers, distributors, and suppliers across every construction trade. Place orders and manage vendor relationships.",
 };
 
+export const dynamic = "force-dynamic";
+
 export default async function VendorNetworkPage() {
   const ctx = await safeOrgContext();
   if (ctx.status === "unauthenticated") redirect("/sign-in");

@@ -200,6 +200,8 @@ export default async function PipelinePage() {
       redirect("/onboarding");
     }
   } catch (error) {
+    // Re-throw redirect errors (Next.js uses throw for redirects)
+    if (error instanceof Error && error.message === "NEXT_REDIRECT") throw error;
     logger.error("[PipelinePage] Error:", error);
   }
 

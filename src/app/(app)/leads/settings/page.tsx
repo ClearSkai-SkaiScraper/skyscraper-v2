@@ -9,6 +9,8 @@ import { checkRole } from "@/lib/auth/rbac";
 import { getOrCreateCurrentOrganization } from "@/lib/organizations";
 import { getCurrentUserPermissions } from "@/lib/permissions";
 
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = {
   title: "Leads Settings | PreLoss Vision",
   description: "Placeholder for lead pipeline configuration.",

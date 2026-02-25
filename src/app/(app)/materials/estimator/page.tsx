@@ -132,8 +132,8 @@ export default function MaterialEstimatorPage() {
       }
 
       setResult(data.estimate);
-    } catch (err) {
-      setError(err.message);
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "Estimation failed");
     } finally {
       setIsLoading(false);
     }
@@ -158,8 +158,8 @@ export default function MaterialEstimatorPage() {
         throw new Error(data.error || "Failed to route to ABC Supply");
       }
       setRouteStatus("routed");
-    } catch (err) {
-      setError(err.message);
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "Routing failed");
       setRouteStatus("idle");
     }
   };

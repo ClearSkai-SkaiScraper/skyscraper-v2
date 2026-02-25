@@ -108,12 +108,21 @@ export default function ClaimsAnalysisPage() {
 
       const contentType = response.headers.get("content-type");
       if (!contentType?.includes("application/json")) {
+        const text = await response.text();
+        console.error("[claims-analysis] Non-JSON response:", text.slice(0, 200));
         setError("Unexpected server response. Please refresh and try again.");
         setLoading(false);
         return;
       }
 
-      const data = await response.json();
+      let data;
+      try {
+        data = await response.json();
+      } catch {
+        setError("Failed to parse server response. Please try again.");
+        setLoading(false);
+        return;
+      }
 
       if (!response.ok) {
         setError(data.error || "Analysis failed");

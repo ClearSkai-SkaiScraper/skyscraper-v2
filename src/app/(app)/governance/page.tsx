@@ -5,6 +5,8 @@ import { redirect } from "next/navigation";
 import { PageContainer } from "@/components/layout/PageContainer";
 import { PageHero } from "@/components/layout/PageHero";
 
+export const dynamic = "force-dynamic";
+
 export default async function GovernancePage() {
   const user = await currentUser();
   if (!user) redirect("/sign-in");

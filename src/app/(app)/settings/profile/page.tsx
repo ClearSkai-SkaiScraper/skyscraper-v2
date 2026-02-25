@@ -7,6 +7,8 @@ import prisma from "@/lib/prisma";
 
 import { ProfileSettingsClient } from "./ProfileSettingsClient";
 
+export const dynamic = "force-dynamic";
+
 export default async function ProfileSettingsPage() {
   const currentAuthUser = await currentUser();
   if (!currentAuthUser) redirect("/sign-in");

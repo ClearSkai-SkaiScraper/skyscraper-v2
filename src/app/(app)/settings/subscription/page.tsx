@@ -7,6 +7,8 @@ import { PageHero } from "@/components/layout/PageHero";
 import { getCurrentUserPermissions } from "@/lib/permissions";
 import prisma from "@/lib/prisma";
 
+export const dynamic = "force-dynamic";
+
 export default async function SubscriptionPage() {
   const user = await currentUser();
   if (!user) redirect("/sign-in");

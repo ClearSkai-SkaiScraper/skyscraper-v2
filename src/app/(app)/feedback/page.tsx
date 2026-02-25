@@ -8,6 +8,8 @@ import { PageSectionCard } from "@/components/layout/PageSectionCard";
 
 import FeedbackForm from "./FeedbackForm";
 
+export const dynamic = "force-dynamic";
+
 export const metadata = {
   title: "Feedback • SkaiScraper",
   description: "Help us improve by sharing your experience",

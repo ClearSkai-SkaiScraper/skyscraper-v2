@@ -4,6 +4,8 @@ import { redirect } from "next/navigation";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
+export const dynamic = "force-dynamic";
+
 export const metadata = {
   title: "Box Summary | Dashboard",
   description: "Export carrier-ready box summaries",

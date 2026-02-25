@@ -86,8 +86,13 @@ async function getRetailJobs(orgId: string): Promise<RetailJob[]> {
 }
 
 export default async function RetailWorkspacePage() {
-  const orgResult = await getActiveOrgContext({ required: true });
-  const orgId = orgResult.ok ? orgResult.orgId : null;
+  let orgId: string | null = null;
+  try {
+    const orgResult = await getActiveOrgContext({ required: true });
+    orgId = orgResult.ok ? orgResult.orgId : null;
+  } catch (error) {
+    logger.error("[RetailWorkspacePage] Org context error:", error);
+  }
 
   let jobs: RetailJob[] = [];
   if (orgId) {

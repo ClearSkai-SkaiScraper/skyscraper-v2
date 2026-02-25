@@ -157,16 +157,15 @@ function QuickScheduleForm({
       const scheduledFor = new Date(`${form.date}T${form.startTime}:00`);
       const endTime = new Date(`${form.date}T${form.endTime}:00`);
 
-      const res = await fetch("/api/appointments/create", {
+      const res = await fetch("/api/appointments", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           title: form.title,
-          type,
-          scheduledFor: scheduledFor.toISOString(),
+          startTime: scheduledFor.toISOString(),
           endTime: endTime.toISOString(),
           location: form.location || null,
-          description: form.description || null,
+          description: form.description || `${typeMeta.label} appointment`,
           notes: form.notes || null,
         }),
       });
@@ -574,6 +573,34 @@ export function AppointmentsClient({
             statusColors={STATUS_COLORS}
             onDateClick={(date) => {
               setSelectedDate(date.toISOString().split("T")[0]);
+            }}
+            renderEventTooltip={(event) => {
+              const typeMeta = APPOINTMENT_TYPES.find((t) => t.id === event.type);
+              const TypeIcon = typeMeta?.icon;
+              return (
+                <>
+                  <div className="mb-1.5 flex items-center gap-2">
+                    {TypeIcon && <TypeIcon className="h-3.5 w-3.5 text-slate-500" />}
+                    <span className="text-xs font-bold text-slate-800 dark:text-slate-100">
+                      {event.title}
+                    </span>
+                  </div>
+                  <div className="space-y-1 text-[10px] text-slate-500 dark:text-slate-400">
+                    {event.time && <p>🕐 {event.time}</p>}
+                    {event.type && (
+                      <p>
+                        📋 {event.type.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase())}
+                      </p>
+                    )}
+                    <p>
+                      Status:{" "}
+                      <span className="font-medium capitalize">{event.status.toLowerCase()}</span>
+                    </p>
+                    {event.meta?.location && <p>📍 {event.meta.location as string}</p>}
+                    {event.meta?.contractor && <p>👷 {event.meta.contractor as string}</p>}
+                  </div>
+                </>
+              );
             }}
             renderEventChip={(event) => {
               const typeColor = TYPE_COLORS[event.type || "other"] || "bg-slate-500";

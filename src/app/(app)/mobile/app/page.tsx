@@ -15,12 +15,12 @@ export default function MobileAppPage() {
     }
   }, [isLoaded, isSignedIn, router]);
 
+  const [offlineMode, setOfflineMode] = useState(false);
+  const [pushNotifications, setPushNotifications] = useState(true);
+
   if (!isLoaded || !isSignedIn) {
     return <div className="flex h-screen items-center justify-center">Loading...</div>;
   }
-
-  const [offlineMode, setOfflineMode] = useState(false);
-  const [pushNotifications, setPushNotifications] = useState(true);
 
   return (
     <div className="space-y-6 p-8">

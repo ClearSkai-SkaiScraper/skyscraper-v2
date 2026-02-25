@@ -1,10 +1,9 @@
 "use client";
 
 import { useUser } from "@clerk/nextjs";
-import { Calendar, Phone, PlayCircle, StopCircle,Users, Video } from "lucide-react";
+import { Calendar, Phone, PlayCircle, StopCircle, Users, Video } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useEffect } from "react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 
@@ -18,9 +17,6 @@ export default function VideoConferencingPage() {
     }
   }, [isLoaded, isSignedIn, router]);
 
-  if (!isLoaded || !isSignedIn) {
-    return <div className="flex h-screen items-center justify-center">Loading...</div>;
-  }
   const [isInMeeting, setIsInMeeting] = useState(false);
   const [upcomingMeetings] = useState([
     {
@@ -36,6 +32,10 @@ export default function VideoConferencingPage() {
       participants: 8,
     },
   ]);
+
+  if (!isLoaded || !isSignedIn) {
+    return <div className="flex h-screen items-center justify-center">Loading...</div>;
+  }
 
   return (
     <div className="space-y-6 p-8">

@@ -16,6 +16,8 @@ import { redirect } from "next/navigation";
 
 import { Button } from "@/components/ui/button";
 
+export const dynamic = "force-dynamic";
+
 /**
  * UI Audit Page - Quick navigation to all critical pages for final QA
  * Internal admin/dev tool for release verification

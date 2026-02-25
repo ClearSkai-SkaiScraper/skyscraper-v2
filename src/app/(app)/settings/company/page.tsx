@@ -8,6 +8,8 @@ import { safeOrgContext } from "@/lib/safeOrgContext";
 
 import { CompanySettingsClient } from "./CompanySettingsClient";
 
+export const dynamic = "force-dynamic";
+
 export default async function CompanySettingsPage() {
   const { userId } = await auth();
 

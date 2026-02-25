@@ -15,6 +15,8 @@ import { redirect } from "next/navigation";
 import { PageHero } from "@/components/layout/PageHero";
 import { SUPPLIER_CONFIG } from "@/lib/suppliers/types";
 
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = {
   title: "Material Intelligence | SkaiScraper",
   description: "AI-powered material cost analysis, ordering, and vendor intelligence",

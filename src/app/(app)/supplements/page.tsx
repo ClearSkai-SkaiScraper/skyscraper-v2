@@ -117,7 +117,7 @@ export default async function SupplementsPage() {
   if (orgCtx.orgId) {
     try {
       const rows = await prisma.supplements.findMany({
-        where: { claims: { orgId: orgCtx.orgId } },
+        where: { org_id: orgCtx.orgId },
         orderBy: { updated_at: "desc" },
         take: 50,
         include: {

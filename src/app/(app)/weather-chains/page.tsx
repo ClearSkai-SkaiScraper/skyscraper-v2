@@ -7,6 +7,8 @@ import { PageHero } from "@/components/layout/PageHero";
 import { PageSectionCard } from "@/components/layout/PageSectionCard";
 import { Button } from "@/components/ui/button";
 
+export const dynamic = "force-dynamic";
+
 export default async function WeatherChainsPage() {
   const user = await currentUser();
   if (!user) redirect("/sign-in");

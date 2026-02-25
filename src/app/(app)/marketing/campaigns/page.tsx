@@ -1,10 +1,9 @@
 "use client";
 
 import { useUser } from "@clerk/nextjs";
-import { Calendar, Copy,Edit, Mail, Send, Trash2, TrendingUp, Users } from "lucide-react";
+import { Calendar, Copy, Edit, Mail, Send, Trash2, TrendingUp, Users } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useEffect } from "react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 
@@ -30,9 +29,6 @@ export default function EmailCampaignsPage() {
     }
   }, [isLoaded, isSignedIn, router]);
 
-  if (!isLoaded || !isSignedIn) {
-    return <div className="flex h-screen items-center justify-center">Loading...</div>;
-  }
   const [campaigns] = useState<Campaign[]>([
     {
       id: "1",
@@ -66,6 +62,10 @@ export default function EmailCampaignsPage() {
   ]);
 
   const [showCreateModal, setShowCreateModal] = useState(false);
+
+  if (!isLoaded || !isSignedIn) {
+    return <div className="flex h-screen items-center justify-center">Loading...</div>;
+  }
 
   const getStatusBadge = (status: Campaign["status"]) => {
     const styles = {

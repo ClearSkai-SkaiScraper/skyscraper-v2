@@ -1,8 +1,9 @@
 import { currentUser } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
-import React from "react";
 
 import BuilderShell from "./BuilderShell";
+
+export const dynamic = "force-dynamic";
 
 export default async function BuilderPage() {
   const user = await currentUser();

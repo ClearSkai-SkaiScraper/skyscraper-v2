@@ -453,6 +453,7 @@ export default function CreateLeadForm({ onSuccess }: CreateLeadFormProps) {
                   <SelectItem value="facebook">Facebook</SelectItem>
                   <SelectItem value="cold-call">Cold Call</SelectItem>
                   <SelectItem value="door-to-door">Door to Door</SelectItem>
+                  <SelectItem value="canvassing">Canvassing</SelectItem>
                   <SelectItem value="trade-show">Trade Show</SelectItem>
                   <SelectItem value="import">Import</SelectItem>
                   <SelectItem value="other">Other</SelectItem>

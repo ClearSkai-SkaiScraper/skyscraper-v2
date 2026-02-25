@@ -6,6 +6,8 @@ import { redirect } from "next/navigation";
 import { PageHero } from "@/components/layout/PageHero";
 import EmptyState from "@/components/ui/EmptyState";
 
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = {
   title: "Import Leads | SkaiScraper",
   description: "Import leads in bulk from CSV files or CRM integrations.",

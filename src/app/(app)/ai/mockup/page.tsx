@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 
 import MockupClient from "./client";
 export const metadata: Metadata = { title: "Project Mockup • SkaiScraper" };
+export const dynamic = "force-dynamic";
 
 export default async function AIMockupPage() {
   const user = await currentUser();

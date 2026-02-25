@@ -59,6 +59,10 @@ const PRO_ROUTES = [
   "/mortgage-checks",
   "/sms",
   "/notifications",
+  "/compliance",
+  "/inspections",
+  "/governance",
+  "/mobile",
 ];
 
 const CLIENT_ROUTES = ["/portal"];

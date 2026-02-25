@@ -3,8 +3,7 @@
 import { useUser } from "@clerk/nextjs";
 import { DollarSign, Target, TrendingUp, Users } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useEffect } from "react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { StatCard } from "@/components/ui/MetricCard";
 
@@ -28,9 +27,6 @@ export default function MarketingAttributionPage() {
     }
   }, [isLoaded, isSignedIn, router]);
 
-  if (!isLoaded || !isSignedIn) {
-    return <div className="flex h-screen items-center justify-center">Loading...</div>;
-  }
   const [campaigns] = useState<Campaign[]>([
     {
       id: "1",
@@ -60,6 +56,10 @@ export default function MarketingAttributionPage() {
       revenue: 35000,
     },
   ]);
+
+  if (!isLoaded || !isSignedIn) {
+    return <div className="flex h-screen items-center justify-center">Loading...</div>;
+  }
 
   const calculateROI = (revenue: number, spent: number) => {
     return (((revenue - spent) / spent) * 100).toFixed(0);

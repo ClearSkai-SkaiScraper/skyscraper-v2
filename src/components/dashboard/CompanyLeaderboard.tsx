@@ -6,7 +6,7 @@ import {
   CalendarDays,
   ChevronDown,
   Crown,
-  DoorOpen,
+  Filter,
   Medal,
   Target,
   TrendingUp,
@@ -30,6 +30,7 @@ interface LeaderboardEntry {
   rankRevenue: number;
   rankClaims: number;
   rankDoors: number;
+  sourceBreakdown?: Record<string, number>;
 }
 
 interface LeaderboardSummary {
@@ -38,6 +39,7 @@ interface LeaderboardSummary {
   totalDoors: number;
   repCount: number;
   avgCloseRate: number;
+  allSources?: string[];
 }
 
 const fmt = (n: number) =>
@@ -58,12 +60,15 @@ export function CompanyLeaderboard() {
   const [tab, setTab] = useState<TabKey>("revenue");
   const [expanded, setExpanded] = useState(false);
   const [period, setPeriod] = useState<"month" | "3month" | "6month" | "year">("month");
+  const [sourceFilter, setSourceFilter] = useState<string>("all");
 
   useEffect(() => {
     const fetchLeaderboard = async () => {
       setLoading(true);
       try {
-        const res = await fetch(`/api/finance/leaderboard?period=${period}`);
+        const params = new URLSearchParams({ period });
+        if (sourceFilter !== "all") params.append("source", sourceFilter);
+        const res = await fetch(`/api/finance/leaderboard?${params.toString()}`);
         const data = await res.json();
         if (data.success) {
           setEntries(data.data.leaderboard);
@@ -76,7 +81,7 @@ export function CompanyLeaderboard() {
       }
     };
     fetchLeaderboard();
-  }, [period]);
+  }, [period, sourceFilter]);
 
   // Sorted + max value for progress bars
   const { sorted, maxVal } = useMemo(() => {
@@ -127,7 +132,7 @@ export function CompanyLeaderboard() {
   const tabConfig: { key: TabKey; label: string; icon: typeof Trophy }[] = [
     { key: "revenue", label: "Revenue", icon: TrendingUp },
     { key: "claims", label: "Claims", icon: Target },
-    { key: "doors", label: "Doors", icon: DoorOpen },
+    { key: "doors", label: "Lead Sources", icon: Filter },
   ];
 
   const displayed = expanded ? sorted : sorted.slice(0, 5);
@@ -195,6 +200,22 @@ export function CompanyLeaderboard() {
               </button>
             ))}
           </div>
+
+          {/* Source Filter (shown when Lead Sources tab active) */}
+          {tab === "doors" && summary?.allSources && summary.allSources.length > 0 && (
+            <select
+              value={sourceFilter}
+              onChange={(e) => setSourceFilter(e.target.value)}
+              className="rounded-lg border border-slate-200/50 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 shadow-sm transition focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-400/20 dark:border-slate-700/50 dark:bg-slate-800 dark:text-slate-300"
+            >
+              <option value="all">All Sources</option>
+              {summary.allSources.map((src) => (
+                <option key={src} value={src}>
+                  {src.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase())}
+                </option>
+              ))}
+            </select>
+          )}
         </div>
       </div>
 
@@ -223,9 +244,12 @@ export function CompanyLeaderboard() {
             bg: "bg-purple-50 dark:bg-purple-950/30",
           },
           {
-            label: "Total Doors",
+            label:
+              sourceFilter !== "all"
+                ? sourceFilter.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase())
+                : "Lead Sources",
             value: effectiveSummary.totalDoors.toLocaleString(),
-            icon: DoorOpen,
+            icon: Filter,
             color: "text-orange-600 dark:text-orange-400",
             bg: "bg-orange-50 dark:bg-orange-950/30",
           },
@@ -247,7 +271,7 @@ export function CompanyLeaderboard() {
         <span>Rep</span>
         <span className="hidden w-24 text-right sm:block">Close Rate</span>
         <span className="w-28 text-right">
-          {tab === "revenue" ? "Revenue" : tab === "claims" ? "Claims" : "Doors"}
+          {tab === "revenue" ? "Revenue" : tab === "claims" ? "Claims" : "Leads"}
         </span>
       </div>
 
@@ -381,7 +405,7 @@ export function CompanyLeaderboard() {
                     {displayValue}
                   </p>
                   <p className="text-[10px] text-slate-400">
-                    {tab === "revenue" ? "revenue" : tab === "claims" ? "signed" : "knocked"}
+                    {tab === "revenue" ? "revenue" : tab === "claims" ? "signed" : "leads"}
                   </p>
                 </div>
               </div>

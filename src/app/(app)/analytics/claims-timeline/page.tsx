@@ -9,8 +9,15 @@ import { PageSectionCard } from "@/components/layout/PageSectionCard";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
+export const dynamic = "force-dynamic";
+
 export default async function ClaimsTimelinePage() {
-  const user = await currentUser();
+  let user;
+  try {
+    user = await currentUser();
+  } catch {
+    redirect("/sign-in");
+  }
   if (!user) redirect("/sign-in");
 
   return (

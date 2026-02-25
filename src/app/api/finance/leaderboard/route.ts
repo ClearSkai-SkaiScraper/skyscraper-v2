@@ -1,3 +1,5 @@
+import { clerkClient } from "@clerk/nextjs/server";
+
 import { logger } from "@/lib/logger";
 import { NextResponse } from "next/server";
 
@@ -52,6 +54,7 @@ export async function GET(req: Request) {
 
     const { searchParams } = new URL(req.url);
     const period = searchParams.get("period") || "month";
+    const sourceFilter = searchParams.get("source") || null;
 
     // Calculate date range based on period
     const now = new Date();
@@ -157,13 +160,38 @@ export async function GET(req: Request) {
     }
 
     // Strategy 2: Compute leaderboard from real claims/leads/scopes data
-    // Get all org members from user_organizations AND tradesCompanyMember
+    // ── Fetch ALL org members: Clerk API + user_organizations + tradesCompanyMember ──
+    let clerkMembers: Array<{
+      userId: string;
+      firstName: string | null;
+      lastName: string | null;
+      imageUrl: string;
+      email: string | null;
+    }> = [];
+    try {
+      const clerk = await clerkClient();
+      const orgMemberList = await clerk.organizations.getOrganizationMembershipList({
+        organizationId: ctx.orgId!,
+        limit: 100,
+      });
+      clerkMembers = orgMemberList.data
+        .map((m) => ({
+          userId: m.publicUserData?.userId || "",
+          firstName: m.publicUserData?.firstName || null,
+          lastName: m.publicUserData?.lastName || null,
+          imageUrl: m.publicUserData?.imageUrl || "",
+          email: m.publicUserData?.identifier || null,
+        }))
+        .filter((m) => m.userId);
+    } catch (e) {
+      logger.warn("[Leaderboard] Could not fetch Clerk org members:", e);
+    }
+
     const memberships = await prisma.user_organizations.findMany({
       where: { organizationId: ctx.orgId },
       select: { userId: true },
     });
 
-    // Also check tradesCompanyMember for the same org (companyId may equal orgId)
     const tradeMembers = await prisma.tradesCompanyMember
       .findMany({
         where: { companyId: ctx.orgId },
@@ -173,9 +201,9 @@ export async function GET(req: Request) {
 
     const memberIds = [
       ...new Set([
+        ...clerkMembers.map((m) => m.userId),
         ...memberships.map((m) => m.userId),
         ...tradeMembers.map((m) => m.userId),
-        // Always include the current user
         ctx.userId!,
       ]),
     ];
@@ -184,7 +212,14 @@ export async function GET(req: Request) {
         success: true,
         data: {
           leaderboard: [],
-          summary: { totalRevenue: 0, totalClaims: 0, totalDoors: 0, repCount: 0, avgCloseRate: 0 },
+          summary: {
+            totalRevenue: 0,
+            totalClaims: 0,
+            totalDoors: 0,
+            repCount: 0,
+            avgCloseRate: 0,
+            allSources: [] as string[],
+          },
           period,
           source: "computed",
         },
@@ -198,6 +233,32 @@ export async function GET(req: Request) {
       select: { id: true, clerkUserId: true, name: true, email: true, headshot_url: true },
     });
 
+    // Ensure ALL members are represented, even if not in users table
+    // Build a map of found users by both id and clerkUserId
+    const foundUserIds = new Set<string>();
+    for (const u of users) {
+      foundUserIds.add(u.id);
+      foundUserIds.add(u.clerkUserId);
+    }
+    // For any memberId not found, create a synthetic entry from Clerk data
+    const syntheticUsers: typeof users = [];
+    for (const mid of memberIds) {
+      if (!foundUserIds.has(mid)) {
+        const cm = clerkMembers.find((c) => c.userId === mid);
+        syntheticUsers.push({
+          id: mid,
+          clerkUserId: mid,
+          name: cm
+            ? [cm.firstName, cm.lastName].filter(Boolean).join(" ") || cm.email || "Team Member"
+            : "Team Member",
+          email: cm?.email || "",
+          headshot_url: cm?.imageUrl || null,
+        });
+        foundUserIds.add(mid);
+      }
+    }
+    const allUsers = [...users, ...syntheticUsers];
+
     // Get claims per user (claims signed in period) — exclude demo claims
     const claims = await prisma.claims.findMany({
       where: {
@@ -208,29 +269,38 @@ export async function GET(req: Request) {
       select: { id: true, estimatedValue: true, status: true, createdAt: true, assignedTo: true },
     });
 
-    // Get leads per user (leads created in period)
+    // Get leads per user (leads created in period), optionally filtered by source
     const leads = await prisma.leads.findMany({
       where: {
         orgId: ctx.orgId,
         createdAt: { gte: periodStart },
+        ...(sourceFilter ? { source: sourceFilter } : {}),
       },
       select: {
         id: true,
         value: true,
         stage: true,
+        source: true,
         jobCategory: true,
         createdAt: true,
         assignedTo: true,
       },
     });
 
-    // Build leaderboard entries for each user — per-user attribution
-    const leaderboard = users.map((user) => {
-      // Attribute claims by createdBy, fallback to splitting evenly if no createdBy
+    // Collect all unique lead sources for the filter dropdown
+    const allSourcesQuery = await prisma.leads.findMany({
+      where: { orgId: ctx.orgId, createdAt: { gte: periodStart } },
+      select: { source: true },
+      distinct: ["source"],
+    });
+    const allSources = allSourcesQuery.map((s) => s.source).filter(Boolean) as string[];
+
+    // Build leaderboard entries for each member — per-user attribution
+    const leaderboard = allUsers.map((user) => {
+      // Attribute claims by assignedTo
       const userClaims = claims.filter(
         (c) => c.assignedTo === user.clerkUserId || c.assignedTo === user.id
       );
-      // If no claims have assignedTo set, attribute all to user (solo org) or split
       const claimsWithCreator = claims.filter((c) => c.assignedTo);
       const effectiveClaims = claimsWithCreator.length > 0 ? userClaims : claims;
 
@@ -240,6 +310,13 @@ export async function GET(req: Request) {
       );
       const leadsWithAssigned = leads.filter((l) => l.assignedTo);
       const effectiveLeads = leadsWithAssigned.length > 0 ? userLeads : leads;
+
+      // Source breakdown per user
+      const sourceBreakdown: Record<string, number> = {};
+      for (const lead of effectiveLeads) {
+        const src = lead.source || "unknown";
+        sourceBreakdown[src] = (sourceBreakdown[src] || 0) + 1;
+      }
 
       const approvedClaims = effectiveClaims.filter(
         (c) => c.status === "approved" || c.status === "completed"
@@ -261,11 +338,12 @@ export async function GET(req: Request) {
         claimsApproved: approvedClaims,
         doorsKnocked: effectiveLeads.length,
         closeRate,
-        commissionEarned: totalRevenue * 0.1, // 10% default commission estimate
+        commissionEarned: totalRevenue * 0.1,
         commissionPaid: 0,
         rankRevenue: 0,
         rankClaims: 0,
         rankDoors: 0,
+        sourceBreakdown,
       };
     });
 
@@ -300,8 +378,10 @@ export async function GET(req: Request) {
             cleanLeaderboard.length > 0
               ? cleanLeaderboard.reduce((s, r) => s + r.closeRate, 0) / cleanLeaderboard.length
               : 0,
+          allSources,
         },
         period,
+        sourceFilter,
         source: "computed",
       },
     });

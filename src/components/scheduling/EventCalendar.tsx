@@ -2,6 +2,7 @@
 
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useCallback, useMemo, useState } from "react";
+import { createPortal } from "react-dom";
 
 import { cn } from "@/lib/utils";
 
@@ -33,6 +34,8 @@ export interface EventCalendarProps {
   statusColors?: Record<string, { bg: string; text: string; dot: string }>;
   /** Optional className for root container */
   className?: string;
+  /** Render custom tooltip content for hovered event. Falls back to a default tooltip. */
+  renderEventTooltip?: (event: CalendarEvent) => React.ReactNode;
 }
 
 /* ------------------------------------------------------------------ */
@@ -94,9 +97,25 @@ export function EventCalendar({
   onEventClick,
   statusColors: userStatusColors,
   className,
+  renderEventTooltip,
 }: EventCalendarProps) {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [viewMode, setViewMode] = useState<"month" | "week">("month");
+  const [hoveredEvent, setHoveredEvent] = useState<CalendarEvent | null>(null);
+  const [tooltipPos, setTooltipPos] = useState({ x: 0, y: 0 });
+
+  const handleChipEnter = useCallback((e: React.MouseEvent, event: CalendarEvent) => {
+    const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+    setTooltipPos({
+      x: Math.min(rect.left, window.innerWidth - 272),
+      y: rect.bottom + 6,
+    });
+    setHoveredEvent(event);
+  }, []);
+
+  const handleChipLeave = useCallback(() => {
+    setHoveredEvent(null);
+  }, []);
 
   const statusColors = useMemo(
     () => ({ ...DEFAULT_STATUS_COLORS, ...userStatusColors }),
@@ -225,6 +244,8 @@ export function EventCalendar({
                     e.stopPropagation();
                     onEventClick?.(event);
                   }}
+                  onMouseEnter={(e) => handleChipEnter(e, event)}
+                  onMouseLeave={handleChipLeave}
                 >
                   {renderEventChip(event)}
                 </div>
@@ -238,6 +259,8 @@ export function EventCalendar({
                   e.stopPropagation();
                   onEventClick?.(event);
                 }}
+                onMouseEnter={(e) => handleChipEnter(e, event)}
+                onMouseLeave={handleChipLeave}
                 className={cn(
                   "flex items-center gap-1.5 rounded-md px-2 py-1 text-[11px] font-medium leading-tight transition-all",
                   colors.bg,
@@ -337,6 +360,49 @@ export function EventCalendar({
           ? monthGrid.map((d) => renderDayCell(d, false))
           : weekDays.map((d) => renderDayCell(d, true))}
       </div>
+
+      {/* ── Floating tooltip (portal to body so it escapes overflow) ── */}
+      {hoveredEvent &&
+        typeof document !== "undefined" &&
+        createPortal(
+          <div
+            className="pointer-events-none fixed z-[9999] w-64 rounded-xl border border-slate-200/80 bg-white/95 p-3 shadow-2xl backdrop-blur-lg dark:border-white/10 dark:bg-slate-800/95"
+            style={{ left: tooltipPos.x, top: tooltipPos.y }}
+          >
+            {renderEventTooltip ? (
+              renderEventTooltip(hoveredEvent)
+            ) : (
+              <>
+                <p className="mb-1.5 text-xs font-bold text-slate-800 dark:text-slate-100">
+                  {hoveredEvent.title}
+                </p>
+                <div className="space-y-1 text-[10px] text-slate-500 dark:text-slate-400">
+                  {hoveredEvent.time && (
+                    <p>
+                      🕐 {hoveredEvent.time}
+                      {hoveredEvent.duration ? ` · ${hoveredEvent.duration}h` : ""}
+                    </p>
+                  )}
+                  {hoveredEvent.type && (
+                    <p>
+                      📋{" "}
+                      {hoveredEvent.type
+                        .replace(/_/g, " ")
+                        .replace(/\b\w/g, (c) => c.toUpperCase())}
+                    </p>
+                  )}
+                  <p>
+                    Status:{" "}
+                    <span className="font-medium capitalize">
+                      {hoveredEvent.status.toLowerCase()}
+                    </span>
+                  </p>
+                </div>
+              </>
+            )}
+          </div>,
+          document.body
+        )}
     </div>
   );
 }
