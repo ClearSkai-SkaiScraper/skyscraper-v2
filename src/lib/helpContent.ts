@@ -12,6 +12,10 @@ export interface HelpContent {
   tips?: string[];
   videoUrl?: string;
   docsUrl?: string;
+  icon?: string;
+  quickTips?: string[];
+  useCases?: string[];
+  commonQuestions?: { q: string; a: string }[];
 }
 
 /**
