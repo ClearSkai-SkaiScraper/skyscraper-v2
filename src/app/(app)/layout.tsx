@@ -10,6 +10,10 @@ import EmojiScrubber from "@/components/EmojiScrubber";
 import { FeatureHelp } from "@/components/FeatureHelp";
 import { CRMFooter } from "@/components/nav/CRMFooter";
 import CRMTopbar from "@/components/nav/CRMTopbar";
+import {
+  RemoteViewBanner,
+  RemoteViewBodyAttribute,
+} from "@/components/remote-view/RemoteViewBanner";
 import { ErrorBoundary } from "@/components/system/ErrorBoundary";
 import { TaskButton } from "@/components/tasks/TaskButton";
 import { TaskSlideOver } from "@/components/tasks/TaskSlideOver";
@@ -163,6 +167,8 @@ export default async function AppLayout({ children }: { children: React.ReactNod
             </div>
           </Suspense>
           <FeatureHelp />
+          <RemoteViewBanner />
+          <RemoteViewBodyAttribute />
           <TaskButton variant="floating" label="New Task" />
           <TaskSlideOver />
         </div>

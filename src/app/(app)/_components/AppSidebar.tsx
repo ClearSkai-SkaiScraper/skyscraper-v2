@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 
+import { RemoteViewSelector } from "@/components/remote-view/RemoteViewSelector";
 import { getUiTheme } from "@/config/uiTheme";
 import { logger } from "@/lib/logger";
 import { cn } from "@/lib/utils";
@@ -304,7 +305,10 @@ export function AppSidebar() {
           );
         })}
       </nav>
-      {/* Debug panel hidden for production - uncomment for development */}
+      {/* Sprint 27: Remote View — admin/manager can view team member workspaces */}
+      <div className={cn("border-t px-3 py-3", t.border.sidebar)}>
+        <RemoteViewSelector />
+      </div>
       {/* 
       <div className={cn("border-t px-3 py-3 text-xs", t.border.sidebar)}>
         <div className="flex items-center justify-between">

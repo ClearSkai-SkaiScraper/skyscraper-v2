@@ -1339,6 +1339,96 @@ export const helpContentRegistry: Record<string, HelpContent> = {
       "Vendor Intelligence data improves as you place more orders",
     ],
   },
+
+  // ─────────────────────────────────────────────────────────────────────────────
+  // CARRIER EXPORTS
+  // ─────────────────────────────────────────────────────────────────────────────
+  "/ai/exports": {
+    icon: "FileOutput",
+    title: "Carrier Exports",
+    description: "Generate carrier-specific export formats for insurance submissions.",
+    quickTips: [
+      "Select a claim first to auto-detect the carrier",
+      "Xactimate XML is the industry standard for most carriers",
+      "Use with Claims-Ready Folder for complete submissions",
+    ],
+    useCases: [
+      "Exporting claim data in Xactimate XML format",
+      "Generating Symbility-compatible packages",
+      "Creating PDF bundles for carrier submission",
+      "Preparing batch exports for multiple claims",
+    ],
+    commonQuestions: [
+      {
+        q: "What format should I use?",
+        a: "Most carriers accept Xactimate XML or PDF. Check with your adjuster if unsure — State Farm and Allstate typically prefer Xactimate.",
+      },
+      {
+        q: "Do I need to generate this before Claims-Ready Folder?",
+        a: "It's optional but recommended. The AI can auto-include your carrier export when generating the full submission package.",
+      },
+    ],
+  },
+
+  // ─────────────────────────────────────────────────────────────────────────────
+  // SMART DOCS
+  // ─────────────────────────────────────────────────────────────────────────────
+  "/smart-docs": {
+    icon: "FileSignature",
+    title: "Smart Documents & E-Sign",
+    description: "Create, manage, and send documents for electronic signatures.",
+    quickTips: [
+      "Create from template or upload your own document",
+      "Send to clients via email with one click",
+      "Track signing status in real-time",
+    ],
+    useCases: [
+      "Sending contracts for electronic signature",
+      "Getting homeowner authorization forms signed",
+      "Tracking document signing status",
+      "Managing document templates for reuse",
+    ],
+    commonQuestions: [
+      {
+        q: "How do I send a document for signature?",
+        a: "Create a new envelope, add recipients with their email addresses, place signature fields, and click Send. Recipients get an email with a secure signing link.",
+      },
+      {
+        q: "Can I use my own templates?",
+        a: "Yes! Upload any PDF or Word document as a template, then add signature fields and reuse it for future claims.",
+      },
+    ],
+  },
+
+  // ─────────────────────────────────────────────────────────────────────────────
+  // AI PROPOSALS
+  // ─────────────────────────────────────────────────────────────────────────────
+  "/ai-proposals": {
+    icon: "Sparkles",
+    title: "AI Proposal Generator",
+    description: "Build professional proposals using AI assistance from your existing data.",
+    quickTips: [
+      "Start by selecting the proposal type you need",
+      "AI pulls data from your claims, leads, or jobs",
+      "Review and customize before sending to clients",
+    ],
+    useCases: [
+      "Creating insurance claim proposals from claim data",
+      "Building retail roofing proposals for leads",
+      "Generating quick estimates from job records",
+      "Preparing professional bid documents",
+    ],
+    commonQuestions: [
+      {
+        q: "What's the difference between proposal types?",
+        a: "Insurance proposals are formatted for carrier submission with scope details. Retail proposals are customer-facing with pricing. Quick estimates are simplified one-page summaries.",
+      },
+      {
+        q: "Where does the AI get data from?",
+        a: "The AI pulls from your selected claim, lead, or job record — including inspection notes, photos, measurements, and any attached documents.",
+      },
+    ],
+  },
 };
 
 /**
