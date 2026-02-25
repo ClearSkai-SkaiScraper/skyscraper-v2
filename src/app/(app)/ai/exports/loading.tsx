@@ -1,6 +1,6 @@
 "use client";
 
-import { Loader2, Package } from "lucide-react";
+import { Package } from "lucide-react";
 
 import { PageContainer } from "@/components/layout/PageContainer";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
