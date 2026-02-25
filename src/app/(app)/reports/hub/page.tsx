@@ -313,14 +313,26 @@ export default async function ReportsHubPage() {
         </Link>
       </div>
 
+      {/* ── Section Divider ── */}
+      <div className="relative mb-10">
+        <div className="absolute inset-0 flex items-center" aria-hidden>
+          <div className="w-full border-t border-slate-200 dark:border-slate-700/60" />
+        </div>
+        <div className="relative flex justify-center">
+          <span className="bg-white px-4 text-xs font-semibold uppercase tracking-widest text-slate-400 dark:bg-slate-950 dark:text-slate-500">
+            All Tools
+          </span>
+        </div>
+      </div>
+
       {/* ───────── CLAIMS REPORTS ───────── */}
-      <div className="mb-10">
-        <div className="mb-4 flex items-center gap-3">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-100 dark:bg-blue-900/30">
+      <div className="mb-8 rounded-2xl border border-blue-200/60 bg-gradient-to-b from-blue-50/40 to-transparent p-6 dark:border-blue-800/30 dark:from-blue-950/20">
+        <div className="mb-5 flex items-center gap-3">
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-100 shadow-sm dark:bg-blue-900/40">
             <ClipboardCheck className="h-5 w-5 text-blue-600 dark:text-blue-400" />
           </div>
           <div>
-            <h2 className="text-xl font-bold text-slate-900 dark:text-white">Claims Reports</h2>
+            <h2 className="text-lg font-bold text-slate-900 dark:text-white">Claims Reports</h2>
             <p className="text-sm text-slate-500">
               Insurance claim tools — supplements, depreciation, rebuttals, and more
             </p>
@@ -332,13 +344,13 @@ export default async function ReportsHubPage() {
       </div>
 
       {/* ───────── RETAIL REPORTS ───────── */}
-      <div className="mb-10">
-        <div className="mb-4 flex items-center gap-3">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-100 dark:bg-emerald-900/30">
+      <div className="mb-8 rounded-2xl border border-emerald-200/60 bg-gradient-to-b from-emerald-50/40 to-transparent p-6 dark:border-emerald-800/30 dark:from-emerald-950/20">
+        <div className="mb-5 flex items-center gap-3">
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-100 shadow-sm dark:bg-emerald-900/40">
             <PenLine className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
           </div>
           <div>
-            <h2 className="text-xl font-bold text-slate-900 dark:text-white">Retail Reports</h2>
+            <h2 className="text-lg font-bold text-slate-900 dark:text-white">Retail Reports</h2>
             <p className="text-sm text-slate-500">
               Direct-to-homeowner proposals, damage reports, project plans, and mockups
             </p>
@@ -348,13 +360,13 @@ export default async function ReportsHubPage() {
       </div>
 
       {/* ───────── GENERAL TOOLS ───────── */}
-      <div className="mb-8">
-        <div className="mb-4 flex items-center gap-3">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-purple-100 dark:bg-purple-900/30">
+      <div className="mb-8 rounded-2xl border border-purple-200/60 bg-gradient-to-b from-purple-50/40 to-transparent p-6 dark:border-purple-800/30 dark:from-purple-950/20">
+        <div className="mb-5 flex items-center gap-3">
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-purple-100 shadow-sm dark:bg-purple-900/40">
             <TrendingUp className="h-5 w-5 text-purple-600 dark:text-purple-400" />
           </div>
           <div>
-            <h2 className="text-xl font-bold text-slate-900 dark:text-white">
+            <h2 className="text-lg font-bold text-slate-900 dark:text-white">
               Templates & Resources
             </h2>
             <p className="text-sm text-slate-500">

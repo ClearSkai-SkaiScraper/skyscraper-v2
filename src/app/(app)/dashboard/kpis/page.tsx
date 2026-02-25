@@ -1,10 +1,6 @@
-import { currentUser } from "@clerk/nextjs/server";
 import { Metadata } from "next";
-import { isRedirectError } from "next/dist/client/components/redirect";
-import { redirect } from "next/navigation";
 
 import KPIDashboardClient from "@/components/kpi-dashboard/KPIDashboardClient";
-import { logger } from "@/lib/logger";
 
 export const metadata: Metadata = {
   title: "KPI Dashboard | SkaiScraper",
@@ -14,23 +10,11 @@ export const metadata: Metadata = {
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
-export default async function KPIsPage() {
-  try {
-    let user;
-    try {
-      user = await currentUser();
-    } catch (error: unknown) {
-      // Re-throw redirect errors (Next.js uses these for navigation)
-      if (isRedirectError(error)) throw error;
-      logger.error("[KPIs] Auth error:", error);
-      redirect("/sign-in?redirect_url=/dashboard/kpis");
-    }
-    if (!user) redirect("/sign-in?redirect_url=/dashboard/kpis");
-  } catch (error: unknown) {
-    // Re-throw redirects so Next.js can handle them
-    if (isRedirectError(error)) throw error;
-    // Any other error — still render the client (it has mockData fallback)
-    logger.error("[KPIs] Server component error — rendering client anyway:", error);
-  }
+/**
+ * KPI Dashboard page — renders the client component directly.
+ * Auth is handled by the (app) layout. The client component has its own
+ * mockData fallback so it always renders even if the API fails.
+ */
+export default function KPIsPage() {
   return <KPIDashboardClient />;
 }

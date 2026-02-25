@@ -227,10 +227,11 @@ export function canArchive(role: AppRole): boolean {
 /**
  * Check if a role can use Remote View.
  * - owner/admin: can view any team member
- * - manager/member/viewer: no access
+ * - manager: can view direct reports
+ * - member/viewer: no access
  */
 export function canUseRemoteView(role: AppRole): boolean {
-  return hasMinRole(role, "admin");
+  return hasMinRole(role, "manager");
 }
 
 /**

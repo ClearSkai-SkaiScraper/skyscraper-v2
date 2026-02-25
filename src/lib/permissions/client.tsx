@@ -125,7 +125,7 @@ export function PermissionsProvider({ children }: { children: React.ReactNode })
     hasMinRole,
     canDelete: state.isAdmin, // admin/owner only
     canArchive: hasMinRole("member"),
-    canRemoteView: hasMinRole("admin"), // admin/owner only
+    canRemoteView: hasMinRole("manager"), // manager/admin/owner
     refresh: fetchPermissions,
   };
 

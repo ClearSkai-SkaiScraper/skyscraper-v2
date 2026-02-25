@@ -184,6 +184,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({
       ok: true,
       members: formattedMembers,
+      currentUserId: ctx.userId || null,
       source: "merged",
     });
   } catch (error) {

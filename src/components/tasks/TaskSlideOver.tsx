@@ -48,13 +48,17 @@ export function TaskSlideOver() {
   const [recentTasks, setRecentTasks] = useState<QuickTask[]>([]);
   const [loadingTasks, setLoadingTasks] = useState(false);
 
-  // Load team members when panel opens
+  // Load team members when panel opens (exclude self — "Myself" option covers that)
   useEffect(() => {
     if (!isOpen) return;
     setLoadingMembers(true);
     fetch("/api/team/members")
       .then((r) => r.json())
-      .then((data) => setMembers(data.members || []))
+      .then((data) => {
+        const allMembers = data.members || [];
+        const currentId = data.currentUserId;
+        setMembers(currentId ? allMembers.filter((m: any) => m.id !== currentId) : allMembers);
+      })
       .catch(() => {})
       .finally(() => setLoadingMembers(false));
   }, [isOpen]);

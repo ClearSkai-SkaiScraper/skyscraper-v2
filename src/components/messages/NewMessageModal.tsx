@@ -138,12 +138,16 @@ export default function NewMessageModal({
         setConnectedPros(prosData.trades || []);
       }
 
-      // Fetch team members for internal messaging
+      // Fetch team members for internal messaging (exclude current user — can't message yourself)
       try {
         const teamRes = await fetch("/api/team/members");
         if (teamRes.ok) {
           const teamData = await teamRes.json();
-          setTeamMembers(teamData.members || []);
+          const allMembers = teamData.members || [];
+          const currentId = teamData.currentUserId;
+          setTeamMembers(
+            currentId ? allMembers.filter((m: any) => m.id !== currentId) : allMembers
+          );
         }
       } catch {
         // Team members fetch is non-critical
