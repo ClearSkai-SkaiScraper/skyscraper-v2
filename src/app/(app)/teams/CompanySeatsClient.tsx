@@ -433,6 +433,35 @@ export default function CompanySeatsClient({ members, orgId }: CompanySeatsClien
     }
   };
 
+  const handleToggleAdmin = async (member: Member) => {
+    const isCurrentlyAdmin = member.role === "Admin" || member.role === "admin";
+    try {
+      const res = await fetch("/api/trades/company/employees", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          memberId: member.id,
+          isAdmin: !isCurrentlyAdmin,
+          role: !isCurrentlyAdmin ? "admin" : "member",
+        }),
+      });
+      if (res.ok) {
+        setMemberList((prev) =>
+          prev.map((m) =>
+            m.id === member.id ? { ...m, role: !isCurrentlyAdmin ? "Admin" : "Member" } : m
+          )
+        );
+        toast.success(!isCurrentlyAdmin ? "Admin access granted" : "Admin access revoked");
+      } else {
+        const data = await res.json();
+        toast.error(data.error || "Failed to update admin status");
+      }
+    } catch (err) {
+      logger.error("Toggle admin error:", err);
+      toast.error("Failed to update admin status");
+    }
+  };
+
   /* ── Loading state ────────────────────────────────────────────── */
 
   if (billingLoading) {
@@ -892,6 +921,12 @@ export default function CompanySeatsClient({ members, orgId }: CompanySeatsClien
                               >
                                 <GitBranch className="mr-2 h-4 w-4" />
                                 {member.isManager ? "Remove Manager Role" : "Make Manager"}
+                              </DropdownMenuItem>
+                              <DropdownMenuItem onClick={() => handleToggleAdmin(member)}>
+                                <Shield className="mr-2 h-4 w-4" />
+                                {member.role === "Admin" || member.role === "admin"
+                                  ? "Revoke Admin"
+                                  : "Grant Admin"}
                               </DropdownMenuItem>
                               <DropdownMenuSeparator />
                             </>

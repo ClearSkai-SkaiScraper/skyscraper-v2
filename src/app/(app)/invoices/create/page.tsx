@@ -1,8 +1,8 @@
 "use client";
 
-import { FileText, Plus, Trash2 } from "lucide-react";
+import { Camera, FileText, Plus, Trash2, Upload, X } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useRef, useState } from "react";
 
 import { PageHero } from "@/components/layout/PageHero";
 
@@ -10,6 +10,13 @@ interface LineItem {
   description: string;
   quantity: number;
   unitPrice: number;
+}
+
+interface ReceiptFile {
+  id: string;
+  file: File;
+  preview: string;
+  name: string;
 }
 
 export default function CreateInvoicePage() {
@@ -26,12 +33,61 @@ export default function CreateInvoicePage() {
   const [customerEmail, setCustomerEmail] = useState("");
   const [items, setItems] = useState<LineItem[]>([{ description: "", quantity: 1, unitPrice: 0 }]);
 
+  /* ── Receipt Upload State ─────────────────────────────────────── */
+  const [receipts, setReceipts] = useState<ReceiptFile[]>([]);
+  const [dragActive, setDragActive] = useState(false);
+  const receiptInputRef = useRef<HTMLInputElement>(null);
+
   const addItem = () => setItems([...items, { description: "", quantity: 1, unitPrice: 0 }]);
   const removeItem = (i: number) => setItems(items.filter((_, idx) => idx !== i));
   const updateItem = (i: number, field: keyof LineItem, value: string | number) => {
     const updated = [...items];
     updated[i] = { ...updated[i], [field]: value };
     setItems(updated);
+  };
+
+  /* ── Receipt Upload Handlers ──────────────────────────────────── */
+  const handleReceiptFiles = (files: FileList | null) => {
+    if (!files) return;
+    const accepted = ["image/jpeg", "image/png", "image/webp", "image/heic", "application/pdf"];
+    const maxSize = 10 * 1024 * 1024; // 10 MB
+
+    Array.from(files).forEach((file) => {
+      if (!accepted.some((t) => file.type.startsWith(t.split("/")[0]) || file.type === t)) {
+        setError("Only images (JPG, PNG, WebP, HEIC) and PDFs are supported");
+        return;
+      }
+      if (file.size > maxSize) {
+        setError("Each file must be under 10 MB");
+        return;
+      }
+
+      const id = `receipt-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+      const preview = file.type.startsWith("image/") ? URL.createObjectURL(file) : "";
+      setReceipts((prev) => [...prev, { id, file, preview, name: file.name }]);
+    });
+  };
+
+  const removeReceipt = (id: string) => {
+    setReceipts((prev) => {
+      const target = prev.find((r) => r.id === id);
+      if (target?.preview) URL.revokeObjectURL(target.preview);
+      return prev.filter((r) => r.id !== id);
+    });
+  };
+
+  const handleReceiptDrag = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (e.type === "dragenter" || e.type === "dragover") setDragActive(true);
+    else if (e.type === "dragleave") setDragActive(false);
+  };
+
+  const handleReceiptDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragActive(false);
+    handleReceiptFiles(e.dataTransfer.files);
   };
 
   const subtotal = items.reduce((s, i) => s + i.quantity * i.unitPrice, 0);
@@ -71,28 +127,45 @@ export default function CreateInvoicePage() {
     setLoading(true);
     setError(null);
     try {
+      // Build the invoice payload
+      const invoicePayload = {
+        jobId,
+        kind,
+        items,
+        taxRate,
+        discount,
+        notes: notes || undefined,
+        dueDate: dueDate || undefined,
+        customerEmail: customerEmail || undefined,
+        receiptCount: receipts.length,
+      };
+
       const res = await fetch("/api/invoices", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          jobId,
-          kind,
-          items,
-          taxRate,
-          discount,
-          notes: notes || undefined,
-          dueDate: dueDate || undefined,
-          customerEmail: customerEmail || undefined,
-        }),
+        body: JSON.stringify(invoicePayload),
       });
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
         throw new Error(data.message || "Failed to create invoice");
       }
+      const invoiceData = await res.json();
+
+      // Upload receipt files if any
+      if (receipts.length > 0 && invoiceData.id) {
+        const formData = new FormData();
+        formData.append("invoiceId", invoiceData.id);
+        receipts.forEach((r, i) => {
+          formData.append(`receipt_${i}`, r.file);
+        });
+        // Fire and forget — receipts are supplementary
+        fetch("/api/invoices/receipts", { method: "POST", body: formData }).catch(() => {});
+      }
+
       router.push("/invoices");
       router.refresh();
-    } catch (err) {
-      setError(err.message);
+    } catch (err: any) {
+      setError(err?.message || "Failed to create invoice");
     } finally {
       setLoading(false);
     }
@@ -233,6 +306,92 @@ export default function CreateInvoicePage() {
           >
             <Plus className="h-4 w-4" /> Add Line Item
           </button>
+        </div>
+
+        {/* Material Receipts / Photos */}
+        <div className="rounded-2xl border border-[color:var(--border)] bg-[var(--surface-glass)] p-6 backdrop-blur-xl">
+          <div className="mb-1 flex items-center gap-2">
+            <Camera className="h-5 w-5 text-[var(--primary)]" />
+            <h2 className="text-lg font-semibold text-[color:var(--text)]">
+              Material Receipts &amp; Photos
+            </h2>
+          </div>
+          <p className="mb-4 text-sm text-slate-500 dark:text-slate-400">
+            Upload photos of receipts, material invoices, or scan documents. Accepted: JPG, PNG,
+            WebP, HEIC, PDF (max 10 MB each).
+          </p>
+
+          {/* Drop zone */}
+          <div
+            onDragEnter={handleReceiptDrag}
+            onDragLeave={handleReceiptDrag}
+            onDragOver={handleReceiptDrag}
+            onDrop={handleReceiptDrop}
+            onClick={() => receiptInputRef.current?.click()}
+            className={`cursor-pointer rounded-xl border-2 border-dashed p-8 text-center transition-all ${
+              dragActive
+                ? "border-[var(--primary)] bg-blue-50/50 dark:bg-blue-950/20"
+                : "border-[color:var(--border)] hover:border-[var(--primary)] hover:bg-[var(--surface-1)]"
+            }`}
+          >
+            <Upload className="mx-auto mb-3 h-8 w-8 text-slate-400" />
+            <p className="text-sm font-medium text-[color:var(--text)]">
+              Drag &amp; drop receipts here, or click to browse
+            </p>
+            <p className="mt-1 text-xs text-slate-400">
+              Take a photo of your material receipt or scan the document
+            </p>
+            <input
+              ref={receiptInputRef}
+              type="file"
+              accept="image/*,.pdf"
+              multiple
+              className="hidden"
+              onChange={(e) => handleReceiptFiles(e.target.files)}
+            />
+          </div>
+
+          {/* Receipt previews */}
+          {receipts.length > 0 && (
+            <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
+              {receipts.map((receipt) => (
+                <div
+                  key={receipt.id}
+                  className="group relative overflow-hidden rounded-xl border border-[color:var(--border)] bg-[var(--surface-2)]"
+                >
+                  {receipt.preview ? (
+                    <img
+                      src={receipt.preview}
+                      alt={receipt.name}
+                      className="h-32 w-full object-cover"
+                    />
+                  ) : (
+                    <div className="flex h-32 items-center justify-center bg-slate-100 dark:bg-slate-800">
+                      <FileText className="h-10 w-10 text-slate-400" />
+                    </div>
+                  )}
+                  <div className="p-2">
+                    <p className="truncate text-xs text-slate-600 dark:text-slate-300">
+                      {receipt.name}
+                    </p>
+                    <p className="text-[10px] text-slate-400">
+                      {(receipt.file.size / 1024).toFixed(0)} KB
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      removeReceipt(receipt.id);
+                    }}
+                    className="absolute right-1.5 top-1.5 rounded-full bg-black/50 p-1 text-white opacity-0 transition-opacity hover:bg-red-600 group-hover:opacity-100"
+                  >
+                    <X className="h-3.5 w-3.5" />
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* Totals */}

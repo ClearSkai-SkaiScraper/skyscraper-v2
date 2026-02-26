@@ -8,14 +8,15 @@ import { fetchContractorById } from "@/lib/data/contractors";
 export const dynamic = "force-dynamic";
 
 interface ContractorPageProps {
-  params: { contractorId: string };
+  params: Promise<{ contractorId: string }>;
 }
 
 export default async function ContractorDetailPage({ params }: ContractorPageProps) {
   const user = await currentUser();
   if (!user) redirect("/sign-in");
 
-  const contractor = await fetchContractorById(params.contractorId);
+  const { contractorId } = await params;
+  const contractor = await fetchContractorById(contractorId);
 
   if (!contractor) {
     notFound();

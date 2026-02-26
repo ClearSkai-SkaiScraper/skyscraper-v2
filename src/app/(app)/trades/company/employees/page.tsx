@@ -2,12 +2,15 @@
 
 import {
   ArrowLeft,
+  GitBranch,
   Loader2,
+  MoreVertical,
   Shield,
   ShieldCheck,
   Trash2,
   User,
   UserCheck,
+  UserCog,
   Users,
 } from "lucide-react";
 import Link from "next/link";
@@ -16,10 +19,32 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
 import ConfirmDeleteDialog from "@/components/ConfirmDeleteDialog";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Switch } from "@/components/ui/switch";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { logger } from "@/lib/logger";
 
 interface Employee {
@@ -35,6 +60,9 @@ interface Employee {
   canEditCompany: boolean;
   status: string;
   createdAt: string;
+  isManager?: boolean;
+  managerId?: string | null;
+  managerName?: string | null;
 }
 
 export default function ManageEmployeesPage() {
@@ -45,6 +73,20 @@ export default function ManageEmployeesPage() {
   const [isAdmin, setIsAdmin] = useState(false);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<{ id: string; name: string } | null>(null);
+
+  /* ── Manager Hierarchy state ──────────────────────────────────── */
+  const [managerDialogOpen, setManagerDialogOpen] = useState(false);
+  const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(null);
+  const [selectedManagerId, setSelectedManagerId] = useState<string>("");
+  const [isAssigningManager, setIsAssigningManager] = useState(false);
+  const [showOrgChart, setShowOrgChart] = useState(false);
+
+  // Filter managers (employees who are admins/managers or marked as manager)
+  const availableManagers = employees.filter(
+    (e) =>
+      (e.isManager || e.isAdmin || e.role === "admin" || e.role === "owner") &&
+      e.status === "active"
+  );
 
   useEffect(() => {
     loadEmployees();
@@ -126,6 +168,90 @@ export default function ManageEmployeesPage() {
     }
   };
 
+  /* ── Manager Hierarchy handlers ───────────────────────────────── */
+
+  const openManagerDialog = (emp: Employee) => {
+    setSelectedEmployee(emp);
+    setSelectedManagerId(emp.managerId || "none");
+    setManagerDialogOpen(true);
+  };
+
+  const handleAssignManager = async () => {
+    if (!selectedEmployee) return;
+    setIsAssigningManager(true);
+    try {
+      const res = await fetch("/api/trades/company/seats/assign-manager", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          memberId: selectedEmployee.id,
+          managerId: selectedManagerId === "none" ? null : selectedManagerId,
+        }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        const managerName =
+          selectedManagerId === "none"
+            ? null
+            : employees.find((e) => e.id === selectedManagerId)?.firstName;
+        setEmployees((prev) =>
+          prev.map((e) =>
+            e.id === selectedEmployee.id
+              ? {
+                  ...e,
+                  managerId: selectedManagerId === "none" ? null : selectedManagerId,
+                  managerName,
+                }
+              : e
+          )
+        );
+        toast.success(data.message || "Manager updated successfully");
+        setManagerDialogOpen(false);
+      } else {
+        toast.error(data.error || "Failed to assign manager");
+      }
+    } catch (err) {
+      logger.error("Assign manager error:", err);
+      toast.error("Failed to assign manager");
+    } finally {
+      setIsAssigningManager(false);
+    }
+  };
+
+  const handleToggleManager = async (emp: Employee, makeManager: boolean) => {
+    setUpdating(emp.id);
+    try {
+      const res = await fetch("/api/trades/company/seats/assign-manager", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          memberId: emp.id,
+          makeManager,
+        }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setEmployees((prev) =>
+          prev.map((e) =>
+            e.id === emp.id
+              ? { ...e, isManager: makeManager, role: makeManager ? "manager" : "member" }
+              : e
+          )
+        );
+        toast.success(
+          data.message || `${emp.firstName} is now a ${makeManager ? "manager" : "member"}`
+        );
+      } else {
+        toast.error(data.error || "Failed to update role");
+      }
+    } catch (err) {
+      logger.error("Toggle manager error:", err);
+      toast.error("Failed to update role");
+    } finally {
+      setUpdating(null);
+    }
+  };
+
   const removeEmployee = async (employeeId: string, name: string) => {
     setUpdating(employeeId);
     try {
@@ -193,18 +319,20 @@ export default function ManageEmployeesPage() {
         </div>
 
         {/* Stats */}
-        <div className="mb-6 grid grid-cols-2 gap-4 md:grid-cols-3">
+        <div className="mb-6 grid grid-cols-2 gap-4 md:grid-cols-4">
           <Card>
             <CardContent className="p-4 text-center">
               <Users className="mx-auto mb-2 h-6 w-6 text-blue-600" />
-              <p className="text-2xl font-bold text-slate-900">{employees.length}</p>
+              <p className="text-2xl font-bold text-slate-900 dark:text-white">
+                {employees.length}
+              </p>
               <p className="text-xs text-slate-500">Total Employees</p>
             </CardContent>
           </Card>
           <Card>
             <CardContent className="p-4 text-center">
               <ShieldCheck className="mx-auto mb-2 h-6 w-6 text-green-600" />
-              <p className="text-2xl font-bold text-slate-900">
+              <p className="text-2xl font-bold text-slate-900 dark:text-white">
                 {employees.filter((e) => e.isAdmin).length}
               </p>
               <p className="text-xs text-slate-500">Admins</p>
@@ -212,14 +340,130 @@ export default function ManageEmployeesPage() {
           </Card>
           <Card>
             <CardContent className="p-4 text-center">
+              <GitBranch className="mx-auto mb-2 h-6 w-6 text-purple-600" />
+              <p className="text-2xl font-bold text-slate-900 dark:text-white">
+                {employees.filter((e) => e.isManager).length}
+              </p>
+              <p className="text-xs text-slate-500">Managers</p>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="p-4 text-center">
               <UserCheck className="mx-auto mb-2 h-6 w-6 text-amber-600" />
-              <p className="text-2xl font-bold text-slate-900">
+              <p className="text-2xl font-bold text-slate-900 dark:text-white">
                 {employees.filter((e) => e.status === "active").length}
               </p>
               <p className="text-xs text-slate-500">Active</p>
             </CardContent>
           </Card>
         </div>
+
+        {/* Org Chart Toggle */}
+        {employees.length > 1 && (
+          <div className="mb-6 rounded-2xl border border-purple-200 bg-purple-50/50 p-4 dark:border-purple-800 dark:bg-purple-950/20">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <GitBranch className="h-5 w-5 text-purple-500" />
+                <div>
+                  <p className="font-semibold text-slate-900 dark:text-white">Team Hierarchy</p>
+                  <p className="text-xs text-slate-500">
+                    Assign managers using the ⋮ menu on each employee
+                  </p>
+                </div>
+              </div>
+              <Button variant="outline" size="sm" onClick={() => setShowOrgChart(!showOrgChart)}>
+                {showOrgChart ? "Hide" : "Show"} Org Chart
+              </Button>
+            </div>
+
+            {showOrgChart && (
+              <div className="mt-4 space-y-3 rounded-xl border border-slate-200 bg-white p-4 dark:border-slate-700 dark:bg-slate-900">
+                {/* Managers with their reports */}
+                {availableManagers.map((manager) => {
+                  const reports = employees.filter((e) => e.managerId === manager.id);
+                  const displayName =
+                    `${manager.firstName || ""} ${manager.lastName || ""}`.trim() || "Unknown";
+                  return (
+                    <div
+                      key={manager.id}
+                      className="rounded-lg border border-purple-200 bg-purple-50/50 p-3 dark:border-purple-800 dark:bg-purple-950/30"
+                    >
+                      <div className="flex items-center gap-2">
+                        <Avatar className="h-8 w-8">
+                          <AvatarImage src={manager.avatar || undefined} />
+                          <AvatarFallback className="bg-purple-600 text-xs text-white">
+                            {(manager.firstName?.[0] || "") + (manager.lastName?.[0] || "")}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div>
+                          <p className="text-sm font-semibold text-slate-900 dark:text-white">
+                            {displayName}
+                          </p>
+                          <p className="text-xs text-purple-600">
+                            {manager.isManager ? "Manager" : "Admin"} · {reports.length} direct
+                            report{reports.length !== 1 ? "s" : ""}
+                          </p>
+                        </div>
+                      </div>
+                      {reports.length > 0 && (
+                        <div className="ml-6 mt-2 space-y-1 border-l-2 border-purple-200 pl-4 dark:border-purple-700">
+                          {reports.map((report) => (
+                            <div key={report.id} className="flex items-center gap-2 text-sm">
+                              <Avatar className="h-6 w-6">
+                                <AvatarImage src={report.avatar || undefined} />
+                                <AvatarFallback className="bg-blue-500 text-xs text-white">
+                                  {(report.firstName?.[0] || "") + (report.lastName?.[0] || "")}
+                                </AvatarFallback>
+                              </Avatar>
+                              <span className="text-slate-700 dark:text-slate-300">
+                                {`${report.firstName || ""} ${report.lastName || ""}`.trim()}
+                              </span>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+
+                {/* Unassigned employees */}
+                {(() => {
+                  const unassigned = employees.filter(
+                    (e) =>
+                      !e.managerId &&
+                      !e.isManager &&
+                      !e.isAdmin &&
+                      e.role !== "owner" &&
+                      e.status === "active"
+                  );
+                  if (unassigned.length === 0) return null;
+                  return (
+                    <div className="rounded-lg border border-slate-200 bg-slate-50/50 p-3 dark:border-slate-700 dark:bg-slate-800/50">
+                      <p className="mb-2 text-sm font-medium text-slate-500">
+                        Unassigned ({unassigned.length})
+                      </p>
+                      <div className="flex flex-wrap gap-2">
+                        {unassigned.map((e) => (
+                          <div
+                            key={e.id}
+                            className="flex items-center gap-1.5 rounded-full bg-slate-100 px-2.5 py-1 text-xs dark:bg-slate-800"
+                          >
+                            <Avatar className="h-5 w-5">
+                              <AvatarFallback className="bg-slate-400 text-[10px] text-white">
+                                {e.firstName?.[0] || "?"}
+                              </AvatarFallback>
+                            </Avatar>
+                            {`${e.firstName || ""} ${e.lastName?.[0] || ""}`.trim()}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  );
+                })()}
+              </div>
+            )}
+          </div>
+        )}
 
         {/* Employee List */}
         <Card>
@@ -267,8 +511,14 @@ export default function ManageEmployeesPage() {
                     {/* Info */}
                     <div className="flex-1">
                       <div className="flex items-center gap-2">
-                        <p className="font-semibold text-gray-900">{displayName}</p>
+                        <p className="font-semibold text-gray-900 dark:text-white">{displayName}</p>
                         {isOwner && <Badge className="bg-purple-100 text-purple-700">Owner</Badge>}
+                        {employee.isManager && !isOwner && (
+                          <Badge className="bg-violet-100 text-violet-700">
+                            <GitBranch className="mr-1 h-3 w-3" />
+                            Manager
+                          </Badge>
+                        )}
                         {employee.isAdmin && !isOwner && (
                           <Badge className="bg-green-100 text-green-700">Admin</Badge>
                         )}
@@ -284,40 +534,69 @@ export default function ManageEmployeesPage() {
                           <Badge className="bg-emerald-100 text-emerald-700">Active</Badge>
                         )}
                       </div>
-                      <p className="text-sm text-gray-500">{employee.jobTitle || employee.role}</p>
+                      <div className="flex items-center gap-2">
+                        <p className="text-sm text-gray-500">
+                          {employee.jobTitle || employee.role}
+                        </p>
+                        {employee.managerName && (
+                          <span className="text-xs text-slate-400">→ {employee.managerName}</span>
+                        )}
+                      </div>
                     </div>
 
-                    {/* Controls — always show for non-owner, non-self employees */}
+                    {/* Three-dot dropdown for non-owner, non-self */}
                     {!isOwner && !isSelf && (
-                      <div className="flex items-center gap-4">
-                        <div className="flex items-center gap-2">
-                          <span className="text-xs text-gray-500">Admin</span>
-                          <Switch
-                            checked={employee.isAdmin}
-                            onCheckedChange={() => toggleAdmin(employee.id, employee.isAdmin)}
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="icon" className="h-8 w-8">
+                            <MoreVertical className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          {employee.status === "active" && (
+                            <>
+                              <DropdownMenuItem onClick={() => openManagerDialog(employee)}>
+                                <UserCog className="mr-2 h-4 w-4" />
+                                Assign Manager
+                              </DropdownMenuItem>
+                              <DropdownMenuItem
+                                onClick={() => handleToggleManager(employee, !employee.isManager)}
+                              >
+                                <GitBranch className="mr-2 h-4 w-4" />
+                                {employee.isManager ? "Remove Manager Role" : "Make Manager"}
+                              </DropdownMenuItem>
+                              <DropdownMenuSeparator />
+                              <DropdownMenuItem
+                                onClick={() => toggleAdmin(employee.id, employee.isAdmin)}
+                                disabled={updating === employee.id}
+                              >
+                                <ShieldCheck className="mr-2 h-4 w-4" />
+                                {employee.isAdmin ? "Revoke Admin" : "Grant Admin"}
+                              </DropdownMenuItem>
+                              <DropdownMenuItem
+                                onClick={() =>
+                                  toggleEditAccess(employee.id, employee.canEditCompany)
+                                }
+                                disabled={updating === employee.id}
+                              >
+                                <User className="mr-2 h-4 w-4" />
+                                {employee.canEditCompany
+                                  ? "Revoke Edit Access"
+                                  : "Grant Edit Access"}
+                              </DropdownMenuItem>
+                              <DropdownMenuSeparator />
+                            </>
+                          )}
+                          <DropdownMenuItem
+                            className="text-red-600 focus:text-red-600"
+                            onClick={() => setDeleteTarget({ id: employee.id, name: displayName })}
                             disabled={updating === employee.id}
-                          />
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <span className="text-xs text-gray-500">Edit</span>
-                          <Switch
-                            checked={employee.canEditCompany}
-                            onCheckedChange={() =>
-                              toggleEditAccess(employee.id, employee.canEditCompany)
-                            }
-                            disabled={updating === employee.id}
-                          />
-                        </div>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="text-red-500 hover:bg-red-50 hover:text-red-600"
-                          onClick={() => setDeleteTarget({ id: employee.id, name: displayName })}
-                          disabled={updating === employee.id}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
+                          >
+                            <Trash2 className="mr-2 h-4 w-4" />
+                            Remove Employee
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
                     )}
                   </div>
                 );
@@ -360,6 +639,60 @@ export default function ManageEmployeesPage() {
           deleteTarget ? removeEmployee(deleteTarget.id, deleteTarget.name) : Promise.resolve()
         }
       />
+
+      {/* Manager Assignment Dialog */}
+      <Dialog open={managerDialogOpen} onOpenChange={setManagerDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Assign Manager</DialogTitle>
+            <DialogDescription>
+              Select a manager for{" "}
+              {selectedEmployee
+                ? `${selectedEmployee.firstName || ""} ${selectedEmployee.lastName || ""}`.trim() ||
+                  selectedEmployee.email
+                : "this employee"}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="py-4">
+            <Select value={selectedManagerId} onValueChange={setSelectedManagerId}>
+              <SelectTrigger>
+                <SelectValue placeholder="Select a manager" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="none">No Manager</SelectItem>
+                {availableManagers
+                  .filter((m) => m.id !== selectedEmployee?.id)
+                  .map((manager) => (
+                    <SelectItem key={manager.id} value={manager.id}>
+                      {`${manager.firstName || ""} ${manager.lastName || ""}`.trim() ||
+                        manager.email}
+                    </SelectItem>
+                  ))}
+              </SelectContent>
+            </Select>
+            {availableManagers.length === 0 && (
+              <p className="mt-2 text-sm text-slate-500">
+                No managers available. Promote a team member to manager first using the ⋮ menu.
+              </p>
+            )}
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setManagerDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleAssignManager} disabled={isAssigningManager}>
+              {isAssigningManager ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Saving...
+                </>
+              ) : (
+                "Save"
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
