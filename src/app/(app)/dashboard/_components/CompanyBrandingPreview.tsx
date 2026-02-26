@@ -72,7 +72,7 @@ export default function CompanyBrandingPreview() {
           </div>
           <h3 className="text-lg font-semibold text-slate-900 dark:text-white">Company Branding</h3>
         </div>
-        <Link href="/settings/branding/cover-page">
+        <Link href="/settings/branding">
           <Button variant="ghost" size="sm" className="gap-1.5 text-xs">
             <Palette className="h-3.5 w-3.5" />
             Edit
@@ -94,7 +94,7 @@ export default function CompanyBrandingPreview() {
             </p>
           </div>
           <Button asChild size="sm" className="mt-1">
-            <Link href="/settings/branding/cover-page">
+            <Link href="/settings/branding">
               <Palette className="mr-1.5 h-3.5 w-3.5" />
               Configure Branding
             </Link>
