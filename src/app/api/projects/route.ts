@@ -2,12 +2,14 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
-import { NextRequest } from "next/server";
 import { logger } from "@/lib/logger";
+import { NextRequest, NextResponse } from "next/server";
 
 import { onStageChange } from "@/lib/automation";
 import { getCurrentUserPermissions, requirePermission } from "@/lib/permissions";
 import prisma from "@/lib/prisma";
+import { validateBody } from "@/lib/validation/middleware";
+import { createProjectSchema } from "@/lib/validation/pipeline-schemas";
 
 // Prisma singleton imported from @/lib/db/prisma
 
@@ -107,13 +109,14 @@ export async function POST(request: NextRequest) {
       return Response.json({ error: "Authentication required" }, { status: 401 });
     }
 
-    const body = await request.json();
+    const body = await validateBody(request, createProjectSchema);
+    if (body instanceof NextResponse) return body;
     const {
       title,
       leadId,
       propertyId,
       contactId,
-      status = "LEAD",
+      status,
       startDate,
       targetEndDate,
       assignedTo,
@@ -121,56 +124,54 @@ export async function POST(request: NextRequest) {
       notes,
     } = body;
 
-    // Validate required fields
-    if (!title) {
-      return Response.json({ error: "Title is required" }, { status: 400 });
-    }
-
     // Generate job number
     const jobCount = await prisma.projects.count({ where: { orgId } });
     const jobNumber = `P${String(jobCount + 1).padStart(6, "0")}`;
 
-    // Create the project
-    const project = await prisma.projects.create({
-      data: {
-        id: crypto.randomUUID(),
-        orgId,
-        title,
-        jobNumber,
-        leadId,
-        propertyId,
-        contactId,
-        status,
-        startDate: startDate ? new Date(startDate) : null,
-        targetEndDate: targetEndDate ? new Date(targetEndDate) : null,
-        createdBy: userId,
-        assignedTo: assignedTo || userId,
-        valueEstimate,
-        notes,
-        updatedAt: new Date(),
-      },
-      include: {
-        contacts: true,
-        properties: true,
-        leads: true,
-        users_projects_assignedToTousers: true,
-        users_projects_createdByTousers: true,
-      },
-    });
+    // Create project + initial activity in a single transaction
+    const project = await prisma.$transaction(async (tx) => {
+      const proj = await tx.projects.create({
+        data: {
+          id: crypto.randomUUID(),
+          orgId,
+          title,
+          jobNumber,
+          leadId,
+          propertyId,
+          contactId,
+          status: status || "LEAD",
+          startDate: startDate ? new Date(startDate) : null,
+          targetEndDate: targetEndDate ? new Date(targetEndDate) : null,
+          createdBy: userId,
+          assignedTo: assignedTo || userId,
+          valueEstimate,
+          notes,
+          updatedAt: new Date(),
+        },
+        include: {
+          contacts: true,
+          properties: true,
+          leads: true,
+          users_projects_assignedToTousers: true,
+          users_projects_createdByTousers: true,
+        },
+      });
 
-    // Create initial activity
-    await prisma.activities.create({
-      data: {
-        id: crypto.randomUUID(),
-        orgId,
-        projectId: project.id,
-        type: "project_created",
-        title: "Project Created",
-        description: `Project "${title}" was created`,
-        userId,
-        userName: "System",
-        updatedAt: new Date(),
-      },
+      await tx.activities.create({
+        data: {
+          id: crypto.randomUUID(),
+          orgId,
+          projectId: proj.id,
+          type: "project_created",
+          title: "Project Created",
+          description: `Project "${title}" was created`,
+          userId,
+          userName: "System",
+          updatedAt: new Date(),
+        },
+      });
+
+      return proj;
     });
 
     // Trigger stage change automation

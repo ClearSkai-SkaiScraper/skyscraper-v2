@@ -3,12 +3,14 @@ export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
 import { currentUser } from "@clerk/nextjs/server";
-import { NextRequest } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
 import { db } from "@/lib/db";
 import prisma from "@/lib/prisma";
 
 import { logger } from "@/lib/logger";
+import { markNotificationReadSchema } from "@/lib/validation/message-schemas";
+import { validateBody } from "@/lib/validation/middleware";
 
 export async function GET() {
   const user = await currentUser();
@@ -155,13 +157,9 @@ export async function POST(req: NextRequest) {
   const user = await currentUser();
   if (!user) return new Response("Unauthorized", { status: 401 });
 
-  let notificationId: string | undefined;
-  try {
-    const body = await req.json();
-    notificationId = body?.notificationId;
-  } catch {
-    return Response.json({ error: "Invalid request body" }, { status: 400 });
-  }
+  const body = await validateBody(req, markNotificationReadSchema);
+  if (body instanceof NextResponse) return body;
+  const { notificationId } = body;
 
   // Handle TradeNotification marks (prefixed with tn-)
   if (notificationId?.startsWith("tn-")) {

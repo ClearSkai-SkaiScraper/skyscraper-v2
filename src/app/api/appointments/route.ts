@@ -1,8 +1,10 @@
-import { NextResponse } from "next/server";
 import { logger } from "@/lib/logger";
+import { NextResponse } from "next/server";
 
 import prisma from "@/lib/prisma";
 import { safeOrgContext } from "@/lib/safeOrgContext";
+import { createAppointmentSchema } from "@/lib/validation/appointment-schemas";
+import { validateBody } from "@/lib/validation/middleware";
 
 export const dynamic = "force-dynamic";
 
@@ -14,16 +16,10 @@ export async function POST(req: Request) {
   }
 
   try {
-    const body = await req.json();
+    const body = await validateBody(req, createAppointmentSchema);
+    if (body instanceof NextResponse) return body;
     const { title, description, startTime, endTime, location, leadId, claimId, contactId, notes } =
       body;
-
-    if (!title || !startTime || !endTime) {
-      return NextResponse.json(
-        { error: "Title, start time, and end time are required" },
-        { status: 400 }
-      );
-    }
 
     const appointment = await prisma.appointments.create({
       data: {

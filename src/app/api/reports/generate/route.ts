@@ -20,6 +20,8 @@ import { withAuth } from "@/lib/auth/withAuth";
 import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 import { uploadPdf } from "@/lib/storage/uploadPdf";
+import { validateBody } from "@/lib/validation/middleware";
+import { generateReportSchema } from "@/lib/validation/report-schemas";
 import {
   fetchReportCodes,
   fetchReportLineItems,
@@ -32,16 +34,13 @@ import type { ReportContext, SectionKey } from "@/modules/reports/types";
 
 export const POST = withAuth(async (req: NextRequest, { orgId, userId }) => {
   try {
-    const body = await req.json();
+    const body = await validateBody(req, generateReportSchema);
+    if (body instanceof NextResponse) return body;
     const { claimId, orgTemplateId, template, sections, addOns, inputs, aiNotes } = body;
 
     // Check for preview mode
     const url = new URL(req.url);
     const mode = url.searchParams.get("mode");
-
-    if (!claimId) {
-      return NextResponse.json({ error: "claimId is required" }, { status: 400 });
-    }
 
     // Resolve DB user UUID from Clerk userId (FK requires users.id, not clerkUserId)
     const dbUser = await prisma.users.findFirst({

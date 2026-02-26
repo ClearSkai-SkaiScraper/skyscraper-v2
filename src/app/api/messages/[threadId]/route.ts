@@ -4,6 +4,8 @@ import { NextRequest, NextResponse } from "next/server";
 
 import prisma from "@/lib/prisma";
 import { safeOrgContext } from "@/lib/safeOrgContext";
+import { sendMessageSchema, threadActionSchema } from "@/lib/validation/message-schemas";
+import { validateBody } from "@/lib/validation/middleware";
 
 type RouteContext = {
   params: Promise<{ threadId: string }>;
@@ -161,12 +163,9 @@ export async function POST(req: NextRequest, context: RouteContext) {
     }
 
     const { threadId } = await context.params;
-    const body = await req.json();
+    const body = await validateBody(req, sendMessageSchema);
+    if (body instanceof NextResponse) return body;
     const { content, attachments } = body;
-
-    if (!content || content.trim() === "") {
-      return NextResponse.json({ error: "Content is required" }, { status: 400 });
-    }
 
     // Verify user has access (expanded check matching GET)
     const thread = await prisma.messageThread.findUnique({
@@ -224,22 +223,24 @@ export async function POST(req: NextRequest, context: RouteContext) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
-    // Create message (Message model doesn't have 'attachments' field)
-    const message = await prisma.message.create({
-      data: {
-        id: crypto.randomUUID(),
-        threadId,
-        senderUserId: userId,
-        senderType: "user",
-        body: content.trim(),
-        // attachments stored in body or separate system - not in Message model
-      },
-    });
+    // Create message + update thread in a single transaction
+    const message = await prisma.$transaction(async (tx) => {
+      const msg = await tx.message.create({
+        data: {
+          id: crypto.randomUUID(),
+          threadId,
+          senderUserId: userId,
+          senderType: "user",
+          body: content.trim(),
+        },
+      });
 
-    // Update thread's updatedAt (MessageThread uses 'updatedAt' not 'lastMessageAt')
-    await prisma.messageThread.update({
-      where: { id: threadId },
-      data: { updatedAt: new Date() },
+      await tx.messageThread.update({
+        where: { id: threadId },
+        data: { updatedAt: new Date() },
+      });
+
+      return msg;
     });
 
     // Create notifications for other participants
@@ -345,13 +346,10 @@ export async function DELETE(req: NextRequest, context: RouteContext) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
-    // Delete all messages in the thread first, then the thread
-    await prisma.message.deleteMany({
-      where: { threadId },
-    });
-
-    await prisma.messageThread.delete({
-      where: { id: threadId },
+    // Delete all messages + thread in a single transaction
+    await prisma.$transaction(async (tx) => {
+      await tx.message.deleteMany({ where: { threadId } });
+      await tx.messageThread.delete({ where: { id: threadId } });
     });
 
     return NextResponse.json({ success: true, message: "Thread deleted" });
@@ -370,8 +368,9 @@ export async function PATCH(req: NextRequest, context: RouteContext) {
     }
 
     const { threadId } = await context.params;
-    const body = await req.json();
-    const { action } = body; // "archive" | "unarchive"
+    const body = await validateBody(req, threadActionSchema);
+    if (body instanceof NextResponse) return body;
+    const { action } = body;
 
     const thread = await prisma.messageThread.findUnique({
       where: { id: threadId },

@@ -4,6 +4,8 @@ import { NextRequest, NextResponse } from "next/server";
 
 import { safeSendEmail } from "@/lib/mail";
 import { checkRateLimit } from "@/lib/rate-limit";
+import { submitFeedbackSchema } from "@/lib/validation/feedback-schemas";
+import { validateBody } from "@/lib/validation/middleware";
 
 export const dynamic = "force-dynamic";
 
@@ -21,20 +23,14 @@ export async function POST(req: NextRequest) {
         { status: 429 }
       );
     }
-    const body = await req.json();
+    const body = await validateBody(req, submitFeedbackSchema);
+    if (body instanceof NextResponse) return body;
     const { message, email, name, category, task, issue, confusion, timestamp, userAgent, url } =
       body;
 
     // Support both old format (message) and new format (task/issue)
     const feedbackMessage = issue || message;
     const feedbackTask = task || category || "General";
-
-    if (!feedbackMessage || feedbackMessage.trim().length < 10) {
-      return NextResponse.json(
-        { error: "Please provide feedback with at least 10 characters" },
-        { status: 400 }
-      );
-    }
 
     // Log feedback for tracking (no DB storage to reduce dependencies)
     if (userId) {

@@ -599,7 +599,7 @@ export const PATCH = withAuth(async (req: NextRequest, { orgId, userId }) => {
     if (zip !== undefined) updateData.zip = zip;
     if (specialties !== undefined) updateData.specialties = specialties;
     if (yearsInBusiness !== undefined)
-      updateData.yearsInBusiness = parseInt(yearsInBusiness) || null;
+      updateData.yearsInBusiness = parseInt(String(yearsInBusiness)) || null;
     if (licenseNumber !== undefined) updateData.licenseNumber = licenseNumber;
 
     const updated = await prisma.tradesCompany.update({
@@ -612,7 +612,7 @@ export const PATCH = withAuth(async (req: NextRequest, { orgId, userId }) => {
     if (tagline !== undefined) memberUpdate.tagline = tagline;
     if (aboutCompany !== undefined) memberUpdate.aboutCompany = aboutCompany;
     if (motto !== undefined) memberUpdate.tagline = motto; // motto maps to tagline
-    if (foundedYear !== undefined) memberUpdate.foundedYear = parseInt(foundedYear) || null;
+    if (foundedYear !== undefined) memberUpdate.foundedYear = parseInt(String(foundedYear)) || null;
     if (teamSize !== undefined) memberUpdate.teamSize = teamSize;
     if (hoursOfOperation !== undefined) memberUpdate.hoursOfOperation = hoursOfOperation;
     if (officePhone !== undefined) memberUpdate.officePhone = officePhone;

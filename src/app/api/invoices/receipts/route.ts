@@ -39,7 +39,6 @@ export async function POST(req: NextRequest) {
       if (key.startsWith("receipt_") && value instanceof File) {
         const file = value;
         if (file.size > 10 * 1024 * 1024) continue; // Skip files >10MB
-        RECEIPT_MAX_SIZE;
         receiptEntries.push({
           name: file.name,
           type: file.type,

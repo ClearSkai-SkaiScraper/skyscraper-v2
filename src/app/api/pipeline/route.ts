@@ -1,10 +1,12 @@
-import { NextRequest } from "next/server";
 import { logger } from "@/lib/logger";
+import { NextRequest, NextResponse } from "next/server";
 
 import { onStageChange } from "@/lib/automation";
 import { getUserName } from "@/lib/clerk-utils";
 import { getCurrentUserPermissions, requirePermission } from "@/lib/permissions";
 import prisma from "@/lib/prisma";
+import { validateBody } from "@/lib/validation/middleware";
+import { moveStageSchema } from "@/lib/validation/pipeline-schemas";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -139,12 +141,9 @@ export async function PUT(request: NextRequest) {
       return Response.json({ error: "Authentication required" }, { status: 401 });
     }
 
-    const body = await request.json();
+    const body = await validateBody(request, moveStageSchema);
+    if (body instanceof NextResponse) return body;
     const { projectId, newStage, oldStage } = body;
-
-    if (!projectId || !newStage) {
-      return Response.json({ error: "projectId and newStage are required" }, { status: 400 });
-    }
 
     // Verify project belongs to org
     const project = await prisma.projects.findFirst({
@@ -155,27 +154,28 @@ export async function PUT(request: NextRequest) {
       return Response.json({ error: "Project not found" }, { status: 404 });
     }
 
-    // Update project stage
-    const updatedProject = await prisma.projects.update({
-      where: { id: projectId },
-      data: { status: newStage },
-      include: {
-        contacts: true,
-        properties: true,
-      },
-    });
+    // Update project stage + create activity in a single transaction
+    const userName = await getUserName(userId);
+    const updatedProject = await prisma.$transaction(async (tx) => {
+      const updated = await tx.projects.update({
+        where: { id: projectId },
+        data: { status: newStage },
+        include: { contacts: true, properties: true },
+      });
 
-    // Create activity for stage change
-    await prisma.activities.create({
-      data: {
-        orgId,
-        projectId,
-        type: "stage_change",
-        title: "Stage Changed",
-        description: `Project moved from ${oldStage || project.status} to ${newStage}`,
-        userId,
-        userName: await getUserName(userId),
-      } as any,
+      await tx.activities.create({
+        data: {
+          orgId,
+          projectId,
+          type: "stage_change",
+          title: "Stage Changed",
+          description: `Project moved from ${oldStage || project.status} to ${newStage}`,
+          userId,
+          userName,
+        } as any,
+      });
+
+      return updated;
     });
 
     // Trigger automation
