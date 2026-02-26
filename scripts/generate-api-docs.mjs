@@ -32,7 +32,8 @@ function extractSchemas(filePath) {
   const schemas = [];
 
   // Find exported z.object definitions
-  const schemaRegex = /export\s+(?:const|let)\s+(\w+Schema)\s*=\s*z\.(object|enum|union|array|string|number)/g;
+  const schemaRegex =
+    /export\s+(?:const|let)\s+(\w+Schema)\s*=\s*z\.(object|enum|union|array|string|number)/g;
   let match;
 
   while ((match = schemaRegex.exec(content)) !== null) {

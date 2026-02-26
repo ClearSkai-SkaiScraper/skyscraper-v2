@@ -4,12 +4,7 @@
 
 import { describe, expect, it } from "vitest";
 
-import {
-  toCsv,
-  filterByDateRange,
-  formatDate,
-  formatCurrency,
-} from "@/lib/export/csvExporter";
+import { filterByDateRange, formatCurrency, formatDate, toCsv } from "@/lib/export/csvExporter";
 
 describe("csvExporter", () => {
   const sampleData = [
@@ -53,9 +48,7 @@ describe("csvExporter", () => {
     });
 
     it("supports custom formatters", () => {
-      const csv = toCsv(sampleData, [
-        { key: "amount", header: "Amount", format: (v) => `$${v}` },
-      ]);
+      const csv = toCsv(sampleData, [{ key: "amount", header: "Amount", format: (v) => `$${v}` }]);
       expect(csv).toContain("$5000");
     });
 
@@ -77,22 +70,12 @@ describe("csvExporter", () => {
     });
 
     it("filters by end date", () => {
-      const filtered = filterByDateRange(
-        sampleData,
-        "created",
-        undefined,
-        "2024-07-31",
-      );
+      const filtered = filterByDateRange(sampleData, "created", undefined, "2024-07-31");
       expect(filtered.length).toBe(2);
     });
 
     it("filters by both dates", () => {
-      const filtered = filterByDateRange(
-        sampleData,
-        "created",
-        "2024-07-01",
-        "2024-07-31",
-      );
+      const filtered = filterByDateRange(sampleData, "created", "2024-07-01", "2024-07-31");
       expect(filtered.length).toBe(1);
       expect(filtered[0].name).toBe("Bob");
     });

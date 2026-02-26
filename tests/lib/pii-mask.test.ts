@@ -4,7 +4,7 @@
 
 import { describe, expect, it } from "vitest";
 
-import { maskPII, maskPIIDeep, maskEmail, maskPhone } from "@/lib/security/piiMask";
+import { maskEmail, maskPhone, maskPII, maskPIIDeep } from "@/lib/security/piiMask";
 
 describe("piiMask", () => {
   describe("maskPII", () => {

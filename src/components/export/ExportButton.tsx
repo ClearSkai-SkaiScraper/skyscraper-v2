@@ -28,7 +28,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { toCsv, downloadCsv, type CsvColumn } from "@/lib/export/csvExporter";
+import { downloadCsv, toCsv, type CsvColumn } from "@/lib/export/csvExporter";
 import { downloadExcel } from "@/lib/export/excelExporter";
 
 interface ExportButtonProps<T extends Record<string, unknown>> {
@@ -66,10 +66,7 @@ export function ExportButton<T extends Record<string, unknown>>({
   const handleExcelExport = async () => {
     setExporting(true);
     try {
-      await downloadExcel(
-        [{ name: sheetName, rows: data, columns }],
-        `${filename}.xlsx`,
-      );
+      await downloadExcel([{ name: sheetName, rows: data, columns }], `${filename}.xlsx`);
     } finally {
       setExporting(false);
     }
@@ -86,12 +83,8 @@ export function ExportButton<T extends Record<string, unknown>>({
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
-        <DropdownMenuItem onClick={handleCsvExport}>
-          📄 Export as CSV
-        </DropdownMenuItem>
-        <DropdownMenuItem onClick={handleExcelExport}>
-          📊 Export as Excel
-        </DropdownMenuItem>
+        <DropdownMenuItem onClick={handleCsvExport}>📄 Export as CSV</DropdownMenuItem>
+        <DropdownMenuItem onClick={handleExcelExport}>📊 Export as Excel</DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
   );

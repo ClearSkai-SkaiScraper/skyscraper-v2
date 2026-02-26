@@ -1,8 +1,9 @@
-/**
- * Deployment Runbook (Sprint 10.4.5)
- *
- * Step-by-step deployment procedures for SkaiScrape.
- */
+/\*\*
+
+- Deployment Runbook (Sprint 10.4.5)
+-
+- Step-by-step deployment procedures for SkaiScrape.
+  \*/
 
 # Deployment Runbook
 
@@ -20,6 +21,7 @@
 ## Environment Variables
 
 ### Required (Production)
+
 ```
 # Auth
 NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_live_...
@@ -59,6 +61,7 @@ NEXT_PUBLIC_APP_VERSION=from-git-sha
 ## Standard Deployment
 
 ### 1. Pre-deploy checks
+
 ```bash
 # Pull latest
 git pull origin main
@@ -77,6 +80,7 @@ pnpm build
 ```
 
 ### 2. Database migrations
+
 ```bash
 # Check migration status
 npx prisma migrate status
@@ -89,6 +93,7 @@ npx prisma generate
 ```
 
 ### 3. Deploy to Vercel
+
 ```bash
 # Preview deploy (staging)
 vercel
@@ -101,6 +106,7 @@ git push origin main
 ```
 
 ### 4. Post-deploy verification
+
 ```bash
 # Health check
 curl -s https://skaiscrape.com/api/health | jq

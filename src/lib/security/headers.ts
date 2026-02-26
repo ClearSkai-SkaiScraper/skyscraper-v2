@@ -24,8 +24,7 @@ export const SECURITY_HEADERS = [
   // Permissions Policy — restrict dangerous APIs
   {
     key: "Permissions-Policy",
-    value:
-      "camera=(), microphone=(), geolocation=(self), interest-cohort=()",
+    value: "camera=(), microphone=(), geolocation=(self), interest-cohort=()",
   },
   // Content Security Policy
   {
@@ -59,9 +58,7 @@ export function getSecurityHeadersConfig() {
     // Cache static assets aggressively
     {
       source: "/static/(.*)",
-      headers: [
-        { key: "Cache-Control", value: "public, max-age=31536000, immutable" },
-      ],
+      headers: [{ key: "Cache-Control", value: "public, max-age=31536000, immutable" }],
     },
     // No cache for API routes
     {
