@@ -16,7 +16,11 @@ const pilotFeedbackSchema = z.object({
 
 /**
  * POST /api/pilot/feedback — In-app feedback widget submissions
- * Stores to activities table for analytics + dedicated pilot feedback tracking
+ *
+ * Canonical storage: activities table (type = "pilot_feedback").
+ * This is the single source of truth for all feedback data.
+ * The dedicated user_feedback table was removed to avoid storage split.
+ * Structured feedback fields are stored in the metadata JSONB column.
  */
 export async function POST(req: NextRequest) {
   try {

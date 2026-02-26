@@ -1,361 +1,261 @@
 "use client";
 
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Progress } from "@/components/ui/progress";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
 import {
   Activity,
+  ArrowRight,
   BarChart3,
   CheckCircle2,
-  Clock,
-  Download,
+  CloudSun,
   FileText,
-  Loader2,
+  Gauge,
+  LineChart,
+  Rocket,
+  Settings2,
   TrendingUp,
+  UserCheck,
   Users,
+  Zap,
 } from "lucide-react";
-import { useCallback, useEffect, useState } from "react";
+import Link from "next/link";
 
-interface ClaimsAnalytics {
-  summary: {
-    totalClaims: number;
-    newClaims30d: number;
-    closedClaims30d: number;
-    closeRate: number;
-    avgCycleTimeDays: number;
-  };
-  byStatus: Record<string, number>;
+// ─── Analytics Page Catalog ─────────────────────────────────────────────────
+
+interface AnalyticsPage {
+  title: string;
+  description: string;
+  href: string;
+  icon: React.ComponentType<{ className?: string }>;
+  badge?: string;
+  badgeColor?: string;
 }
 
-interface TeamAnalytics {
-  summary: {
-    weeklyActiveUsers: number;
-    totalActivities30d: number;
-    avgActivitiesPerUser: number;
-  };
-  userActivity: { userId: string; activityCount: number }[];
-  topFeatures: { event: string; count: number }[];
-}
+const OPERATIONS: AnalyticsPage[] = [
+  {
+    title: "Claims Performance",
+    description: "KPIs, close rates, cycle times, team productivity, and feature usage.",
+    href: "/analytics/performance",
+    icon: TrendingUp,
+  },
+  {
+    title: "Claims Timeline",
+    description: "Pipeline funnel view — claims by stage, aging, and progression.",
+    href: "/analytics/claims-timeline",
+    icon: LineChart,
+  },
+  {
+    title: "AI Reports",
+    description: "Report generation stats, AI accuracy, and processing volumes.",
+    href: "/analytics/reports",
+    icon: FileText,
+  },
+  {
+    title: "KPI Overview",
+    description: "Top-level dashboard with real-time claim and activity summaries.",
+    href: "/analytics/dashboard",
+    icon: BarChart3,
+  },
+];
 
-export default function PerformanceDashboardPage() {
-  const [claims, setClaims] = useState<ClaimsAnalytics | null>(null);
-  const [team, setTeam] = useState<TeamAnalytics | null>(null);
-  const [loading, setLoading] = useState(true);
+const EXECUTIVE: AnalyticsPage[] = [
+  {
+    title: "Executive Intelligence",
+    description: "C-suite KPI dashboard — revenue, churn risk, NPS, and growth metrics.",
+    href: "/dashboard/kpis",
+    icon: Gauge,
+  },
+  {
+    title: "Team Activity",
+    description: "Recent team actions, login frequency, and engagement patterns.",
+    href: "/dashboard/activity",
+    icon: Activity,
+  },
+  {
+    title: "Invitation Performance",
+    description: "Invite send rates, acceptance funnels, and viral coefficients.",
+    href: "/invitations/analytics",
+    icon: Users,
+  },
+  {
+    title: "Vendor Performance",
+    description: "Trade partner response times, completion rates, and satisfaction scores.",
+    href: "/trades/analytics",
+    icon: UserCheck,
+  },
+  {
+    title: "Weather Analytics",
+    description: "Weather-correlated claim patterns, storm tracking, and regional impact.",
+    href: "/weather/analytics",
+    icon: CloudSun,
+  },
+];
 
-  const fetchData = useCallback(async () => {
-    try {
-      const [claimsRes, teamRes] = await Promise.all([
-        fetch("/api/analytics/claims"),
-        fetch("/api/analytics/team"),
-      ]);
+const PLATFORM_HEALTH: AnalyticsPage[] = [
+  {
+    title: "Pilot Dashboard",
+    description: "Feedback collection, pilot cohort tracking, and activation scoring.",
+    href: "/settings/pilot",
+    icon: Rocket,
+    badge: "Pilot",
+    badgeColor: "bg-amber-100 text-amber-700 dark:bg-amber-950 dark:text-amber-300",
+  },
+  {
+    title: "Onboarding Funnel",
+    description: "Step-by-step drop-off analysis, time-to-activate, and conversion rates.",
+    href: "/settings/onboarding-analytics",
+    icon: Zap,
+    badge: "New",
+    badgeColor: "bg-blue-100 text-blue-700 dark:bg-blue-950 dark:text-blue-300",
+  },
+  {
+    title: "Go / No-Go Readiness",
+    description: "Launch checklist — infra, security, billing, and compliance gates.",
+    href: "/settings/go-no-go",
+    icon: CheckCircle2,
+    badge: "Launch",
+    badgeColor: "bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300",
+  },
+];
 
-      if (claimsRes.ok) {
-        const data = await claimsRes.json();
-        setClaims(data.data);
-      }
-      if (teamRes.ok) {
-        const data = await teamRes.json();
-        setTeam(data.data);
-      }
-    } catch {
-      console.error("Failed to load analytics");
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+// ─── Hub Page ───────────────────────────────────────────────────────────────
 
-  useEffect(() => {
-    fetchData();
-  }, [fetchData]);
-
-  const handleExport = async () => {
-    try {
-      const data = {
-        claims,
-        team,
-        exportedAt: new Date().toISOString(),
-      };
-      const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `skaiscraper-analytics-${new Date().toISOString().split("T")[0]}.json`;
-      a.click();
-      URL.revokeObjectURL(url);
-    } catch {
-      console.error("Export failed");
-    }
-  };
-
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center py-20">
-        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-      </div>
-    );
-  }
-
+export default function AnalyticsHubPage() {
   return (
-    <div className="mx-auto max-w-6xl space-y-6 p-6">
+    <div className="mx-auto max-w-6xl space-y-10 p-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight">Performance Dashboard</h1>
-          <p className="text-muted-foreground">
-            Claims performance, team productivity, and feature usage analytics.
-          </p>
-        </div>
-        <Button variant="outline" size="sm" onClick={handleExport} className="gap-1.5">
-          <Download className="h-3.5 w-3.5" />
-          Export
-        </Button>
-      </div>
-
-      {/* KPI Cards */}
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <KpiCard
-          title="Total Claims"
-          value={claims?.summary.totalClaims ?? 0}
-          icon={FileText}
-          color="indigo"
-        />
-        <KpiCard
-          title="Close Rate (30d)"
-          value={`${claims?.summary.closeRate ?? 0}%`}
-          icon={CheckCircle2}
-          color="emerald"
-        />
-        <KpiCard
-          title="Avg Cycle Time"
-          value={`${claims?.summary.avgCycleTimeDays ?? 0}d`}
-          icon={Clock}
-          color="blue"
-        />
-        <KpiCard
-          title="Weekly Active Users"
-          value={team?.summary.weeklyActiveUsers ?? 0}
-          icon={Users}
-          color="purple"
-        />
-      </div>
-
-      <Tabs defaultValue="claims">
-        <TabsList>
-          <TabsTrigger value="claims">Claims</TabsTrigger>
-          <TabsTrigger value="team">Team</TabsTrigger>
-          <TabsTrigger value="features">Feature Usage</TabsTrigger>
-        </TabsList>
-
-        {/* Claims Tab */}
-        <TabsContent value="claims" className="space-y-4">
-          <div className="grid gap-4 md:grid-cols-2">
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-base">Claims by Status</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-3">
-                  {Object.entries(claims?.byStatus || {}).map(([status, count]) => (
-                    <div key={status} className="flex items-center gap-3">
-                      <StatusDot status={status} />
-                      <span className="w-28 text-sm font-medium capitalize">
-                        {status.replace(/_/g, " ")}
-                      </span>
-                      <Progress
-                        value={
-                          claims?.summary.totalClaims
-                            ? (count / claims.summary.totalClaims) * 100
-                            : 0
-                        }
-                        className="flex-1"
-                      />
-                      <span className="w-10 text-right text-sm font-semibold">{count}</span>
-                    </div>
-                  ))}
-                  {Object.keys(claims?.byStatus || {}).length === 0 && (
-                    <EmptyMessage message="No claims data yet. Analytics will populate as claims are created." />
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-base">30-Day Summary</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <MetricRow
-                  label="New Claims"
-                  value={claims?.summary.newClaims30d ?? 0}
-                  icon={TrendingUp}
-                />
-                <MetricRow
-                  label="Closed Claims"
-                  value={claims?.summary.closedClaims30d ?? 0}
-                  icon={CheckCircle2}
-                />
-                <MetricRow
-                  label="Avg Cycle Time"
-                  value={`${claims?.summary.avgCycleTimeDays ?? 0} days`}
-                  icon={Clock}
-                />
-                <MetricRow
-                  label="Close Rate"
-                  value={`${claims?.summary.closeRate ?? 0}%`}
-                  icon={BarChart3}
-                />
-              </CardContent>
-            </Card>
+      <div>
+        <div className="flex items-center gap-3">
+          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 text-white">
+            <BarChart3 className="h-5 w-5" />
           </div>
-        </TabsContent>
+          <div>
+            <h1 className="text-2xl font-bold tracking-tight">Analytics Hub</h1>
+            <p className="text-muted-foreground">
+              Every metric in one place — operations, executive insights, and platform health.
+            </p>
+          </div>
+        </div>
+      </div>
 
-        {/* Team Tab */}
-        <TabsContent value="team" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-base">Team Activity (30 Days)</CardTitle>
-              <CardDescription>
-                {team?.summary.totalActivities30d ?? 0} total activities across{" "}
-                {team?.userActivity?.length ?? 0} team members
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
-                {team?.userActivity?.map((user, idx) => (
-                  <div key={user.userId} className="flex items-center gap-3">
-                    <span className="flex h-6 w-6 items-center justify-center rounded-full bg-indigo-100 text-xs font-bold text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300">
-                      {idx + 1}
-                    </span>
-                    <span className="w-48 truncate font-mono text-sm">
-                      {user.userId.substring(0, 20)}...
-                    </span>
-                    <Progress
-                      value={
-                        team?.summary.totalActivities30d
-                          ? (user.activityCount / team.summary.totalActivities30d) * 100
-                          : 0
-                      }
-                      className="flex-1"
-                    />
-                    <span className="w-16 text-right text-sm font-semibold">
-                      {user.activityCount}
-                    </span>
-                  </div>
-                ))}
-                {(!team?.userActivity || team.userActivity.length === 0) && (
-                  <EmptyMessage message="No team activity data yet." />
-                )}
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
+      {/* Operations Section */}
+      <AnalyticsSection
+        title="Operations"
+        description="Day-to-day claims processing and team performance."
+        icon={Settings2}
+        color="indigo"
+        pages={OPERATIONS}
+      />
 
-        {/* Features Tab */}
-        <TabsContent value="features" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-base">Top Features (30 Days)</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
-                {team?.topFeatures?.map((feature) => (
-                  <div key={feature.event} className="flex items-center gap-3">
-                    <Activity className="h-4 w-4 text-muted-foreground" />
-                    <span className="flex-1 text-sm font-medium">
-                      {feature.event.replace(/_/g, " ").replace("feature:", "")}
-                    </span>
-                    <Badge variant="secondary">{feature.count}</Badge>
-                  </div>
-                ))}
-                {(!team?.topFeatures || team.topFeatures.length === 0) && (
-                  <EmptyMessage message="No feature usage data yet. Events will appear as users interact with features." />
-                )}
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-      </Tabs>
+      {/* Executive Section */}
+      <AnalyticsSection
+        title="Executive"
+        description="High-level business intelligence and growth metrics."
+        icon={Gauge}
+        color="purple"
+        pages={EXECUTIVE}
+      />
+
+      {/* Platform Health Section */}
+      <AnalyticsSection
+        title="Platform Health"
+        description="Pilot readiness, onboarding funnels, and launch gates."
+        icon={Rocket}
+        color="emerald"
+        pages={PLATFORM_HEALTH}
+      />
     </div>
   );
 }
 
-// ─── Sub-components ─────────────────────────────────────────────────────────
+// ─── Section Component ──────────────────────────────────────────────────────
 
-function KpiCard({
+function AnalyticsSection({
   title,
-  value,
+  description,
   icon: Icon,
   color,
+  pages,
 }: {
   title: string;
-  value: string | number;
+  description: string;
   icon: React.ComponentType<{ className?: string }>;
-  color: string;
+  color: "indigo" | "purple" | "emerald";
+  pages: AnalyticsPage[];
 }) {
-  return (
-    <Card>
-      <CardContent className="flex items-center gap-4 p-4">
-        <div
-          className={cn(
-            "flex h-10 w-10 items-center justify-center rounded-lg",
-            color === "indigo" && "bg-indigo-100 text-indigo-600 dark:bg-indigo-950",
-            color === "emerald" && "bg-emerald-100 text-emerald-600 dark:bg-emerald-950",
-            color === "blue" && "bg-blue-100 text-blue-600 dark:bg-blue-950",
-            color === "purple" && "bg-purple-100 text-purple-600 dark:bg-purple-950"
-          )}
-        >
-          <Icon className="h-5 w-5" />
-        </div>
-        <div>
-          <p className="text-2xl font-bold">{value}</p>
-          <p className="text-xs text-muted-foreground">{title}</p>
-        </div>
-      </CardContent>
-    </Card>
-  );
-}
-
-function MetricRow({
-  label,
-  value,
-  icon: Icon,
-}: {
-  label: string;
-  value: string | number;
-  icon: React.ComponentType<{ className?: string }>;
-}) {
-  return (
-    <div className="flex items-center justify-between rounded-lg border p-3">
-      <div className="flex items-center gap-2">
-        <Icon className="h-4 w-4 text-muted-foreground" />
-        <span className="text-sm">{label}</span>
-      </div>
-      <span className="text-sm font-bold">{value}</span>
-    </div>
-  );
-}
-
-function StatusDot({ status }: { status: string }) {
-  const colors: Record<string, string> = {
-    open: "bg-blue-500",
-    active: "bg-green-500",
-    in_progress: "bg-yellow-500",
-    closed: "bg-zinc-400",
-    settled: "bg-emerald-500",
-    completed: "bg-emerald-500",
-    denied: "bg-red-500",
+  const colorMap = {
+    indigo: {
+      icon: "bg-indigo-100 text-indigo-600 dark:bg-indigo-950 dark:text-indigo-400",
+      line: "border-indigo-200 dark:border-indigo-900",
+    },
+    purple: {
+      icon: "bg-purple-100 text-purple-600 dark:bg-purple-950 dark:text-purple-400",
+      line: "border-purple-200 dark:border-purple-900",
+    },
+    emerald: {
+      icon: "bg-emerald-100 text-emerald-600 dark:bg-emerald-950 dark:text-emerald-400",
+      line: "border-emerald-200 dark:border-emerald-900",
+    },
   };
 
-  return <div className={cn("h-2.5 w-2.5 rounded-full", colors[status] || "bg-zinc-300")} />;
+  return (
+    <section>
+      <div className="mb-4 flex items-center gap-3">
+        <div
+          className={cn(
+            "flex h-8 w-8 items-center justify-center rounded-md",
+            colorMap[color].icon
+          )}
+        >
+          <Icon className="h-4 w-4" />
+        </div>
+        <div>
+          <h2 className="text-lg font-semibold">{title}</h2>
+          <p className="text-sm text-muted-foreground">{description}</p>
+        </div>
+      </div>
+
+      <div className={cn("grid gap-3 sm:grid-cols-2 lg:grid-cols-3")}>
+        {pages.map((page) => (
+          <AnalyticsCard key={page.href} page={page} />
+        ))}
+      </div>
+    </section>
+  );
 }
 
-function EmptyMessage({ message }: { message: string }) {
+// ─── Card Component ─────────────────────────────────────────────────────────
+
+function AnalyticsCard({ page }: { page: AnalyticsPage }) {
+  const Icon = page.icon;
+
   return (
-    <div className="flex items-center justify-center py-8">
-      <p className="text-sm text-muted-foreground">{message}</p>
-    </div>
+    <Link href={page.href} className="group">
+      <Card className="h-full transition-all duration-200 hover:border-primary/40 hover:shadow-md group-hover:-translate-y-0.5">
+        <CardHeader className="pb-2">
+          <div className="flex items-start justify-between">
+            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-muted text-muted-foreground transition-colors group-hover:bg-primary/10 group-hover:text-primary">
+              <Icon className="h-4.5 w-4.5" />
+            </div>
+            <div className="flex items-center gap-2">
+              {page.badge && (
+                <Badge
+                  variant="secondary"
+                  className={cn("text-[10px] font-medium", page.badgeColor)}
+                >
+                  {page.badge}
+                </Badge>
+              )}
+              <ArrowRight className="h-4 w-4 text-muted-foreground/40 transition-all group-hover:translate-x-0.5 group-hover:text-primary" />
+            </div>
+          </div>
+          <CardTitle className="mt-2 text-sm font-semibold">{page.title}</CardTitle>
+        </CardHeader>
+        <CardContent className="pt-0">
+          <CardDescription className="text-xs leading-relaxed">{page.description}</CardDescription>
+        </CardContent>
+      </Card>
+    </Link>
   );
 }

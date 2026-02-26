@@ -1,5 +1,6 @@
 "use client";
 
+import { getAnalyticsConsent } from "@/lib/analytics/consent";
 import posthog from "posthog-js";
 import { PostHogProvider } from "posthog-js/react";
 import { useEffect } from "react";
@@ -10,6 +11,27 @@ if (typeof window !== "undefined") {
     person_profiles: "identified_only",
     capture_pageview: false, // Disable automatic pageview capture, as we capture manually
     capture_pageleave: true,
+    // ── Consent Gate ─────────────────────────────────────────────────────
+    // Start opted-out. All capture() calls silently no-op until consent
+    // is granted via setAnalyticsConsent("granted").
+    // See: src/lib/analytics/consent.ts + src/hooks/useConsent.ts
+    opt_out_capturing_by_default: true,
+  });
+
+  // Apply any previously stored consent
+  const storedConsent = getAnalyticsConsent();
+  if (storedConsent === "granted") {
+    posthog.opt_in_capturing();
+  }
+
+  // React to consent changes in real-time (e.g., user toggles in Settings)
+  window.addEventListener("skai-consent-change", (e) => {
+    const detail = (e as CustomEvent).detail;
+    if (detail === "granted") {
+      posthog.opt_in_capturing();
+    } else {
+      posthog.opt_out_capturing();
+    }
   });
 }
 

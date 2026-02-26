@@ -21,6 +21,12 @@ interface FetchOptions extends Omit<RequestInit, "body"> {
   retryDelay?: number; // base delay ms, default 1000
   onRetry?: (attempt: number, error: Error) => void;
   skipAuth?: boolean;
+  /**
+   * Opt-in: allow retrying POST/PUT/PATCH/DELETE on transient errors.
+   * ⚠️  Only enable when the endpoint is idempotent (e.g., uses idempotency keys).
+   * By default, only GET/HEAD/OPTIONS are auto-retried to prevent duplicate mutations.
+   */
+  retryMutations?: boolean;
 }
 
 interface ApiResponse<T = unknown> {
@@ -55,6 +61,13 @@ function jitter(baseMs: number): number {
 function isRetryable(status: number): boolean {
   // Retry on server errors and rate limits, NOT on auth/validation errors
   return status === 429 || status === 502 || status === 503 || status === 504 || status === 0;
+}
+
+/** Methods that are safe to retry — they don't create side effects */
+const SAFE_RETRY_METHODS = new Set(["GET", "HEAD", "OPTIONS"]);
+
+function isSafeToRetry(method?: string): boolean {
+  return SAFE_RETRY_METHODS.has((method || "GET").toUpperCase());
 }
 
 function isNetworkError(error: unknown): boolean {
@@ -98,6 +111,7 @@ async function resilientFetch<T = unknown>(
     onRetry,
     body,
     skipAuth,
+    retryMutations = false,
     ...fetchOptions
   } = options;
 
@@ -170,6 +184,13 @@ async function resilientFetch<T = unknown>(
       } else {
         lastError = error instanceof Error ? error : new Error(String(error));
       }
+    }
+
+    // ── Mutation Safety Guard ──────────────────────────────────────────────
+    // Only auto-retry safe (idempotent) methods unless caller opts in.
+    // POST/PUT/PATCH/DELETE could create duplicates if retried blindly.
+    if (!isSafeToRetry(config.method) && !retryMutations) {
+      break; // Don't retry mutations — fall through to exhausted return
     }
 
     // Retry with exponential backoff + jitter
