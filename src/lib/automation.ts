@@ -1,5 +1,5 @@
-import prisma from "@/lib/prisma";
 import { logger } from "@/lib/logger";
+import prisma from "@/lib/prisma";
 
 import { sendEmail } from "./email";
 
@@ -17,7 +17,8 @@ export type PipelineStage =
   | "FINAL_QA"
   | "INVOICED"
   | "PAID"
-  | "WARRANTY";
+  | "WARRANTY"
+  | "ARCHIVED";
 
 /**
  * Trigger automations when a project stage changes

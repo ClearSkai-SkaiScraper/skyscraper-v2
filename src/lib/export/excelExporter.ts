@@ -25,6 +25,7 @@ export async function downloadExcel<T extends Record<string, unknown>>(
 ): Promise<void> {
   try {
     // Dynamic import — only loads if exceljs is installed
+    // @ts-expect-error - exceljs is an optional dependency, fallback to CSV if not installed
     const ExcelJS = await import("exceljs");
     const workbook = new ExcelJS.Workbook();
 

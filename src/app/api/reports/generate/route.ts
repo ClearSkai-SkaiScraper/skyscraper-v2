@@ -87,7 +87,7 @@ export const POST = withAuth(async (req: NextRequest, { orgId, userId }) => {
         type: templateName,
         title: reportTitle,
         sections: sections || addOns || [],
-        meta: { inputs: inputs || {}, aiNotes: aiNotes || null },
+        meta: JSON.parse(JSON.stringify({ inputs: inputs || {}, aiNotes: aiNotes || null })),
         updatedAt: new Date(),
       },
     });
@@ -178,8 +178,8 @@ export const POST = withAuth(async (req: NextRequest, { orgId, userId }) => {
     // Determine which sections to render
     const defaultSections: SectionKey[] = ["cover", "executive-summary", "scope-matrix"];
     const sectionKeys: SectionKey[] =
-      (sections && sections.length > 0 ? sections : null) ||
-      (addOns && addOns.length > 0 ? addOns : null) ||
+      (sections && sections.length > 0 ? (sections as SectionKey[]) : null) ||
+      (addOns && addOns.length > 0 ? (addOns as SectionKey[]) : null) ||
       defaultSections;
 
     // ── Generate PDF via orchestrator ────────────────────────────────────

@@ -22,9 +22,8 @@ import { Card } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { logger } from "@/lib/logger";
 
-import MessageInput from "./MessageInput";
-import MessageThreadList from "./MessageThreadList";
-import MessageView from "./MessageView";
+import { Textarea } from "@/components/ui/textarea";
+import { formatDistanceToNow } from "date-fns";
 import NewMessageModal from "./NewMessageModal";
 
 // ── Types ───────────────────────────────────────────────────────────
@@ -62,6 +61,42 @@ interface MessageHubProps {
   /** Pre-filter to a specific claim or project */
   contextId?: string;
   contextType?: "claim" | "project";
+}
+
+// ── Inline Composer ─────────────────────────────────────────────────
+function MessageComposer({
+  onSend,
+  disabled,
+}: {
+  onSend: (content: string) => Promise<void>;
+  disabled: boolean;
+}) {
+  const [content, setContent] = useState("");
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!content.trim() || disabled) return;
+    await onSend(content);
+    setContent("");
+  };
+  return (
+    <form onSubmit={handleSubmit} className="flex gap-2">
+      <Textarea
+        value={content}
+        onChange={(e) => setContent(e.target.value)}
+        placeholder="Type a message…"
+        className="min-h-[60px] flex-1 resize-none"
+        onKeyDown={(e) => {
+          if (e.key === "Enter" && !e.shiftKey) {
+            e.preventDefault();
+            handleSubmit(e);
+          }
+        }}
+      />
+      <Button type="submit" disabled={disabled || !content.trim()}>
+        Send
+      </Button>
+    </form>
+  );
 }
 
 // ── Component ───────────────────────────────────────────────────────
@@ -241,23 +276,55 @@ export default function MessageHub({
               No conversations yet
             </div>
           ) : (
-            <MessageThreadList
-              threads={threads.map((t) => ({
-                id: t.id,
-                subject: t.subject ?? t.title ?? "No subject",
-                preview: t.lastMessage ?? "",
-                participantName: t.participantName ?? "Unknown",
-                participantAvatar: t.participantAvatar ?? undefined,
-                updatedAt: t.lastMessageAt ?? t.updatedAt ?? "",
-                unreadCount: t.unreadCount ?? 0,
-                isSelected: selectedThread?.id === t.id,
-              }))}
-              onSelect={(id: string) => {
-                const thread = threads.find((t) => t.id === id) ?? null;
-                setSelectedThread(thread);
-              }}
-              onArchive={handleArchive}
-            />
+            <div className="divide-y divide-slate-100 dark:divide-slate-800">
+              {threads.map((t) => {
+                const isSelected = selectedThread?.id === t.id;
+                const displayName = t.participantName ?? t.subject ?? t.title ?? "Conversation";
+                const initial = (displayName || "C")[0].toUpperCase();
+                return (
+                  <button
+                    key={t.id}
+                    onClick={() => setSelectedThread(t)}
+                    className={`group w-full p-4 text-left transition-all ${
+                      isSelected
+                        ? "bg-blue-50 dark:bg-blue-900/20"
+                        : "hover:bg-slate-50 dark:hover:bg-slate-800"
+                    }`}
+                  >
+                    <div className="flex items-start gap-3">
+                      <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 text-base font-bold text-white">
+                        {initial}
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center justify-between gap-2">
+                          <h3 className="truncate font-semibold text-slate-900 group-hover:text-blue-600 dark:text-white">
+                            {displayName}
+                          </h3>
+                          <span className="shrink-0 whitespace-nowrap text-xs text-slate-400">
+                            {t.lastMessageAt || t.updatedAt
+                              ? formatDistanceToNow(
+                                  new Date(t.lastMessageAt || t.updatedAt || ""),
+                                  { addSuffix: true }
+                                )
+                              : ""}
+                          </span>
+                        </div>
+                        {t.lastMessage && (
+                          <p className="mt-0.5 truncate text-sm text-slate-500 dark:text-slate-400">
+                            {t.lastMessage}
+                          </p>
+                        )}
+                        {(t.unreadCount ?? 0) > 0 && (
+                          <Badge variant="destructive" className="mt-1 text-xs">
+                            {t.unreadCount} new
+                          </Badge>
+                        )}
+                      </div>
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
           )}
         </Card>
 
@@ -285,17 +352,47 @@ export default function MessageHub({
 
               {/* Messages */}
               <div className="flex-1 overflow-y-auto p-4">
-                <MessageView messages={messages} currentUserId={userId} />
+                <div className="space-y-4">
+                  {messages.length === 0 ? (
+                    <p className="text-center text-sm text-slate-500">No messages yet</p>
+                  ) : (
+                    messages.map((msg) => {
+                      const isOwn = msg.senderId === userId;
+                      return (
+                        <div
+                          key={msg.id}
+                          className={`flex ${isOwn ? "justify-end" : "justify-start"}`}
+                        >
+                          <div
+                            className={`max-w-[70%] rounded-lg px-4 py-2 ${
+                              isOwn
+                                ? "bg-blue-600 text-white"
+                                : "bg-slate-100 text-slate-900 dark:bg-slate-800 dark:text-white"
+                            }`}
+                          >
+                            {msg.senderName && !isOwn && (
+                              <p className="mb-1 text-xs font-medium opacity-70">
+                                {msg.senderName}
+                              </p>
+                            )}
+                            <p className="whitespace-pre-wrap break-words text-sm">{msg.content}</p>
+                            <p
+                              className={`mt-1 text-xs ${isOwn ? "text-blue-200" : "text-slate-400"}`}
+                            >
+                              {formatDistanceToNow(new Date(msg.createdAt), { addSuffix: true })}
+                            </p>
+                          </div>
+                        </div>
+                      );
+                    })
+                  )}
+                </div>
                 <div ref={messagesEndRef} />
               </div>
 
               {/* Composer */}
               <div className="border-t p-3">
-                <MessageInput
-                  onSend={handleSend}
-                  disabled={isSending}
-                  placeholder="Type a message…"
-                />
+                <MessageComposer onSend={handleSend} disabled={isSending} />
               </div>
             </>
           ) : (
@@ -308,16 +405,15 @@ export default function MessageHub({
       </div>
 
       {/* New message modal */}
-      {showNewMessage && (
-        <NewMessageModal
-          orgId={orgId}
-          onClose={() => setShowNewMessage(false)}
-          onCreated={async () => {
-            setShowNewMessage(false);
-            await fetchThreads();
-          }}
-        />
-      )}
+      <NewMessageModal
+        open={showNewMessage}
+        onOpenChange={setShowNewMessage}
+        orgId={orgId}
+        onSuccess={async () => {
+          setShowNewMessage(false);
+          await fetchThreads();
+        }}
+      />
     </div>
   );
 }
