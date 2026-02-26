@@ -1,7 +1,8 @@
 "use client";
 
-import { Calculator, Download, Info, Layers, Zap } from "lucide-react";
-import { useState } from "react";
+import { Calculator, Clock, Download, FileText, Info, Layers, Mail, Save, Zap } from "lucide-react";
+import Link from "next/link";
+import { useEffect, useState } from "react";
 
 import { PageContainer } from "@/components/layout/PageContainer";
 import { PageHero } from "@/components/layout/PageHero";
@@ -11,9 +12,21 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { logger } from "@/lib/logger";
 
+interface SavedPlan {
+  id: string;
+  title: string;
+  createdAt: string;
+  status: string;
+}
+
 export default function ProjectPlanBuilderPage() {
   const [generating, setGenerating] = useState(false);
   const [result, setResult] = useState<string | null>(null);
+  const [savedPlans, setSavedPlans] = useState<SavedPlan[]>([]);
+  const [saving, setSaving] = useState(false);
+  const [emailing, setEmailing] = useState(false);
+  const [emailTo, setEmailTo] = useState("");
+  const [showEmailModal, setShowEmailModal] = useState(false);
   const [formData, setFormData] = useState({
     trade: "roofing",
     jobType: "installation",
@@ -122,6 +135,100 @@ ${formData.documents || "No additional documents provided."}
     }
   };
 
+  // ── Load saved plans on mount ──────────────────────────────────
+  useEffect(() => {
+    async function loadPlans() {
+      try {
+        const res = await fetch("/api/artifacts?type=PROJECT_PLAN&limit=10");
+        if (res.ok) {
+          const data = await res.json();
+          if (Array.isArray(data)) {
+            setSavedPlans(
+              data.map((a: any) => ({
+                id: a.id,
+                title: a.title || "Untitled Plan",
+                createdAt: a.createdAt || a.created_at,
+                status: a.status || "DRAFT",
+              }))
+            );
+          }
+        }
+      } catch {
+        // Silent fail — non-critical
+      }
+    }
+    loadPlans();
+  }, [result]); // refresh after generating
+
+  // ── Email plan handler ─────────────────────────────────────────
+  const handleEmailPlan = async () => {
+    if (!result || !emailTo) return;
+    setEmailing(true);
+    try {
+      const tradeLabel = formData.trade.replace(/-/g, " ").replace(/\b\w/g, (l) => l.toUpperCase());
+      const res = await fetch("/api/email/send", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          to: emailTo,
+          subject: `Project Plan — ${tradeLabel}`,
+          text: result,
+        }),
+      });
+      if (res.ok) {
+        setShowEmailModal(false);
+        setEmailTo("");
+        alert("Plan emailed successfully!");
+      } else {
+        alert("Failed to send email. Please try again.");
+      }
+    } catch (err) {
+      logger.error("Email plan error:", err);
+      alert("Failed to send email.");
+    } finally {
+      setEmailing(false);
+    }
+  };
+
+  // ── Transfer to Proposal ───────────────────────────────────────
+  const handleTransferToProposal = async () => {
+    if (!result) return;
+    setSaving(true);
+    try {
+      const tradeLabel = formData.trade.replace(/-/g, " ").replace(/\b\w/g, (l) => l.toUpperCase());
+      const jobTypeLabel = formData.jobType
+        .replace(/-/g, " ")
+        .replace(/\b\w/g, (l) => l.toUpperCase());
+
+      const res = await fetch("/api/artifacts", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          type: "PROPOSAL",
+          title: `Proposal — ${tradeLabel} ${jobTypeLabel} (${formData.projectSize || "TBD"})`,
+          status: "DRAFT",
+          contentText: result,
+          contentJson: {
+            sourceType: "PROJECT_PLAN",
+            input: formData,
+            output: result,
+            convertedAt: new Date().toISOString(),
+          },
+        }),
+      });
+      if (res.ok) {
+        alert("Plan transferred to Proposals! View it in Report History.");
+      } else {
+        alert("Failed to create proposal. Please try again.");
+      }
+    } catch (err) {
+      logger.error("Transfer to proposal error:", err);
+      alert("Failed to create proposal.");
+    } finally {
+      setSaving(false);
+    }
+  };
+
   const generateMaterialsList = (trade: string, _jobType: string) => {
     const materials: Record<string, string> = {
       roofing:
@@ -177,10 +284,18 @@ ${formData.documents || "No additional documents provided."}
         subtitle="Build AI-powered project plans for any trade with detailed breakdowns and timelines"
         icon={<Layers className="h-5 w-5" />}
       >
-        <Badge variant="secondary">
-          <Zap className="mr-1 h-3 w-3" />
-          AI-Powered
-        </Badge>
+        <div className="flex items-center gap-3">
+          <Badge variant="secondary">
+            <Zap className="mr-1 h-3 w-3" />
+            AI-Powered
+          </Badge>
+          <Button variant="outline" size="sm" asChild>
+            <Link href="/reports/history">
+              <Clock className="mr-1 h-3 w-3" />
+              Report History
+            </Link>
+          </Button>
+        </div>
       </PageHero>
 
       <TradesToolJobPicker label="Select job context:" />
@@ -440,35 +555,100 @@ ${formData.documents || "No additional documents provided."}
                   </pre>
                 </div>
 
-                <div className="flex gap-3">
+                {/* Primary actions */}
+                <div className="flex flex-wrap gap-3">
                   <Button
                     variant="outline"
-                    className="flex-1"
                     onClick={() => {
                       const blob = new Blob([result], { type: "text/plain" });
                       const url = URL.createObjectURL(blob);
                       const a = document.createElement("a");
                       a.href = url;
-                      a.download = "roofplan-estimate.txt";
+                      a.download = "project-plan.txt";
                       a.click();
                     }}
                   >
                     <Download className="mr-2 h-4 w-4" />
-                    Download as TXT
+                    Download TXT
+                  </Button>
+                  <Button variant="outline" onClick={() => setShowEmailModal(true)}>
+                    <Mail className="mr-2 h-4 w-4" />
+                    Email Plan
+                  </Button>
+                  <Button variant="outline" disabled={saving} onClick={handleTransferToProposal}>
+                    <FileText className="mr-2 h-4 w-4" />
+                    {saving ? "Creating…" : "Transfer to Proposal"}
                   </Button>
                   <Button
-                    className="flex-1 bg-gradient-to-r from-blue-600 to-blue-700"
+                    className="bg-gradient-to-r from-blue-600 to-blue-700"
                     onClick={handleGenerate}
                   >
                     <Zap className="mr-2 h-4 w-4" />
                     Regenerate
                   </Button>
                 </div>
+
+                {/* Email modal */}
+                {showEmailModal && (
+                  <div className="rounded-lg border border-blue-200 bg-blue-50 p-4 dark:border-blue-800 dark:bg-blue-900/20">
+                    <p className="mb-2 text-sm font-medium text-slate-700 dark:text-slate-300">
+                      Send plan via email:
+                    </p>
+                    <div className="flex gap-2">
+                      <input
+                        type="email"
+                        placeholder="recipient@example.com"
+                        value={emailTo}
+                        onChange={(e) => setEmailTo(e.target.value)}
+                        className="flex-1 rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm dark:border-slate-600 dark:bg-slate-800 dark:text-white"
+                      />
+                      <Button size="sm" disabled={emailing || !emailTo} onClick={handleEmailPlan}>
+                        {emailing ? "Sending…" : "Send"}
+                      </Button>
+                      <Button size="sm" variant="ghost" onClick={() => setShowEmailModal(false)}>
+                        Cancel
+                      </Button>
+                    </div>
+                  </div>
+                )}
               </div>
             )}
           </PageSectionCard>
         </div>
       </div>
+
+      {/* ── Saved Plans Panel ─── */}
+      {savedPlans.length > 0 && (
+        <PageSectionCard>
+          <h3 className="mb-4 flex items-center gap-2 text-lg font-semibold text-slate-900 dark:text-white">
+            <Save className="h-5 w-5 text-blue-600" />
+            Saved Project Plans
+          </h3>
+          <div className="space-y-2">
+            {savedPlans.map((plan) => (
+              <div
+                key={plan.id}
+                className="flex items-center justify-between rounded-lg border border-slate-200 bg-white px-4 py-3 transition-colors hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:hover:bg-slate-800"
+              >
+                <div>
+                  <p className="text-sm font-medium text-slate-900 dark:text-white">{plan.title}</p>
+                  <p className="text-xs text-slate-500">
+                    {new Date(plan.createdAt).toLocaleDateString()} · {plan.status}
+                  </p>
+                </div>
+                <Badge variant="outline" className="text-xs">
+                  {plan.status}
+                </Badge>
+              </div>
+            ))}
+          </div>
+          <div className="mt-3 text-center">
+            <Button variant="ghost" size="sm" asChild>
+              <Link href="/reports/history">View all in Report History →</Link>
+            </Button>
+          </div>
+        </PageSectionCard>
+      )}
     </PageContainer>
   );
 }

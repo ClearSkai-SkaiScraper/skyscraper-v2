@@ -467,6 +467,16 @@ export default function InvitationsPage() {
               <Share className="h-4 w-4" />
               Share Link
             </Button>
+            <Button
+              variant="secondary"
+              className="gap-2 bg-white/20 text-white hover:bg-white/30"
+              asChild
+            >
+              <Link href="/invitations/analytics">
+                <BarChart3 className="h-4 w-4" />
+                View Analytics
+              </Link>
+            </Button>
           </div>
         }
       />

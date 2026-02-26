@@ -1,6 +1,7 @@
 // app/(dashboard)/reports/claims/page.tsx
 
 import { auth } from "@clerk/nextjs/server";
+import Link from "next/link";
 import { redirect } from "next/navigation";
 
 import { PageHero } from "@/components/layout/PageHero";
@@ -94,7 +95,15 @@ export default async function AiClaimsReportPage({
         title="AI Claims Report"
         subtitle={`Claim ${claims.claimNumber || claims.id} • ${claims.propertyAddress} • ${claims.dateOfLoss ? new Date(claims.dateOfLoss).toLocaleDateString() : "No DOL set"}`}
       >
-        <ClaimSelector claims={allClaims} selectedClaimId={claims.id} />
+        <div className="flex items-center gap-3">
+          <ClaimSelector claims={allClaims} selectedClaimId={claims.id} />
+          <Link
+            href="/reports/history"
+            className="inline-flex items-center gap-1 rounded-lg border border-white/20 bg-white/10 px-3 py-1.5 text-xs font-medium text-white hover:bg-white/20"
+          >
+            Report History
+          </Link>
+        </div>
       </PageHero>
 
       <ReportBuilderPanel orgId={orgId} claimId={claims.id} defaultType="INSURANCE_CLAIM" />

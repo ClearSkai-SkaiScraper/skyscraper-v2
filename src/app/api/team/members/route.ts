@@ -1,4 +1,4 @@
-import { currentUser } from "@clerk/nextjs/server";
+import { clerkClient, currentUser } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
 
 import { logger } from "@/lib/logger";
@@ -179,6 +179,53 @@ export async function GET(request: NextRequest) {
           avatarUrl: clerkUser?.imageUrl || null,
         });
       }
+    }
+
+    // ── Batch-enrich ALL members with Clerk profiles ─────────────
+    // Fixes "Unknown (ADMIN)" for non-current users whose DB rows lack names
+    try {
+      const membersNeedingEnrichment = formattedMembers.filter(
+        (m) => !m.name || m.name === "Unknown" || m.name === "You"
+      );
+      if (membersNeedingEnrichment.length > 0) {
+        const clerk = await clerkClient();
+        const clerkUsers = await clerk.users.getUserList({
+          userId: membersNeedingEnrichment.map((m) => m.id),
+          limit: 100,
+        });
+        const clerkLookup = new Map<
+          string,
+          { name: string | null; email: string | null; avatarUrl: string | null }
+        >(
+          clerkUsers.data.map((u) => [
+            u.id,
+            {
+              name: [u.firstName, u.lastName].filter(Boolean).join(" ") || null,
+              email: u.emailAddresses?.[0]?.emailAddress || null,
+              avatarUrl: u.imageUrl || null,
+            },
+          ])
+        );
+        for (const member of formattedMembers) {
+          const clerkProfile = clerkLookup.get(member.id);
+          if (clerkProfile) {
+            if (!member.name || member.name === "Unknown") {
+              member.name = clerkProfile.name;
+            }
+            if (!member.email || member.email === "Unknown") {
+              member.email = clerkProfile.email || member.email;
+            }
+            if (!member.avatarUrl) {
+              member.avatarUrl = clerkProfile.avatarUrl;
+            }
+          }
+        }
+      }
+    } catch (clerkErr) {
+      logger.warn(
+        "[GET /api/team/members] Clerk batch enrichment failed (non-critical):",
+        clerkErr
+      );
     }
 
     return NextResponse.json({

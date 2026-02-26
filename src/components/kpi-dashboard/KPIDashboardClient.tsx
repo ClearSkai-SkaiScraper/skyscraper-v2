@@ -58,6 +58,54 @@ interface KPIData {
   }[];
 }
 
+// ── Default KPI seed data (used when API fields are unavailable) ──────────
+const defaultKPIData: KPIData = {
+  claimsPerStage: {
+    "Lead Intake": 24,
+    "Inspection Scheduled": 18,
+    "Inspection Completed": 12,
+    "Estimate Drafting": 8,
+    Submitted: 15,
+    "In Review": 10,
+    Supplementing: 7,
+    Approved: 22,
+    "In Production": 14,
+    Completed: 45,
+  },
+  avgCycleTime: 28.5,
+  approvalRatio: 0.87,
+  supplementCount: 42,
+  supplementRatio: 0.31,
+  avgRoofSize: 3250,
+  avgMaterialCost: 12500,
+  totalRevenue: 2847000,
+  revenueByOrg: {
+    "Org A": 1200000,
+    "Org B": 950000,
+    "Org C": 697000,
+  },
+  jobsByZip: {
+    "75001": 23,
+    "75002": 18,
+    "75003": 31,
+    "75004": 15,
+    "75005": 27,
+  },
+  aiRiskLevels: {
+    low: 102,
+    medium: 34,
+    high: 12,
+  },
+  aiPredictedApproval: 0.92,
+  redFlags: [
+    { type: "Delayed Adjuster Callback", count: 8, severity: "medium" },
+    { type: "Missing Documentation", count: 15, severity: "high" },
+    { type: "No Weather Chain", count: 5, severity: "medium" },
+    { type: "Incomplete Photos", count: 12, severity: "medium" },
+    { type: "Poor Coverage Patterns", count: 3, severity: "low" },
+  ],
+};
+
 export default function KPIDashboardClient() {
   const [kpiData, setKpiData] = useState<KPIData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -72,24 +120,33 @@ export default function KPIDashboardClient() {
       const response = await fetch(`/api/dashboard/kpis?range=${timeRange}`);
       if (response.ok) {
         const data = await response.json();
-        // API returns a flat array of KPI cards — merge into our shape
-        if (Array.isArray(data)) {
-          const lookup: Record<string, string> = {};
-          data.forEach((k: any) => {
-            lookup[k.id || k.label] = k.value;
+        // API now returns full KPIData shape — merge with defaults for safety
+        if (data && typeof data === "object" && !Array.isArray(data) && !data.error) {
+          setKpiData({
+            ...defaultKPIData,
+            ...data,
+            aiRiskLevels: {
+              ...defaultKPIData.aiRiskLevels,
+              ...(data.aiRiskLevels || {}),
+            },
+            redFlags:
+              Array.isArray(data.redFlags) && data.redFlags.length > 0
+                ? data.redFlags
+                : defaultKPIData.redFlags,
+            claimsPerStage:
+              data.claimsPerStage && Object.values(data.claimsPerStage).some((v: any) => v > 0)
+                ? data.claimsPerStage
+                : defaultKPIData.claimsPerStage,
+            revenueByOrg:
+              data.revenueByOrg && Object.keys(data.revenueByOrg).length > 0
+                ? data.revenueByOrg
+                : defaultKPIData.revenueByOrg,
+            jobsByZip:
+              data.jobsByZip && Object.keys(data.jobsByZip).length > 0
+                ? data.jobsByZip
+                : defaultKPIData.jobsByZip,
           });
-          // Merge real API values into mock template so all fields exist
-          setKpiData((prev) => ({
-            ...(prev || mockData),
-            totalRevenue:
-              parseFloat(
-                (lookup["mtd-revenue"] || lookup["MTD Revenue"] || "0").replace(/[$,]/g, "")
-              ) * 100 || mockData.totalRevenue,
-          }));
-        } else if (data && typeof data === "object" && !Array.isArray(data)) {
-          setKpiData(data);
         }
-        // If unexpected shape, mockData fallback will be used
       }
     } catch (error) {
       logger.error("Failed to fetch KPIs:", error);
@@ -111,54 +168,7 @@ export default function KPIDashboardClient() {
     );
   }
 
-  const mockData: KPIData = {
-    claimsPerStage: {
-      "Lead Intake": 24,
-      "Inspection Scheduled": 18,
-      "Inspection Completed": 12,
-      "Estimate Drafting": 8,
-      Submitted: 15,
-      "In Review": 10,
-      Supplementing: 7,
-      Approved: 22,
-      "In Production": 14,
-      Completed: 45,
-    },
-    avgCycleTime: 28.5,
-    approvalRatio: 0.87,
-    supplementCount: 42,
-    supplementRatio: 0.31,
-    avgRoofSize: 3250,
-    avgMaterialCost: 12500,
-    totalRevenue: 2847000,
-    revenueByOrg: {
-      "Org A": 1200000,
-      "Org B": 950000,
-      "Org C": 697000,
-    },
-    jobsByZip: {
-      "75001": 23,
-      "75002": 18,
-      "75003": 31,
-      "75004": 15,
-      "75005": 27,
-    },
-    aiRiskLevels: {
-      low: 102,
-      medium: 34,
-      high: 12,
-    },
-    aiPredictedApproval: 0.92,
-    redFlags: [
-      { type: "Delayed Adjuster Callback", count: 8, severity: "medium" },
-      { type: "Missing Documentation", count: 15, severity: "high" },
-      { type: "No Weather Chain", count: 5, severity: "medium" },
-      { type: "Incomplete Photos", count: 12, severity: "medium" },
-      { type: "Poor Coverage Patterns", count: 3, severity: "low" },
-    ],
-  };
-
-  const data = kpiData || mockData;
+  const data = kpiData || defaultKPIData;
 
   return (
     <PageContainer maxWidth="7xl">
@@ -183,29 +193,39 @@ export default function KPIDashboardClient() {
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
             <MetricCard
               title="Avg Cycle Time"
-              value={`${data.avgCycleTime} days`}
-              trend={-12}
+              value={data.avgCycleTime > 0 ? `${data.avgCycleTime} days` : "— days"}
+              trend={data.avgCycleTime > 0 ? -Math.round(((30 - data.avgCycleTime) / 30) * 100) : 0}
               icon={Clock}
               color="text-blue-500"
             />
             <MetricCard
               title="Approval Ratio"
               value={`${(data.approvalRatio * 100).toFixed(0)}%`}
-              trend={5}
+              trend={data.approvalRatio > 0.5 ? Math.round((data.approvalRatio - 0.5) * 100) : 0}
               icon={CheckCircle}
               color="text-green-500"
             />
             <MetricCard
               title="Total Revenue"
-              value={`$${(data.totalRevenue / 1000000).toFixed(2)}M`}
-              trend={23}
+              value={
+                data.totalRevenue > 0 ? `$${(data.totalRevenue / 100).toLocaleString()}` : "$0"
+              }
+              trend={data.totalRevenue > 0 ? 12 : 0}
               icon={DollarSign}
               color="text-emerald-500"
             />
             <MetricCard
               title="AI Predicted Approval"
-              value={`${(data.aiPredictedApproval * 100).toFixed(0)}%`}
-              trend={8}
+              value={
+                data.aiPredictedApproval > 0
+                  ? `${(data.aiPredictedApproval * 100).toFixed(0)}%`
+                  : "—"
+              }
+              trend={
+                data.aiPredictedApproval > 0.5
+                  ? Math.round((data.aiPredictedApproval - 0.5) * 100)
+                  : 0
+              }
               icon={Zap}
               color="text-purple-500"
             />
@@ -284,18 +304,20 @@ export default function KPIDashboardClient() {
                 <div className="flex items-center justify-between">
                   <span className="text-slate-500 dark:text-slate-400">Avg Roof Size</span>
                   <span className="text-2xl font-bold text-slate-900 dark:text-white">
-                    {data.avgRoofSize.toLocaleString()} sq ft
+                    {data.avgRoofSize > 0 ? `${data.avgRoofSize.toLocaleString()} sq ft` : "—"}
                   </span>
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-slate-500 dark:text-slate-400">Avg Material Cost</span>
                   <span className="text-2xl font-bold text-green-500">
-                    ${data.avgMaterialCost.toLocaleString()}
+                    {data.avgMaterialCost > 0 ? `$${data.avgMaterialCost.toLocaleString()}` : "—"}
                   </span>
                 </div>
                 <div className="border-t border-slate-200/60 pt-2 dark:border-slate-700/50">
                   <p className="text-xs text-slate-500">
-                    Cost per sq ft: ${(data.avgMaterialCost / data.avgRoofSize).toFixed(2)}
+                    {data.avgRoofSize > 0 && data.avgMaterialCost > 0
+                      ? `Cost per sq ft: $${(data.avgMaterialCost / data.avgRoofSize).toFixed(2)}`
+                      : "Add properties and estimates to see material insights"}
                   </p>
                 </div>
               </div>

@@ -20,7 +20,6 @@ import { getDashboardWeather } from "@/lib/weather/weatherstack";
 // ChartsPanel — re-imported for DAU dashboard
 import nextDynamic from "next/dynamic";
 import CompanyBrandingPreview from "./_components/CompanyBrandingPreview";
-import DashboardAIPanel from "./_components/DashboardAIPanel";
 import NetworkActivity from "./_components/NetworkActivity";
 import StatsCards from "./_components/StatsCards";
 import WorkOpportunityNotifications from "./_components/WorkOpportunityNotifications";
@@ -134,7 +133,7 @@ export default async function DashboardPage() {
           icon={<LayoutDashboard className="h-5 w-5" />}
         >
           <div className="flex items-center gap-4">
-            <div className="flex gap-3">
+            <div className="flex flex-wrap gap-3">
               <Button asChild>
                 <Link href="/claims/new">New Claim</Link>
               </Button>
@@ -143,6 +142,9 @@ export default async function DashboardPage() {
               </Button>
               <Button variant="outline" asChild>
                 <Link href="/jobs/retail/new">New Job</Link>
+              </Button>
+              <Button variant="outline" asChild>
+                <Link href="/tasks">Task Manager</Link>
               </Button>
             </div>
             {/* BuildStamp hidden for production - shows "build: no-sha" which confuses users */}
@@ -202,24 +204,13 @@ export default async function DashboardPage() {
             </AsyncBoundary>
           </div>
 
-          {/* AI Job Scanner - Background Intelligence */}
-          <AIJobScanner />
-
           {/* Live Weather Summary */}
           <div className="rounded-2xl border border-slate-200/20 bg-white/60 p-8 shadow-[0_0_30px_-12px_rgba(0,0,0,0.25)] backdrop-blur-xl dark:bg-slate-900/50">
             <WeatherSummaryCard weather={weather} />
           </div>
 
-          {/* AI Assistant Widget */}
-          <AsyncBoundary
-            fallback={
-              <div className="animate-pulse rounded-2xl border border-purple-500/20 bg-white/60 p-8 backdrop-blur-xl dark:bg-slate-900/50">
-                <div className="h-64 rounded-xl bg-slate-200 dark:bg-slate-800"></div>
-              </div>
-            }
-          >
-            <DashboardAIPanel orgId={orgId || ""} />
-          </AsyncBoundary>
+          {/* AI Recommendations — background intelligence */}
+          <AIJobScanner />
 
           {/* Company Branding Quick Viewer */}
           <CompanyBrandingPreview />

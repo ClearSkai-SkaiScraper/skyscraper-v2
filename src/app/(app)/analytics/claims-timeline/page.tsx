@@ -83,6 +83,32 @@ export default async function ClaimsTimelinePage() {
 
   const orgId = ctx.orgId;
 
+  // ── If no org, show prompt ─────────────────────────────────────
+  if (!orgId) {
+    return (
+      <PageContainer>
+        <PageHero
+          section="claims"
+          title="Claims Timeline"
+          subtitle="Visualize claim lifecycle stages and identify bottlenecks across your pipeline"
+          icon={<Clock className="h-5 w-5" />}
+        />
+        <div className="flex flex-col items-center justify-center py-12 text-center">
+          <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-sky-100 to-blue-200 shadow-inner dark:from-sky-900/40 dark:to-blue-900/40">
+            <AlertTriangle className="h-8 w-8 text-amber-600 dark:text-amber-400" />
+          </div>
+          <h3 className="mt-5 text-lg font-semibold text-[color:var(--text)]">
+            Organization Required
+          </h3>
+          <p className="mx-auto mt-2 max-w-md text-sm text-slate-500 dark:text-slate-400">
+            Please select or create an organization to view your claims timeline and pipeline
+            analytics.
+          </p>
+        </div>
+      </PageContainer>
+    );
+  }
+
   // ── Fetch real claims data ─────────────────────────────────────
   let claims: {
     id: string;
@@ -94,20 +120,18 @@ export default async function ClaimsTimelinePage() {
   }[] = [];
 
   try {
-    if (orgId) {
-      claims = await prisma.claims.findMany({
-        where: { orgId, archivedAt: null },
-        select: {
-          id: true,
-          status: true,
-          createdAt: true,
-          updatedAt: true,
-          title: true,
-          claimNumber: true,
-        },
-        orderBy: { createdAt: "desc" },
-      });
-    }
+    claims = await prisma.claims.findMany({
+      where: { orgId, archivedAt: null },
+      select: {
+        id: true,
+        status: true,
+        createdAt: true,
+        updatedAt: true,
+        title: true,
+        claimNumber: true,
+      },
+      orderBy: { createdAt: "desc" },
+    });
   } catch (err) {
     logger.error("[ClaimsTimeline] Failed to fetch claims:", err);
   }
@@ -168,6 +192,11 @@ export default async function ClaimsTimelinePage() {
           <Link href="/claims">
             <Button variant="outline" size="sm">
               All Claims
+            </Button>
+          </Link>
+          <Link href="/reports/history">
+            <Button variant="outline" size="sm">
+              Report History
             </Button>
           </Link>
         </div>

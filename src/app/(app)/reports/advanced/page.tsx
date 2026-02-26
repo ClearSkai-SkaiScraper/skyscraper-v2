@@ -22,7 +22,14 @@ export default async function AdvancedAnalyticsPage() {
         title="Advanced Analytics"
         subtitle="Create custom reports, export data, and build powerful dashboards"
         icon={<BarChart3 className="h-5 w-5" />}
-      />
+      >
+        <Link
+          href="/reports/history"
+          className="inline-flex items-center gap-1 rounded-lg border border-white/20 bg-white/10 px-3 py-1.5 text-sm font-medium text-white hover:bg-white/20"
+        >
+          Report History
+        </Link>
+      </PageHero>
 
       {/* Quick Actions */}
       <div className="grid grid-cols-1 gap-4 md:grid-cols-3">

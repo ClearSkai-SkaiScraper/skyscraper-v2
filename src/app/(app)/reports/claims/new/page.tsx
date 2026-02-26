@@ -59,16 +59,25 @@ export default async function ClaimsWizardPage({
         subtitle="Generate professional insurance claim reports with AI-powered assistance"
         icon={<FileText className="h-6 w-6" />}
       >
-        <Button
-          asChild
-          variant="outline"
-          className="border-white/20 bg-white/10 text-white hover:bg-white/20"
-        >
-          <Link href="/reports/hub">
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            Back to Reports
-          </Link>
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button
+            asChild
+            variant="outline"
+            className="border-white/20 bg-white/10 text-white hover:bg-white/20"
+          >
+            <Link href="/reports/hub">
+              <ArrowLeft className="mr-2 h-4 w-4" />
+              Back to Reports
+            </Link>
+          </Button>
+          <Button
+            asChild
+            variant="outline"
+            className="border-white/20 bg-white/10 text-white hover:bg-white/20"
+          >
+            <Link href="/reports/history">Report History</Link>
+          </Button>
+        </div>
       </PageHero>
 
       <div className="-mt-4">

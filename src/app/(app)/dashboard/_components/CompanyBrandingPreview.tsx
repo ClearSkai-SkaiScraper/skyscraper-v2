@@ -129,6 +129,13 @@ export default function CompanyBrandingPreview() {
             </div>
           </div>
 
+          {/* Team Photo */}
+          {branding?.teamPhotoUrl && (
+            <div className="relative h-36 w-full overflow-hidden rounded-xl border border-slate-200 dark:border-slate-700">
+              <Image src={branding.teamPhotoUrl} alt="Team Photo" fill className="object-cover" />
+            </div>
+          )}
+
           {/* Color swatches */}
           <div className="flex items-center gap-3">
             <div className="flex items-center gap-2">

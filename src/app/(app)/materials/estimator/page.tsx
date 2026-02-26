@@ -6,6 +6,7 @@ import {
   CheckCircle,
   Clock,
   DollarSign,
+  Link2,
   Mail,
   MoreVertical,
   Package,
@@ -335,6 +336,39 @@ export default function MaterialEstimatorPage() {
     const subject = encodeURIComponent(`Materials List — ${est.jobLabel}`);
     const body = buildMaterialsText(est);
     window.open(`mailto:?subject=${subject}&body=${body}`, "_blank");
+  };
+
+  // ── Attach estimate as a document link to the job/claim ──────────────────
+  const handleAttachToJobDocs = async (est: SavedEstimate) => {
+    if (!est.jobId && !est.claimId) {
+      alert("This estimate isn't linked to a job or claim. Save it with a job first.");
+      return;
+    }
+    try {
+      const res = await fetch("/api/documents/link", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          sourceType: "estimate",
+          sourceId: est.id,
+          jobId: est.jobId || null,
+          claimId: est.claimId || null,
+          title: `Material Estimate — ${est.jobLabel}`,
+          url: `/materials/estimator?load=${est.id}`,
+          mimeType: "application/json",
+          sizeBytes: null,
+          category: "estimate",
+        }),
+      });
+      if (res.ok) {
+        alert("✅ Estimate attached to job documents!");
+      } else {
+        const data = await res.json().catch(() => ({}));
+        alert(data.error || "Failed to attach");
+      }
+    } catch {
+      alert("Failed to attach estimate to job docs");
+    }
   };
 
   // ── Derived stats for the results header ─────────────────────────────────
@@ -685,6 +719,10 @@ export default function MaterialEstimatorPage() {
                       <DropdownMenuItem onClick={() => handleEmailPartner(est)}>
                         <Mail className="mr-2 h-4 w-4 text-emerald-500" />
                         Email to Partner
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => handleAttachToJobDocs(est)}>
+                        <Link2 className="mr-2 h-4 w-4 text-purple-500" />
+                        Attach to Job Docs
                       </DropdownMenuItem>
                       <DropdownMenuSeparator />
                       <DropdownMenuItem

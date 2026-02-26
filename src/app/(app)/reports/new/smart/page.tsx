@@ -150,7 +150,14 @@ export default function SmartReportBuilderPage() {
       <PageHero
         title="Smart AI Report Builder"
         subtitle="Choose a claim, select a report type, pick your audience, and toggle which sections you want. SkaiScraper will generate a structured report you can print or export."
-      />
+      >
+        <a
+          href="/reports/history"
+          className="inline-flex items-center gap-1 rounded-lg border border-white/20 bg-white/10 px-3 py-1.5 text-xs font-medium text-white hover:bg-white/20"
+        >
+          Report History
+        </a>
+      </PageHero>
 
       {/* Builder Form */}
       <form onSubmit={handleGenerate} className="space-y-4 rounded-2xl border bg-card p-4">

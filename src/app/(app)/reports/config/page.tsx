@@ -68,7 +68,14 @@ export default async function ReportConfigPage() {
       <PageHero
         title="Report Generator"
         subtitle={`Using claim ${sampleClaim?.claimNumber || sampleClaim?.id || "N/A"} at ${propertyAddress}`}
-      />
+      >
+        <a
+          href="/reports/history"
+          className="inline-flex items-center gap-1 rounded-lg border border-white/20 bg-white/10 px-3 py-1.5 text-xs font-medium text-white hover:bg-white/20"
+        >
+          Report History
+        </a>
+      </PageHero>
       <p className="text-xs text-amber-600">
         💡 Tip: For claim-specific report generation, use the &quot;Reports&quot; tab on each claim
         page

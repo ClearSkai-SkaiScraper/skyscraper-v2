@@ -7,22 +7,35 @@ import {
   CheckCircle2,
   Clock,
   DollarSign,
+  Download,
   ExternalLink,
   FileCheck,
   FileText,
   Loader2,
-  MapPin,
   Save,
   Trash2,
+  Upload,
+  X,
 } from "lucide-react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 
 import { PageContainer } from "@/components/layout/PageContainer";
 import { PageHero } from "@/components/layout/PageHero";
 import { Button } from "@/components/ui/button";
+
+interface PermitDocument {
+  id: string;
+  title: string;
+  url: string;
+  mimeType: string | null;
+  sizeBytes: number | null;
+  category: string | null;
+  notes: string | null;
+  createdAt: string;
+}
 
 interface Permit {
   id: string;
@@ -105,6 +118,9 @@ export default function PermitDetailPage() {
   const [permit, setPermit] = useState<Permit | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [documents, setDocuments] = useState<PermitDocument[]>([]);
+  const [uploading, setUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [form, setForm] = useState({
     status: "",
     inspectionDate: "",
@@ -141,7 +157,80 @@ export default function PermitDetailPage() {
 
   useEffect(() => {
     fetchPermit();
+    fetchDocuments();
   }, [fetchPermit]);
+
+  const fetchDocuments = async () => {
+    try {
+      const res = await fetch(`/api/permits/${id}/documents`);
+      if (res.ok) {
+        const data = await res.json();
+        setDocuments(data.data?.documents || []);
+      }
+    } catch {
+      // Non-critical — empty docs list
+    }
+  };
+
+  const handleFileUpload = async (files: FileList | null) => {
+    if (!files || files.length === 0) return;
+    setUploading(true);
+    try {
+      for (const file of Array.from(files)) {
+        // 1. Upload the file to Supabase storage
+        const formData = new FormData();
+        formData.append("file", file);
+        formData.append("type", "permitDocuments");
+        const uploadRes = await fetch("/api/upload/supabase", {
+          method: "POST",
+          body: formData,
+        });
+        if (!uploadRes.ok) {
+          toast.error(`Failed to upload ${file.name}`);
+          continue;
+        }
+        const uploadData = await uploadRes.json();
+
+        // 2. Register the document with the permit
+        const docRes = await fetch(`/api/permits/${id}/documents`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            title: file.name,
+            url: uploadData.url,
+            mimeType: file.type,
+            sizeBytes: file.size,
+            category: "permit",
+            linkToJob: true,
+          }),
+        });
+        if (docRes.ok) {
+          toast.success(`${file.name} uploaded`);
+        }
+      }
+      await fetchDocuments();
+    } catch {
+      toast.error("Upload failed");
+    } finally {
+      setUploading(false);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    }
+  };
+
+  const handleDeleteDocument = async (docId: string) => {
+    if (!confirm("Remove this document?")) return;
+    try {
+      const res = await fetch(`/api/permits/${id}/documents?docId=${docId}`, {
+        method: "DELETE",
+      });
+      if (res.ok) {
+        setDocuments((prev) => prev.filter((d) => d.id !== docId));
+        toast.success("Document removed");
+      }
+    } catch {
+      toast.error("Failed to remove document");
+    }
+  };
 
   const handleSave = async () => {
     setSaving(true);
@@ -355,24 +444,115 @@ export default function PermitDetailPage() {
         </div>
       </div>
 
-      {/* Document Link */}
-      {permit.documentUrl && (
-        <div className="flex items-center gap-3 rounded-xl border border-[color:var(--border)] bg-[var(--surface-glass)] p-4 backdrop-blur-xl">
-          <FileText className="h-5 w-5 text-blue-500" />
-          <div className="flex-1">
-            <p className="text-sm font-medium text-[color:var(--text)]">Permit Document</p>
-            <p className="truncate text-xs text-slate-500">{permit.documentUrl}</p>
-          </div>
-          <a
-            href={permit.documentUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-1 rounded-lg bg-blue-100 px-3 py-1.5 text-xs font-medium text-blue-700 transition hover:bg-blue-200 dark:bg-blue-900/30 dark:text-blue-400 dark:hover:bg-blue-900/50"
+      {/* ─── Document Upload & Files ─── */}
+      <div className="rounded-2xl border border-[color:var(--border)] bg-[var(--surface-glass)] p-6 backdrop-blur-xl">
+        <div className="mb-4 flex items-center justify-between">
+          <h3 className="flex items-center gap-2 text-lg font-semibold text-[color:var(--text)]">
+            <FileText className="h-5 w-5 text-blue-500" />
+            Permit Documents
+          </h3>
+          <Button
+            size="sm"
+            variant="outline"
+            className="gap-1.5"
+            onClick={() => fileInputRef.current?.click()}
+            disabled={uploading}
           >
-            <ExternalLink className="h-3.5 w-3.5" /> Open
-          </a>
+            {uploading ? (
+              <Loader2 className="h-3.5 w-3.5 animate-spin" />
+            ) : (
+              <Upload className="h-3.5 w-3.5" />
+            )}
+            Upload
+          </Button>
+          <input
+            ref={fileInputRef}
+            type="file"
+            multiple
+            accept=".pdf,.jpg,.jpeg,.png,.webp,.heic,.doc,.docx"
+            className="hidden"
+            onChange={(e) => handleFileUpload(e.target.files)}
+          />
         </div>
-      )}
+
+        {/* Legacy document URL */}
+        {permit.documentUrl && (
+          <div className="mb-4 flex items-center gap-3 rounded-xl border border-blue-200 bg-blue-50 p-3 dark:border-blue-800 dark:bg-blue-950/30">
+            <FileText className="h-5 w-5 text-blue-500" />
+            <div className="min-w-0 flex-1">
+              <p className="text-sm font-medium text-[color:var(--text)]">Legacy Document Link</p>
+              <p className="truncate text-xs text-slate-500">{permit.documentUrl}</p>
+            </div>
+            <a
+              href={permit.documentUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1 rounded-lg bg-blue-100 px-3 py-1.5 text-xs font-medium text-blue-700 transition hover:bg-blue-200 dark:bg-blue-900/30 dark:text-blue-400"
+            >
+              <ExternalLink className="h-3.5 w-3.5" /> Open
+            </a>
+          </div>
+        )}
+
+        {/* Uploaded Documents */}
+        {documents.length > 0 ? (
+          <div className="space-y-2">
+            {documents.map((doc) => (
+              <div
+                key={doc.id}
+                className="flex items-center gap-3 rounded-xl border border-[color:var(--border)] bg-[var(--surface-2)] p-3"
+              >
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-blue-100 dark:bg-blue-900/30">
+                  <FileText className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-sm font-medium text-[color:var(--text)]">
+                    {doc.title}
+                  </p>
+                  <p className="text-xs text-slate-500">
+                    {doc.sizeBytes ? `${(doc.sizeBytes / 1024).toFixed(0)} KB` : ""}
+                    {doc.category ? ` · ${doc.category}` : ""}
+                    {doc.createdAt ? ` · ${new Date(doc.createdAt).toLocaleDateString()}` : ""}
+                  </p>
+                </div>
+                <div className="flex items-center gap-1">
+                  <a
+                    href={doc.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="rounded-md p-1.5 text-slate-400 hover:bg-slate-100 hover:text-blue-600 dark:hover:bg-slate-700"
+                    title="Download"
+                  >
+                    <Download className="h-4 w-4" />
+                  </a>
+                  <button
+                    onClick={() => handleDeleteDocument(doc.id)}
+                    className="rounded-md p-1.5 text-slate-400 hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-900/20"
+                    title="Remove"
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          !permit.documentUrl && (
+            <div
+              onClick={() => fileInputRef.current?.click()}
+              className="cursor-pointer rounded-xl border-2 border-dashed border-slate-200 p-8 text-center transition hover:border-blue-400 dark:border-slate-700"
+            >
+              <Upload className="mx-auto mb-2 h-8 w-8 text-slate-300 dark:text-slate-600" />
+              <p className="text-sm font-medium text-slate-600 dark:text-slate-400">
+                Drop files here or click to upload
+              </p>
+              <p className="mt-1 text-xs text-slate-400">
+                PDF, images, or Word documents up to 25 MB
+              </p>
+            </div>
+          )
+        )}
+      </div>
 
       {/* Edit Form */}
       <div className="rounded-2xl border border-[color:var(--border)] bg-[var(--surface-glass)] p-6 backdrop-blur-xl">
@@ -455,22 +635,6 @@ export default function PermitDetailPage() {
               className="w-full rounded-xl border border-[color:var(--border)] bg-[var(--surface-2)] px-4 py-3 text-sm text-[color:var(--text)] transition-colors focus:border-[color:var(--primary)] focus:outline-none focus:ring-2 focus:ring-blue-500/20"
               placeholder="Notes from the inspector..."
             />
-          </div>
-
-          {/* Document URL */}
-          <div className="md:col-span-2">
-            <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-slate-500">
-              Document URL
-            </label>
-            <div className="relative">
-              <MapPin className="pointer-events-none absolute left-3 top-3.5 h-4 w-4 text-slate-400" />
-              <input
-                value={form.documentUrl}
-                onChange={(e) => setForm({ ...form, documentUrl: e.target.value })}
-                className="w-full rounded-xl border border-[color:var(--border)] bg-[var(--surface-2)] py-3 pl-9 pr-4 text-sm text-[color:var(--text)] transition-colors focus:border-[color:var(--primary)] focus:outline-none focus:ring-2 focus:ring-blue-500/20"
-                placeholder="https://..."
-              />
-            </div>
           </div>
 
           {/* Notes */}

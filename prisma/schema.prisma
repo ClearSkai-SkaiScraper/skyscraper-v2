@@ -6286,10 +6286,54 @@ model permits {
   claims   claims?   @relation(fields: [claimId], references: [id])
   Org      Org       @relation(fields: [orgId], references: [id], onDelete: Cascade)
 
+  permit_documents permit_documents[]
+
   @@index([orgId, status])
   @@index([jobId])
   @@index([claimId])
   @@index([permitNumber])
+}
+
+// ─── Permit Documents ────────────────────────────────────────────────────────
+model permit_documents {
+  id         String   @id @default(dbgenerated("gen_random_uuid()::text"))
+  permitId   String   @map("permit_id")
+  orgId      String   @map("org_id")
+  title      String
+  url        String
+  mimeType   String?  @map("mime_type")
+  sizeBytes  BigInt?  @map("size_bytes")
+  category   String?  @default("permit") // permit | inspection | receipt | correspondence | other
+  uploadedBy String?  @map("uploaded_by")
+  notes      String?
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  permit permits @relation(fields: [permitId], references: [id], onDelete: Cascade)
+
+  @@index([permitId])
+  @@index([orgId])
+}
+
+// ─── Document Links (cross-reference docs to jobs/claims) ────────────────────
+model document_links {
+  id         String   @id @default(dbgenerated("gen_random_uuid()::text"))
+  orgId      String   @map("org_id")
+  sourceType String   @map("source_type") // permit | estimate | report | manual
+  sourceId   String   @map("source_id")
+  jobId      String?  @map("job_id")
+  claimId    String?  @map("claim_id")
+  title      String
+  url        String
+  mimeType   String?  @map("mime_type")
+  sizeBytes  BigInt?  @map("size_bytes")
+  category   String?  @default("document")
+  createdBy  String?  @map("created_by")
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  @@index([orgId])
+  @@index([jobId])
+  @@index([claimId])
+  @@index([sourceType, sourceId])
 }
 
 // ─── Mortgage Check Tracking ─────────────────────────────────────────────────

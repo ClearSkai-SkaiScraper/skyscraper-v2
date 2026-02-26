@@ -1,6 +1,7 @@
 "use client";
 
-import { CloudRain, Download } from "lucide-react";
+import { Clock, CloudRain, Download } from "lucide-react";
+import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 
@@ -169,7 +170,14 @@ export default function WeatherReportsPage() {
         title="Weather Reports"
         subtitle="Storm verification using real weather data and claim context"
         icon={<CloudRain className="h-5 w-5" />}
-      />
+      >
+        <Button variant="outline" size="sm" asChild>
+          <Link href="/reports/history">
+            <Clock className="mr-1 h-3 w-3" />
+            Report History
+          </Link>
+        </Button>
+      </PageHero>
 
       <div className="space-y-6">
         <PageSectionCard title="Build Weather Report">

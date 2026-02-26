@@ -382,12 +382,20 @@ export default function MarketplacePage() {
         subtitle="Browse and add professional report templates to your workspace"
         icon={<LayoutTemplate className="h-6 w-6" />}
         actions={
-          <a
-            href="/reports/templates"
-            className="rounded-lg bg-white/20 px-4 py-2 text-sm font-medium text-white hover:bg-white/30"
-          >
-            My Templates
-          </a>
+          <div className="flex items-center gap-2">
+            <a
+              href="/reports/history"
+              className="rounded-lg bg-white/20 px-4 py-2 text-sm font-medium text-white hover:bg-white/30"
+            >
+              Report History
+            </a>
+            <a
+              href="/reports/templates"
+              className="rounded-lg bg-white/20 px-4 py-2 text-sm font-medium text-white hover:bg-white/30"
+            >
+              My Templates
+            </a>
+          </div>
         }
       />
 

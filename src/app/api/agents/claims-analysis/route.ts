@@ -103,62 +103,37 @@ export async function POST(req: NextRequest) {
     });
 
     // Mock analysis results (in production, this would call actual AI services)
+    // Response shape matches the client ClaimsAnalysisResult interface
+    const damageMode = modes.includes("damage");
+    const coverageMode = modes.includes("coverage");
+    const riskMode = modes.includes("risk");
+
     const analysisResults = {
       claimId: claim.id,
-      claimNumber: claim.claimNumber,
-      analyzedAt: new Date().toISOString(),
-      modes,
-      results: {
-        coverage: modes.includes("coverage")
+      findings: {
+        damage: damageMode
           ? {
-              status: "COVERED",
-              confidence: 85,
-              reasoning: `Based on policy review and claim details for ${claim.title}, this appears to be a covered loss.`,
-              recommendations: ["Document all damage thoroughly", "Consider supplement if needed"],
+              severity: "Moderate",
+              estimatedRepairDays: 14,
+              confidence: 0.82,
             }
-          : null,
-
-        fraud: modes.includes("fraud")
+          : undefined,
+        coverage: coverageMode
           ? {
-              riskLevel: "LOW",
-              confidence: 92,
-              flags: [],
-              reasoning: "No fraud indicators detected. Claim appears legitimate.",
+              policyRisk: "LOW",
+              exclusionsFlagged: 0,
+              confidence: 0.85,
             }
-          : null,
-
-        severity: modes.includes("severity")
+          : undefined,
+        risk: riskMode
           ? {
-              level: "MODERATE",
-              estimatedDamage: 45000,
-              confidence: 78,
-              reasoning: "Moderate damage based on property size and loss date.",
+              litigationProbability: 0.12,
+              recommendedAction: "Continue standard processing — no elevated risk indicators",
             }
-          : null,
-
-        timeline: modes.includes("timeline")
-          ? {
-              status: "ON_TRACK",
-              daysOpen: Math.floor(
-                (new Date().getTime() - new Date(claim.dateOfLoss || Date.now()).getTime()) /
-                  (1000 * 60 * 60 * 24)
-              ),
-              nextSteps: ["Complete inspection", "Submit estimate", "Await adjuster response"],
-            }
-          : null,
-
-        documents: {
-          total: artifacts.length,
-          byType: artifacts.reduce(
-            (acc, art) => {
-              acc[art.type] = (acc[art.type] || 0) + 1;
-              return acc;
-            },
-            {} as Record<string, number>
-          ),
-          missingRecommended: [],
-        },
+          : undefined,
       },
+      riskScore: riskMode ? 28 : damageMode ? 35 : 20,
+      tokensUsed: 1250,
       summary: `Analysis complete for claim ${claim.claimNumber}. Reviewed ${modes.length} analysis mode(s) and ${artifacts.length} document(s).`,
     };
 

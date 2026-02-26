@@ -188,12 +188,21 @@ export default async function ReportTemplatesPage() {
         subtitle="Templates you've saved from the marketplace. Use these with AI to generate professional reports."
         icon={<LayoutGrid className="h-6 w-6" />}
       >
-        <Button asChild className="bg-white text-blue-600 hover:bg-blue-50">
-          <Link href="/reports/templates/marketplace">
-            <ShoppingBag className="mr-2 h-4 w-4" />
-            Browse Marketplace
-          </Link>
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button asChild className="bg-white text-blue-600 hover:bg-blue-50">
+            <Link href="/reports/templates/marketplace">
+              <ShoppingBag className="mr-2 h-4 w-4" />
+              Browse Marketplace
+            </Link>
+          </Button>
+          <Button
+            asChild
+            variant="outline"
+            className="border-white/20 bg-white/10 text-white hover:bg-white/20"
+          >
+            <Link href="/reports/history">Report History</Link>
+          </Button>
+        </div>
       </PageHero>
       <div className="mt-2">
         {templates.length === 0 ? (

@@ -1,7 +1,7 @@
 "use client";
 
-import { formatDistanceToNow } from "date-fns";
 import { logger } from "@/lib/logger";
+import { formatDistanceToNow } from "date-fns";
 import { Bell, CheckCheck } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
@@ -227,6 +227,28 @@ export default function UnifiedNotificationBell({
                 </div>
               ))
             )}
+          </div>
+
+          {/* Quick Links */}
+          <div className="flex items-center justify-between border-t pt-2">
+            <button
+              onClick={() => {
+                setOpen(false);
+                router.push("/tasks");
+              }}
+              className="text-xs font-medium text-primary hover:underline"
+            >
+              Task Manager
+            </button>
+            <button
+              onClick={() => {
+                setOpen(false);
+                router.push("/notifications");
+              }}
+              className="text-xs font-medium text-muted-foreground hover:text-primary hover:underline"
+            >
+              View all →
+            </button>
           </div>
         </div>
       </PopoverContent>

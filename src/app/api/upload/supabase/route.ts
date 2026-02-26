@@ -74,6 +74,19 @@ const UPLOAD_CONFIGS: Record<
     maxSize: 20 * 1024 * 1024,
     allowedTypes: ["image/jpeg", "image/png", "image/webp", "application/pdf"],
   },
+  permitDocuments: {
+    bucket: "claim-documents", // reuse existing bucket
+    maxSize: 25 * 1024 * 1024, // 25MB — permits can be large scans
+    allowedTypes: [
+      "application/pdf",
+      "image/jpeg",
+      "image/png",
+      "image/webp",
+      "image/heic",
+      "application/msword",
+      "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    ],
+  },
 };
 
 export async function POST(request: NextRequest) {
