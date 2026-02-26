@@ -147,6 +147,12 @@ const nextConfig = {
       // Carrier
       { source: "/carrier/export", destination: "/exports/carrier", permanent: true },
 
+      // Onboarding consolidation (Sprint 5)
+      { source: "/getting-started", destination: "/onboarding", permanent: true },
+      { source: "/auto-onboard", destination: "/onboarding", permanent: true },
+      { source: "/trades/onboarding", destination: "/onboarding", permanent: true },
+      { source: "/trades/onboarding/:path*", destination: "/onboarding", permanent: true },
+
       // Portal legacy redirects
       { source: "/portal/community/feed", destination: "/portal", permanent: true },
       { source: "/portal/projects", destination: "/portal/my-jobs", permanent: true },
