@@ -76,7 +76,7 @@ export function mockAuth(options: MockAuthOptions = {}) {
               emailAddresses: [{ emailAddress: "test@example.com" }],
               primaryEmailAddressId: "email_test",
             }
-          : null,
+          : null
       ),
       clerkClient: vi.fn().mockReturnValue({
         users: {
@@ -109,7 +109,7 @@ export function mockAuth(options: MockAuthOptions = {}) {
               lastName: "User",
               emailAddresses: [{ emailAddress: "test@example.com" }],
             }
-          : null,
+          : null
       ),
     };
   });

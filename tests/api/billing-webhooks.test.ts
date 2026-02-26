@@ -5,16 +5,16 @@
  * and checkout session flow.
  */
 
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import {
   createMockPrisma,
   createMockStripe,
   createWebhookEvent,
-  mockAuth,
+  MOCK_CHECKOUT_SESSION_ID,
   MOCK_CUSTOMER_ID,
   MOCK_SUBSCRIPTION_ID,
-  MOCK_CHECKOUT_SESSION_ID,
+  mockAuth,
   TEST_ORG_ID,
 } from "../../helpers";
 
@@ -163,20 +163,16 @@ describe("Checkout Session Flow", () => {
 describe("Webhook Signature Verification", () => {
   it("constructEvent is callable with proper signature", () => {
     stripe.webhooks.constructEvent.mockReturnValue(
-      createWebhookEvent("checkout.session.completed"),
+      createWebhookEvent("checkout.session.completed")
     );
 
-    const event = stripe.webhooks.constructEvent(
-      "raw_body",
-      "sig_header",
-      "whsec_test",
-    );
+    const event = stripe.webhooks.constructEvent("raw_body", "sig_header", "whsec_test");
 
     expect(event.type).toBe("checkout.session.completed");
     expect(stripe.webhooks.constructEvent).toHaveBeenCalledWith(
       "raw_body",
       "sig_header",
-      "whsec_test",
+      "whsec_test"
     );
   });
 
@@ -185,8 +181,8 @@ describe("Webhook Signature Verification", () => {
       throw new Error("No signatures found matching the expected signature for payload");
     });
 
-    expect(() =>
-      stripe.webhooks.constructEvent("tampered", "bad_sig", "whsec_test"),
-    ).toThrow("No signatures found");
+    expect(() => stripe.webhooks.constructEvent("tampered", "bad_sig", "whsec_test")).toThrow(
+      "No signatures found"
+    );
   });
 });

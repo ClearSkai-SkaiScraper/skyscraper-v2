@@ -143,7 +143,7 @@ export default function MessageHub({
         setIsSending(false);
       }
     },
-    [selectedThread, userId, fetchMessages],
+    [selectedThread, userId, fetchMessages]
   );
 
   // ── Archive thread ────────────────────────────────────────────────
@@ -162,7 +162,7 @@ export default function MessageHub({
         toast.error("Failed to archive thread");
       }
     },
-    [selectedThread, fetchThreads],
+    [selectedThread, fetchThreads]
   );
 
   // ── Polling ───────────────────────────────────────────────────────
@@ -202,7 +202,11 @@ export default function MessageHub({
           <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as ThreadCategory)}>
             <TabsList>
               {TABS.map((tab) => (
-                <TabsTrigger key={tab.value} value={tab.value} className="flex items-center gap-1.5">
+                <TabsTrigger
+                  key={tab.value}
+                  value={tab.value}
+                  className="flex items-center gap-1.5"
+                >
                   {tab.icon}
                   {tab.label}
                 </TabsTrigger>
@@ -267,9 +271,7 @@ export default function MessageHub({
                   <h3 className="font-semibold">
                     {selectedThread.subject ?? selectedThread.title ?? "Conversation"}
                   </h3>
-                  <p className="text-xs text-muted-foreground">
-                    {selectedThread.participantName}
-                  </p>
+                  <p className="text-xs text-muted-foreground">{selectedThread.participantName}</p>
                 </div>
                 <Button
                   variant="ghost"
@@ -289,7 +291,11 @@ export default function MessageHub({
 
               {/* Composer */}
               <div className="border-t p-3">
-                <MessageInput onSend={handleSend} disabled={isSending} placeholder="Type a message…" />
+                <MessageInput
+                  onSend={handleSend}
+                  disabled={isSending}
+                  placeholder="Type a message…"
+                />
               </div>
             </>
           ) : (

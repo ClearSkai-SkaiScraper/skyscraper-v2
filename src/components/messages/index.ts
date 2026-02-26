@@ -9,16 +9,16 @@
  */
 
 // ── Core UI primitives ──────────────────────────────────────────────
-export { default as MessageInput } from "./MessageInput";
-export { default as MessageView } from "./MessageView";
-export { default as MessageThreadList } from "./MessageThreadList";
-export { MessageThread } from "./MessageThread";
-export { MessageComposer } from "./MessageComposer";
 export { ConversationList } from "./ConversationList";
+export { MessageComposer } from "./MessageComposer";
+export { default as MessageInput } from "./MessageInput";
+export { MessageThread } from "./MessageThread";
+export { default as MessageThreadList } from "./MessageThreadList";
+export { default as MessageView } from "./MessageView";
 
 // ── Modals ──────────────────────────────────────────────────────────
-export { default as NewMessageModal } from "./NewMessageModal";
 export { default as NewClientMessageModal } from "./NewClientMessageModal";
+export { default as NewMessageModal } from "./NewMessageModal";
 
 // ── Composite wrapper ───────────────────────────────────────────────
 export { default as MessageHub } from "./MessageHub";

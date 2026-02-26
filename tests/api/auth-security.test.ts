@@ -5,17 +5,16 @@
  * and rate limiting patterns across the API surface.
  */
 
-import { describe, expect, it, vi, beforeEach } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import {
-  mockAuth,
-  mockAuthSignedOut,
-  mockAuthOtherOrg,
   createMockPrisma,
-  TEST_USER_ID,
-  TEST_ORG_ID,
-  SECOND_USER_ID,
+  mockAuth,
+  mockAuthOtherOrg,
+  mockAuthSignedOut,
   SECOND_ORG_ID,
+  TEST_ORG_ID,
+  TEST_USER_ID,
 } from "../../helpers";
 
 const prisma = createMockPrisma();
@@ -67,14 +66,14 @@ describe("Cross-org isolation", () => {
   it("org A cannot update org B records", async () => {
     mockAuth();
     (prisma.claim.update as ReturnType<typeof vi.fn>).mockRejectedValue(
-      new Error("Record to update not found"),
+      new Error("Record to update not found")
     );
 
     await expect(
       prisma.claim.update({
         where: { id: "claim_other_org", orgId: TEST_ORG_ID },
         data: { status: "closed" },
-      }),
+      })
     ).rejects.toThrow();
   });
 
@@ -137,10 +136,10 @@ describe("Rate limiting patterns", () => {
 
     expect(Number(rateLimitHeaders["X-RateLimit-Limit"])).toBeGreaterThan(0);
     expect(Number(rateLimitHeaders["X-RateLimit-Remaining"])).toBeLessThanOrEqual(
-      Number(rateLimitHeaders["X-RateLimit-Limit"]),
+      Number(rateLimitHeaders["X-RateLimit-Limit"])
     );
     expect(Number(rateLimitHeaders["X-RateLimit-Reset"])).toBeGreaterThan(
-      Math.floor(Date.now() / 1000),
+      Math.floor(Date.now() / 1000)
     );
   });
 
@@ -173,13 +172,13 @@ describe("Data access patterns", () => {
 
     // Verify each was called with orgId
     expect(prisma.claim.findMany).toHaveBeenCalledWith(
-      expect.objectContaining({ where: expect.objectContaining({ orgId: TEST_ORG_ID }) }),
+      expect.objectContaining({ where: expect.objectContaining({ orgId: TEST_ORG_ID }) })
     );
     expect(prisma.invoice.findMany).toHaveBeenCalledWith(
-      expect.objectContaining({ where: expect.objectContaining({ orgId: TEST_ORG_ID }) }),
+      expect.objectContaining({ where: expect.objectContaining({ orgId: TEST_ORG_ID }) })
     );
     expect(prisma.contact.findMany).toHaveBeenCalledWith(
-      expect.objectContaining({ where: expect.objectContaining({ orgId: TEST_ORG_ID }) }),
+      expect.objectContaining({ where: expect.objectContaining({ orgId: TEST_ORG_ID }) })
     );
   });
 

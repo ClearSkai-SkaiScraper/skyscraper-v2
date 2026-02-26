@@ -132,7 +132,7 @@ export function createMockNextRequest(
   method: string,
   url: string,
   body?: unknown,
-  headers?: Record<string, string>,
+  headers?: Record<string, string>
 ) {
   const requestInit: RequestInit = {
     method,

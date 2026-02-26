@@ -8,9 +8,9 @@
 import { describe, expect, it } from "vitest";
 
 import {
-  hasFeature,
-  getMinPlanForFeature,
   getFeaturesForPlan,
+  getMinPlanForFeature,
+  hasFeature,
   PLAN_DISPLAY_NAMES,
   type FeatureKey,
   type PlanSlug,

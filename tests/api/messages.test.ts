@@ -12,9 +12,9 @@ import {
   mockAuthOtherOrg,
   mockAuthSignedOut,
   resetTestFactories,
+  SECOND_ORG_ID,
   TEST_ORG_ID,
   TEST_USER_ID,
-  SECOND_ORG_ID,
 } from "../../helpers";
 
 const prisma = createMockPrisma();
@@ -78,10 +78,7 @@ describe("POST /api/messages/[threadId]", () => {
   });
 
   it("creates a message within a transaction", async () => {
-    (prisma.$transaction as ReturnType<typeof vi.fn>).mockResolvedValue([
-      fakeMessage,
-      fakeThread,
-    ]);
+    (prisma.$transaction as ReturnType<typeof vi.fn>).mockResolvedValue([fakeMessage, fakeThread]);
 
     const result = await prisma.$transaction([
       prisma.message.create({
@@ -133,14 +130,14 @@ describe("PATCH /api/messages/[threadId]", () => {
   it("prevents archiving threads from other orgs", async () => {
     mockAuthOtherOrg();
     (prisma.messageThread.update as ReturnType<typeof vi.fn>).mockRejectedValue(
-      new Error("Record not found"),
+      new Error("Record not found")
     );
 
     await expect(
       prisma.messageThread.update({
         where: { id: "thread_1", orgId: SECOND_ORG_ID },
         data: { isArchived: true },
-      }),
+      })
     ).rejects.toThrow("Record not found");
   });
 });

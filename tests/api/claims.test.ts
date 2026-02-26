@@ -8,7 +8,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import {
-  createMockNextRequest,
   createMockPrisma,
   createTestClaim,
   mockAuth,
@@ -16,7 +15,6 @@ import {
   mockAuthSignedOut,
   resetTestFactories,
   TEST_ORG_ID,
-  TEST_USER_ID,
 } from "../../helpers";
 
 // ── Setup ───────────────────────────────────────────────────────────
@@ -143,7 +141,7 @@ describe("DELETE /api/claims/[id]", () => {
     expect(prisma.claim.update).toHaveBeenCalledWith(
       expect.objectContaining({
         where: expect.objectContaining({ orgId: TEST_ORG_ID }),
-      }),
+      })
     );
   });
 });
