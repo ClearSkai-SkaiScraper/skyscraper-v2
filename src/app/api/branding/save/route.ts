@@ -52,10 +52,13 @@ import { logger } from "@/lib/logger";
 import { currentUser } from "@clerk/nextjs/server";
 import { revalidatePath, revalidateTag } from "next/cache";
 import { NextResponse } from "next/server";
+import { z } from "zod";
 
 import { hasTrackedEvent, PRODUCT_EVENTS, trackProductEvent } from "@/lib/analytics/track";
 import { getActiveOrgContext } from "@/lib/org/getActiveOrgContext";
 import prisma from "@/lib/prisma";
+import { isValidationError, validateBody } from "@/lib/validation/middleware";
+import { BrandingSchema } from "@/lib/validation/schemas";
 import { pool } from "@/server/db";
 
 export async function POST(req: Request) {
@@ -78,7 +81,13 @@ export async function POST(req: Request) {
     if (!org) {
       return NextResponse.json({ error: "Organization not found" }, { status: 404 });
     }
-    const body = await req.json();
+    const body = await validateBody(
+      req,
+      BrandingSchema.extend({
+        coverPhotoUrl: z.string().optional().or(z.literal("")),
+      })
+    );
+    if (isValidationError(body)) return body;
     const {
       companyName,
       license,

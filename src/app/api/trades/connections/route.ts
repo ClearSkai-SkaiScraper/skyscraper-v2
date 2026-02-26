@@ -8,11 +8,13 @@
  * Handles connection requests between trades professionals (friend-like system)
  */
 
-import { auth } from "@clerk/nextjs/server";
 import { logger } from "@/lib/logger";
+import { auth } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
 
 import prisma from "@/lib/prisma";
+import { isValidationError, validateBody } from "@/lib/validation/middleware";
+import { connectionActionSchema, connectionRequestSchema } from "@/lib/validation/trades-schemas";
 
 // Use any cast for tradesConnection due to dual model naming conflict in schema
 // (TradesConnection PascalCase has different fields than tradesConnection lowercase)
@@ -84,12 +86,9 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const body = await req.json();
+    const body = await validateBody(req, connectionRequestSchema);
+    if (isValidationError(body)) return body;
     const { addresseeId, message } = body;
-
-    if (!addresseeId) {
-      return NextResponse.json({ error: "addresseeId is required" }, { status: 400 });
-    }
 
     if (addresseeId === userId) {
       return NextResponse.json({ error: "Cannot connect with yourself" }, { status: 400 });
@@ -137,16 +136,9 @@ export async function PATCH(req: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const body = await req.json();
+    const body = await validateBody(req, connectionActionSchema);
+    if (isValidationError(body)) return body;
     const { connectionId, action } = body;
-
-    if (!connectionId || !action) {
-      return NextResponse.json({ error: "connectionId and action are required" }, { status: 400 });
-    }
-
-    if (!["accept", "decline", "block"].includes(action)) {
-      return NextResponse.json({ error: "Invalid action" }, { status: 400 });
-    }
 
     // Find the connection
     const connection = await tradesConnectionModel.findUnique({

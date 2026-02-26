@@ -39,7 +39,8 @@ export async function POST(request: NextRequest) {
 
     const formData = await request.formData();
     const file = formData.get("file") as File;
-    const type = formData.get("type") as string; // "logo" or "team"
+    const rawType = formData.get("type") as string;
+    const type = ["logo", "team"].includes(rawType) ? rawType : "logo"; // Validated to "logo" | "team"
 
     if (!file) {
       return NextResponse.json({ error: "No file provided" }, { status: 400 });

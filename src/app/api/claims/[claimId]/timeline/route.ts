@@ -22,6 +22,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { getOrgClaimOrThrow, OrgScopeError } from "@/lib/auth/orgScope";
 import { withAuth } from "@/lib/auth/withAuth";
 import prisma from "@/lib/prisma";
+import { timelineCreateSchema, timelineDeleteSchema } from "@/lib/validation/claim-schemas";
+import { isValidationError, validateBody } from "@/lib/validation/middleware";
 
 /**
  * GET /api/claims/[claimId]/timeline
@@ -64,10 +66,7 @@ export const GET = withAuth(
         return NextResponse.json({ error: "Claim not found" }, { status: 404 });
       }
       logger.error("[Timeline GET] Error:", error);
-      return NextResponse.json(
-        { error: "Failed to fetch timeline" },
-        { status: 500 }
-      );
+      return NextResponse.json({ error: "Failed to fetch timeline" }, { status: 500 });
     }
   }
 );
@@ -86,12 +85,9 @@ export const POST = withAuth(
       const { claimId } = await routeParams.params;
       await getOrgClaimOrThrow(orgId, claimId);
 
-      const body = await req.json();
+      const body = await validateBody(req, timelineCreateSchema);
+      if (isValidationError(body)) return body;
       const { title, description, eventType } = body;
-
-      if (!title?.trim()) {
-        return NextResponse.json({ error: "Title is required" }, { status: 400 });
-      }
 
       const event = await prisma.claim_timeline_events.create({
         data: {
@@ -123,10 +119,7 @@ export const POST = withAuth(
         return NextResponse.json({ error: "Claim not found" }, { status: 404 });
       }
       logger.error("[Timeline POST] Error:", error);
-      return NextResponse.json(
-        { error: "Failed to add event" },
-        { status: 500 }
-      );
+      return NextResponse.json({ error: "Failed to add event" }, { status: 500 });
     }
   }
 );
@@ -145,12 +138,9 @@ export const DELETE = withAuth(
       const { claimId } = await routeParams.params;
       await getOrgClaimOrThrow(orgId, claimId);
 
-      const body = await req.json();
+      const body = await validateBody(req, timelineDeleteSchema);
+      if (isValidationError(body)) return body;
       const { eventId } = body;
-
-      if (!eventId) {
-        return NextResponse.json({ error: "eventId is required" }, { status: 400 });
-      }
 
       // Verify event belongs to this claim
       const event = await prisma.claim_timeline_events.findFirst({
@@ -171,10 +161,7 @@ export const DELETE = withAuth(
         return NextResponse.json({ error: "Claim not found" }, { status: 404 });
       }
       logger.error("[Timeline DELETE] Error:", error);
-      return NextResponse.json(
-        { error: "Failed to delete event" },
-        { status: 500 }
-      );
+      return NextResponse.json({ error: "Failed to delete event" }, { status: 500 });
     }
   }
 );

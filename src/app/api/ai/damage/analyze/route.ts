@@ -50,7 +50,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json(aiFail("No photos provided", "NO_PHOTOS"), { status: 400 });
     }
 
-    // Convert HEIC/HEIF images to JPEG
+    // Convert HEIC/HEIF images to JPEG (fallback — client should convert first)
     const convertedPhotos: File[] = [];
     for (const photo of photos) {
       if (isHeicImage(photo.type)) {
@@ -73,28 +73,21 @@ export async function POST(req: NextRequest) {
               level: "info",
             });
           } else {
-            logger.error(`HEIC conversion failed for ${photo.name}:`, result.error);
-            return NextResponse.json(
-              aiFail("Photo conversion failed", "CONVERSION_FAILED", {
-                file: photo.name,
-                hint: "Upload JPG or PNG instead",
-              }),
-              { status: 422 }
+            // Graceful fallback: try sending the original file to the AI
+            // OpenAI Vision can sometimes handle HEIC natively
+            logger.warn(
+              `HEIC conversion failed for ${photo.name}, sending original: ${result.error}`
             );
+            convertedPhotos.push(photo);
           }
         } catch (error) {
           Sentry.captureException(error, {
             tags: { operation: "heic-conversion" },
             extra: { fileName: photo.name, mimeType: photo.type },
           });
-          return NextResponse.json(
-            aiFail("Photo processing failed", "HEIC_PROCESSING_FAILED", {
-              file: photo.name,
-              mime: photo.type,
-              hint: "Upload JPG if error persists",
-            }),
-            { status: 422 }
-          );
+          // Graceful fallback instead of hard failure
+          logger.warn(`HEIC processing exception for ${photo.name}, sending original`);
+          convertedPhotos.push(photo);
         }
       } else {
         convertedPhotos.push(photo);

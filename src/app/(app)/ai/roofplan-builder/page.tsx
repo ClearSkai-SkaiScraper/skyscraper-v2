@@ -1,8 +1,23 @@
 "use client";
 
-import { Calculator, Clock, Download, FileText, Info, Layers, Mail, Save, Zap } from "lucide-react";
+import {
+  Calculator,
+  Clock,
+  Download,
+  FileText,
+  Info,
+  Layers,
+  Loader2,
+  Mail,
+  Paperclip,
+  Save,
+  Sparkles,
+  Upload,
+  X,
+} from "lucide-react";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { toast } from "sonner";
 
 import { PageContainer } from "@/components/layout/PageContainer";
 import { PageHero } from "@/components/layout/PageHero";
@@ -19,14 +34,26 @@ interface SavedPlan {
   status: string;
 }
 
+interface UploadedFile {
+  id: string;
+  name: string;
+  size: number;
+  section: string;
+}
+
 export default function ProjectPlanBuilderPage() {
   const [generating, setGenerating] = useState(false);
   const [result, setResult] = useState<string | null>(null);
   const [savedPlans, setSavedPlans] = useState<SavedPlan[]>([]);
   const [saving, setSaving] = useState(false);
+  const [exporting, setExporting] = useState(false);
   const [emailing, setEmailing] = useState(false);
   const [emailTo, setEmailTo] = useState("");
   const [showEmailModal, setShowEmailModal] = useState(false);
+  const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([]);
+  const specFileRef = useRef<HTMLInputElement>(null);
+  const docFileRef = useRef<HTMLInputElement>(null);
+  const photoFileRef = useRef<HTMLInputElement>(null);
   const [formData, setFormData] = useState({
     trade: "roofing",
     jobType: "installation",
@@ -35,107 +62,132 @@ export default function ProjectPlanBuilderPage() {
     budget: "",
     summary: "",
     documents: "",
+    finalNotes: "",
   });
 
+  // ── AI-Powered Generate ────────────────────────────────────
   const handleGenerate = async () => {
     setGenerating(true);
     setResult(null);
 
     try {
+      const res = await fetch("/api/ai/plan/generate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData),
+      });
+
+      if (!res.ok) {
+        const err = await res.json();
+        toast.error(err.error || "Failed to generate plan");
+        setResult(null);
+        return;
+      }
+
+      const data = await res.json();
+      setResult(data.plan);
+      toast.success("Project plan generated!");
+
+      // Save to GeneratedArtifact table
       const tradeLabel = formData.trade.replace(/-/g, " ").replace(/\b\w/g, (l) => l.toUpperCase());
       const jobTypeLabel = formData.jobType
         .replace(/-/g, " ")
         .replace(/\b\w/g, (l) => l.toUpperCase());
 
-      // Generate AI-powered project plan
-      const templateResult = `# ${tradeLabel} Project Plan — ${jobTypeLabel}
-
-**Project Overview:**
-- Trade: ${tradeLabel}
-- Job Type: ${jobTypeLabel}
-- Timeline: ${formData.timeline.replace(/-/g, " ")}
-- Project Size: ${formData.projectSize || "To be determined"}
-- Budget Range: ${formData.budget || "Not specified"}
-
-**Project Summary:**
-${formData.summary || "No additional summary provided."}
-
-**Detailed Breakdown:**
-
-**Phase 1: Planning & Preparation**
-- Initial site assessment and measurements
-- Material selection and ordering
-- Permits and inspections coordination
-- Timeline: First 1-2 weeks
-
-**Phase 2: Execution**
-- Main work execution based on ${jobTypeLabel.toLowerCase()}
-- Quality control checkpoints
-- Timeline: Varies based on project scope
-
-**Phase 3: Final Inspection & Cleanup**
-- Final inspection and verification
-- Cleanup and site restoration
-- Documentation and warranty setup
-- Timeline: Final week
-
-**Materials & Resources:**
-${generateMaterialsList(formData.trade, formData.jobType)}
-
-**Cost Estimate:**
-${generateCostEstimate(formData.trade, formData.jobType, formData.budget)}
-
-**Timeline & Milestones:**
-- Start Date: TBD
-- Completion: ${formData.timeline.replace(/-/g, " ")}
-- Key Milestones: ${generateMilestones(formData.trade, formData.jobType)}
-
-**Additional Documents/References:**
-${formData.documents || "No additional documents provided."}
-
-**Safety & Compliance:**
-- All work to comply with local building codes
-- Safety protocols to be followed
-- Required permits to be obtained before work begins
-
----
-*This is an AI-generated project plan. Always verify with local codes and licensed professionals.*`;
-
-      setResult(templateResult);
-
-      // Save to GeneratedArtifact table
       try {
-        const response = await fetch("/api/artifacts", {
+        await fetch("/api/artifacts", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             type: "PROJECT_PLAN",
             title: `${tradeLabel} - ${jobTypeLabel} (${formData.projectSize || "TBD"})`,
             status: "DRAFT",
-            contentText: templateResult,
+            contentText: data.plan,
             contentJson: {
               input: formData,
-              output: templateResult,
+              output: data.plan,
+              tokensUsed: data.tokensUsed,
+              model: data.model,
               generatedAt: new Date().toISOString(),
             },
           }),
         });
-
-        if (!response.ok) {
-          logger.warn("Failed to save artifact:", await response.text());
-        }
-      } catch (saveError) {
-        logger.error("Error saving artifact:", saveError);
+      } catch {
+        // Non-critical
       }
     } catch (error) {
       logger.error("Error generating project plan:", error);
-      setResult("Error generating project plan. Please try again.");
+      toast.error("Error generating plan. Please try again.");
     } finally {
       setGenerating(false);
     }
   };
 
-  // ── Load saved plans on mount ──────────────────────────────────
+  // ── PDF Export ──────────────────────────────────────────────
+  const handleExportPDF = async () => {
+    if (!result) return;
+    setExporting(true);
+    try {
+      const tradeLabel = formData.trade.replace(/-/g, " ").replace(/\b\w/g, (l) => l.toUpperCase());
+      const jobTypeLabel = formData.jobType
+        .replace(/-/g, " ")
+        .replace(/\b\w/g, (l) => l.toUpperCase());
+      const res = await fetch("/api/ai/plan/export", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          plan: result,
+          title: `${tradeLabel} — ${jobTypeLabel}`,
+          companyName: tradeLabel,
+        }),
+      });
+      if (!res.ok) {
+        toast.error("Failed to export PDF");
+        return;
+      }
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `project-plan-${formData.trade}-${formData.jobType}.pdf`;
+      a.click();
+      URL.revokeObjectURL(url);
+      toast.success("PDF downloaded!");
+    } catch (err) {
+      logger.error("PDF export error:", err);
+      toast.error("Failed to export PDF");
+    } finally {
+      setExporting(false);
+    }
+  };
+
+  // ── File Upload Handler ────────────────────────────────────
+  const handleFileUpload = (section: string) => (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    const newFiles: UploadedFile[] = files.map((f) => ({
+      id: crypto.randomUUID(),
+      name: f.name,
+      size: f.size,
+      section,
+    }));
+    setUploadedFiles((prev) => [...prev, ...newFiles]);
+    toast.success(`${files.length} file(s) attached to ${section}`);
+    const fileNames = files.map((f) => f.name).join(", ");
+    if (section === "specs" || section === "documents") {
+      setFormData((prev) => ({
+        ...prev,
+        documents: prev.documents
+          ? `${prev.documents}\n[Attached: ${fileNames}]`
+          : `[Attached: ${fileNames}]`,
+      }));
+    }
+  };
+
+  const removeFile = (id: string) => {
+    setUploadedFiles((prev) => prev.filter((f) => f.id !== id));
+  };
+
+  // ── Load saved plans ───────────────────────────────────────
   useEffect(() => {
     async function loadPlans() {
       try {
@@ -154,13 +206,13 @@ ${formData.documents || "No additional documents provided."}
           }
         }
       } catch {
-        // Silent fail — non-critical
+        /* silent */
       }
     }
     loadPlans();
-  }, [result]); // refresh after generating
+  }, [result]);
 
-  // ── Email plan handler ─────────────────────────────────────────
+  // ── Email plan handler ─────────────────────────────────────
   const handleEmailPlan = async () => {
     if (!result || !emailTo) return;
     setEmailing(true);
@@ -178,19 +230,19 @@ ${formData.documents || "No additional documents provided."}
       if (res.ok) {
         setShowEmailModal(false);
         setEmailTo("");
-        alert("Plan emailed successfully!");
+        toast.success("Plan emailed!");
       } else {
-        alert("Failed to send email. Please try again.");
+        toast.error("Failed to send email.");
       }
     } catch (err) {
       logger.error("Email plan error:", err);
-      alert("Failed to send email.");
+      toast.error("Failed to send email.");
     } finally {
       setEmailing(false);
     }
   };
 
-  // ── Transfer to Proposal ───────────────────────────────────────
+  // ── Transfer to Proposal ───────────────────────────────────
   const handleTransferToProposal = async () => {
     if (!result) return;
     setSaving(true);
@@ -199,7 +251,6 @@ ${formData.documents || "No additional documents provided."}
       const jobTypeLabel = formData.jobType
         .replace(/-/g, " ")
         .replace(/\b\w/g, (l) => l.toUpperCase());
-
       const res = await fetch("/api/artifacts", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -217,77 +268,171 @@ ${formData.documents || "No additional documents provided."}
         }),
       });
       if (res.ok) {
-        alert("Plan transferred to Proposals! View it in Report History.");
+        toast.success("Plan transferred to Proposals!");
       } else {
-        alert("Failed to create proposal. Please try again.");
+        toast.error("Failed to create proposal.");
       }
     } catch (err) {
       logger.error("Transfer to proposal error:", err);
-      alert("Failed to create proposal.");
+      toast.error("Failed to create proposal.");
     } finally {
       setSaving(false);
     }
   };
 
-  const generateMaterialsList = (trade: string, _jobType: string) => {
-    const materials: Record<string, string> = {
-      roofing:
-        "- Shingles/roofing material\n- Underlayment\n- Fasteners and nails\n- Ridge cap\n- Ventilation components",
-      hvac: "- HVAC unit(s)\n- Ductwork\n- Thermostats\n- Refrigerant lines\n- Electrical components",
-      plumbing: "- Pipes and fittings\n- Fixtures\n- Valves\n- Sealants\n- Tools and equipment",
-      electrical:
-        "- Wiring and cables\n- Circuit breakers\n- Outlets and switches\n- Junction boxes\n- Conduit",
-      solar:
-        "- Solar panels\n- Inverters\n- Mounting hardware\n- Wiring\n- Battery storage (if applicable)",
-      "general-contractor": "- Materials vary by project scope\n- Consult detailed specifications",
-      restoration:
-        "- Restoration materials\n- Cleaning supplies\n- Protective equipment\n- Specialized tools",
-      painting: "- Paint/primer\n- Brushes and rollers\n- Drop cloths\n- Tape and supplies",
-      flooring: "- Flooring material\n- Underlayment\n- Adhesives\n- Trim and transitions",
-      carpentry: "- Lumber\n- Fasteners\n- Hardware\n- Finishing materials",
-      landscaping:
-        "- Plants and materials\n- Soil and mulch\n- Hardscape materials\n- Irrigation components",
-      concrete: "- Concrete mix\n- Rebar/reinforcement\n- Forms\n- Finishing tools",
-    };
-    return materials[trade] || "- Materials to be determined based on project scope";
+  // ── Markdown Preview Renderer ──────────────────────────────
+  const formatBold = (text: string) => {
+    const parts = text.split(/\*\*(.*?)\*\*/g);
+    return parts.map((part, i) =>
+      i % 2 === 1 ? (
+        <strong key={i} className="font-semibold text-slate-800 dark:text-slate-200">
+          {part}
+        </strong>
+      ) : (
+        part
+      )
+    );
   };
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const generateCostEstimate = (trade: string, jobType: string, budget: string) => {
-    if (budget) {
-      return `Estimated Budget: ${budget}\n- Labor: ~40-50% of total\n- Materials: ~40-50% of total\n- Permits & Fees: ~5-10% of total`;
-    }
-    return `Budget not specified. Typical ${trade} ${jobType} projects vary widely based on scope and location.`;
+  const renderMarkdownPreview = (md: string) => {
+    return md.split("\n").map((line, i) => {
+      const t = line.trim();
+      if (!t) return <div key={i} className="h-2" />;
+      if (t.startsWith("# "))
+        return (
+          <h1
+            key={i}
+            className="mb-3 mt-6 border-b border-blue-200 pb-2 text-xl font-bold text-blue-700 dark:border-blue-800 dark:text-blue-400"
+          >
+            {t.replace(/^#\s+/, "").replace(/\*\*/g, "")}
+          </h1>
+        );
+      if (t.startsWith("## "))
+        return (
+          <h2
+            key={i}
+            className="mb-2 mt-5 text-lg font-semibold text-slate-800 dark:text-slate-200"
+          >
+            {t.replace(/^##\s+/, "").replace(/\*\*/g, "")}
+          </h2>
+        );
+      if (t.startsWith("### "))
+        return (
+          <h3
+            key={i}
+            className="mb-1 mt-4 text-base font-semibold text-slate-700 dark:text-slate-300"
+          >
+            {t.replace(/^###\s+/, "").replace(/\*\*/g, "")}
+          </h3>
+        );
+      if (/^-{3,}$|^\*{3,}$/.test(t))
+        return <hr key={i} className="my-4 border-slate-200 dark:border-slate-700" />;
+      if (t.startsWith("- ") || t.startsWith("* "))
+        return (
+          <div
+            key={i}
+            className="ml-4 flex gap-2 py-0.5 text-sm text-slate-600 dark:text-slate-400"
+          >
+            <span className="mt-0.5 text-blue-500">•</span>
+            <span>{formatBold(t.replace(/^[-*]\s+/, ""))}</span>
+          </div>
+        );
+      if (/^\d+\.\s/.test(t)) {
+        const n = t.match(/^(\d+)\./)?.[1] || "";
+        return (
+          <div
+            key={i}
+            className="ml-4 flex gap-2 py-0.5 text-sm text-slate-600 dark:text-slate-400"
+          >
+            <span className="min-w-[1.5rem] font-medium text-blue-600">{n}.</span>
+            <span>{formatBold(t.replace(/^\d+\.\s+/, ""))}</span>
+          </div>
+        );
+      }
+      if (t.startsWith("|") && t.endsWith("|")) {
+        if (/^\|[\s\-:]+\|/.test(t) && !t.match(/[a-zA-Z]/)) return null;
+        const cells = t
+          .split("|")
+          .filter(Boolean)
+          .map((c) => c.trim());
+        return (
+          <div
+            key={i}
+            className="grid gap-2 border-b border-slate-100 py-1 text-sm dark:border-slate-800"
+            style={{ gridTemplateColumns: `repeat(${cells.length}, 1fr)` }}
+          >
+            {cells.map((cell, j) => (
+              <span key={j} className="text-slate-600 dark:text-slate-400">
+                {formatBold(cell)}
+              </span>
+            ))}
+          </div>
+        );
+      }
+      if (t.startsWith("**") && t.endsWith("**"))
+        return (
+          <p key={i} className="mt-2 text-sm font-semibold text-slate-800 dark:text-slate-200">
+            {t.replace(/\*\*/g, "")}
+          </p>
+        );
+      return (
+        <p key={i} className="py-0.5 text-sm leading-relaxed text-slate-600 dark:text-slate-400">
+          {formatBold(t)}
+        </p>
+      );
+    });
   };
 
-  const generateMilestones = (_trade: string, _jobType: string) => {
-    return "Site prep, material delivery, main work execution, inspection, completion";
+  const formatSize = (bytes: number) => {
+    if (bytes < 1024) return `${bytes} B`;
+    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
   };
 
-  const _getPitchDegrees = (pitch: string) => {
-    const pitchMap: Record<string, number> = {
-      "2-12": 9.5,
-      "4-12": 18.4,
-      "6-12": 26.6,
-      "8-12": 33.7,
-      "10-12": 39.8,
-      "12-12": 45,
-    };
-    return pitchMap[pitch] || 18.4;
-  };
+  const sectionFiles = (section: string) => uploadedFiles.filter((f) => f.section === section);
 
   return (
     <PageContainer maxWidth="7xl">
+      {/* Hidden file inputs */}
+      <input
+        ref={specFileRef}
+        type="file"
+        className="hidden"
+        multiple
+        accept=".pdf,.doc,.docx,.xls,.xlsx,.csv,.txt"
+        onChange={handleFileUpload("specs")}
+      />
+      <input
+        ref={docFileRef}
+        type="file"
+        className="hidden"
+        multiple
+        accept=".pdf,.doc,.docx,.xls,.xlsx,.csv,.txt,.jpg,.png"
+        onChange={handleFileUpload("documents")}
+      />
+      <input
+        ref={photoFileRef}
+        type="file"
+        className="hidden"
+        multiple
+        accept="image/*,.pdf"
+        onChange={handleFileUpload("photos")}
+      />
+
       <PageHero
         section="claims"
         title="Project Plan Builder"
-        subtitle="Build AI-powered project plans for any trade with detailed breakdowns and timelines"
+        subtitle="Build AI-powered project plans for any trade — exported as professional PDFs"
         icon={<Layers className="h-5 w-5" />}
       >
         <div className="flex items-center gap-3">
-          <Badge variant="secondary">
-            <Zap className="mr-1 h-3 w-3" />
-            AI-Powered
+          <Badge variant="secondary" className="gap-1">
+            <Sparkles className="h-3 w-3" />
+            GPT-4o Powered
+          </Badge>
+          <Badge variant="outline" className="gap-1">
+            <FileText className="h-3 w-3" />
+            PDF Export
           </Badge>
           <Button variant="outline" size="sm" asChild>
             <Link href="/reports/history">
@@ -301,14 +446,13 @@ ${formData.documents || "No additional documents provided."}
       <TradesToolJobPicker label="Select job context:" />
 
       <div className="grid gap-6 lg:grid-cols-3">
-        {/* Left Column - Input Controls */}
-        <div className="lg:col-span-1">
+        {/* ── Left Column — Input Controls ── */}
+        <div className="space-y-4 lg:col-span-1">
           <PageSectionCard>
             <h3 className="mb-4 flex items-center gap-2 text-lg font-semibold text-slate-900 dark:text-white">
               <Calculator className="h-5 w-5 text-blue-600" />
               Project Details
             </h3>
-
             <div className="space-y-4">
               {/* Trade Selection */}
               <div>
@@ -338,7 +482,7 @@ ${formData.documents || "No additional documents provided."}
                 </select>
               </div>
 
-              {/* Job Type - Dynamic based on trade */}
+              {/* Job Type */}
               <div>
                 <label className="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300">
                   Job Type
@@ -389,13 +533,9 @@ ${formData.documents || "No additional documents provided."}
                       <option value="maintenance">Maintenance</option>
                     </>
                   )}
-                  {(formData.trade === "general-contractor" ||
-                    formData.trade === "restoration" ||
-                    formData.trade === "painting" ||
-                    formData.trade === "flooring" ||
-                    formData.trade === "carpentry" ||
-                    formData.trade === "landscaping" ||
-                    formData.trade === "concrete") && (
+                  {!["roofing", "hvac", "plumbing", "electrical", "solar"].includes(
+                    formData.trade
+                  ) && (
                     <>
                       <option value="installation">New Installation</option>
                       <option value="remodel">Remodel/Renovation</option>
@@ -454,31 +594,169 @@ ${formData.documents || "No additional documents provided."}
                 />
               </div>
 
-              {/* Project Summary */}
+              {/* Project Summary + Upload */}
               <div>
-                <label className="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300">
-                  Project Summary
-                </label>
+                <div className="mb-2 flex items-center justify-between">
+                  <label className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                    Project Summary
+                  </label>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="h-7 gap-1 text-xs"
+                    onClick={() => specFileRef.current?.click()}
+                  >
+                    <Upload className="h-3 w-3" />
+                    Attach Specs
+                  </Button>
+                </div>
                 <textarea
                   value={formData.summary}
                   onChange={(e) => setFormData({ ...formData, summary: e.target.value })}
-                  placeholder="Paste or describe your project requirements, photos, documents, or any details..."
+                  placeholder="Describe your project requirements, scope, special conditions..."
                   rows={4}
                   className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-500 dark:border-slate-600 dark:bg-slate-800 dark:text-white"
                 />
+                {sectionFiles("specs").length > 0 && (
+                  <div className="mt-2 space-y-1">
+                    {sectionFiles("specs").map((f) => (
+                      <div
+                        key={f.id}
+                        className="flex items-center gap-2 rounded bg-blue-50 px-2 py-1 text-xs dark:bg-blue-900/20"
+                      >
+                        <Paperclip className="h-3 w-3 text-blue-500" />
+                        <span className="flex-1 truncate text-slate-700 dark:text-slate-300">
+                          {f.name}
+                        </span>
+                        <span className="text-slate-400">{formatSize(f.size)}</span>
+                        <button
+                          onClick={() => removeFile(f.id)}
+                          className="text-slate-400 hover:text-red-500"
+                        >
+                          <X className="h-3 w-3" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
 
-              {/* Documents / Additional Info */}
+              {/* Documents + Upload */}
               <div>
-                <label className="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300">
-                  Documents / Additional Info
-                </label>
+                <div className="mb-2 flex items-center justify-between">
+                  <label className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                    Documents & References
+                  </label>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="h-7 gap-1 text-xs"
+                    onClick={() => docFileRef.current?.click()}
+                  >
+                    <Upload className="h-3 w-3" />
+                    Upload Docs
+                  </Button>
+                </div>
                 <textarea
                   value={formData.documents}
                   onChange={(e) => setFormData({ ...formData, documents: e.target.value })}
-                  placeholder="Paste links to photos, plans, specifications, or any other details..."
+                  placeholder="Links to plans, specs, blueprints, or any reference materials..."
                   rows={3}
                   className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-500 dark:border-slate-600 dark:bg-slate-800 dark:text-white"
+                />
+                {sectionFiles("documents").length > 0 && (
+                  <div className="mt-2 space-y-1">
+                    {sectionFiles("documents").map((f) => (
+                      <div
+                        key={f.id}
+                        className="flex items-center gap-2 rounded bg-green-50 px-2 py-1 text-xs dark:bg-green-900/20"
+                      >
+                        <Paperclip className="h-3 w-3 text-green-500" />
+                        <span className="flex-1 truncate text-slate-700 dark:text-slate-300">
+                          {f.name}
+                        </span>
+                        <span className="text-slate-400">{formatSize(f.size)}</span>
+                        <button
+                          onClick={() => removeFile(f.id)}
+                          className="text-slate-400 hover:text-red-500"
+                        >
+                          <X className="h-3 w-3" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Site Photos Upload */}
+              <div>
+                <div className="mb-2 flex items-center justify-between">
+                  <label className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                    Site Photos
+                  </label>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="h-7 gap-1 text-xs"
+                    onClick={() => photoFileRef.current?.click()}
+                  >
+                    <Upload className="h-3 w-3" />
+                    Upload Photos
+                  </Button>
+                </div>
+                {sectionFiles("photos").length > 0 ? (
+                  <div className="space-y-1">
+                    {sectionFiles("photos").map((f) => (
+                      <div
+                        key={f.id}
+                        className="flex items-center gap-2 rounded bg-purple-50 px-2 py-1 text-xs dark:bg-purple-900/20"
+                      >
+                        <Paperclip className="h-3 w-3 text-purple-500" />
+                        <span className="flex-1 truncate text-slate-700 dark:text-slate-300">
+                          {f.name}
+                        </span>
+                        <span className="text-slate-400">{formatSize(f.size)}</span>
+                        <button
+                          onClick={() => removeFile(f.id)}
+                          className="text-slate-400 hover:text-red-500"
+                        >
+                          <X className="h-3 w-3" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div
+                    onClick={() => photoFileRef.current?.click()}
+                    className="cursor-pointer rounded-lg border-2 border-dashed border-slate-200 p-4 text-center transition-colors hover:border-blue-300 hover:bg-blue-50/50 dark:border-slate-700 dark:hover:border-blue-600"
+                  >
+                    <Upload className="mx-auto mb-1 h-5 w-5 text-slate-400" />
+                    <p className="text-xs text-slate-500">Drop photos here or click to upload</p>
+                  </div>
+                )}
+              </div>
+
+              {/* Final Notes — AI Enhanced */}
+              <div className="rounded-lg border border-indigo-200 bg-gradient-to-br from-indigo-50 to-blue-50 p-3 dark:border-indigo-800 dark:from-indigo-950/30 dark:to-blue-950/20">
+                <div className="mb-2 flex items-center gap-2">
+                  <Sparkles className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
+                  <label className="text-sm font-medium text-indigo-900 dark:text-indigo-300">
+                    Final Touches & Special Requests
+                  </label>
+                </div>
+                <p className="mb-2 text-xs text-indigo-600 dark:text-indigo-400">
+                  AI will incorporate these details — describe any last-minute requirements, special
+                  conditions, client preferences, or unique considerations.
+                </p>
+                <textarea
+                  value={formData.finalNotes}
+                  onChange={(e) => setFormData({ ...formData, finalNotes: e.target.value })}
+                  placeholder="e.g., Client prefers GAF Timberline HDZ shingles in Charcoal. HOA requires pre-approval. Dumpster on driveway only. Include warranty upgrade option..."
+                  rows={4}
+                  className="w-full rounded-lg border border-indigo-200 bg-white px-3 py-2 text-sm text-slate-900 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 dark:border-indigo-700 dark:bg-slate-900 dark:text-white"
                 />
               </div>
 
@@ -486,28 +764,28 @@ ${formData.documents || "No additional documents provided."}
               <Button
                 onClick={handleGenerate}
                 disabled={generating || !formData.trade || !formData.jobType}
-                className="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800"
+                className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700"
               >
                 {generating ? (
                   <>
-                    <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
-                    Generating Plan...
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    AI is generating your plan...
                   </>
                 ) : (
                   <>
-                    <Zap className="mr-2 h-4 w-4" />
-                    Generate Project Plan
+                    <Sparkles className="mr-2 h-4 w-4" />
+                    Generate AI Project Plan
                   </>
                 )}
               </Button>
 
-              {/* Info Box */}
               <div className="rounded-lg border border-blue-200 bg-blue-50 p-3 dark:border-blue-800 dark:bg-blue-900/20">
                 <div className="flex items-start gap-2">
                   <Info className="mt-0.5 h-4 w-4 flex-shrink-0 text-blue-600 dark:text-blue-400" />
                   <p className="text-xs text-blue-700 dark:text-blue-300">
-                    AI will analyze your inputs and generate a comprehensive project plan with
-                    timelines, materials, and cost estimates.
+                    GPT-4o generates a comprehensive 16-section plan including scope, phased
+                    execution, materials, costs, and compliance. Export as PDF for clients or add to
+                    claims packets.
                   </p>
                 </div>
               </div>
@@ -515,48 +793,72 @@ ${formData.documents || "No additional documents provided."}
           </PageSectionCard>
         </div>
 
-        {/* Right Column - Result Area */}
+        {/* ── Right Column — Result Area ── */}
         <div className="lg:col-span-2">
           <PageSectionCard>
             <h3 className="mb-4 flex items-center gap-2 text-lg font-semibold text-slate-900 dark:text-white">
-              <Layers className="h-5 w-5 text-blue-600" />
-              Generated RoofPlan
+              <FileText className="h-5 w-5 text-blue-600" />
+              Generated Project Plan
             </h3>
 
             {!result && !generating && (
               <div className="rounded-lg border-2 border-dashed border-slate-300 p-12 text-center dark:border-slate-700">
-                <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800">
-                  <Layers className="h-8 w-8 text-slate-400" />
+                <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-blue-100 to-indigo-100 dark:from-blue-900 dark:to-indigo-900">
+                  <Sparkles className="h-8 w-8 text-blue-600 dark:text-blue-400" />
                 </div>
                 <h4 className="mb-2 text-base font-semibold text-slate-900 dark:text-white">
                   Ready to Generate
                 </h4>
                 <p className="text-sm text-slate-600 dark:text-slate-400">
-                  Fill in the specifications on the left and click &ldquo;Generate RoofPlan&rdquo;
-                  to create your AI-powered roof plan with material estimates.
+                  Fill in the details and click &ldquo;Generate AI Project Plan&rdquo;. GPT-4o will
+                  create a comprehensive plan with 16 professional sections.
                 </p>
+                <div className="mt-4 flex flex-wrap justify-center gap-2">
+                  {[
+                    "Scope of Work",
+                    "Phased Execution",
+                    "Materials List",
+                    "Cost Estimate",
+                    "Timeline",
+                    "Safety & Compliance",
+                  ].map((tag) => (
+                    <Badge key={tag} variant="outline" className="text-xs">
+                      {tag}
+                    </Badge>
+                  ))}
+                </div>
               </div>
             )}
 
             {generating && (
-              <div className="rounded-lg border border-slate-200 bg-slate-50 p-12 text-center dark:border-slate-700 dark:bg-slate-900/50">
+              <div className="rounded-lg border border-blue-200 bg-gradient-to-br from-blue-50 to-indigo-50 p-12 text-center dark:border-blue-800 dark:from-blue-950/30 dark:to-indigo-950/20">
                 <div className="mx-auto mb-4 h-12 w-12 animate-spin rounded-full border-4 border-blue-200 border-t-blue-600" />
                 <p className="text-sm font-medium text-slate-700 dark:text-slate-300">
-                  Analyzing roof specifications...
+                  GPT-4o is building your project plan...
                 </p>
+                <p className="mt-1 text-xs text-slate-500">This typically takes 10-20 seconds</p>
               </div>
             )}
 
             {result && !generating && (
               <div className="space-y-4">
-                <div className="rounded-lg border border-slate-200 bg-white p-6 dark:border-slate-700 dark:bg-slate-900">
-                  <pre className="whitespace-pre-wrap font-mono text-xs text-slate-700 dark:text-slate-300">
-                    {result}
-                  </pre>
+                <div className="max-h-[600px] overflow-y-auto rounded-lg border border-slate-200 bg-white p-6 dark:border-slate-700 dark:bg-slate-900">
+                  {renderMarkdownPreview(result)}
                 </div>
 
-                {/* Primary actions */}
                 <div className="flex flex-wrap gap-3">
+                  <Button
+                    onClick={handleExportPDF}
+                    disabled={exporting}
+                    className="gap-2 bg-gradient-to-r from-blue-600 to-indigo-600"
+                  >
+                    {exporting ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <Download className="h-4 w-4" />
+                    )}
+                    {exporting ? "Exporting…" : "Download PDF"}
+                  </Button>
                   <Button
                     variant="outline"
                     onClick={() => {
@@ -566,6 +868,7 @@ ${formData.documents || "No additional documents provided."}
                       a.href = url;
                       a.download = "project-plan.txt";
                       a.click();
+                      URL.revokeObjectURL(url);
                     }}
                   >
                     <Download className="mr-2 h-4 w-4" />
@@ -579,16 +882,12 @@ ${formData.documents || "No additional documents provided."}
                     <FileText className="mr-2 h-4 w-4" />
                     {saving ? "Creating…" : "Transfer to Proposal"}
                   </Button>
-                  <Button
-                    className="bg-gradient-to-r from-blue-600 to-blue-700"
-                    onClick={handleGenerate}
-                  >
-                    <Zap className="mr-2 h-4 w-4" />
+                  <Button variant="outline" onClick={handleGenerate}>
+                    <Sparkles className="mr-2 h-4 w-4" />
                     Regenerate
                   </Button>
                 </div>
 
-                {/* Email modal */}
                 {showEmailModal && (
                   <div className="rounded-lg border border-blue-200 bg-blue-50 p-4 dark:border-blue-800 dark:bg-blue-900/20">
                     <p className="mb-2 text-sm font-medium text-slate-700 dark:text-slate-300">
@@ -617,7 +916,7 @@ ${formData.documents || "No additional documents provided."}
         </div>
       </div>
 
-      {/* ── Saved Plans Panel ─── */}
+      {/* ── Saved Plans ── */}
       {savedPlans.length > 0 && (
         <PageSectionCard>
           <h3 className="mb-4 flex items-center gap-2 text-lg font-semibold text-slate-900 dark:text-white">

@@ -4,6 +4,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { withAuth } from "@/lib/auth/withAuth";
 import prisma from "@/lib/prisma";
 import { isPlatformAdmin } from "@/lib/security/roles";
+import { isValidationError, validateBody } from "@/lib/validation/middleware";
+import { tradesCompanyUpdateSchema } from "@/lib/validation/trades-schemas";
 
 // Minimum members to unlock company page (can be overridden by plan)
 // Set to 1 so every registered user can access their company page
@@ -522,7 +524,8 @@ export const GET = withAuth(async (req: NextRequest, { orgId, userId }) => {
 
 export const PATCH = withAuth(async (req: NextRequest, { orgId, userId }) => {
   try {
-    const body = await req.json();
+    const body = await validateBody(req, tradesCompanyUpdateSchema);
+    if (isValidationError(body)) return body;
     const {
       name,
       description,
@@ -538,7 +541,6 @@ export const PATCH = withAuth(async (req: NextRequest, { orgId, userId }) => {
       specialties,
       yearsInBusiness,
       licenseNumber,
-      // licenseState removed — field does not exist in Prisma schema (ghost field)
       // Extended member-level fields (saved to member profile)
       tagline,
       aboutCompany,

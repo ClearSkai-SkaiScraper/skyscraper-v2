@@ -146,17 +146,56 @@ export default function DamageBuilderClient({ leadId, jobId }: DamageBuilderClie
 
   function handleFileSelect(e: React.ChangeEvent<HTMLInputElement>) {
     const files = Array.from(e.target.files || []);
-    const newPhotos: PhotoItem[] = files.map((file) => ({
-      id: crypto.randomUUID(),
-      file,
-      preview: URL.createObjectURL(file),
-      analyzed: false,
-    }));
-    setPhotos((prev) => [...prev, ...newPhotos]);
-    setError(null);
-    if (files.length > 0 && photos.length === 0) {
-      setSelectedPhotoIndex(0);
-    }
+
+    // Convert HEIC/HEIF on the client side before adding to state
+    const processFiles = async () => {
+      const processed: PhotoItem[] = [];
+      for (const file of files) {
+        const isHeic = /\.(heic|heif)$/i.test(file.name) || /^image\/(heic|heif)$/i.test(file.type);
+        if (isHeic) {
+          try {
+            toast.info(`Converting ${file.name} from HEIC…`);
+            const heic2any = (await import("heic2any")).default;
+            const blob = await heic2any({ blob: file, toType: "image/jpeg", quality: 0.9 });
+            const converted = Array.isArray(blob) ? blob[0] : blob;
+            const jpegFile = new File([converted], file.name.replace(/\.(heic|heif)$/i, ".jpg"), {
+              type: "image/jpeg",
+            });
+            processed.push({
+              id: crypto.randomUUID(),
+              file: jpegFile,
+              preview: URL.createObjectURL(jpegFile),
+              analyzed: false,
+            });
+            toast.success(`Converted ${file.name} to JPEG`);
+          } catch (err) {
+            console.error("HEIC conversion failed:", err);
+            toast.error(`Could not convert ${file.name}. Try uploading as JPG/PNG.`);
+            // Still add original as fallback — server will also try
+            processed.push({
+              id: crypto.randomUUID(),
+              file,
+              preview: URL.createObjectURL(file),
+              analyzed: false,
+            });
+          }
+        } else {
+          processed.push({
+            id: crypto.randomUUID(),
+            file,
+            preview: URL.createObjectURL(file),
+            analyzed: false,
+          });
+        }
+      }
+      setPhotos((prev) => [...prev, ...processed]);
+      setError(null);
+      if (files.length > 0 && photos.length === 0) {
+        setSelectedPhotoIndex(0);
+      }
+    };
+
+    processFiles();
   }
 
   function removePhoto(id: string) {

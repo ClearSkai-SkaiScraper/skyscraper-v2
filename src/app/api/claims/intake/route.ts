@@ -5,14 +5,16 @@
  * Professional 3-step claim creation with auto-healing org validation
  */
 
-import { nanoid } from "nanoid";
 import { logger } from "@/lib/logger";
+import { nanoid } from "nanoid";
 import { NextResponse } from "next/server";
 
 import { requireAuth } from "@/lib/auth/requireAuth";
 import { getNextActionFromStatus } from "@/lib/claims/status";
 import { generateContactSlug } from "@/lib/generateContactSlug";
 import prisma from "@/lib/prisma";
+import { claimIntakeSchema } from "@/lib/validation/claim-schemas";
+import { isValidationError, validateBody } from "@/lib/validation/middleware";
 
 export async function POST(req: Request) {
   try {
@@ -21,21 +23,19 @@ export async function POST(req: Request) {
     if (auth instanceof NextResponse) return auth;
     const { orgId, userId } = auth;
 
-    // 2. PARSE REQUEST BODY
-    const body = await req.json();
+    // 2. PARSE & VALIDATE REQUEST BODY (Zod)
+    const body = await validateBody(req, claimIntakeSchema);
+    if (isValidationError(body)) return body;
     const {
-      // Step 1: Loss Details
       dateOfLoss,
       lossType,
       status,
-      // Step 2: Property
       propertyAddress,
       structureType,
       stories,
       roofType,
       slope,
       squareFootage,
-      // Step 3: Contact & Policy
       contactId,
       contactName,
       contactPhone,
@@ -45,14 +45,6 @@ export async function POST(req: Request) {
       deductible,
       agentName,
     } = body;
-
-    // 3. VALIDATION
-    if (!dateOfLoss || !propertyAddress) {
-      return NextResponse.json(
-        { error: "Date of loss and property address are required." },
-        { status: 400 }
-      );
-    }
 
     // 4. AUTO-CREATE CONTACT if needed (contactId is required FK on properties)
     let finalContactId = contactId;
