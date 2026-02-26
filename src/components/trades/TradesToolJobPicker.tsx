@@ -42,8 +42,8 @@ export function TradesToolJobPicker({
   };
 
   return (
-    <div className="mb-4 flex flex-col gap-2 rounded-lg border border-slate-200 bg-slate-50/50 p-3 dark:border-slate-700 dark:bg-slate-800/50 sm:flex-row sm:items-center sm:gap-3">
-      <span className="whitespace-nowrap text-sm font-medium text-slate-600 dark:text-slate-400">
+    <div className="mb-4 flex flex-col gap-2 rounded-lg border-2 border-[#117CFF]/20 bg-white p-3 shadow-sm dark:border-[#117CFF]/30 dark:bg-slate-900 sm:flex-row sm:items-center sm:gap-3">
+      <span className="whitespace-nowrap text-sm font-medium text-slate-700 dark:text-slate-300">
         {label}
       </span>
       <JobClaimSelector

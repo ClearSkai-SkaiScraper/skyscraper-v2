@@ -8,7 +8,9 @@ import {
   ChevronRight,
   FileDown,
   Loader2,
+  Package,
   PenTool,
+  Save,
   Search,
   Share2,
   Sparkles,
@@ -75,6 +77,54 @@ export default function DamageBuilderClient({ leadId, jobId }: DamageBuilderClie
 
   // Export state
   const [exporting, setExporting] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [savedId, setSavedId] = useState<string | null>(null);
+
+  async function handleSaveEstimate() {
+    if (findings.length === 0) return;
+    setSaving(true);
+    try {
+      const payload = {
+        title: propertyAddress ? `Damage Estimate — ${propertyAddress}` : "Damage Estimate",
+        type: "damage_estimate",
+        contentJson: JSON.stringify({
+          photos: photos.map((p) => ({ id: p.id, analyzed: p.analyzed, caption: p.caption })),
+          findings,
+          options: { includeCodeCompliance, includeMaterialSpecs, propertyAddress },
+          savedAt: new Date().toISOString(),
+        }),
+        ...(leadId ? { leadId } : {}),
+        ...(jobId ? { jobId } : {}),
+      };
+      const res = await fetch("/api/artifacts", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      if (!res.ok) throw new Error("Save failed");
+      const result = await res.json();
+      setSavedId(result.id || "saved");
+      toast.success("Estimate saved successfully");
+    } catch (err) {
+      toast.error("Failed to save estimate. Please try again.");
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  function handleTransferToMaterials() {
+    // Build materials list from findings that have material specs
+    const materials = findings
+      .filter((f) => f.materialSpec)
+      .map((f) => f.materialSpec)
+      .join("\n");
+    const query = new URLSearchParams();
+    if (materials) query.set("prefill", encodeURIComponent(materials));
+    if (propertyAddress) query.set("address", encodeURIComponent(propertyAddress));
+    if (jobId) query.set("jobContext", `job:${jobId}`);
+    else if (leadId) query.set("jobContext", `lead:${leadId}`);
+    _router.push(`/trades/materials-estimator?${query.toString()}`);
+  }
 
   // Cleanup preview URLs on unmount
   useEffect(() => {
@@ -362,9 +412,9 @@ export default function DamageBuilderClient({ leadId, jobId }: DamageBuilderClie
         })}
       </div>
 
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-12 md:gap-6">
         {/* Left Column: Photo Queue + Options */}
-        <div className="space-y-4 lg:col-span-3">
+        <div className="space-y-4 md:col-span-4 lg:col-span-3">
           {/* Photo Upload Section */}
           <div className="rounded-2xl border border-[#117CFF]/20 bg-gradient-to-br from-white to-slate-50 p-5 shadow-lg dark:from-slate-900 dark:to-slate-800">
             <h2 className="mb-4 flex items-center gap-2 text-base font-bold text-[#117CFF]">
@@ -510,14 +560,14 @@ export default function DamageBuilderClient({ leadId, jobId }: DamageBuilderClie
         </div>
 
         {/* Center Column: Main Photo View */}
-        <div className="flex flex-col lg:col-span-6">
-          <div className="relative flex aspect-[4/3] min-h-[400px] flex-1 items-center justify-center rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-700 dark:bg-slate-800/50">
+        <div className="flex flex-col md:col-span-8 lg:col-span-6">
+          <div className="relative flex aspect-[4/3] min-h-[250px] flex-1 items-center justify-center overflow-hidden rounded-2xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-700 dark:bg-slate-800/50 sm:p-6">
             {photos.length > 0 && selectedPhoto ? (
               <>
                 <img
                   src={selectedPhoto.preview}
                   alt={`Photo ${selectedPhotoIndex + 1}`}
-                  className="max-h-[500px] max-w-full rounded-lg object-contain shadow-lg"
+                  className="max-h-[300px] max-w-full rounded-lg object-contain shadow-lg sm:max-h-[400px] lg:max-h-[500px]"
                 />
 
                 {/* Navigation arrows */}
@@ -567,7 +617,7 @@ export default function DamageBuilderClient({ leadId, jobId }: DamageBuilderClie
         </div>
 
         {/* Right Column: Findings & Captions Panel */}
-        <div className="space-y-4 lg:col-span-3">
+        <div className="space-y-4 md:col-span-12 lg:col-span-3">
           {/* Caption Panel */}
           {selectedPhoto?.caption && (
             <div className="rounded-2xl border border-green-200 bg-green-50 p-4 dark:border-green-900 dark:bg-green-900/20">
@@ -753,6 +803,32 @@ export default function DamageBuilderClient({ leadId, jobId }: DamageBuilderClie
                   </>
                 )}
               </button>
+
+              <div className="mt-2 grid grid-cols-2 gap-2">
+                <button
+                  type="button"
+                  onClick={handleSaveEstimate}
+                  disabled={saving || !!savedId}
+                  className="flex items-center justify-center gap-1.5 rounded-lg border border-green-200 bg-green-50 px-3 py-2 text-xs font-medium text-green-700 transition-all hover:bg-green-100 disabled:opacity-50 dark:border-green-900 dark:bg-green-900/20 dark:text-green-400"
+                >
+                  {saving ? (
+                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                  ) : savedId ? (
+                    <Check className="h-3.5 w-3.5" />
+                  ) : (
+                    <Save className="h-3.5 w-3.5" />
+                  )}
+                  {savedId ? "Saved" : "Save Estimate"}
+                </button>
+                <button
+                  type="button"
+                  onClick={handleTransferToMaterials}
+                  className="flex items-center justify-center gap-1.5 rounded-lg border border-purple-200 bg-purple-50 px-3 py-2 text-xs font-medium text-purple-700 transition-all hover:bg-purple-100 dark:border-purple-900 dark:bg-purple-900/20 dark:text-purple-400"
+                >
+                  <Package className="h-3.5 w-3.5" />
+                  To Materials
+                </button>
+              </div>
             </div>
           )}
         </div>

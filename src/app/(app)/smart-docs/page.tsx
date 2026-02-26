@@ -18,15 +18,17 @@ import {
   FileText,
   Loader2,
   MoreHorizontal,
+  Paperclip,
   PenTool,
   Plus,
   RefreshCw,
   Search,
   Send,
   Trash2,
+  Upload,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 import { PageContainer } from "@/components/layout/PageContainer";
 import { PageHero } from "@/components/layout/PageHero";
@@ -165,6 +167,8 @@ export default function SmartDocsPage() {
   const [newSignerEmail, setNewSignerEmail] = useState("");
   const [newSignerRole, setNewSignerRole] = useState("homeowner");
   const [creating, setCreating] = useState(false);
+  const [uploadFile, setUploadFile] = useState<File | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   /* ------------------------------------------------------------------ */
   /*  Fetch envelopes                                                    */
@@ -194,6 +198,23 @@ export default function SmartDocsPage() {
     if (!newTitle || !newSignerEmail) return;
     setCreating(true);
     try {
+      // Step 1: If a PDF file is attached, upload it first
+      let documentUrl: string | null = null;
+      if (uploadFile) {
+        const formData = new FormData();
+        formData.append("file", uploadFile);
+        formData.append("folder", "smart-docs");
+        const uploadRes = await fetch("/api/uploads/file", {
+          method: "POST",
+          body: formData,
+        });
+        if (uploadRes.ok) {
+          const uploadData = await uploadRes.json();
+          documentUrl = uploadData.url || uploadData.publicUrl || null;
+        }
+      }
+
+      // Step 2: Create the envelope with optional document URL
       const res = await fetch("/api/esign/envelopes/create", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -206,6 +227,7 @@ export default function SmartDocsPage() {
               email: newSignerEmail,
             },
           ],
+          ...(documentUrl ? { documentUrl } : {}),
         }),
       });
       const data = await res.json();
@@ -249,6 +271,8 @@ export default function SmartDocsPage() {
     setNewSignerName("");
     setNewSignerEmail("");
     setNewSignerRole("homeowner");
+    setUploadFile(null);
+    if (fileInputRef.current) fileInputRef.current.value = "";
   }
 
   /* ------------------------------------------------------------------ */
@@ -337,12 +361,45 @@ export default function SmartDocsPage() {
               <DialogHeader>
                 <DialogTitle>Create Document</DialogTitle>
                 <DialogDescription>
-                  Start a new document for e-signature. You can attach a template or upload a PDF
-                  later.
+                  Upload a PDF for e-signature, or create a blank document to build on-site.
                 </DialogDescription>
               </DialogHeader>
 
               <div className="grid gap-4 py-2">
+                {/* PDF Upload */}
+                <div className="grid gap-1.5">
+                  <Label>Attach PDF (optional)</Label>
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept=".pdf,application/pdf"
+                    onChange={(e) => setUploadFile(e.target.files?.[0] || null)}
+                    className="hidden"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => fileInputRef.current?.click()}
+                    className="flex items-center gap-2 rounded-lg border-2 border-dashed border-slate-200 px-4 py-3 text-sm text-slate-600 transition-colors hover:border-[#117CFF]/40 hover:bg-[#117CFF]/5 dark:border-slate-700 dark:text-slate-400 dark:hover:border-[#117CFF]/40"
+                  >
+                    {uploadFile ? (
+                      <>
+                        <Paperclip className="h-4 w-4 text-[#117CFF]" />
+                        <span className="truncate font-medium text-slate-900 dark:text-white">
+                          {uploadFile.name}
+                        </span>
+                        <span className="ml-auto text-xs text-slate-400">
+                          {(uploadFile.size / 1024).toFixed(0)} KB
+                        </span>
+                      </>
+                    ) : (
+                      <>
+                        <Upload className="h-4 w-4" />
+                        <span>Click to upload a PDF document</span>
+                      </>
+                    )}
+                  </button>
+                </div>
+
                 <div className="grid gap-1.5">
                   <Label>Document Title *</Label>
                   <Input

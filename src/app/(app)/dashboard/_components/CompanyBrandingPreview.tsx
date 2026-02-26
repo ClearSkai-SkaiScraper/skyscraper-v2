@@ -102,39 +102,48 @@ export default function CompanyBrandingPreview() {
         </div>
       ) : (
         /* Branding preview card */
-        <div className="space-y-4">
-          {/* Logo + Company Name */}
-          <div className="flex items-center gap-4">
-            {branding?.logoUrl ? (
-              <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-xl border border-slate-200 bg-white dark:border-slate-700">
-                <Image
-                  src={branding.logoUrl}
-                  alt="Company Logo"
-                  fill
-                  className="object-contain p-1"
-                />
+        <div className="space-y-5">
+          {/* Hero banner: team photo with logo overlay */}
+          <div className="relative overflow-hidden rounded-2xl">
+            {/* Team Photo — full width banner */}
+            {branding?.teamPhotoUrl ? (
+              <div className="relative h-48 w-full sm:h-56">
+                <Image src={branding.teamPhotoUrl} alt="Team Photo" fill className="object-cover" />
+                {/* Gradient overlay for readability */}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
               </div>
             ) : (
-              <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-xl border-2 border-dashed border-slate-200 dark:border-slate-700">
-                <Building2 className="h-6 w-6 text-slate-400" />
+              <div className="flex h-40 items-center justify-center bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-800 dark:to-slate-700">
+                <Building2 className="h-12 w-12 text-slate-300 dark:text-slate-600" />
               </div>
             )}
-            <div>
-              <p className="text-lg font-bold text-slate-900 dark:text-white">
-                {branding?.companyName || "Your Company"}
-              </p>
-              {branding?.license && (
-                <p className="text-xs text-slate-500">License: {branding.license}</p>
+
+            {/* Logo + Name — overlaid on banner */}
+            <div className="absolute bottom-0 left-0 right-0 flex items-end gap-4 p-5">
+              {branding?.logoUrl ? (
+                <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-xl border-2 border-white bg-white shadow-lg sm:h-20 sm:w-20">
+                  <Image
+                    src={branding.logoUrl}
+                    alt="Company Logo"
+                    fill
+                    className="object-contain p-1.5"
+                  />
+                </div>
+              ) : (
+                <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-xl border-2 border-white/50 bg-white/20 backdrop-blur-sm sm:h-20 sm:w-20">
+                  <Building2 className="h-7 w-7 text-white/80" />
+                </div>
               )}
+              <div className="min-w-0 pb-1">
+                <p className="truncate text-lg font-bold text-white drop-shadow-md sm:text-xl">
+                  {branding?.companyName || "Your Company"}
+                </p>
+                {branding?.license && (
+                  <p className="text-xs text-white/80 drop-shadow">Lic: {branding.license}</p>
+                )}
+              </div>
             </div>
           </div>
-
-          {/* Team Photo */}
-          {branding?.teamPhotoUrl && (
-            <div className="relative h-36 w-full overflow-hidden rounded-xl border border-slate-200 dark:border-slate-700">
-              <Image src={branding.teamPhotoUrl} alt="Team Photo" fill className="object-cover" />
-            </div>
-          )}
 
           {/* Color swatches */}
           <div className="flex items-center gap-3">

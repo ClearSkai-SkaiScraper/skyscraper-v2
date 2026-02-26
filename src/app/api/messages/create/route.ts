@@ -1,4 +1,5 @@
 import { logger } from "@/lib/logger";
+import { clerkClient } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 
@@ -96,6 +97,39 @@ export const POST = withAuth(async (req: NextRequest, { userId, orgId }) => {
           }
         } catch {
           // supplementary lookup
+        }
+      }
+
+      // Fallback: Check Clerk directly for org membership (handles cases where user_organizations table is out of sync)
+      if (!recipient) {
+        try {
+          const clerk = await clerkClient();
+          // recipientUserId could be a Clerk user ID — verify they belong to this org
+          const memberships = await clerk.organizations.getOrganizationMembershipList({
+            organizationId: orgId,
+            limit: 100,
+          });
+          const match = memberships.data?.find((m) => m.publicUserData?.userId === recipientUserId);
+          if (match) {
+            // They ARE in this org via Clerk but missing from user_organizations table
+            resolvedRecipientId = recipientUserId;
+            recipient = { userId: recipientUserId } as any;
+            // Auto-heal: create user_organizations row so future lookups work
+            try {
+              await prisma.user_organizations.create({
+                data: {
+                  id: crypto.randomUUID(),
+                  userId: recipientUserId,
+                  organizationId: orgId,
+                  role: (match.role as string) || "member",
+                },
+              });
+            } catch {
+              // row may already exist — ignore
+            }
+          }
+        } catch (clerkErr) {
+          logger.warn("[MESSAGES] Clerk org membership check failed:", clerkErr);
         }
       }
 
