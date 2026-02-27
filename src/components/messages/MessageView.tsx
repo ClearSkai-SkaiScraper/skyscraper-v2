@@ -3,6 +3,8 @@
 import { formatDistanceToNow } from "date-fns";
 import { User } from "lucide-react";
 
+import { MessageAttachments } from "@/components/messages/MessageAttachments";
+
 interface Message {
   id: string;
   body: string;
@@ -10,6 +12,7 @@ interface Message {
   senderUserId: string;
   createdAt: Date;
   read: boolean;
+  attachments?: string[];
 }
 
 interface MessageViewProps {
@@ -72,6 +75,9 @@ export default function MessageView({
                   )}
                   <div className="min-w-0 flex-1">
                     <p className="whitespace-pre-wrap break-words">{message.body}</p>
+                    {message.attachments && message.attachments.length > 0 && (
+                      <MessageAttachments attachments={message.attachments} />
+                    )}
                     <p
                       className={`mt-1 text-xs ${isOwnMessage ? "text-blue-100" : "text-slate-500"}`}
                     >

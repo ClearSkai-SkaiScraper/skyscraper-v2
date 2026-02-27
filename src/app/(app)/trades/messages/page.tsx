@@ -14,6 +14,7 @@ import { toast } from "sonner";
 import ConfirmDeleteDialog from "@/components/ConfirmDeleteDialog";
 import { PageContainer } from "@/components/layout/PageContainer";
 import { PageHero } from "@/components/layout/PageHero";
+import { ConnectionInviteBanner } from "@/components/messages/ConnectionInviteBanner";
 import MessageInput from "@/components/messages/MessageInput";
 import MessageThreadList from "@/components/messages/MessageThreadList";
 import MessageView from "@/components/messages/MessageView";
@@ -79,6 +80,7 @@ interface PortalMessageResponse {
   senderType?: string;
   createdAt?: string;
   read?: boolean;
+  attachments?: string[];
 }
 
 interface Thread {
@@ -103,6 +105,7 @@ interface Message {
   senderType: string;
   createdAt: Date;
   read: boolean;
+  attachments?: string[];
 }
 
 export default function TradesMessagesPage() {
@@ -266,6 +269,7 @@ export default function TradesMessagesPage() {
                 senderType: m.senderType || "client",
                 createdAt: new Date(m.createdAt || new Date().toISOString()),
                 read: m.read ?? true,
+                attachments: m.attachments || [],
               }))
             );
           }
@@ -425,6 +429,7 @@ export default function TradesMessagesPage() {
                 senderType: m.senderType || "client",
                 createdAt: new Date(m.createdAt || new Date().toISOString()),
                 read: m.read ?? true,
+                attachments: m.attachments || [],
               }))
             );
           }
@@ -620,6 +625,7 @@ export default function TradesMessagesPage() {
                   onScroll={handleScroll}
                   className="flex-1 overflow-y-auto p-4"
                 >
+                  {selectedThread?.id && <ConnectionInviteBanner threadId={selectedThread.id} />}
                   <MessageView
                     messages={messages}
                     currentUserId={currentUserId}

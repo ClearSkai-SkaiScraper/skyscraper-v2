@@ -4,6 +4,7 @@ import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 import ClientDocumentSharing from "@/components/claims/ClientDocumentSharing";
+import { DocumentForwardButton } from "@/components/documents/DocumentForwardButton";
 import { Button } from "@/components/ui/button";
 import { DocumentUpload } from "@/components/uploads";
 import { clientFetch } from "@/lib/http/clientFetch";
@@ -307,6 +308,12 @@ export default function ClaimDocumentsPage() {
                         >
                           <Download className="h-4 w-4" />
                         </a>
+                        <DocumentForwardButton
+                          documentId={doc.id}
+                          claimId={claimId!}
+                          filename={doc.title}
+                          onForwarded={fetchDocuments}
+                        />
                       </div>
                     </td>
                   </tr>

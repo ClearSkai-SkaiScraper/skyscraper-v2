@@ -8,7 +8,7 @@
  *   <ConnectionInviteBanner threadId={threadId} />
  */
 
-import { Check, Loader2, UserPlus, X } from "lucide-react";
+import { Check, Loader2, UserPlus } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 

@@ -131,6 +131,7 @@ export async function GET(req: NextRequest, context: RouteContext) {
       senderType: msg.senderType,
       createdAt: msg.createdAt,
       fromPortal: msg.fromPortal,
+      attachments: msg.attachments || [],
     }));
 
     return NextResponse.json({

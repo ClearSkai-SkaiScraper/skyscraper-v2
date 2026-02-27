@@ -50,10 +50,7 @@ export const POST = withAuth(async (req: NextRequest, { userId, orgId }) => {
     });
 
     if (!claim) {
-      return NextResponse.json(
-        { ok: false, error: "Claim not found" },
-        { status: 404 }
-      );
+      return NextResponse.json({ ok: false, error: "Claim not found" }, { status: 404 });
     }
 
     // Verify document belongs to claim
@@ -63,10 +60,7 @@ export const POST = withAuth(async (req: NextRequest, { userId, orgId }) => {
     });
 
     if (!doc) {
-      return NextResponse.json(
-        { ok: false, error: "Document not found" },
-        { status: 404 }
-      );
+      return NextResponse.json({ ok: false, error: "Document not found" }, { status: 404 });
     }
 
     // Set document as visible to client
@@ -139,9 +133,6 @@ export const POST = withAuth(async (req: NextRequest, { userId, orgId }) => {
     });
   } catch (error) {
     logger.error("[POST /api/claims/documents/forward]", error);
-    return NextResponse.json(
-      { ok: false, error: "Failed to forward document" },
-      { status: 500 }
-    );
+    return NextResponse.json({ ok: false, error: "Failed to forward document" }, { status: 500 });
   }
 });

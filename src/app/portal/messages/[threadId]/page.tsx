@@ -6,6 +6,8 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
+import { ConnectionInviteBanner } from "@/components/messages/ConnectionInviteBanner";
+import { MessageAttachments } from "@/components/messages/MessageAttachments";
 import MessageInput from "@/components/messages/MessageInput";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -198,6 +200,8 @@ export default function ThreadDetailPage() {
 
       {/* Messages Container */}
       <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-lg dark:border-slate-700 dark:bg-slate-900">
+        {/* Connection Banner */}
+        {selectedThreadId && <ConnectionInviteBanner threadId={selectedThreadId} />}
         {/* Messages List */}
         <div className="h-[calc(100vh-400px)] min-h-[400px] overflow-y-auto p-4">
           {messages.length === 0 ? (
@@ -229,6 +233,9 @@ export default function ThreadDetailPage() {
                       }`}
                     >
                       <p className="text-sm">{message.content}</p>
+                      {message.attachments && message.attachments.length > 0 && (
+                        <MessageAttachments attachments={message.attachments} />
+                      )}
                       <div
                         className={`mt-2 flex items-center gap-2 text-xs ${
                           isOwn ? "text-purple-200" : "text-slate-500"
