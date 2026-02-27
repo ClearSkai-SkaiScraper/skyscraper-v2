@@ -1,0 +1,160 @@
+import { auth } from "@clerk/nextjs/server";
+import { NextRequest, NextResponse } from "next/server";
+
+import { logger } from "@/lib/logger";
+import prisma from "@/lib/prisma";
+
+export const dynamic = "force-dynamic";
+
+type RouteContext = {
+  params: Promise<{ claimId: string }>;
+};
+
+/**
+ * GET /api/portal/claims/[claimId]/documents
+ * Returns documents shared with the client for this claim.
+ */
+export async function GET(req: NextRequest, context: RouteContext) {
+  try {
+    const { userId } = await auth();
+    if (!userId) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const { claimId } = await context.params;
+
+    // Verify client owns this claim
+    const client = await prisma.client.findFirst({
+      where: { userId },
+      select: { id: true },
+    });
+
+    if (!client) {
+      return NextResponse.json({ error: "Client not found" }, { status: 404 });
+    }
+
+    const claim = await prisma.claims.findFirst({
+      where: {
+        id: claimId,
+        clientId: client.id,
+      },
+      select: { id: true },
+    });
+
+    if (!claim) {
+      return NextResponse.json({ error: "Claim not found" }, { status: 404 });
+    }
+
+    // Get documents from file_assets (non-image files visible to client)
+    const documents = await prisma.file_assets.findMany({
+      where: {
+        claimId,
+        mimeType: { not: { startsWith: "image/" } },
+        visibleToClient: true,
+      },
+      select: {
+        id: true,
+        filename: true,
+        publicUrl: true,
+        mimeType: true,
+        sizeBytes: true,
+        category: true,
+        createdAt: true,
+      },
+      orderBy: { createdAt: "desc" },
+    });
+
+    const allDocs = documents.map((d) => ({
+      id: d.id,
+      title: d.filename,
+      type: d.category || "document",
+      url: d.publicUrl,
+      mimeType: d.mimeType,
+      size: d.sizeBytes,
+      sharedAt: d.createdAt,
+    }));
+
+    return NextResponse.json({
+      documents: allDocs,
+      total: allDocs.length,
+    });
+  } catch (error) {
+    logger.error("[PORTAL_CLAIM_DOCUMENTS_ERROR]", error);
+    return NextResponse.json({ error: "Failed to load documents" }, { status: 500 });
+  }
+}
+
+/**
+ * POST /api/portal/claims/[claimId]/documents
+ * Upload a document to a claim from the client portal.
+ */
+export async function POST(req: NextRequest, context: RouteContext) {
+  try {
+    const { userId } = await auth();
+    if (!userId) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const { claimId } = await context.params;
+
+    // Verify client owns this claim
+    const client = await prisma.client.findFirst({
+      where: { userId },
+      select: { id: true },
+    });
+
+    if (!client) {
+      return NextResponse.json({ error: "Client not found" }, { status: 404 });
+    }
+
+    const claim = await prisma.claims.findFirst({
+      where: {
+        id: claimId,
+        clientId: client.id,
+      },
+      select: { id: true, orgId: true },
+    });
+
+    if (!claim) {
+      return NextResponse.json({ error: "Claim not found" }, { status: 404 });
+    }
+
+    const body = await req.json();
+    const { url, filename, mimeType } = body;
+
+    if (!url) {
+      return NextResponse.json({ error: "Document URL is required" }, { status: 400 });
+    }
+
+    // Create file_assets record
+    const doc = await prisma.file_assets.create({
+      data: {
+        id: crypto.randomUUID(),
+        claimId,
+        orgId: claim.orgId,
+        ownerId: userId,
+        filename: filename || "document",
+        publicUrl: url,
+        storageKey: url,
+        bucket: "portal-uploads",
+        mimeType: mimeType || "application/pdf",
+        sizeBytes: 0,
+        category: "client_upload",
+        visibleToClient: true,
+        updatedAt: new Date(),
+      },
+    });
+
+    return NextResponse.json({
+      success: true,
+      document: {
+        id: doc.id,
+        url: doc.publicUrl,
+        filename: doc.filename,
+      },
+    });
+  } catch (error) {
+    logger.error("[PORTAL_CLAIM_DOCUMENTS_POST_ERROR]", error);
+    return NextResponse.json({ error: "Failed to add document" }, { status: 500 });
+  }
+}

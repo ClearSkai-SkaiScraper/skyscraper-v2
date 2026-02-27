@@ -113,7 +113,7 @@ export default function ClientMessagesPage() {
 
   const fetchThread = async (threadId: string, silent = false) => {
     try {
-      const res = await fetch(`/api/portal/messages/thread/${threadId}`);
+      const res = await fetch(`/api/portal/messages/${threadId}`);
       if (!res.ok) {
         throw new Error(`Failed to fetch thread: ${res.status}`);
       }

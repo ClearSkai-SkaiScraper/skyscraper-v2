@@ -69,7 +69,7 @@ export default function ThreadDetailPage() {
   const fetchThread = async (id: string, silent = false) => {
     if (!silent) setLoading(true);
     try {
-      const res = await fetch(`/api/portal/messages/thread/${id}`);
+      const res = await fetch(`/api/portal/messages/${id}`);
       if (res.ok) {
         const data = await res.json();
         setThread(data);
