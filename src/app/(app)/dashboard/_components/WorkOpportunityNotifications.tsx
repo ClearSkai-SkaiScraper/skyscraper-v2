@@ -116,7 +116,7 @@ export default function WorkOpportunityNotifications() {
           Work Opportunities
         </h3>
         <Link
-          href="/network/trades"
+          href="/connections"
           className="text-xs font-medium text-purple-600 hover:underline dark:text-purple-400"
         >
           View All
@@ -212,7 +212,7 @@ export default function WorkOpportunityNotifications() {
                     </p>
                   </div>
                   <Link
-                    href={`/network/trades/opportunity/${opp.id}`}
+                    href={`/invitations`}
                     className="flex-shrink-0 rounded-lg bg-purple-600 px-3 py-1.5 text-xs font-medium text-white shadow-sm transition-all hover:-translate-y-0.5 hover:bg-purple-700 hover:shadow-md"
                   >
                     View
@@ -224,7 +224,7 @@ export default function WorkOpportunityNotifications() {
           {/* See More Link */}
           {totalCount > 3 && (
             <Link
-              href="/network/trades"
+              href="/connections"
               className="block rounded-xl border border-dashed border-purple-300 p-3 text-center text-sm font-medium text-purple-600 transition-colors hover:bg-purple-50 dark:border-purple-700 dark:text-purple-400 dark:hover:bg-purple-900/20"
             >
               View {totalCount - 3} more {totalCount - 3 === 1 ? "opportunity" : "opportunities"}

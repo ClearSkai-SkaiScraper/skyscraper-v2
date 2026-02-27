@@ -113,9 +113,11 @@ const navSections: NavSection[] = [
     items: [
       { label: "My Profile & Company", href: "/trades/profile" },
       { label: "Trades Network Hub", href: "/trades" },
+      { label: "Connections", href: "/company/connections" },
       { label: "Job Board", href: "/trades/jobs" },
       { label: "Vendor Intelligence", href: "/vendor-network" },
       { label: "Invitations", href: "/invitations" },
+      { label: "Notifications", href: "/notifications" },
       { label: "Company Settings", href: "/settings" },
       { label: "Team & Company Seats", href: "/teams" },
     ],
@@ -186,6 +188,7 @@ export function AppSidebar() {
     if (href === "/appointments") return badges.upcomingAppointments || null;
     if (href === "/invitations") return badges.pendingInvitations || null;
     if (href === "/invitations/analytics") return badges.pendingInvitations || null;
+    if (href === "/notifications") return badges.unreadNotifications || null;
     return null;
   };
 

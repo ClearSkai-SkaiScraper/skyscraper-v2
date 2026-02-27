@@ -1,5 +1,5 @@
-import { auth, currentUser } from "@clerk/nextjs/server";
 import { logger } from "@/lib/logger";
+import { auth, currentUser } from "@clerk/nextjs/server";
 import { randomUUID } from "crypto";
 import { NextResponse } from "next/server";
 import { z } from "zod";
@@ -9,6 +9,7 @@ import prisma from "@/lib/prisma";
 const sendMessageSchema = z.object({
   threadId: z.string(),
   body: z.string().min(1).max(5000),
+  attachments: z.array(z.string().url()).optional().default([]),
 });
 
 export async function POST(req: Request) {
@@ -163,6 +164,7 @@ export async function POST(req: Request) {
         senderUserId: senderUserId!,
         senderType: senderType!,
         body: validated.body,
+        attachments: validated.attachments,
       },
     });
 

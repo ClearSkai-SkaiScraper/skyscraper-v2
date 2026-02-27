@@ -893,6 +893,7 @@ model Message {
   body          String
   read          Boolean       @default(false)
   fromPortal    Boolean       @default(false)
+  attachments   String[]      @default([])
   createdAt     DateTime      @default(now())
   MessageThread MessageThread @relation(fields: [threadId], references: [id], onDelete: Cascade)
 
