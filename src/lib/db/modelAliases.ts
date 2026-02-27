@@ -10,7 +10,7 @@ const aliasMap: Record<string, keyof typeof prisma> = {
   // completionPhoto: 'completion_photos',
   // damageAssessment: 'damage_assessments',
   // propertyImpact: 'property_impacts',
-  // reportRecord: 'reports',
+  reportRecord: "reports",
   // webhooks: 'webhooks',
   // automationAction: 'automation_actions',
   // automationTrigger: 'automation_triggers',

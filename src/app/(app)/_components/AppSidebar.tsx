@@ -45,7 +45,6 @@ const navSections: NavSection[] = [
       { label: "Storm Center", href: "/storm-center" },
       { label: "Job Pipeline", href: "/pipeline" },
       { label: "Analytics Hub", href: "/analytics" },
-      { label: "Analytics Dashboard", href: "/analytics/dashboard" },
       { label: "Smart Actions", href: "/ai/smart-actions" },
       { label: "Quick DOL", href: "/quick-dol" },
     ],
@@ -68,6 +67,7 @@ const navSections: NavSection[] = [
     items: [
       { label: "Retail Workspace", href: "/jobs/retail" },
       { label: "Lead Routing", href: "/leads" },
+      { label: "Analytics Dashboard", href: "/analytics/dashboard" },
       { label: "Appointments & Inspections", href: "/appointments" },
       { label: "Task Manager", href: "/tasks" },
       { label: "Crew Manager", href: "/crews" },
