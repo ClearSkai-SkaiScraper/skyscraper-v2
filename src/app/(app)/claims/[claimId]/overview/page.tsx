@@ -1,7 +1,7 @@
 // src/app/(app)/claims/[claimId]/overview/page.tsx
 "use client";
 
-import { FileText, Layers } from "lucide-react";
+import { ClipboardCheck, FileText, Layers, PenLine } from "lucide-react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -13,6 +13,7 @@ import { TabErrorBoundary } from "@/components/errors/TabErrorBoundary";
 import { ClaimWorkspaceSkeleton } from "@/components/loading/LoadingStates";
 
 import { logger } from "@/lib/logger";
+import { CarrierExportButton } from "../_components/CarrierExportButton";
 import { ClaimsSidebar } from "../_components/ClaimsSidebar";
 import { ClientConnectSection } from "../_components/ClientConnectSection";
 import { GenerateReportButton } from "../_components/GenerateReportButton";
@@ -436,26 +437,58 @@ export default function OverviewPage() {
 
         {/* 5. Actions — on the bottom */}
         <SectionCard title="Actions">
-          <div className="flex flex-wrap gap-4">
-            <Link
-              href={`/claims/${claimId}/supplement`}
-              className="inline-flex items-center gap-2 rounded-lg bg-yellow-600 px-4 py-2 text-sm font-semibold text-white shadow transition-colors hover:bg-yellow-700 focus:outline-none focus:ring-2 focus:ring-yellow-400 dark:bg-yellow-700 dark:hover:bg-yellow-800"
-            >
-              <Layers className="h-4 w-4" />
-              Generate Supplement
-            </Link>
-            <Link
-              href={`/claims/rebuttal-builder?claimId=${claimId}`}
-              className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow transition-colors hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-400 dark:bg-blue-700 dark:hover:bg-blue-800"
-            >
-              <FileText className="h-4 w-4" />
-              Generate Rebuttal
-            </Link>
-            <GenerateReportButton
-              claimId={claimId}
-              variant="outline"
-              className="inline-flex items-center gap-2 border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-800 shadow-sm hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:hover:bg-slate-800"
-            />
+          <div className="space-y-4">
+            {/* AI Generation Actions */}
+            <div>
+              <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                Generate
+              </p>
+              <div className="flex flex-wrap gap-3">
+                <Link
+                  href={`/claims/${claimId}/supplement`}
+                  className="inline-flex items-center gap-2 rounded-lg bg-yellow-600 px-4 py-2 text-sm font-semibold text-white shadow transition-colors hover:bg-yellow-700 focus:outline-none focus:ring-2 focus:ring-yellow-400 dark:bg-yellow-700 dark:hover:bg-yellow-800"
+                >
+                  <Layers className="h-4 w-4" />
+                  Generate Supplement
+                </Link>
+                <Link
+                  href={`/claims/rebuttal-builder?claimId=${claimId}`}
+                  className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow transition-colors hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-400 dark:bg-blue-700 dark:hover:bg-blue-800"
+                >
+                  <FileText className="h-4 w-4" />
+                  Generate Rebuttal
+                </Link>
+                <CarrierExportButton claimId={claimId} carrier={claim.carrier} />
+                <GenerateReportButton
+                  claimId={claimId}
+                  variant="outline"
+                  className="inline-flex items-center gap-2 border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-800 shadow-sm hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:hover:bg-slate-800"
+                />
+              </div>
+            </div>
+
+            {/* Build Documents */}
+            <div>
+              <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                Build Documents
+              </p>
+              <div className="flex flex-wrap gap-3">
+                <Link
+                  href={`/claims-ready-folder/${claimId}`}
+                  className="inline-flex items-center gap-2 rounded-lg border border-blue-200 bg-blue-50 px-4 py-2 text-sm font-semibold text-blue-700 shadow-sm transition-colors hover:bg-blue-100 dark:border-blue-800 dark:bg-blue-950 dark:text-blue-300 dark:hover:bg-blue-900"
+                >
+                  <ClipboardCheck className="h-4 w-4" />
+                  Claim Packet
+                </Link>
+                <Link
+                  href={`/reports/contractor-packet?claimId=${claimId}`}
+                  className="inline-flex items-center gap-2 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-2 text-sm font-semibold text-emerald-700 shadow-sm transition-colors hover:bg-emerald-100 dark:border-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 dark:hover:bg-emerald-900"
+                >
+                  <PenLine className="h-4 w-4" />
+                  Bid Package
+                </Link>
+              </div>
+            </div>
           </div>
         </SectionCard>
       </div>

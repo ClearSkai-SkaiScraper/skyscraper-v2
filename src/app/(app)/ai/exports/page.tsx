@@ -14,7 +14,7 @@ import {
   Sparkles,
 } from "lucide-react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 
 import { PageContainer } from "@/components/layout/PageContainer";
@@ -64,16 +64,20 @@ interface ClaimOption {
 
 export default function CarrierExportsPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { isLoaded, isSignedIn } = useUser();
   const { orgId } = useAuth();
 
   const [loading, setLoading] = useState(false);
   const [loadingClaims, setLoadingClaims] = useState(true);
   const [claims, setClaims] = useState<ClaimOption[]>([]);
-  const [selectedClaimId, setSelectedClaimId] = useState("");
+  const [selectedClaimId, setSelectedClaimId] = useState(searchParams?.get("claimId") || "");
   const [carrier, setCarrier] = useState("");
   const [format, setFormat] = useState("");
   const [result, setResult] = useState<any>(null);
+
+  // Pre-select carrier from URL param (after claims load so auto-detect can also fire)
+  const urlCarrier = searchParams?.get("carrier") || "";
 
   useEffect(() => {
     if (isLoaded && !isSignedIn) {
@@ -110,7 +114,7 @@ export default function CarrierExportsPage() {
     fetchClaims();
   }, [isSignedIn, orgId]);
 
-  // Auto-select carrier when claim is selected
+  // Auto-select carrier when claim is selected (from claim data or URL param)
   useEffect(() => {
     if (selectedClaimId) {
       const claim = claims.find((c) => c.id === selectedClaimId);
@@ -120,10 +124,21 @@ export default function CarrierExportsPage() {
         );
         if (matchedCarrier) {
           setCarrier(matchedCarrier.id);
+          return;
+        }
+      }
+      // Fall back to URL carrier param if no match from claim data
+      if (urlCarrier && !carrier) {
+        const matchedUrlCarrier = CARRIERS.find(
+          (c) =>
+            c.id === urlCarrier.toLowerCase() || c.name.toLowerCase() === urlCarrier.toLowerCase()
+        );
+        if (matchedUrlCarrier) {
+          setCarrier(matchedUrlCarrier.id);
         }
       }
     }
-  }, [selectedClaimId, claims]);
+  }, [selectedClaimId, claims, urlCarrier]);
 
   if (!isLoaded || !isSignedIn) {
     return (
@@ -251,9 +266,10 @@ export default function CarrierExportsPage() {
             </li>
           </ul>
           <p className="mt-3 text-xs text-blue-600 dark:text-blue-400">
-            <strong>💡 Pro Tip:</strong> Generate the carrier export first, then use the
-            Claims-Ready Folder to build your complete submission package. The AI will pull this
-            export data for the most accurate carrier-specific formatting.
+            <strong>💡 Pro Tip:</strong> You can also generate carrier exports directly from any
+            claim&apos;s overview page — click &quot;Carrier Export&quot; in the Actions section and
+            your claim + carrier are auto-selected. The AI will save this export and use the
+            carrier-specific formatting for all future reports on that claim.
           </p>
         </CardContent>
       </Card>

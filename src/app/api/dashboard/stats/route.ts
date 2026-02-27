@@ -7,6 +7,16 @@ import { withAuth } from "@/lib/auth/withAuth";
 import prisma from "@/lib/prisma";
 import { toPlainJSON } from "@/lib/serialize";
 
+/** Wraps a promise so a single failure won't crash the entire Promise.all */
+async function safe<T>(p: Promise<T>, fallback: T): Promise<T> {
+  try {
+    return await p;
+  } catch (err) {
+    logger.warn("[DASHBOARD_STATS] query failed, using fallback:", err);
+    return fallback;
+  }
+}
+
 export const GET = withAuth(async (req: NextRequest, { orgId, userId }) => {
   try {
     // withAuth provides DB-backed orgId — no more fallback chains needed
@@ -36,10 +46,11 @@ export const GET = withAuth(async (req: NextRequest, { orgId, userId }) => {
     const sixtyDaysAgo = new Date();
     sixtyDaysAgo.setDate(sixtyDaysAgo.getDate() - 60);
 
+    // Each query is individually resilient — one failure won't zero-out everything
     const [
       claimsCount,
       leadsCount,
-      tradesPostsCount,
+      unreadMessagesCount,
       retailJobsCount,
       recentClaims,
       recentLeads,
@@ -49,107 +60,165 @@ export const GET = withAuth(async (req: NextRequest, { orgId, userId }) => {
       leadsPrior30,
       retailJobsLast30,
       retailJobsPrior30,
-      postsLast30,
-      postsPrior30,
+      messagesLast30,
+      messagesPrior30,
       // Report Analytics (Phase 5)
       pdfReportsLast30,
       videoReportsLast30,
       uniqueClaimsWithReportsData,
     ] = await Promise.all([
-      prisma.claims.count({ where: orgFilter }),
-      prisma.leads.count({
-        where: {
-          ...orgFilter,
-          // Exclude retail-category leads — those show under "Retail Jobs" card
-          NOT: { jobCategory: { in: ["out_of_pocket", "financed", "repair"] } },
-        },
-      }),
-      prisma.network_posts.count({ where: { userId } }),
-      prisma.leads.count({
-        where: {
-          ...orgFilter,
-          jobCategory: { in: ["out_of_pocket", "financed", "repair"] },
-          stage: { notIn: ["closed", "lost"] },
-        },
-      }),
-      prisma.claims.findMany({
-        where: orgFilter,
-        orderBy: { createdAt: "desc" },
-        take: 5,
-        select: {
-          id: true,
-          claimNumber: true,
-          status: true,
-          createdAt: true,
-          damageType: true,
-        },
-      }),
-      prisma.leads.findMany({
-        where: orgFilter,
-        orderBy: { createdAt: "desc" },
-        take: 5,
-        select: {
-          id: true,
-          title: true,
-          stage: true,
-          createdAt: true,
-          contactId: true,
-        },
-      }),
+      safe(prisma.claims.count({ where: orgFilter }), 0),
+      safe(
+        prisma.leads.count({
+          where: {
+            ...orgFilter,
+            // Exclude retail-category leads — those show under "Retail Jobs" card
+            NOT: { jobCategory: { in: ["out_of_pocket", "financed", "repair"] } },
+          },
+        }),
+        0
+      ),
+      // Unread messages count — threads where org has unread messages
+      safe(
+        prisma.message.count({
+          where: {
+            read: false,
+            NOT: { senderUserId: userId },
+            MessageThread: { orgId },
+          },
+        }),
+        0
+      ),
+      safe(
+        prisma.leads.count({
+          where: {
+            ...orgFilter,
+            jobCategory: { in: ["out_of_pocket", "financed", "repair"] },
+            stage: { notIn: ["closed", "lost"] },
+          },
+        }),
+        0
+      ),
+      safe(
+        prisma.claims.findMany({
+          where: orgFilter,
+          orderBy: { createdAt: "desc" },
+          take: 5,
+          select: {
+            id: true,
+            claimNumber: true,
+            status: true,
+            createdAt: true,
+            damageType: true,
+          },
+        }),
+        []
+      ),
+      safe(
+        prisma.leads.findMany({
+          where: orgFilter,
+          orderBy: { createdAt: "desc" },
+          take: 5,
+          select: {
+            id: true,
+            title: true,
+            stage: true,
+            createdAt: true,
+            contactId: true,
+          },
+        }),
+        []
+      ),
       // Trends - last 30 days
-      prisma.claims.count({ where: { ...orgFilter, createdAt: { gte: thirtyDaysAgo } } }),
-      prisma.claims.count({
-        where: { ...orgFilter, createdAt: { gte: sixtyDaysAgo, lt: thirtyDaysAgo } },
-      }),
-      prisma.leads.count({
-        where: {
-          ...orgFilter,
-          createdAt: { gte: thirtyDaysAgo },
-          NOT: { jobCategory: { in: ["out_of_pocket", "financed", "repair"] } },
-        },
-      }),
-      prisma.leads.count({
-        where: {
-          ...orgFilter,
-          createdAt: { gte: sixtyDaysAgo, lt: thirtyDaysAgo },
-          NOT: { jobCategory: { in: ["out_of_pocket", "financed", "repair"] } },
-        },
-      }),
-      prisma.leads.count({
-        where: {
-          ...orgFilter,
-          jobCategory: { in: ["out_of_pocket", "financed", "repair"] },
-          stage: { notIn: ["closed", "lost"] },
-          createdAt: { gte: thirtyDaysAgo },
-        },
-      }),
-      prisma.leads.count({
-        where: {
-          ...orgFilter,
-          jobCategory: { in: ["out_of_pocket", "financed", "repair"] },
-          stage: { notIn: ["closed", "lost"] },
-          createdAt: { gte: sixtyDaysAgo, lt: thirtyDaysAgo },
-        },
-      }),
-      prisma.network_posts.count({
-        where: { userId, createdAt: { gte: thirtyDaysAgo } },
-      }),
-      prisma.network_posts.count({
-        where: { userId, createdAt: { gte: sixtyDaysAgo, lt: thirtyDaysAgo } },
-      }),
+      safe(prisma.claims.count({ where: { ...orgFilter, createdAt: { gte: thirtyDaysAgo } } }), 0),
+      safe(
+        prisma.claims.count({
+          where: { ...orgFilter, createdAt: { gte: sixtyDaysAgo, lt: thirtyDaysAgo } },
+        }),
+        0
+      ),
+      safe(
+        prisma.leads.count({
+          where: {
+            ...orgFilter,
+            createdAt: { gte: thirtyDaysAgo },
+            NOT: { jobCategory: { in: ["out_of_pocket", "financed", "repair"] } },
+          },
+        }),
+        0
+      ),
+      safe(
+        prisma.leads.count({
+          where: {
+            ...orgFilter,
+            createdAt: { gte: sixtyDaysAgo, lt: thirtyDaysAgo },
+            NOT: { jobCategory: { in: ["out_of_pocket", "financed", "repair"] } },
+          },
+        }),
+        0
+      ),
+      safe(
+        prisma.leads.count({
+          where: {
+            ...orgFilter,
+            jobCategory: { in: ["out_of_pocket", "financed", "repair"] },
+            stage: { notIn: ["closed", "lost"] },
+            createdAt: { gte: thirtyDaysAgo },
+          },
+        }),
+        0
+      ),
+      safe(
+        prisma.leads.count({
+          where: {
+            ...orgFilter,
+            jobCategory: { in: ["out_of_pocket", "financed", "repair"] },
+            stage: { notIn: ["closed", "lost"] },
+            createdAt: { gte: sixtyDaysAgo, lt: thirtyDaysAgo },
+          },
+        }),
+        0
+      ),
+      // Messages trends (replaces network posts)
+      safe(
+        prisma.message.count({
+          where: {
+            read: false,
+            NOT: { senderUserId: userId },
+            MessageThread: { orgId },
+            createdAt: { gte: thirtyDaysAgo },
+          },
+        }),
+        0
+      ),
+      safe(
+        prisma.message.count({
+          where: {
+            read: false,
+            NOT: { senderUserId: userId },
+            MessageThread: { orgId },
+            createdAt: { gte: sixtyDaysAgo, lt: thirtyDaysAgo },
+          },
+        }),
+        0
+      ),
       // Report Analytics - Phase 5
-      prisma.$queryRaw<Array<{ count: bigint }>>`
-        SELECT COUNT(*) as count FROM "reports" 
-        WHERE "orgId" = ${orgId} AND "createdAt" >= ${thirtyDaysAgo}
-      `
-        .then((rows) => Number(rows[0]?.count || 0))
-        .catch(() => 0),
+      safe(
+        prisma.$queryRaw<Array<{ count: bigint }>>`
+          SELECT COUNT(*) as count FROM "reports" 
+          WHERE "orgId" = ${orgId} AND "createdAt" >= ${thirtyDaysAgo}
+        `.then((rows) => Number(rows[0]?.count || 0)),
+        0
+      ),
       // VideoReport table doesn't exist - return 0
       Promise.resolve(0),
-      prisma.$queryRaw<Array<{ claimId: string }>>`
-        SELECT DISTINCT "claimId" FROM "reports" 
-        WHERE "orgId" = ${orgId} AND "createdAt" >= ${thirtyDaysAgo}
-      `.catch(() => []),
+      safe(
+        prisma.$queryRaw<Array<{ claimId: string }>>`
+          SELECT DISTINCT "claimId" FROM "reports" 
+          WHERE "orgId" = ${orgId} AND "createdAt" >= ${thirtyDaysAgo}
+        `,
+        []
+      ),
     ]);
 
     // Calculate percentage trends
@@ -166,14 +235,14 @@ export const GET = withAuth(async (req: NextRequest, { orgId, userId }) => {
       stats: {
         claimsCount,
         leadsCount,
-        tradesPostsCount,
+        unreadMessagesCount,
         jobsCount: retailJobsCount,
         recentClaims,
         recentLeads,
         claimsTrend: calculateTrend(claimsLast30, claimsPrior30),
         leadsTrend: calculateTrend(leadsLast30, leadsPrior30),
         jobsTrend: calculateTrend(retailJobsLast30, retailJobsPrior30),
-        postsTrend: calculateTrend(postsLast30, postsPrior30),
+        messagesTrend: calculateTrend(messagesLast30, messagesPrior30),
         // Report Analytics - Phase 5
         pdfReportsCount: pdfReportsLast30,
         videoReportsCount: videoReportsLast30,
@@ -185,9 +254,6 @@ export const GET = withAuth(async (req: NextRequest, { orgId, userId }) => {
     return NextResponse.json(payload);
   } catch (error) {
     logger.error("[GET /api/dashboard/stats] error:", error);
-    return NextResponse.json(
-      { ok: false, error: "Unknown error" },
-      { status: 500 }
-    );
+    return NextResponse.json({ ok: false, error: "Unknown error" }, { status: 500 });
   }
 });

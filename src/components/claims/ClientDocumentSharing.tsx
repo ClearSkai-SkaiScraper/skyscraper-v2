@@ -67,13 +67,19 @@ export default function ClientDocumentSharing({
       const response = await fetch(
         `/api/claims/documents/sharing?claimId=${claimId}&clientId=${selectedClientId}`
       );
-      if (!response.ok) throw new Error("Failed to load documents");
+      if (!response.ok) {
+        // Auth or scope errors — silently degrade, main doc list still works
+        logger.warn("ClientDocumentSharing: API returned", response.status);
+        setDocuments([]);
+        return;
+      }
 
       const data = await response.json();
       setDocuments(data.documents || []);
     } catch (error) {
       logger.error("Error loading documents:", error);
-      toast.error("Failed to load documents");
+      // Don't toast on load — the main documents list still works
+      setDocuments([]);
     } finally {
       setLoading(false);
     }

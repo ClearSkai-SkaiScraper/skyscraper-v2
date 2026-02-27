@@ -44,6 +44,7 @@ const navSections: NavSection[] = [
       { label: "KPI Dashboard", href: "/dashboard/kpis" },
       { label: "Storm Center", href: "/storm-center" },
       { label: "Job Pipeline", href: "/pipeline" },
+      { label: "Analytics Hub", href: "/analytics" },
       { label: "Analytics Dashboard", href: "/analytics/dashboard" },
       { label: "Smart Actions", href: "/ai/smart-actions" },
       { label: "Quick DOL", href: "/quick-dol" },

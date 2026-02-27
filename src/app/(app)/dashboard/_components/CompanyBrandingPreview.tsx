@@ -1,6 +1,6 @@
 "use client";
 
-import { Building2, ExternalLink, Palette, Upload } from "lucide-react";
+import { Building2, ExternalLink, Globe, Mail, Palette, Phone, Upload, User } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
@@ -101,51 +101,86 @@ export default function CompanyBrandingPreview() {
           </Button>
         </div>
       ) : (
-        /* Branding preview card */
+        /* Branding preview card — professional business card layout */
         <div className="space-y-5">
-          {/* Hero banner: team photo with logo overlay */}
-          <div className="relative overflow-hidden rounded-2xl">
-            {/* Team Photo — full width banner */}
-            {branding?.teamPhotoUrl ? (
-              <div className="relative h-48 w-full sm:h-56">
-                <Image src={branding.teamPhotoUrl} alt="Team Photo" fill className="object-cover" />
-                {/* Gradient overlay for readability */}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
+          {/* Company Identity — Logo, Headshot, Name */}
+          <div className="flex items-center gap-5 rounded-xl border border-slate-100 bg-slate-50/50 p-4 dark:border-slate-800 dark:bg-slate-800/30">
+            {/* Company Logo */}
+            {branding?.logoUrl ? (
+              <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm dark:border-slate-700">
+                <Image
+                  src={branding.logoUrl}
+                  alt="Company Logo"
+                  fill
+                  className="object-contain p-1.5"
+                />
               </div>
             ) : (
-              <div className="flex h-40 items-center justify-center bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-800 dark:to-slate-700">
-                <Building2 className="h-12 w-12 text-slate-300 dark:text-slate-600" />
+              <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-xl border border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-800">
+                <Building2 className="h-7 w-7 text-slate-300 dark:text-slate-600" />
               </div>
             )}
 
-            {/* Logo + Name — overlaid on banner */}
-            <div className="absolute bottom-0 left-0 right-0 flex items-end gap-4 p-5">
-              {branding?.logoUrl ? (
-                <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-xl border-2 border-white bg-white shadow-lg sm:h-20 sm:w-20">
-                  <Image
-                    src={branding.logoUrl}
-                    alt="Company Logo"
-                    fill
-                    className="object-contain p-1.5"
-                  />
-                </div>
-              ) : (
-                <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-xl border-2 border-white/50 bg-white/20 backdrop-blur-sm sm:h-20 sm:w-20">
-                  <Building2 className="h-7 w-7 text-white/80" />
-                </div>
-              )}
-              <div className="min-w-0 pb-1">
-                <p className="truncate text-lg font-bold text-white drop-shadow-md sm:text-xl">
-                  {branding?.companyName || "Your Company"}
-                </p>
-                {branding?.license && (
-                  <p className="text-xs text-white/80 drop-shadow">Lic: {branding.license}</p>
-                )}
+            {/* Team / Employee Headshot */}
+            {branding?.teamPhotoUrl ? (
+              <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-full border-2 border-white shadow-sm dark:border-slate-700">
+                <Image src={branding.teamPhotoUrl} alt="Team Photo" fill className="object-cover" />
               </div>
+            ) : (
+              <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full border-2 border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-800">
+                <User className="h-7 w-7 text-slate-300 dark:text-slate-600" />
+              </div>
+            )}
+
+            {/* Company Name & License */}
+            <div className="min-w-0 flex-1">
+              <p className="truncate text-lg font-bold text-slate-900 dark:text-white">
+                {branding?.companyName || "Your Company"}
+              </p>
+              {branding?.license && (
+                <p className="text-xs text-slate-500 dark:text-slate-400">
+                  License: {branding.license}
+                </p>
+              )}
+              {branding?.business_state && (
+                <p className="text-xs text-slate-500 dark:text-slate-400">
+                  {branding.business_state}
+                </p>
+              )}
             </div>
           </div>
 
-          {/* Color swatches */}
+          {/* Contact Details Grid */}
+          {(branding?.phone || branding?.email || branding?.website) && (
+            <div className="grid gap-2 sm:grid-cols-3">
+              {branding?.phone && (
+                <div className="flex items-center gap-2 rounded-lg border border-slate-100 bg-white px-3 py-2.5 dark:border-slate-800 dark:bg-slate-800/40">
+                  <Phone className="h-3.5 w-3.5 text-blue-500" />
+                  <span className="truncate text-sm text-slate-700 dark:text-slate-300">
+                    {branding.phone}
+                  </span>
+                </div>
+              )}
+              {branding?.email && (
+                <div className="flex items-center gap-2 rounded-lg border border-slate-100 bg-white px-3 py-2.5 dark:border-slate-800 dark:bg-slate-800/40">
+                  <Mail className="h-3.5 w-3.5 text-blue-500" />
+                  <span className="truncate text-sm text-slate-700 dark:text-slate-300">
+                    {branding.email}
+                  </span>
+                </div>
+              )}
+              {branding?.website && (
+                <div className="flex items-center gap-2 rounded-lg border border-slate-100 bg-white px-3 py-2.5 dark:border-slate-800 dark:bg-slate-800/40">
+                  <Globe className="h-3.5 w-3.5 text-blue-500" />
+                  <span className="truncate text-sm text-slate-700 dark:text-slate-300">
+                    {branding.website}
+                  </span>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Color swatches + Tax */}
           <div className="flex items-center gap-3">
             <div className="flex items-center gap-2">
               <div
@@ -167,15 +202,6 @@ export default function CompanyBrandingPreview() {
               </span>
             )}
           </div>
-
-          {/* Contact info */}
-          {(branding?.phone || branding?.email || branding?.website) && (
-            <div className="flex flex-wrap gap-3 rounded-lg bg-slate-50 px-3 py-2 text-xs text-slate-600 dark:bg-slate-800/50 dark:text-slate-400">
-              {branding?.phone && <span>📞 {branding.phone}</span>}
-              {branding?.email && <span>✉️ {branding.email}</span>}
-              {branding?.website && <span>🌐 {branding.website}</span>}
-            </div>
-          )}
 
           {/* PDF Ready indicator */}
           <div className="flex items-center gap-2 text-xs">

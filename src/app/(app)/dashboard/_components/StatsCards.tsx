@@ -1,14 +1,6 @@
 "use client";
 
-import {
-  ArrowUpRight,
-  FileBarChart,
-  Hammer,
-  MessageSquare,
-  Plus,
-  TrendingUp,
-  UserPlus,
-} from "lucide-react";
+import { ArrowUpRight, FileBarChart, Hammer, Mail, Plus, TrendingUp, UserPlus } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
@@ -17,12 +9,12 @@ import { logger } from "@/lib/logger";
 type DashboardStats = {
   claimsCount: number;
   leadsCount: number;
-  tradesPostsCount: number;
+  unreadMessagesCount: number;
   jobsCount: number;
   claimsTrend?: string;
   leadsTrend?: string;
   jobsTrend?: string;
-  postsTrend?: string;
+  messagesTrend?: string;
 };
 
 export default function StatsCards() {
@@ -53,7 +45,7 @@ export default function StatsCards() {
     );
   }
 
-  // Order: Total Leads → Active Claims → Network Posts → Retail Jobs
+  // Order: Total Leads → Active Claims → Messages → Retail Jobs
   const cards = [
     {
       label: "Total Leads",
@@ -82,13 +74,13 @@ export default function StatsCards() {
       iconColor: "text-blue-600 dark:text-blue-400",
     },
     {
-      label: "Network Posts",
-      value: stats?.tradesPostsCount ?? 0,
-      Icon: MessageSquare,
-      trend: stats?.postsTrend || "--",
-      href: "/trades",
-      createHref: "/trades",
-      createLabel: "Post Now",
+      label: "Messages",
+      value: stats?.unreadMessagesCount ?? 0,
+      Icon: Mail,
+      trend: stats?.messagesTrend || "--",
+      href: "/messages",
+      createHref: "/messages",
+      createLabel: "Open Inbox",
       gradient: "from-purple-500 to-violet-600",
       bgGradient: "from-purple-50 to-violet-50 dark:from-purple-950/40 dark:to-violet-950/40",
       iconBg: "bg-purple-500/10 dark:bg-purple-500/20",
