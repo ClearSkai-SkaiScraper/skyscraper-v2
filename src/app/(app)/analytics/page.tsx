@@ -1,14 +1,12 @@
 "use client";
 
-import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { cn } from "@/lib/utils";
 import {
   Activity,
   ArrowRight,
   BarChart3,
   CheckCircle2,
   CloudSun,
+  FileBarChart,
   FileText,
   Gauge,
   LineChart,
@@ -20,6 +18,12 @@ import {
   Zap,
 } from "lucide-react";
 import Link from "next/link";
+
+import { PageContainer } from "@/components/layout/PageContainer";
+import { PageHero } from "@/components/layout/PageHero";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
 // ─── Analytics Page Catalog ─────────────────────────────────────────────────
 
@@ -99,7 +103,7 @@ const PLATFORM_HEALTH: AnalyticsPage[] = [
     href: "/settings/pilot",
     icon: Rocket,
     badge: "Pilot",
-    badgeColor: "bg-amber-100 text-amber-700 dark:bg-amber-950 dark:text-amber-300",
+    badgeColor: "bg-amber-100 text-amber-700 dark:bg-amber-900 dark:text-amber-200",
   },
   {
     title: "Onboarding Funnel",
@@ -107,7 +111,7 @@ const PLATFORM_HEALTH: AnalyticsPage[] = [
     href: "/settings/onboarding-analytics",
     icon: Zap,
     badge: "New",
-    badgeColor: "bg-blue-100 text-blue-700 dark:bg-blue-950 dark:text-blue-300",
+    badgeColor: "bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-200",
   },
   {
     title: "Go / No-Go Readiness",
@@ -115,7 +119,7 @@ const PLATFORM_HEALTH: AnalyticsPage[] = [
     href: "/settings/go-no-go",
     icon: CheckCircle2,
     badge: "Launch",
-    badgeColor: "bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300",
+    badgeColor: "bg-emerald-100 text-emerald-700 dark:bg-emerald-900 dark:text-emerald-200",
   },
 ];
 
@@ -123,26 +127,37 @@ const PLATFORM_HEALTH: AnalyticsPage[] = [
 
 export default function AnalyticsHubPage() {
   return (
-    <div className="mx-auto max-w-6xl space-y-10 p-6">
-      {/* Header */}
-      <div>
-        <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 text-white">
-            <BarChart3 className="h-5 w-5" />
-          </div>
-          <div>
-            <h1 className="text-2xl font-bold tracking-tight">Analytics Hub</h1>
-            <p className="text-muted-foreground">
-              Every metric in one place — operations, executive insights, and platform health.
-            </p>
-          </div>
+    <PageContainer maxWidth="7xl">
+      <PageHero
+        section="reports"
+        title="Analytics Hub"
+        subtitle="Every metric in one place — operations, executive insights, and platform health"
+        icon={<BarChart3 className="h-6 w-6" />}
+      >
+        <div className="flex flex-wrap gap-2">
+          <Button asChild className="bg-white text-blue-600 hover:bg-blue-50">
+            <Link href="/analytics/dashboard">
+              <FileBarChart className="mr-2 h-4 w-4" />
+              KPI Dashboard
+            </Link>
+          </Button>
+          <Button
+            asChild
+            variant="outline"
+            className="border-white/20 bg-white/10 text-white hover:bg-white/20"
+          >
+            <Link href="/analytics/performance">
+              <TrendingUp className="mr-2 h-4 w-4" />
+              Performance
+            </Link>
+          </Button>
         </div>
-      </div>
+      </PageHero>
 
       {/* Operations Section */}
       <AnalyticsSection
         title="Operations"
-        description="Day-to-day claims processing and team performance."
+        description="Day-to-day claims processing and team performance"
         icon={Settings2}
         color="indigo"
         pages={OPERATIONS}
@@ -151,7 +166,7 @@ export default function AnalyticsHubPage() {
       {/* Executive Section */}
       <AnalyticsSection
         title="Executive"
-        description="High-level business intelligence and growth metrics."
+        description="High-level business intelligence and growth metrics"
         icon={Gauge}
         color="purple"
         pages={EXECUTIVE}
@@ -160,12 +175,12 @@ export default function AnalyticsHubPage() {
       {/* Platform Health Section */}
       <AnalyticsSection
         title="Platform Health"
-        description="Pilot readiness, onboarding funnels, and launch gates."
+        description="Pilot readiness, onboarding funnels, and launch gates"
         icon={Rocket}
         color="emerald"
         pages={PLATFORM_HEALTH}
       />
-    </div>
+    </PageContainer>
   );
 }
 
@@ -186,37 +201,40 @@ function AnalyticsSection({
 }) {
   const colorMap = {
     indigo: {
-      icon: "bg-indigo-100 text-indigo-600 dark:bg-indigo-950 dark:text-indigo-400",
-      line: "border-indigo-200 dark:border-indigo-900",
+      gradient: "from-indigo-500 to-blue-600",
+      iconBg: "bg-indigo-100 text-indigo-600 dark:bg-indigo-900/50 dark:text-indigo-400",
+      border: "border-indigo-200 dark:border-indigo-800",
     },
     purple: {
-      icon: "bg-purple-100 text-purple-600 dark:bg-purple-950 dark:text-purple-400",
-      line: "border-purple-200 dark:border-purple-900",
+      gradient: "from-purple-500 to-violet-600",
+      iconBg: "bg-purple-100 text-purple-600 dark:bg-purple-900/50 dark:text-purple-400",
+      border: "border-purple-200 dark:border-purple-800",
     },
     emerald: {
-      icon: "bg-emerald-100 text-emerald-600 dark:bg-emerald-950 dark:text-emerald-400",
-      line: "border-emerald-200 dark:border-emerald-900",
+      gradient: "from-emerald-500 to-teal-600",
+      iconBg: "bg-emerald-100 text-emerald-600 dark:bg-emerald-900/50 dark:text-emerald-400",
+      border: "border-emerald-200 dark:border-emerald-800",
     },
   };
 
   return (
-    <section>
-      <div className="mb-4 flex items-center gap-3">
+    <section className="mb-10">
+      <div className="mb-5 flex items-center gap-3">
         <div
           className={cn(
-            "flex h-8 w-8 items-center justify-center rounded-md",
-            colorMap[color].icon
+            "flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br shadow-md",
+            colorMap[color].gradient
           )}
         >
-          <Icon className="h-4 w-4" />
+          <Icon className="h-5 w-5 text-white" />
         </div>
         <div>
-          <h2 className="text-lg font-semibold">{title}</h2>
-          <p className="text-sm text-muted-foreground">{description}</p>
+          <h2 className="text-lg font-semibold text-slate-900 dark:text-white">{title}</h2>
+          <p className="text-sm text-slate-500 dark:text-slate-400">{description}</p>
         </div>
       </div>
 
-      <div className={cn("grid gap-3 sm:grid-cols-2 lg:grid-cols-3")}>
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {pages.map((page) => (
           <AnalyticsCard key={page.href} page={page} />
         ))}
@@ -232,30 +250,28 @@ function AnalyticsCard({ page }: { page: AnalyticsPage }) {
 
   return (
     <Link href={page.href} className="group">
-      <Card className="h-full transition-all duration-200 hover:border-primary/40 hover:shadow-md group-hover:-translate-y-0.5">
-        <CardHeader className="pb-2">
-          <div className="flex items-start justify-between">
-            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-muted text-muted-foreground transition-colors group-hover:bg-primary/10 group-hover:text-primary">
-              <Icon className="h-4.5 w-4.5" />
-            </div>
-            <div className="flex items-center gap-2">
-              {page.badge && (
-                <Badge
-                  variant="secondary"
-                  className={cn("text-[10px] font-medium", page.badgeColor)}
-                >
-                  {page.badge}
-                </Badge>
-              )}
-              <ArrowRight className="h-4 w-4 text-muted-foreground/40 transition-all group-hover:translate-x-0.5 group-hover:text-primary" />
-            </div>
+      <div className="h-full rounded-xl border border-slate-200 bg-white p-5 shadow-sm transition-all duration-200 hover:border-blue-300 hover:shadow-md group-hover:-translate-y-0.5 dark:border-slate-700 dark:bg-slate-800">
+        <div className="flex items-start justify-between">
+          <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-slate-100 text-slate-600 transition-colors group-hover:bg-blue-100 group-hover:text-blue-600 dark:bg-slate-700 dark:text-slate-400 dark:group-hover:bg-blue-900/50 dark:group-hover:text-blue-400">
+            <Icon className="h-5 w-5" />
           </div>
-          <CardTitle className="mt-2 text-sm font-semibold">{page.title}</CardTitle>
-        </CardHeader>
-        <CardContent className="pt-0">
-          <CardDescription className="text-xs leading-relaxed">{page.description}</CardDescription>
-        </CardContent>
-      </Card>
+          <div className="flex items-center gap-2">
+            {page.badge && (
+              <Badge
+                variant="secondary"
+                className={cn("text-[10px] font-semibold", page.badgeColor)}
+              >
+                {page.badge}
+              </Badge>
+            )}
+            <ArrowRight className="h-4 w-4 text-slate-300 transition-all group-hover:translate-x-0.5 group-hover:text-blue-500 dark:text-slate-600" />
+          </div>
+        </div>
+        <h3 className="mt-4 text-sm font-semibold text-slate-900 dark:text-white">{page.title}</h3>
+        <p className="mt-1.5 text-xs leading-relaxed text-slate-500 dark:text-slate-400">
+          {page.description}
+        </p>
+      </div>
     </Link>
   );
 }
