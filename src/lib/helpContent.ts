@@ -752,16 +752,6 @@ export const helpContentRegistry: Record<string, HelpContent> = {
     ],
   },
 
-  "/tokens": {
-    title: "AI Token Balance",
-    description: "View your AI token usage and purchase additional tokens.",
-    steps: [
-      "Check your current token balance",
-      "View usage history by tool and date",
-      "Purchase token packs when running low",
-      "Tokens are consumed when generating AI reports and analyses",
-    ],
-  },
   "/support": {
     title: "Support Center",
     description: "Get help, report issues, and access documentation.",
@@ -972,7 +962,7 @@ export const helpContentRegistry: Record<string, HelpContent> = {
       "Review the AI output and approve or edit before saving",
     ],
     tips: [
-      "Smart Actions use your AI tokens — check your balance before bulk processing",
+      "All AI features are included in your Pro subscription — no per-use limits",
       "Custom actions can be created in Settings",
     ],
   },

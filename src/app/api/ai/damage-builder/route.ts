@@ -147,10 +147,7 @@ async function handlePOST(
     }
   }
 
-  // 9) Get updated token balance
-  const updatedBalance = { remaining: 0 }; // TODO: getTokenStatus removed — wire up new token system
-
-  // 10) Log success and return
+  // 9) Log success and return
   const duration = Date.now() - startTime;
   log.info("[damage-builder] Request completed", {
     userId,
@@ -162,7 +159,6 @@ async function handlePOST(
 
   return ok({
     pdfUrl: publicUrl,
-    balance: updatedBalance,
     report: json,
   });
 }

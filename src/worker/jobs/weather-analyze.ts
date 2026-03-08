@@ -1,13 +1,13 @@
 /**
  * Weather Analyze Worker Job
- * 
+ *
  * Fetches weather data for a property location and date range.
  * Currently uses placeholder data - replace with real NOAA/NEXRAD pipeline.
  */
 
 import type { Job as PgBossJob } from "pg-boss";
 import { pool } from "../../lib/db/index.js";
-import { recordJobEvent, spendTokens } from "../../lib/queue/hooks.js";
+import { recordJobEvent } from "../../lib/queue/hooks.js";
 
 export interface WeatherPayload {
   lat: number;
@@ -21,10 +21,7 @@ export interface WeatherPayload {
 /**
  * Weather analysis job handler
  */
-export async function jobWeatherAnalyze(
-  payload: WeatherPayload,
-  job: PgBossJob
-): Promise<void> {
+export async function jobWeatherAnalyze(payload: WeatherPayload, job: PgBossJob): Promise<void> {
   console.log(`Starting weather analysis for (${payload.lat}, ${payload.lng})`);
 
   await recordJobEvent(job, "working", "Weather analysis started");
@@ -36,10 +33,11 @@ export async function jobWeatherAnalyze(
 
     // Fetch real weather data (tries Visual Crossing first, falls back to WeatherStack)
     const weatherData = await fetchWeatherData(lat, lng, dateFrom, dateTo);
-    
+
     const summary = {
       hailRisk: weatherData.hailDetected ? "high" : "low",
-      windRisk: weatherData.maxWindSpeed > 40 ? "high" : weatherData.maxWindSpeed > 25 ? "medium" : "low",
+      windRisk:
+        weatherData.maxWindSpeed > 40 ? "high" : weatherData.maxWindSpeed > 25 ? "medium" : "low",
       temperatureRange: `${weatherData.minTemp}°F - ${weatherData.maxTemp}°F`,
       precipitationTotal: `${weatherData.totalPrecipitation} inches`,
       note: `Weather data from ${weatherData.provider}`,
@@ -79,9 +77,6 @@ export async function jobWeatherAnalyze(
     const weatherResultId = result.rows[0].id;
     const resultSummary = result.rows[0].summary;
 
-    // Charge 1 token for weather analysis
-    await spendTokens(job, "weather-analyze", -1);
-
     // Record completion
     await recordJobEvent(job, "completed", "Weather analysis complete", {
       weatherResultId,
@@ -116,13 +111,14 @@ async function fetchWeatherData(
   raw: any;
 }> {
   // Try Visual Crossing first (better for historical data)
-  const visualCrossingKey = process.env.VISUALCROSSING_API_KEY || process.env.VISUAL_CROSSING_API_KEY;
+  const visualCrossingKey =
+    process.env.VISUALCROSSING_API_KEY || process.env.VISUAL_CROSSING_API_KEY;
   if (visualCrossingKey) {
     try {
-      console.log('Using Visual Crossing for weather data');
+      console.log("Using Visual Crossing for weather data");
       return await fetchVisualCrossingData(lat, lng, dateFrom, dateTo);
     } catch (error) {
-      console.error('Visual Crossing failed, falling back to WeatherStack:', error);
+      console.error("Visual Crossing failed, falling back to WeatherStack:", error);
     }
   }
 
@@ -130,16 +126,18 @@ async function fetchWeatherData(
   const weatherStackKey = process.env.WEATHERSTACK_API_KEY || process.env.WEATHER_STACK_API_KEY;
   if (weatherStackKey) {
     try {
-      console.log('Using WeatherStack for weather data');
+      console.log("Using WeatherStack for weather data");
       return await fetchWeatherStackData(lat, lng, dateFrom, dateTo);
     } catch (error) {
-      console.error('WeatherStack failed:', error);
+      console.error("WeatherStack failed:", error);
     }
   }
 
   // Final fallback - return error instead of placeholder
   console.error("CRITICAL: No weather API keys configured!");
-  throw new Error("Weather API not configured. Please add VISUALCROSSING_API_KEY or WEATHERSTACK_API_KEY to environment variables.");
+  throw new Error(
+    "Weather API not configured. Please add VISUALCROSSING_API_KEY or WEATHERSTACK_API_KEY to environment variables."
+  );
 }
 
 /**
@@ -161,17 +159,17 @@ async function fetchVisualCrossingData(
   raw: any;
 }> {
   const apiKey = process.env.VISUALCROSSING_API_KEY || process.env.VISUAL_CROSSING_API_KEY;
-  
+
   if (!apiKey) {
-    throw new Error('VISUALCROSSING_API_KEY not configured');
+    throw new Error("VISUALCROSSING_API_KEY not configured");
   }
 
   const location = `${lat},${lng}`;
-  const dates = dateFrom && dateTo ? `${dateFrom}/${dateTo}` : dateFrom || '';
-  const url = `https://weather.visualcrossing.com/VisualCrossingWebServices/rest/services/timeline/${location}${dates ? '/' + dates : ''}?key=${apiKey}&unitGroup=us&contentType=json`;
+  const dates = dateFrom && dateTo ? `${dateFrom}/${dateTo}` : dateFrom || "";
+  const url = `https://weather.visualcrossing.com/VisualCrossingWebServices/rest/services/timeline/${location}${dates ? "/" + dates : ""}?key=${apiKey}&unitGroup=us&contentType=json`;
 
   const response = await fetch(url);
-  
+
   if (!response.ok) {
     throw new Error(`Visual Crossing API error: ${response.status}`);
   }
@@ -180,7 +178,7 @@ async function fetchVisualCrossingData(
 
   // Parse timeline data
   const days = data.days || [];
-  
+
   let maxWindSpeed = 0;
   let minTemp = Infinity;
   let maxTemp = -Infinity;
@@ -192,7 +190,7 @@ async function fetchVisualCrossingData(
     if (day.windspeed > maxWindSpeed) {
       maxWindSpeed = day.windspeed;
     }
-    
+
     // Temperature (°F)
     if (day.tempmin < minTemp) {
       minTemp = day.tempmin;
@@ -200,23 +198,23 @@ async function fetchVisualCrossingData(
     if (day.tempmax > maxTemp) {
       maxTemp = day.tempmax;
     }
-    
+
     // Precipitation (inches)
     if (day.precip) {
       totalPrecipitation += day.precip;
     }
-    
+
     // Check for hail in conditions
-    const conditions = (day.conditions || '').toLowerCase();
-    if (conditions.includes('hail')) {
+    const conditions = (day.conditions || "").toLowerCase();
+    if (conditions.includes("hail")) {
       hailDetected = true;
     }
-    
+
     // Check hourly data for more accurate hail detection
     if (day.hours) {
       for (const hour of day.hours) {
-        const hourConditions = (hour.conditions || '').toLowerCase();
-        if (hourConditions.includes('hail')) {
+        const hourConditions = (hour.conditions || "").toLowerCase();
+        if (hourConditions.includes("hail")) {
           hailDetected = true;
         }
       }
@@ -268,7 +266,7 @@ async function fetchWeatherStackData(
 
   // Use historical endpoint if dates provided, otherwise current
   const useHistorical = dateFrom && dateTo;
-  const targetDate = dateFrom || new Date().toISOString().split('T')[0];
+  const targetDate = dateFrom || new Date().toISOString().split("T")[0];
 
   const params = new URLSearchParams({
     access_key: apiKey,
@@ -276,18 +274,18 @@ async function fetchWeatherStackData(
   });
 
   if (useHistorical) {
-    params.append('historical_date', targetDate);
+    params.append("historical_date", targetDate);
   }
 
-  const endpoint = useHistorical 
-    ? 'https://api.weatherstack.com/historical'
-    : 'https://api.weatherstack.com/current';
+  const endpoint = useHistorical
+    ? "https://api.weatherstack.com/historical"
+    : "https://api.weatherstack.com/current";
 
   const url = `${endpoint}?${params.toString()}`;
 
   try {
     const response = await fetch(url);
-    
+
     if (!response.ok) {
       throw new Error(`WeatherStack API error: ${response.status}`);
     }
@@ -295,12 +293,12 @@ async function fetchWeatherStackData(
     const data = await response.json();
 
     if (data.error) {
-      throw new Error(`WeatherStack error: ${data.error.info || 'Unknown error'}`);
+      throw new Error(`WeatherStack error: ${data.error.info || "Unknown error"}`);
     }
 
     // Parse weather data
     const current = data.current || data.historical?.[targetDate]?.[0] || {};
-    
+
     return {
       hailDetected: false, // WeatherStack doesn't provide hail detection
       maxWindSpeed: current.wind_speed || 0,
@@ -311,7 +309,7 @@ async function fetchWeatherStackData(
       raw: data,
     };
   } catch (error: any) {
-    console.error('WeatherStack API error:', error);
+    console.error("WeatherStack API error:", error);
     // Return placeholder on error
     return {
       hailDetected: false,

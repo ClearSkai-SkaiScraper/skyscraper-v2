@@ -3,7 +3,6 @@
 import { CloudRain, FileText, Hammer, MapPin, Package, Sparkles } from "lucide-react";
 import Link from "next/link";
 
-import { PLAN_QUOTAS, TOKEN_COSTS } from "@/lib/config/tokens";
 import { PATHS } from "@/lib/paths";
 
 interface AICard {
@@ -11,8 +10,7 @@ interface AICard {
   title: string;
   description: string;
   icon: React.ComponentType<{ className?: string }>;
-  tokenCost: number;
-  quotaSnippet: string;
+  badge: string;
   runHref: string;
   historyHref: string;
   color: string;
@@ -25,8 +23,7 @@ let cards: AICard[] = [
     description:
       "Generate complete proposals with AI - retail sales, claims packets, or contractor work orders with live preview.",
     icon: FileText,
-    tokenCost: 2,
-    quotaSnippet: "Unlimited proposals",
+    badge: "Included",
     runHref: PATHS.PROPOSALS_NEW,
     historyHref: PATHS.PROPOSALS,
     color: "indigo",
@@ -37,8 +34,7 @@ let cards: AICard[] = [
     description:
       "Upload damage photos and get AI-annotated mockups with captions for instant estimates.",
     icon: Sparkles,
-    tokenCost: TOKEN_COSTS.AI_MOCKUP,
-    quotaSnippet: `${PLAN_QUOTAS.SOLO.aiMockups}/month included`,
+    badge: "Included",
     runHref: PATHS.AI_TOOLS_MOCKUP,
     historyHref: PATHS.AI_TOOLS_MOCKUP_HISTORY,
     color: "purple",
@@ -49,8 +45,7 @@ let cards: AICard[] = [
     description:
       "Auto-detect damage from photos with AI-powered analysis, code references, and severity ratings.",
     icon: Hammer,
-    tokenCost: TOKEN_COSTS.AI_MOCKUP,
-    quotaSnippet: `${PLAN_QUOTAS.SOLO.aiMockups}/month included`,
+    badge: "Included",
     runHref: PATHS.AI_DAMAGE_BUILDER,
     historyHref: PATHS.AI_DAMAGE_HISTORY,
     color: "red",
@@ -61,8 +56,7 @@ let cards: AICard[] = [
     description:
       "Enter an address and get a comprehensive 30-second property summary with claim history.",
     icon: MapPin,
-    tokenCost: TOKEN_COSTS.QUICK_DOL_PULL,
-    quotaSnippet: `${PLAN_QUOTAS.SOLO.dolPulls}/month included`,
+    badge: "Included",
     runHref: PATHS.AI_DOL,
     historyHref: PATHS.AI_DOL,
     color: "emerald",
@@ -73,8 +67,7 @@ let cards: AICard[] = [
     description:
       "Generate claims-ready weather reports with storm data, wind speeds, and verification documentation.",
     icon: CloudRain,
-    tokenCost: TOKEN_COSTS.WEATHER_REPORT_BASIC,
-    quotaSnippet: `${PLAN_QUOTAS.SOLO.weatherReports}/month included`,
+    badge: "Included",
     runHref: PATHS.AI_TOOLS_WEATHER,
     historyHref: PATHS.AI_TOOLS_WEATHER,
     color: "cyan",
@@ -85,8 +78,7 @@ let cards: AICard[] = [
     description:
       "Bundle photos, captions, DOL data, and weather into carrier-ready ZIP packages or formatted PDFs.",
     icon: Package,
-    tokenCost: TOKEN_COSTS.CARRIER_EXPORT_ZIP,
-    quotaSnippet: "Unlimited exports",
+    badge: "Included",
     runHref: PATHS.CARRIER_EXPORT,
     historyHref: PATHS.AI_EXPORTS,
     color: "orange",
@@ -120,14 +112,12 @@ export default function AICardsGrid() {
             <div className="flex flex-1 flex-col p-6">
               <p className="mb-4 text-sm text-[color:var(--muted)]">{card.description}</p>
 
-              {/* Token Cost Badge */}
+              {/* Included Badge */}
               <div className="mb-2 flex items-center gap-2">
                 <span className="inline-flex items-center rounded-full bg-[var(--primary-weak)] px-2.5 py-0.5 text-xs font-medium text-[color:var(--primary)]">
-                  {card.tokenCost === 0
-                    ? "Free"
-                    : `${card.tokenCost} token${card.tokenCost !== 1 ? "s" : ""}`}
+                  ✓ {card.badge}
                 </span>
-                <span className="text-xs text-[color:var(--muted)]">{card.quotaSnippet}</span>
+                <span className="text-xs text-[color:var(--muted)]">with Pro plan</span>
               </div>
 
               {/* Actions */}

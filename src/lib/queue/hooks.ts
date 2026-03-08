@@ -1,18 +1,17 @@
 /**
  * Queue Job Hooks
- * 
- * Utilities for recording job events and token spend during job execution.
- * Used by all worker jobs to track status and charge tokens.
+ *
+ * Utilities for recording job events during job execution.
  */
 
-import type { Job } from "pg-boss";
 import { logger } from "@/lib/logger";
+import type { Job } from "pg-boss";
 
 import { pool } from "../db/index.js";
 
 /**
  * Record a job event for UI tracking
- * 
+ *
  * @param job - pg-boss job object
  * @param status - queued|working|completed|failed|cancelled|retry
  * @param message - Optional status message
@@ -40,36 +39,4 @@ export async function recordJobEvent(
   ]);
 
   logger.debug(`Job event recorded: ${job.name} (${job.id}) → ${status}`);
-}
-
-/**
- * Record token spend for a job
- * 
- * @param job - pg-boss job object
- * @param feature - Feature name (e.g., "damage-analyze", "weather-analyze")
- * @param delta - Token delta (negative for spend, positive for credit)
- */
-export async function spendTokens(
-  job: Job,
-  feature: string,
-  delta: number
-): Promise<void> {
-  const orgId = (job.data as any)?.orgId || null;
-  const userId = (job.data as any)?.userId || null;
-
-  const query = `
-    INSERT INTO token_ledger (org_id, userId, feature, delta, ref_job_id, meta)
-    VALUES ($1, $2, $3, $4, $5, $6::jsonb)
-  `;
-
-  await pool.query(query, [
-    orgId,
-    userId,
-    feature,
-    delta,
-    job.id,
-    { at: new Date().toISOString() },
-  ]);
-
-  logger.debug(`Token spend recorded: ${feature} → ${delta} tokens (org: ${orgId})`);
 }

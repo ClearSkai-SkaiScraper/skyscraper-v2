@@ -1020,8 +1020,6 @@ model Org {
   quickbooks_connections    quickbooks_connections?
   measurement_orders        measurement_orders[]
   migration_jobs            migration_jobs[]
-  token_ledger              token_ledger[]
-  token_orders              token_orders[]
   support_tickets           support_tickets[]
 
   @@index([stripeCustomerId])
@@ -2462,24 +2460,23 @@ model claims {
   weather_reports            weather_reports[]
   permits                    permits[]
   mortgage_checks            mortgage_checks[]
-  token_ledger               token_ledger[]
 
   externalId     String?
   externalSource String?
 
   // Signing status: tracks whether claim contract has been signed
-  signingStatus       String?   @default("pending") @db.VarChar(20)  // pending | signed | declined
-  signingStatusSetAt  DateTime? @db.Timestamptz(6)
-  signingStatusSetBy  String?
+  signingStatus      String?   @default("pending") @db.VarChar(20) // pending | signed | declined
+  signingStatusSetAt DateTime? @db.Timestamptz(6)
+  signingStatusSetBy String?
 
   // Job value estimation + manager approval
-  estimatedJobValue      Int?                                        // cents
-  jobValueStatus         String?   @default("draft") @db.VarChar(20) // draft | submitted | approved | rejected
-  jobValueSubmittedAt    DateTime? @db.Timestamptz(6)
-  jobValueSubmittedBy    String?
-  jobValueApprovedAt     DateTime? @db.Timestamptz(6)
-  jobValueApprovedBy     String?
-  jobValueApprovalNotes  String?
+  estimatedJobValue     Int? // cents
+  jobValueStatus        String?   @default("draft") @db.VarChar(20) // draft | submitted | approved | rejected
+  jobValueSubmittedAt   DateTime? @db.Timestamptz(6)
+  jobValueSubmittedBy   String?
+  jobValueApprovedAt    DateTime? @db.Timestamptz(6)
+  jobValueApprovedBy    String?
+  jobValueApprovalNotes String?
 
   @@index([orgId, assignedTo])
   @@index([orgId, status])
@@ -3639,13 +3636,13 @@ model leads {
   externalSource                String?
 
   // Job value estimation + manager approval
-  estimatedJobValue      Int?                                        // cents
-  jobValueStatus         String?   @default("draft") @db.VarChar(20) // draft | submitted | approved | rejected
-  jobValueSubmittedAt    DateTime? @db.Timestamptz(6)
-  jobValueSubmittedBy    String?
-  jobValueApprovedAt     DateTime? @db.Timestamptz(6)
-  jobValueApprovedBy     String?
-  jobValueApprovalNotes  String?
+  estimatedJobValue     Int? // cents
+  jobValueStatus        String?   @default("draft") @db.VarChar(20) // draft | submitted | approved | rejected
+  jobValueSubmittedAt   DateTime? @db.Timestamptz(6)
+  jobValueSubmittedBy   String?
+  jobValueApprovedAt    DateTime? @db.Timestamptz(6)
+  jobValueApprovedBy    String?
+  jobValueApprovalNotes String?
 
   @@index([orgId, assignedTo])
   @@index([orgId, stage])
@@ -6594,59 +6591,9 @@ model migration_items {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// Token System — Token Packs & Ledger (from SQL migrations)
+// Token System — REMOVED (flat $80/month per-user pricing)
+// Tables token_packs, token_ledger, token_orders are deprecated.
 // ═══════════════════════════════════════════════════════════════════════════════
-
-/// Available token packages for purchase
-model token_packs {
-  id            String   @id @default(dbgenerated("gen_random_uuid()::text"))
-  name          String
-  tokens        Int
-  priceCents    Int      @map("price_cents")
-  stripePriceId String?  @map("stripe_price_id")
-  isActive      Boolean  @default(true) @map("is_active")
-  createdAt     DateTime @default(now()) @map("created_at")
-  updatedAt     DateTime @default(now()) @map("updated_at")
-
-  @@map("token_packs")
-}
-
-/// Transaction ledger for token credits and debits
-model token_ledger {
-  id             String   @id @default(dbgenerated("gen_random_uuid()::text"))
-  organizationId String   @map("organization_id")
-  amount         Int // positive = credit, negative = debit
-  balance        Int // running balance after transaction
-  reason         String
-  claimId        String?  @map("claim_id")
-  orderId        String?  @map("order_id")
-  createdAt      DateTime @default(now()) @map("created_at")
-
-  organization Org     @relation(fields: [organizationId], references: [id])
-  claim        claims? @relation(fields: [claimId], references: [id])
-
-  @@index([organizationId])
-  @@index([claimId])
-  @@map("token_ledger")
-}
-
-/// Token purchase orders
-model token_orders {
-  id                    String   @id @default(dbgenerated("gen_random_uuid()::text"))
-  organizationId        String   @map("organization_id")
-  packId                String?  @map("pack_id")
-  tokens                Int
-  amountCents           Int      @map("amount_cents")
-  stripePaymentId       String?  @map("stripe_payment_id")
-  stripeCheckoutSession String?  @map("stripe_checkout_session")
-  status                String   @default("pending")
-  createdAt             DateTime @default(now()) @map("created_at")
-
-  organization Org @relation(fields: [organizationId], references: [id])
-
-  @@index([organizationId])
-  @@map("token_orders")
-}
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // Support System

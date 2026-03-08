@@ -1,6 +1,6 @@
 /**
  * Proposal Generation Worker Job v1
- * 
+ *
  * Generates proposals with placeholder content and download URLs.
  * Phase 4: Creates proposal row with sections, returns fake download URL.
  * Future: Replace with real PDF generation pipeline.
@@ -8,7 +8,7 @@
 
 import { type Job as PgBossJob } from "pg-boss";
 import { pool } from "../../lib/db/index.js";
-import { recordJobEvent, spendTokens } from "../../lib/queue/hooks.js";
+import { recordJobEvent } from "../../lib/queue/hooks.js";
 
 // =============================================================================
 // TYPES
@@ -40,12 +40,7 @@ export async function jobProposalGenerate(
   const client = await pool.connect();
 
   try {
-    const {
-      leadId,
-      orgId,
-      title = "New Proposal",
-      sections = [],
-    } = payload;
+    const { leadId, orgId, title = "New Proposal", sections = [] } = payload;
 
     // Build proposal data
     const data = {
@@ -75,9 +70,6 @@ export async function jobProposalGenerate(
 
     const proposalId = result.rows[0].id;
     const resultDownloadUrl = result.rows[0].download_url;
-
-    // Charge 2 tokens for proposal generation
-    await spendTokens(job, "proposal-generate", -2);
 
     // Record completion
     await recordJobEvent(job, "completed", "Proposal ready", {

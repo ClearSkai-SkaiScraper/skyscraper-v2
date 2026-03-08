@@ -66,23 +66,7 @@ export async function bootstrapNewOrgForUser(args: {
   }
 
   // Seed dependent singletons if missing (idempotent)
-  try {
-    const wallet = await (prisma as any).tokenWallet
-      ?.findUnique?.({ where: { orgId: Org.id } })
-      .catch(() => null);
-    if (!wallet) {
-      await (prisma as any).tokenWallet?.create?.({
-        data: {
-          id: `tw_${Org.id}`,
-          orgId: Org.id,
-          aiRemaining: 0,
-          dolCheckRemain: 0,
-          dolFullRemain: 0,
-          updatedAt: new Date(),
-        },
-      });
-    }
-  } catch {}
+  // Token wallet removed — flat $80/month per-user pricing
   try {
     const billing = await prisma.billingSettings.findUnique({ where: { orgId: Org.id } });
     if (!billing) {
