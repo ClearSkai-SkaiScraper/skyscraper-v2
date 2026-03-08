@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 /**
  * POST /api/claims/documents/forward
  * Forward a document to a connected client.

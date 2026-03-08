@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 /**
  * Client Connect API
  * POST /api/client/connect - Create a ClientProConnection from client side

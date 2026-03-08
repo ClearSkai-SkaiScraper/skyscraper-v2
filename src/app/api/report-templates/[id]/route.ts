@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 // app/api/report-templates/[id]/route.ts
 import { logger } from "@/lib/logger";
 import { NextRequest, NextResponse } from "next/server";

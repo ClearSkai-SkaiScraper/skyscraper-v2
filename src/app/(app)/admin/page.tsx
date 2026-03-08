@@ -29,7 +29,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { checkRole } from "@/lib/auth/rbac";
-import prisma from "@/lib/db/prisma";
+import prisma from "@/lib/prisma";
 import { logger } from "@/lib/logger";
 
 export const dynamic = "force-dynamic";

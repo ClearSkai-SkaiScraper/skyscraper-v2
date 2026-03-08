@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 // app/api/video/create/route.ts
 
 import { logger } from "@/lib/logger";

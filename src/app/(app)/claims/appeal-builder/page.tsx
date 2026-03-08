@@ -1,4 +1,4 @@
-import prisma from "@/lib/db/prisma";
+import prisma from "@/lib/prisma";
 import { safeOrgContext } from "@/lib/safeOrgContext";
 import { redirect } from "next/navigation";
 import { Suspense } from "react";

@@ -33,6 +33,11 @@ interface WorkspaceData {
     propertyId: string | null;
     createdAt: string;
     updatedAt: string;
+    signingStatus: string;
+    estimatedJobValue: number | null;
+    jobValueStatus: string;
+    jobValueApprovedBy: string | null;
+    jobValueApprovalNotes: string | null;
   };
   organization: { id: string; name: string; role: string };
   stats: {
@@ -151,6 +156,11 @@ export async function GET(request: NextRequest, { params }: { params: { claimId:
           propertyId: null,
           createdAt: demoNow.toISOString(),
           updatedAt: demoNow.toISOString(),
+          signingStatus: "pending",
+          estimatedJobValue: null,
+          jobValueStatus: "draft",
+          jobValueApprovedBy: null,
+          jobValueApprovalNotes: null,
         },
         organization: { id: "demo-org", name: "Raven Demo", role: "ADMIN" },
         stats: { evidenceCount: 8, documentsCount: 2, reportCount: 1, timelineEventCount: 3 },
@@ -171,7 +181,24 @@ export async function GET(request: NextRequest, { params }: { params: { claimId:
         { status: 404 }
       );
     }
-    const { id: orgId, name: orgName, role } = await getActiveOrg();
+    const orgId = orgResult.orgId;
+
+    // Get org details safely — don't throw if membership table is missing a row
+    let orgName = "My Organization";
+    let role = "ADMIN";
+    try {
+      const activeOrg = await getActiveOrg();
+      orgName = activeOrg.name;
+      role = activeOrg.role;
+    } catch (orgErr) {
+      // Membership may not exist yet — fall back to defaults
+      logger.warn("[workspace-api] getActiveOrg fallback:", (orgErr as Error)?.message);
+      // Try to get org name directly
+      const org = await prisma.org
+        .findUnique({ where: { id: orgId }, select: { name: true } })
+        .catch(() => null);
+      if (org?.name) orgName = org.name;
+    }
 
     // Resolve claim (supports both id and claimNumber formats)
     const claimResult = await resolveClaim(claimId, orgId);
@@ -248,6 +275,13 @@ export async function GET(request: NextRequest, { params }: { params: { claimId:
         propertyId: claim.propertyId || null,
         createdAt: claim.createdAt.toISOString(),
         updatedAt: claim.updatedAt.toISOString(),
+        // Signing status
+        signingStatus: (claim as any).signingStatus || "pending",
+        // Job value estimation
+        estimatedJobValue: (claim as any).estimatedJobValue || null,
+        jobValueStatus: (claim as any).jobValueStatus || "draft",
+        jobValueApprovedBy: (claim as any).jobValueApprovedBy || null,
+        jobValueApprovalNotes: (claim as any).jobValueApprovalNotes || null,
       },
       organization: { id: orgId, name: orgName, role: role || "ADMIN" },
       stats: { evidenceCount, documentsCount, reportCount, timelineEventCount },

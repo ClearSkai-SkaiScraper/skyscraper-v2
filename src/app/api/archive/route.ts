@@ -1,3 +1,4 @@
+export const dynamic = "force-dynamic";
 /**
  * Archive API
  * POST /api/archive - Archive an item (lead, claim, project)

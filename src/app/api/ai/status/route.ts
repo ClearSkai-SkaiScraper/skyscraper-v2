@@ -12,11 +12,21 @@ import { logger } from "@/lib/logger";
 import { NextRequest, NextResponse } from "next/server";
 
 import { createAiConfig, withAiBilling, type AiBillingContext } from "@/lib/ai/withAiBilling";
+import { getRateLimitIdentifier, rateLimiters } from "@/lib/rate-limit";
 import { getStatus } from "@/modules/ai/jobs/queue";
 
 async function GET_INNER(req: NextRequest, ctx: AiBillingContext) {
   try {
     const { userId } = ctx;
+
+    const identifier = getRateLimitIdentifier(userId, req);
+    const allowed = await rateLimiters.ai.check(20, identifier);
+    if (!allowed) {
+      return NextResponse.json(
+        { error: "Rate limit exceeded. Please wait a moment and try again." },
+        { status: 429 }
+      );
+    }
 
     const jobId = req.nextUrl.searchParams.get("jobId");
     if (!jobId) {

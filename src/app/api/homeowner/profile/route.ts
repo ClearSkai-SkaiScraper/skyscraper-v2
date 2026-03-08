@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 // MODULE 6: Homeowner Profiles - Update profile
 import { logger } from "@/lib/logger";
 import { auth, clerkClient } from "@clerk/nextjs/server";

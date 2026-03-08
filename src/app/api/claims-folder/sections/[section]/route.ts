@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 /**
  * Claims Folder Section Data API
  * GET /api/claims-folder/sections/[section]?claimId=xxx

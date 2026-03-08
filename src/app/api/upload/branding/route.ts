@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 /**
  * Branding Asset Upload API
  * Uploads branding assets (logo, team photos, etc.) to Supabase Storage

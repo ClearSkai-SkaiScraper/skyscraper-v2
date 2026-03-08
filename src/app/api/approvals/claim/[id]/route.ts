@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 // MODULE 4: Approvals - List approvals for claim
 import { auth, currentUser } from "@clerk/nextjs/server";
 import { logger } from "@/lib/logger";

@@ -1,5 +1,7 @@
-import fs from "fs";
+export const dynamic = "force-dynamic";
+
 import { logger } from "@/lib/logger";
+import fs from "fs";
 import { marked } from "marked";
 import { NextResponse } from "next/server";
 import path from "path";

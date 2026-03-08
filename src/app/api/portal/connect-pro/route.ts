@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 /**
  * Connect Pro API - Client Portal
  * Creates a connection request from client to a pro

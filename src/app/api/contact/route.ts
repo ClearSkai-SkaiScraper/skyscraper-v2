@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import { logger } from "@/lib/logger";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { NextResponse } from "next/server";

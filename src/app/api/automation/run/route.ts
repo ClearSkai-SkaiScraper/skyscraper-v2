@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 // app/api/automation/run/route.ts
 /**
  * 🔥 DOMINUS AUTOMATION API

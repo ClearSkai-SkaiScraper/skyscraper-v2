@@ -1,12 +1,11 @@
-import { NextResponse } from "next/server";
+export const dynamic = "force-dynamic";
+
 import { logger } from "@/lib/logger";
+import { NextResponse } from "next/server";
 
 import prisma from "@/lib/prisma";
 
-export async function GET(
-  req: Request,
-  { params }: { params: { token: string } }
-) {
+export async function GET(req: Request, { params }: { params: { token: string } }) {
   try {
     const { token } = params;
 
@@ -33,10 +32,7 @@ export async function GET(
     });
 
     if (!report) {
-      return NextResponse.json(
-        { error: "Weather report not found" },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: "Weather report not found" }, { status: 404 });
     }
 
     return NextResponse.json({

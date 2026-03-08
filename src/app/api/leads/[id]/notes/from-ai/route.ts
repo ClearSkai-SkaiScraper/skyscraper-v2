@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 /**
  * 🔥 PHASE C: QOL - Save AI Output to Lead Notes
  * 

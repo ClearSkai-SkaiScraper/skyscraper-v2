@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 /**
  * 🔥 PHASE 27.2a: SHARE VIDEO REPORT
  *

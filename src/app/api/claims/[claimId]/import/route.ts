@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 /**
  * POST /api/claims/[claimId]/import
  * Import adjuster or contractor estimates (CSV, Xactimate XML)

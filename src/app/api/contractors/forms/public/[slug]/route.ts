@@ -1,3 +1,4 @@
+export const dynamic = "force-dynamic";
 /**
  * GET /api/contractors/forms/public/[slug]
  * Returns the public intake form definition for a contractor

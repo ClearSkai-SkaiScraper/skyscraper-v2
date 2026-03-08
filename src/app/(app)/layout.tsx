@@ -104,13 +104,18 @@ export default async function AppLayout({ children }: { children: React.ReactNod
     // Get current user for legal checks (only if we have a valid org)
     const user = orgResult.ok ? await currentUser() : null;
 
-    // Check org branding completion
+    // Check org branding completion — use dual-ID lookup (DB UUID + Clerk org ID)
     let brandingCompleted = false;
     let onboardingCompleted = false;
     if (!isBuildPhase() && orgId !== "temp") {
       try {
+        // Build candidate list: DB UUID first, then Clerk org ID for legacy records
+        const brandingCandidates = [orgId];
+        if (orgResult.ok && orgResult.org?.clerkOrgId && orgResult.org.clerkOrgId !== orgId) {
+          brandingCandidates.push(orgResult.org.clerkOrgId);
+        }
         const branding = await prisma.org_branding.findFirst({
-          where: { orgId },
+          where: { orgId: { in: brandingCandidates } },
           select: { companyName: true, email: true, colorPrimary: true },
         });
         brandingCompleted = !!(branding?.companyName && branding?.email && branding?.colorPrimary);

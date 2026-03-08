@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 /**
  * PHASE 41: Carrier Compliance API Route
  * POST /api/carrier/compliance

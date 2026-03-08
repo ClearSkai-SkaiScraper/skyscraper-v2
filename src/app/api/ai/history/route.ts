@@ -1,8 +1,10 @@
+export const dynamic = "force-dynamic";
 import { logger } from "@/lib/logger";
-import { NextRequest } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
 import { apiError, apiSuccess, apiUnauthorized } from "@/lib/api/safeResponse";
 import prisma from "@/lib/prisma";
+import { getRateLimitIdentifier, rateLimiters } from "@/lib/rate-limit";
 import { safeOrgContext } from "@/lib/safeOrgContext";
 
 /**
@@ -18,6 +20,15 @@ export async function GET(req: NextRequest) {
     const ctx = await safeOrgContext();
     if (ctx.status !== "ok" || !ctx.orgId) {
       return apiUnauthorized();
+    }
+
+    const identifier = getRateLimitIdentifier(ctx.userId!, req);
+    const allowed = await rateLimiters.ai.check(20, identifier);
+    if (!allowed) {
+      return NextResponse.json(
+        { error: "Rate limit exceeded. Please wait a moment and try again." },
+        { status: 429 }
+      );
     }
 
     const { searchParams } = new URL(req.url);

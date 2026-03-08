@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 /**
  * Client Network Invite API
  * POST /api/network/clients/invite

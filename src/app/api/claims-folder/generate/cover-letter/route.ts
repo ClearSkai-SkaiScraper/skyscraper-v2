@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 // src/app/api/claims-folder/generate/cover-letter/route.ts
 import { NextResponse, type NextRequest } from "next/server";
 import { logger } from "@/lib/logger";

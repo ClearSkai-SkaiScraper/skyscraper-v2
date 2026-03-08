@@ -1,3 +1,4 @@
+export const dynamic = "force-dynamic";
 /**
  * GET /api/contractors/public/[slug]
  * Public contractor profile by slug path param (client-side fetch)

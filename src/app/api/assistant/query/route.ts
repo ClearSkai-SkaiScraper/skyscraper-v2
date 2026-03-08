@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 /**
  * Skai AI Assistant Query Endpoint
  * Replaces the old /api/copilot endpoint

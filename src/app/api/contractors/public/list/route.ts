@@ -1,3 +1,4 @@
+export const dynamic = "force-dynamic";
 /**
  * GET /api/contractors/public/list
  * Public contractor directory search with filtering

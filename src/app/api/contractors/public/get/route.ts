@@ -1,3 +1,4 @@
+export const dynamic = "force-dynamic";
 /**
  * GET /api/contractors/public/get?slug=xxx
  * Public contractor profile lookup by slug (server-side fetch from /c/[slug] page)

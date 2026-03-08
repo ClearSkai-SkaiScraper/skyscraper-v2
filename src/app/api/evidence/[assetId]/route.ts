@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 /**
  * PATCH /api/evidence/[assetId]
  * Update asset metadata (title, description, tags)

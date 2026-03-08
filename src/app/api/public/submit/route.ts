@@ -1,3 +1,4 @@
+export const dynamic = "force-dynamic";
 /**
  * PHASE 5 — PUBLIC INTAKE → CRM + AI WIRING
  * POST /api/public/submit — Public job requests → Full CRM pipeline

@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 // ORG-SCOPE: Scoped by userId/clientId — queries clientWorkRequest + leads by client.id. No cross-tenant risk.
 /**
  * Shared Claims API for Client Portal

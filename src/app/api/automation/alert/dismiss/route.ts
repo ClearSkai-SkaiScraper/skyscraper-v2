@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 // app/api/automation/alert/dismiss/route.ts
 /**
  * POST /api/automation/alert/dismiss

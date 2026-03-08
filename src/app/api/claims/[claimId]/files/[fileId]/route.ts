@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 // Pro-side API to toggle file visibility in portal
 import { logger } from "@/lib/logger";
 import { NextRequest, NextResponse } from "next/server";

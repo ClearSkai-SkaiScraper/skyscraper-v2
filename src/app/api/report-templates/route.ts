@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 // app/api/report-templates/route.ts
 import { logger } from "@/lib/logger";
 import { Prisma } from "@prisma/client";

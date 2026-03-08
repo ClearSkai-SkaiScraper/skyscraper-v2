@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 /**
  * PHASE 40: Priced Estimate API Route
  * POST /api/estimate/priced

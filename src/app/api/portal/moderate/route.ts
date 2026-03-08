@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 /**
  * Content Moderation API
  * POST: Check content for violations before submission

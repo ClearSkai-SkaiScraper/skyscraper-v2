@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 // app/api/intel/claims-packet/route.ts
 import { logger } from "@/lib/logger";
 import { NextResponse } from "next/server";

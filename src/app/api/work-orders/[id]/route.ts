@@ -1,3 +1,4 @@
+export const dynamic = "force-dynamic";
 /**
  * Work Order Detail API
  *

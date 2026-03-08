@@ -1,3 +1,4 @@
+export const dynamic = "force-dynamic";
 /**
  * AI SUPPLEMENT WRITER - CARRIER PUSHBACK EXPERT
  *

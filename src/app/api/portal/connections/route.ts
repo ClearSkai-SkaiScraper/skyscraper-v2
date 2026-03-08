@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 // ORG-SCOPE: Scoped by userId/clientId — all queries filter by client.id (derived from auth userId). No cross-tenant risk.
 /**
  * Connections API - Client Portal

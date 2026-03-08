@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 /**
  * Migration API Route
  * POST /api/migrations/[source]/start

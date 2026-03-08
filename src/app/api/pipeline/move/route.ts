@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 /**
  * POST /api/pipeline/move
  * Move a claim or lead to a new pipeline stage

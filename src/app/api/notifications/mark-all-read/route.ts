@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 /**
  * API: Mark All Notifications as Read
  */

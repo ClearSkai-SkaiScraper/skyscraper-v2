@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 /**
  * 3D Vision AI Endpoint
  *

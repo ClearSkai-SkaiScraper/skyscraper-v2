@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 /**
  * GET /api/claims/[claimId]/weather
  * Fetch and cache weather verification data

@@ -1,15 +1,16 @@
 // src/app/(app)/claims/[claimId]/overview/page.tsx
 "use client";
 
-import { ClipboardCheck, FileText, Layers, PenLine } from "lucide-react";
+import { ClipboardCheck, FileText, Layers, PenLine, ShieldCheck } from "lucide-react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 
 import { EditableField } from "@/components/claims/EditableField";
-import { ClaimNotFoundError, NetworkError } from "@/components/errors/ErrorStates";
+import { ClaimNotFoundError } from "@/components/errors/ErrorStates";
 import { TabErrorBoundary } from "@/components/errors/TabErrorBoundary";
+import { JobValueBox } from "@/components/jobs/JobValueBox";
 import { ClaimWorkspaceSkeleton } from "@/components/loading/LoadingStates";
 
 import { logger } from "@/lib/logger";
@@ -45,6 +46,13 @@ interface ClaimData {
   adjusterEmail: string | null;
   propertyId: string | null;
   propertyAddress: string | null;
+  // Signing status
+  signingStatus: string;
+  // Job value estimation
+  estimatedJobValue: number | null;
+  jobValueStatus: string;
+  jobValueApprovedBy: string | null;
+  jobValueApprovalNotes: string | null;
 }
 
 function EditableTextareaField({
@@ -212,6 +220,10 @@ export default function OverviewPage() {
           setError("NOT_FOUND");
         } else if (workspaceRes.status === 401) {
           setError("UNAUTHORIZED");
+        } else if (workspaceRes.status >= 500) {
+          // Server error — NOT a network issue, the server hit an error
+          logger.error("[ClaimOverview] Server error:", workspaceRes.status);
+          setError("SERVER_ERROR");
         } else {
           setError("NETWORK_ERROR");
         }
@@ -253,6 +265,13 @@ export default function OverviewPage() {
             adjusterEmail: claimInfo.adjusterEmail || null,
             propertyId: claimInfo.propertyId ?? null,
             propertyAddress: claimInfo.propertyAddress || null,
+            // Signing status
+            signingStatus: claimInfo.signingStatus || "pending",
+            // Job value
+            estimatedJobValue: claimInfo.estimatedJobValue ?? null,
+            jobValueStatus: claimInfo.jobValueStatus || "draft",
+            jobValueApprovedBy: claimInfo.jobValueApprovedBy || null,
+            jobValueApprovalNotes: claimInfo.jobValueApprovalNotes || null,
           });
 
           setStats({
@@ -283,8 +302,42 @@ export default function OverviewPage() {
     return <ClaimNotFoundError claimId={claimId} />;
   }
 
-  if (error === "NETWORK_ERROR") {
-    return <NetworkError onRetry={fetchData} />;
+  if (error === "NETWORK_ERROR" || error === "SERVER_ERROR") {
+    return (
+      <div className="flex min-h-[50vh] items-center justify-center">
+        <div className="max-w-md space-y-4 rounded-2xl border border-amber-200 bg-amber-50/80 p-8 text-center shadow-lg dark:border-amber-800 dark:bg-amber-950/30">
+          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-amber-100 dark:bg-amber-900/40">
+            <svg
+              className="h-8 w-8 text-amber-600"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"
+              />
+            </svg>
+          </div>
+          <h3 className="text-lg font-semibold text-amber-900 dark:text-amber-200">
+            {error === "SERVER_ERROR" ? "Something went wrong" : "Connection Error"}
+          </h3>
+          <p className="text-sm text-amber-700 dark:text-amber-300">
+            {error === "SERVER_ERROR"
+              ? "We hit a temporary issue loading this claim. This usually resolves itself — try refreshing."
+              : "We couldn't connect to the server. Check your internet connection and try again."}
+          </p>
+          <button
+            onClick={fetchData}
+            className="inline-flex items-center gap-2 rounded-lg bg-amber-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-amber-700"
+          >
+            Try Again
+          </button>
+        </div>
+      </div>
+    );
   }
 
   if (!claim) {
@@ -311,6 +364,76 @@ export default function OverviewPage() {
             <MetricPill label="Reports" value={stats.reportsCount} />
           </div>
         </SectionCard>
+
+        {/* 2b. Signing Status + Job Value — key workflow controls */}
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+          {/* Signing Status Dropdown */}
+          <SectionCard title="Signing Status">
+            <div className="space-y-3">
+              <div className="flex items-center gap-3">
+                <div
+                  className={`flex h-10 w-10 items-center justify-center rounded-full ${
+                    claim.signingStatus === "signed"
+                      ? "bg-emerald-100 dark:bg-emerald-900/40"
+                      : claim.signingStatus === "declined"
+                        ? "bg-red-100 dark:bg-red-900/40"
+                        : "bg-amber-100 dark:bg-amber-900/40"
+                  }`}
+                >
+                  <ShieldCheck
+                    className={`h-5 w-5 ${
+                      claim.signingStatus === "signed"
+                        ? "text-emerald-600"
+                        : claim.signingStatus === "declined"
+                          ? "text-red-600"
+                          : "text-amber-600"
+                    }`}
+                  />
+                </div>
+                <div className="flex-1">
+                  <label className="text-xs font-medium text-muted-foreground">
+                    Contract Status
+                  </label>
+                  <select
+                    value={claim.signingStatus}
+                    onChange={async (e) => {
+                      const newStatus = e.target.value;
+                      setClaim((prev) => (prev ? { ...prev, signingStatus: newStatus } : null));
+                      queueSave("signingStatus", newStatus);
+                    }}
+                    className="mt-1 block w-full rounded-lg border border-slate-300 bg-background px-3 py-2 text-sm font-medium text-foreground shadow-sm transition-colors focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200 dark:border-slate-600"
+                  >
+                    <option value="pending">⏳ Pending Signature</option>
+                    <option value="signed">✅ Signed</option>
+                    <option value="declined">❌ Declined</option>
+                  </select>
+                </div>
+              </div>
+              <p className="text-xs text-muted-foreground">
+                {claim.signingStatus === "signed"
+                  ? "This claim is signed and counts toward leaderboard totals."
+                  : claim.signingStatus === "declined"
+                    ? "Client declined. This claim won't count on the leaderboard."
+                    : "Pending claims are not counted on the leaderboard until signed."}
+              </p>
+            </div>
+          </SectionCard>
+
+          {/* Job Value Estimation Box */}
+          <SectionCard title="Estimated Job Value">
+            <JobValueBox
+              entityId={claimId}
+              entityType="claim"
+              estimatedJobValue={claim.estimatedJobValue}
+              jobValueStatus={claim.jobValueStatus}
+              jobValueApprovedBy={claim.jobValueApprovedBy}
+              jobValueApprovalNotes={claim.jobValueApprovalNotes}
+              onUpdate={(updates) => {
+                setClaim((prev) => (prev ? { ...prev, ...updates } : null));
+              }}
+            />
+          </SectionCard>
+        </div>
 
         {/* 3. Client & Property Info */}
         <SectionCard title="Client Information" editable>

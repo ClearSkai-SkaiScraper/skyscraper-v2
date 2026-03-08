@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 /**
  * Video AI Endpoint
  *
@@ -17,11 +19,21 @@ import { NextRequest, NextResponse } from "next/server";
 import { createAiConfig, withAiBilling } from "@/lib/ai/withAiBilling";
 
 import { AICoreRouter } from "@/lib/ai/router";
+import { getRateLimitIdentifier, rateLimiters } from "@/lib/rate-limit";
 import { validateAIRequest, videoSchema } from "@/lib/validation/aiSchemas";
 
 async function POST_INNER(request: NextRequest, ctx: { userId: string; orgId: string | null }) {
   try {
     const { userId } = ctx;
+
+    const identifier = getRateLimitIdentifier(userId, request);
+    const allowed = await rateLimiters.ai.check(5, identifier);
+    if (!allowed) {
+      return NextResponse.json(
+        { error: "Rate limit exceeded. Please wait a moment and try again." },
+        { status: 429 }
+      );
+    }
 
     const body = await request.json();
     const validation = validateAIRequest(videoSchema, body);

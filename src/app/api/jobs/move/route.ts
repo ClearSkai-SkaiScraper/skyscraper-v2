@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 /**
  * POST /api/jobs/move
  * Move a job between workflow categories (claim, repair, out_of_pocket, financed)

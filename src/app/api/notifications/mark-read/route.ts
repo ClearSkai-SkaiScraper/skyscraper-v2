@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 // MODULE 2: Notifications - Mark as read (supports both client and pro)
 import { auth, currentUser } from "@clerk/nextjs/server";
 import { logger } from "@/lib/logger";

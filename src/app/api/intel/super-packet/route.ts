@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 // app/api/intel/super-packet/route.ts
 /**
  * 🔥 PHASE 11: FULL CLAIM PACKET SUPER SYSTEM

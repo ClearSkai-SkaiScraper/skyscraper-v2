@@ -2467,6 +2467,20 @@ model claims {
   externalId     String?
   externalSource String?
 
+  // Signing status: tracks whether claim contract has been signed
+  signingStatus       String?   @default("pending") @db.VarChar(20)  // pending | signed | declined
+  signingStatusSetAt  DateTime? @db.Timestamptz(6)
+  signingStatusSetBy  String?
+
+  // Job value estimation + manager approval
+  estimatedJobValue      Int?                                        // cents
+  jobValueStatus         String?   @default("draft") @db.VarChar(20) // draft | submitted | approved | rejected
+  jobValueSubmittedAt    DateTime? @db.Timestamptz(6)
+  jobValueSubmittedBy    String?
+  jobValueApprovedAt     DateTime? @db.Timestamptz(6)
+  jobValueApprovedBy     String?
+  jobValueApprovalNotes  String?
+
   @@index([orgId, assignedTo])
   @@index([orgId, status])
   @@index([clientId], map: "idx_claims_clientid")
@@ -2474,6 +2488,7 @@ model claims {
   @@index([orgId, externalId, externalSource])
   @@index([orgId, createdAt], map: "idx_claims_org_created")
   @@index([orgId, damageType], map: "idx_claims_org_damage_type")
+  @@index([orgId, signingStatus], map: "idx_claims_org_signing")
 }
 
 model client_access {
@@ -3622,6 +3637,15 @@ model leads {
   weather_reports               weather_reports[]
   externalId                    String?
   externalSource                String?
+
+  // Job value estimation + manager approval
+  estimatedJobValue      Int?                                        // cents
+  jobValueStatus         String?   @default("draft") @db.VarChar(20) // draft | submitted | approved | rejected
+  jobValueSubmittedAt    DateTime? @db.Timestamptz(6)
+  jobValueSubmittedBy    String?
+  jobValueApprovedAt     DateTime? @db.Timestamptz(6)
+  jobValueApprovedBy     String?
+  jobValueApprovalNotes  String?
 
   @@index([orgId, assignedTo])
   @@index([orgId, stage])

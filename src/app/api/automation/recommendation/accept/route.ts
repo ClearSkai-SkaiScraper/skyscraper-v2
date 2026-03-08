@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 // app/api/automation/recommendation/accept/route.ts
 /**
  * POST /api/automation/recommendation/accept

@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 /**
  * Team Member Profile API Route
  * Master Prompt #56: Professional Identity and Gamification Framework

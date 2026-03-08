@@ -37,6 +37,7 @@ interface LeaderboardSummary {
   totalRevenue: number;
   totalClaims: number;
   totalDoors: number;
+  pendingClaimsCount?: number;
   repCount: number;
   avgCloseRate: number;
   allSources?: string[];
@@ -230,7 +231,9 @@ export function CompanyLeaderboard() {
             bg: "bg-green-50 dark:bg-green-950/30",
           },
           {
-            label: "Claims Signed",
+            label: effectiveSummary.pendingClaimsCount
+              ? `Claims Signed · ${effectiveSummary.pendingClaimsCount} pending`
+              : "Claims Signed",
             value: effectiveSummary.totalClaims.toString(),
             icon: Target,
             color: "text-blue-600 dark:text-blue-400",

@@ -171,7 +171,7 @@ export default function FinancialOverviewPage() {
 
   return (
     <RBACGuard
-      minimumRole="PM"
+      minimumRole="FIELD_TECH"
       fallback={
         <PageContainer maxWidth="7xl">
           <PageHero
@@ -184,10 +184,9 @@ export default function FinancialOverviewPage() {
             <CardContent className="flex flex-col items-center gap-4 py-12 text-center">
               <Lock className="h-12 w-12 text-amber-500" />
               <div>
-                <h3 className="text-lg font-semibold">Manager Access Required</h3>
+                <h3 className="text-lg font-semibold">Employee Access Required</h3>
                 <p className="mt-1 text-sm text-muted-foreground">
-                  Financial data is restricted to project managers and above. Contact your admin for
-                  access.
+                  Financial data is restricted to team members. Contact your admin for access.
                 </p>
               </div>
             </CardContent>

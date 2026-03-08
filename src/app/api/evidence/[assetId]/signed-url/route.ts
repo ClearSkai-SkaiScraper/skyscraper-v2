@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 /**
  * GET /api/evidence/[assetId]/signed-url
  * Generate time-limited presigned URL for secure access

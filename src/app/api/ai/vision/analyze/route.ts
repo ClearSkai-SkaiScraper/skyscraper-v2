@@ -1,3 +1,4 @@
+export const dynamic = "force-dynamic";
 /**
  * PHASE 36: Vision Analysis API Endpoint
  * Rate-limited and authenticated

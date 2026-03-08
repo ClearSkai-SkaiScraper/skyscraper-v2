@@ -5,6 +5,7 @@ import { NextRequest, NextResponse } from "next/server";
 
 import { ensureOpenAI } from "@/lib/ai/client";
 import { aiFail, aiOk } from "@/lib/api/aiResponse";
+import { getRateLimitIdentifier, rateLimiters } from "@/lib/rate-limit";
 import { convertHeicToJpeg, isHeicImage } from "@/modules/photos/utils/heic";
 
 // Force Node.js runtime for sharp/native modules
@@ -36,6 +37,15 @@ export async function POST(req: NextRequest) {
     const user = await currentUser();
     if (!user) {
       return NextResponse.json(aiFail("Unauthorized", "UNAUTH"), { status: 401 });
+    }
+
+    const identifier = getRateLimitIdentifier(user.id, req);
+    const allowed = await rateLimiters.ai.check(5, identifier);
+    if (!allowed) {
+      return NextResponse.json(
+        { error: "Rate limit exceeded. Please wait a moment and try again." },
+        { status: 429 }
+      );
     }
 
     const formData = await req.formData();

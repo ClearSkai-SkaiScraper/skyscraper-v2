@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 /**
  * Push Subscription API
  * Handle push notification subscription management

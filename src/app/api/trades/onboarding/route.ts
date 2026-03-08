@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 /**
  * Trades Network Onboarding API
  * Phase 1: Employee Profile Creation & Company Linking

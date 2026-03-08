@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 // app/api/automation/task/complete/route.ts
 /**
  * POST /api/automation/task/complete

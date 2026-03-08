@@ -19,10 +19,15 @@ import { NextRequest, NextResponse } from "next/server";
 import { getOrgClaimOrThrow, OrgScopeError } from "@/lib/auth/orgScope";
 import { withAuth } from "@/lib/auth/withAuth";
 import { logger } from "@/lib/logger";
+import { notifyManagersOfSubmission } from "@/lib/notifications/notifyManagers";
 import prisma from "@/lib/prisma";
 
 export const PATCH = withAuth(
-  async (req: NextRequest, { orgId }, routeParams: { params: Promise<{ claimId: string }> }) => {
+  async (
+    req: NextRequest,
+    { orgId, userId },
+    routeParams: { params: Promise<{ claimId: string }> }
+  ) => {
     try {
       const { claimId } = await routeParams.params;
 
@@ -45,6 +50,10 @@ export const PATCH = withAuth(
         "adjusterName",
         "adjusterPhone",
         "adjusterEmail",
+        "signingStatus",
+        "estimatedJobValue",
+        "jobValueStatus",
+        "jobValueApprovalNotes",
       ];
 
       for (const field of allowedFields) {
@@ -58,6 +67,23 @@ export const PATCH = withAuth(
         updateData.dateOfLoss = body.dateOfLoss ? new Date(body.dateOfLoss) : null;
       }
 
+      // Auto-set signing status audit trail
+      if (body.signingStatus !== undefined) {
+        updateData.signingStatusSetAt = new Date();
+        updateData.signingStatusSetBy = userId;
+      }
+
+      // Auto-set job value submission audit trail
+      if (body.jobValueStatus === "submitted") {
+        updateData.jobValueSubmittedAt = new Date();
+        updateData.jobValueSubmittedBy = userId;
+      }
+      // Auto-set job value approval/rejection audit trail
+      if (body.jobValueStatus === "approved" || body.jobValueStatus === "rejected") {
+        updateData.jobValueApprovedAt = new Date();
+        updateData.jobValueApprovedBy = userId;
+      }
+
       if (Object.keys(updateData).length === 0) {
         return NextResponse.json({ success: true, message: "No changes" });
       }
@@ -66,6 +92,18 @@ export const PATCH = withAuth(
         where: { id: claimId },
         data: updateData,
       });
+
+      // Notify managers when a job value is submitted for approval
+      if (body.jobValueStatus === "submitted" && body.estimatedJobValue) {
+        notifyManagersOfSubmission({
+          orgId,
+          submittedByUserId: userId,
+          entityType: "claim",
+          entityId: claimId,
+          entityTitle: updated.title || "Claim",
+          estimatedValue: body.estimatedJobValue,
+        });
+      }
 
       // Update property address if provided
       if (body.propertyAddress !== undefined && updated.propertyId) {
@@ -81,10 +119,7 @@ export const PATCH = withAuth(
         return NextResponse.json({ error: "Claim not found" }, { status: 404 });
       }
       logger.error("[PATCH /api/claims/[claimId]/update] Error:", error);
-      return NextResponse.json(
-        { error: "Failed to update claim" },
-        { status: 500 }
-      );
+      return NextResponse.json({ error: "Failed to update claim" }, { status: 500 });
     }
   }
 );

@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 /**
  * POST /api/claims/[claimId]/weather/refresh
  * Force refresh weather data (rate-limited: 1 per 10 minutes per claim)

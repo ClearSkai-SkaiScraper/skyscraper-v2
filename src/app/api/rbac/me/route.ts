@@ -1,26 +1,39 @@
+export const dynamic = "force-dynamic";
+
 // GET /api/rbac/me
 // Returns current user's role and permissions
+// Uses getActiveOrgContext to resolve orgId from DB membership (not just Clerk)
 
-import { auth } from "@clerk/nextjs/server";
 import { logger } from "@/lib/logger";
 import { NextResponse } from "next/server";
 
-import { getRoleContext } from "@/lib/rbac";
+import { getActiveOrgContext } from "@/lib/org/getActiveOrgContext";
+import { getUserRole, roleHierarchy, rolePermissions } from "@/lib/rbac";
 
 export async function GET() {
   try {
-    const { userId, orgId } = await auth();
+    const orgCtx = await getActiveOrgContext({ required: true });
 
-    if (!userId || !orgId) {
+    if (!orgCtx.ok) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const context = await getRoleContext();
+    const { userId, orgId } = orgCtx;
+    const role = await getUserRole(userId, orgId);
+
+    if (!role) {
+      // User exists in org but has no role set — default to ADMIN for org creators
+      return NextResponse.json({
+        role: "ADMIN",
+        permissions: rolePermissions["ADMIN"] || [],
+        hierarchy: roleHierarchy["ADMIN"] || 80,
+      });
+    }
 
     return NextResponse.json({
-      role: context.role,
-      permissions: context.permissions,
-      hierarchy: context.hierarchy,
+      role,
+      permissions: rolePermissions[role] || [],
+      hierarchy: roleHierarchy[role],
     });
   } catch (error) {
     logger.error("[API] RBAC me error:", error);

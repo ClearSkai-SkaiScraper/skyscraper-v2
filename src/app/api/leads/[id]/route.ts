@@ -10,6 +10,7 @@ import { logger } from "@/lib/logger";
 import { NextRequest, NextResponse } from "next/server";
 
 import { compose, withRateLimit, withSentryApi } from "@/lib/api/wrappers";
+import { notifyManagersOfSubmission } from "@/lib/notifications/notifyManagers";
 import { getCurrentUserPermissions, requirePermission } from "@/lib/permissions";
 import prisma from "@/lib/prisma";
 
@@ -113,6 +114,9 @@ const basePATCH = async (request: NextRequest, { params }: { params: { id: strin
       followUpDate,
       jobCategory,
       clientId,
+      estimatedJobValue,
+      jobValueStatus,
+      jobValueApprovalNotes,
     } = body;
 
     // Build update data
@@ -129,6 +133,23 @@ const basePATCH = async (request: NextRequest, { params }: { params: { id: strin
       updateData.followUpDate = followUpDate ? new Date(followUpDate) : null;
     if (jobCategory !== undefined) updateData.jobCategory = jobCategory;
     if (clientId !== undefined) updateData.clientId = clientId;
+
+    // Job value estimation fields — auto-set audit trail server-side
+    if (estimatedJobValue !== undefined) {
+      updateData.estimatedJobValue = estimatedJobValue;
+      updateData.jobValueSubmittedBy = userId || "system";
+      updateData.jobValueSubmittedAt = new Date();
+    }
+    if (jobValueStatus !== undefined) {
+      updateData.jobValueStatus = jobValueStatus;
+      if (jobValueStatus === "approved") {
+        updateData.jobValueApprovedBy = userId || "system";
+        updateData.jobValueApprovedAt = new Date();
+      }
+    }
+    if (jobValueApprovalNotes !== undefined) {
+      updateData.jobValueApprovalNotes = jobValueApprovalNotes;
+    }
 
     // Track stage changes for activity logging
     const stageChanged = stage && stage !== existingLead.stage;
@@ -150,6 +171,18 @@ const basePATCH = async (request: NextRequest, { params }: { params: { id: strin
         },
       },
     });
+
+    // Notify managers when a job value is submitted for approval
+    if (jobValueStatus === "submitted" && estimatedJobValue) {
+      notifyManagersOfSubmission({
+        orgId: orgId!,
+        submittedByUserId: userId || "system",
+        entityType: "lead",
+        entityId: params.id,
+        entityTitle: lead.title || "Lead",
+        estimatedValue: estimatedJobValue,
+      });
+    }
 
     // Log activity if stage changed
     if (stageChanged) {

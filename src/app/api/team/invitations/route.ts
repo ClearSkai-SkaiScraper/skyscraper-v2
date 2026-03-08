@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 /**
  * Team Invitations API
  * Uses Clerk's native organization invitation system

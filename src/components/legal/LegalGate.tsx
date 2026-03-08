@@ -1,7 +1,7 @@
 "use client";
 
-import { CheckCircle2, FileText, Loader2, Scale, Shield, ShieldCheck } from "lucide-react";
 import { logger } from "@/lib/logger";
+import { CheckCircle2, FileText, Loader2, Scale, Shield, ShieldCheck } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -30,6 +30,7 @@ export function LegalGate({ initialPending, children }: LegalGateProps) {
   const [pendingQueue, setPendingQueue] = useState<PendingLegalDoc[]>(initialPending);
   const [accepting, setAccepting] = useState(false);
   const [accepted, setAccepted] = useState<Set<string>>(new Set());
+  const [dismissed, setDismissed] = useState(false);
 
   const handleAcceptAll = async () => {
     if (accepting) return;
@@ -87,8 +88,8 @@ export function LegalGate({ initialPending, children }: LegalGateProps) {
     }
   };
 
-  // All clear — render portal
-  if (pendingQueue.length === 0) {
+  // All clear or dismissed — render portal
+  if (pendingQueue.length === 0 || dismissed) {
     return <>{children}</>;
   }
 
@@ -186,6 +187,14 @@ export function LegalGate({ initialPending, children }: LegalGateProps) {
               By clicking &quot;I Accept All,&quot; you agree to be legally bound by all listed
               documents. You can review any document anytime from Settings.
             </p>
+
+            <button
+              type="button"
+              onClick={() => setDismissed(true)}
+              className="w-full rounded-xl border border-blue-400/20 px-6 py-3 text-sm font-medium text-blue-300/80 transition-all hover:border-blue-400/40 hover:bg-blue-500/10 hover:text-blue-200"
+            >
+              Continue for now — I&apos;ll review later in Settings
+            </button>
           </div>
         </div>
       </div>

@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 
 import { ensureOpenAI } from "@/lib/ai/client";
 import { logger } from "@/lib/logger";
+import { getRateLimitIdentifier, rateLimiters } from "@/lib/rate-limit";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -12,6 +13,15 @@ export async function POST(req: NextRequest) {
     const user = await currentUser();
     if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const identifier = getRateLimitIdentifier(user.id, req);
+    const allowed = await rateLimiters.ai.check(5, identifier);
+    if (!allowed) {
+      return NextResponse.json(
+        { error: "Rate limit exceeded. Please wait a moment and try again." },
+        { status: 429 }
+      );
     }
 
     const body = await req.json();

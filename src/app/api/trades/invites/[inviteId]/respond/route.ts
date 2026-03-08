@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 /**
  * POST /api/trades/invites/[inviteId]/respond
  * Accept or decline a ClientProConnection invitation.

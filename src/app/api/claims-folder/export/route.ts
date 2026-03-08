@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 /**
  * Claims Folder Export API
  * POST /api/claims-folder/export

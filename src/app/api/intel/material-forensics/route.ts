@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 // app/api/intel/material-forensics/route.ts
 // 🧬 MATERIAL FORENSICS API — Generate engineering-grade material failure analysis
 

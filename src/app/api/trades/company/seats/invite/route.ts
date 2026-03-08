@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 /**
  * /api/trades/company/seats/invite
  *

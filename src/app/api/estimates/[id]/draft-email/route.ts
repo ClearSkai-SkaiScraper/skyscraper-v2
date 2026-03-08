@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 // src/app/api/estimates/[id]/draft-email/route.ts
 import { auth } from "@clerk/nextjs/server";
 import { logger } from "@/lib/logger";

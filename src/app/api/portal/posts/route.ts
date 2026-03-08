@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 /**
  * Portal Posts API
  * Handle client social posts - create, list, and manage posts

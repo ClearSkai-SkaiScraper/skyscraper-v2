@@ -1,7 +1,8 @@
-import { NextResponse } from "next/server";
 import { logger } from "@/lib/logger";
+import { NextRequest, NextResponse } from "next/server";
 
 import prisma from "@/lib/prisma";
+import { getRateLimitIdentifier, rateLimiters } from "@/lib/rate-limit";
 import { safeOrgContext } from "@/lib/safeOrgContext";
 
 export const dynamic = "force-dynamic";
@@ -11,11 +12,20 @@ export const dynamic = "force-dynamic";
  * Analyzes claims, leads, pipeline, and scopes to generate
  * intelligent action recommendations for the user.
  */
-export async function GET() {
+export async function GET(req: NextRequest) {
   try {
     const ctx = await safeOrgContext();
     if (ctx.status !== "ok" || !ctx.orgId)
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+    const identifier = getRateLimitIdentifier(ctx.userId!, req);
+    const allowed = await rateLimiters.ai.check(10, identifier);
+    if (!allowed) {
+      return NextResponse.json(
+        { error: "Rate limit exceeded. Please wait a moment and try again." },
+        { status: 429 }
+      );
+    }
 
     const orgId = ctx.orgId;
 

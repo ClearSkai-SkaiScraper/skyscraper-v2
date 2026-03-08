@@ -1,3 +1,4 @@
+export const dynamic = "force-dynamic";
 /**
  * PHASE 21 — PUBLIC CONTRACTOR PROFILE API
  * GET /api/public/contractor/[slug] — Get public contractor profile by slug

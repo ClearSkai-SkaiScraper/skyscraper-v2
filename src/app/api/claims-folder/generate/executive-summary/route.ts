@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 // src/app/api/claims-folder/generate/executive-summary/route.ts
 import { logger } from "@/lib/logger";
 import { NextResponse, type NextRequest } from "next/server";

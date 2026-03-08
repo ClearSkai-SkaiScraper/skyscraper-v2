@@ -1,3 +1,4 @@
+export const dynamic = "force-dynamic";
 /**
  * AI Orchestration API Endpoint
  *
@@ -18,6 +19,7 @@ import { createAiConfig, withAiBilling } from "@/lib/ai/withAiBilling";
 
 import { orchestrateClaim } from "@/lib/ai/orchestrator/orchestrateClaim";
 import prisma from "@/lib/prisma";
+import { getRateLimitIdentifier, rateLimiters } from "@/lib/rate-limit";
 import { orchestrateQuerySchema, validateAIRequest } from "@/lib/validation/aiSchemas";
 
 async function GET_INNER(
@@ -32,6 +34,16 @@ async function GET_INNER(
 ) {
   try {
     const { userId, orgId } = ctx;
+
+    const identifier = getRateLimitIdentifier(userId, request);
+    const allowed = await rateLimiters.ai.check(5, identifier);
+    if (!allowed) {
+      return NextResponse.json(
+        { error: "Rate limit exceeded. Please wait a moment and try again." },
+        { status: 429 }
+      );
+    }
+
     const claimId = request.nextUrl.pathname.split("/").pop() || "";
 
     if (!orgId) {
@@ -96,10 +108,7 @@ async function GET_INNER(
     return NextResponse.json(response);
   } catch (error) {
     logger.error("AI orchestration error:", error);
-    return NextResponse.json(
-      { error: "Failed to orchestrate AI intelligence" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Failed to orchestrate AI intelligence" }, { status: 500 });
   }
 }
 

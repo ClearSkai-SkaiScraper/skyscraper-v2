@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 /**
  * PATCH /api/leads/[id]/files/[fileId]/share
  *

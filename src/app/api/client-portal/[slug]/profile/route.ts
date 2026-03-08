@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 // src/app/api/client-portal/[slug]/profile/route.ts
 /**
  * Client Portal Profile API

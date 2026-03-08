@@ -260,13 +260,33 @@ export async function GET(req: Request) {
     const allUsers = [...users, ...syntheticUsers];
 
     // Get claims per user (claims signed in period) — exclude demo claims
+    // Only count claims with signingStatus = "signed" for leaderboard
     const claims = await prisma.claims.findMany({
       where: {
         orgId: ctx.orgId,
         createdAt: { gte: periodStart },
         isDemo: false,
+        signingStatus: "signed",
       },
-      select: { id: true, estimatedValue: true, status: true, createdAt: true, assignedTo: true },
+      select: {
+        id: true,
+        estimatedValue: true,
+        estimatedJobValue: true,
+        jobValueStatus: true,
+        status: true,
+        createdAt: true,
+        assignedTo: true,
+      },
+    });
+
+    // Also count pending claims separately for context
+    const pendingClaimsCount = await prisma.claims.count({
+      where: {
+        orgId: ctx.orgId,
+        createdAt: { gte: periodStart },
+        isDemo: false,
+        OR: [{ signingStatus: "pending" }, { signingStatus: null }],
+      },
     });
 
     // Get leads per user (leads created in period), optionally filtered by source
@@ -321,8 +341,15 @@ export async function GET(req: Request) {
       const approvedClaims = effectiveClaims.filter(
         (c) => c.status === "approved" || c.status === "completed"
       ).length;
+      // Use approved estimatedJobValue when available, otherwise fall back to estimatedValue
       const claimsRevenue =
-        effectiveClaims.reduce((sum, c) => sum + (c.estimatedValue || 0), 0) / 100;
+        effectiveClaims.reduce((sum, c) => {
+          const jobVal =
+            c.jobValueStatus === "approved" && c.estimatedJobValue
+              ? c.estimatedJobValue
+              : c.estimatedValue || 0;
+          return sum + jobVal;
+        }, 0) / 100;
       const leadsRevenue = effectiveLeads.reduce((sum, l) => sum + (l.value || 0), 0) / 100;
       const totalRevenue = claimsRevenue + leadsRevenue;
       const closeRate =
@@ -373,6 +400,7 @@ export async function GET(req: Request) {
           totalRevenue,
           totalClaims,
           totalDoors,
+          pendingClaimsCount,
           repCount: cleanLeaderboard.length,
           avgCloseRate:
             cleanLeaderboard.length > 0

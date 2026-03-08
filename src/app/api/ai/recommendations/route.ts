@@ -1,9 +1,10 @@
-import { NextRequest, NextResponse } from "next/server";
 import { logger } from "@/lib/logger";
+import { NextRequest, NextResponse } from "next/server";
 
 import { createAiConfig, withAiBilling, type AiBillingContext } from "@/lib/ai/withAiBilling";
 import { generateRecommendations } from "@/lib/ml/recommendations/engine";
 import { getActiveRecommendations, upsertRecommendations } from "@/lib/ml/recommendations/persist";
+import { getRateLimitIdentifier, rateLimiters } from "@/lib/rate-limit";
 
 /**
  * GET /api/ai/recommendations
@@ -13,6 +14,15 @@ import { getActiveRecommendations, upsertRecommendations } from "@/lib/ml/recomm
 async function GET_INNER(req: NextRequest, ctx: AiBillingContext) {
   try {
     const { userId, orgId: ctxOrgId } = ctx;
+
+    const identifier = getRateLimitIdentifier(userId, req);
+    const allowed = await rateLimiters.ai.check(10, identifier);
+    if (!allowed) {
+      return NextResponse.json(
+        { error: "Rate limit exceeded. Please wait a moment and try again." },
+        { status: 429 }
+      );
+    }
 
     // Use org context (may be null) - default to userId if no org
     const orgId = ctxOrgId || userId;

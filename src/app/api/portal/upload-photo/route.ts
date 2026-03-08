@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import { logger } from "@/lib/observability/logger";
 import { getStorageClient } from "@/lib/storage/client";
 import { auth } from "@clerk/nextjs/server";

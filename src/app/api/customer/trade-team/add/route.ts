@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 /**
  * POST /api/customer/trade-team/add
  * Add a contractor to the customer's trade team (saved pros)

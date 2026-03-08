@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 // ORG-SCOPE: Public marketplace data — cross-org by design
 // Lists all active tradesCompany records for marketplace discovery.
 // tradesCompany has no orgId column; companies exist across the cross-org trades network.

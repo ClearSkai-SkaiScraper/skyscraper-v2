@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 /**
  * PHASE 3: Client Portal Work Request → Real Claim Creation
  *

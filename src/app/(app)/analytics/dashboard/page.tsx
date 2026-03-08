@@ -15,7 +15,7 @@ import { redirect } from "next/navigation";
 import { PageContainer } from "@/components/layout/PageContainer";
 import { PageHero } from "@/components/layout/PageHero";
 import { Button } from "@/components/ui/button";
-import prisma from "@/lib/db/prisma";
+import prisma from "@/lib/prisma";
 import { PUBLIC_DEMO_ORG_ID } from "@/lib/demo/constants";
 import { getOrg } from "@/lib/org/getOrg";
 

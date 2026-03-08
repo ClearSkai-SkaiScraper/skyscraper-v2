@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 /**
  * POST /api/workflow/trigger
  * Manually trigger workflow stage change

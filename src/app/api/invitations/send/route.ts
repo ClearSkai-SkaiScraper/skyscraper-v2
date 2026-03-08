@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 /**
  * POST /api/invitations/send
  * Send client invitations from a pro — creates ClientProConnection + Client records

@@ -1,3 +1,4 @@
+export const dynamic = "force-dynamic";
 /**
  * /api/materials/estimates — CRUD for saved material estimates
  *

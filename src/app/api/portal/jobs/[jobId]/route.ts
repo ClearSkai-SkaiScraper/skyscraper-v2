@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 /**
  * Job Detail API - Get full job details with contractor info
  */

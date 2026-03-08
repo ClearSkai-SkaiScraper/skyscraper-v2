@@ -54,24 +54,24 @@ export const LEGAL_DOCUMENTS: LegalDocConfig[] = [
     id: "pro-agreement",
     title: "Trades Professional Agreement",
     latestVersion: "2026-01",
-    required: true,
+    required: false, // Prompted separately, not as a gate blocker
     audience: "contractor",
   },
   {
     id: "contractor",
     title: "Pro Contractor Agreement",
     latestVersion: "2026-01",
-    required: true,
+    required: false, // Prompted separately, not as a gate blocker
     audience: "contractor",
   },
   // ============================================
-  // ADDITIONAL — required for pros, optional for clients
+  // ADDITIONAL — optional, shown in settings
   // ============================================
   {
     id: "aup",
     title: "Acceptable Use Policy",
     latestVersion: "2026-01",
-    required: true,
+    required: false, // Shown in settings, not as a gate
     audience: "contractor",
   },
   {
@@ -92,7 +92,7 @@ export const LEGAL_DOCUMENTS: LegalDocConfig[] = [
     id: "billing",
     title: "Billing Addendum",
     latestVersion: "2026-01",
-    required: true,
+    required: false, // Shown in settings, not as a gate
     audience: "contractor",
   },
   // ============================================

@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 /**
  * Client Job Management API
  *

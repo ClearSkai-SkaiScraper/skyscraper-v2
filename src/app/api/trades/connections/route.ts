@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 // ORG-SCOPE: Scoped by userId — no cross-tenant risk
 // GET returns only connections where authenticated userId is requester or addressee.
 // POST/PATCH/DELETE all verify userId ownership. Connections are intentionally cross-org

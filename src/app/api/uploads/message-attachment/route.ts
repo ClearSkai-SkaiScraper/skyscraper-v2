@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 /**
  * POST /api/uploads/message-attachment
  * Upload a file for use as a message attachment.

@@ -71,15 +71,9 @@ const SECTION_DETAILS: Record<
 > = {
   cover: {
     description:
-      "Professional cover page with company branding, property address, and claim details.",
-    tips: ["Add your logo in Settings → Branding", "Include date of loss for carrier submissions"],
-    dataFields: [
-      "Company Logo",
-      "Company Name",
-      "Property Address",
-      "Claim Number",
-      "Date of Loss",
-    ],
+      "Professional cover page with company branding, property address, and project details.",
+    tips: ["Add your logo in Settings → Branding", "Include project name and customer info"],
+    dataFields: ["Company Logo", "Company Name", "Property Address", "Project Name", "Date"],
   },
   toc: {
     description: "Auto-generated table of contents reflecting selected sections and page numbers.",
@@ -113,29 +107,22 @@ const SECTION_DETAILS: Record<
   },
   // test-cuts: REMOVED — now in Claims-Ready Folder only
   "scope-matrix": {
-    description: "Xactimate-style line items with quantities, unit pricing, and trade categories.",
+    description: "Detailed line items with quantities, unit pricing, and trade categories.",
     tips: [
-      "Use Xactimate codes for carrier compatibility",
-      "Include IRC code references for justification",
+      "Include line-item codes for professional documentation",
+      "Reference building codes for justification when applicable",
     ],
-    dataFields: [
-      "Line Items",
-      "Trade Category",
-      "Xactimate Code",
-      "Quantity",
-      "Unit Price",
-      "Total",
-    ],
+    dataFields: ["Line Items", "Trade Category", "Item Code", "Quantity", "Unit Price", "Total"],
   },
   "code-compliance": {
-    description: "IRC building code references and manufacturer requirements supporting the scope.",
+    description: "Building code references and manufacturer requirements supporting the scope.",
     tips: ["Reference specific IRC sections", "Include manufacturer warranty requirements"],
     dataFields: ["Code Citations", "Manufacturer Specs", "Compliance Notes"],
   },
   "pricing-comparison": {
     description: "Market pricing data and comparative analysis to justify line item pricing.",
-    tips: ["Include local market data", "Reference Xactimate price lists for your region"],
-    dataFields: ["Market Rates", "Regional Data", "Carrier Comparison"],
+    tips: ["Include local market data", "Reference regional price lists"],
+    dataFields: ["Market Rates", "Regional Data", "Competitive Comparison"],
   },
   // supplements: REMOVED — now in Claims-Ready Folder only
   "signature-page": {
@@ -266,12 +253,12 @@ export default function Builder() {
 
   const [selectedSections, setSelectedSections] = useState<SectionKey[]>([
     "cover",
-    "toc",
-    "executive-summary",
-    "adjuster-notes",
+    "customer-details",
+    "retail-proposal",
     "photo-evidence",
-    "scope-matrix",
-    "code-compliance",
+    "material-selections",
+    "payment-schedule",
+    "warranty-terms",
     "signature-page",
   ]);
 
@@ -547,23 +534,6 @@ export default function Builder() {
             onClick={() =>
               setSelectedSections([
                 "cover",
-                "toc",
-                "executive-summary",
-                "weather-verification",
-                "photo-evidence",
-                "scope-matrix",
-                "code-compliance",
-                "signature-page",
-              ])
-            }
-            className="rounded-lg border border-blue-200 bg-blue-50 px-3 py-1.5 text-xs font-medium text-blue-700 hover:bg-blue-100"
-          >
-            📋 Insurance Claim Preset
-          </button>
-          <button
-            onClick={() =>
-              setSelectedSections([
-                "cover",
                 "customer-details",
                 "retail-proposal",
                 "material-selections",
@@ -575,7 +545,27 @@ export default function Builder() {
             }
             className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-1.5 text-xs font-medium text-amber-700 hover:bg-amber-100"
           >
-            🏠 Retail Proposal Preset
+            🏠 Retail Proposal
+          </button>
+          <button
+            onClick={() =>
+              setSelectedSections([
+                "cover",
+                "toc",
+                "customer-details",
+                "retail-proposal",
+                "photo-evidence",
+                "scope-matrix",
+                "material-selections",
+                "payment-schedule",
+                "warranty-terms",
+                "signature-page",
+                "attachments-index",
+              ])
+            }
+            className="rounded-lg border border-green-200 bg-green-50 px-3 py-1.5 text-xs font-medium text-green-700 hover:bg-green-100"
+          >
+            📦 Full Bid Package
           </button>
           <button
             onClick={() =>
@@ -583,17 +573,16 @@ export default function Builder() {
                 "cover",
                 "toc",
                 "executive-summary",
+                "weather-verification",
                 "photo-evidence",
                 "scope-matrix",
-                "pricing-comparison",
-                "supplements",
+                "code-compliance",
                 "signature-page",
-                "attachments-index",
               ])
             }
-            className="rounded-lg border border-green-200 bg-green-50 px-3 py-1.5 text-xs font-medium text-green-700 hover:bg-green-100"
+            className="rounded-lg border border-blue-200 bg-blue-50 px-3 py-1.5 text-xs font-medium text-blue-700 hover:bg-blue-100"
           >
-            🔄 Full Restoration Preset
+            📋 Insurance Claim
           </button>
         </div>
       </div>

@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 /**
  * AI Analysis API for Claims
  *

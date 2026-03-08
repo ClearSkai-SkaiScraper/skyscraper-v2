@@ -85,13 +85,6 @@ type StatusFilter = "all" | "draft" | "sent" | "completed" | "voided";
 
 const TEMPLATES = [
   {
-    id: "authorization-to-represent",
-    name: "Authorization to Represent",
-    description: "Authorizes your company to represent the homeowner in their insurance claim.",
-    category: "Claims",
-    icon: FileSignature,
-  },
-  {
     id: "scope-of-work",
     name: "Scope of Work Agreement",
     description: "Details the scope, timeline, and terms for a roofing/siding project.",
@@ -99,17 +92,17 @@ const TEMPLATES = [
     icon: FileCheck2,
   },
   {
-    id: "material-selection",
-    name: "Material Selection Sheet",
-    description: "Homeowner selects shingle color, manufacturer, and add-ons.",
-    category: "Materials",
+    id: "retail-proposal",
+    name: "Retail Proposal & Quote",
+    description: "Professional proposal with itemized pricing and project details for the client.",
+    category: "Proposals",
     icon: FileText,
   },
   {
-    id: "supplement-authorization",
-    name: "Supplement Authorization",
-    description: "Authorizes filing a supplement with the insurance carrier.",
-    category: "Claims",
+    id: "material-selection",
+    name: "Material Selection Sheet",
+    description: "Client selects shingle color, manufacturer, and add-ons.",
+    category: "Materials",
     icon: FileText,
   },
   {
@@ -120,10 +113,24 @@ const TEMPLATES = [
     icon: FileCheck2,
   },
   {
+    id: "authorization-to-represent",
+    name: "Authorization to Represent",
+    description: "Authorizes your company to represent the homeowner in their insurance claim.",
+    category: "Claims",
+    icon: FileSignature,
+  },
+  {
     id: "lien-waiver",
     name: "Lien Waiver",
     description: "Partial or final lien waiver to release payment.",
     category: "Closeout",
+    icon: FileText,
+  },
+  {
+    id: "supplement-authorization",
+    name: "Supplement Authorization",
+    description: "Authorizes filing a supplement with the insurance carrier.",
+    category: "Claims",
     icon: FileText,
   },
 ];
@@ -174,6 +181,10 @@ export default function SmartDocsPage() {
   const [clients, setClients] = useState<{ id: string; name: string; email: string }[]>([]);
   const [selectedClientId, setSelectedClientId] = useState<string>("");
 
+  /* ----- Job/Claim selector state ----- */
+  const [jobs, setJobs] = useState<{ id: string; title: string; type: string }[]>([]);
+  const [selectedJobId, setSelectedJobId] = useState<string>("");
+
   /* ------------------------------------------------------------------ */
   /*  Fetch envelopes                                                    */
   /* ------------------------------------------------------------------ */
@@ -205,6 +216,27 @@ export default function SmartDocsPage() {
         setClients(contactList);
       })
       .catch(() => {});
+    // Fetch jobs/claims for the job selector
+    Promise.all([
+      fetch("/api/leads?limit=50")
+        .then((r) => r.json())
+        .catch(() => ({ data: [] })),
+      fetch("/api/claims?limit=50")
+        .then((r) => r.json())
+        .catch(() => ({ data: [] })),
+    ]).then(([leadsData, claimsData]) => {
+      const leads = (leadsData.data || leadsData.leads || []).map((l: any) => ({
+        id: l.id,
+        title: l.title || l.name || `Lead ${l.id?.slice(0, 8)}`,
+        type: "job",
+      }));
+      const claims = (claimsData.data || claimsData.claims || []).map((c: any) => ({
+        id: c.id,
+        title: c.title || c.claimNumber || `Claim ${c.id?.slice(0, 8)}`,
+        type: "claim",
+      }));
+      setJobs([...claims, ...leads]);
+    });
   }, [fetchEnvelopes]);
 
   /* ------------------------------------------------------------------ */
@@ -232,6 +264,8 @@ export default function SmartDocsPage() {
       }
 
       // Step 2: Create the envelope with optional document URL
+      const jobRef = selectedJobId && selectedJobId !== "none" ? selectedJobId : undefined;
+      const claimRef = jobs.find((j) => j.id === jobRef && j.type === "claim") ? jobRef : undefined;
       const res = await fetch("/api/esign/envelopes/create", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -245,6 +279,11 @@ export default function SmartDocsPage() {
             },
           ],
           ...(documentUrl ? { documentUrl } : {}),
+          ...(claimRef ? { claimId: claimRef } : {}),
+          ...(jobRef && !claimRef ? { jobId: jobRef } : {}),
+          ...(selectedClientId && selectedClientId !== "none"
+            ? { contactId: selectedClientId }
+            : {}),
         }),
       });
       const data = await res.json();
@@ -289,6 +328,7 @@ export default function SmartDocsPage() {
     setNewSignerEmail("");
     setNewSignerRole("homeowner");
     setSelectedClientId("");
+    setSelectedJobId("");
     setUploadFile(null);
     if (fileInputRef.current) fileInputRef.current.value = "";
   }
@@ -416,6 +456,26 @@ export default function SmartDocsPage() {
                   </div>
                 )}
 
+                {/* Job / Claim Selector */}
+                {jobs.length > 0 && (
+                  <div className="grid gap-1.5">
+                    <Label>Link to Job / Claim (optional)</Label>
+                    <Select value={selectedJobId} onValueChange={setSelectedJobId}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select a job or claim..." />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="none">No job selected</SelectItem>
+                        {jobs.map((j) => (
+                          <SelectItem key={j.id} value={j.id}>
+                            {j.type === "claim" ? "📋" : "🔧"} {j.title}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
+
                 {/* PDF Upload */}
                 <div className="grid gap-1.5">
                   <Label>Attach PDF (optional)</Label>
@@ -487,8 +547,12 @@ export default function SmartDocsPage() {
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="homeowner">Homeowner</SelectItem>
+                      <SelectItem value="client">Client</SelectItem>
+                      <SelectItem value="business-owner">Business Owner</SelectItem>
+                      <SelectItem value="tenant">Tenant</SelectItem>
                       <SelectItem value="contractor">Contractor</SelectItem>
                       <SelectItem value="spouse">Spouse</SelectItem>
+                      <SelectItem value="property-manager">Property Manager</SelectItem>
                       <SelectItem value="witness">Witness</SelectItem>
                     </SelectContent>
                   </Select>

@@ -1,3 +1,4 @@
+export const dynamic = "force-dynamic";
 /**
  * Trades Network Webhook Endpoint
  * Receives events from trades microservice to sync with Core CRM

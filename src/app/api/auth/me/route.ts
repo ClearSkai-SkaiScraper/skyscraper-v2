@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 /**
  * Get current authenticated user info
  * Useful for debugging and getting Clerk user ID

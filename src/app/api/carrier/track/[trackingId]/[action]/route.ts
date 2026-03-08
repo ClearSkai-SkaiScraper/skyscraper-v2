@@ -1,3 +1,4 @@
+export const dynamic = "force-dynamic";
 /**
  * PHASE 13.5 — CARRIER TRACKING API
  * GET /api/carrier/track/[trackingId]/[action]

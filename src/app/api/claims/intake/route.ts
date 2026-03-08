@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 /**
  * PHASE C: Elite Claim Intake API
  * POST /api/claims/intake

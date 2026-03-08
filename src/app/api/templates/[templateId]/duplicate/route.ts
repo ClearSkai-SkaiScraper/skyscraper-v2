@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import { logger } from "@/lib/logger";
 import type { Prisma } from "@prisma/client";
 import crypto from "crypto";

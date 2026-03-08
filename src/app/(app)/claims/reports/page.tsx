@@ -1,7 +1,7 @@
 import { PageHero } from "@/components/layout/PageHero";
 import { Button } from "@/components/ui/button";
 import { getTenant } from "@/lib/auth/tenant";
-import prisma from "@/lib/db/prisma";
+import prisma from "@/lib/prisma";
 import { logger } from "@/lib/logger";
 import { auth } from "@clerk/nextjs/server";
 import { Download, ExternalLink, FileText } from "lucide-react";

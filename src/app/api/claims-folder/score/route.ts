@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 /**
  * Claims Folder Readiness Score API
  * GET /api/claims-folder/score?claimId=xxx

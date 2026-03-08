@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 /**
  * PHASE 3: Organization Initialize API
  * Manually marks org as initialized (both branding + onboarding complete)

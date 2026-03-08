@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 // src/app/api/weather/quick-dol/route.ts
 import { logger } from "@/lib/logger";
 import { auth } from "@clerk/nextjs/server";

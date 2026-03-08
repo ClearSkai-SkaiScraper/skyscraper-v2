@@ -2,8 +2,8 @@
 // Phase G Priority 3: Complete RBAC Implementation
 // Enforces role hierarchy: OWNER > ADMIN > PM > FIELD_TECH > OFFICE_STAFF > CLIENT
 
-import { auth } from "@clerk/nextjs/server";
 import { logger } from "@/lib/logger";
+import { auth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 
 import prisma from "@/lib/prisma";
@@ -11,7 +11,7 @@ import prisma from "@/lib/prisma";
 export type Role = "OWNER" | "ADMIN" | "PM" | "FIELD_TECH" | "OFFICE_STAFF" | "CLIENT";
 
 // Role hierarchy (higher number = more permissions)
-const roleHierarchy: Record<Role, number> = {
+export const roleHierarchy: Record<Role, number> = {
   OWNER: 100,
   ADMIN: 80,
   PM: 60,
@@ -40,7 +40,7 @@ export type Permission =
   | "org:settings";
 
 // Role permission matrix
-const rolePermissions: Record<Role, Permission[]> = {
+export const rolePermissions: Record<Role, Permission[]> = {
   OWNER: [
     "claims:create",
     "claims:edit",

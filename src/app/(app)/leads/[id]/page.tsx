@@ -29,6 +29,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ConvertToClaimButton } from "./_components/ConvertToClaimButton";
 import { EditableLeadSummary } from "./_components/EditableLeadSummary";
 import LeadDetailTabs from "./_components/LeadDetailTabs";
+import { LeadJobValueCard } from "./_components/LeadJobValueCard";
 
 // Prisma singleton imported from @/lib/db/prisma
 
@@ -271,6 +272,14 @@ export default async function LeadDetailPage({ params }: { params: Promise<{ id:
                 )}
               </CardContent>
             </Card>
+
+            <LeadJobValueCard
+              leadId={lead.id}
+              estimatedJobValue={(lead as any).estimatedJobValue ?? null}
+              jobValueStatus={(lead as any).jobValueStatus ?? "draft"}
+              jobValueApprovedBy={(lead as any).jobValueApprovedBy ?? null}
+              jobValueApprovalNotes={(lead as any).jobValueApprovalNotes ?? null}
+            />
 
             <Card className="border-0 shadow-lg">
               <CardHeader className="bg-gradient-to-r from-emerald-50 to-teal-50 dark:from-emerald-950/30 dark:to-teal-950/30">

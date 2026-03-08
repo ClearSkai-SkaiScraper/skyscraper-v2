@@ -16,12 +16,14 @@ export async function GET() {
     if (ctx.status !== "ok" || !ctx.orgId)
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
+    const orgId = ctx.orgId;
+
     // Run queries in parallel
-    const [financials, commissions, invoiceStats, teamPerf] = await Promise.all([
+    const [financials, commissions, invoiceStats, teamPerf, claimsPipeline] = await Promise.all([
       // Job financials aggregate
       prisma.job_financials
         .aggregate({
-          where: { org_id: ctx.orgId },
+          where: { org_id: orgId },
           _sum: {
             contract_amount: true,
             supplement_amount: true,
@@ -40,7 +42,7 @@ export async function GET() {
       prisma.commission_records
         .groupBy({
           by: ["status"],
-          where: { org_id: ctx.orgId },
+          where: { org_id: orgId },
           _sum: { commission_amount: true },
           _count: true,
         })
@@ -49,7 +51,7 @@ export async function GET() {
       // Invoice stats from contractor_invoices
       (async () => {
         const jobs = await prisma.crm_jobs.findMany({
-          where: { org_id: ctx.orgId! },
+          where: { org_id: orgId! },
           select: { id: true },
         });
         const jobIds = jobs.map((j) => j.id);
@@ -79,7 +81,7 @@ export async function GET() {
       // Team performance aggregate
       prisma.team_performance
         .aggregate({
-          where: { orgId: ctx.orgId },
+          where: { orgId: orgId },
           _sum: {
             totalRevenueGenerated: true,
             commissionOwed: true,
@@ -91,6 +93,42 @@ export async function GET() {
           _count: true,
         })
         .catch(() => null),
+
+      // Claims pipeline — approved job values + pending submissions
+      (async () => {
+        try {
+          const [approved, pending, total] = await Promise.all([
+            prisma.claims.aggregate({
+              where: { orgId: orgId, jobValueStatus: "approved" },
+              _sum: { estimatedJobValue: true },
+              _count: true,
+            }),
+            prisma.claims.aggregate({
+              where: { orgId: orgId, jobValueStatus: "submitted" },
+              _sum: { estimatedJobValue: true },
+              _count: true,
+            }),
+            prisma.claims.count({
+              where: { orgId: orgId, signingStatus: "signed" },
+            }),
+          ]);
+          return {
+            approvedValue: Number(approved._sum?.estimatedJobValue ?? 0),
+            approvedCount: approved._count ?? 0,
+            pendingValue: Number(pending._sum?.estimatedJobValue ?? 0),
+            pendingCount: pending._count ?? 0,
+            signedCount: total,
+          };
+        } catch {
+          return {
+            approvedValue: 0,
+            approvedCount: 0,
+            pendingValue: 0,
+            pendingCount: 0,
+            signedCount: 0,
+          };
+        }
+      })(),
     ]);
 
     // Build commission summary
@@ -147,6 +185,7 @@ export async function GET() {
           repCount: teamPerf?._count ?? 0,
         },
         jobCount: financials?._count ?? 0,
+        claimsPipeline: claimsPipeline,
       },
     });
   } catch (err) {

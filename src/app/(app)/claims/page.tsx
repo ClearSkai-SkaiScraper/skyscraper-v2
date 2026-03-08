@@ -8,6 +8,7 @@ import {
   MapPin,
   Plus,
   Search,
+  ShieldCheck,
   TrendingUp,
 } from "lucide-react";
 import Link from "next/link";
@@ -18,10 +19,10 @@ import RecordActions from "@/components/RecordActions";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import prisma from "@/lib/db/prisma";
 import { PUBLIC_DEMO_ORG_ID } from "@/lib/demo/constants";
 import { logger } from "@/lib/logger";
 import { getOrg } from "@/lib/org/getOrg";
+import prisma from "@/lib/prisma";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -198,7 +199,7 @@ export default async function ClaimsPage({ searchParams }: { searchParams: Claim
   try {
     allOrgClaims = await prisma.claims.findMany({
       where: { orgId: organizationId },
-      select: { status: true, estimatedValue: true },
+      select: { status: true, estimatedValue: true, signingStatus: true },
     });
   } catch {
     allOrgClaims = claims; // fallback to current page
@@ -210,6 +211,10 @@ export default async function ClaimsPage({ searchParams }: { searchParams: Claim
     pending: allOrgClaims.filter((c: any) => c.status === "pending"),
     approved: allOrgClaims.filter((c: any) => c.status === "approved"),
   };
+  const signedCount = allOrgClaims.filter((c: any) => c.signingStatus === "signed").length;
+  const pendingSignatureCount = allOrgClaims.filter(
+    (c: any) => !c.signingStatus || c.signingStatus === "pending"
+  ).length;
 
   return (
     <PageContainer maxWidth="7xl">
@@ -238,7 +243,7 @@ export default async function ClaimsPage({ searchParams }: { searchParams: Claim
       </PageHero>
 
       {/* Stats Row */}
-      <div className="mb-6 grid grid-cols-1 gap-4 md:grid-cols-5">
+      <div className="mb-6 grid grid-cols-1 gap-4 md:grid-cols-6">
         {/* Total Value */}
         <Card className="border-blue-200 bg-gradient-to-br from-blue-50 to-indigo-50 dark:border-blue-800 dark:from-blue-900/30 dark:to-indigo-900/30">
           <CardHeader className="pb-2">
@@ -252,6 +257,22 @@ export default async function ClaimsPage({ searchParams }: { searchParams: Claim
               ${(totalValue / 100).toLocaleString()}
             </p>
             <p className="text-xs text-blue-600">{total} claims</p>
+          </CardContent>
+        </Card>
+
+        {/* Signing Status Card */}
+        <Card className="border-emerald-200 bg-gradient-to-br from-emerald-50 to-teal-50 dark:border-emerald-800 dark:from-emerald-900/30 dark:to-teal-900/30">
+          <CardHeader className="pb-2">
+            <CardTitle className="flex items-center gap-2 text-sm font-medium text-emerald-800 dark:text-emerald-200">
+              <ShieldCheck className="h-4 w-4" />
+              Signed
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-2xl font-bold text-emerald-700 dark:text-emerald-300">
+              {signedCount}
+            </p>
+            <p className="text-xs text-emerald-600">{pendingSignatureCount} pending</p>
           </CardContent>
         </Card>
 
@@ -334,6 +355,29 @@ export default async function ClaimsPage({ searchParams }: { searchParams: Claim
                           <Badge variant="outline" className={statusColor}>
                             {(claim.status || "new").replace("_", " ")}
                           </Badge>
+                          {/* Signing status badge */}
+                          {claim.signingStatus === "signed" ? (
+                            <Badge
+                              variant="outline"
+                              className="border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-400"
+                            >
+                              ✅ Signed
+                            </Badge>
+                          ) : claim.signingStatus === "declined" ? (
+                            <Badge
+                              variant="outline"
+                              className="border-red-200 bg-red-50 text-red-700 dark:border-red-800 dark:bg-red-900/30 dark:text-red-400"
+                            >
+                              ❌ Declined
+                            </Badge>
+                          ) : (
+                            <Badge
+                              variant="outline"
+                              className="border-amber-200 bg-amber-50 text-amber-700 dark:border-amber-800 dark:bg-amber-900/30 dark:text-amber-400"
+                            >
+                              ⏳ Pending
+                            </Badge>
+                          )}
                         </div>
                         <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-0.5 text-xs text-slate-500 dark:text-slate-400">
                           {claim.claimNumber && (

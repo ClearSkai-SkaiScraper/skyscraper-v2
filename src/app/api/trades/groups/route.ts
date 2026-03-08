@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 // ORG-SCOPE: Public marketplace data — cross-org by design
 // GET lists public/private groups for discovery (myGroups mode filters by userId membership).
 // POST creates groups scoped to the authenticated user as creator.

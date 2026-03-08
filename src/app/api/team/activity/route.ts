@@ -1,5 +1,7 @@
-import { NextResponse } from "next/server";
+export const dynamic = "force-dynamic";
+
 import { logger } from "@/lib/logger";
+import { NextResponse } from "next/server";
 
 import { getTenant } from "@/lib/auth/tenant";
 import prisma from "@/lib/prisma";

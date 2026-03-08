@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 // ORG-SCOPE: Scoped by proId/contractorId (GET) and userId→clientId (POST) — no cross-tenant risk
 // GET filters reviews by contractorId (proId param). POST requires authenticated user's
 // client record + verified connection to the pro. trade_reviews has no orgId;
