@@ -25,6 +25,7 @@ import {
   PlusCircle,
   Ruler,
   Scale,
+  Scissors,
   ShoppingBag,
   Table,
   X,
@@ -39,7 +40,7 @@ import { Button } from "@/components/ui/button";
 import EmptyState from "@/components/ui/EmptyState";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
-import { runAI, useAIJob, useAIUsage } from "@/modules/ai/core/hooks";
+import { runAI, useAIJob } from "@/modules/ai/core/hooks";
 import { BrandingIncompleteHint } from "@/modules/branding/ui/BrandingIncompleteHint";
 import { useTheme } from "@/modules/ui/theme/useTheme";
 
@@ -61,6 +62,7 @@ const SECTION_ICONS: Record<string, React.ElementType> = {
   PlusCircle,
   PenTool,
   Paperclip,
+  Scissors,
   ShoppingBag,
 };
 
@@ -105,7 +107,23 @@ const SECTION_DETAILS: Record<
     ],
     dataFields: ["Photo Grid", "Captions", "Damage Labels", "Location Tags"],
   },
-  // test-cuts: REMOVED — now in Claims-Ready Folder only
+  "test-cuts": {
+    description:
+      "Documentation of invasive testing including core samples, moisture readings, and pull tests to support the scope of damage.",
+    tips: [
+      "Photograph each test cut location before and after",
+      "Record moisture meter readings with specific values",
+      "Include pull test results with pass/fail thresholds",
+    ],
+    dataFields: [
+      "Test Location",
+      "Test Type",
+      "Core Sample Results",
+      "Moisture Readings",
+      "Pull Test Results",
+      "Photos",
+    ],
+  },
   "scope-matrix": {
     description: "Detailed line items with quantities, unit pricing, and trade categories.",
     tips: [
@@ -291,7 +309,6 @@ export default function Builder() {
   };
 
   const { job } = useAIJob(currentJobId);
-  const { usage } = useAIUsage();
 
   const toggleSection = (key: SectionKey) => {
     setSelectedSections((prev) =>
@@ -567,23 +584,6 @@ export default function Builder() {
           >
             📦 Full Bid Package
           </button>
-          <button
-            onClick={() =>
-              setSelectedSections([
-                "cover",
-                "toc",
-                "executive-summary",
-                "weather-verification",
-                "photo-evidence",
-                "scope-matrix",
-                "code-compliance",
-                "signature-page",
-              ])
-            }
-            className="rounded-lg border border-blue-200 bg-blue-50 px-3 py-1.5 text-xs font-medium text-blue-700 hover:bg-blue-100"
-          >
-            📋 Insurance Claim
-          </button>
         </div>
       </div>
 
@@ -730,24 +730,6 @@ export default function Builder() {
                     </Button>
                   </div>
                 </div>
-
-                {/* Token Usage */}
-                {usage && usage.mockup && usage.dol && usage.weather && (
-                  <div className="ml-auto flex items-center gap-4 text-sm">
-                    <div>
-                      <span className="text-gray-600">Mockup:</span>{" "}
-                      <span className="font-semibold">{usage.mockup.remaining ?? 0}</span>
-                    </div>
-                    <div>
-                      <span className="text-gray-600">DOL:</span>{" "}
-                      <span className="font-semibold">{usage.dol.remaining ?? 0}</span>
-                    </div>
-                    <div>
-                      <span className="text-gray-600">Weather:</span>{" "}
-                      <span className="font-semibold">{usage.weather.remaining ?? 0}</span>
-                    </div>
-                  </div>
-                )}
               </div>
 
               {/* Weather Data Status */}

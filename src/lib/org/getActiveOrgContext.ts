@@ -40,7 +40,11 @@ export type OrgContextOptions = {
  * Ensure org workspace primitives exist (BillingSettings, etc.)
  * Called after org is found/created to ensure invariants
  */
-async function ensureOrgPrimitives(orgId: string, userId: string): Promise<void> {
+async function ensureOrgPrimitives(
+  orgId: string,
+  userId: string,
+  clerkOrgId?: string | null
+): Promise<void> {
   try {
     // Ensure BillingSettings exists
     const billing = await prisma.billingSettings.findUnique({
@@ -59,9 +63,13 @@ async function ensureOrgPrimitives(orgId: string, userId: string): Promise<void>
     }
 
     // Ensure org_branding exists with sensible defaults
+    // Check BOTH orgId (DB UUID) and clerkOrgId (Clerk org) for backward compatibility
     try {
-      const branding = await prisma.$queryRaw<{ id: string }[]>`
-        SELECT id FROM org_branding WHERE "orgId" = ${orgId} LIMIT 1
+      const idCandidates = [orgId, clerkOrgId].filter(
+        (v): v is string => typeof v === "string" && v.length > 0
+      );
+      const branding = await prisma.$queryRaw<{ id: string; orgId: string }[]>`
+        SELECT id, "orgId" FROM org_branding WHERE "orgId" = ANY(${idCandidates}) LIMIT 1
       `;
 
       if (!branding || branding.length === 0) {
@@ -98,9 +106,26 @@ async function ensureOrgPrimitives(orgId: string, userId: string): Promise<void>
         });
         logger.debug("[getActiveOrgContext] Created org_branding for org:", orgId);
       } else {
+        // Migrate stale branding: if found under clerkOrgId but NOT under DB UUID, update it
+        const foundUnderClerk = branding[0].orgId !== orgId;
+        if (foundUnderClerk) {
+          try {
+            await prisma.org_branding.update({
+              where: { id: branding[0].id },
+              data: { orgId },
+            });
+            logger.info(
+              "[getActiveOrgContext] Migrated org_branding from clerkOrgId to DB orgId:",
+              orgId
+            );
+          } catch {
+            // May fail if a record with the new orgId already exists — non-fatal
+          }
+        }
+
         // Backfill missing companyName/email on existing branding rows
         const existing = await prisma.org_branding.findFirst({
-          where: { orgId },
+          where: { orgId: { in: idCandidates } },
           select: { companyName: true, email: true },
         });
         if (existing && (!existing.companyName || !existing.email)) {
@@ -120,7 +145,10 @@ async function ensureOrgPrimitives(orgId: string, userId: string): Promise<void>
             if (user?.email) updates.email = user.email;
           }
           if (Object.keys(updates).length > 0) {
-            await prisma.org_branding.update({ where: { orgId }, data: updates });
+            await prisma.org_branding.updateMany({
+              where: { orgId: { in: idCandidates } },
+              data: updates,
+            });
             logger.debug("[getActiveOrgContext] Backfilled org_branding for org:", orgId);
           }
         }
@@ -235,7 +263,7 @@ export async function getActiveOrgContext(
       logger.debug("[ORG RESOLUTION]", { userId, clerkOrgId, resolvedOrgId: org.id });
 
       // Ensure workspace primitives exist
-      await ensureOrgPrimitives(org.id, userId);
+      await ensureOrgPrimitives(org.id, userId, clerkOrgId);
 
       return {
         ok: true,
@@ -271,7 +299,11 @@ export async function getActiveOrgContext(
       });
 
       // Ensure workspace primitives exist
-      await ensureOrgPrimitives(validMembership.organizationId, userId);
+      await ensureOrgPrimitives(
+        validMembership.organizationId,
+        userId,
+        validMembership.Org?.clerkOrgId
+      );
 
       return {
         ok: true,
@@ -332,7 +364,7 @@ export async function getActiveOrgContext(
       });
 
       // Ensure workspace primitives exist
-      await ensureOrgPrimitives(newOrg.id, userId);
+      await ensureOrgPrimitives(newOrg.id, userId, null);
 
       logger.debug("[getActiveOrgContext] Created personal org:", newOrg.id);
 

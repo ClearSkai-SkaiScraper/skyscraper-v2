@@ -52,11 +52,11 @@ const defaultSteps: OnboardingStep[] = [
     completed: false,
   },
   {
-    id: "tokens",
-    title: "🪙 Token System",
+    id: "billing",
+    title: "💳 Flat Pricing — $80/seat/month",
     description:
-      "You start with 10 free tokens. Each AI generation uses 1 token. Need more? Just click here.",
-    targetElement: '[data-onboarding="token-counter"]',
+      "Unlimited AI generations included. Manage seats and billing from Settings → Billing.",
+    targetElement: '[data-onboarding="billing-link"]',
     position: "bottom",
     completed: false,
   },

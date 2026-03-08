@@ -363,7 +363,30 @@ export default async function RetailJobWorkspacePage({
               </div>
             </div>
 
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-3">
+              {/* Value Badge */}
+              {(() => {
+                const val = (job as any).estimatedJobValue || job.value;
+                if (!val || val <= 0) return null;
+                const dollars = val / 100;
+                return (
+                  <div className="hidden items-center gap-2 sm:flex">
+                    <div className="rounded-xl border border-white/20 bg-white/15 px-3 py-1.5 backdrop-blur-sm">
+                      <span className="flex items-center gap-1.5 text-sm font-semibold text-white">
+                        <DollarSign className="h-3.5 w-3.5" />
+                        {dollars.toLocaleString("en-US", {
+                          style: "currency",
+                          currency: "USD",
+                          maximumFractionDigits: 0,
+                        })}
+                      </span>
+                      <span className="text-[10px] font-medium uppercase tracking-wide text-amber-200">
+                        Job Value
+                      </span>
+                    </div>
+                  </div>
+                );
+              })()}
               <TransferJobDropdown jobId={job.id} currentCategory={job.jobCategory || "retail"} />
               <ArchiveJobButton jobId={job.id} jobTitle={job.title} type="lead" />
               <Button

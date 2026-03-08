@@ -201,7 +201,7 @@ export default async function PipelinePage() {
     }
   } catch (error) {
     // Re-throw redirect errors (Next.js uses throw for redirects)
-    if (error instanceof Error && error.message === "NEXT_REDIRECT") throw error;
+    if ((error as any)?.digest?.startsWith?.("NEXT_REDIRECT")) throw error;
     logger.error("[PipelinePage] Error:", error);
   }
 

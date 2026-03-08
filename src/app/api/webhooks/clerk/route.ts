@@ -25,6 +25,55 @@ import { bootstrapNewOrg } from "@/scripts/bootstrap-new-org";
 
 const webhookSecret = process.env.CLERK_WEBHOOK_SECRET;
 
+/**
+ * Auto-sync Stripe subscription seat count when members are added/removed.
+ * Uses proration so billing adjusts mid-cycle.
+ */
+async function syncStripeSeats(orgId: string, direction: "increment" | "decrement") {
+  try {
+    const sub = await prisma.subscription.findUnique({
+      where: { orgId },
+      select: { stripeSubId: true, stripeSubscriptionItemId: true, seatCount: true, status: true },
+    });
+
+    if (!sub || !sub.stripeSubId || !sub.stripeSubscriptionItemId) {
+      logger.debug(`[Webhook] No active Stripe subscription for org ${orgId}, skipping seat sync`);
+      return;
+    }
+
+    if (sub.status !== "active" && sub.status !== "trialing") {
+      logger.debug(
+        `[Webhook] Subscription ${sub.stripeSubId} status is ${sub.status}, skipping seat sync`
+      );
+      return;
+    }
+
+    const newCount = direction === "increment" ? sub.seatCount + 1 : Math.max(1, sub.seatCount - 1);
+
+    // Lazy-load Stripe to avoid import issues at module scope
+    const { getStripeClient } = await import("@/lib/stripe");
+    const stripe = getStripeClient();
+    if (!stripe) {
+      logger.warn("[Webhook] Stripe not configured, cannot sync seats");
+      return;
+    }
+
+    await stripe.subscriptionItems.update(sub.stripeSubscriptionItemId, {
+      quantity: newCount,
+      proration_behavior: "create_prorations",
+    });
+
+    await prisma.subscription.update({
+      where: { orgId },
+      data: { seatCount: newCount, updatedAt: new Date() },
+    });
+
+    logger.info(`[Webhook] ✅ Stripe seats synced: ${sub.seatCount} → ${newCount} (${direction})`);
+  } catch (err) {
+    logger.error(`[Webhook] ❌ Failed to sync Stripe seats (${direction}):`, err);
+  }
+}
+
 export async function POST(req: NextRequest) {
   const ip = req.headers.get("x-forwarded-for")?.split(",")[0] || "unknown";
   const rl = await checkRateLimit(`clerk:${ip}`, "WEBHOOK");
@@ -162,6 +211,7 @@ export async function POST(req: NextRequest) {
     // ─── Organization Membership Deleted ───────────────────────
     // When a user is removed from an org in Clerk Dashboard,
     // clean up their DB membership so withOrgScope rejects future requests.
+    // Also decrement Stripe seat count.
     if (eventType === "organizationMembership.deleted") {
       const { organization, public_user_data } = evt.data;
       const clerkOrgId = organization?.id;
@@ -208,9 +258,39 @@ export async function POST(req: NextRequest) {
                 `[Webhook] ✅ Removed user ${removedUserId} from org ${clerkOrgId} in DB`
               );
             }
+
+            // ── Auto-decrement Stripe seat count ──────────────────────
+            await syncStripeSeats(org.id, "decrement");
           }
         } catch (error) {
           logger.error(`[Webhook] ❌ Failed to remove membership:`, error);
+        }
+      }
+    }
+
+    // ─── Organization Membership Created ──────────────────────────
+    // When a new member joins an org (invite accepted, admin adds),
+    // auto-increment the Stripe seat count.
+    if (eventType === "organizationMembership.created") {
+      const { organization, public_user_data } = evt.data;
+      const clerkOrgId = organization?.id;
+      const newUserId = public_user_data?.user_id;
+
+      if (clerkOrgId && newUserId) {
+        logger.info(`[Webhook] Membership added: user ${newUserId} to org ${clerkOrgId}`);
+
+        try {
+          const org = await prisma.org.findFirst({
+            where: { clerkOrgId },
+            select: { id: true },
+          });
+
+          if (org) {
+            // ── Auto-increment Stripe seat count ──────────────────────
+            await syncStripeSeats(org.id, "increment");
+          }
+        } catch (error) {
+          logger.error(`[Webhook] ❌ Failed to sync seats on membership created:`, error);
         }
       }
     }
@@ -225,7 +305,12 @@ export async function POST(req: NextRequest) {
 export async function GET(req: NextRequest) {
   return NextResponse.json({
     status: "Clerk webhook endpoint active",
-    events: ["user.created", "organization.created", "organizationMembership.deleted"],
+    events: [
+      "user.created",
+      "organization.created",
+      "organizationMembership.created",
+      "organizationMembership.deleted",
+    ],
     timestamp: new Date().toISOString(),
   });
 }

@@ -91,6 +91,8 @@ export default async function RetailWorkspacePage() {
     const orgResult = await getActiveOrgContext({ required: true });
     orgId = orgResult.ok ? orgResult.orgId : null;
   } catch (error) {
+    // Re-throw redirect errors (Next.js uses throw for redirects)
+    if ((error as any)?.digest?.startsWith?.("NEXT_REDIRECT")) throw error;
     logger.error("[RetailWorkspacePage] Org context error:", error);
   }
 

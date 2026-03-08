@@ -30,12 +30,13 @@ export default async function BrandingPage() {
     (v): v is string => typeof v === "string" && v.length > 0
   );
 
-  // Fetch existing branding
+  // Fetch existing branding — prefer records with actual data (logo, phone, etc.)
   const branding = await prisma.org_branding
     .findFirst({
       where: {
         orgId: { in: orgIdCandidates },
       },
+      orderBy: { updatedAt: "desc" },
     })
     .catch(() => null);
 

@@ -128,23 +128,30 @@ export default async function ClaimLayout({ children, params }: ClaimLayoutProps
                 </div>
 
                 {/* Job Value Pill */}
-                {(claim.estimatedValue ?? 0) > 0 && (
-                  <div className="hidden items-center gap-2 sm:flex">
-                    <div className="rounded-xl border border-white/20 bg-white/15 px-3 py-1.5 backdrop-blur-sm">
-                      <span className="flex items-center gap-1.5 text-sm font-semibold text-white">
-                        <DollarSign className="h-3.5 w-3.5" />
-                        {(claim.estimatedValue ?? 0).toLocaleString("en-US", {
-                          style: "currency",
-                          currency: "USD",
-                          maximumFractionDigits: 0,
-                        })}
-                      </span>
-                      <span className="text-[10px] font-medium uppercase tracking-wide text-blue-200">
-                        Job Value
-                      </span>
+                {(() => {
+                  const approvedValue = (claim as any).estimatedJobValue;
+                  const legacyValue = claim.estimatedValue ?? 0;
+                  const displayValue = approvedValue ? approvedValue / 100 : legacyValue;
+                  const label = approvedValue ? "Approved Value" : "Est. Value";
+                  if (displayValue <= 0) return null;
+                  return (
+                    <div className="hidden items-center gap-2 sm:flex">
+                      <div className="rounded-xl border border-white/20 bg-white/15 px-3 py-1.5 backdrop-blur-sm">
+                        <span className="flex items-center gap-1.5 text-sm font-semibold text-white">
+                          <DollarSign className="h-3.5 w-3.5" />
+                          {displayValue.toLocaleString("en-US", {
+                            style: "currency",
+                            currency: "USD",
+                            maximumFractionDigits: 0,
+                          })}
+                        </span>
+                        <span className="text-[10px] font-medium uppercase tracking-wide text-blue-200">
+                          {label}
+                        </span>
+                      </div>
                     </div>
-                  </div>
-                )}
+                  );
+                })()}
               </div>
             </div>
 
@@ -309,23 +316,30 @@ export default async function ClaimLayout({ children, params }: ClaimLayoutProps
                 claimId={claimId}
                 claimTitle={claim.title || claim.claimNumber || "Claim"}
               />
-              {((claim as any).estimatedValue ?? 0) > 0 && (
-                <div className="hidden items-center gap-2 sm:flex">
-                  <div className="rounded-xl border border-white/20 bg-white/15 px-3 py-1.5 backdrop-blur-sm">
-                    <span className="flex items-center gap-1.5 text-sm font-semibold text-white">
-                      <DollarSign className="h-3.5 w-3.5" />
-                      {((claim as any).estimatedValue ?? 0).toLocaleString("en-US", {
-                        style: "currency",
-                        currency: "USD",
-                        maximumFractionDigits: 0,
-                      })}
-                    </span>
-                    <span className="text-[10px] font-medium uppercase tracking-wide text-blue-200">
-                      Job Value
-                    </span>
+              {(() => {
+                const approvedValue = (claim as any).estimatedJobValue;
+                const legacyValue = (claim as any).estimatedValue;
+                const displayValue = approvedValue ? approvedValue / 100 : (legacyValue ?? 0);
+                const label = approvedValue ? "Approved Value" : "Est. Value";
+                if (displayValue <= 0) return null;
+                return (
+                  <div className="hidden items-center gap-2 sm:flex">
+                    <div className="rounded-xl border border-white/20 bg-white/15 px-3 py-1.5 backdrop-blur-sm">
+                      <span className="flex items-center gap-1.5 text-sm font-semibold text-white">
+                        <DollarSign className="h-3.5 w-3.5" />
+                        {displayValue.toLocaleString("en-US", {
+                          style: "currency",
+                          currency: "USD",
+                          maximumFractionDigits: 0,
+                        })}
+                      </span>
+                      <span className="text-[10px] font-medium uppercase tracking-wide text-blue-200">
+                        {label}
+                      </span>
+                    </div>
                   </div>
-                </div>
-              )}
+                );
+              })()}
             </div>
           </div>
         </div>

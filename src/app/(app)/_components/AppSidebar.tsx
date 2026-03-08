@@ -109,17 +109,22 @@ const navSections: NavSection[] = [
     ],
   },
   {
-    label: "Company & Network",
+    label: "Company",
     items: [
       { label: "My Profile & Company", href: "/trades/profile" },
+      { label: "Company Settings", href: "/settings" },
+      { label: "Team & Company Seats", href: "/teams" },
+      { label: "Notifications", href: "/notifications" },
+    ],
+  },
+  {
+    label: "Network",
+    items: [
       { label: "Trades Network Hub", href: "/trades" },
       { label: "Connections", href: "/company/connections" },
       { label: "Job Board", href: "/trades/jobs" },
       { label: "Vendor Intelligence", href: "/vendor-network" },
       { label: "Invitations", href: "/invitations" },
-      { label: "Notifications", href: "/notifications" },
-      { label: "Company Settings", href: "/settings" },
-      { label: "Team & Company Seats", href: "/teams" },
     ],
   },
 ];

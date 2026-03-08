@@ -228,6 +228,23 @@ export default clerkMiddleware((auth, req) => {
     return NextResponse.redirect(new URL(dest, req.url));
   }
 
+  // ─── Onboarding redirect ──────────────────────────────────────
+  // If a pro user hits a dashboard route but hasn't completed onboarding,
+  // redirect them to the wizard. We check the "x-onboarding-complete" cookie
+  // (set by the wizard completion step) to avoid a DB call in middleware.
+  // The wizard itself is always accessible (it's in the PRO_ROUTES list).
+  if (
+    userId &&
+    isProRoute &&
+    !pathname.startsWith("/onboarding") &&
+    !pathname.startsWith("/settings")
+  ) {
+    const onboardingDone = req.cookies.get("x-onboarding-complete")?.value;
+    if (onboardingDone === "0") {
+      return NextResponse.redirect(new URL("/onboarding/wizard", req.url));
+    }
+  }
+
   if (isPublicRoute(req)) {
     res.headers.set("x-auth-mode", "public");
     return res;

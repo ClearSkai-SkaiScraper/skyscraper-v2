@@ -97,6 +97,9 @@ export const POST = withManager(async (req: NextRequest, { orgId, userId }) => {
     }
 
     // ── Create subscription ─────────────────────────────────────────
+    // 14-day free trial for all new subscriptions
+    const TRIAL_DAYS = 14;
+
     const subscription = await stripe.subscriptions.create({
       customer: stripeCustomerId,
       items: [
@@ -105,6 +108,7 @@ export const POST = withManager(async (req: NextRequest, { orgId, userId }) => {
           quantity: seatCount,
         },
       ],
+      trial_period_days: TRIAL_DAYS,
       payment_behavior: "default_incomplete",
       payment_settings: {
         save_default_payment_method: "on_subscription",
