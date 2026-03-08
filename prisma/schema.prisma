@@ -955,6 +955,12 @@ model Org {
   is_archived               Boolean                     @default(false)
   seatsLimit                Int                         @default(5) @map("seats_limit")
   seatsUsed                 Int                         @default(1) @map("seats_used")
+  onboarding_step           Int?                        @default(0)
+  onboarding_complete       Boolean?                    @default(false)
+  cancellationReason        String?
+  cancellationFeedback      String?
+  cancellationRequestedAt   DateTime?
+  cancellationRequestedBy   String?
   BillingSettings           BillingSettings?
   BuildProgress             BuildProgress[]
   Client                    Client[]
