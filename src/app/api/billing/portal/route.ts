@@ -5,12 +5,12 @@ export const revalidate = 0;
 import { logger } from "@/lib/logger";
 import { NextRequest, NextResponse } from "next/server";
 
-import { withAuth } from "@/lib/auth/withAuth";
+import { withManager } from "@/lib/auth/withAuth";
 import { createBillingPortalSession } from "@/lib/billing/portal";
 import prisma from "@/lib/prisma";
 import { checkRateLimit } from "@/lib/rate-limit";
 
-export const POST = withAuth(async (req: NextRequest, { orgId, userId }) => {
+export const POST = withManager(async (req: NextRequest, { orgId, userId }) => {
   try {
     const rl = await checkRateLimit(userId, "API");
     if (!rl.success) {

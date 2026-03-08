@@ -38,6 +38,7 @@ import { getOrgClaimOrThrow, OrgScopeError } from "@/lib/auth/orgScope";
 import { canInviteClients } from "@/lib/auth/permissions";
 import { withAuth } from "@/lib/auth/withAuth";
 import { sendEmail, TEMPLATES } from "@/lib/email/resend";
+import { sendTemplatedNotification } from "@/lib/notifications/templates";
 import prisma from "@/lib/prisma";
 import { verifyProClaimAccess } from "@/lib/security";
 
@@ -291,6 +292,25 @@ async function handleUpdateStatus(
     const { WebhookService } = await import("@/lib/webhook-service");
     await WebhookService.sendClaimUpdated(claimId, { status: newStatus }, orgId);
   } catch {}
+
+  // Send CLAIM_STATUS_CHANGE notification to org members
+  try {
+    const orgMembers = await prisma.users.findMany({
+      where: { orgId },
+      select: { clerkUserId: true },
+    });
+    for (const member of orgMembers) {
+      if (member.clerkUserId) {
+        await sendTemplatedNotification("CLAIM_STATUS_CHANGE", member.clerkUserId, {
+          claimNumber: updated.claimNumber || claimId,
+          newStatus: payload.lifecycleStage,
+          claimId,
+        }).catch(() => {});
+      }
+    }
+  } catch (notifErr) {
+    logger.error("[CLAIM_STATUS_CHANGE] Notification error:", notifErr);
+  }
 
   return NextResponse.json({
     success: true,

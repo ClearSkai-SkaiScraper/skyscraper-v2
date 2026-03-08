@@ -4,6 +4,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 
 import { getDelegate } from "@/lib/db/modelAliases";
+import { sendTemplatedNotification } from "@/lib/notifications/templates";
 import prisma from "@/lib/prisma";
 import { checkRateLimit } from "@/lib/rate-limit";
 
@@ -90,6 +91,22 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ task
             occurredAt: new Date(),
           },
         });
+      }
+    }
+
+    // Send TASK_COMPLETED notification to the creator (if different from updater)
+    if (input.status === "DONE" && existing.status !== "DONE") {
+      try {
+        // Notify assignee if task was completed by someone else
+        const assignee = existing.assigneeId;
+        if (assignee && assignee !== userId) {
+          await sendTemplatedNotification("TASK_COMPLETED", assignee, {
+            taskName: existing.title,
+            taskId: task.id,
+          });
+        }
+      } catch (notifError) {
+        logger.error("[Task Update] Notification error:", notifError);
       }
     }
 

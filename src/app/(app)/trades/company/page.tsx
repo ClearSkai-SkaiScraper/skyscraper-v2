@@ -48,6 +48,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { logger } from "@/lib/logger";
 
 interface MemberSettings {
@@ -286,7 +287,7 @@ export default function CompanyPage() {
 
   if (loading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-slate-100 via-blue-50/60 to-amber-50/40">
+      <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-slate-100 via-blue-50/60 to-amber-50/40 dark:from-slate-900 dark:via-slate-900 dark:to-slate-800">
         <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
       </div>
     );
@@ -295,12 +296,12 @@ export default function CompanyPage() {
   // No company exists
   if (!data?.company) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-slate-100 via-blue-50/60 to-amber-50/40 p-6">
+      <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-slate-100 via-blue-50/60 to-amber-50/40 p-6 dark:from-slate-900 dark:via-slate-900 dark:to-slate-800">
         <Card className="max-w-md text-center">
           <CardContent className="p-8">
             <Building2 className="mx-auto mb-4 h-12 w-12 text-gray-400" />
             <h1 className="mb-2 text-xl font-semibold">No Company Found</h1>
-            <p className="mb-6 text-gray-600">
+            <p className="mb-6 text-gray-600 dark:text-gray-400">
               Create a company profile to showcase your business and manage your team.
             </p>
             <Link href="/trades/setup">
@@ -318,14 +319,14 @@ export default function CompanyPage() {
   // Company page locked
   if (!data.companyPageUnlocked) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-slate-100 via-blue-50/60 to-amber-50/40 p-6">
+      <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-slate-100 via-blue-50/60 to-amber-50/40 p-6 dark:from-slate-900 dark:via-slate-900 dark:to-slate-800">
         <Card className="max-w-lg">
           <CardContent className="p-8 text-center">
-            <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-blue-100">
+            <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-blue-100 dark:bg-blue-900/40">
               <Lock className="h-8 w-8 text-blue-600" />
             </div>
             <h1 className="mb-2 text-2xl font-bold">Company Page Locked</h1>
-            <p className="mb-6 text-gray-600">
+            <p className="mb-6 text-gray-600 dark:text-gray-400">
               {typeof data.requirementsToUnlock === "object" && data.requirementsToUnlock
                 ? `Upgrade to a ${data.requirementsToUnlock.needsPlan || "paid"} plan or add ${(data.requirementsToUnlock.orNeedsMembers || 3) - (data.requirementsToUnlock.currentMembers || 1)} more team member${(data.requirementsToUnlock.orNeedsMembers || 3) - (data.requirementsToUnlock.currentMembers || 1) !== 1 ? "s" : ""} to unlock your company page.`
                 : data.requirementsToUnlock || "Upgrade your plan to unlock your company page."}
@@ -434,7 +435,7 @@ export default function CompanyPage() {
     .join(", ");
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-100 via-blue-50/60 to-amber-50/40">
+    <div className="min-h-screen bg-gradient-to-br from-slate-100 via-blue-50/60 to-amber-50/40 dark:from-slate-900 dark:via-slate-900 dark:to-slate-800">
       {/* Cover Photo — native img, no next/image */}
       <div className="relative h-60 overflow-hidden rounded-t-xl bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-700 md:h-72">
         {company.coverPhoto && (
@@ -572,369 +573,485 @@ export default function CompanyPage() {
 
         <div className="grid gap-6 md:grid-cols-3">
           {/* ───────── Main Content Column (2/3) ───────── */}
-          <div className="space-y-6 md:col-span-2">
-            {/* About Section */}
-            {(ms.aboutCompany || company.description) && (
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2 text-lg">
-                    <FileText className="h-5 w-5 text-blue-600" />
-                    About
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="whitespace-pre-line leading-relaxed text-gray-700">
-                    {ms.aboutCompany || company.description}
-                  </p>
-                </CardContent>
-              </Card>
-            )}
+          <div className="md:col-span-2">
+            <Tabs defaultValue="overview" className="w-full">
+              <TabsList className="mb-6 w-full justify-start">
+                <TabsTrigger value="overview">Overview</TabsTrigger>
+                <TabsTrigger value="details">Details & Contact</TabsTrigger>
+                <TabsTrigger value="credentials">Credentials</TabsTrigger>
+                <TabsTrigger value="social">Social & More</TabsTrigger>
+              </TabsList>
 
-            {/* Specialties */}
-            {company.specialties && company.specialties.length > 0 && (
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2 text-lg">
-                    <Award className="h-5 w-5 text-amber-500" />
-                    Specialties
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="flex flex-wrap gap-2">
-                    {company.specialties.map((s) => (
-                      <Badge key={s} variant="secondary" className="bg-amber-100 text-amber-800">
-                        {s}
-                      </Badge>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-            )}
+              {/* ── Tab: Overview ── */}
+              <TabsContent value="overview" className="space-y-6">
+                {/* About Section */}
+                {(ms.aboutCompany || company.description) && (
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2 text-lg">
+                        <FileText className="h-5 w-5 text-blue-600" />
+                        About
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <p className="whitespace-pre-line leading-relaxed text-gray-700">
+                        {ms.aboutCompany || company.description}
+                      </p>
+                    </CardContent>
+                  </Card>
+                )}
 
-            {/* Business Details — Enhanced Google Business card */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-lg">
-                  <Building2 className="h-5 w-5 text-indigo-600" />
-                  Business Details
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="grid gap-5 sm:grid-cols-2">
-                  {company.yearsInBusiness && (
-                    <div className="flex items-start gap-3">
-                      <Calendar className="mt-0.5 h-5 w-5 text-slate-400" />
-                      <div>
-                        <p className="text-xs font-medium uppercase tracking-wider text-slate-400">
-                          Years in Business
-                        </p>
-                        <p className="font-semibold text-slate-900">
-                          {company.yearsInBusiness} years
-                        </p>
+                {/* Specialties */}
+                {company.specialties && company.specialties.length > 0 && (
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2 text-lg">
+                        <Award className="h-5 w-5 text-amber-500" />
+                        Specialties
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="flex flex-wrap gap-2">
+                        {company.specialties.map((s) => (
+                          <Badge
+                            key={s}
+                            variant="secondary"
+                            className="bg-amber-100 text-amber-800"
+                          >
+                            {s}
+                          </Badge>
+                        ))}
                       </div>
-                    </div>
-                  )}
-                  {ms.foundedYear && (
-                    <div className="flex items-start gap-3">
-                      <Calendar className="mt-0.5 h-5 w-5 text-slate-400" />
-                      <div>
-                        <p className="text-xs font-medium uppercase tracking-wider text-slate-400">
-                          Founded
-                        </p>
-                        <p className="font-semibold text-slate-900">{ms.foundedYear}</p>
-                      </div>
-                    </div>
-                  )}
-                  {ms.teamSize && (
-                    <div className="flex items-start gap-3">
-                      <Users className="mt-0.5 h-5 w-5 text-slate-400" />
-                      <div>
-                        <p className="text-xs font-medium uppercase tracking-wider text-slate-400">
-                          Team Size
-                        </p>
-                        <p className="font-semibold text-slate-900">{ms.teamSize}</p>
-                      </div>
-                    </div>
-                  )}
-                  {company.licenseNumber && (
-                    <div className="flex items-start gap-3">
-                      <ShieldCheck className="mt-0.5 h-5 w-5 text-slate-400" />
-                      <div>
-                        <p className="text-xs font-medium uppercase tracking-wider text-slate-400">
-                          License Number
-                        </p>
-                        <p className="font-semibold text-slate-900">{company.licenseNumber}</p>
-                      </div>
-                    </div>
-                  )}
-                  {ms.rocNumber && (
-                    <div className="flex items-start gap-3">
-                      <FileText className="mt-0.5 h-5 w-5 text-slate-400" />
-                      <div>
-                        <p className="text-xs font-medium uppercase tracking-wider text-slate-400">
-                          ROC Number
-                        </p>
-                        <p className="font-semibold text-slate-900">{ms.rocNumber}</p>
-                      </div>
-                    </div>
-                  )}
-                  {ms.insuranceProvider && (
-                    <div className="flex items-start gap-3">
-                      <Shield className="mt-0.5 h-5 w-5 text-slate-400" />
-                      <div>
-                        <p className="text-xs font-medium uppercase tracking-wider text-slate-400">
-                          Insurance
-                        </p>
-                        <p className="font-semibold text-slate-900">{ms.insuranceProvider}</p>
-                      </div>
-                    </div>
-                  )}
-                  {company.website && (
-                    <div className="flex items-start gap-3">
-                      <Globe className="mt-0.5 h-5 w-5 text-slate-400" />
-                      <div>
-                        <p className="text-xs font-medium uppercase tracking-wider text-slate-400">
-                          Website
-                        </p>
-                        <a
-                          href={company.website}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="flex items-center gap-1 font-semibold text-blue-600 hover:underline"
-                        >
-                          {company.website.replace(/^https?:\/\//, "")}
-                          <ExternalLink className="h-3 w-3" />
-                        </a>
-                      </div>
-                    </div>
-                  )}
-                </div>
+                    </CardContent>
+                  </Card>
+                )}
 
-                {/* Feature badges row */}
-                <div className="mt-5 flex flex-wrap gap-3">
-                  {ms.emergencyAvailable && (
-                    <Badge className="bg-red-100 text-red-700">
-                      <PhoneCall className="mr-1 h-3 w-3" />
-                      24/7 Emergency
-                    </Badge>
-                  )}
-                  {ms.freeEstimates && (
-                    <Badge className="bg-green-100 text-green-700">
-                      <CheckCircle2 className="mr-1 h-3 w-3" />
-                      Free Estimates
-                    </Badge>
-                  )}
-                  {company.verified && (
-                    <Badge className="bg-blue-100 text-blue-700">
-                      <Shield className="mr-1 h-3 w-3" />
-                      Verified Business
-                    </Badge>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Contact Information */}
-            {(company.phone ||
-              ms.officePhone ||
-              ms.mobilePhone ||
-              company.email ||
-              fullAddress) && (
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2 text-lg">
-                    <Phone className="h-5 w-5 text-green-600" />
-                    Contact Information
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  {(company.phone || ms.officePhone) && (
-                    <div className="flex items-center gap-3">
-                      <div className="flex h-10 w-10 items-center justify-center rounded-full bg-green-100">
-                        <Phone className="h-5 w-5 text-green-600" />
-                      </div>
-                      <div>
-                        <p className="text-xs font-medium text-slate-400">Office Phone</p>
-                        <a
-                          href={`tel:${company.phone || ms.officePhone}`}
-                          className="font-semibold text-slate-900 transition hover:text-blue-600"
-                        >
-                          {company.phone || ms.officePhone}
-                        </a>
-                      </div>
-                    </div>
-                  )}
-                  {ms.mobilePhone && (
-                    <div className="flex items-center gap-3">
-                      <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-100">
-                        <Smartphone className="h-5 w-5 text-blue-600" />
-                      </div>
-                      <div>
-                        <p className="text-xs font-medium text-slate-400">Mobile</p>
-                        <a
-                          href={`tel:${ms.mobilePhone}`}
-                          className="font-semibold text-slate-900 transition hover:text-blue-600"
-                        >
-                          {ms.mobilePhone}
-                        </a>
-                      </div>
-                    </div>
-                  )}
-                  {company.email && (
-                    <div className="flex items-center gap-3">
-                      <div className="flex h-10 w-10 items-center justify-center rounded-full bg-purple-100">
-                        <Mail className="h-5 w-5 text-purple-600" />
-                      </div>
-                      <div>
-                        <p className="text-xs font-medium text-slate-400">Email</p>
-                        <a
-                          href={`mailto:${company.email}`}
-                          className="font-semibold text-slate-900 transition hover:text-blue-600"
-                        >
-                          {company.email}
-                        </a>
-                      </div>
-                    </div>
-                  )}
-                  {fullAddress && (
-                    <div className="flex items-center gap-3">
-                      <div className="flex h-10 w-10 items-center justify-center rounded-full bg-red-100">
-                        <MapPin className="h-5 w-5 text-red-500" />
-                      </div>
-                      <div>
-                        <p className="text-xs font-medium text-slate-400">Address</p>
-                        <p className="font-semibold text-slate-900">{fullAddress}</p>
-                      </div>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            )}
-
-            {/* Hours of Operation */}
-            {Object.keys(hours).length > 0 && (
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2 text-lg">
-                    <Clock className="h-5 w-5 text-amber-600" />
-                    Hours of Operation
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="divide-y divide-slate-100">
-                    {dayOrder
-                      .filter((d) => hours[d])
-                      .map((d) => {
-                        const display = formatHours(hours[d]);
-                        if (!display) return null;
-                        return (
-                          <div key={d} className="flex items-center justify-between py-2.5 text-sm">
-                            <span className="font-medium text-slate-700">{dayLabels[d] || d}</span>
-                            <span
-                              className={
-                                display === "Closed" ? "italic text-slate-400" : "text-slate-600"
-                              }
-                            >
-                              {display}
-                            </span>
+                {/* Business Details — Enhanced Google Business card */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2 text-lg">
+                      <Building2 className="h-5 w-5 text-indigo-600" />
+                      Business Details
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid gap-5 sm:grid-cols-2">
+                      {company.yearsInBusiness && (
+                        <div className="flex items-start gap-3">
+                          <Calendar className="mt-0.5 h-5 w-5 text-slate-400" />
+                          <div>
+                            <p className="text-xs font-medium uppercase tracking-wider text-slate-400">
+                              Years in Business
+                            </p>
+                            <p className="font-semibold text-slate-900">
+                              {company.yearsInBusiness} years
+                            </p>
                           </div>
-                        );
-                      })}
-                  </div>
-                </CardContent>
-              </Card>
-            )}
+                        </div>
+                      )}
+                      {ms.foundedYear && (
+                        <div className="flex items-start gap-3">
+                          <Calendar className="mt-0.5 h-5 w-5 text-slate-400" />
+                          <div>
+                            <p className="text-xs font-medium uppercase tracking-wider text-slate-400">
+                              Founded
+                            </p>
+                            <p className="font-semibold text-slate-900">{ms.foundedYear}</p>
+                          </div>
+                        </div>
+                      )}
+                      {ms.teamSize && (
+                        <div className="flex items-start gap-3">
+                          <Users className="mt-0.5 h-5 w-5 text-slate-400" />
+                          <div>
+                            <p className="text-xs font-medium uppercase tracking-wider text-slate-400">
+                              Team Size
+                            </p>
+                            <p className="font-semibold text-slate-900">{ms.teamSize}</p>
+                          </div>
+                        </div>
+                      )}
+                      {company.licenseNumber && (
+                        <div className="flex items-start gap-3">
+                          <ShieldCheck className="mt-0.5 h-5 w-5 text-slate-400" />
+                          <div>
+                            <p className="text-xs font-medium uppercase tracking-wider text-slate-400">
+                              License Number
+                            </p>
+                            <p className="font-semibold text-slate-900">{company.licenseNumber}</p>
+                          </div>
+                        </div>
+                      )}
+                      {ms.rocNumber && (
+                        <div className="flex items-start gap-3">
+                          <FileText className="mt-0.5 h-5 w-5 text-slate-400" />
+                          <div>
+                            <p className="text-xs font-medium uppercase tracking-wider text-slate-400">
+                              ROC Number
+                            </p>
+                            <p className="font-semibold text-slate-900">{ms.rocNumber}</p>
+                          </div>
+                        </div>
+                      )}
+                      {ms.insuranceProvider && (
+                        <div className="flex items-start gap-3">
+                          <Shield className="mt-0.5 h-5 w-5 text-slate-400" />
+                          <div>
+                            <p className="text-xs font-medium uppercase tracking-wider text-slate-400">
+                              Insurance
+                            </p>
+                            <p className="font-semibold text-slate-900">{ms.insuranceProvider}</p>
+                          </div>
+                        </div>
+                      )}
+                      {company.website && (
+                        <div className="flex items-start gap-3">
+                          <Globe className="mt-0.5 h-5 w-5 text-slate-400" />
+                          <div>
+                            <p className="text-xs font-medium uppercase tracking-wider text-slate-400">
+                              Website
+                            </p>
+                            <a
+                              href={company.website}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="flex items-center gap-1 font-semibold text-blue-600 hover:underline"
+                            >
+                              {company.website.replace(/^https?:\/\//, "")}
+                              <ExternalLink className="h-3 w-3" />
+                            </a>
+                          </div>
+                        </div>
+                      )}
+                    </div>
 
-            {/* Warranty Info */}
-            {ms.warrantyInfo && (
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2 text-lg">
-                    <ShieldCheck className="h-5 w-5 text-green-600" />
-                    Warranty Information
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="whitespace-pre-line text-gray-700">{ms.warrantyInfo}</p>
-                </CardContent>
-              </Card>
-            )}
+                    {/* Feature badges row */}
+                    <div className="mt-5 flex flex-wrap gap-3">
+                      {ms.emergencyAvailable && (
+                        <Badge className="bg-red-100 text-red-700">
+                          <PhoneCall className="mr-1 h-3 w-3" />
+                          24/7 Emergency
+                        </Badge>
+                      )}
+                      {ms.freeEstimates && (
+                        <Badge className="bg-green-100 text-green-700">
+                          <CheckCircle2 className="mr-1 h-3 w-3" />
+                          Free Estimates
+                        </Badge>
+                      )}
+                      {company.verified && (
+                        <Badge className="bg-blue-100 text-blue-700">
+                          <Shield className="mr-1 h-3 w-3" />
+                          Verified Business
+                        </Badge>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+              </TabsContent>
 
-            {/* Payment Methods & Languages */}
-            {((ms.paymentMethods && ms.paymentMethods.length > 0) ||
-              (ms.languages && ms.languages.length > 0)) && (
-              <div className="grid gap-6 sm:grid-cols-2">
-                {ms.paymentMethods && ms.paymentMethods.length > 0 && (
+              {/* ── Tab: Details & Contact ── */}
+              <TabsContent value="details" className="space-y-6">
+                {/* Contact Information */}
+                {(company.phone ||
+                  ms.officePhone ||
+                  ms.mobilePhone ||
+                  company.email ||
+                  fullAddress) && (
                   <Card>
                     <CardHeader>
                       <CardTitle className="flex items-center gap-2 text-lg">
-                        <CreditCard className="h-5 w-5 text-indigo-500" />
-                        Payment Methods
+                        <Phone className="h-5 w-5 text-green-600" />
+                        Contact Information
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      {(company.phone || ms.officePhone) && (
+                        <div className="flex items-center gap-3">
+                          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-green-100">
+                            <Phone className="h-5 w-5 text-green-600" />
+                          </div>
+                          <div>
+                            <p className="text-xs font-medium text-slate-400">Office Phone</p>
+                            <a
+                              href={`tel:${company.phone || ms.officePhone}`}
+                              className="font-semibold text-slate-900 transition hover:text-blue-600"
+                            >
+                              {company.phone || ms.officePhone}
+                            </a>
+                          </div>
+                        </div>
+                      )}
+                      {ms.mobilePhone && (
+                        <div className="flex items-center gap-3">
+                          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-100">
+                            <Smartphone className="h-5 w-5 text-blue-600" />
+                          </div>
+                          <div>
+                            <p className="text-xs font-medium text-slate-400">Mobile</p>
+                            <a
+                              href={`tel:${ms.mobilePhone}`}
+                              className="font-semibold text-slate-900 transition hover:text-blue-600"
+                            >
+                              {ms.mobilePhone}
+                            </a>
+                          </div>
+                        </div>
+                      )}
+                      {company.email && (
+                        <div className="flex items-center gap-3">
+                          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-purple-100">
+                            <Mail className="h-5 w-5 text-purple-600" />
+                          </div>
+                          <div>
+                            <p className="text-xs font-medium text-slate-400">Email</p>
+                            <a
+                              href={`mailto:${company.email}`}
+                              className="font-semibold text-slate-900 transition hover:text-blue-600"
+                            >
+                              {company.email}
+                            </a>
+                          </div>
+                        </div>
+                      )}
+                      {fullAddress && (
+                        <div className="flex items-center gap-3">
+                          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-red-100">
+                            <MapPin className="h-5 w-5 text-red-500" />
+                          </div>
+                          <div>
+                            <p className="text-xs font-medium text-slate-400">Address</p>
+                            <p className="font-semibold text-slate-900">{fullAddress}</p>
+                          </div>
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+                )}
+
+                {/* Hours of Operation */}
+                {Object.keys(hours).length > 0 && (
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2 text-lg">
+                        <Clock className="h-5 w-5 text-amber-600" />
+                        Hours of Operation
                       </CardTitle>
                     </CardHeader>
                     <CardContent>
-                      <div className="flex flex-wrap gap-2">
-                        {ms.paymentMethods.map((pm) => (
-                          <Badge key={pm} variant="outline">
-                            <Banknote className="mr-1 h-3 w-3" />
-                            {pm}
-                          </Badge>
-                        ))}
+                      <div className="divide-y divide-slate-100">
+                        {dayOrder
+                          .filter((d) => hours[d])
+                          .map((d) => {
+                            const display = formatHours(hours[d]);
+                            if (!display) return null;
+                            return (
+                              <div
+                                key={d}
+                                className="flex items-center justify-between py-2.5 text-sm"
+                              >
+                                <span className="font-medium text-slate-700">
+                                  {dayLabels[d] || d}
+                                </span>
+                                <span
+                                  className={
+                                    display === "Closed"
+                                      ? "italic text-slate-400"
+                                      : "text-slate-600"
+                                  }
+                                >
+                                  {display}
+                                </span>
+                              </div>
+                            );
+                          })}
                       </div>
                     </CardContent>
                   </Card>
                 )}
-                {ms.languages && ms.languages.length > 0 && (
+              </TabsContent>
+
+              {/* ── Tab: Credentials ── */}
+              <TabsContent value="credentials" className="space-y-6">
+                {/* Warranty Info */}
+                {ms.warrantyInfo && (
                   <Card>
                     <CardHeader>
                       <CardTitle className="flex items-center gap-2 text-lg">
-                        <Globe2 className="h-5 w-5 text-teal-500" />
-                        Languages Spoken
+                        <ShieldCheck className="h-5 w-5 text-green-600" />
+                        Warranty Information
                       </CardTitle>
                     </CardHeader>
                     <CardContent>
-                      <div className="flex flex-wrap gap-2">
-                        {ms.languages.map((lang) => (
-                          <Badge key={lang} variant="secondary">
-                            {lang}
-                          </Badge>
-                        ))}
+                      <p className="whitespace-pre-line text-gray-700 dark:text-gray-300">
+                        {ms.warrantyInfo}
+                      </p>
+                    </CardContent>
+                  </Card>
+                )}
+
+                {/* Credentials Summary */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2 text-lg">
+                      <ShieldCheck className="h-5 w-5 text-blue-600" />
+                      Credentials &amp; Compliance
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid gap-4 sm:grid-cols-2">
+                      {company.licenseNumber && (
+                        <div className="flex items-start gap-3 rounded-lg border border-slate-200 p-3 dark:border-slate-700">
+                          <ShieldCheck className="mt-0.5 h-5 w-5 text-green-500" />
+                          <div>
+                            <p className="text-xs font-medium uppercase tracking-wider text-slate-400">
+                              License
+                            </p>
+                            <p className="font-semibold text-slate-900 dark:text-slate-100">
+                              {company.licenseNumber}
+                            </p>
+                          </div>
+                        </div>
+                      )}
+                      {ms.rocNumber && (
+                        <div className="flex items-start gap-3 rounded-lg border border-slate-200 p-3 dark:border-slate-700">
+                          <FileText className="mt-0.5 h-5 w-5 text-blue-500" />
+                          <div>
+                            <p className="text-xs font-medium uppercase tracking-wider text-slate-400">
+                              ROC Number
+                            </p>
+                            <p className="font-semibold text-slate-900 dark:text-slate-100">
+                              {ms.rocNumber}
+                            </p>
+                          </div>
+                        </div>
+                      )}
+                      {ms.insuranceProvider && (
+                        <div className="flex items-start gap-3 rounded-lg border border-slate-200 p-3 dark:border-slate-700">
+                          <Shield className="mt-0.5 h-5 w-5 text-indigo-500" />
+                          <div>
+                            <p className="text-xs font-medium uppercase tracking-wider text-slate-400">
+                              Insurance
+                            </p>
+                            <p className="font-semibold text-slate-900 dark:text-slate-100">
+                              {ms.insuranceProvider}
+                            </p>
+                          </div>
+                        </div>
+                      )}
+                      {company.verified && (
+                        <div className="flex items-start gap-3 rounded-lg border border-green-200 bg-green-50/50 p-3 dark:border-green-900 dark:bg-green-950/20">
+                          <CheckCircle2 className="mt-0.5 h-5 w-5 text-green-600" />
+                          <div>
+                            <p className="text-xs font-medium uppercase tracking-wider text-green-600">
+                              Verified
+                            </p>
+                            <p className="font-semibold text-green-700 dark:text-green-400">
+                              Business Verified ✓
+                            </p>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                    {!company.licenseNumber &&
+                      !ms.rocNumber &&
+                      !ms.insuranceProvider &&
+                      !company.verified && (
+                        <p className="text-sm text-slate-500">
+                          No credentials added yet.{" "}
+                          {data.isAdmin && (
+                            <Link
+                              href="/trades/company/edit"
+                              className="text-blue-500 hover:underline"
+                            >
+                              Add credentials →
+                            </Link>
+                          )}
+                        </p>
+                      )}
+                  </CardContent>
+                </Card>
+              </TabsContent>
+
+              {/* ── Tab: Social & More ── */}
+              <TabsContent value="social" className="space-y-6">
+                {/* Payment Methods & Languages */}
+                {((ms.paymentMethods && ms.paymentMethods.length > 0) ||
+                  (ms.languages && ms.languages.length > 0)) && (
+                  <div className="grid gap-6 sm:grid-cols-2">
+                    {ms.paymentMethods && ms.paymentMethods.length > 0 && (
+                      <Card>
+                        <CardHeader>
+                          <CardTitle className="flex items-center gap-2 text-lg">
+                            <CreditCard className="h-5 w-5 text-indigo-500" />
+                            Payment Methods
+                          </CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                          <div className="flex flex-wrap gap-2">
+                            {ms.paymentMethods.map((pm) => (
+                              <Badge key={pm} variant="outline">
+                                <Banknote className="mr-1 h-3 w-3" />
+                                {pm}
+                              </Badge>
+                            ))}
+                          </div>
+                        </CardContent>
+                      </Card>
+                    )}
+                    {ms.languages && ms.languages.length > 0 && (
+                      <Card>
+                        <CardHeader>
+                          <CardTitle className="flex items-center gap-2 text-lg">
+                            <Globe2 className="h-5 w-5 text-teal-500" />
+                            Languages Spoken
+                          </CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                          <div className="flex flex-wrap gap-2">
+                            {ms.languages.map((lang) => (
+                              <Badge key={lang} variant="secondary">
+                                {lang}
+                              </Badge>
+                            ))}
+                          </div>
+                        </CardContent>
+                      </Card>
+                    )}
+                  </div>
+                )}
+
+                {/* Social Links */}
+                {Object.keys(socials).filter((k) => socials[k]).length > 0 && (
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2 text-lg">
+                        <Globe className="h-5 w-5 text-blue-500" />
+                        Social Media
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="flex flex-wrap gap-3">
+                        {Object.entries(socials)
+                          .filter(([, url]) => url)
+                          .map(([platform, url]) => (
+                            <a
+                              key={platform}
+                              href={url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="flex items-center gap-2 rounded-lg border border-slate-200 px-3 py-2 text-sm font-medium text-slate-700 transition hover:border-blue-300 hover:bg-blue-50 hover:text-blue-700 dark:border-slate-700"
+                            >
+                              <ExternalLink className="h-3.5 w-3.5" />
+                              {platform.charAt(0).toUpperCase() + platform.slice(1)}
+                            </a>
+                          ))}
                       </div>
                     </CardContent>
                   </Card>
                 )}
-              </div>
-            )}
-
-            {/* Social Links */}
-            {Object.keys(socials).filter((k) => socials[k]).length > 0 && (
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2 text-lg">
-                    <Globe className="h-5 w-5 text-blue-500" />
-                    Social Media
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="flex flex-wrap gap-3">
-                    {Object.entries(socials)
-                      .filter(([, url]) => url)
-                      .map(([platform, url]) => (
-                        <a
-                          key={platform}
-                          href={url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="flex items-center gap-2 rounded-lg border border-slate-200 px-3 py-2 text-sm font-medium text-slate-700 transition hover:border-blue-300 hover:bg-blue-50 hover:text-blue-700 dark:border-slate-700"
-                        >
-                          <ExternalLink className="h-3.5 w-3.5" />
-                          {platform.charAt(0).toUpperCase() + platform.slice(1)}
-                        </a>
-                      ))}
-                  </div>
-                </CardContent>
-              </Card>
-            )}
+              </TabsContent>
+            </Tabs>
           </div>
 
           {/* ───────── Sidebar Column (1/3) ───────── */}

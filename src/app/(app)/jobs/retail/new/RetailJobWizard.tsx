@@ -1,6 +1,16 @@
 "use client";
 
-import { Camera, CheckCircle, CreditCard, DollarSign, Loader2, Wrench, X } from "lucide-react";
+import {
+  Camera,
+  CheckCircle,
+  ClipboardCheck,
+  CreditCard,
+  DollarSign,
+  Loader2,
+  Ruler,
+  Wrench,
+  X,
+} from "lucide-react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useCallback, useState } from "react";
@@ -10,7 +20,7 @@ import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 
 type Props = { orgId: string };
-type Step = 1 | 2 | 3 | 4;
+type Step = 1 | 2 | 3 | 4 | 5 | 6;
 
 type JobCategory = "out_of_pocket" | "financed" | "repair";
 
@@ -93,6 +103,13 @@ export function RetailJobWizard({ orgId }: Props) {
   const [uploadProgress, setUploadProgress] = useState(0);
   const [isUploading, setIsUploading] = useState(false);
 
+  // Step 5 – Scope & Measurements
+  const [roofSquares, setRoofSquares] = useState("");
+  const [sidingLf, setSidingLf] = useState("");
+  const [stories, setStories] = useState("1");
+  const [pitch, setPitch] = useState("");
+  const [scopeNotes, setScopeNotes] = useState("");
+
   const addPhotos = useCallback((files: FileList | File[]) => {
     const arr = Array.from(files)
       .filter((f) => f.type.startsWith("image/"))
@@ -114,6 +131,8 @@ export function RetailJobWizard({ orgId }: Props) {
     if (s === 1) return !!workType;
     if (s === 2) return !!firstName && !!lastName;
     if (s === 3) return !!address;
+    if (s === 4) return true; // Photos optional
+    if (s === 5) return true; // Measurements optional
     return true;
   }
 
@@ -142,6 +161,13 @@ export function RetailJobWizard({ orgId }: Props) {
           city,
           state,
           zipCode: zip,
+        },
+        measurements: {
+          roofSquares: roofSquares ? parseFloat(roofSquares) : undefined,
+          sidingLinearFeet: sidingLf ? parseFloat(sidingLf) : undefined,
+          stories: parseInt(stories) || 1,
+          pitch: pitch || undefined,
+          notes: scopeNotes || undefined,
         },
       };
 
@@ -197,6 +223,8 @@ export function RetailJobWizard({ orgId }: Props) {
     { id: 2 as Step, label: "Customer", description: "Who needs the work" },
     { id: 3 as Step, label: "Property", description: "Location & address" },
     { id: 4 as Step, label: "Photos", description: "Upload site photos (optional)" },
+    { id: 5 as Step, label: "Measurements", description: "Scope & dimensions" },
+    { id: 6 as Step, label: "Review", description: "Confirm & submit" },
   ];
 
   const selectedCat = JOB_CATEGORIES.find((c) => c.id === jobCategory);
@@ -543,6 +571,198 @@ export function RetailJobWizard({ orgId }: Props) {
             )}
           </div>
         )}
+
+        {step === 5 && (
+          <div className="space-y-5">
+            <h3 className="flex items-center gap-2 text-lg font-semibold">
+              <Ruler className="h-5 w-5 text-amber-500" />
+              Scope & Measurements
+            </h3>
+            <p className="text-sm text-slate-500">
+              Optional — add roof squares, siding footage, or any measurements you have.
+            </p>
+            <div className="grid gap-4 md:grid-cols-2">
+              <div className="space-y-1">
+                <label className="text-xs font-medium text-slate-700 dark:text-slate-300">
+                  Roof Squares
+                </label>
+                <input
+                  type="number"
+                  min={0}
+                  step={0.1}
+                  placeholder="e.g. 24.5"
+                  value={roofSquares}
+                  onChange={(e) => setRoofSquares(e.target.value)}
+                  className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm shadow-sm focus:border-amber-500 focus:outline-none focus:ring-2 focus:ring-amber-100 dark:border-slate-600 dark:bg-slate-800"
+                />
+                <p className="text-xs text-slate-400">1 square = 100 sq ft</p>
+              </div>
+              <div className="space-y-1">
+                <label className="text-xs font-medium text-slate-700 dark:text-slate-300">
+                  Siding Linear Feet
+                </label>
+                <input
+                  type="number"
+                  min={0}
+                  placeholder="e.g. 180"
+                  value={sidingLf}
+                  onChange={(e) => setSidingLf(e.target.value)}
+                  className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm shadow-sm focus:border-amber-500 focus:outline-none focus:ring-2 focus:ring-amber-100 dark:border-slate-600 dark:bg-slate-800"
+                />
+              </div>
+              <div className="space-y-1">
+                <label className="text-xs font-medium text-slate-700 dark:text-slate-300">
+                  Stories
+                </label>
+                <select
+                  value={stories}
+                  onChange={(e) => setStories(e.target.value)}
+                  title="Number of stories"
+                  className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm shadow-sm focus:border-amber-500 focus:outline-none focus:ring-2 focus:ring-amber-100 dark:border-slate-600 dark:bg-slate-800"
+                >
+                  <option value="1">1 Story</option>
+                  <option value="2">2 Stories</option>
+                  <option value="3">3+ Stories</option>
+                </select>
+              </div>
+              <div className="space-y-1">
+                <label className="text-xs font-medium text-slate-700 dark:text-slate-300">
+                  Roof Pitch
+                </label>
+                <select
+                  value={pitch}
+                  onChange={(e) => setPitch(e.target.value)}
+                  title="Roof pitch"
+                  className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm shadow-sm focus:border-amber-500 focus:outline-none focus:ring-2 focus:ring-amber-100 dark:border-slate-600 dark:bg-slate-800"
+                >
+                  <option value="">Select pitch...</option>
+                  <option value="flat">Flat (0-2/12)</option>
+                  <option value="low">Low (3-5/12)</option>
+                  <option value="moderate">Moderate (6-8/12)</option>
+                  <option value="steep">Steep (9-12/12)</option>
+                  <option value="extreme">Extreme (12+/12)</option>
+                </select>
+              </div>
+            </div>
+            <div className="space-y-1">
+              <label className="text-xs font-medium text-slate-700 dark:text-slate-300">
+                Scope Notes
+              </label>
+              <textarea
+                rows={3}
+                placeholder="Additional details about measurements, materials, access concerns..."
+                value={scopeNotes}
+                onChange={(e) => setScopeNotes(e.target.value)}
+                className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm shadow-sm focus:border-amber-500 focus:outline-none focus:ring-2 focus:ring-amber-100 dark:border-slate-600 dark:bg-slate-800"
+              />
+            </div>
+          </div>
+        )}
+
+        {step === 6 && (
+          <div className="space-y-5">
+            <h3 className="flex items-center gap-2 text-lg font-semibold">
+              <ClipboardCheck className="h-5 w-5 text-amber-500" />
+              Review & Confirm
+            </h3>
+            <p className="text-sm text-slate-500">
+              Please review the details before creating the job.
+            </p>
+
+            <div className="space-y-4">
+              {/* Job Details Summary */}
+              <div className="rounded-xl border border-slate-200 p-4 dark:border-slate-700">
+                <h4 className="mb-2 text-sm font-semibold text-slate-700 dark:text-slate-300">
+                  Job Details
+                </h4>
+                <div className="grid grid-cols-2 gap-2 text-sm">
+                  <span className="text-slate-500">Category:</span>
+                  <span className="font-medium">{selectedCat?.label ?? jobCategory}</span>
+                  <span className="text-slate-500">Work Type:</span>
+                  <span className="font-medium">
+                    {WORK_TYPES.find((w) => w.value === workType)?.label ?? workType}
+                  </span>
+                  <span className="text-slate-500">Urgency:</span>
+                  <span className="font-medium capitalize">{urgency}</span>
+                  {budget && (
+                    <>
+                      <span className="text-slate-500">Budget:</span>
+                      <span className="font-medium">${parseInt(budget).toLocaleString()}</span>
+                    </>
+                  )}
+                </div>
+              </div>
+
+              {/* Customer Summary */}
+              <div className="rounded-xl border border-slate-200 p-4 dark:border-slate-700">
+                <h4 className="mb-2 text-sm font-semibold text-slate-700 dark:text-slate-300">
+                  Customer
+                </h4>
+                <div className="grid grid-cols-2 gap-2 text-sm">
+                  <span className="text-slate-500">Name:</span>
+                  <span className="font-medium">
+                    {firstName} {lastName}
+                  </span>
+                  {phone && (
+                    <>
+                      <span className="text-slate-500">Phone:</span>
+                      <span className="font-medium">{phone}</span>
+                    </>
+                  )}
+                  {email && (
+                    <>
+                      <span className="text-slate-500">Email:</span>
+                      <span className="font-medium">{email}</span>
+                    </>
+                  )}
+                </div>
+              </div>
+
+              {/* Property Summary */}
+              <div className="rounded-xl border border-slate-200 p-4 dark:border-slate-700">
+                <h4 className="mb-2 text-sm font-semibold text-slate-700 dark:text-slate-300">
+                  Property
+                </h4>
+                <p className="text-sm font-medium">
+                  {address}
+                  {city ? `, ${city}` : ""}
+                  {state ? `, ${state}` : ""} {zip}
+                </p>
+              </div>
+
+              {/* Photos & Measurements Summary */}
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <div className="rounded-xl border border-slate-200 p-4 dark:border-slate-700">
+                  <h4 className="mb-2 text-sm font-semibold text-slate-700 dark:text-slate-300">
+                    Photos
+                  </h4>
+                  <p className="text-sm">
+                    {photos.length > 0
+                      ? `${photos.length} photo${photos.length > 1 ? "s" : ""} attached`
+                      : "No photos"}
+                  </p>
+                </div>
+                <div className="rounded-xl border border-slate-200 p-4 dark:border-slate-700">
+                  <h4 className="mb-2 text-sm font-semibold text-slate-700 dark:text-slate-300">
+                    Measurements
+                  </h4>
+                  {roofSquares || sidingLf || pitch ? (
+                    <div className="space-y-1 text-sm">
+                      {roofSquares && <p>Roof: {roofSquares} squares</p>}
+                      {sidingLf && <p>Siding: {sidingLf} LF</p>}
+                      {pitch && <p>Pitch: {pitch}</p>}
+                      <p>
+                        {stories} stor{stories === "1" ? "y" : "ies"}
+                      </p>
+                    </div>
+                  ) : (
+                    <p className="text-sm text-slate-400">Not provided</p>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Navigation */}
@@ -556,7 +776,7 @@ export function RetailJobWizard({ orgId }: Props) {
         </button>
 
         <div className="flex items-center gap-2">
-          {step < 4 && (
+          {step < 6 && (
             <Button
               type="button"
               onClick={() => {
@@ -567,11 +787,11 @@ export function RetailJobWizard({ orgId }: Props) {
               disabled={!canGoNext(step) || loading}
               className="bg-amber-600 hover:bg-amber-700"
             >
-              Next
+              {step === 5 ? "Review" : "Next"}
             </Button>
           )}
 
-          {step === 4 && (
+          {step === 6 && (
             <Button
               type="button"
               onClick={handleSubmit}

@@ -64,8 +64,9 @@ export async function listClaims(params: {
   offset?: number;
   stage?: string | null;
   search?: string | null;
+  visibleUserIds?: string[] | null;
 }): Promise<{ claims: ClaimDTO[]; total: number; limit: number; offset: number }> {
-  const { orgId, limit = 50, offset = 0, stage, search } = params;
+  const { orgId, limit = 50, offset = 0, stage, search, visibleUserIds } = params;
   const where: any = { orgId };
   if (stage) where.status = stage; // status field in schema
   if (search) {
@@ -73,6 +74,14 @@ export async function listClaims(params: {
       { title: { contains: search, mode: "insensitive" } },
       { claimNumber: { contains: search, mode: "insensitive" } },
       { description: { contains: search, mode: "insensitive" } },
+    ];
+  }
+  // Manager-scoped visibility: filter by assignedTo if visibleUserIds provided
+  if (visibleUserIds) {
+    // Use AND to combine with existing OR (search) without conflicts
+    where.AND = [
+      ...(where.AND || []),
+      { OR: [{ assignedTo: { in: visibleUserIds } }, { assignedTo: null }] },
     ];
   }
   const [claims, total] = await Promise.all([

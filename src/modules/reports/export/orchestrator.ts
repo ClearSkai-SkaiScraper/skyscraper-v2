@@ -746,15 +746,361 @@ async function renderSection(
     }
 
     default: {
-      // For sections not yet implemented (test-cuts, pricing-comparison, etc.)
-      drawText(section.title, { bold: true, size: FONT_SIZE.SUBTITLE });
-      yPos -= 4;
-      drawDivider(page, yPos, COLOR.DIVIDER_LIGHT);
-      yPos -= 12;
-      drawText("This section is available in the full report.", {
-        size: FONT_SIZE.BODY,
-        color: COLOR.TEXT_MUTED,
-      });
+      // ── Section-specific renderers for previously stub sections ─────
+      switch (section.key) {
+        case "test-cuts": {
+          drawText("Test Cut Results", { bold: true, size: FONT_SIZE.SUBTITLE });
+          yPos -= 4;
+          drawDivider(page, yPos, COLOR.DIVIDER_LIGHT);
+          yPos -= 12;
+
+          if (context.testCuts && context.testCuts.length > 0) {
+            for (const cut of context.testCuts) {
+              ensureSpace(70);
+              drawText(`Location: ${cut.location || "N/A"}  |  Size: ${cut.size || "N/A"}`, {
+                bold: true,
+                size: FONT_SIZE.BODY,
+              });
+              if (cut.layers) {
+                drawText(`Layers Found: ${cut.layers}`, {
+                  size: FONT_SIZE.LABEL,
+                  color: COLOR.TEXT_SECONDARY,
+                  indent: 8,
+                });
+              }
+              if (cut.findings) {
+                drawParagraph(cut.findings, { size: FONT_SIZE.LABEL, indent: 8 });
+              }
+              yPos -= 8;
+              drawDivider(page, yPos, COLOR.DIVIDER_LIGHT);
+              yPos -= 8;
+            }
+          } else {
+            drawText("No test cut data recorded for this claim.", { color: COLOR.TEXT_MUTED });
+          }
+          break;
+        }
+
+        case "signature-page": {
+          drawText("Authorization & Signatures", { bold: true, size: FONT_SIZE.SUBTITLE });
+          yPos -= 4;
+          drawDivider(page, yPos, COLOR.DIVIDER_LIGHT);
+          yPos -= 20;
+
+          const sigLines = [
+            { label: "Property Owner", name: context.homeowner?.name || "" },
+            { label: "Contractor Representative", name: context.branding?.companyName || "" },
+            { label: "Insurance Adjuster (if applicable)", name: "" },
+          ];
+
+          for (const sig of sigLines) {
+            ensureSpace(80);
+            drawText(sig.label, { bold: true, size: FONT_SIZE.BODY });
+            yPos -= 8;
+            // Signature line
+            page.drawLine({
+              start: { x: PAGE.MARGIN.LEFT, y: yPos },
+              end: { x: PAGE.MARGIN.LEFT + 260, y: yPos },
+              thickness: 0.75,
+              color: COLOR.TEXT_SECONDARY,
+            });
+            page.drawText("Signature", {
+              x: PAGE.MARGIN.LEFT,
+              y: yPos - 12,
+              size: FONT_SIZE.TINY,
+              font,
+              color: COLOR.TEXT_MUTED,
+            });
+            // Date line
+            page.drawLine({
+              start: { x: PAGE.MARGIN.LEFT + 300, y: yPos },
+              end: { x: PAGE.MARGIN.LEFT + 460, y: yPos },
+              thickness: 0.75,
+              color: COLOR.TEXT_SECONDARY,
+            });
+            page.drawText("Date", {
+              x: PAGE.MARGIN.LEFT + 300,
+              y: yPos - 12,
+              size: FONT_SIZE.TINY,
+              font,
+              color: COLOR.TEXT_MUTED,
+            });
+            if (sig.name) {
+              drawText(`Print Name: ${sig.name}`, {
+                size: FONT_SIZE.SMALL,
+                color: COLOR.TEXT_SECONDARY,
+                indent: 0,
+              });
+            }
+            yPos -= 30;
+          }
+
+          yPos -= 12;
+          drawParagraph(
+            "By signing above, the parties acknowledge the scope of work, pricing, and terms described in this document. This authorization permits the contractor to proceed with the restoration work detailed herein.",
+            { size: FONT_SIZE.SMALL, color: COLOR.TEXT_SECONDARY }
+          );
+          break;
+        }
+
+        case "warranty-terms": {
+          drawText("Warranty & Guarantee Terms", { bold: true, size: FONT_SIZE.SUBTITLE });
+          yPos -= 4;
+          drawDivider(page, yPos, COLOR.DIVIDER_LIGHT);
+          yPos -= 12;
+
+          const warrantyItems = [
+            {
+              term: "Workmanship Warranty",
+              duration: "5 Years",
+              desc: "Covers all labor and installation defects. Contractor will repair or replace any faulty workmanship at no additional cost.",
+            },
+            {
+              term: "Manufacturer Material Warranty",
+              duration: "25-50 Years",
+              desc: "Per manufacturer specifications. Covers defects in roofing materials, shingles, and components.",
+            },
+            {
+              term: "Leak-Free Guarantee",
+              duration: "2 Years",
+              desc: "Full coverage for any leaks resulting from the restoration work performed.",
+            },
+          ];
+
+          if (context.warrantyTerms && context.warrantyTerms.length > 0) {
+            for (const w of context.warrantyTerms) {
+              ensureSpace(60);
+              drawText(`${w.term} — ${w.duration}`, { bold: true, size: FONT_SIZE.BODY });
+              drawParagraph(w.description, { size: FONT_SIZE.LABEL, indent: 8 });
+              yPos -= 8;
+            }
+          } else {
+            for (const w of warrantyItems) {
+              ensureSpace(60);
+              drawText(`${w.term} — ${w.duration}`, { bold: true, size: FONT_SIZE.BODY });
+              drawParagraph(w.desc, { size: FONT_SIZE.LABEL, indent: 8 });
+              yPos -= 8;
+            }
+          }
+
+          yPos -= 8;
+          drawDivider(page, yPos, COLOR.DIVIDER_LIGHT);
+          yPos -= 12;
+          drawParagraph(
+            "Warranty claims must be submitted in writing within the warranty period. Normal wear and tear, acts of God, and unauthorized modifications are excluded from coverage.",
+            { size: FONT_SIZE.SMALL, color: COLOR.TEXT_SECONDARY }
+          );
+          break;
+        }
+
+        case "material-selections": {
+          drawText("Material Selections", { bold: true, size: FONT_SIZE.SUBTITLE });
+          yPos -= 4;
+          drawDivider(page, yPos, COLOR.DIVIDER_LIGHT);
+          yPos -= 12;
+
+          if (context.materials && context.materials.length > 0) {
+            // Table header
+            const cols = { name: PAGE.MARGIN.LEFT, brand: 220, color: 340, qty: 430 };
+            drawPanel(page, PAGE.MARGIN.LEFT, yPos - 14, maxTextWidth, 18, COLOR.BG_STRIPE);
+            page.drawText("Material", {
+              x: cols.name + 4,
+              y: yPos - 10,
+              size: FONT_SIZE.TABLE_HEADER,
+              font: fontBold,
+              color: COLOR.TEXT_SECONDARY,
+            });
+            page.drawText("Brand/Model", {
+              x: cols.brand,
+              y: yPos - 10,
+              size: FONT_SIZE.TABLE_HEADER,
+              font: fontBold,
+              color: COLOR.TEXT_SECONDARY,
+            });
+            page.drawText("Color/Style", {
+              x: cols.color,
+              y: yPos - 10,
+              size: FONT_SIZE.TABLE_HEADER,
+              font: fontBold,
+              color: COLOR.TEXT_SECONDARY,
+            });
+            page.drawText("Qty", {
+              x: cols.qty,
+              y: yPos - 10,
+              size: FONT_SIZE.TABLE_HEADER,
+              font: fontBold,
+              color: COLOR.TEXT_SECONDARY,
+            });
+            yPos -= 20;
+
+            for (let i = 0; i < context.materials.length; i++) {
+              const mat = context.materials[i];
+              ensureSpace(SPACING.TABLE_ROW_HEIGHT + 4);
+              if (i % 2 === 0) {
+                drawPanel(
+                  page,
+                  PAGE.MARGIN.LEFT,
+                  yPos - 12,
+                  maxTextWidth,
+                  SPACING.TABLE_ROW_HEIGHT,
+                  COLOR.BG_LIGHT
+                );
+              }
+              page.drawText((mat.name || "").substring(0, 28), {
+                x: cols.name + 4,
+                y: yPos - 8,
+                size: FONT_SIZE.TABLE_CELL,
+                font,
+                color: COLOR.TEXT_PRIMARY,
+              });
+              page.drawText((mat.brand || "").substring(0, 20), {
+                x: cols.brand,
+                y: yPos - 8,
+                size: FONT_SIZE.TABLE_CELL,
+                font,
+                color: COLOR.TEXT_PRIMARY,
+              });
+              page.drawText((mat.color || "").substring(0, 18), {
+                x: cols.color,
+                y: yPos - 8,
+                size: FONT_SIZE.TABLE_CELL,
+                font,
+                color: COLOR.TEXT_PRIMARY,
+              });
+              page.drawText(String(mat.quantity || ""), {
+                x: cols.qty,
+                y: yPos - 8,
+                size: FONT_SIZE.TABLE_CELL,
+                font,
+                color: COLOR.TEXT_PRIMARY,
+              });
+              yPos -= SPACING.TABLE_ROW_HEIGHT;
+            }
+          } else {
+            drawText(
+              "Material selections pending. Selections will be finalized after scope approval.",
+              { color: COLOR.TEXT_MUTED }
+            );
+          }
+          break;
+        }
+
+        case "payment-schedule": {
+          drawText("Payment Schedule & Terms", { bold: true, size: FONT_SIZE.SUBTITLE });
+          yPos -= 4;
+          drawDivider(page, yPos, COLOR.DIVIDER_LIGHT);
+          yPos -= 12;
+
+          if (context.paymentSchedule && context.paymentSchedule.length > 0) {
+            for (const milestone of context.paymentSchedule) {
+              ensureSpace(50);
+              drawText(
+                `${milestone.phase || milestone.name} — ${milestone.percentage ? milestone.percentage + "%" : "$" + (milestone.amount || 0).toLocaleString()}`,
+                { bold: true, size: FONT_SIZE.BODY }
+              );
+              if (milestone.description) {
+                drawParagraph(milestone.description, { size: FONT_SIZE.LABEL, indent: 8 });
+              }
+              yPos -= 6;
+            }
+          } else {
+            // Default payment schedule
+            const defaultSchedule = [
+              {
+                phase: "1. Upon Agreement Signing",
+                pct: "30%",
+                desc: "Deposit to initiate material ordering and project scheduling.",
+              },
+              {
+                phase: "2. Materials Delivered / Work Commenced",
+                pct: "40%",
+                desc: "Due upon delivery of materials and commencement of work.",
+              },
+              {
+                phase: "3. Project Completion & Final Inspection",
+                pct: "30%",
+                desc: "Balance due upon completion, walkthrough, and final sign-off.",
+              },
+            ];
+            for (const item of defaultSchedule) {
+              ensureSpace(50);
+              drawText(`${item.phase} — ${item.pct}`, { bold: true, size: FONT_SIZE.BODY });
+              drawParagraph(item.desc, { size: FONT_SIZE.LABEL, indent: 8 });
+              yPos -= 6;
+            }
+          }
+
+          yPos -= 8;
+          drawDivider(page, yPos, COLOR.DIVIDER_LIGHT);
+          yPos -= 12;
+          drawParagraph(
+            "Payment is expected within 10 business days of each milestone. Insurance proceeds will be applied to the balance as received. Any deviation from this schedule requires written agreement from both parties.",
+            { size: FONT_SIZE.SMALL, color: COLOR.TEXT_SECONDARY }
+          );
+          break;
+        }
+
+        case "retail-proposal": {
+          drawText("Retail Proposal Summary", { bold: true, size: FONT_SIZE.SUBTITLE });
+          yPos -= 4;
+          drawDivider(page, yPos, COLOR.DIVIDER_LIGHT);
+          yPos -= 12;
+
+          if (context.retailProposal) {
+            const rp = context.retailProposal;
+            const fields: [string, string | undefined][] = [
+              ["Property Address", rp.propertyAddress],
+              ["Scope of Work", rp.scopeSummary],
+              ["Estimated Total", rp.total ? `$${rp.total.toLocaleString()}` : undefined],
+              ["Estimated Timeline", rp.timeline],
+              ["Valid Until", rp.validUntil],
+            ];
+            const panelH = fields.filter(([, v]) => v).length * 20 + 12;
+            drawPanel(page, PAGE.MARGIN.LEFT, yPos - panelH, maxTextWidth, panelH);
+            for (const [label, value] of fields) {
+              if (!value) continue;
+              page.drawText(`${label}:`, {
+                x: PAGE.MARGIN.LEFT + 10,
+                y: yPos - 4,
+                size: FONT_SIZE.BODY,
+                font: fontBold,
+                color: COLOR.TEXT_SECONDARY,
+              });
+              page.drawText(value.substring(0, 60), {
+                x: PAGE.MARGIN.LEFT + 160,
+                y: yPos - 4,
+                size: FONT_SIZE.BODY,
+                font,
+                color: COLOR.TEXT_PRIMARY,
+              });
+              yPos -= 20;
+            }
+            if (rp.notes) {
+              yPos -= 12;
+              drawText("Additional Notes", { bold: true, size: FONT_SIZE.BODY });
+              drawParagraph(rp.notes, { size: FONT_SIZE.LABEL });
+            }
+          } else {
+            drawText("Retail proposal not yet generated for this project.", {
+              color: COLOR.TEXT_MUTED,
+            });
+          }
+          break;
+        }
+
+        default: {
+          // Any truly unknown section
+          drawText(section.title, { bold: true, size: FONT_SIZE.SUBTITLE });
+          yPos -= 4;
+          drawDivider(page, yPos, COLOR.DIVIDER_LIGHT);
+          yPos -= 12;
+          drawText("This section is available in the full report.", {
+            size: FONT_SIZE.BODY,
+            color: COLOR.TEXT_MUTED,
+          });
+          break;
+        }
+      }
       break;
     }
   }

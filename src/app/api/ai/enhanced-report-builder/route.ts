@@ -19,11 +19,21 @@ import { getRecommendedProducts } from "@/lib/materials/vendor-catalog";
 import type { EnhancedReportData } from "@/lib/pdf/enhancedReportBuilder";
 import { generateEnhancedPDFReport } from "@/lib/pdf/enhancedReportBuilder";
 import prisma from "@/lib/prisma";
+import { checkRateLimit } from "@/lib/rate-limit";
 import { enhancedReportBuilderSchema, validateAIRequest } from "@/lib/validation/aiSchemas";
 
 async function POST_INNER(req: NextRequest, ctx: { userId: string; orgId: string }) {
   try {
     const { userId, orgId: clerkOrgId } = ctx;
+
+    // Rate limit: AI tier (5/min)
+    const rl = await checkRateLimit(userId, "AI");
+    if (!rl.success) {
+      return NextResponse.json(
+        { error: "rate_limit_exceeded", message: "Too many AI requests. Please wait." },
+        { status: 429 }
+      );
+    }
 
     const body = await req.json();
     const validated = validateAIRequest(enhancedReportBuilderSchema, body);

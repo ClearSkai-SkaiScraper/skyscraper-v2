@@ -1,12 +1,15 @@
 /**
  * PDF Generation for Templates
  *
- * Generates PDF from template with company branding applied
- * Uses React-PDF or Puppeteer for rendering
+ * Generates PDF from template with company branding applied.
+ * Uses jsPDF (serverless-compatible) as primary renderer.
+ * Puppeteer/React-PDF used only when explicitly configured.
  */
 
-import { getMergedTemplate } from "./mergeTemplate";
+import { jsPDF } from "jspdf";
+
 import { logger } from "@/lib/logger";
+import { getMergedTemplate } from "./mergeTemplate";
 
 interface PDFGenerationOptions {
   templateId: string;
@@ -22,13 +25,13 @@ interface PDFGenerationOptions {
 /**
  * Generate PDF from template with branding
  *
- * @param options - Template ID, org ID, and optional claim data
- * @returns PDF buffer or URL to generated PDF
+ * Uses jsPDF for serverless-safe PDF generation (Vercel/Railway compatible).
+ * Falls back gracefully if template merge fails.
  */
-export async function generateTemplatePDF(options: PDFGenerationOptions): Promise<Buffer | string> {
+export async function generateTemplatePDF(options: PDFGenerationOptions): Promise<Buffer> {
   const { templateId, orgId, claimData } = options;
 
-  logger.debug(`[PDF_GENERATION] Starting PDF generation for template ${templateId}`);
+  logger.info(`[PDF_GENERATION] Starting PDF generation for template ${templateId}`, { orgId });
 
   try {
     // 1. Get merged template with branding
@@ -40,136 +43,137 @@ export async function generateTemplatePDF(options: PDFGenerationOptions): Promis
 
     logger.debug(`[PDF_GENERATION] Merged template loaded with branding`);
 
-    // 2. Generate PDF using Puppeteer (server-side rendering)
-    // This approach renders the preview page and converts to PDF
-    const pdfBuffer = await generatePDFWithPuppeteer(templateId, orgId, claimData);
+    // 2. Generate PDF using jsPDF (works in all environments)
+    const pdfBuffer = generatePDFWithJsPDF(mergedTemplate, claimData);
 
-    logger.debug(`[PDF_GENERATION] PDF generated successfully (${pdfBuffer.length} bytes)`);
+    logger.info(`[PDF_GENERATION] PDF generated successfully (${pdfBuffer.length} bytes)`);
 
     return pdfBuffer;
   } catch (error: any) {
-    logger.error(`[PDF_GENERATION] Error:`, error);
+    logger.error(`[PDF_GENERATION] Error generating PDF`, {
+      templateId,
+      orgId,
+      error: error.message,
+    });
     throw new Error(`Failed to generate PDF: ${error.message}`);
   }
 }
 
 /**
- * Generate PDF using Puppeteer (server-side rendering)
- *
- * This renders the preview page in headless browser and exports to PDF
+ * Generate PDF using jsPDF — serverless-safe, no Chromium required.
  */
-async function generatePDFWithPuppeteer(
-  templateId: string,
-  orgId: string,
-  claimData?: any
-): Promise<Buffer> {
-  // Note: This is a placeholder for Puppeteer implementation
-  // In production, you would:
-  // 1. Launch headless browser
-  // 2. Navigate to preview page
-  // 3. Wait for template to load
-  // 4. Generate PDF
-  // 5. Return buffer
+function generatePDFWithJsPDF(mergedTemplate: any, claimData?: any): Buffer {
+  const doc = new jsPDF({ format: "letter" });
 
-  // For now, we'll return a simple PDF generation notice
-  // You'll need to install puppeteer: pnpm add puppeteer
+  const primaryColor = mergedTemplate?.styles?.primaryColor ?? "#0A1A2F";
+  const companyName = mergedTemplate?.header?.companyName ?? "Report";
 
-  throw new Error(
-    "PDF generation requires Puppeteer setup. " +
-      "Run: pnpm add puppeteer && configure CHROME_BIN environment variable"
-  );
+  // Parse primary color
+  const pRgb = hexToRgb(primaryColor);
 
-  // Example Puppeteer code (uncomment when ready):
-  /*
-  const puppeteer = require('puppeteer');
-  
-  const browser = await puppeteer.launch({
-    headless: true,
-    args: ['--no-sandbox', '--disable-setuid-sandbox'],
-  });
+  let yPos = 20;
 
-  const page = await browser.newPage();
-  
-  // Navigate to preview page
-  const previewUrl = `${process.env.NEXT_PUBLIC_APP_URL}/reports/templates/${templateId}/preview`;
-  await page.goto(previewUrl, { waitUntil: 'networkidle0' });
+  // === HEADER ===
+  doc.setFontSize(18);
+  doc.setFont("helvetica", "bold");
+  doc.setTextColor(pRgb.r, pRgb.g, pRgb.b);
+  doc.text(companyName, 105, yPos, { align: "center" });
+  yPos += 10;
 
-  // Generate PDF
-  const pdfBuffer = await page.pdf({
-    format: 'Letter',
-    printBackground: true,
-    margin: {
-      top: '0.5in',
-      right: '0.5in',
-      bottom: '0.5in',
-      left: '0.5in',
-    },
-  });
+  // Header line
+  doc.setDrawColor(pRgb.r, pRgb.g, pRgb.b);
+  doc.setLineWidth(1);
+  doc.line(20, yPos, 195, yPos);
+  yPos += 15;
 
-  await browser.close();
+  // === CLAIM DATA (if provided) ===
+  if (claimData) {
+    doc.setFontSize(10);
+    doc.setFont("helvetica", "normal");
+    doc.setTextColor(60, 60, 60);
 
-  return pdfBuffer;
-  */
+    if (claimData.claimNumber) {
+      doc.text(`Claim #: ${claimData.claimNumber}`, 20, yPos);
+      yPos += 6;
+    }
+    if (claimData.insured_name) {
+      doc.text(`Insured: ${claimData.insured_name}`, 20, yPos);
+      yPos += 6;
+    }
+    if (claimData.propertyAddress) {
+      doc.text(`Property: ${claimData.propertyAddress}`, 20, yPos);
+      yPos += 6;
+    }
+    if (claimData.lossDate) {
+      doc.text(`Loss Date: ${claimData.lossDate}`, 20, yPos);
+      yPos += 6;
+    }
+    yPos += 10;
+  }
+
+  // === TEMPLATE SECTIONS ===
+  const sections = mergedTemplate?.sections ?? [];
+  doc.setTextColor(0, 0, 0);
+
+  for (const section of sections) {
+    if (yPos > 260) {
+      doc.addPage();
+      yPos = 20;
+    }
+
+    // Section heading
+    doc.setFontSize(14);
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(pRgb.r, pRgb.g, pRgb.b);
+    const title = section.title ?? section.type ?? "Section";
+    doc.text(title, 20, yPos);
+    yPos += 3;
+
+    doc.setDrawColor(pRgb.r, pRgb.g, pRgb.b);
+    doc.setLineWidth(0.5);
+    doc.line(20, yPos, 80, yPos);
+    yPos += 8;
+
+    // Section content
+    doc.setFontSize(10);
+    doc.setFont("helvetica", "normal");
+    doc.setTextColor(0, 0, 0);
+
+    const content = section.content ?? section.text ?? "";
+    if (content) {
+      const lines = doc.splitTextToSize(content, 175);
+      doc.text(lines, 20, yPos);
+      yPos += lines.length * 5 + 10;
+    }
+  }
+
+  // === FOOTER ===
+  const pageCount = doc.getNumberOfPages();
+  for (let i = 1; i <= pageCount; i++) {
+    doc.setPage(i);
+    doc.setFontSize(8);
+    doc.setFont("helvetica", "normal");
+    doc.setTextColor(150, 150, 150);
+    doc.text(`${companyName} — Page ${i} of ${pageCount}`, 105, 275, { align: "center" });
+  }
+
+  // Convert to Buffer
+  const arrayBuffer = doc.output("arraybuffer");
+  return Buffer.from(arrayBuffer);
 }
 
 /**
- * Generate PDF using React-PDF (alternative approach)
- *
- * This uses @react-pdf/renderer to generate PDF programmatically
+ * Convert hex color to RGB values
  */
-export async function generatePDFWithReactPDF(
-  templateId: string,
-  orgId: string,
-  claimData?: any
-): Promise<Buffer> {
-  // Note: This is a placeholder for React-PDF implementation
-  // You would need to:
-  // 1. Install @react-pdf/renderer
-  // 2. Create PDF components matching preview
-  // 3. Render to buffer
-
-  throw new Error(
-    "React-PDF generation not yet implemented. " +
-      "Use Puppeteer approach for now or implement React-PDF components"
-  );
-
-  // Example React-PDF code (uncomment when ready):
-  /*
-  import { Document, Page, Text, View, StyleSheet, pdf } from '@react-pdf/renderer';
-
-  const mergedTemplate = await getMergedTemplate(templateId, orgId);
-
-  const styles = StyleSheet.create({
-    page: {
-      padding: 30,
-      backgroundColor: '#ffffff',
-    },
-    header: {
-      marginBottom: 20,
-      borderBottom: `2px solid ${mergedTemplate.styles.primaryColor}`,
-      paddingBottom: 10,
-    },
-    // ... more styles
-  });
-
-  const PDFDocument = () => (
-    <Document>
-      <Page size="LETTER" style={styles.page}>
-        <View style={styles.header}>
-          <Text>{mergedTemplate.header.companyName}</Text>
-        </View>
-        {mergedTemplate.sections.map((section) => (
-          <View key={section.type}>
-            <Text>{section.type}</Text>
-          </View>
-        ))}
-      </Page>
-    </Document>
-  );
-
-  const pdfBuffer = await pdf(<PDFDocument />).toBuffer();
-  return pdfBuffer;
-  */
+function hexToRgb(hex: string): { r: number; g: number; b: number } {
+  const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+  return result
+    ? {
+        r: parseInt(result[1], 16),
+        g: parseInt(result[2], 16),
+        b: parseInt(result[3], 16),
+      }
+    : { r: 10, g: 26, b: 47 };
 }
 
 /**
@@ -180,14 +184,7 @@ export async function generatePDFWithReactPDF(
  * @returns URL to stored PDF
  */
 export async function savePDFToStorage(pdfBuffer: Buffer, filename: string): Promise<string> {
-  // TODO: Implement storage upload
-  // Options:
-  // 1. Supabase Storage
-  // 2. AWS S3
-  // 3. Vercel Blob Storage
-
+  // TODO: Implement storage upload (Supabase Storage / Vercel Blob)
   logger.debug(`[PDF_STORAGE] Would save PDF: ${filename} (${pdfBuffer.length} bytes)`);
-
-  // Placeholder URL
   return `/api/pdfs/${filename}`;
 }

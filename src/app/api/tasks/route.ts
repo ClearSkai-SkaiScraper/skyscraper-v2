@@ -2,6 +2,9 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
+import { auth } from "@clerk/nextjs/server";
+
+import { getVisibleUserIds } from "@/lib/auth/managerScope";
 import { logger } from "@/lib/logger";
 import { NextRequest } from "next/server";
 
@@ -48,6 +51,18 @@ export async function GET(request: NextRequest) {
       const nextWeek = new Date(today);
       nextWeek.setDate(nextWeek.getDate() + 7);
       where.dueAt = { gte: today, lte: nextWeek };
+    }
+
+    // Manager-scoped visibility: non-admins see only their own + direct reports' tasks
+    const { userId: clerkUserId } = await auth();
+    if (clerkUserId) {
+      const visibleUserIds = await getVisibleUserIds(clerkUserId, orgId);
+      if (visibleUserIds) {
+        where.OR = [
+          { assigneeId: { in: visibleUserIds } },
+          { assigneeId: null }, // Unassigned tasks visible to managers
+        ];
+      }
     }
 
     const [tasks, totalCount] = await Promise.all([

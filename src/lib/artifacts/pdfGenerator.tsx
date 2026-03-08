@@ -20,6 +20,11 @@ interface PdfDocumentOptions {
   contentJson?: any;
   sourceTemplate?: UniversalTemplate | null;
   artifactId: string;
+  companyName?: string;
+  companyPhone?: string;
+  companyEmail?: string;
+  companyLicense?: string;
+  employeeName?: string;
 }
 
 // Helper functions
@@ -91,6 +96,12 @@ const styles = StyleSheet.create({
     color: "#9ca3af",
     marginBottom: 4,
   },
+  disclaimer: {
+    fontSize: 8,
+    color: "#dc2626",
+    marginTop: 8,
+    fontStyle: "italic",
+  },
 });
 
 /**
@@ -107,16 +118,33 @@ export function generatePdfDocument(options: PdfDocumentOptions) {
     contentJson,
     sourceTemplate,
     artifactId,
+    companyName,
+    companyPhone,
+    companyEmail,
+    companyLicense,
+    employeeName,
   } = options;
 
   return (
     <Document>
       <Page size="A4" style={styles.page}>
-        {/* Header */}
+        {/* Header with company branding */}
         <View style={styles.header}>
           <Text style={styles.title}>{title}</Text>
+          {companyName && (
+            <Text style={styles.subtitle}>
+              {companyName}
+              {companyLicense ? ` • Lic #${companyLicense}` : ""}
+            </Text>
+          )}
+          {(companyPhone || companyEmail) && (
+            <Text style={styles.date}>
+              {[companyPhone, companyEmail].filter(Boolean).join(" • ")}
+            </Text>
+          )}
           <Text style={styles.subtitle}>
             {formatArtifactType(type)} • Version {version}
+            {employeeName ? ` • Prepared by ${employeeName}` : ""}
           </Text>
           <Text style={styles.date}>
             Generated:{" "}
@@ -151,6 +179,10 @@ export function generatePdfDocument(options: PdfDocumentOptions) {
           <Text style={styles.footerText}>Artifact ID: {artifactId}</Text>
           {sourceTemplate && <Text style={styles.footerText}>Template: {sourceTemplate.name}</Text>}
           <Text style={styles.footerText}>Exported: {new Date().toLocaleString()}</Text>
+          <Text style={styles.disclaimer}>
+            ⚠ AI can make mistakes — please read through the final report carefully before
+            submission.
+          </Text>
         </View>
       </Page>
     </Document>

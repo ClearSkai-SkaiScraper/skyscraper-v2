@@ -12,41 +12,40 @@ export interface StorageConfig {
 }
 
 /**
- * Storage path configuration
+ * Storage path configuration — Supabase Storage compatible keys (no leading slash)
  *
  * Structure:
- * - /company-docs/{orgId}/{templateId}.pdf         (original templates)
- * - /esign/{envelopeId}/signatures/{signerId}-{fieldId}.png  (signature images)
- * - /claim-documents/{claimId}/signed/{envelopeId}.pdf  (finalized signed PDFs)
- * - /temp/{uuid}.pdf  (temporary uploads before processing)
+ * - company-docs/{orgId}/{templateId}.pdf         (original templates)
+ * - esign/{envelopeId}/signatures/{signerId}-{fieldId}.png  (signature images)
+ * - claim-documents/{claimId}/signed/{envelopeId}.pdf  (finalized signed PDFs)
+ * - temp/{uuid}.pdf  (temporary uploads before processing)
  */
 export const storagePaths: StorageConfig = {
   /**
    * Company document template storage
-   * Example: /company-docs/org_abc123/tpl_def456.pdf
+   * Example: company-docs/org_abc123/tpl_def456.pdf
    */
-  companyDocsPath: (orgId: string, templateId: string) =>
-    `/company-docs/${orgId}/${templateId}.pdf`,
+  companyDocsPath: (orgId: string, templateId: string) => `company-docs/${orgId}/${templateId}.pdf`,
 
   /**
    * Individual signature image storage (transparent PNG)
-   * Example: /esign/env_xyz789/signatures/signer_001-field_002.png
+   * Example: esign/env_xyz789/signatures/signer_001-field_002.png
    */
   signaturePath: (envelopeId: string, signerId: string, fieldId: string) =>
-    `/esign/${envelopeId}/signatures/${signerId}-${fieldId}.png`,
+    `esign/${envelopeId}/signatures/${signerId}-${fieldId}.png`,
 
   /**
    * Finalized signed PDF storage
-   * Example: /claim-documents/clm_abc123/signed/env_xyz789.pdf
+   * Example: claim-documents/clm_abc123/signed/env_xyz789.pdf
    */
   finalizedPdfPath: (claimId: string, envelopeId: string) =>
-    `/claim-documents/${claimId}/signed/${envelopeId}.pdf`,
+    `claim-documents/${claimId}/signed/${envelopeId}.pdf`,
 
   /**
    * Temporary upload storage (before moving to permanent location)
-   * Example: /temp/550e8400-e29b-41d4-a716-446655440000.pdf
+   * Example: temp/550e8400-e29b-41d4-a716-446655440000.pdf
    */
-  tempUploadPath: (filename: string) => `/temp/${filename}`,
+  tempUploadPath: (filename: string) => `temp/${filename}`,
 };
 
 /**

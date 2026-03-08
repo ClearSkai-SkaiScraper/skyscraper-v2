@@ -24,6 +24,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { logger } from "@/lib/logger";
 import { getOrg } from "@/lib/org/getOrg";
 import prisma from "@/lib/prisma";
+import { getLogoFromWebsite, VENDOR_LOGOS } from "@/lib/vendors/vendorLogos";
 
 import { TradesNetworkClient } from "./TradesNetworkClient";
 
@@ -89,6 +90,7 @@ export default async function TradesNetworkPage() {
         id: true,
         name: true,
         logo: true,
+        website: true,
         coverimage: true,
         rating: true,
         reviewCount: true,
@@ -131,21 +133,33 @@ export default async function TradesNetworkPage() {
       createdAt: post.createdAt ?? new Date(),
     }));
 
-    contractors = companyProfiles.map((p) => ({
-      id: p.id,
-      businessName: p.name,
-      companyLogoUrl: p.logo ?? null,
-      coverPhoto: p.coverimage ?? null,
-      rating: p.rating ? parseFloat(p.rating.toString()) : null,
-      reviewCount: p.reviewCount ?? 0,
-      serviceAreas: p.city && p.state ? [`${p.city}, ${p.state}`] : [],
-      primaryServices: p.specialties || [],
-      emergencyService: false,
-      isVerified: p.isVerified ?? false,
-      description: p.description,
-      yearsInBusiness: p.yearsInBusiness,
-      clientConnections: [],
-    }));
+    contractors = companyProfiles.map((p) => {
+      // 3-tier logo fallback: DB logo → VENDOR_LOGOS manifest → website favicon
+      const slug =
+        p.name
+          ?.toLowerCase()
+          .replace(/[^a-z0-9]+/g, "-")
+          .replace(/-+/g, "-")
+          .replace(/^-|-$/g, "") || "";
+      const manifestLogo = VENDOR_LOGOS[slug]?.logoPath;
+      const resolvedLogo = p.logo || manifestLogo || getLogoFromWebsite(p.website) || null;
+
+      return {
+        id: p.id,
+        businessName: p.name,
+        companyLogoUrl: resolvedLogo,
+        coverPhoto: p.coverimage ?? null,
+        rating: p.rating ? parseFloat(p.rating.toString()) : null,
+        reviewCount: p.reviewCount ?? 0,
+        serviceAreas: p.city && p.state ? [`${p.city}, ${p.state}`] : [],
+        primaryServices: p.specialties || [],
+        emergencyService: false,
+        isVerified: p.isVerified ?? false,
+        description: p.description,
+        yearsInBusiness: p.yearsInBusiness,
+        clientConnections: [],
+      };
+    });
   } catch (error) {
     logger.error("[TradesNetworkPage] Failed to fetch contractors:", error);
   }

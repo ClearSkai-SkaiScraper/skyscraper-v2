@@ -2,10 +2,11 @@
  * PHASE 37: Geometry Detection API Endpoints
  */
 
-import { NextRequest, NextResponse } from "next/server";
 import { logger } from "@/lib/logger";
+import { NextRequest, NextResponse } from "next/server";
 
 import { createAiConfig, withAiBilling, type AiBillingContext } from "@/lib/ai/withAiBilling";
+import { checkRateLimit } from "@/lib/rate-limit";
 
 // PHASE 2: Geometry Detection System
 // Planned features:
@@ -19,6 +20,15 @@ import { createAiConfig, withAiBilling, type AiBillingContext } from "@/lib/ai/w
 async function POST_INNER(req: NextRequest, ctx: AiBillingContext) {
   try {
     const { userId, orgId } = ctx;
+
+    // Rate limit: AI tier
+    const rl = await checkRateLimit(userId, "AI");
+    if (!rl.success) {
+      return NextResponse.json(
+        { error: "rate_limit_exceeded", message: "Too many requests." },
+        { status: 429 }
+      );
+    }
 
     // Phase 2 Feature: Not yet implemented
     // See roadmap comment at top of file for planned implementation

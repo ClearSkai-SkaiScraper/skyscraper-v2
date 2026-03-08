@@ -660,16 +660,222 @@ function generateDocumentHash(folder: ClaimFolder): string {
   return Buffer.from(baseString).toString("base64").substring(0, 32);
 }
 
-// Export function to convert PDFDocument to actual PDF bytes
-// This would integrate with pdfkit, puppeteer, or similar
+// Export function to convert PDFDocument to actual PDF bytes using pdf-lib
 export async function renderPDFBytes(document: PDFDocument): Promise<Uint8Array> {
-  // Placeholder - would use actual PDF library
-  const content = [
-    document.title,
-    document.subtitle,
-    "",
-    ...document.sections.map((s) => `\n${s.title}\n${"=".repeat(40)}\n${s.content}`),
-  ].join("\n");
+  const { PDFDocument: PdfLibDoc, StandardFonts, rgb } = await import("pdf-lib");
 
-  return new TextEncoder().encode(content);
+  const pdfDoc = await PdfLibDoc.create();
+  const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
+  const fontBold = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
+
+  const PAGE_W = 612; // Letter
+  const PAGE_H = 792;
+  const MARGIN = 54; // 0.75 in
+  const MAX_W = PAGE_W - MARGIN * 2;
+  const BRAND = rgb(0.12, 0.27, 0.53); // Deep blue brand
+  const GRAY = rgb(0.4, 0.4, 0.4);
+  const LIGHT = rgb(0.92, 0.92, 0.92);
+  const BLACK = rgb(0, 0, 0);
+  const WHITE = rgb(1, 1, 1);
+  const FOOTER_H = 28;
+
+  /** Wrap text to fit a given width */
+  const wrapText = (text: string, f: any, size: number, maxW: number): string[] => {
+    const words = text.split(/\s+/);
+    const lines: string[] = [];
+    let current = "";
+    for (const word of words) {
+      const test = current ? `${current} ${word}` : word;
+      if (f.widthOfTextAtSize(test, size) > maxW && current) {
+        lines.push(current);
+        current = word;
+      } else {
+        current = test;
+      }
+    }
+    if (current) lines.push(current);
+    return lines.length ? lines : [""];
+  };
+
+  for (const section of document.sections) {
+    let page = pdfDoc.addPage([PAGE_W, PAGE_H]);
+    let y = PAGE_H;
+
+    /** Get new page when needed */
+    const ensureSpace = (needed: number) => {
+      if (y < FOOTER_H + needed + 20) {
+        page = pdfDoc.addPage([PAGE_W, PAGE_H]);
+        y = PAGE_H - MARGIN;
+      }
+    };
+
+    // ── Section header bar ──
+    page.drawRectangle({ x: 0, y: PAGE_H - 44, width: PAGE_W, height: 44, color: BRAND });
+    page.drawText(section.title.substring(0, 70), {
+      x: MARGIN,
+      y: PAGE_H - 30,
+      size: 14,
+      font: fontBold,
+      color: WHITE,
+    });
+    y = PAGE_H - 64;
+
+    // ── Parse markdown-ish content into PDF ──
+    const lines = section.content.split("\n");
+    for (const raw of lines) {
+      const line = raw.replace(/\*\*/g, "").replace(/\*/g, "").trim(); // Strip markdown bold/italic
+      if (!line) {
+        y -= 8;
+        continue;
+      }
+
+      // Horizontal rule
+      if (/^-{3,}$/.test(line)) {
+        ensureSpace(16);
+        page.drawLine({
+          start: { x: MARGIN, y },
+          end: { x: PAGE_W - MARGIN, y },
+          thickness: 0.5,
+          color: LIGHT,
+        });
+        y -= 12;
+        continue;
+      }
+
+      // H1
+      if (line.startsWith("# ")) {
+        const text = line.replace(/^#+\s*/, "");
+        ensureSpace(24);
+        const wrapped = wrapText(text, fontBold, 16, MAX_W);
+        for (const wl of wrapped) {
+          ensureSpace(20);
+          page.drawText(wl.substring(0, 80), {
+            x: MARGIN,
+            y,
+            size: 16,
+            font: fontBold,
+            color: BLACK,
+          });
+          y -= 20;
+        }
+        y -= 4;
+        continue;
+      }
+
+      // H2
+      if (line.startsWith("## ")) {
+        const text = line.replace(/^#+\s*/, "");
+        ensureSpace(18);
+        const wrapped = wrapText(text, fontBold, 13, MAX_W);
+        for (const wl of wrapped) {
+          ensureSpace(17);
+          page.drawText(wl.substring(0, 80), {
+            x: MARGIN,
+            y,
+            size: 13,
+            font: fontBold,
+            color: BRAND,
+          });
+          y -= 17;
+        }
+        y -= 3;
+        continue;
+      }
+
+      // H3
+      if (line.startsWith("### ")) {
+        const text = line.replace(/^#+\s*/, "");
+        ensureSpace(16);
+        page.drawText(text.substring(0, 80), {
+          x: MARGIN,
+          y,
+          size: 11,
+          font: fontBold,
+          color: BLACK,
+        });
+        y -= 16;
+        continue;
+      }
+
+      // Bullet / checklist
+      if (/^[-☑•]/.test(line)) {
+        const text = line.replace(/^[-☑•]\s*/, "• ");
+        ensureSpace(14);
+        const wrapped = wrapText(text, font, 10, MAX_W - 12);
+        for (const wl of wrapped) {
+          ensureSpace(14);
+          page.drawText(wl.substring(0, 100), { x: MARGIN + 8, y, size: 10, font, color: BLACK });
+          y -= 14;
+        }
+        continue;
+      }
+
+      // Regular paragraph text
+      const wrapped = wrapText(line, font, 10, MAX_W);
+      for (const wl of wrapped) {
+        ensureSpace(14);
+        page.drawText(wl.substring(0, 100), { x: MARGIN, y, size: 10, font, color: BLACK });
+        y -= 14;
+      }
+    }
+
+    // ── Render tables if present ──
+    if (section.tables && section.tables.length > 0) {
+      for (const table of section.tables) {
+        y -= 12;
+        ensureSpace(30);
+        const colW = MAX_W / (table.headers.length || 1);
+
+        // Header row
+        page.drawRectangle({ x: MARGIN, y: y - 14, width: MAX_W, height: 16, color: LIGHT });
+        table.headers.forEach((h, i) => {
+          page.drawText(h.substring(0, 20), {
+            x: MARGIN + i * colW + 4,
+            y: y - 10,
+            size: 8,
+            font: fontBold,
+            color: BRAND,
+          });
+        });
+        y -= 18;
+
+        // Data rows
+        for (const row of table.rows) {
+          ensureSpace(16);
+          row.forEach((cell, i) => {
+            page.drawText((cell || "").substring(0, 22), {
+              x: MARGIN + i * colW + 4,
+              y: y - 2,
+              size: 8,
+              font,
+              color: BLACK,
+            });
+          });
+          y -= 14;
+        }
+      }
+    }
+  }
+
+  // ── Add page numbers and footer bar ──
+  const pages = pdfDoc.getPages();
+  const dateStr = new Date().toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
+  pages.forEach((p, idx) => {
+    p.drawRectangle({ x: 0, y: 0, width: PAGE_W, height: FOOTER_H, color: BRAND });
+    p.drawText(dateStr, { x: MARGIN, y: 9, size: 7, font, color: WHITE });
+    const pageText = `Page ${idx + 1} of ${pages.length}`;
+    const ptW = font.widthOfTextAtSize(pageText, 7);
+    p.drawText(pageText, { x: PAGE_W - MARGIN - ptW, y: 9, size: 7, font, color: WHITE });
+    if (idx > 0) {
+      const conf = "CONFIDENTIAL";
+      const cW = font.widthOfTextAtSize(conf, 6);
+      p.drawText(conf, { x: (PAGE_W - cW) / 2, y: 10, size: 6, font, color: WHITE });
+    }
+  });
+
+  return pdfDoc.save();
 }

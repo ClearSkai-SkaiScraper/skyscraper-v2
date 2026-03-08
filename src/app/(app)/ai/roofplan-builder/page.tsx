@@ -466,6 +466,9 @@ export default function ProjectPlanBuilderPage() {
                   className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-500 dark:border-slate-600 dark:bg-slate-800 dark:text-white"
                 >
                   <option value="roofing">Roofing</option>
+                  <option value="siding">Siding</option>
+                  <option value="gutters">Gutters &amp; Downspouts</option>
+                  <option value="windows">Windows &amp; Doors</option>
                   <option value="hvac">HVAC</option>
                   <option value="plumbing">Plumbing</option>
                   <option value="electrical">Electrical</option>
@@ -475,6 +478,10 @@ export default function ProjectPlanBuilderPage() {
                   <option value="painting">Painting</option>
                   <option value="flooring">Flooring</option>
                   <option value="carpentry">Carpentry</option>
+                  <option value="drywall">Drywall</option>
+                  <option value="insulation">Insulation</option>
+                  <option value="fencing">Fencing</option>
+                  <option value="masonry">Masonry &amp; Stone</option>
                   <option value="landscaping">Landscaping</option>
                   <option value="concrete">Concrete Work</option>
                   <option value="tpo">TPO (Flat)</option>
@@ -535,12 +542,77 @@ export default function ProjectPlanBuilderPage() {
                   )}
                   {!["roofing", "hvac", "plumbing", "electrical", "solar"].includes(
                     formData.trade
-                  ) && (
+                  ) &&
+                    ![
+                      "siding",
+                      "gutters",
+                      "windows",
+                      "drywall",
+                      "insulation",
+                      "fencing",
+                      "masonry",
+                    ].includes(formData.trade) && (
+                      <>
+                        <option value="installation">New Installation</option>
+                        <option value="remodel">Remodel/Renovation</option>
+                        <option value="repair">Repair Work</option>
+                        <option value="custom">Custom Project</option>
+                      </>
+                    )}
+                  {formData.trade === "siding" && (
                     <>
-                      <option value="installation">New Installation</option>
-                      <option value="remodel">Remodel/Renovation</option>
-                      <option value="repair">Repair Work</option>
-                      <option value="custom">Custom Project</option>
+                      <option value="installation">New Siding Installation</option>
+                      <option value="replacement">Siding Replacement</option>
+                      <option value="repair">Siding Repair</option>
+                      <option value="wrap">Soffit &amp; Fascia Wrap</option>
+                    </>
+                  )}
+                  {formData.trade === "gutters" && (
+                    <>
+                      <option value="installation">Gutter Installation</option>
+                      <option value="replacement">Gutter Replacement</option>
+                      <option value="repair">Gutter Repair</option>
+                      <option value="guards">Gutter Guard Install</option>
+                    </>
+                  )}
+                  {formData.trade === "windows" && (
+                    <>
+                      <option value="replacement">Window Replacement</option>
+                      <option value="new-construction">New Construction Windows</option>
+                      <option value="door-replacement">Door Replacement</option>
+                      <option value="storm">Storm Window/Door Install</option>
+                    </>
+                  )}
+                  {formData.trade === "drywall" && (
+                    <>
+                      <option value="installation">New Drywall Install</option>
+                      <option value="repair">Drywall Repair/Patch</option>
+                      <option value="finishing">Tape, Mud &amp; Finish</option>
+                      <option value="water-damage">Water Damage Repair</option>
+                    </>
+                  )}
+                  {formData.trade === "insulation" && (
+                    <>
+                      <option value="attic">Attic Insulation</option>
+                      <option value="wall">Wall Insulation</option>
+                      <option value="spray-foam">Spray Foam</option>
+                      <option value="removal">Insulation Removal</option>
+                    </>
+                  )}
+                  {formData.trade === "fencing" && (
+                    <>
+                      <option value="installation">New Fence Installation</option>
+                      <option value="replacement">Fence Replacement</option>
+                      <option value="repair">Fence Repair</option>
+                      <option value="gate">Gate Installation</option>
+                    </>
+                  )}
+                  {formData.trade === "masonry" && (
+                    <>
+                      <option value="repair">Masonry Repair</option>
+                      <option value="stone-veneer">Stone Veneer</option>
+                      <option value="chimney">Chimney Repair</option>
+                      <option value="retaining-wall">Retaining Wall</option>
                     </>
                   )}
                 </select>

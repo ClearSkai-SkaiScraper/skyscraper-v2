@@ -12,11 +12,14 @@ export const dynamic = "force-dynamic";
 
 export async function POST(req: NextRequest) {
   try {
-    // Verify org access
+    // Verify org access — MUST be authenticated
     const resolvedOrgId = await getResolvedOrgId();
+    if (!resolvedOrgId) {
+      return NextResponse.json({ error: "Authentication required" }, { status: 401 });
+    }
 
     // Rate limit AI requests
-    const rl = await checkRateLimit(resolvedOrgId || "anon", "AI");
+    const rl = await checkRateLimit(resolvedOrgId, "AI");
     if (!rl.success) {
       return NextResponse.json({ error: "Rate limit exceeded" }, { status: 429 });
     }

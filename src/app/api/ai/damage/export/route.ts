@@ -3,6 +3,7 @@ export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
 import { logger } from "@/lib/logger";
+import { checkRateLimit } from "@/lib/rate-limit";
 import { damageExportSchema, validateAIRequest } from "@/lib/validation/aiSchemas";
 import { currentUser } from "@clerk/nextjs/server";
 import { jsPDF } from "jspdf";
@@ -34,6 +35,15 @@ export async function POST(req: NextRequest) {
     const user = await currentUser();
     if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    // Rate limit: AI tier
+    const rl = await checkRateLimit(user.id, "AI");
+    if (!rl.success) {
+      return NextResponse.json(
+        { error: "rate_limit_exceeded", message: "Too many requests. Please wait." },
+        { status: 429 }
+      );
     }
 
     const body = await req.json();

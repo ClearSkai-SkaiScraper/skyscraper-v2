@@ -21,7 +21,6 @@ import {
   Truck,
   Users,
 } from "lucide-react";
-import Image from "next/image";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -29,6 +28,7 @@ import { useEffect, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { VendorLogo } from "@/components/vendors/VendorLogo";
 import { getVendorResources } from "@/lib/vendors/vendorResources";
 import { toast } from "sonner";
 
@@ -113,58 +113,6 @@ const DAY_LABELS: Record<string, string> = {
   sat: "Saturday",
   sun: "Sunday",
 };
-
-// Generate initials for placeholder logo
-function getInitials(name: string): string {
-  return name
-    .split(" ")
-    .map((word) => word[0])
-    .slice(0, 2)
-    .join("")
-    .toUpperCase();
-}
-
-// Placeholder logo component
-function VendorLogo({
-  logo,
-  name,
-  size = "lg",
-}: {
-  logo: string | null;
-  name: string;
-  size?: "sm" | "md" | "lg";
-}) {
-  const [imageError, setImageError] = useState(false);
-
-  const sizeClasses = {
-    sm: "h-12 w-12 text-lg",
-    md: "h-20 w-20 text-2xl",
-    lg: "h-32 w-32 text-4xl",
-  };
-
-  const imageSizes = { sm: 48, md: 80, lg: 128 };
-
-  if (logo && !imageError) {
-    return (
-      <Image
-        src={logo}
-        alt={`${name} logo`}
-        width={imageSizes[size]}
-        height={imageSizes[size]}
-        className={`${sizeClasses[size].split(" ").slice(0, 2).join(" ")} rounded-xl border-4 border-white bg-white object-contain shadow-lg`}
-        onError={() => setImageError(true)}
-      />
-    );
-  }
-
-  return (
-    <div
-      className={`${sizeClasses[size]} flex items-center justify-center rounded-xl border-4 border-white bg-gradient-to-br from-blue-600 to-blue-800 font-bold text-white shadow-lg`}
-    >
-      {getInitials(name)}
-    </div>
-  );
-}
 
 export default function VendorDetailPage() {
   const params = useParams();
@@ -347,7 +295,7 @@ export default function VendorDetailPage() {
             <Card className="sticky top-4 p-6">
               {/* Logo - Top Left with Placeholder Fallback */}
               <div className="-mt-20 mb-4">
-                <VendorLogo logo={vendor.logo} name={vendor.name} size="lg" />
+                <VendorLogo logo={vendor.logo} name={vendor.name} size="xl" />
               </div>
 
               {/* Name & Category */}

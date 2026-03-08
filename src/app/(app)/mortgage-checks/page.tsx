@@ -16,6 +16,7 @@ import { StatCard } from "@/components/ui/MetricCard";
 import { guarded } from "@/lib/buildPhase";
 import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
+import { hasMinimumRole, type Role } from "@/lib/rbac";
 import { safeOrgContext } from "@/lib/safeOrgContext";
 
 import MortgageCheckForm from "./MortgageCheckForm";
@@ -37,6 +38,29 @@ export default async function MortgageChecksPage() {
   const ctx = await safeOrgContext();
   if (ctx.status === "unauthenticated") redirect("/sign-in");
   if (ctx.status !== "ok" || !ctx.orgId) redirect("/dashboard");
+
+  // RBAC: Mortgage check data requires PM (manager) role or above
+  if (!ctx.role || !hasMinimumRole(ctx.role as Role, "PM")) {
+    return (
+      <PageContainer>
+        <PageHero
+          section="finance"
+          title="Mortgage Checks"
+          subtitle="Track mortgage company payments"
+          icon={<Banknote className="h-5 w-5" />}
+        />
+        <div className="flex flex-col items-center gap-4 rounded-2xl border border-amber-200 bg-amber-50/50 py-12 text-center dark:border-amber-800 dark:bg-amber-950/20">
+          <Banknote className="h-12 w-12 text-amber-500" />
+          <div>
+            <h3 className="text-lg font-semibold">Manager Access Required</h3>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Mortgage check tracking is restricted to project managers and above.
+            </p>
+          </div>
+        </div>
+      </PageContainer>
+    );
+  }
 
   const checks = await guarded(
     "mortgage-checks",

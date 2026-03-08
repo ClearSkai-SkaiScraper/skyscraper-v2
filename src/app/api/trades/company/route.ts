@@ -637,6 +637,35 @@ export const PATCH = withAuth(async (req: NextRequest, { orgId, userId }) => {
       });
     }
 
+    // Audit log — track company profile edits
+    const changedFields = Object.keys(updateData).filter((k) => k !== "updatedAt");
+    const changedMemberFields = Object.keys(memberUpdate).filter((k) => k !== "updatedAt");
+    const allChanges = [...changedFields, ...changedMemberFields];
+
+    if (allChanges.length > 0) {
+      try {
+        await prisma.audit_logs.create({
+          data: {
+            id: crypto.randomUUID(),
+            org_id: orgId,
+            user_id: userId,
+            user_name: membership.company?.name ?? "Unknown",
+            action: "company_profile_updated",
+            payload: {
+              companyId: membership.companyId,
+              changedFields: allChanges,
+              changes: Object.fromEntries(
+                allChanges.map((k) => [k, updateData[k] ?? memberUpdate[k]])
+              ),
+            },
+          },
+        });
+      } catch (auditErr) {
+        // Non-blocking: don't fail the request if audit logging fails
+        logger.warn("[trades/company] Audit log write failed:", auditErr);
+      }
+    }
+
     return NextResponse.json({
       ok: true,
       company: { ...updated, coverPhoto: updated.coverimage },

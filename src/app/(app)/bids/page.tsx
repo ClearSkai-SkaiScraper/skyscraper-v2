@@ -162,7 +162,7 @@ function BidCard({ bid, onWithdraw }: { bid: MyBid; onWithdraw: (bidId: string) 
                 </Link>
               </Button>
               <Button variant="outline" size="sm" asChild>
-                <Link href={`/claims/new?projectId=${bid.project.id}`}>Start Claim</Link>
+                <Link href={`/claims/new?projectId=${bid.project.id}`}>Start Job</Link>
               </Button>
             </>
           )}

@@ -1,15 +1,19 @@
 "use client";
 
 import { useUser } from "@clerk/nextjs";
-import { Brain, CheckSquare, Clock, Loader2, Target, User } from "lucide-react";
+import { Brain, CheckSquare, Clock, Loader2, Plus, Target, User, X } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import { toast } from "sonner";
 
+import { PageContainer } from "@/components/layout/PageContainer";
 import { PageHero } from "@/components/layout/PageHero";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
@@ -17,6 +21,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
 
 import { logger } from "@/lib/logger";
 
@@ -50,6 +55,14 @@ export default function TasksPage() {
   const [loading, setLoading] = useState(true);
   const [filterStatus, setFilterStatus] = useState<string>("all");
   const [filterSource, setFilterSource] = useState<string>("all");
+  const [showCreateDialog, setShowCreateDialog] = useState(false);
+  const [creating, setCreating] = useState(false);
+  const [newTask, setNewTask] = useState({
+    title: "",
+    description: "",
+    priority: "normal" as Task["priority"],
+    dueDate: "",
+  });
 
   useEffect(() => {
     if (isLoaded && !isSignedIn) {
@@ -64,7 +77,15 @@ export default function TasksPage() {
         const res = await fetch("/api/tasks");
         if (res.ok) {
           const data = await res.json();
-          setTasks(data.tasks || []);
+          // Normalize API response (Prisma stores UPPERCASE) to frontend lowercase
+          const normalized = (data.tasks || []).map((t: any) => ({
+            ...t,
+            status: fromApiStatus(t.status || "TODO"),
+            priority: fromApiPriority(t.priority || "MEDIUM"),
+            dueDate: t.dueAt || t.dueDate,
+            assignedTo: t.users || t.assignedTo,
+          }));
+          setTasks(normalized);
         }
       } catch (error) {
         logger.error("Failed to fetch tasks:", error);
@@ -79,13 +100,27 @@ export default function TasksPage() {
     return <div className="flex h-screen items-center justify-center">Loading...</div>;
   }
 
+  // Map frontend lowercase status → API uppercase status
+  const toApiStatus = (s: string) => s.toUpperCase() as string;
+  const fromApiStatus = (s: string) =>
+    s.toLowerCase().replace("in_progress", "in_progress") as Task["status"];
+  const toApiPriority = (p: string) =>
+    ({ low: "LOW", normal: "MEDIUM", high: "HIGH", urgent: "URGENT" })[p] || "MEDIUM";
+  const fromApiPriority = (p: string): Task["priority"] =>
+    (
+      ({ LOW: "low", MEDIUM: "normal", HIGH: "high", URGENT: "urgent" }) as Record<
+        string,
+        Task["priority"]
+      >
+    )[p] || "normal";
+
   const handleStatusChange = async (taskId: string, newStatus: Task["status"]) => {
     try {
       const response = await fetch(`/api/tasks/${taskId}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          status: newStatus,
+          status: toApiStatus(newStatus),
           completedAt: newStatus === "done" ? new Date().toISOString() : null,
         }),
       });
@@ -94,9 +129,60 @@ export default function TasksPage() {
         setTasks((prev) =>
           prev.map((task) => (task.id === taskId ? { ...task, status: newStatus } : task))
         );
+        toast.success("Task updated");
+      } else {
+        toast.error("Failed to update task");
       }
     } catch (error) {
       logger.error("Update task error:", error);
+      toast.error("Failed to update task");
+    }
+  };
+
+  const handleCreateTask = async () => {
+    if (!newTask.title.trim()) {
+      toast.error("Task title is required");
+      return;
+    }
+    setCreating(true);
+    try {
+      const response = await fetch("/api/tasks", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          title: newTask.title.trim(),
+          description: newTask.description.trim() || undefined,
+          priority: toApiPriority(newTask.priority),
+          dueAt: newTask.dueDate || undefined,
+          source: "user",
+          status: "TODO",
+        }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        const created = data.task || data;
+        const normalizedTask: Task = {
+          id: created.id || Date.now().toString(),
+          title: created.title || newTask.title.trim(),
+          description: created.description || newTask.description.trim(),
+          status: fromApiStatus(created.status || "TODO"),
+          priority: fromApiPriority(created.priority || "MEDIUM"),
+          dueDate: created.dueAt || newTask.dueDate,
+          source: "user",
+        };
+        setTasks((prev) => [normalizedTask, ...prev]);
+        setShowCreateDialog(false);
+        setNewTask({ title: "", description: "", priority: "normal", dueDate: "" });
+        toast.success("Task created successfully");
+      } else {
+        toast.error("Failed to create task");
+      }
+    } catch (error) {
+      logger.error("Create task error:", error);
+      toast.error("Failed to create task");
+    } finally {
+      setCreating(false);
     }
   };
 
@@ -229,25 +315,113 @@ export default function TasksPage() {
   };
 
   return (
-    <div className="container max-w-7xl py-8">
+    <PageContainer maxWidth="7xl">
       <PageHero
         section="jobs"
         title="Tasks"
         subtitle="Manage all tasks across your claims"
         icon={<CheckSquare className="h-6 w-6" />}
       >
-        <Select value={filterSource} onValueChange={setFilterSource}>
-          <SelectTrigger className="w-[180px] border-white/30 bg-white/20 text-white">
-            <SelectValue placeholder="Filter by source" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Sources</SelectItem>
-            <SelectItem value="skai_ai">SkaiPDF</SelectItem>
-            <SelectItem value="user">User Created</SelectItem>
-            <SelectItem value="system">System</SelectItem>
-          </SelectContent>
-        </Select>
+        <div className="flex items-center gap-2">
+          <Button
+            onClick={() => setShowCreateDialog(true)}
+            className="bg-white/20 hover:bg-white/30"
+            size="sm"
+          >
+            <Plus className="mr-1 h-4 w-4" />
+            Create Task
+          </Button>
+          <Select value={filterSource} onValueChange={setFilterSource}>
+            <SelectTrigger className="w-[180px] border-white/30 bg-white/20 text-white">
+              <SelectValue placeholder="Filter by source" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Sources</SelectItem>
+              <SelectItem value="skai_ai">SkaiPDF</SelectItem>
+              <SelectItem value="user">User Created</SelectItem>
+              <SelectItem value="system">System</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
       </PageHero>
+
+      {/* Create Task Dialog */}
+      {showCreateDialog && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+          <Card className="mx-4 w-full max-w-md p-6">
+            <div className="mb-4 flex items-center justify-between">
+              <h3 className="text-lg font-semibold">Create New Task</h3>
+              <Button variant="ghost" size="sm" onClick={() => setShowCreateDialog(false)}>
+                <X className="h-4 w-4" />
+              </Button>
+            </div>
+            <div className="space-y-4">
+              <div>
+                <Label htmlFor="task-title">Title *</Label>
+                <Input
+                  id="task-title"
+                  placeholder="e.g. Follow up with adjuster"
+                  value={newTask.title}
+                  onChange={(e) => setNewTask((prev) => ({ ...prev, title: e.target.value }))}
+                />
+              </div>
+              <div>
+                <Label htmlFor="task-desc">Description</Label>
+                <Textarea
+                  id="task-desc"
+                  placeholder="Optional details..."
+                  value={newTask.description}
+                  onChange={(e) => setNewTask((prev) => ({ ...prev, description: e.target.value }))}
+                  rows={3}
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label>Priority</Label>
+                  <Select
+                    value={newTask.priority}
+                    onValueChange={(v) =>
+                      setNewTask((prev) => ({ ...prev, priority: v as Task["priority"] }))
+                    }
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="low">🟢 Low</SelectItem>
+                      <SelectItem value="normal">🟡 Normal</SelectItem>
+                      <SelectItem value="high">🟠 High</SelectItem>
+                      <SelectItem value="urgent">🔴 Urgent</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label htmlFor="task-due">Due Date</Label>
+                  <Input
+                    id="task-due"
+                    type="date"
+                    value={newTask.dueDate}
+                    onChange={(e) => setNewTask((prev) => ({ ...prev, dueDate: e.target.value }))}
+                  />
+                </div>
+              </div>
+              <div className="flex justify-end gap-2 pt-2">
+                <Button variant="outline" onClick={() => setShowCreateDialog(false)}>
+                  Cancel
+                </Button>
+                <Button onClick={handleCreateTask} disabled={creating}>
+                  {creating ? (
+                    <Loader2 className="mr-1 h-4 w-4 animate-spin" />
+                  ) : (
+                    <Plus className="mr-1 h-4 w-4" />
+                  )}
+                  Create Task
+                </Button>
+              </div>
+            </div>
+          </Card>
+        </div>
+      )}
 
       {loading ? (
         <div className="flex items-center justify-center py-12">
@@ -324,6 +498,6 @@ export default function TasksPage() {
           </div>
         </div>
       )}
-    </div>
+    </PageContainer>
   );
 }

@@ -170,6 +170,10 @@ export default function SmartDocsPage() {
   const [uploadFile, setUploadFile] = useState<File | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  /* ----- Client selector state ----- */
+  const [clients, setClients] = useState<{ id: string; name: string; email: string }[]>([]);
+  const [selectedClientId, setSelectedClientId] = useState<string>("");
+
   /* ------------------------------------------------------------------ */
   /*  Fetch envelopes                                                    */
   /* ------------------------------------------------------------------ */
@@ -188,6 +192,19 @@ export default function SmartDocsPage() {
 
   useEffect(() => {
     fetchEnvelopes();
+    // Fetch clients for the selector
+    fetch("/api/contacts?limit=100")
+      .then((res) => res.json())
+      .then((data) => {
+        const contactList = (data.contacts || data.data || []).map((c: any) => ({
+          id: c.id,
+          name:
+            [c.firstName, c.lastName].filter(Boolean).join(" ") || c.name || c.email || "Unknown",
+          email: c.email || "",
+        }));
+        setClients(contactList);
+      })
+      .catch(() => {});
   }, [fetchEnvelopes]);
 
   /* ------------------------------------------------------------------ */
@@ -271,6 +288,7 @@ export default function SmartDocsPage() {
     setNewSignerName("");
     setNewSignerEmail("");
     setNewSignerRole("homeowner");
+    setSelectedClientId("");
     setUploadFile(null);
     if (fileInputRef.current) fileInputRef.current.value = "";
   }
@@ -366,6 +384,38 @@ export default function SmartDocsPage() {
               </DialogHeader>
 
               <div className="grid gap-4 py-2">
+                {/* Client Selector */}
+                {clients.length > 0 && (
+                  <div className="grid gap-1.5">
+                    <Label>Link to Client (optional)</Label>
+                    <Select
+                      value={selectedClientId}
+                      onValueChange={(val) => {
+                        setSelectedClientId(val);
+                        if (val) {
+                          const client = clients.find((c) => c.id === val);
+                          if (client) {
+                            setNewSignerName(client.name);
+                            setNewSignerEmail(client.email);
+                          }
+                        }
+                      }}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select a client..." />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="none">No client selected</SelectItem>
+                        {clients.map((c) => (
+                          <SelectItem key={c.id} value={c.id}>
+                            {c.name} {c.email ? `(${c.email})` : ""}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
+
                 {/* PDF Upload */}
                 <div className="grid gap-1.5">
                   <Label>Attach PDF (optional)</Label>

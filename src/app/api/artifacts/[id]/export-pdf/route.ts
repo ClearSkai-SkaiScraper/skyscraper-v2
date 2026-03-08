@@ -5,6 +5,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { generatePdfDocument } from "@/lib/artifacts/pdfGenerator";
 import { verifyClaimAccess } from "@/lib/auth/apiAuth";
 import { getActiveOrgContext } from "@/lib/org/getActiveOrgContext";
+import { fetchBrandingData } from "@/lib/pdf/brandedHeader";
 import prisma from "@/lib/prisma";
 
 // React-PDF requires Node.js runtime
@@ -49,6 +50,9 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
       }
     }
 
+    // Fetch company branding for PDF header
+    const branding = await fetchBrandingData(orgResult.orgId, orgResult.userId);
+
     // Generate PDF document using available fields
     const pdfDoc = generatePdfDocument({
       title: artifact.title,
@@ -60,6 +64,11 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
       contentJson: null,
       sourceTemplate: null,
       artifactId: artifact.id,
+      companyName: branding.companyName,
+      companyPhone: branding.companyPhone,
+      companyEmail: branding.companyEmail,
+      companyLicense: branding.companyLicense,
+      employeeName: branding.employeeName,
     });
 
     // Render to buffer

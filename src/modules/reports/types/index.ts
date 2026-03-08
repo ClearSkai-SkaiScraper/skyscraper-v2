@@ -123,6 +123,25 @@ export interface ReportContext {
   testCutsData?: any;
   pricingComparison?: any;
   attachments?: Array<{ name: string; url: string }>;
+  homeowner?: { name?: string; email?: string; phone?: string };
+  testCuts?: Array<{ location?: string; size?: string; layers?: string; findings?: string }>;
+  warrantyTerms?: Array<{ term: string; duration: string; description: string }>;
+  materials?: Array<{ name?: string; brand?: string; color?: string; quantity?: number }>;
+  paymentSchedule?: Array<{
+    phase?: string;
+    name?: string;
+    percentage?: number;
+    amount?: number;
+    description?: string;
+  }>;
+  retailProposal?: {
+    propertyAddress?: string;
+    scopeSummary?: string;
+    total?: number;
+    timeline?: string;
+    validUntil?: string;
+    notes?: string;
+  };
 }
 
 export interface ExportOptions {

@@ -1,24 +1,21 @@
 /**
  * POST /api/esign/envelopes/[id]/signers/[signerId]/signature
  *
- * Save a signature for a specific signer
- *
- * NOTE: This feature requires schema migration - esign models not yet implemented.
- * The esignSigner, esignEnvelope, esignFieldDefinition, esignFieldValue, and esignEvent
- * models need to be added to the Prisma schema before this endpoint can function.
+ * Save a signature for a specific signer — uploads to Supabase Storage
  */
 
-import { mkdir, writeFile } from "fs/promises";
 import { logger } from "@/lib/logger";
 import { NextRequest, NextResponse } from "next/server";
-import { join } from "path";
 
 import { isAuthError, requireAuth } from "@/lib/auth/requireAuth";
 import { storagePaths } from "@/lib/esign/storage";
 import prisma from "@/lib/prisma";
+import { getSupabaseAdmin } from "@/lib/supabaseAdmin";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
+
+const ESIGN_BUCKET = "esign";
 
 export async function POST(
   req: NextRequest,
@@ -65,16 +62,35 @@ export async function POST(
       );
     }
 
-    // Save signature image to filesystem
+    // Upload signature image to Supabase Storage
     const bytes = await signatureImage.arrayBuffer();
     const buffer = Buffer.from(bytes);
 
-    const signaturePath = storagePaths.signaturePath(envelopeId, signerId, fieldId);
-    const dir = join(process.cwd(), "public", "esign", envelopeId, "signatures");
-    await mkdir(dir, { recursive: true });
+    const storageKey = storagePaths.signaturePath(envelopeId, signerId, fieldId);
 
-    const filePath = join(process.cwd(), "public", signaturePath.substring(1));
-    await writeFile(filePath, buffer);
+    const supabase = getSupabaseAdmin();
+    if (!supabase) {
+      logger.error("[SIGNATURE_SAVE] Supabase admin client not configured");
+      return NextResponse.json({ ok: false, message: "Storage not configured" }, { status: 503 });
+    }
+
+    const { error: uploadError } = await supabase.storage
+      .from(ESIGN_BUCKET)
+      .upload(storageKey, buffer, {
+        contentType: "image/png",
+        upsert: true,
+      });
+
+    if (uploadError) {
+      logger.error("[SIGNATURE_UPLOAD_ERROR]", { error: uploadError.message, storageKey });
+      return NextResponse.json(
+        { ok: false, message: "Failed to upload signature" },
+        { status: 500 }
+      );
+    }
+
+    // Store the Supabase storage key (not a filesystem path)
+    const signatureUrl = `supabase://${ESIGN_BUCKET}/${storageKey}`;
 
     // Update envelope status using existing SignatureEnvelope model
     await prisma.signatureEnvelope.update({
@@ -82,7 +98,7 @@ export async function POST(
       data: {
         status: "signed",
         signedAt: new Date(),
-        signedDocumentUrl: signaturePath,
+        signedDocumentUrl: signatureUrl,
         metadata: {
           ...((envelope.metadata as object) || {}),
           lastSignerId: signerId,
@@ -90,19 +106,18 @@ export async function POST(
           printedName: printedName || undefined,
           signedByIp: req.headers.get("x-forwarded-for") || req.headers.get("x-real-ip") || null,
           signedUserAgent: req.headers.get("user-agent") || null,
+          storageBucket: ESIGN_BUCKET,
+          storageKey,
         },
       },
     });
 
     return NextResponse.json({
       ok: true,
-      message: "Signature saved using simplified signature model",
+      message: "Signature saved to Supabase Storage",
     });
   } catch (error) {
     logger.error("[SIGNATURE_SAVE_ERROR]", error);
-    return NextResponse.json(
-      { ok: false, message: "Failed to save signature" },
-      { status: 500 }
-    );
+    return NextResponse.json({ ok: false, message: "Failed to save signature" }, { status: 500 });
   }
 }

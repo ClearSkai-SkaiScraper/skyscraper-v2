@@ -29,7 +29,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 
-import { NotificationCenter } from "@/components/NotificationCenter";
+import UnifiedNotificationBell from "@/components/notifications/UnifiedNotificationBell";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -411,7 +411,7 @@ export default function TradesNetworkDashboard({ userProfile, stats }: Dashboard
                 <MessageCircle className="h-5 w-5" />
               </Button>
             </Link>
-            <NotificationCenter />
+            <UnifiedNotificationBell variant="pro" />
             {userProfile && (
               <Link href="/trades/profile">
                 <Avatar className="h-8 w-8 cursor-pointer border-2 border-transparent hover:border-blue-500">

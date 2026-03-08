@@ -1,7 +1,8 @@
 "use client";
 
 import { formatDistanceToNow } from "date-fns";
-import { User } from "lucide-react";
+import { Check, CheckCheck, User } from "lucide-react";
+import { useEffect } from "react";
 
 import { MessageAttachments } from "@/components/messages/MessageAttachments";
 
@@ -28,6 +29,20 @@ export default function MessageView({
 }: MessageViewProps) {
   // Ensure messages is always an array to prevent t.map errors
   const safeMessages = Array.isArray(messages) ? messages : [];
+
+  // Auto-mark incoming unread messages as read
+  useEffect(() => {
+    const unreadIncoming = safeMessages.filter(
+      (m) => !m.read && m.senderUserId !== currentUserId && m.senderType !== currentUserType
+    );
+    for (const msg of unreadIncoming) {
+      // Find thread ID from the message context
+      const threadId = (msg as any).threadId;
+      if (threadId) {
+        fetch(`/api/messages/${threadId}/${msg.id}/read`, { method: "PATCH" }).catch(() => {});
+      }
+    }
+  }, [safeMessages, currentUserId, currentUserType]);
 
   if (safeMessages.length === 0) {
     return (
@@ -79,9 +94,15 @@ export default function MessageView({
                       <MessageAttachments attachments={message.attachments} />
                     )}
                     <p
-                      className={`mt-1 text-xs ${isOwnMessage ? "text-blue-100" : "text-slate-500"}`}
+                      className={`mt-1 flex items-center gap-1 text-xs ${isOwnMessage ? "text-blue-100" : "text-slate-500"}`}
                     >
                       {formatDistanceToNow(messageDate, { addSuffix: true })}
+                      {isOwnMessage &&
+                        (message.read ? (
+                          <CheckCheck className="h-3.5 w-3.5 text-blue-200" />
+                        ) : (
+                          <Check className="h-3.5 w-3.5 text-blue-200/60" />
+                        ))}
                     </p>
                   </div>
                 </div>

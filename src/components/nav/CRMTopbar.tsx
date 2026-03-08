@@ -8,7 +8,7 @@ import { usePathname } from "next/navigation";
 
 import { MobileNav } from "@/components/nav/MobileNav";
 import ProTradesUserMenu from "@/components/nav/ProTradesUserMenu";
-import { NotificationCenter } from "@/components/NotificationCenter";
+import UnifiedNotificationBell from "@/components/notifications/UnifiedNotificationBell";
 import { Button } from "@/components/ui/button";
 
 export default function CRMTopbar() {
@@ -156,7 +156,7 @@ export default function CRMTopbar() {
           </SignedOut>
 
           <SignedIn>
-            <NotificationCenter />
+            <UnifiedNotificationBell variant="pro" />
             <ProTradesUserMenu />
           </SignedIn>
         </div>

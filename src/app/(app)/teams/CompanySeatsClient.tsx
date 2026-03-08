@@ -69,6 +69,7 @@ interface Member {
   isManager?: boolean;
   managerId?: string | null;
   managerName?: string | null;
+  directReportCount?: number;
 }
 
 interface CompanySeatsClientProps {
@@ -899,6 +900,17 @@ export default function CompanySeatsClient({ members, orgId }: CompanySeatsClien
                         {member.managerName && (
                           <span className="text-[10px] text-slate-400">→ {member.managerName}</span>
                         )}
+                        {member.isManager &&
+                          (() => {
+                            const reportCount =
+                              member.directReportCount ??
+                              memberList.filter((m) => m.managerId === member.id).length;
+                            return reportCount > 0 ? (
+                              <span className="inline-flex items-center gap-0.5 rounded-full bg-purple-100 px-1.5 py-0.5 text-[10px] font-medium text-purple-700 dark:bg-purple-900/30 dark:text-purple-300">
+                                👥 {reportCount} report{reportCount !== 1 ? "s" : ""}
+                              </span>
+                            ) : null;
+                          })()}
                       </div>
                     </div>
 
@@ -916,6 +928,31 @@ export default function CompanySeatsClient({ members, orgId }: CompanySeatsClien
                                 <UserCog className="mr-2 h-4 w-4" />
                                 Assign Manager
                               </DropdownMenuItem>
+                              {member.isManager && (
+                                <DropdownMenuItem
+                                  onClick={() => {
+                                    // Filter unassigned active members (not this manager, not owners)
+                                    const unassigned = memberList.filter(
+                                      (m) =>
+                                        m.id !== member.id &&
+                                        m.status === "active" &&
+                                        m.managerId !== member.id &&
+                                        m.role !== "Owner"
+                                    );
+                                    if (unassigned.length === 0) {
+                                      toast.info(
+                                        "All team members are already assigned to a manager."
+                                      );
+                                      return;
+                                    }
+                                    // Open the manager dialog pre-selecting this manager as target
+                                    openManagerDialog(unassigned[0]);
+                                  }}
+                                >
+                                  <GitBranch className="mr-2 h-4 w-4" />
+                                  Add Direct Report
+                                </DropdownMenuItem>
+                              )}
                               <DropdownMenuItem
                                 onClick={() => handleToggleManager(member, !member.isManager)}
                               >

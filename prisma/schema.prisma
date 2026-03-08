@@ -953,6 +953,8 @@ model Org {
   demoMode                  Boolean                     @default(false)
   demoSeededAt              DateTime?
   is_archived               Boolean                     @default(false)
+  seatsLimit                Int                         @default(5) @map("seats_limit")
+  seatsUsed                 Int                         @default(1) @map("seats_used")
   BillingSettings           BillingSettings?
   BuildProgress             BuildProgress[]
   Client                    Client[]
@@ -1018,6 +1020,9 @@ model Org {
   quickbooks_connections    quickbooks_connections?
   measurement_orders        measurement_orders[]
   migration_jobs            migration_jobs[]
+  token_ledger              token_ledger[]
+  token_orders              token_orders[]
+  support_tickets           support_tickets[]
 
   @@index([stripeCustomerId])
   @@index([subscriptionStatus])
@@ -2457,6 +2462,7 @@ model claims {
   weather_reports            weather_reports[]
   permits                    permits[]
   mortgage_checks            mortgage_checks[]
+  token_ledger               token_ledger[]
 
   externalId     String?
   externalSource String?
@@ -5584,6 +5590,8 @@ model users {
   tasks                                         tasks[]
   Org                                           Org                         @relation(fields: [orgId], references: [id])
   weather_reports                               weather_reports[]
+  support_tickets                               support_tickets[]
+  push_subscriptions                            push_subscriptions[]
 
   @@index([orgId, role])
 }
@@ -6559,4 +6567,106 @@ model migration_items {
   @@unique([migrationId, entityType, externalId])
   @@index([migrationId, entityType])
   @@index([externalId])
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// Token System — Token Packs & Ledger (from SQL migrations)
+// ═══════════════════════════════════════════════════════════════════════════════
+
+/// Available token packages for purchase
+model token_packs {
+  id            String   @id @default(dbgenerated("gen_random_uuid()::text"))
+  name          String
+  tokens        Int
+  priceCents    Int      @map("price_cents")
+  stripePriceId String?  @map("stripe_price_id")
+  isActive      Boolean  @default(true) @map("is_active")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @default(now()) @map("updated_at")
+
+  @@map("token_packs")
+}
+
+/// Transaction ledger for token credits and debits
+model token_ledger {
+  id             String   @id @default(dbgenerated("gen_random_uuid()::text"))
+  organizationId String   @map("organization_id")
+  amount         Int // positive = credit, negative = debit
+  balance        Int // running balance after transaction
+  reason         String
+  claimId        String?  @map("claim_id")
+  orderId        String?  @map("order_id")
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  organization Org     @relation(fields: [organizationId], references: [id])
+  claim        claims? @relation(fields: [claimId], references: [id])
+
+  @@index([organizationId])
+  @@index([claimId])
+  @@map("token_ledger")
+}
+
+/// Token purchase orders
+model token_orders {
+  id                    String   @id @default(dbgenerated("gen_random_uuid()::text"))
+  organizationId        String   @map("organization_id")
+  packId                String?  @map("pack_id")
+  tokens                Int
+  amountCents           Int      @map("amount_cents")
+  stripePaymentId       String?  @map("stripe_payment_id")
+  stripeCheckoutSession String?  @map("stripe_checkout_session")
+  status                String   @default("pending")
+  createdAt             DateTime @default(now()) @map("created_at")
+
+  organization Org @relation(fields: [organizationId], references: [id])
+
+  @@index([organizationId])
+  @@map("token_orders")
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// Support System
+// ═══════════════════════════════════════════════════════════════════════════════
+
+/// Support tickets from users
+model support_tickets {
+  id             String    @id @default(dbgenerated("gen_random_uuid()::text"))
+  organizationId String    @map("organization_id")
+  userId         String    @map("user_id")
+  subject        String
+  description    String
+  status         String    @default("open") // open, in_progress, resolved, closed
+  priority       String    @default("normal") // low, normal, high, urgent
+  category       String?
+  assignedTo     String?   @map("assigned_to")
+  resolvedAt     DateTime? @map("resolved_at")
+  createdAt      DateTime  @default(now()) @map("created_at")
+  updatedAt      DateTime  @default(now()) @map("updated_at")
+
+  organization Org   @relation(fields: [organizationId], references: [id])
+  user         users @relation(fields: [userId], references: [id])
+
+  @@index([organizationId])
+  @@index([userId])
+  @@index([status])
+  @@map("support_tickets")
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// Push Notifications
+// ═══════════════════════════════════════════════════════════════════════════════
+
+/// Web push notification subscriptions
+model push_subscriptions {
+  id        String   @id @default(dbgenerated("gen_random_uuid()::text"))
+  userId    String   @map("user_id")
+  endpoint  String   @unique
+  p256dh    String
+  auth      String
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user users @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("push_subscriptions")
 }

@@ -1,8 +1,9 @@
-import { NextRequest, NextResponse } from "next/server";
 import { logger } from "@/lib/logger";
+import { NextRequest, NextResponse } from "next/server";
 
 import { requireAuth } from "@/lib/auth/requireAuth";
 import prisma from "@/lib/prisma";
+import { getLogoFromWebsite, VENDOR_LOGOS } from "@/lib/vendors/vendorLogos";
 
 // GET /api/vendors - Fetch vendor network (Phase 2)
 export async function GET(request: NextRequest) {
@@ -43,15 +44,22 @@ export async function GET(request: NextRequest) {
     });
 
     // Transform to match frontend expectations
-    const vendors = vendorsRaw.map((v) => ({
-      ...v,
-      locations: v.VendorLocation,
-      _count: {
-        locations: v._count.VendorLocation,
-        contacts: v._count.VendorContact,
-        resources: v._count.VendorResource,
-      },
-    }));
+    // Resolve logos with same fallback chain as /api/vin:
+    //   DB logo → VENDOR_LOGOS manifest (Google Favicons) → website favicon
+    const vendors = vendorsRaw.map((v) => {
+      const logoEntry = VENDOR_LOGOS[v.slug];
+      const resolvedLogo = v.logo || logoEntry?.logoPath || getLogoFromWebsite(v.website) || null;
+      return {
+        ...v,
+        logo: resolvedLogo,
+        locations: v.VendorLocation,
+        _count: {
+          locations: v._count.VendorLocation,
+          contacts: v._count.VendorContact,
+          resources: v._count.VendorResource,
+        },
+      };
+    });
 
     if (debug) {
       return NextResponse.json({

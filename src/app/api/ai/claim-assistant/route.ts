@@ -3,19 +3,31 @@ import { auth } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
 
 import { getOpenAI } from "@/lib/ai/client";
+import { getRateLimitIdentifier, rateLimiters } from "@/lib/rate-limit";
 
 // Force Node.js runtime for OpenAI SDK
 export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
 
 export async function POST(request: NextRequest) {
   try {
+    // ── Auth check (required) ──
+    const { userId } = await auth();
+    if (!userId) {
+      return NextResponse.json({ error: "Authentication required" }, { status: 401 });
+    }
+
+    // Rate limit AI requests
+    const identifier = getRateLimitIdentifier(userId, request);
+    const allowed = await rateLimiters.ai.check(10, identifier);
+    if (!allowed) {
+      return NextResponse.json({ error: "Rate limit exceeded" }, { status: 429 });
+    }
+
     const body = await request.json();
-    const validated = { success: true, data: body }; // validateAIRequest removed — inline validation
+    const validated = { success: true, data: body };
 
     const { message, claimId, history } = validated.data;
-
-    // Get auth - but allow demo claims to work
-    const { userId } = await auth();
 
     // Initialize OpenAI client
     const openai = getOpenAI();

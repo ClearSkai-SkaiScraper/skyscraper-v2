@@ -18,6 +18,7 @@ import { StatCard } from "@/components/ui/MetricCard";
 import { guarded } from "@/lib/buildPhase";
 import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
+import { hasMinimumRole, type Role } from "@/lib/rbac";
 import { safeOrgContext } from "@/lib/safeOrgContext";
 
 export const dynamic = "force-dynamic";
@@ -31,6 +32,29 @@ export default async function InvoicesPage() {
   const ctx = await safeOrgContext();
   if (ctx.status === "unauthenticated") redirect("/sign-in");
   if (ctx.status !== "ok" || !ctx.orgId) redirect("/dashboard");
+
+  // RBAC: Invoice data requires at least OFFICE_STAFF role
+  if (!ctx.role || !hasMinimumRole(ctx.role as Role, "OFFICE_STAFF")) {
+    return (
+      <PageContainer>
+        <PageHero
+          section="finance"
+          title="Invoices"
+          subtitle="Create, send, and track invoices"
+          icon={<FileText className="h-5 w-5" />}
+        />
+        <div className="flex flex-col items-center gap-4 rounded-2xl border border-amber-200 bg-amber-50/50 py-12 text-center dark:border-amber-800 dark:bg-amber-950/20">
+          <FileText className="h-12 w-12 text-amber-500" />
+          <div>
+            <h3 className="text-lg font-semibold">Access Restricted</h3>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Invoice management requires office staff access or above.
+            </p>
+          </div>
+        </div>
+      </PageContainer>
+    );
+  }
 
   const invoices = await guarded(
     "invoices",

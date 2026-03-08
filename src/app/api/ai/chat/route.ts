@@ -50,9 +50,15 @@ export async function POST(request: NextRequest) {
   const startTime = Date.now();
 
   try {
-    // Rate limiting check (10 requests per minute for AI endpoints)
+    // Auth check — must be logged in
     const currentClerkUser = await currentUser();
-    const identifier = getRateLimitIdentifier(currentClerkUser?.id || null, request);
+    if (!currentClerkUser) {
+      logger.error("[AI_CHAT] ❌ Unauthorized - no user");
+      return NextResponse.json(aiFail("Authentication required", "AUTH"), { status: 401 });
+    }
+
+    // Rate limiting check (10 requests per minute for AI endpoints)
+    const identifier = getRateLimitIdentifier(currentClerkUser.id, request);
     const allowed = await rateLimiters.ai.check(10, identifier);
 
     if (!allowed) {
@@ -65,11 +71,7 @@ export async function POST(request: NextRequest) {
     // Critical configuration check
     const openai = getOpenAI();
 
-    const user = await currentUser();
-    if (!user) {
-      logger.error("[AI_CHAT] ❌ Unauthorized - no user");
-      return NextResponse.json(aiFail("Unauthorized", "AUTH"), { status: 401 });
-    }
+    const user = currentClerkUser;
 
     let body;
     try {
@@ -86,8 +88,12 @@ export async function POST(request: NextRequest) {
 
     const { message } = validated.data;
 
-    // Get user's Org ID
-    const orgId = (user.publicMetadata?.orgId as string) || user.id;
+    // Get user's Org ID — resolve from DB, not publicMetadata
+    const dbUser = await prisma.users.findUnique({
+      where: { id: user.id },
+      select: { orgId: true },
+    });
+    const orgId = dbUser?.orgId || user.id;
     // Get or create user memory
     const userId = user.id;
     let memory = userMemory.get(userId);

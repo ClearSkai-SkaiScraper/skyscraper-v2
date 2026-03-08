@@ -66,7 +66,7 @@ const nextConfig = {
       { source: "/admin/token-usage", destination: "/tokens", permanent: false },
       // Feature redirects
       { source: "/projects", destination: "/jobs", permanent: false },
-      { source: "/notifications", destination: "/dashboard", permanent: false },
+      // /notifications page now exists — removed stale redirect to /dashboard
       { source: "/directory", destination: "/network/trades", permanent: false },
       { source: "/demo", destination: "/", permanent: false },
       // Legacy route redirects

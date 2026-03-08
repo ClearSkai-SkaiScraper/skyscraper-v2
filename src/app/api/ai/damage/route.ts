@@ -2,6 +2,7 @@ import { logger } from "@/lib/logger";
 import { currentUser } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
 
+import { getRateLimitIdentifier, rateLimiters } from "@/lib/rate-limit";
 import { damageAssessmentSchema, validateAIRequest } from "@/lib/validation/aiSchemas";
 
 export const runtime = "edge";
@@ -12,7 +13,14 @@ export async function POST(req: NextRequest) {
   try {
     const user = await currentUser();
     if (!user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return NextResponse.json({ error: "Authentication required" }, { status: 401 });
+    }
+
+    // Rate limit AI requests
+    const identifier = getRateLimitIdentifier(user.id, req);
+    const allowed = await rateLimiters.ai.check(10, identifier);
+    if (!allowed) {
+      return NextResponse.json({ error: "Rate limit exceeded" }, { status: 429 });
     }
 
     const body = await req.json();

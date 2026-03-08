@@ -65,12 +65,15 @@ interface Employee {
   managerName?: string | null;
 }
 
+type ViewMode = "admin" | "read-only" | "blocked";
+
 export default function ManageEmployeesPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState<string | null>(null);
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [currentUserIsManager, setCurrentUserIsManager] = useState(false);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<{ id: string; name: string } | null>(null);
 
@@ -107,6 +110,9 @@ export default function ManageEmployeesPage() {
       setEmployees(data.employees || []);
       setIsAdmin(data.isAdmin);
       setCurrentUserId(data.currentUserId);
+      // Detect if current user is a manager (for read-only mode)
+      const currentEmp = (data.employees || []).find((e: Employee) => e.id === data.currentUserId);
+      setCurrentUserIsManager(currentEmp?.isManager || currentEmp?.role === "manager" || false);
     } catch (error) {
       logger.error("Failed to load employees:", error);
       toast.error("Failed to load employees");
@@ -286,17 +292,152 @@ export default function ManageEmployeesPage() {
   }
 
   if (!isAdmin) {
+    // Managers get read-only view of the org chart and employee list
+    const viewMode: ViewMode = currentUserIsManager ? "read-only" : "blocked";
+
+    if (viewMode === "blocked") {
+      return (
+        <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-slate-50 via-blue-50/40 to-amber-50/30 p-6">
+          <div className="max-w-md text-center">
+            <Shield className="mx-auto mb-4 h-12 w-12 text-gray-400" />
+            <h1 className="mb-2 text-xl font-semibold text-gray-900">Admin Access Required</h1>
+            <p className="mb-4 text-gray-600">
+              Only company admins can manage employees and permissions.
+            </p>
+            <Link href="/trades/profile">
+              <Button>Back to Profile</Button>
+            </Link>
+          </div>
+        </div>
+      );
+    }
+
+    // Read-only mode for managers
     return (
-      <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-slate-50 via-blue-50/40 to-amber-50/30 p-6">
-        <div className="max-w-md text-center">
-          <Shield className="mx-auto mb-4 h-12 w-12 text-gray-400" />
-          <h1 className="mb-2 text-xl font-semibold text-gray-900">Admin Access Required</h1>
-          <p className="mb-4 text-gray-600">
-            Only company admins can manage employees and permissions.
-          </p>
-          <Link href="/trades/profile">
-            <Button>Back to Profile</Button>
-          </Link>
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/40 to-amber-50/30 p-6">
+        <div className="mx-auto max-w-3xl">
+          <div className="mb-6 flex items-center gap-4">
+            <Link href="/trades/company">
+              <Button variant="ghost" size="icon" className="rounded-full">
+                <ArrowLeft className="h-5 w-5" />
+              </Button>
+            </Link>
+            <div>
+              <h1 className="text-2xl font-bold text-gray-900">Team Directory</h1>
+              <p className="text-sm text-gray-600">
+                View your team structure{" "}
+                <Badge variant="outline" className="ml-1 text-xs">
+                  Read-Only
+                </Badge>
+              </p>
+            </div>
+          </div>
+
+          {/* Stats (read-only) */}
+          <div className="mb-6 grid grid-cols-2 gap-4 md:grid-cols-4">
+            <Card>
+              <CardContent className="p-4 text-center">
+                <Users className="mx-auto mb-2 h-6 w-6 text-blue-600" />
+                <p className="text-2xl font-bold text-slate-900 dark:text-white">
+                  {employees.length}
+                </p>
+                <p className="text-xs text-slate-500">Total Employees</p>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardContent className="p-4 text-center">
+                <ShieldCheck className="mx-auto mb-2 h-6 w-6 text-green-600" />
+                <p className="text-2xl font-bold text-slate-900 dark:text-white">
+                  {employees.filter((e) => e.isAdmin).length}
+                </p>
+                <p className="text-xs text-slate-500">Admins</p>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardContent className="p-4 text-center">
+                <GitBranch className="mx-auto mb-2 h-6 w-6 text-purple-600" />
+                <p className="text-2xl font-bold text-slate-900 dark:text-white">
+                  {employees.filter((e) => e.isManager).length}
+                </p>
+                <p className="text-xs text-slate-500">Managers</p>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardContent className="p-4 text-center">
+                <UserCheck className="mx-auto mb-2 h-6 w-6 text-amber-600" />
+                <p className="text-2xl font-bold text-slate-900 dark:text-white">
+                  {employees.filter((e) => e.status === "active").length}
+                </p>
+                <p className="text-xs text-slate-500">Active</p>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Read-only employee list */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Team Members</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {employees.map((employee) => {
+                const displayName =
+                  `${employee.firstName || ""} ${employee.lastName || ""}`.trim() ||
+                  employee.email ||
+                  "Unknown";
+                const initials =
+                  (employee.firstName?.[0] || "") + (employee.lastName?.[0] || "") || "?";
+                const isOwner = employee.role === "owner";
+                const isSelf = employee.id === currentUserId;
+
+                return (
+                  <div
+                    key={employee.id}
+                    className="flex items-center gap-4 rounded-lg border border-gray-200 bg-white p-4 dark:border-slate-700 dark:bg-slate-900"
+                  >
+                    <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center overflow-hidden rounded-full bg-gradient-to-br from-blue-500 to-blue-600 text-lg font-bold text-white">
+                      {employee.avatar ? (
+                        <img
+                          src={employee.avatar}
+                          alt={displayName}
+                          className="h-full w-full object-cover"
+                        />
+                      ) : (
+                        initials
+                      )}
+                    </div>
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2">
+                        <p className="font-semibold text-gray-900 dark:text-white">{displayName}</p>
+                        {isOwner && <Badge className="bg-purple-100 text-purple-700">Owner</Badge>}
+                        {employee.isManager && !isOwner && (
+                          <Badge className="bg-violet-100 text-violet-700">
+                            <GitBranch className="mr-1 h-3 w-3" />
+                            Manager
+                          </Badge>
+                        )}
+                        {employee.isAdmin && !isOwner && (
+                          <Badge className="bg-green-100 text-green-700">Admin</Badge>
+                        )}
+                        {isSelf && (
+                          <Badge variant="outline" className="text-blue-600">
+                            You
+                          </Badge>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <p className="text-sm text-gray-500">
+                          {employee.jobTitle || employee.role}
+                        </p>
+                        {employee.managerName && (
+                          <span className="text-xs text-slate-400">→ {employee.managerName}</span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </CardContent>
+          </Card>
         </div>
       </div>
     );

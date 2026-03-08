@@ -5,6 +5,7 @@ import { z } from "zod";
 
 import { createOrUpdateClaimEmbedding } from "@/lib/ai/similarity/embedClaim";
 import { apiError } from "@/lib/apiError";
+import { getVisibleUserIds } from "@/lib/auth/managerScope";
 import { createForbiddenResponse, requirePermission } from "@/lib/auth/rbac";
 import { withOrgScope } from "@/lib/auth/tenant";
 import { logInfo, timeExecution } from "@/lib/log";
@@ -284,13 +285,16 @@ export const POST = withOrgScope(async (req, { userId, orgId }) => {
 /**
  * GET /api/claims - List claims with filters
  */
-export const GET = withOrgScope(async (req, { orgId }) => {
+export const GET = withOrgScope(async (req, { userId, orgId }) => {
   try {
     const { searchParams } = new URL(req.url);
     const stage = searchParams.get("stage");
     const search = searchParams.get("search");
     const limit = Math.max(1, parseInt(searchParams.get("limit") || "50", 10) || 50);
     const offset = Math.max(0, parseInt(searchParams.get("offset") || "0", 10) || 0);
+
+    // Manager-scoped visibility
+    const visibleUserIds = userId ? await getVisibleUserIds(userId, orgId) : null;
 
     const where: any = { orgId };
 
@@ -318,7 +322,14 @@ export const GET = withOrgScope(async (req, { orgId }) => {
       }
     }
 
-    const { claims, total } = await listClaims({ orgId, limit, offset, stage, search });
+    const { claims, total } = await listClaims({
+      orgId,
+      limit,
+      offset,
+      stage,
+      search,
+      visibleUserIds,
+    });
     return NextResponse.json(
       { claims, total, limit, offset },
       { headers: { "Cache-Control": "no-store" } }

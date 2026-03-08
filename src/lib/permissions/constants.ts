@@ -133,6 +133,7 @@ export const ROLE_PERMISSIONS: Record<AppRole, Permission[]> = {
     "billing:view",
     "integrations:view",
     "settings:view",
+    "remote_view:view", // Managers can view direct reports via Remote View
   ],
   member: [
     // Members: create + edit assigned, archive but NOT delete, read most
