@@ -23,7 +23,7 @@ export default async function HierarchyPage() {
     redirect("/sign-in?redirect_url=/teams/hierarchy");
   }
 
-  const userId = orgCtx.userId!;
+  const userId = orgCtx.userId as string;
 
   /* ── Fetch company members ───────────────────────────────────── */
   let members: any[] = [];
@@ -31,7 +31,7 @@ export default async function HierarchyPage() {
 
   try {
     const membership = await prisma.tradesCompanyMember.findUnique({
-      where: { userId },
+      where: { userId: userId },
       select: { companyId: true },
     });
 
