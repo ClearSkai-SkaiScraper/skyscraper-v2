@@ -1,5 +1,5 @@
-import { auth } from "@clerk/nextjs/server";
 import { logger } from "@/lib/logger";
+import { auth } from "@clerk/nextjs/server";
 
 import { ensureOrgForUser } from "@/lib/org/ensureOrgForUser";
 import prisma from "@/lib/prisma";
@@ -7,18 +7,30 @@ import { ensureWorkspaceForOrg } from "@/lib/workspace/ensureWorkspaceForOrg";
 
 export type SafeOrgStatus = "unauthenticated" | "noMembership" | "ok" | "error";
 
-export type SafeOrgContext = {
-  status: SafeOrgStatus;
-  userId: string | null;
-  orgId: string | null;
-  role: string | null;
-  membership: any | null;
-  error?: string | null;
-  // Backwards compatibility fields (allow existing code expecting ok/reason/organizationId)
-  ok?: boolean;
-  reason?: string | null;
-  organizationId?: string | null;
-};
+/** Discriminated union: when ok=true, orgId & userId are guaranteed non-null */
+export type SafeOrgContext =
+  | {
+      status: "ok";
+      userId: string;
+      orgId: string;
+      role: string;
+      membership: any;
+      error?: null;
+      ok: true;
+      reason: null;
+      organizationId: string;
+    }
+  | {
+      status: "unauthenticated" | "noMembership" | "error";
+      userId: string | null;
+      orgId: string | null;
+      role: string | null;
+      membership: any | null;
+      error?: string | null;
+      ok: false;
+      reason: string | null;
+      organizationId: string | null;
+    };
 
 export async function safeOrgContext(): Promise<SafeOrgContext> {
   let userId: string | null = null;

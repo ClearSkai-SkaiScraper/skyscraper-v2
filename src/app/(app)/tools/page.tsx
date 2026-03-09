@@ -110,7 +110,7 @@ const TOOLS = [
 
 export default async function ToolsPage() {
   const orgCtx = await safeOrgContext();
-  if (!orgCtx?.ok) {
+  if (!orgCtx.ok) {
     redirect("/sign-in");
   }
 
