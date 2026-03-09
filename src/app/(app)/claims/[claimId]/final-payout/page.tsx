@@ -15,15 +15,18 @@ export default async function FinalPayoutPage({ params }: FinalPayoutPageProps) 
   const { claimId } = await params;
 
   const ctx = await safeOrgContext();
-  if (!ctx.ok || !ctx.orgId) {
+  if (!ctx.ok || !ctx.orgId || !ctx.userId) {
     redirect("/sign-in");
   }
+
+  const orgId = ctx.orgId;
+  const userId = ctx.userId;
 
   // Fetch claim with all related data for the payout system
   const claim = await prisma.claims.findFirst({
     where: {
       id: claimId,
-      orgId: ctx.orgId,
+      orgId,
     },
     include: {
       properties: true,
@@ -104,5 +107,5 @@ export default async function FinalPayoutPage({ params }: FinalPayoutPageProps) 
     }>,
   };
 
-  return <FinalPayoutClient claim={claimData} orgId={ctx.orgId} userId={ctx.userId} />;
+  return <FinalPayoutClient claim={claimData} orgId={orgId} userId={userId} />;
 }
