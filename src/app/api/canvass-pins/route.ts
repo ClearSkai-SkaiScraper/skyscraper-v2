@@ -16,14 +16,9 @@ const createPinSchema = z.object({
   state: z.string().optional(),
   zipCode: z.string().optional(),
   ownerName: z.string().optional(),
-  outcome: z.enum([
-    "no_answer",
-    "interested",
-    "signed",
-    "come_back",
-    "not_interested",
-    "not_home",
-  ]).default("no_answer"),
+  outcome: z
+    .enum(["no_answer", "interested", "signed", "come_back", "not_interested", "not_home"])
+    .default("no_answer"),
   notes: z.string().optional(),
   followUpDate: z.string().datetime().optional(),
   areaTag: z.string().optional(),

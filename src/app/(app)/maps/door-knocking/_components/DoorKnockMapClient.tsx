@@ -5,7 +5,6 @@ import "mapbox-gl/dist/mapbox-gl.css";
 import {
   CalendarClock,
   Check,
-  Clock,
   DoorOpen,
   Filter,
   Loader2,
@@ -49,12 +48,42 @@ const OUTCOME_CONFIG: Record<
   string,
   { label: string; color: string; emoji: string; mapColor: string }
 > = {
-  no_answer: { label: "No Answer", color: "bg-gray-200 text-gray-700", emoji: "🚪", mapColor: "#9ca3af" },
-  interested: { label: "Interested", color: "bg-blue-100 text-blue-700", emoji: "👍", mapColor: "#3b82f6" },
-  signed: { label: "Signed", color: "bg-green-100 text-green-700", emoji: "✅", mapColor: "#22c55e" },
-  come_back: { label: "Come Back", color: "bg-amber-100 text-amber-700", emoji: "🔄", mapColor: "#f59e0b" },
-  not_interested: { label: "Not Interested", color: "bg-red-100 text-red-700", emoji: "❌", mapColor: "#ef4444" },
-  not_home: { label: "Not Home", color: "bg-purple-100 text-purple-700", emoji: "🏠", mapColor: "#a855f7" },
+  no_answer: {
+    label: "No Answer",
+    color: "bg-gray-200 text-gray-700",
+    emoji: "🚪",
+    mapColor: "#9ca3af",
+  },
+  interested: {
+    label: "Interested",
+    color: "bg-blue-100 text-blue-700",
+    emoji: "👍",
+    mapColor: "#3b82f6",
+  },
+  signed: {
+    label: "Signed",
+    color: "bg-green-100 text-green-700",
+    emoji: "✅",
+    mapColor: "#22c55e",
+  },
+  come_back: {
+    label: "Come Back",
+    color: "bg-amber-100 text-amber-700",
+    emoji: "🔄",
+    mapColor: "#f59e0b",
+  },
+  not_interested: {
+    label: "Not Interested",
+    color: "bg-red-100 text-red-700",
+    emoji: "❌",
+    mapColor: "#ef4444",
+  },
+  not_home: {
+    label: "Not Home",
+    color: "bg-purple-100 text-purple-700",
+    emoji: "🏠",
+    mapColor: "#a855f7",
+  },
 };
 
 /* ═══════════════════════════════════════════════════════
@@ -236,7 +265,9 @@ export default function DoorKnockMapClient() {
           ${pin.areaTag ? `<div style="font-size: 11px; color: #666; margin-top: 2px;">📍 ${pin.areaTag}</div>` : ""}
         </div>
       `;
-      const popup = new mapboxRef.current.Popup({ offset: 18, maxWidth: "250px" }).setHTML(popupHtml);
+      const popup = new mapboxRef.current.Popup({ offset: 18, maxWidth: "250px" }).setHTML(
+        popupHtml
+      );
       marker.setPopup(popup);
 
       // Click to edit
@@ -416,9 +447,7 @@ export default function DoorKnockMapClient() {
 
         {/* Recent Pins List */}
         <div className="flex-1 space-y-1.5 overflow-y-auto">
-          <p className="text-xs font-semibold text-muted-foreground">
-            Recent ({pins.length})
-          </p>
+          <p className="text-xs font-semibold text-muted-foreground">Recent ({pins.length})</p>
           {loading && (
             <div className="flex items-center justify-center py-8">
               <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
@@ -462,9 +491,7 @@ export default function DoorKnockMapClient() {
                   {cfg.emoji}
                 </span>
                 <div className="min-w-0 flex-1">
-                  <p className="truncate text-xs font-medium">
-                    {pin.address || "Dropped Pin"}
-                  </p>
+                  <p className="truncate text-xs font-medium">{pin.address || "Dropped Pin"}</p>
                   <p className="truncate text-[10px] text-muted-foreground">
                     {pin.ownerName && `${pin.ownerName} · `}
                     {cfg.label}
@@ -504,7 +531,12 @@ export default function DoorKnockMapClient() {
                   </>
                 )}
               </h3>
-              <button onClick={() => { setShowForm(false); setEditingPin(null); }}>
+              <button
+                onClick={() => {
+                  setShowForm(false);
+                  setEditingPin(null);
+                }}
+              >
                 <X className="h-4 w-4 text-muted-foreground" />
               </button>
             </div>
@@ -586,7 +618,7 @@ export default function DoorKnockMapClient() {
                       onClick={() => setFormData((p) => ({ ...p, outcome: key }))}
                       className={`rounded-md px-1.5 py-1 text-[10px] font-medium transition-all ${
                         formData.outcome === key
-                          ? cfg.color + " ring-2 ring-offset-1 ring-current"
+                          ? cfg.color + " ring-2 ring-current ring-offset-1"
                           : "bg-muted text-muted-foreground hover:bg-accent"
                       }`}
                     >
@@ -650,12 +682,7 @@ export default function DoorKnockMapClient() {
 
               {/* Actions */}
               <div className="flex gap-2">
-                <Button
-                  onClick={handleSave}
-                  disabled={saving}
-                  className="flex-1"
-                  size="sm"
-                >
+                <Button onClick={handleSave} disabled={saving} className="flex-1" size="sm">
                   {saving ? (
                     <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
                   ) : (
@@ -681,10 +708,7 @@ export default function DoorKnockMapClient() {
         <div className="absolute bottom-4 left-4 z-10 flex flex-wrap gap-1.5 rounded-lg bg-white/90 px-3 py-2 shadow dark:bg-slate-900/90">
           {Object.entries(OUTCOME_CONFIG).map(([key, cfg]) => (
             <div key={key} className="flex items-center gap-1 text-[10px]">
-              <div
-                className="h-2.5 w-2.5 rounded-full"
-                style={{ background: cfg.mapColor }}
-              />
+              <div className="h-2.5 w-2.5 rounded-full" style={{ background: cfg.mapColor }} />
               <span className="text-muted-foreground">{cfg.label}</span>
             </div>
           ))}

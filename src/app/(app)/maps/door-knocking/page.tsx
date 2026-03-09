@@ -14,20 +14,17 @@ export const metadata: Metadata = {
 export const dynamic = "force-dynamic";
 
 // Dynamic import — Mapbox can't run in SSR
-const DoorKnockMapClient = nextDynamic(
-  () => import("./_components/DoorKnockMapClient"),
-  {
-    ssr: false,
-    loading: () => (
-      <div className="flex h-[60vh] items-center justify-center rounded-xl border bg-muted/10">
-        <div className="text-center">
-          <div className="mb-3 text-4xl">🚪</div>
-          <p className="text-sm text-muted-foreground">Loading door-knocking map…</p>
-        </div>
+const DoorKnockMapClient = nextDynamic(() => import("./_components/DoorKnockMapClient"), {
+  ssr: false,
+  loading: () => (
+    <div className="flex h-[60vh] items-center justify-center rounded-xl border bg-muted/10">
+      <div className="text-center">
+        <div className="mb-3 text-4xl">🚪</div>
+        <p className="text-sm text-muted-foreground">Loading door-knocking map…</p>
       </div>
-    ),
-  }
-);
+    </div>
+  ),
+});
 
 export default function DoorKnockingPage() {
   return (
