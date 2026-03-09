@@ -38,7 +38,7 @@ export default async function DepreciationBuilderPage({ searchParams }: PageProp
           title="Depreciation Builder"
           subtitle="Final payout system for depreciation recovery, invoices, and homeowner acceptance forms"
           icon={<Calculator className="h-5 w-5" />}
-          section="ai"
+          section="claims"
         />
         <div className="rounded-2xl border border-[color:var(--border)] bg-[var(--surface-glass)] p-12 text-center backdrop-blur-xl">
           <p className="text-slate-500 dark:text-slate-400">
