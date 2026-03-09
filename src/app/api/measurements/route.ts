@@ -68,6 +68,7 @@ interface CreateOrderBody {
   orderType?: "roof" | "siding" | "gutters" | "full";
   claimId?: string;
   jobId?: string;
+  urgency?: "standard" | "rush";
 }
 
 export async function POST(req: NextRequest) {
