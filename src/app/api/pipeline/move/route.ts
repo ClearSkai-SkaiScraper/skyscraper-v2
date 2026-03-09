@@ -60,12 +60,13 @@ export const POST = withAuth(async (req: NextRequest, { orgId: userOrgId, userId
       };
 
       // Map pipeline stage to valid ClaimLifecycleStage enum values
+      // MUST be 1:1 so the round-trip (save → reload → norm) is lossless
       // Valid enum: FILED, ADJUSTER_REVIEW, APPROVED, DENIED, APPEAL, BUILD, COMPLETED, DEPRECIATION
       const stageToLifecycle: Record<string, string> = {
         new: "FILED",
         draft: "FILED",
         qualified: "ADJUSTER_REVIEW",
-        proposal: "APPROVED",
+        proposal: "BUILD",
         negotiation: "APPROVED",
         approved: "APPROVED",
         won: "COMPLETED",

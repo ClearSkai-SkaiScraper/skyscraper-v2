@@ -281,13 +281,15 @@ export default function MapViewClient({ markers, initialCenter }: MapViewClientP
         </div>
       `;
 
-      // Manual popup — do NOT use marker.setPopup() (it adds a conflicting
-      // click handler that double-toggles the popup and auto-pans to top-left)
+      // Manual popup — do NOT use marker.setPopup() (conflicting click handler)
+      // anchor:'bottom' + no closeButton prevents Mapbox auto-pan that slides markers
       const popup = new mapboxRef.current.Popup({
-        offset: 20,
+        offset: [0, -15],
         maxWidth: "300px",
         closeOnClick: true,
+        closeButton: true,
         focusAfterOpen: false,
+        anchor: "bottom",
       }).setHTML(popupHtml);
 
       el.addEventListener("click", (e) => {

@@ -1,7 +1,7 @@
 import { auth } from "@clerk/nextjs/server";
 
-import { getActiveOrgContext } from "@/lib/org/getActiveOrgContext";
 import prisma from "@/lib/prisma";
+import { safeOrgContext } from "@/lib/safeOrgContext";
 
 // Prisma singleton imported from @/lib/db/prisma
 
@@ -153,9 +153,9 @@ export async function getCurrentUserPermissions() {
     return { role: null, permissions: [], userId: null, orgId: null };
   }
 
-  // Resolve org context via canonical resolver (auto-creates personal org if missing)
-  const ctx = await getActiveOrgContext({ required: true });
-  if (!ctx.ok) {
+  // Resolve org context via safeOrgContext (DB-first, auto-onboards if needed)
+  const ctx = await safeOrgContext();
+  if (!ctx.ok || !ctx.orgId) {
     return { role: null, permissions: [], userId, orgId: null, needsInitialization: true };
   }
 

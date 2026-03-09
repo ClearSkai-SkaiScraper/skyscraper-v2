@@ -231,9 +231,16 @@ function PipelineCard({ job }: { job: Job }) {
 function norm(stage: string): string {
   const s = stage.toLowerCase();
   if (STAGES.some((st) => st.id === s)) return s;
-  if (["draft", "active", "open"].includes(s)) return "new";
-  if (["in_progress", "approved"].includes(s)) return "negotiation";
-  if (["closed", "completed", "paid"].includes(s)) return "won";
+  // ClaimLifecycleStage enum values (must mirror lifecycleToStage in page.tsx)
+  if (["filed"].includes(s)) return "new";
+  if (["adjuster_review"].includes(s)) return "qualified";
+  if (["build"].includes(s)) return "proposal";
+  if (["approved", "appeal"].includes(s)) return "negotiation";
+  if (["completed", "depreciation"].includes(s)) return "won";
+  // Legacy status-string fallbacks
+  if (["draft", "active", "open", "denied"].includes(s)) return "new";
+  if (["in_progress", "review"].includes(s)) return "negotiation";
+  if (["closed", "paid"].includes(s)) return "won";
   return "new";
 }
 

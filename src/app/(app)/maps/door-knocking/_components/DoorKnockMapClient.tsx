@@ -332,11 +332,14 @@ export default function DoorKnockMapClient() {
         </div>
       `;
       // Manual popup — do NOT use marker.setPopup() (causes double-toggle + auto-pan)
+      // anchor:'bottom' prevents Mapbox from auto-panning/sliding the map when popup opens
       const popup = new mapboxRef.current.Popup({
-        offset: 18,
+        offset: [0, -12],
         maxWidth: "250px",
         closeOnClick: true,
+        closeButton: true,
         focusAfterOpen: false,
+        anchor: "bottom",
       }).setHTML(popupHtml);
 
       // Click: show popup + open edit form

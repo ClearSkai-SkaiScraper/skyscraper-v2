@@ -127,7 +127,15 @@ async function getJobsByCategory(orgId: string) {
     // Also get claims and format them as pipeline items
     const claims = await prisma.claims.findMany({
       where: { orgId },
-      include: {
+      select: {
+        id: true,
+        title: true,
+        status: true,
+        lifecycle_stage: true,
+        estimatedValue: true,
+        claimNumber: true,
+        carrier: true,
+        updatedAt: true,
         properties: {
           select: {
             street: true,
@@ -146,12 +154,35 @@ async function getJobsByCategory(orgId: string) {
       take: 50,
     });
 
+    // Map lifecycle_stage → pipeline stage (1:1, matches stageToLifecycle in /api/pipeline/move)
+    const lifecycleToStage: Record<string, string> = {
+      FILED: "new",
+      ADJUSTER_REVIEW: "qualified",
+      BUILD: "proposal",
+      APPROVED: "negotiation",
+      COMPLETED: "won",
+      // Fallbacks for stages not directly used by pipeline drag-and-drop
+      DENIED: "new",
+      APPEAL: "negotiation",
+      DEPRECIATION: "won",
+    };
+
+    // Status-based fallback for claims that don't have lifecycle_stage set yet
+    const statusFallback: Record<string, string> = {
+      new: "new",
+      in_progress: "negotiation",
+      completed: "won",
+      closed: "won",
+    };
+
     // Convert claims to pipeline format
     const claimItems = claims.map((claim) => ({
       id: claim.id,
       title: claim.title,
       jobCategory: "claim",
-      stage: claim.status || "new",
+      stage: claim.lifecycle_stage
+        ? (lifecycleToStage[claim.lifecycle_stage] ?? "new")
+        : (statusFallback[claim.status ?? ""] ?? "new"),
       value: claim.estimatedValue || 0,
       contacts: {
         firstName: claim.properties?.contacts?.firstName || "Insured",
