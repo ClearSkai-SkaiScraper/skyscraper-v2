@@ -244,3 +244,21 @@ export async function safeOrgContext(): Promise<SafeOrgContext> {
 
 // Backwards compatibility type alias (optional external imports relying on old union)
 export type SafeOrgContextResult = SafeOrgContext;
+
+/** Convenience type for the "ok" branch of SafeOrgContext */
+export type SafeOrgOk = Extract<SafeOrgContext, { ok: true }>;
+
+/**
+ * requireSafeOrg — call safeOrgContext, redirect if not ok, return narrowed type.
+ * Use this in server components / pages instead of the manual check pattern.
+ * TypeScript reliably narrows the return type to { orgId: string; userId: string; ... }
+ */
+export async function requireSafeOrg(redirectTo = "/sign-in"): Promise<SafeOrgOk> {
+  const ctx = await safeOrgContext();
+  if (!ctx.ok || !ctx.orgId || !ctx.userId) {
+    // Dynamic import to avoid circular deps in non-Next contexts
+    const { redirect } = await import("next/navigation");
+    redirect(redirectTo);
+  }
+  return ctx as SafeOrgOk;
+}

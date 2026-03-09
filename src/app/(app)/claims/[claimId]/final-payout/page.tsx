@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 
 import prisma from "@/lib/prisma";
-import { safeOrgContext } from "@/lib/safeOrgContext";
+import { requireSafeOrg } from "@/lib/safeOrgContext";
 
 import { FinalPayoutClient } from "./_components/FinalPayoutClient";
 
@@ -14,10 +14,7 @@ interface FinalPayoutPageProps {
 export default async function FinalPayoutPage({ params }: FinalPayoutPageProps) {
   const { claimId } = await params;
 
-  const ctx = await safeOrgContext();
-  if (!ctx.ok) {
-    redirect("/sign-in");
-  }
+  const ctx = await requireSafeOrg();
 
   // Fetch claim with all related data for the payout system
   const claim = await prisma.claims.findFirst({
