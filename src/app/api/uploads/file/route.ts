@@ -1,0 +1,125 @@
+/**
+ * POST /api/uploads/file
+ *
+ * General file upload endpoint used by Smart Docs and other features.
+ * Uploads to Supabase storage and returns the public URL.
+ */
+
+import { NextRequest, NextResponse } from "next/server";
+
+import { logger } from "@/lib/logger";
+import { resolveOrg } from "@/lib/org/resolveOrg";
+import prisma from "@/lib/prisma";
+import { auth } from "@clerk/nextjs/server";
+import { createClient } from "@supabase/supabase-js";
+
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
+
+function getSupabaseAdmin() {
+  const url = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!url || !key) return null;
+  return createClient(url, key, { auth: { persistSession: false } });
+}
+
+export async function POST(req: NextRequest) {
+  try {
+    const { userId } = await auth();
+    if (!userId) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    let orgId: string | null = null;
+    try {
+      const ctx = await resolveOrg();
+      orgId = ctx.orgId;
+    } catch {
+      // fallback to userId
+    }
+
+    const supabase = getSupabaseAdmin();
+    if (!supabase) {
+      return NextResponse.json({ error: "Storage not configured" }, { status: 500 });
+    }
+
+    const formData = await req.formData();
+    const file = formData.get("file") as File;
+    const folder = (formData.get("folder") as string) || "uploads";
+
+    if (!file) {
+      return NextResponse.json({ error: "No file provided" }, { status: 400 });
+    }
+
+    // 50MB max for general uploads
+    const maxSize = 50 * 1024 * 1024;
+    if (file.size > maxSize) {
+      return NextResponse.json({ error: "File too large (max 50MB)" }, { status: 400 });
+    }
+
+    const bytes = await file.arrayBuffer();
+    const buffer = Buffer.from(bytes);
+
+    const ext = file.name.split(".").pop() || "bin";
+    const timestamp = Date.now();
+    const uuid = crypto.randomUUID();
+    const safeOwner = orgId || userId;
+    const filePath = `${safeOwner}/${folder}/${timestamp}-${uuid}.${ext}`;
+
+    const bucket = "claim-documents"; // General purpose bucket
+
+    // Ensure bucket exists
+    const { data: buckets } = await supabase.storage.listBuckets();
+    if (!buckets?.some((b) => b.name === bucket)) {
+      await supabase.storage.createBucket(bucket, { public: true, fileSizeLimit: maxSize });
+    }
+
+    const { data, error } = await supabase.storage
+      .from(bucket)
+      .upload(filePath, buffer, { contentType: file.type, upsert: true });
+
+    if (error) {
+      logger.error("[File Upload] Supabase error:", error);
+      return NextResponse.json({ error: "Upload failed" }, { status: 500 });
+    }
+
+    const {
+      data: { publicUrl },
+    } = supabase.storage.from(bucket).getPublicUrl(filePath);
+
+    // Create file_assets DB record
+    try {
+      await prisma.file_assets.create({
+        data: {
+          id: crypto.randomUUID(),
+          orgId: safeOwner,
+          ownerId: userId,
+          filename: file.name,
+          mimeType: file.type,
+          sizeBytes: file.size,
+          storageKey: filePath,
+          bucket,
+          publicUrl,
+          category: folder,
+          source: "user",
+          updatedAt: new Date(),
+        },
+      });
+    } catch (dbErr) {
+      logger.warn("[File Upload] file_assets record creation failed:", dbErr);
+    }
+
+    return NextResponse.json({
+      ok: true,
+      url: publicUrl,
+      publicUrl,
+      path: data.path,
+      name: file.name,
+      size: file.size,
+      type: file.type,
+    });
+  } catch (error) {
+    logger.error("[File Upload] Error:", error);
+    return NextResponse.json({ error: "Upload failed" }, { status: 500 });
+  }
+}

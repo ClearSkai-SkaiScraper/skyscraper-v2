@@ -18,6 +18,7 @@ import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 
 import RetailAssistant from "@/components/ai/RetailAssistant";
+import { DocActionsMenu } from "@/components/documents/DocActionsMenu";
 import { ArchiveJobButton } from "@/components/jobs/ArchiveJobButton";
 import { ClientShareWidget } from "@/components/jobs/ClientShareWidget";
 import { TransferJobDropdown } from "@/components/jobs/TransferJobDropdown";
@@ -659,13 +660,22 @@ export default async function RetailJobWorkspacePage({
                                 </p>
                               </div>
                             </div>
-                            {doc.publicUrl && (
-                              <Button variant="ghost" size="sm" asChild>
-                                <a href={doc.publicUrl} target="_blank" rel="noopener noreferrer">
-                                  View
-                                </a>
-                              </Button>
-                            )}
+                            <div className="flex items-center gap-1">
+                              {doc.publicUrl && (
+                                <DocActionsMenu
+                                  doc={{
+                                    id: doc.id,
+                                    title: doc.title || "Untitled",
+                                    url: doc.publicUrl,
+                                    mimeType: doc.mimeType,
+                                  }}
+                                  showArchive={false}
+                                  showDelete={false}
+                                  showAttach={false}
+                                  compact
+                                />
+                              )}
+                            </div>
                           </div>
                         ))}
                       </div>

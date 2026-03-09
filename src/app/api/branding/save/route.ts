@@ -55,8 +55,8 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 
 import { hasTrackedEvent, PRODUCT_EVENTS, trackProductEvent } from "@/lib/analytics/track";
-import { getActiveOrgContext } from "@/lib/org/getActiveOrgContext";
 import prisma from "@/lib/prisma";
+import { safeOrgContext } from "@/lib/safeOrgContext";
 import { isValidationError, validateBody } from "@/lib/validation/middleware";
 import { BrandingSchema } from "@/lib/validation/schemas";
 import { pool } from "@/server/db";
@@ -69,8 +69,8 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const orgCtx = await getActiveOrgContext({ required: true });
-    if (!orgCtx.ok) {
+    const orgCtx = await safeOrgContext();
+    if (!orgCtx.ok || !orgCtx.orgId) {
       return NextResponse.json({ error: "No organization" }, { status: 400 });
     }
 

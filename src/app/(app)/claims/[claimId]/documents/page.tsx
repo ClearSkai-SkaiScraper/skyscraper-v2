@@ -1,9 +1,10 @@
 "use client";
-import { Download, Eye, FileCheck, FileText, Loader2 } from "lucide-react";
+import { FileCheck, FileText, Loader2 } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 import ClientDocumentSharing from "@/components/claims/ClientDocumentSharing";
+import { DocActionsMenu } from "@/components/documents/DocActionsMenu";
 import { DocumentForwardButton } from "@/components/documents/DocumentForwardButton";
 import { Button } from "@/components/ui/button";
 import { DocumentUpload } from "@/components/uploads";
@@ -292,27 +293,43 @@ export default function ClaimDocumentsPage() {
                       </button>
                     </td>
                     <td className="whitespace-nowrap px-6 py-4 text-right text-sm">
-                      <div className="flex items-center justify-end gap-2">
-                        <button
-                          onClick={() => window.open(doc.publicUrl, "_blank")}
-                          className="rounded p-2 text-gray-600 transition-colors hover:bg-blue-50 hover:text-blue-600 dark:text-gray-400 dark:text-gray-600 dark:hover:bg-blue-900/20 dark:hover:text-blue-400"
-                          title="View document"
-                        >
-                          <Eye className="h-4 w-4" />
-                        </button>
-                        <a
-                          href={doc.publicUrl}
-                          download
-                          className="rounded p-2 text-gray-600 transition-colors hover:bg-purple-50 hover:text-purple-600 dark:text-gray-400 dark:text-gray-600 dark:hover:bg-purple-900/20 dark:hover:text-purple-400"
-                          title="Download document"
-                        >
-                          <Download className="h-4 w-4" />
-                        </a>
+                      <div className="flex items-center justify-end gap-1">
                         <DocumentForwardButton
                           documentId={doc.id}
                           claimId={claimId!}
                           filename={doc.title}
                           onForwarded={fetchDocuments}
+                        />
+                        <DocActionsMenu
+                          doc={{
+                            id: doc.id,
+                            title: doc.title,
+                            url: doc.publicUrl,
+                            mimeType: doc.mimeType,
+                          }}
+                          showAttach={false}
+                          onDelete={async (docId) => {
+                            try {
+                              await clientFetch(`/api/claims/${claimId}/documents/${docId}`, {
+                                method: "DELETE",
+                              });
+                              setDocuments((prev) => prev.filter((d) => d.id !== docId));
+                            } catch {
+                              // error handled by clientFetch
+                            }
+                          }}
+                          onArchive={async (docId) => {
+                            try {
+                              await clientFetch(`/api/claims/${claimId}/documents/${docId}`, {
+                                method: "PATCH",
+                                body: JSON.stringify({ archived: true }),
+                              });
+                              setDocuments((prev) => prev.filter((d) => d.id !== docId));
+                            } catch {
+                              // error handled by clientFetch
+                            }
+                          }}
+                          compact
                         />
                       </div>
                     </td>

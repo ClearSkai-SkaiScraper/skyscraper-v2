@@ -68,10 +68,119 @@ export const GET = withAuth(
         return NextResponse.json({ error: "Claim not found" }, { status: 404 });
       }
       logger.error("[Photos GET] Error:", error);
-      return NextResponse.json(
-        { error: "Failed to fetch photos" },
-        { status: 500 }
-      );
+      return NextResponse.json({ error: "Failed to fetch photos" }, { status: 500 });
+    }
+  }
+);
+
+/**
+ * POST /api/claims/[claimId]/photos
+ * Upload a photo for a claim — stores in Supabase, registers in file_assets
+ */
+export const POST = withAuth(
+  async (
+    req: NextRequest,
+    { userId, orgId },
+    routeParams: { params: Promise<{ claimId: string }> }
+  ) => {
+    try {
+      const { claimId } = await routeParams.params;
+
+      // Verify claim belongs to org
+      await getOrgClaimOrThrow(orgId, claimId);
+
+      const { createClient } = await import("@supabase/supabase-js");
+      const url = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL;
+      const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
+      if (!url || !key) {
+        return NextResponse.json({ error: "Storage not configured" }, { status: 500 });
+      }
+      const supabase = createClient(url, key, { auth: { persistSession: false } });
+
+      const formData = await req.formData();
+      const file = formData.get("file") as File;
+      const category = (formData.get("category") as string) || "damage";
+
+      if (!file) {
+        return NextResponse.json({ error: "No file provided" }, { status: 400 });
+      }
+
+      const maxSize = 10 * 1024 * 1024; // 10MB
+      const allowed = ["image/jpeg", "image/jpg", "image/png", "image/webp", "image/heic"];
+
+      if (!allowed.includes(file.type)) {
+        return NextResponse.json({ error: `Invalid file type: ${file.type}` }, { status: 400 });
+      }
+      if (file.size > maxSize) {
+        return NextResponse.json({ error: "File too large (max 10MB)" }, { status: 400 });
+      }
+
+      const bytes = await file.arrayBuffer();
+      const buffer = Buffer.from(bytes);
+
+      const ext = file.name.split(".").pop() || "jpg";
+      const timestamp = Date.now();
+      const uuid = crypto.randomUUID();
+      const filePath = `${orgId}/${claimId}/${timestamp}-${uuid}.${ext}`;
+      const bucket = "claim-photos";
+
+      // Ensure bucket exists
+      const { data: buckets } = await supabase.storage.listBuckets();
+      if (!buckets?.some((b: { name: string }) => b.name === bucket)) {
+        await supabase.storage.createBucket(bucket, { public: true, fileSizeLimit: maxSize });
+      }
+
+      const { error: uploadError } = await supabase.storage
+        .from(bucket)
+        .upload(filePath, buffer, { contentType: file.type, upsert: true });
+
+      if (uploadError) {
+        logger.error("[Photos POST] Supabase upload error:", uploadError);
+        return NextResponse.json({ error: "Upload failed" }, { status: 500 });
+      }
+
+      const {
+        data: { publicUrl },
+      } = supabase.storage.from(bucket).getPublicUrl(filePath);
+
+      // Register in file_assets
+      const asset = await prisma.file_assets.create({
+        data: {
+          id: crypto.randomUUID(),
+          orgId,
+          ownerId: userId,
+          claimId,
+          filename: file.name,
+          mimeType: file.type,
+          sizeBytes: file.size,
+          storageKey: filePath,
+          bucket,
+          publicUrl,
+          category,
+          source: "user",
+          updatedAt: new Date(),
+        },
+      });
+
+      return NextResponse.json({
+        success: true,
+        photo: {
+          id: asset.id,
+          filename: asset.filename,
+          url: publicUrl,
+          publicUrl,
+          category: asset.category,
+          mimeType: asset.mimeType,
+          sizeBytes: asset.sizeBytes,
+          createdAt: asset.createdAt,
+        },
+      });
+    } catch (error) {
+      if (error instanceof OrgScopeError) {
+        return NextResponse.json({ error: "Claim not found" }, { status: 404 });
+      }
+      logger.error("[Photos POST] Error:", error);
+      return NextResponse.json({ error: "Upload failed" }, { status: 500 });
     }
   }
 );

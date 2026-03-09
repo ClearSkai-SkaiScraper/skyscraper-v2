@@ -961,11 +961,11 @@ function DocumentsSection({
       const file = files[i];
       const formData = new FormData();
       formData.append("file", file);
-      formData.append("title", file.name);
-      formData.append("type", "DOCUMENT");
+      formData.append("type", "claimDocuments");
+      formData.append("claimId", claimId);
 
       try {
-        const res = await fetch(`/api/claims/${claimId}/documents`, {
+        const res = await fetch("/api/upload/supabase", {
           method: "POST",
           body: formData,
         });
@@ -1341,11 +1341,11 @@ function PhotosSection({ claimId }: { claimId: string }) {
 
       const formData = new FormData();
       formData.append("file", file);
-      formData.append("caption", file.name);
-      formData.append("category", "damage");
+      formData.append("type", "claimPhotos");
+      formData.append("claimId", claimId);
 
       try {
-        const res = await fetch(`/api/claims/${claimId}/photos`, {
+        const res = await fetch("/api/upload/supabase", {
           method: "POST",
           body: formData,
         });

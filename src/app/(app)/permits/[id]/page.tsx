@@ -7,7 +7,6 @@ import {
   CheckCircle2,
   Clock,
   DollarSign,
-  Download,
   ExternalLink,
   FileCheck,
   FileText,
@@ -15,13 +14,13 @@ import {
   Save,
   Trash2,
   Upload,
-  X,
 } from "lucide-react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 
+import { DocActionsMenu } from "@/components/documents/DocActionsMenu";
 import { PageContainer } from "@/components/layout/PageContainer";
 import { PageHero } from "@/components/layout/PageHero";
 import { Button } from "@/components/ui/button";
@@ -515,24 +514,30 @@ export default function PermitDetailPage() {
                     {doc.createdAt ? ` · ${new Date(doc.createdAt).toLocaleDateString()}` : ""}
                   </p>
                 </div>
-                <div className="flex items-center gap-1">
-                  <a
-                    href={doc.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="rounded-md p-1.5 text-slate-400 hover:bg-slate-100 hover:text-blue-600 dark:hover:bg-slate-700"
-                    title="Download"
-                  >
-                    <Download className="h-4 w-4" />
-                  </a>
-                  <button
-                    onClick={() => handleDeleteDocument(doc.id)}
-                    className="rounded-md p-1.5 text-slate-400 hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-900/20"
-                    title="Remove"
-                  >
-                    <X className="h-4 w-4" />
-                  </button>
-                </div>
+                <DocActionsMenu
+                  doc={{
+                    id: doc.id,
+                    title: doc.title,
+                    url: doc.url,
+                    mimeType: doc.mimeType,
+                  }}
+                  showArchive={false}
+                  showAttach={false}
+                  onDelete={async (docId) => {
+                    try {
+                      const res = await fetch(`/api/permits/${id}/documents?docId=${docId}`, {
+                        method: "DELETE",
+                      });
+                      if (res.ok) {
+                        setDocuments((prev) => prev.filter((d) => d.id !== docId));
+                        toast.success("Document removed");
+                      }
+                    } catch {
+                      toast.error("Failed to remove document");
+                    }
+                  }}
+                  compact
+                />
               </div>
             ))}
           </div>
