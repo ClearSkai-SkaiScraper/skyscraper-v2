@@ -1027,6 +1027,7 @@ model Org {
   measurement_orders        measurement_orders[]
   migration_jobs            migration_jobs[]
   support_tickets           support_tickets[]
+  canvass_pins              canvass_pins[]
 
   @@index([stripeCustomerId])
   @@index([subscriptionStatus])
@@ -3228,6 +3229,33 @@ model door_knocks {
   @@index([knockedBy])
   @@index([outcome])
   @@index([routeId])
+}
+
+/// Standalone door-knocking / canvassing pin tracker.
+/// Each pin = one house visited by a canvasser. No storm event required.
+model canvass_pins {
+  id            String    @id
+  orgId         String
+  userId        String    // who knocked
+  lat           Decimal   @db.Decimal(10, 7)
+  lng           Decimal   @db.Decimal(10, 7)
+  address       String?
+  city          String?
+  state         String?
+  zipCode       String?
+  ownerName     String?
+  outcome       String    @default("no_answer") // no_answer | interested | signed | come_back | not_interested | not_home
+  notes         String?
+  followUpDate  DateTime?
+  areaTag       String?   // user-defined area grouping (e.g. "Elm St Block", "Zone A")
+  knockedAt     DateTime  @default(now())
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  Org           Org       @relation(fields: [orgId], references: [id], onDelete: Cascade)
+
+  @@index([orgId, areaTag])
+  @@index([orgId, outcome])
+  @@index([userId])
 }
 
 model email_subscribers {

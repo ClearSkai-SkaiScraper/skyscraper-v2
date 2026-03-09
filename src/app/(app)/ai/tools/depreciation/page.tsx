@@ -41,7 +41,9 @@ export default async function DepreciationBuilderPage({ searchParams }: PageProp
           section="ai"
         />
         <div className="rounded-2xl border border-[color:var(--border)] bg-[var(--surface-glass)] p-12 text-center backdrop-blur-xl">
-          <p className="text-slate-500 dark:text-slate-400">Unable to load workspace. Please try again or contact support.</p>
+          <p className="text-slate-500 dark:text-slate-400">
+            Unable to load workspace. Please try again or contact support.
+          </p>
         </div>
       </PageContainer>
     );

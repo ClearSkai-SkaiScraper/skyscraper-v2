@@ -235,10 +235,13 @@ export async function getActiveOrgContext(
         });
 
         if (existingMembership?.Org) {
-          logger.info("[getActiveOrgContext] Found existing org via user_organizations — linking clerkOrgId", {
-            existingOrgId: existingMembership.Org.id,
-            clerkOrgId,
-          });
+          logger.info(
+            "[getActiveOrgContext] Found existing org via user_organizations — linking clerkOrgId",
+            {
+              existingOrgId: existingMembership.Org.id,
+              clerkOrgId,
+            }
+          );
 
           // Link the existing org with this Clerk org to prevent future mismatches
           try {
@@ -248,12 +251,18 @@ export async function getActiveOrgContext(
             });
           } catch (linkErr: any) {
             // May fail if another org already has this clerkOrgId — non-fatal
-            logger.warn("[getActiveOrgContext] Could not link clerkOrgId (non-fatal):", linkErr.message);
+            logger.warn(
+              "[getActiveOrgContext] Could not link clerkOrgId (non-fatal):",
+              linkErr.message
+            );
           }
 
           org = existingMembership.Org;
         } else {
-          logger.debug("[getActiveOrgContext] No existing org found — creating new org for clerkOrgId:", clerkOrgId);
+          logger.debug(
+            "[getActiveOrgContext] No existing org found — creating new org for clerkOrgId:",
+            clerkOrgId
+          );
 
           const orgName = "My Organization";
 

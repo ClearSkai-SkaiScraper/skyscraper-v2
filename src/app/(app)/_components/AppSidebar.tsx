@@ -72,6 +72,7 @@ const navSections: NavSection[] = [
       { label: "Task Manager", href: "/tasks" },
       { label: "Crew Manager", href: "/crews" },
       { label: "Map View", href: "/maps/map-view" },
+      { label: "Door Knocking", href: "/maps/door-knocking" },
       { label: "Permits", href: "/permits" },
     ],
   },
