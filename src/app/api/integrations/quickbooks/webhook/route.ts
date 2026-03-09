@@ -84,6 +84,9 @@ export async function POST(req: NextRequest) {
 
         logger.info(`[QB_WEBHOOK] ${operation} on ${name} #${id} for org ${conn.org_id}`);
 
+        // Handle entity-specific sync back to SkaiScrape
+        await handleEntityChange(conn.org_id, name, id, operation);
+
         // Record the webhook event for audit trail
         await prisma.quickbooks_connections.update({
           where: { id: conn.id },
@@ -101,15 +104,8 @@ export async function POST(req: NextRequest) {
           },
         });
 
-        // Entity-specific handling can be added here:
-        // switch (name) {
-        //   case "Customer":
-        //   case "Invoice":
-        //   case "Payment":
-        //   case "Purchase":
-        //     // Sync back to SkaiScrape
-        //     break;
-        // }
+        // Entity-specific handling:
+        // Sync operations handled above via handleEntityChange()
       }
     }
 
@@ -119,5 +115,71 @@ export async function POST(req: NextRequest) {
     logger.error("[QB_WEBHOOK_ERROR]", error);
     // Still return 200 to prevent QB from retrying
     return NextResponse.json({ ok: true });
+  }
+}
+
+/**
+ * Handle inbound entity change notifications from QuickBooks.
+ * When QB updates a Customer/Invoice/Payment, we sync relevant data back.
+ */
+async function handleEntityChange(
+  orgId: string,
+  entityName: string,
+  entityId: string,
+  operation: string
+) {
+  try {
+    switch (entityName) {
+      case "Invoice": {
+        // Find local job_financials record matching this QB invoice
+        const financial = await prisma.job_financials.findFirst({
+          where: { qb_invoice_id: entityId },
+        });
+
+        if (financial && operation === "Update") {
+          // Mark that QB has updated this invoice — flag for review
+          await prisma.job_financials.update({
+            where: { job_id: financial.job_id },
+            data: {
+              qb_synced_at: new Date(),
+            },
+          });
+          logger.info(
+            `[QB_WEBHOOK] Invoice ${entityId} updated, synced timestamp for job ${financial.job_id}`
+          );
+        }
+
+        if (financial && operation === "Delete") {
+          // QB invoice was deleted — clear the QB reference
+          await prisma.job_financials.update({
+            where: { job_id: financial.job_id },
+            data: {
+              qb_invoice_id: null,
+              qb_synced_at: null,
+            },
+          });
+          logger.info(`[QB_WEBHOOK] Invoice ${entityId} deleted in QB, cleared local reference`);
+        }
+        break;
+      }
+
+      case "Payment": {
+        // Payment received in QB — log it (could update job payment status)
+        logger.info(`[QB_WEBHOOK] Payment ${operation} #${entityId} for org ${orgId}`);
+        break;
+      }
+
+      case "Customer": {
+        // Customer updated/deleted in QB — informational only
+        logger.info(`[QB_WEBHOOK] Customer ${operation} #${entityId} for org ${orgId}`);
+        break;
+      }
+
+      default:
+        logger.debug(`[QB_WEBHOOK] Unhandled entity type: ${entityName}`);
+    }
+  } catch (err) {
+    // Don't throw — we always need to return 200 to QB
+    logger.error(`[QB_WEBHOOK] Entity handler error for ${entityName} #${entityId}:`, err);
   }
 }

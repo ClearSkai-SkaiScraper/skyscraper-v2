@@ -1,10 +1,11 @@
 /**
  * GET  /api/measurements         — list measurement orders
- * POST /api/measurements         — place a new measurement order
+ * POST /api/measurements         — place a new measurement order (via GAF/EagleView API)
  */
 
-import { auth } from "@clerk/nextjs/server";
+import { getGAFClient } from "@/lib/integrations/gaf";
 import { logger } from "@/lib/logger";
+import { auth } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
 
 import prisma from "@/lib/prisma";
@@ -50,10 +51,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ ok: true, orders });
   } catch (error) {
     logger.error("[MEASUREMENTS_LIST_ERROR]", error);
-    return NextResponse.json(
-      { ok: false, message: "Failed to load" },
-      { status: 500 }
-    );
+    return NextResponse.json({ ok: false, message: "Failed to load" }, { status: 500 });
   }
 }
 
@@ -97,6 +95,10 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    const provider = body.provider ?? "gaf";
+    const orderType = body.orderType ?? "roof";
+
+    // Create the local DB record first
     const order = await prisma.measurement_orders.create({
       data: {
         org_id: user.orgId,
@@ -106,19 +108,82 @@ export async function POST(req: NextRequest) {
         city: body.city ?? null,
         state: body.state ?? null,
         zip: body.zip ?? null,
-        provider: body.provider ?? "gaf",
-        order_type: body.orderType ?? "roof",
+        provider,
+        order_type: orderType,
         status: "pending",
         ordered_by: userId,
       },
     });
 
+    // If provider is GAF, call the GAF API to actually place the order
+    if (provider === "gaf" && process.env.GAF_API_KEY) {
+      try {
+        const gaf = getGAFClient(user.orgId);
+        const gafOrder = await gaf.orderMeasurement({
+          address: {
+            street: body.propertyAddress,
+            city: body.city ?? "",
+            state: body.state ?? "",
+            zip: body.zip ?? "",
+          },
+          orderType: orderType as "roof" | "siding" | "gutters" | "full",
+          callbackUrl: `${process.env.NEXT_PUBLIC_APP_URL || "https://skaiscrape.com"}/api/measurements/webhook`,
+          customerRef: order.id,
+          urgency: body.urgency ?? "standard",
+        });
+
+        // Update local record with GAF order info
+        await prisma.measurement_orders.update({
+          where: { id: order.id },
+          data: {
+            external_id: gafOrder.orderId,
+            status: gafOrder.status,
+            metadata: {
+              gafOrderId: gafOrder.orderId,
+              estimatedCompletion: gafOrder.estimatedCompletionTime,
+              placedAt: new Date().toISOString(),
+            },
+          },
+        });
+
+        logger.info("[MEASUREMENTS_CREATE] GAF order placed", {
+          orderId: order.id,
+          gafOrderId: gafOrder.orderId,
+        });
+      } catch (gafErr) {
+        // Log but don't fail — local record exists, can retry
+        logger.error("[MEASUREMENTS_CREATE] GAF API call failed:", gafErr);
+        await prisma.measurement_orders.update({
+          where: { id: order.id },
+          data: {
+            metadata: {
+              gafError: gafErr instanceof Error ? gafErr.message : "GAF API error",
+              errorAt: new Date().toISOString(),
+            },
+          },
+        });
+      }
+    }
+
+    // If provider is EagleView, log for manual follow-up (API not yet available)
+    if (provider === "eagleview") {
+      logger.info("[MEASUREMENTS_CREATE] EagleView order created (manual follow-up required)", {
+        orderId: order.id,
+      });
+      await prisma.measurement_orders.update({
+        where: { id: order.id },
+        data: {
+          metadata: {
+            note: "EagleView orders require manual placement at connect.eagleview.com",
+            createdAt: new Date().toISOString(),
+          },
+        },
+      });
+    }
+
     return NextResponse.json({ ok: true, order }, { status: 201 });
   } catch (error) {
     logger.error("[MEASUREMENTS_CREATE_ERROR]", error);
-    return NextResponse.json(
-      { ok: false, message: "Failed to create order" },
-      { status: 500 }
-    );
+    return NextResponse.json({ ok: false, message: "Failed to create order" }, { status: 500 });
   }
 }

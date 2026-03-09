@@ -1,8 +1,8 @@
 "use client";
 
-import { Bell, Globe, Lock, Settings, Shield, User } from "lucide-react";
+import { Bell, Check, Globe, Lock, Settings, Shield, User } from "lucide-react";
 import Link from "next/link";
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 import PortalPageHero from "@/components/portal/portal-page-hero";
 import { Button } from "@/components/ui/button";
@@ -14,6 +14,64 @@ export default function PortalSettingsPage() {
   const [emailNotifications, setEmailNotifications] = useState(true);
   const [pushNotifications, setPushNotifications] = useState(true);
   const [marketingEmails, setMarketingEmails] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [saved, setSaved] = useState(false);
+
+  // Load preferences from API
+  const loadPreferences = useCallback(async () => {
+    try {
+      const res = await fetch("/api/portal/settings");
+      const data = await res.json();
+      if (data.ok && data.preferences) {
+        setEmailNotifications(data.preferences.emailNotifications ?? true);
+        setPushNotifications(data.preferences.pushNotifications ?? true);
+        setMarketingEmails(data.preferences.marketingEmails ?? false);
+      }
+    } catch {
+      // Use defaults on error
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    loadPreferences();
+  }, [loadPreferences]);
+
+  // Save preferences to API
+  const savePreferences = useCallback(async () => {
+    setSaving(true);
+    setSaved(false);
+    try {
+      const res = await fetch("/api/portal/settings", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          emailNotifications,
+          pushNotifications,
+          marketingEmails,
+        }),
+      });
+      const data = await res.json();
+      if (data.ok) {
+        setSaved(true);
+        setTimeout(() => setSaved(false), 2000);
+      }
+    } catch {
+      // Silently fail — user can retry
+    } finally {
+      setSaving(false);
+    }
+  }, [emailNotifications, pushNotifications, marketingEmails]);
+
+  // Auto-save on change after initial load
+  useEffect(() => {
+    if (!loading) {
+      const timer = setTimeout(savePreferences, 500);
+      return () => clearTimeout(timer);
+    }
+  }, [emailNotifications, pushNotifications, marketingEmails, loading, savePreferences]);
 
   return (
     <div className="space-y-8">
@@ -27,10 +85,12 @@ export default function PortalSettingsPage() {
       />
 
       <div className="mx-auto max-w-3xl space-y-6">
-        <div className="rounded-lg border border-amber-300 bg-amber-50 p-3 text-center text-sm text-amber-800 dark:border-amber-700 dark:bg-amber-900/20 dark:text-amber-300">
-          🚧 <strong>Preview Mode</strong> — Notification preferences are stored locally and will
-          reset on page reload.
-        </div>
+        {saved && (
+          <div className="rounded-lg border border-green-300 bg-green-50 p-3 text-center text-sm text-green-800 dark:border-green-700 dark:bg-green-900/20 dark:text-green-300">
+            <Check className="mr-1 inline h-4 w-4" />
+            <strong>Saved</strong> — Your preferences have been updated.
+          </div>
+        )}
         {/* Profile Settings */}
         <Card>
           <CardHeader>

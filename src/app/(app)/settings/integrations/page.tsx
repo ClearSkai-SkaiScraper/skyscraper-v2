@@ -126,6 +126,9 @@ export default function IntegrationsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [connecting, setConnecting] = useState(false);
+  const [syncing, setSyncing] = useState(false);
+  const [syncResult, setSyncResult] = useState<string | null>(null);
+  const [disconnecting, setDisconnecting] = useState(false);
 
   const fetchStatus = useCallback(async () => {
     setLoading(true);
@@ -160,6 +163,48 @@ export default function IntegrationsPage() {
       logger.error("[INTEGRATIONS] connect error:", err);
     } finally {
       setConnecting(false);
+    }
+  }
+
+  async function handleSync() {
+    setSyncing(true);
+    setSyncResult(null);
+    try {
+      const res = await fetch("/api/integrations/quickbooks/sync", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ bulk: true }),
+      });
+      const data = await res.json();
+      if (data.ok && data.summary) {
+        const { synced, skipped, errors } = data.summary;
+        setSyncResult(`Synced: ${synced}, Skipped: ${skipped}, Errors: ${errors}`);
+      } else {
+        setSyncResult(data.error || "Sync failed");
+      }
+      // Refresh status
+      fetchStatus();
+    } catch (err) {
+      setSyncResult("Sync request failed");
+      logger.error("[INTEGRATIONS] sync error:", err);
+    } finally {
+      setSyncing(false);
+    }
+  }
+
+  async function handleDisconnect() {
+    if (!confirm("Disconnect QuickBooks? This will stop all syncing.")) return;
+    setDisconnecting(true);
+    try {
+      const res = await fetch("/api/integrations/quickbooks/status", { method: "DELETE" });
+      const data = await res.json();
+      if (data.ok) {
+        fetchStatus();
+      }
+    } catch (err) {
+      logger.error("[INTEGRATIONS] disconnect error:", err);
+    } finally {
+      setDisconnecting(false);
     }
   }
 
@@ -290,6 +335,38 @@ export default function IntegrationsPage() {
                     )}
                     Connect QuickBooks
                   </Button>
+                )}
+
+                {quickbooks?.connected && (
+                  <div className="space-y-2">
+                    <Button size="sm" className="w-full" onClick={handleSync} disabled={syncing}>
+                      {syncing ? (
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      ) : (
+                        <Upload className="mr-2 h-4 w-4" />
+                      )}
+                      {syncing ? "Syncing…" : "Sync All Jobs to QuickBooks"}
+                    </Button>
+
+                    {syncResult && (
+                      <p className="text-center text-xs text-slate-500">{syncResult}</p>
+                    )}
+
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="w-full text-red-600 hover:bg-red-50 hover:text-red-700"
+                      onClick={handleDisconnect}
+                      disabled={disconnecting}
+                    >
+                      {disconnecting ? (
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      ) : (
+                        <XCircle className="mr-2 h-4 w-4" />
+                      )}
+                      Disconnect QuickBooks
+                    </Button>
+                  </div>
                 )}
               </CardContent>
             </Card>
