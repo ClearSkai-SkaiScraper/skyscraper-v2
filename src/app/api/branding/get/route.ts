@@ -2,22 +2,24 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
-import { NextRequest, NextResponse } from "next/server";
 import { logger } from "@/lib/logger";
+import { NextRequest, NextResponse } from "next/server";
 
-import { getActiveOrgContext } from "@/lib/org/getActiveOrgContext";
 import prisma from "@/lib/prisma";
+import { safeOrgContext } from "@/lib/safeOrgContext";
 
 /**
  * GET /api/branding/get
  *
- * Fetches organization branding for authenticated user's org
- * Auto-creates org if user doesn't have one yet
+ * Fetches organization branding for authenticated user's org.
+ * Uses safeOrgContext (DB-first) to ensure consistent orgId resolution
+ * — this was previously using getActiveOrgContext which caused branding
+ * to "disappear" due to orgId mismatch between save and read.
  */
 export async function GET(req: NextRequest) {
   try {
-    const orgCtx = await getActiveOrgContext({ required: true });
-    if (!orgCtx.ok) {
+    const orgCtx = await safeOrgContext();
+    if (!orgCtx.ok || !orgCtx.orgId) {
       return NextResponse.json({
         companyName: null,
         license: null,
@@ -31,7 +33,13 @@ export async function GET(req: NextRequest) {
       });
     }
 
-    const orgIdCandidates = [orgCtx.orgId, orgCtx.clerkOrgId].filter(
+    // Look up the org to get clerkOrgId for backward-compatible dual-ID lookup
+    const org = await prisma.org.findUnique({
+      where: { id: orgCtx.orgId },
+      select: { clerkOrgId: true },
+    });
+
+    const orgIdCandidates = [orgCtx.orgId, org?.clerkOrgId].filter(
       (v): v is string => typeof v === "string" && v.length > 0
     );
 

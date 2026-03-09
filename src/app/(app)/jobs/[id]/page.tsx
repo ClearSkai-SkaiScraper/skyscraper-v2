@@ -2,6 +2,7 @@ import { auth } from "@clerk/nextjs/server";
 import { notFound, redirect } from "next/navigation";
 
 import prisma from "@/lib/prisma";
+import { requireSafeOrg } from "@/lib/safeOrgContext";
 
 type Props = {
   params: Promise<{ id: string }>;

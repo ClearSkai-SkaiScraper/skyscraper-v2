@@ -326,14 +326,21 @@ export default function DoorKnockMapClient() {
           ${pin.areaTag ? `<div style="font-size: 11px; color: #666; margin-top: 2px;">📍 ${pin.areaTag}</div>` : ""}
         </div>
       `;
-      const popup = new mapboxRef.current.Popup({ offset: 18, maxWidth: "250px" }).setHTML(
-        popupHtml
-      );
-      marker.setPopup(popup);
+      // Create popup but DON'T attach to marker (we handle click ourselves)
+      const popup = new mapboxRef.current.Popup({
+        offset: 18,
+        maxWidth: "250px",
+        closeOnClick: true,
+      }).setHTML(popupHtml);
 
-      // Click to edit
+      // Click: show popup briefly + open edit form
       el.addEventListener("click", (e) => {
         e.stopPropagation();
+
+        // Show popup at marker location
+        popup.setLngLat([pin.lng, pin.lat]).addTo(mapRef.current!);
+
+        // Open edit form
         setEditingPin(pin);
         setFormData({
           lat: pin.lat,

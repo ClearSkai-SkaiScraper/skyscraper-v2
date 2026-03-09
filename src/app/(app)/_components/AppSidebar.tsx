@@ -117,6 +117,7 @@ const navSections: NavSection[] = [
       { label: "Team & Company Seats", href: "/teams" },
       { label: "Company Hierarchy", href: "/teams/hierarchy" },
       { label: "Notifications", href: "/notifications" },
+      { label: "Archive", href: "/archive" },
     ],
   },
   {

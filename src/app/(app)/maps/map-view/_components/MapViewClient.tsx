@@ -156,7 +156,7 @@ export default function MapViewClient({ markers, initialCenter }: MapViewClientP
         });
 
         mapRef.current.addControl(new mapboxgl.NavigationControl(), "top-right");
-        mapRef.current.addControl(new mapboxgl.FullscreenControl(), "top-left");
+        mapRef.current.addControl(new mapboxgl.FullscreenControl(), "bottom-right");
 
         mapRef.current.on("load", () => {
           if (!cancelled) setMapReady(true);
@@ -270,10 +270,13 @@ export default function MapViewClient({ markers, initialCenter }: MapViewClientP
       );
       marker.setPopup(popup);
 
-      // Click to select
-      el.addEventListener("click", (ev) => {
-        ev.stopPropagation();
+      // Click to select — let Mapbox handle popup natively, just update state
+      el.addEventListener("click", () => {
         setSelectedMarker(pin);
+        // Ensure popup opens (Mapbox toggles it, but we want it always open on click)
+        if (!marker.getPopup().isOpen()) {
+          marker.togglePopup();
+        }
       });
 
       markersRef.current.push(marker);
@@ -460,6 +463,139 @@ export default function MapViewClient({ markers, initialCenter }: MapViewClientP
             </div>
           </div>
         )}
+
+        {/* ─── Selected Marker Detail Card ─── */}
+        {selectedMarker &&
+          (() => {
+            const cfg = TYPE_CONFIG[selectedMarker.type] || TYPE_CONFIG.lead;
+            const isJob = selectedMarker.type !== "vendor";
+            const editHref =
+              selectedMarker.type === "claim"
+                ? `/claims/${selectedMarker.id}`
+                : selectedMarker.type === "lead"
+                  ? `/leads/${selectedMarker.id}`
+                  : selectedMarker.type === "retail"
+                    ? `/retail/${selectedMarker.id}`
+                    : null;
+            return (
+              <div className="absolute right-4 top-4 z-20 w-72 duration-200 animate-in slide-in-from-right-4">
+                <Card className="border-2 shadow-xl" style={{ borderColor: cfg.color + "60" }}>
+                  <CardHeader className="pb-2">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <span
+                          className="flex h-8 w-8 items-center justify-center rounded-full text-base"
+                          style={{ background: cfg.color + "20" }}
+                        >
+                          {cfg.emoji}
+                        </span>
+                        <div>
+                          <CardTitle className="text-sm leading-tight">
+                            {selectedMarker.label}
+                          </CardTitle>
+                          <p className="text-[10px] uppercase tracking-wider text-muted-foreground">
+                            {cfg.label}
+                          </p>
+                        </div>
+                      </div>
+                      <button
+                        onClick={() => setSelectedMarker(null)}
+                        className="rounded-full p-1 hover:bg-muted"
+                      >
+                        <X className="h-4 w-4 text-muted-foreground" />
+                      </button>
+                    </div>
+                  </CardHeader>
+                  <CardContent className="space-y-2 text-xs">
+                    {selectedMarker.status && (
+                      <div className="flex items-center gap-2">
+                        <span className="text-muted-foreground">Status</span>
+                        <Badge
+                          variant="outline"
+                          className="ml-auto text-[10px]"
+                          style={{
+                            borderColor: STATUS_COLORS[selectedMarker.status] || cfg.color,
+                            color: STATUS_COLORS[selectedMarker.status] || cfg.color,
+                          }}
+                        >
+                          {selectedMarker.status.replace(/_/g, " ")}
+                        </Badge>
+                      </div>
+                    )}
+                    {selectedMarker.contactName && (
+                      <div className="flex items-center justify-between">
+                        <span className="text-muted-foreground">Contact</span>
+                        <span className="font-medium">{selectedMarker.contactName}</span>
+                      </div>
+                    )}
+                    {selectedMarker.claimNumber && (
+                      <div className="flex items-center justify-between">
+                        <span className="text-muted-foreground">Claim #</span>
+                        <span className="font-mono font-medium">{selectedMarker.claimNumber}</span>
+                      </div>
+                    )}
+                    {selectedMarker.address && (
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="shrink-0 text-muted-foreground">Address</span>
+                        <span className="truncate text-right font-medium">
+                          {selectedMarker.address}
+                        </span>
+                      </div>
+                    )}
+                    {selectedMarker.value != null && (
+                      <div className="flex items-center justify-between">
+                        <span className="text-muted-foreground">Value</span>
+                        <span className="font-semibold text-emerald-600">
+                          ${Number(selectedMarker.value).toLocaleString()}
+                        </span>
+                      </div>
+                    )}
+                    {selectedMarker.insurer && (
+                      <div className="flex items-center justify-between">
+                        <span className="text-muted-foreground">Carrier</span>
+                        <span className="font-medium">{selectedMarker.insurer}</span>
+                      </div>
+                    )}
+                    {selectedMarker.jobCategory && (
+                      <div className="flex items-center justify-between">
+                        <span className="text-muted-foreground">Category</span>
+                        <span className="font-medium">{selectedMarker.jobCategory}</span>
+                      </div>
+                    )}
+
+                    {/* Action Buttons */}
+                    <div className="flex gap-2 border-t pt-2">
+                      {isJob && editHref ? (
+                        <>
+                          <Button asChild size="sm" className="flex-1 gap-1.5 text-xs">
+                            <Link href={editHref}>
+                              <Pencil className="h-3 w-3" />
+                              Edit
+                            </Link>
+                          </Button>
+                          <Button
+                            asChild
+                            variant="outline"
+                            size="sm"
+                            className="flex-1 gap-1.5 text-xs"
+                          >
+                            <Link href={editHref} target="_blank">
+                              <ExternalLink className="h-3 w-3" />
+                              Open
+                            </Link>
+                          </Button>
+                        </>
+                      ) : (
+                        <p className="w-full text-center text-[10px] text-muted-foreground">
+                          Vendor location — view only
+                        </p>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            );
+          })()}
       </div>
     </div>
   );
