@@ -6,13 +6,12 @@
 
 import { Calculator, FileText, Info } from "lucide-react";
 import { Metadata } from "next";
-import { redirect } from "next/navigation";
 
 import { PageContainer } from "@/components/layout/PageContainer";
 import { PageHero } from "@/components/layout/PageHero";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { getActiveOrgContext } from "@/lib/org/getActiveOrgContext";
 import prisma from "@/lib/prisma";
+import { safeOrgContext } from "@/lib/safeOrgContext";
 
 import { DepreciationBuilderClient } from "./_components/DepreciationBuilderClient";
 
@@ -31,9 +30,21 @@ interface PageProps {
 export default async function DepreciationBuilderPage({ searchParams }: PageProps) {
   const claimId = searchParams.claimId;
 
-  const ctx = await getActiveOrgContext({ required: true });
-  if (!ctx.ok) {
-    redirect("/sign-in");
+  const ctx = await safeOrgContext();
+  if (!ctx.ok || !ctx.orgId) {
+    return (
+      <PageContainer maxWidth="7xl">
+        <PageHero
+          title="Depreciation Builder"
+          subtitle="Final payout system for depreciation recovery, invoices, and homeowner acceptance forms"
+          icon={<Calculator className="h-5 w-5" />}
+          section="ai"
+        />
+        <div className="rounded-2xl border border-[color:var(--border)] bg-[var(--surface-glass)] p-12 text-center backdrop-blur-xl">
+          <p className="text-slate-500 dark:text-slate-400">Unable to load workspace. Please try again or contact support.</p>
+        </div>
+      </PageContainer>
+    );
   }
 
   // Fetch all claims for selection

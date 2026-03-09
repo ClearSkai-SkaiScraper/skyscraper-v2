@@ -35,8 +35,8 @@ import { PageHero } from "@/components/layout/PageHero";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { logger } from "@/lib/logger";
-import { getActiveOrgContext } from "@/lib/org/getActiveOrgContext";
 import prisma from "@/lib/prisma";
+import { safeOrgContext } from "@/lib/safeOrgContext";
 
 import { JobsCategoryBoard } from "./JobsCategoryBoard";
 
@@ -188,8 +188,9 @@ export default async function PipelinePage() {
   let stats: any[] = [];
 
   try {
-    // Use required: true to auto-create org if missing
-    const orgResult = await getActiveOrgContext({ required: true });
+    // Use safeOrgContext — matches the resolver used by leads/claims API routes
+    // This ensures we query the same org where data was created
+    const orgResult = await safeOrgContext();
     orgId = orgResult.ok ? orgResult.orgId : null;
 
     if (orgId) {

@@ -67,6 +67,10 @@ export default function FinancialOverviewPage() {
   const router = useRouter();
   const [data, setData] = useState<FinancialData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState<"overview" | "revenue" | "commissions" | "ar">(
+    "overview"
+  );
+  const [refreshing, setRefreshing] = useState(false);
 
   useEffect(() => {
     if (isLoaded && !isSignedIn) router.push("/sign-in");
@@ -188,11 +192,6 @@ export default function FinancialOverviewPage() {
     (data.commissions.pending?.total ?? 0) +
     (data.commissions.approved?.total ?? 0) +
     (data.commissions.paid?.total ?? 0);
-
-  const [activeTab, setActiveTab] = useState<"overview" | "revenue" | "commissions" | "ar">(
-    "overview"
-  );
-  const [refreshing, setRefreshing] = useState(false);
 
   const handleRefresh = async () => {
     setRefreshing(true);

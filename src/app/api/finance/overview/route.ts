@@ -189,6 +189,8 @@ export async function GET() {
       },
     });
   } catch (err) {
+    // Re-throw Next.js internal redirect errors
+    if ((err as any)?.digest?.startsWith?.("NEXT_REDIRECT")) throw err;
     logger.error("[API] finance/overview error:", err);
     return NextResponse.json({ error: "Internal error" }, { status: 500 });
   }

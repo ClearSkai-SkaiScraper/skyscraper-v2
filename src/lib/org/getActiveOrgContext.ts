@@ -226,21 +226,49 @@ export async function getActiveOrgContext(
       });
 
       if (!org) {
-        logger.debug("[getActiveOrgContext] Creating new org for clerkOrgId:", clerkOrgId);
-
-        const orgName = "My Organization";
-
-        org = await prisma.org.upsert({
-          where: { clerkOrgId },
-          update: {},
-          create: {
-            id: crypto.randomUUID(),
-            clerkOrgId,
-            name: orgName,
-            updatedAt: new Date(),
-          },
+        // BEFORE creating a new org, check if the user already has one via user_organizations.
+        // This prevents "org splitting" where data lives under one orgId but Clerk resolves to another.
+        const existingMembership = await prisma.user_organizations.findFirst({
+          where: { userId },
+          include: { Org: true },
+          orderBy: { createdAt: "asc" },
         });
-        logger.debug("[getActiveOrgContext] Upserted org:", org.id);
+
+        if (existingMembership?.Org) {
+          logger.info("[getActiveOrgContext] Found existing org via user_organizations — linking clerkOrgId", {
+            existingOrgId: existingMembership.Org.id,
+            clerkOrgId,
+          });
+
+          // Link the existing org with this Clerk org to prevent future mismatches
+          try {
+            await prisma.org.update({
+              where: { id: existingMembership.Org.id },
+              data: { clerkOrgId },
+            });
+          } catch (linkErr: any) {
+            // May fail if another org already has this clerkOrgId — non-fatal
+            logger.warn("[getActiveOrgContext] Could not link clerkOrgId (non-fatal):", linkErr.message);
+          }
+
+          org = existingMembership.Org;
+        } else {
+          logger.debug("[getActiveOrgContext] No existing org found — creating new org for clerkOrgId:", clerkOrgId);
+
+          const orgName = "My Organization";
+
+          org = await prisma.org.upsert({
+            where: { clerkOrgId },
+            update: {},
+            create: {
+              id: crypto.randomUUID(),
+              clerkOrgId,
+              name: orgName,
+              updatedAt: new Date(),
+            },
+          });
+          logger.debug("[getActiveOrgContext] Upserted org:", org.id);
+        }
       }
 
       // Ensure user_organizations membership exists
