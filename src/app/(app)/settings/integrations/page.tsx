@@ -6,7 +6,8 @@
  * Enterprise credibility surface: QuickBooks, Migrations, System Health
  */
 
-import { AlertTriangle, CheckCircle2, Link2, Loader2, RefreshCw, XCircle } from "lucide-react";
+// eslint-disable-next-line no-unused-vars
+import { AlertTriangle, CheckCircle2, Link2, Loader2, RefreshCw, Upload, XCircle } from "lucide-react";
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
