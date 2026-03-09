@@ -97,6 +97,7 @@ export default function MapViewClient({ markers, initialCenter }: MapViewClientP
   const mapRef = useRef<any>(null);
   const mapboxRef = useRef<any>(null);
   const markersRef = useRef<any[]>([]);
+  const activePopupRef = useRef<any>(null);
   const [mapReady, setMapReady] = useState(false);
 
   /* ───── filtered markers ───── */
@@ -188,7 +189,11 @@ export default function MapViewClient({ markers, initialCenter }: MapViewClientP
   useEffect(() => {
     if (!mapRef.current || !mapReady || !mapboxRef.current) return;
 
-    // Clear existing
+    // Clear existing markers and popups
+    if (activePopupRef.current) {
+      activePopupRef.current.remove();
+      activePopupRef.current = null;
+    }
     markersRef.current.forEach((m) => m.remove());
     markersRef.current = [];
 
@@ -276,18 +281,25 @@ export default function MapViewClient({ markers, initialCenter }: MapViewClientP
         </div>
       `;
 
-      const popup = new mapboxRef.current.Popup({ offset: 20, maxWidth: "300px" }).setHTML(
-        popupHtml
-      );
-      marker.setPopup(popup);
+      // Manual popup — do NOT use marker.setPopup() (it adds a conflicting
+      // click handler that double-toggles the popup and auto-pans to top-left)
+      const popup = new mapboxRef.current.Popup({
+        offset: 20,
+        maxWidth: "300px",
+        closeOnClick: true,
+        focusAfterOpen: false,
+      }).setHTML(popupHtml);
 
-      // Click to select — let Mapbox handle popup natively, just update state
-      el.addEventListener("click", () => {
-        setSelectedMarker(pin);
-        // Ensure popup opens (Mapbox toggles it, but we want it always open on click)
-        if (!marker.getPopup().isOpen()) {
-          marker.togglePopup();
+      el.addEventListener("click", (e) => {
+        e.stopPropagation();
+        // Close any previously open popup
+        if (activePopupRef.current) {
+          activePopupRef.current.remove();
         }
+        // Open this popup at marker position
+        popup.setLngLat([pin.lng, pin.lat]).addTo(mapRef.current!);
+        activePopupRef.current = popup;
+        setSelectedMarker(pin);
       });
 
       markersRef.current.push(marker);

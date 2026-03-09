@@ -124,6 +124,7 @@ export default function DoorKnockMapClient() {
   const mapRef = useRef<any>(null);
   const mapboxRef = useRef<any>(null);
   const markersRef = useRef<any[]>([]);
+  const activePopupRef = useRef<any>(null);
   const [mapReady, setMapReady] = useState(false);
   const [clickMode, setClickMode] = useState(false);
   const [geocoding, setGeocoding] = useState(false);
@@ -279,7 +280,11 @@ export default function DoorKnockMapClient() {
   useEffect(() => {
     if (!mapRef.current || !mapReady || !mapboxRef.current) return;
 
-    // Clear existing
+    // Clear existing markers and popups
+    if (activePopupRef.current) {
+      activePopupRef.current.remove();
+      activePopupRef.current = null;
+    }
     markersRef.current.forEach((m) => m.remove());
     markersRef.current = [];
 
@@ -326,19 +331,25 @@ export default function DoorKnockMapClient() {
           ${pin.areaTag ? `<div style="font-size: 11px; color: #666; margin-top: 2px;">📍 ${pin.areaTag}</div>` : ""}
         </div>
       `;
-      // Create popup but DON'T attach to marker (we handle click ourselves)
+      // Manual popup — do NOT use marker.setPopup() (causes double-toggle + auto-pan)
       const popup = new mapboxRef.current.Popup({
         offset: 18,
         maxWidth: "250px",
         closeOnClick: true,
+        focusAfterOpen: false,
       }).setHTML(popupHtml);
 
-      // Click: show popup briefly + open edit form
+      // Click: show popup + open edit form
       el.addEventListener("click", (e) => {
         e.stopPropagation();
 
+        // Close any previously open popup
+        if (activePopupRef.current) {
+          activePopupRef.current.remove();
+        }
         // Show popup at marker location
         popup.setLngLat([pin.lng, pin.lat]).addTo(mapRef.current!);
+        activePopupRef.current = popup;
 
         // Open edit form
         setEditingPin(pin);
