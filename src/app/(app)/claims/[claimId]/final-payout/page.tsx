@@ -15,7 +15,7 @@ export default async function FinalPayoutPage({ params }: FinalPayoutPageProps) 
   const { claimId } = await params;
 
   const ctx = await safeOrgContext();
-  if (!ctx.ok) {
+  if (!ctx.ok || !ctx.orgId) {
     redirect("/sign-in");
   }
 
