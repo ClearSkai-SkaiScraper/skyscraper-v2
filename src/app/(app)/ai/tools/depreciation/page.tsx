@@ -327,7 +327,7 @@ export default async function DepreciationBuilderPage({ searchParams }: PageProp
       claim={selectedClaim}
       claims={claimsForSelector}
       orgId={ctx.orgId}
-      userId={ctx.userId}
+      userId={ctx.userId ?? "unknown"}
     />
   );
 }
