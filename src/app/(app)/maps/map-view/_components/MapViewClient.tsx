@@ -2,10 +2,21 @@
 
 import "mapbox-gl/dist/mapbox-gl.css";
 
-import { ChevronRight, DoorOpen, Layers, MapPin, Search, X } from "lucide-react";
+import {
+  ChevronRight,
+  DoorOpen,
+  ExternalLink,
+  Layers,
+  MapPin,
+  Pencil,
+  Search,
+  X,
+} from "lucide-react";
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { logger } from "@/lib/logger";
 
