@@ -23,7 +23,7 @@ export default async function HierarchyPage() {
     redirect("/sign-in?redirect_url=/teams/hierarchy");
   }
 
-  const userId = orgCtx.userId;
+  const userId = orgCtx.userId!;
 
   /* ── Fetch company members ───────────────────────────────────── */
   let members: any[] = [];
