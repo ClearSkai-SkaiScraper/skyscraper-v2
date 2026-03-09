@@ -17,6 +17,7 @@ import {
   User,
   X,
 } from "lucide-react";
+import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 import { Button } from "@/components/ui/button";
@@ -125,6 +126,53 @@ export default function DoorKnockMapClient() {
   const markersRef = useRef<any[]>([]);
   const [mapReady, setMapReady] = useState(false);
   const [clickMode, setClickMode] = useState(false);
+  const [geocoding, setGeocoding] = useState(false);
+
+  /* ───── reverse geocode helper ───── */
+  const reverseGeocode = useCallback(async (lat: number, lng: number) => {
+    const token =
+      process.env.NEXT_PUBLIC_MAPBOX_TOKEN ||
+      process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN ||
+      process.env.NEXT_PUBLIC_MAPBOXGL_ACCESS_TOKEN;
+    if (!token) return null;
+    try {
+      setGeocoding(true);
+      const res = await fetch(
+        `https://api.mapbox.com/geocoding/v5/mapbox.places/${lng},${lat}.json?types=address&access_token=${token}`
+      );
+      const json = await res.json();
+      const feature = json?.features?.[0];
+      if (!feature) return null;
+
+      // Parse the address components from the context array
+      const ctx = (feature.context || []) as Array<{
+        id: string;
+        text: string;
+        short_code?: string;
+      }>;
+      const placeText = feature.place_name || "";
+      const addressNumber = feature.address || "";
+      const streetName = feature.text || "";
+      const street = addressNumber ? `${addressNumber} ${streetName}` : streetName;
+
+      let city = "";
+      let state = "";
+      let zipCode = "";
+
+      for (const c of ctx) {
+        if (c.id.startsWith("place")) city = c.text;
+        else if (c.id.startsWith("region")) state = c.short_code?.replace("US-", "") || c.text;
+        else if (c.id.startsWith("postcode")) zipCode = c.text;
+      }
+
+      return { address: street || placeText.split(",")[0] || "", city, state, zipCode };
+    } catch (err) {
+      logger.error("[DoorKnockMap] Reverse geocode error:", err);
+      return null;
+    } finally {
+      setGeocoding(false);
+    }
+  }, []);
 
   /* ───── data fetching ───── */
   const fetchPins = useCallback(async () => {
@@ -199,20 +247,33 @@ export default function DoorKnockMapClient() {
   useEffect(() => {
     if (!mapRef.current || !mapReady) return;
 
-    const handleClick = (e: any) => {
+    const handleClick = async (e: any) => {
       if (!clickMode) return;
       const { lng, lat } = e.lngLat;
+      // Immediately open form with lat/lng, then fill address async
       setFormData((prev) => ({ ...prev, lat, lng, address: "", city: "", state: "", zipCode: "" }));
       setEditingPin(null);
       setShowForm(true);
       setClickMode(false);
+
+      // Reverse geocode to auto-fill address
+      const geo = await reverseGeocode(lat, lng);
+      if (geo) {
+        setFormData((prev) => ({
+          ...prev,
+          address: geo.address || prev.address,
+          city: geo.city || prev.city,
+          state: geo.state || prev.state,
+          zipCode: geo.zipCode || prev.zipCode,
+        }));
+      }
     };
 
     mapRef.current.on("click", handleClick);
     return () => {
       mapRef.current?.off("click", handleClick);
     };
-  }, [mapReady, clickMode]);
+  }, [mapReady, clickMode, reverseGeocode]);
 
   /* ───── render markers ───── */
   useEffect(() => {
@@ -383,6 +444,15 @@ export default function DoorKnockMapClient() {
           </CardContent>
         </Card>
 
+        {/* Cross-link to Map View */}
+        <Link
+          href="/maps/map-view"
+          className="flex items-center gap-2 rounded-lg border border-border bg-muted/30 px-3 py-2 text-xs text-muted-foreground transition-colors hover:bg-muted/60 hover:text-foreground"
+        >
+          🗺️ <span>View Map Overview</span>
+          <span className="ml-auto text-[10px]">→</span>
+        </Link>
+
         {/* Actions */}
         <div className="flex gap-2">
           <Button
@@ -545,13 +615,16 @@ export default function DoorKnockMapClient() {
               {/* Address */}
               <div>
                 <label className="mb-0.5 block text-[10px] font-semibold uppercase text-muted-foreground">
-                  Address
+                  Address{" "}
+                  {geocoding && (
+                    <span className="ml-1 animate-pulse text-blue-500">⏳ Locating…</span>
+                  )}
                 </label>
                 <input
                   type="text"
                   value={formData.address}
                   onChange={(e) => setFormData((p) => ({ ...p, address: e.target.value }))}
-                  placeholder="123 Main St"
+                  placeholder={geocoding ? "Getting address…" : "123 Main St"}
                   className="w-full rounded-md border bg-background px-2 py-1.5 text-xs"
                 />
               </div>

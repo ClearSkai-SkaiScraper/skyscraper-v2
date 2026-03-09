@@ -3,7 +3,7 @@ import { Metadata } from "next";
 
 import { PageContainer } from "@/components/layout/PageContainer";
 import { PageHero } from "@/components/layout/PageHero";
-import { getActiveOrgContext } from "@/lib/org/getActiveOrgContext";
+import { safeOrgContext } from "@/lib/safeOrgContext";
 
 import { AppointmentsClient } from "./AppointmentsClient";
 
@@ -19,9 +19,9 @@ export default async function AppointmentsPage() {
   let userId = "";
   let orgId = "";
   try {
-    const ctx = await getActiveOrgContext({ required: true });
-    userId = ctx.ok ? ctx.userId : "";
-    orgId = ctx.ok ? ctx.orgId : "";
+    const ctx = await safeOrgContext();
+    userId = ctx.ok ? (ctx.userId ?? "") : "";
+    orgId = ctx.ok ? (ctx.orgId ?? "") : "";
   } catch (error: unknown) {
     // Re-throw redirect errors (Next.js uses these for navigation)
     if (error instanceof Error && error.message === "NEXT_REDIRECT") throw error;

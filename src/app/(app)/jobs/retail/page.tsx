@@ -25,8 +25,8 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { logger } from "@/lib/logger";
-import { getActiveOrgContext } from "@/lib/org/getActiveOrgContext";
 import prisma from "@/lib/prisma";
+import { safeOrgContext } from "@/lib/safeOrgContext";
 
 export const dynamic = "force-dynamic";
 
@@ -88,7 +88,7 @@ async function getRetailJobs(orgId: string): Promise<RetailJob[]> {
 export default async function RetailWorkspacePage() {
   let orgId: string | null = null;
   try {
-    const orgResult = await getActiveOrgContext({ required: true });
+    const orgResult = await safeOrgContext();
     orgId = orgResult.ok ? orgResult.orgId : null;
   } catch (error) {
     // Re-throw redirect errors (Next.js uses throw for redirects)

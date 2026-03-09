@@ -23,7 +23,7 @@ import { redirect } from "next/navigation";
 import { PageContainer } from "@/components/layout/PageContainer";
 import { PageHero } from "@/components/layout/PageHero";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { getActiveOrgContext } from "@/lib/org/getActiveOrgContext";
+import { safeOrgContext } from "@/lib/safeOrgContext";
 
 export const dynamic = "force-dynamic";
 
@@ -109,7 +109,7 @@ const TOOLS = [
 ];
 
 export default async function ToolsPage() {
-  const orgCtx = await getActiveOrgContext();
+  const orgCtx = await safeOrgContext();
   if (!orgCtx?.ok) {
     redirect("/sign-in");
   }

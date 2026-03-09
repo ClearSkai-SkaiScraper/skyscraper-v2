@@ -2,7 +2,7 @@ import { redirect } from "next/navigation";
 
 import { PageContainer } from "@/components/layout/PageContainer";
 import { logger } from "@/lib/logger";
-import { getActiveOrgContext } from "@/lib/org/getActiveOrgContext";
+import { safeOrgContext } from "@/lib/safeOrgContext";
 
 import { RetailJobWizard } from "./RetailJobWizard";
 
@@ -11,7 +11,7 @@ export const dynamic = "force-dynamic";
 export default async function NewRetailJobPage() {
   let orgId = "";
   try {
-    const orgResult = await getActiveOrgContext({ required: true });
+    const orgResult = await safeOrgContext();
     if (!orgResult.ok) {
       redirect("/sign-in");
     }

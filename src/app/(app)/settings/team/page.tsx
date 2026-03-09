@@ -8,8 +8,8 @@ import TeamInviteForm from "@/components/team/TeamInviteForm";
 import { TeamMemberActions } from "@/components/team/TeamMemberActions";
 import { Button } from "@/components/ui/button";
 import { logger } from "@/lib/logger";
-import { getActiveOrgContext } from "@/lib/org/getActiveOrgContext";
 import prisma from "@/lib/prisma";
+import { safeOrgContext } from "@/lib/safeOrgContext";
 
 export const dynamic = "force-dynamic";
 
@@ -18,7 +18,7 @@ export default async function TeamSettingsPage() {
   if (!user) redirect("/sign-in");
 
   // Get org context
-  const orgCtx = await getActiveOrgContext({ required: true });
+  const orgCtx = await safeOrgContext();
   if (!orgCtx.ok) {
     redirect("/onboarding/start");
   }

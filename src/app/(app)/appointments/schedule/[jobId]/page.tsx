@@ -10,7 +10,7 @@ import Link from "next/link";
 
 import { PageContainer } from "@/components/layout/PageContainer";
 import { Button } from "@/components/ui/button";
-import { getActiveOrgContext } from "@/lib/org/getActiveOrgContext";
+import { safeOrgContext } from "@/lib/safeOrgContext";
 
 import { ScheduledJobClient } from "./_components/ScheduledJobClient";
 
@@ -175,10 +175,10 @@ interface PageProps {
 
 export default async function ScheduledJobPage({ params }: PageProps) {
   const resolvedParams = await params;
-  const ctx = await getActiveOrgContext({ required: true });
+  const ctx = await safeOrgContext();
 
-  const orgId = ctx.ok ? ctx.orgId : "";
-  const userId = ctx.ok ? ctx.userId : "";
+  const orgId = ctx.ok ? (ctx.orgId ?? "") : "";
+  const userId = ctx.ok ? (ctx.userId ?? "") : "";
 
   // Try to fetch from API first, fall back to demo data
   let job = null;

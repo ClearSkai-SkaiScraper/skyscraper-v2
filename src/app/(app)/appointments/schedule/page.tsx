@@ -9,7 +9,7 @@ import { Metadata } from "next";
 
 import { PageContainer } from "@/components/layout/PageContainer";
 import { PageHero } from "@/components/layout/PageHero";
-import { getActiveOrgContext } from "@/lib/org/getActiveOrgContext";
+import { safeOrgContext } from "@/lib/safeOrgContext";
 
 import { JobScheduleClient } from "./_components/JobScheduleClient";
 
@@ -33,10 +33,10 @@ interface PageProps {
 }
 
 export default async function JobSchedulePage({ searchParams }: PageProps) {
-  const ctx = await getActiveOrgContext({ required: true });
+  const ctx = await safeOrgContext();
 
-  const userId = ctx.ok ? ctx.userId : "";
-  const orgId = ctx.ok ? ctx.orgId : "";
+  const userId = ctx.ok ? (ctx.userId ?? "") : "";
+  const orgId = ctx.ok ? (ctx.orgId ?? "") : "";
 
   // Pre-fill data from query params (e.g., from Orders page)
   const prefillData = searchParams.type
