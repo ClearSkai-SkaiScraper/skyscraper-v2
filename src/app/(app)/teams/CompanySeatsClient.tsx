@@ -9,6 +9,7 @@ import {
   GitBranch,
   Loader2,
   Mail,
+  Maximize2,
   Minus,
   MoreVertical,
   Plus,
@@ -1092,13 +1093,21 @@ export default function CompanySeatsClient({ members, orgId }: CompanySeatsClien
               <GitBranch className="h-5 w-5 text-purple-500" />
               <h3 className="text-lg font-bold text-[color:var(--text)]">Team Hierarchy</h3>
             </div>
-            <Button variant="outline" size="sm" onClick={() => setShowOrgChart(!showOrgChart)}>
-              {showOrgChart ? "Hide" : "Show"} Org Chart
-            </Button>
+            <div className="flex items-center gap-2">
+              <Button variant="outline" size="sm" onClick={() => setShowOrgChart(!showOrgChart)}>
+                {showOrgChart ? "Hide" : "Show"} Org Chart
+              </Button>
+              <Link href="/teams/hierarchy">
+                <Button size="sm" className="gap-1.5 bg-purple-600 hover:bg-purple-700">
+                  <Maximize2 className="h-3.5 w-3.5" />
+                  View Company Hierarchy
+                </Button>
+              </Link>
+            </div>
           </div>
           <p className="mb-4 text-sm text-slate-500 dark:text-slate-400">
             Assign managers to team members to create reporting structure. Use the dropdown menu on
-            each member card.
+            each member card — or open the full hierarchy view for drag-and-drop management.
           </p>
 
           {showOrgChart && (

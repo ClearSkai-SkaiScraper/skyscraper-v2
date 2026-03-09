@@ -25,14 +25,13 @@ export const metadata: Metadata = {
 export const dynamic = "force-dynamic";
 
 interface PageProps {
-  searchParams: Promise<{ claimId?: string }>;
+  searchParams: { claimId?: string };
 }
 
 export default async function DepreciationBuilderPage({ searchParams }: PageProps) {
-  const resolvedParams = await searchParams;
-  const claimId = resolvedParams.claimId;
+  const claimId = searchParams.claimId;
 
-  const ctx = await getActiveOrgContext();
+  const ctx = await getActiveOrgContext({ required: true });
   if (!ctx.ok) {
     redirect("/sign-in");
   }

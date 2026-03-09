@@ -28,7 +28,6 @@ import {
   Wrench,
 } from "lucide-react";
 import Link from "next/link";
-import { redirect } from "next/navigation";
 import { Suspense } from "react";
 
 import { PageContainer } from "@/components/layout/PageContainer";
@@ -196,9 +195,8 @@ export default async function PipelinePage() {
     if (orgId) {
       // Real data only — no demo mode fallback
       [jobs, stats] = await Promise.all([getJobsByCategory(orgId), getCategoryStats(orgId)]);
-    } else {
-      redirect("/onboarding");
     }
+    // If no orgId, continue with empty state — don't redirect
   } catch (error) {
     // Re-throw redirect errors (Next.js uses throw for redirects)
     if ((error as any)?.digest?.startsWith?.("NEXT_REDIRECT")) throw error;
