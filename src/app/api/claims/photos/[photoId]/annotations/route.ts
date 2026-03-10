@@ -34,6 +34,7 @@ const AnnotationSchema = z.object({
 
 const PutSchema = z.object({
   annotations: z.array(AnnotationSchema),
+  note: z.string().optional(),
 });
 
 interface RouteParams {
@@ -97,7 +98,7 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
 
   try {
     const body = await request.json();
-    const { annotations } = PutSchema.parse(body);
+    const { annotations, note } = PutSchema.parse(body);
 
     // Find the file_asset and verify org access
     const file = await prisma.file_assets.findFirst({
@@ -141,6 +142,8 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
         analyzed_by: userId,
         analysis_status: "complete",
         updatedAt: new Date(),
+        // Save note if provided
+        ...(note !== undefined && { note }),
       },
     });
 
@@ -148,6 +151,7 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
       photoId,
       orgId,
       annotationCount: annotations.length,
+      hasNote: !!note,
     });
 
     return NextResponse.json({
@@ -156,6 +160,7 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
       annotationCount: annotations.length,
       caption,
       severity,
+      note,
     });
   } catch (error) {
     if (error instanceof z.ZodError) {

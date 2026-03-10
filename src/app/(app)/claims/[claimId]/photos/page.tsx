@@ -56,6 +56,7 @@ interface Photo {
   note?: string;
   // AI Analysis fields
   aiCaption?: AICaption;
+  category?: string;
   annotations?: Annotation[];
   damageBoxes?: DamageBox[];
   severity?: "none" | "minor" | "moderate" | "severe";
@@ -78,6 +79,8 @@ export default function PhotosPage() {
   const [viewMode, setViewMode] = useState<"grid" | "analysis">("grid");
   const [modalTab, setModalTab] = useState<"view" | "annotate" | "details">("view");
   const [deleteTarget, setDeleteTarget] = useState<{ id: string; label?: string } | null>(null);
+  const [photoNote, setPhotoNote] = useState("");
+  const [savingNote, setSavingNote] = useState(false);
 
   const fetchPhotos = async () => {
     if (!claimId) return;
@@ -378,6 +381,40 @@ export default function PhotosPage() {
     [selectedPhoto]
   );
 
+  const handleSaveNote = useCallback(
+    async (photoId: string, note: string) => {
+      if (!claimId) return;
+      setSavingNote(true);
+      try {
+        const res = await fetch(`/api/claims/photos/${photoId}/annotations`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            annotations: selectedPhoto?.annotations || [],
+            note,
+          }),
+        });
+
+        if (!res.ok) throw new Error("Failed to save note");
+
+        // Update local state
+        setPhotos((prev) => prev.map((p) => (p.id === photoId ? { ...p, note } : p)));
+
+        if (selectedPhoto?.id === photoId) {
+          setSelectedPhoto({ ...selectedPhoto, note });
+        }
+
+        toast.success("Note saved");
+      } catch (error) {
+        logger.error("Save note error:", error);
+        toast.error("Failed to save note");
+      } finally {
+        setSavingNote(false);
+      }
+    },
+    [claimId, selectedPhoto]
+  );
+
   const getSeverityColorHex = (severity?: string): string => {
     switch (severity) {
       case "Critical":
@@ -554,7 +591,10 @@ export default function PhotosPage() {
             <div
               key={photo.id}
               className="group relative aspect-square cursor-pointer overflow-hidden rounded-lg border border-slate-200 transition-all hover:shadow-lg dark:border-slate-700"
-              onClick={() => setSelectedPhoto(photo)}
+              onClick={() => {
+                setSelectedPhoto(photo);
+                setPhotoNote(photo.note || "");
+              }}
             >
               {/* Photo with overlay if analyzed */}
               {photo.analyzed && photo.damageBoxes && photo.damageBoxes.length > 0 ? (
@@ -657,7 +697,10 @@ export default function PhotosPage() {
               {/* Thumbnail with overlay */}
               <div
                 className="relative h-32 w-32 flex-shrink-0 cursor-pointer overflow-hidden rounded-lg"
-                onClick={() => setSelectedPhoto(photo)}
+                onClick={() => {
+                  setSelectedPhoto(photo);
+                  setPhotoNote(photo.note || "");
+                }}
               >
                 {photo.analyzed && photo.damageBoxes ? (
                   <PhotoOverlay
@@ -844,7 +887,38 @@ export default function PhotosPage() {
                 </TabsContent>
 
                 {/* Details Tab */}
-                <TabsContent value="details" className="mt-4">
+                <TabsContent value="details" className="mt-4 space-y-4">
+                  {/* Pro User Note Section */}
+                  <div className="rounded-lg border border-slate-200 bg-white p-4 dark:border-slate-700 dark:bg-slate-900">
+                    <h4 className="mb-2 flex items-center gap-2 text-sm font-medium">
+                      <Edit3 className="h-4 w-4 text-slate-500" />
+                      Your Notes
+                    </h4>
+                    <Textarea
+                      placeholder="Add your notes about this photo..."
+                      value={photoNote}
+                      onChange={(e) => setPhotoNote(e.target.value)}
+                      className="mb-2 min-h-[80px] resize-none"
+                    />
+                    <Button
+                      size="sm"
+                      onClick={() => handleSaveNote(selectedPhoto.id, photoNote)}
+                      disabled={savingNote}
+                    >
+                      {savingNote ? (
+                        <>
+                          <Loader2 className="mr-2 h-3 w-3 animate-spin" />
+                          Saving...
+                        </>
+                      ) : (
+                        <>
+                          <Check className="mr-2 h-3 w-3" />
+                          Save Note
+                        </>
+                      )}
+                    </Button>
+                  </div>
+
                   {selectedPhoto.aiCaption ? (
                     <div className="rounded-lg border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-800">
                       <h4 className="mb-3 flex items-center gap-2 font-medium">
@@ -854,31 +928,84 @@ export default function PhotosPage() {
                       <div className="grid gap-3 md:grid-cols-2">
                         <div>
                           <p className="text-xs font-medium text-slate-500">Material Type</p>
-                          <p className="text-sm">{selectedPhoto.aiCaption.materialType || "N/A"}</p>
+                          {selectedPhoto.aiCaption.materialType ? (
+                            <p className="text-sm">{selectedPhoto.aiCaption.materialType}</p>
+                          ) : (
+                            <p className="text-xs text-amber-600 dark:text-amber-400">
+                              → Update material type on{" "}
+                              <a
+                                href={`/claims/${claimId}/overview`}
+                                className="underline hover:text-amber-700"
+                              >
+                                Claim Overview
+                              </a>
+                            </p>
+                          )}
                         </div>
                         <div>
                           <p className="text-xs font-medium text-slate-500">Damage Type</p>
-                          <p className="text-sm text-red-600 dark:text-red-400">
-                            {selectedPhoto.aiCaption.damageType || "N/A"}
-                          </p>
+                          {selectedPhoto.aiCaption.damageType ? (
+                            <p className="text-sm text-red-600 dark:text-red-400">
+                              {selectedPhoto.aiCaption.damageType}
+                            </p>
+                          ) : (
+                            <p className="text-xs text-amber-600 dark:text-amber-400">
+                              → Set loss type on{" "}
+                              <a
+                                href={`/claims/${claimId}/overview`}
+                                className="underline hover:text-amber-700"
+                              >
+                                Claim Overview
+                              </a>
+                            </p>
+                          )}
                         </div>
                         <div>
                           <p className="text-xs font-medium text-slate-500">Functional Impact</p>
-                          <p className="text-sm">
-                            {selectedPhoto.aiCaption.functionalImpact || "N/A"}
-                          </p>
+                          {selectedPhoto.aiCaption.functionalImpact ? (
+                            <p className="text-sm">{selectedPhoto.aiCaption.functionalImpact}</p>
+                          ) : (
+                            <p className="text-xs text-amber-600 dark:text-amber-400">
+                              → Add functional damage details on{" "}
+                              <a
+                                href={`/claims/${claimId}/overview`}
+                                className="underline hover:text-amber-700"
+                              >
+                                Claim Overview
+                              </a>
+                            </p>
+                          )}
                         </div>
                         <div>
                           <p className="text-xs font-medium text-slate-500">Applicable IRC Code</p>
-                          <p className="text-sm text-blue-600 dark:text-blue-400">
-                            {selectedPhoto.aiCaption.applicableCode || "N/A"}
-                          </p>
+                          {selectedPhoto.aiCaption.applicableCode ? (
+                            <p className="text-sm text-blue-600 dark:text-blue-400">
+                              {selectedPhoto.aiCaption.applicableCode}
+                            </p>
+                          ) : (
+                            <p className="text-xs text-slate-400">
+                              No code reference detected
+                            </p>
+                          )}
                         </div>
                         <div className="md:col-span-2">
                           <p className="text-xs font-medium text-slate-500">
                             Date of Loss Correlation
                           </p>
-                          <p className="text-sm">{selectedPhoto.aiCaption.dolTieIn || "N/A"}</p>
+                          {selectedPhoto.aiCaption.dolTieIn ? (
+                            <p className="text-sm">{selectedPhoto.aiCaption.dolTieIn}</p>
+                          ) : (
+                            <p className="text-xs text-amber-600 dark:text-amber-400">
+                              → Run Quick DOL Verification on{" "}
+                              <a
+                                href={`/claims/${claimId}/overview`}
+                                className="underline hover:text-amber-700"
+                              >
+                                Claim Overview
+                              </a>{" "}
+                              to correlate damage with weather events
+                            </p>
+                          )}
                         </div>
                         {selectedPhoto.aiCaption.summary && (
                           <div className="md:col-span-2">
