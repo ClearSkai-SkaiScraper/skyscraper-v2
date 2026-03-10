@@ -2,7 +2,7 @@ export const dynamic = "force-dynamic";
 
 import { NextRequest, NextResponse } from "next/server";
 
-import { getOpenAI } from "@/lib/ai";
+import { getOpenAI } from "@/lib/ai/client";
 import { requireApiOrg, verifyClaimAccess } from "@/lib/auth/apiAuth";
 import {
   requireActiveSubscription,

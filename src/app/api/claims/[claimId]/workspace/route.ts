@@ -31,6 +31,7 @@ interface WorkspaceData {
     adjusterPhone: string | null;
     adjusterEmail: string | null;
     propertyId: string | null;
+    contactId: string | null;
     createdAt: string;
     updatedAt: string;
     signingStatus: string;
@@ -154,6 +155,7 @@ export async function GET(request: NextRequest, { params }: { params: { claimId:
           adjusterPhone: "(555) 010-2000",
           adjusterEmail: "alex.adjuster@example.com",
           propertyId: null,
+          contactId: null,
           createdAt: demoNow.toISOString(),
           updatedAt: demoNow.toISOString(),
           signingStatus: "pending",

@@ -320,7 +320,7 @@ export async function POST(req: NextRequest) {
 
     logger.info("[BAD_FAITH_EXPORT_PDF]", { userId, orgId, claimId });
 
-    return new NextResponse(pdfBuffer, {
+    return new NextResponse(new Uint8Array(pdfBuffer), {
       headers: {
         "Content-Type": "application/pdf",
         "Content-Disposition": `attachment; filename="bad-faith-analysis-${claimId}.pdf"`,
