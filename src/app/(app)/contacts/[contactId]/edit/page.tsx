@@ -29,7 +29,7 @@ interface ContactForm {
 export default function EditContactPage() {
   const params = useParams();
   const router = useRouter();
-  const contactId = params.contactId as string;
+  const contactId = params?.contactId as string;
 
   const [form, setForm] = useState<ContactForm>({
     firstName: "",
