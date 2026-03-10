@@ -124,7 +124,7 @@ export default function DoorKnockMapClient() {
   const mapRef = useRef<any>(null);
   const mapboxRef = useRef<any>(null);
   const markersRef = useRef<any[]>([]);
-  const activePopupRef = useRef<any>(null);
+  const boundsSetRef = useRef(false);
   const [mapReady, setMapReady] = useState(false);
   const [clickMode, setClickMode] = useState(false);
   const [geocoding, setGeocoding] = useState(false);
@@ -297,16 +297,19 @@ export default function DoorKnockMapClient() {
         box-shadow: 0 2px 8px rgba(0,0,0,0.3);
         cursor: pointer; display: flex; align-items: center;
         justify-content: center; font-size: 14px;
-        transition: transform 0.15s;
+        z-index: 1;
       `;
       el.textContent = cfg.emoji;
       el.title = `${pin.address || "Unknown"} — ${cfg.label}`;
 
+      // NO transform or transition — they conflict with Mapbox marker positioning
       el.addEventListener("mouseenter", () => {
-        el.style.transform = "scale(1.3)";
+        el.style.boxShadow = "0 0 0 4px " + cfg.mapColor + "66, 0 4px 12px rgba(0,0,0,0.35)";
+        el.style.zIndex = "10";
       });
       el.addEventListener("mouseleave", () => {
-        el.style.transform = "scale(1)";
+        el.style.boxShadow = "0 2px 8px rgba(0,0,0,0.3)";
+        el.style.zIndex = "1";
       });
 
       // Use anchor:'center' so the pin dot IS the marker, no offset
@@ -338,8 +341,8 @@ export default function DoorKnockMapClient() {
       markersRef.current.push(marker);
     });
 
-    // Fit bounds
-    if (pins.length > 0) {
+    // Only set initial bounds ONCE — prevents map from jumping on pin updates
+    if (!boundsSetRef.current && pins.length > 0) {
       const bounds = new mapboxRef.current.LngLatBounds();
       pins.forEach((p) => {
         if (Number.isFinite(p.lat) && Number.isFinite(p.lng)) {
@@ -347,6 +350,7 @@ export default function DoorKnockMapClient() {
         }
       });
       mapRef.current.fitBounds(bounds, { padding: 60, maxZoom: 16 });
+      boundsSetRef.current = true;
     }
   }, [pins, mapReady]);
 

@@ -230,9 +230,9 @@ async function renderContactsPage() {
     try {
       // Fetch contacts (clients) from CRM contacts table
       const raw = await prisma.contacts.findMany({
-        where: { orgId: organizationId },
+        where: { orgId: organizationId, isDemo: false },
         orderBy: { createdAt: "desc" },
-        take: 50,
+        take: 200,
         select: {
           id: true,
           firstName: true,
@@ -256,6 +256,104 @@ async function renderContactsPage() {
           tags: c.tags || [],
           createdAt: c.createdAt ? String(c.createdAt) : null,
         }));
+
+      // ── Also fetch client_networks (CRM client records) ──
+      try {
+        const clientNetworks = await prisma.client_networks.findMany({
+          where: { orgId: organizationId, status: { not: "deleted" } },
+          orderBy: { createdAt: "desc" },
+          take: 200,
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            phone: true,
+            category: true,
+            status: true,
+            city: true,
+            state: true,
+            createdAt: true,
+          },
+        });
+
+        const existingEmails = new Set(
+          contacts.map((c: any) => c.email?.toLowerCase()).filter(Boolean)
+        );
+        const existingIds = new Set(contacts.map((c: any) => c.id));
+
+        for (const cn of clientNetworks) {
+          if (isDemoContact({ email: cn.email, name: cn.name })) continue;
+          if (cn.email && existingEmails.has(cn.email.toLowerCase())) continue;
+          if (existingIds.has(cn.id)) continue;
+
+          const nameParts = (cn.name || "Client").split(" ");
+          contacts.push({
+            id: cn.id,
+            type: "client",
+            name: cn.name || "Unknown",
+            firstName: nameParts[0] || "",
+            lastName: nameParts.slice(1).join(" ") || "",
+            email: cn.email,
+            phone: cn.phone,
+            tags: [cn.category || "client"].filter(Boolean),
+            createdAt: cn.createdAt ? String(cn.createdAt) : null,
+          });
+        }
+      } catch (cnErr) {
+        logger.error("[CompanyContacts] client_networks query failed:", cnErr);
+      }
+
+      // ── Also fetch claim homeowners / insured names as client contacts ──
+      try {
+        const claimClients = await prisma.claims.findMany({
+          where: {
+            orgId: organizationId,
+            insured_name: { not: null },
+            isDemo: false,
+          },
+          orderBy: { createdAt: "desc" },
+          take: 200,
+          select: {
+            id: true,
+            insured_name: true,
+            homeownerEmail: true,
+            homeowner_email: true,
+            claimNumber: true,
+            createdAt: true,
+          },
+        });
+
+        const existingEmails2 = new Set(
+          contacts.map((c: any) => c.email?.toLowerCase()).filter(Boolean)
+        );
+        const existingNames = new Set(
+          contacts.map((c: any) => c.name?.toLowerCase()).filter(Boolean)
+        );
+
+        for (const cl of claimClients) {
+          const name = cl.insured_name?.trim();
+          if (!name) continue;
+          if (isDemoContact({ name, email: cl.homeownerEmail || cl.homeowner_email })) continue;
+          const email = cl.homeownerEmail || cl.homeowner_email;
+          if (email && existingEmails2.has(email.toLowerCase())) continue;
+          if (existingNames.has(name.toLowerCase())) continue;
+
+          const nameParts = name.split(" ");
+          contacts.push({
+            id: `claim-${cl.id}`,
+            type: "client",
+            name,
+            firstName: nameParts[0] || "",
+            lastName: nameParts.slice(1).join(" ") || "",
+            email: email || null,
+            phone: null,
+            tags: ["claim", cl.claimNumber || ""].filter(Boolean),
+            createdAt: cl.createdAt ? String(cl.createdAt) : null,
+          });
+        }
+      } catch (claimErr) {
+        logger.error("[CompanyContacts] claims insured query failed:", claimErr);
+      }
 
       // ── Also fetch connected portal clients (ClientProConnection) ──
       try {

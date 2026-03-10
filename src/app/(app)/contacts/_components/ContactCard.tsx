@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 interface ContactCardProps {
   contact: {
     id: string;
+    name?: string | null;
     firstName?: string | null;
     lastName?: string | null;
     email?: string | null;
@@ -33,7 +34,9 @@ export function ContactCard({ contact }: ContactCardProps) {
         <div className="mb-4 flex items-start justify-between">
           <div>
             <span className="mb-1 inline-flex text-lg font-semibold text-slate-900 transition group-hover:text-blue-700 dark:text-white">
-              {contact.firstName} {contact.lastName}
+              {[contact.firstName, contact.lastName].filter(Boolean).join(" ") ||
+                contact.name ||
+                "Unknown Contact"}
             </span>
             <Badge variant="secondary" className="ml-2 text-xs">
               Client
