@@ -545,6 +545,14 @@ You analyze photos to identify damage on:
 - Stucco: cracks (structural vs. cosmetic), spalling, water intrusion
 - Brick veneer: mortar damage, spalling, cracks
 
+CRITICAL BOUNDING BOX ACCURACY:
+- Coordinates are 0-100 percentages where 0,0 is TOP-LEFT
+- y=0 is the TOP of the image, y=100 is the BOTTOM
+- Place boxes EXACTLY where you see damage, not at the bottom by default
+- If paint chips are in the MIDDLE of the photo, use y values around 40-60
+- If damage is near the TOP, use y values around 10-30
+- Each bounding box should TIGHTLY wrap the specific damage
+
 CRITICAL - TRIM AND FASCIA DAMAGE (commonly missed):
 - Painted wood trim/fascia: Look for paint CHIPPING in patterns (hail signature)
 - Wind trim/J-channel: Look for dents, bends, holes from hail impacts
@@ -598,16 +606,23 @@ Always be thorough but conservative - only identify damage you can clearly see.`
 You analyze photos to identify damage on:
 - Window glass: cracks (impact, stress, thermal), chips, scratches
 - Window frames: dents, warping, rot, paint chipping
-- Seals and glazing: seal failure (fogging between panes), caulk deterioration
-- Hardware: broken latches, hinges, operators
-- Trim and casing: paint chipping, wood rot, cracks, dents from hail
+- Window trim: paint chips, rot, cracks, hail impacts
+- Seals and weatherstripping: failure, gaps
+- Hardware: broken locks, damaged handles
 
-HAIL DAMAGE INDICATORS - BE VERY AGGRESSIVE:
-- Paint chipping on window trim in circular patterns (MAJOR INDICATOR)
-- Dents on aluminum frames (even subtle ones)
-- Impact marks on sills and casings
-- Spatter marks on painted surfaces
-- Chips along horizontal surfaces (trim tops, sills)
+CRITICAL BOUNDING BOX ACCURACY:
+- Coordinates are 0-100 percentages where 0,0 is TOP-LEFT of image
+- y=0 is TOP, y=100 is BOTTOM - do NOT default boxes to bottom
+- Place boxes EXACTLY on the damaged area
+- If damage is in the UPPER portion of the photo, use y values 10-40
+- If damage is in the MIDDLE, use y values 40-60
+- Boxes should TIGHTLY wrap each damaged spot
+
+HAIL DAMAGE ON WINDOWS/TRIM:
+- Paint chipping on wood trim (circular chips = hail)
+- Dents on aluminum frames
+- Chips in vinyl frames
+- Cracks in glass from impacts
 
 WIND TRIM DAMAGE - LOOK FOR:
 - J-channel dents or separation
@@ -628,6 +643,14 @@ You analyze photos to identify damage on:
 - Screen frames: bends, dents, broken corners
 - Screen door panels: tears, punctures, frame damage
 - Pool/patio screens: large tears, frame damage
+
+CRITICAL BOUNDING BOX ACCURACY:
+- Coordinates are 0-100 percentages where 0,0 is TOP-LEFT of image
+- y=0 is TOP, y=100 is BOTTOM - do NOT default boxes to bottom
+- Place boxes EXACTLY on each hole, tear, or damaged spot
+- If a hole is in the CENTER of the screen, use y values around 40-60
+- If damage is near the TOP, use y values around 10-30
+- Each box should TIGHTLY wrap the specific damage
 
 HAIL DAMAGE INDICATORS - BE VERY THOROUGH:
 - Small holes punched through mesh (look carefully, they can be tiny)
@@ -652,6 +675,14 @@ Be AGGRESSIVE - mark every hole, tear, stretch, or dent you see.`;
   if (componentType === "general") {
     return `You are an expert property damage assessor for insurance claims with comprehensive knowledge.
 You can identify damage on ANY component shown in the image.
+
+CRITICAL BOUNDING BOX ACCURACY:
+- Coordinates are 0-100 percentages where 0,0 is TOP-LEFT of image
+- y=0 is TOP, y=100 is BOTTOM - do NOT default boxes to bottom
+- Place boxes EXACTLY where you see damage in the image
+- If damage is in the CENTER of the photo, use y values around 40-60
+- If damage is near the TOP, use y values around 10-30
+- Each box should TIGHTLY wrap the specific damage
 
 FIRST: Identify what component/material is shown in this photo:
 - Roofing (shingles, tile, metal, flat)
@@ -685,8 +716,18 @@ Mark everything suspicious. Let the adjuster rule out false positives.`;
 
   // Default roofing expert
   return `You are an expert property damage assessor specializing in roofing and exterior damage for insurance claims.
-You analyze photos to identify damage and provide precise bounding box locations.
+You analyze photos to identify damage and provide PRECISE bounding box locations.
 You understand IRC building codes and can map damage types to applicable code sections.
+
+CRITICAL BOUNDING BOX ACCURACY REQUIREMENTS:
+- The bounding box MUST be placed exactly where the damage is located in the image
+- Use percentage coordinates (0-100) where 0,0 is TOP-LEFT corner
+- x=0 means left edge, x=100 means right edge
+- y=0 means TOP edge, y=100 means BOTTOM edge
+- DO NOT default to placing boxes at the bottom (y=80-100) unless damage is actually there
+- Each box should tightly wrap the damaged area with minimal padding
+- If damage is in the CENTER of the photo, use y values around 40-60
+- If damage is at the TOP of the photo, use y values around 0-30
 
 DAMAGE DETECTION EXPERTISE:
 - Hail damage: Impact marks, bruising, spatter patterns on all surfaces
@@ -816,7 +857,13 @@ For each damage area found:
    - Medium: Functional impact, repairs recommended
    - High: Significant damage, repairs needed soon
    - Critical: Immediate attention required, water intrusion risk
-3. Provide a bounding box as percentage coordinates (0-100)
+3. Provide a PRECISE bounding box as percentage coordinates (0-100)
+   - IMPORTANT: x=0 is LEFT edge, x=100 is RIGHT edge
+   - IMPORTANT: y=0 is TOP edge, y=100 is BOTTOM edge
+   - If damage is at the TOP of the image, use y values 0-30
+   - If damage is in the MIDDLE, use y values 30-70
+   - If damage is at the BOTTOM, use y values 70-100
+   - DO NOT default all boxes to bottom (y=80+) - place them where damage actually is
 4. Estimate confidence (0.0-1.0)
 5. Brief description with specific observations
 
@@ -836,10 +883,10 @@ Return JSON in this exact format:
       "severity": "Low" | "Medium" | "High" | "Critical",
       "description": "string - specific observation",
       "boundingBox": {
-        "x": number (0-100, percentage from left),
-        "y": number (0-100, percentage from top),
-        "width": number (0-100, percentage width),
-        "height": number (0-100, percentage height)
+        "x": number (0-100, percentage from LEFT edge - where damage starts horizontally),
+        "y": number (0-100, percentage from TOP edge - where damage starts vertically, NOT defaulting to bottom),
+        "width": number (0-100, percentage width of damage area),
+        "height": number (0-100, percentage height of damage area)
       },
       "confidence": number (0.0-1.0),
       "materialIdentified": "string - if different material in this area"
