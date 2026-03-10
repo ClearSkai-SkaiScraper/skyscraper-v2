@@ -983,9 +983,7 @@ export default function PhotosPage() {
                               {selectedPhoto.aiCaption.applicableCode}
                             </p>
                           ) : (
-                            <p className="text-xs text-slate-400">
-                              No code reference detected
-                            </p>
+                            <p className="text-xs text-slate-400">No code reference detected</p>
                           )}
                         </div>
                         <div className="md:col-span-2">
