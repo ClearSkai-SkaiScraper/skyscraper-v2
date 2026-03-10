@@ -163,6 +163,7 @@ export async function POST(req: NextRequest) {
         measurementSummary,
         jobContextType,
         jobContextLabel,
+        userNotes,
       } = body as {
         trade: string;
         tradeLabel: string;
@@ -170,6 +171,7 @@ export async function POST(req: NextRequest) {
         measurementSummary: string;
         jobContextType?: string;
         jobContextLabel?: string;
+        userNotes?: string;
       };
 
       if (!trade || !measurementSummary) {
@@ -259,7 +261,7 @@ Each item in the array must have these exact fields:
             { role: "system", content: systemPrompt },
             {
               role: "user",
-              content: `Generate a complete material list for this ${tradeLabel} project:\n\n${measurementSummary}\n\nJob Context: ${jobContextLabel || "General Estimate"}\n\nReturn ONLY the JSON array.`,
+              content: `Generate a complete material list for this ${tradeLabel} project:\n\n${measurementSummary}\n\nJob Context: ${jobContextLabel || "General Estimate"}${userNotes ? `\n\nADDITIONAL NOTES FROM USER (important — follow these instructions):\n${userNotes}` : ""}\n\nReturn ONLY the JSON array.`,
             },
           ],
           max_tokens: 3000,
@@ -352,6 +354,73 @@ Trade: ${tradeLabel}`,
         logger.error("[MATERIALS] AI estimate error:", aiErr);
         return NextResponse.json(
           { ok: false, error: "AI estimation failed — check OpenAI API key" },
+          { status: 500 }
+        );
+      }
+    }
+
+    // ── Action: AI Chat — conversational assistant for estimates ──────────
+    if (action === "ai-chat") {
+      const { trade, tradeLabel, jobContextType: ctxType, jobContextLabel: ctxLabel, userMessage, chatHistory } = body as {
+        trade: string;
+        tradeLabel: string;
+        jobContextType?: string;
+        jobContextLabel?: string;
+        userMessage: string;
+        chatHistory?: Array<{ role: string; text: string }>;
+      };
+
+      if (!userMessage) {
+        return NextResponse.json(
+          { ok: false, error: "Missing message" },
+          { status: 400 }
+        );
+      }
+
+      try {
+        const openai = await getOpenAI();
+
+        // Build conversation history
+        const history = (chatHistory || []).map((m) => ({
+          role: m.role === "user" ? "user" as const : "assistant" as const,
+          content: m.text,
+        }));
+
+        const chatResponse = await openai.chat.completions.create({
+          model: "gpt-4o-mini",
+          messages: [
+            {
+              role: "system",
+              content: `You are SkaiScraper's AI estimating assistant helping a contractor prepare a material estimate. You are chatting with the user BEFORE they generate the estimate.
+
+Current context:
+- Trade: ${tradeLabel || trade}
+- Job Context: ${ctxLabel || ctxType || "General"}
+
+Your role:
+1. Answer questions about materials, brands, quantities, best practices
+2. Help them decide what to include or exclude
+3. Suggest upgrades, alternatives, or code requirements
+4. Note any special instructions they give — these will be passed to the estimate generator
+5. Be concise (2-4 sentences max), friendly, and professional
+6. If they mention specific brands, materials, or preferences, acknowledge them and confirm they'll be included
+
+Do NOT generate material lists or prices — that happens when they click "Calculate Materials". Just advise and note their preferences.`,
+            },
+            ...history,
+            { role: "user", content: userMessage },
+          ],
+          max_tokens: 300,
+          temperature: 0.4,
+        });
+
+        const reply = chatResponse.choices[0]?.message?.content || "I'm here to help — could you rephrase that?";
+
+        return NextResponse.json({ ok: true, reply });
+      } catch (chatErr) {
+        logger.error("[MATERIALS] AI chat error:", chatErr);
+        return NextResponse.json(
+          { ok: false, error: "AI chat failed" },
           { status: 500 }
         );
       }

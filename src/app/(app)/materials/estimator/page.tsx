@@ -399,6 +399,14 @@ export default function MaterialEstimatorPage() {
   } | null>(null);
   const scopeInputRef = useRef<HTMLInputElement>(null);
 
+  // AI Chat — notes & conversation for the estimator
+  const [aiChatInput, setAiChatInput] = useState("");
+  const [aiChatMessages, setAiChatMessages] = useState<
+    Array<{ role: "user" | "ai"; text: string; time: string }>
+  >([]);
+  const [aiChatLoading, setAiChatLoading] = useState(false);
+  const chatEndRef = useRef<HTMLDivElement>(null);
+
   // ── Fetch saved estimates from DB on mount ────────────────────────────────
   const loadEstimates = useCallback(async () => {
     try {
@@ -495,6 +503,63 @@ export default function MaterialEstimatorPage() {
     } finally {
       setScopeParsing(false);
     }
+  };
+
+  // ── AI Chat: send a message to the assistant ──────────────────────────
+  const handleAiChatSend = async () => {
+    const msg = aiChatInput.trim();
+    if (!msg) return;
+
+    const timestamp = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+    const userMsg = { role: "user" as const, text: msg, time: timestamp };
+    setAiChatMessages((prev) => [...prev, userMsg]);
+    setAiChatInput("");
+    setAiChatLoading(true);
+
+    try {
+      const tradeConfig = TRADE_TYPES.find((t) => t.value === selectedTrade);
+      const contextLabel =
+        JOB_CONTEXTS.find((c) => c.value === jobContextType)?.label || "Estimate";
+
+      const res = await fetch("/api/materials/estimate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "ai-chat",
+          trade: selectedTrade,
+          tradeLabel: tradeConfig?.label || selectedTrade,
+          jobContextType,
+          jobContextLabel: contextLabel,
+          userMessage: msg,
+          chatHistory: aiChatMessages.slice(-10),
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "AI chat failed");
+
+      const aiTimestamp = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+      setAiChatMessages((prev) => [...prev, { role: "ai", text: data.reply, time: aiTimestamp }]);
+    } catch {
+      const errTimestamp = new Date().toLocaleTimeString([], {
+        hour: "2-digit",
+        minute: "2-digit",
+      });
+      setAiChatMessages((prev) => [
+        ...prev,
+        { role: "ai", text: "Sorry, I couldn't process that. Try again.", time: errTimestamp },
+      ]);
+    } finally {
+      setAiChatLoading(false);
+      setTimeout(() => chatEndRef.current?.scrollIntoView({ behavior: "smooth" }), 100);
+    }
+  };
+
+  // Build cumulative user notes from chat for the AI estimate
+  const buildUserNotes = () => {
+    return aiChatMessages
+      .filter((m) => m.role === "user")
+      .map((m) => m.text)
+      .join("\n");
   };
 
   // ── Auto-estimate linear feet from area if user leaves them blank ────────
@@ -596,6 +661,7 @@ export default function MaterialEstimatorPage() {
             measurementSummary,
             jobContextType,
             jobContextLabel: contextLabel,
+            userNotes: buildUserNotes(),
           }),
         });
         const data = await res.json();
@@ -1748,6 +1814,107 @@ export default function MaterialEstimatorPage() {
                 </p>
               </div>
             )}
+
+            {/* ── AI CHAT BOX ── */}
+            <div className="space-y-2">
+              <Label className="flex items-center gap-2">
+                <Sparkles className="h-4 w-4 text-purple-500" />
+                AI Assistant Chat
+              </Label>
+              <div className="overflow-hidden rounded-xl border border-purple-200 bg-gradient-to-b from-purple-50/50 to-white dark:border-purple-800 dark:from-purple-950/30 dark:to-slate-900">
+                {/* Chat messages area */}
+                <div className="max-h-52 min-h-[80px] overflow-y-auto p-3">
+                  {aiChatMessages.length === 0 ? (
+                    <div className="flex flex-col items-center justify-center py-4 text-center">
+                      <Sparkles className="mb-1.5 h-6 w-6 text-purple-300 dark:text-purple-700" />
+                      <p className="text-xs font-medium text-purple-400 dark:text-purple-500">
+                        Tell the AI anything before building your estimate
+                      </p>
+                      <p className="mt-0.5 text-[10px] text-slate-400">
+                        &quot;Use premium materials&quot; &bull; &quot;Include code upgrades&quot;
+                        &bull; &quot;Homeowner wants energy-efficient&quot;
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="space-y-2.5">
+                      {aiChatMessages.map((msg, i) => (
+                        <div
+                          key={i}
+                          className={`flex ${
+                            msg.role === "user" ? "justify-end" : "justify-start"
+                          }`}
+                        >
+                          <div
+                            className={`max-w-[85%] rounded-xl px-3 py-2 text-[12px] leading-relaxed ${
+                              msg.role === "user"
+                                ? "bg-purple-600 text-white"
+                                : "border border-purple-100 bg-white text-slate-700 dark:border-purple-800 dark:bg-slate-800 dark:text-slate-200"
+                            }`}
+                          >
+                            {msg.role === "ai" && (
+                              <div className="mb-0.5 flex items-center gap-1">
+                                <Sparkles className="h-3 w-3 text-purple-500" />
+                                <span className="text-[10px] font-semibold text-purple-500">
+                                  SkaiAI
+                                </span>
+                              </div>
+                            )}
+                            <p className="whitespace-pre-wrap">{msg.text}</p>
+                            <p
+                              className={`mt-0.5 text-right text-[9px] ${
+                                msg.role === "user" ? "text-purple-200" : "text-slate-400"
+                              }`}
+                            >
+                              {msg.time}
+                            </p>
+                          </div>
+                        </div>
+                      ))}
+                      {aiChatLoading && (
+                        <div className="flex justify-start">
+                          <div className="flex items-center gap-1.5 rounded-xl border border-purple-100 bg-white px-3 py-2 dark:border-purple-800 dark:bg-slate-800">
+                            <Loader2 className="h-3 w-3 animate-spin text-purple-500" />
+                            <span className="text-[11px] text-purple-500">Thinking…</span>
+                          </div>
+                        </div>
+                      )}
+                      <div ref={chatEndRef} />
+                    </div>
+                  )}
+                </div>
+                {/* Chat input */}
+                <div className="flex items-center gap-2 border-t border-purple-200/60 bg-white/80 px-3 py-2 dark:border-purple-800/40 dark:bg-slate-900/60">
+                  <Input
+                    value={aiChatInput}
+                    onChange={(e) => setAiChatInput(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" && !e.shiftKey) {
+                        e.preventDefault();
+                        handleAiChatSend();
+                      }
+                    }}
+                    placeholder="Tell the AI what to include or adjust…"
+                    className="border-0 bg-transparent text-sm shadow-none focus-visible:ring-0"
+                    disabled={aiChatLoading}
+                  />
+                  <Button
+                    size="sm"
+                    onClick={handleAiChatSend}
+                    disabled={!aiChatInput.trim() || aiChatLoading}
+                    className="h-8 shrink-0 bg-purple-600 px-3 hover:bg-purple-700"
+                  >
+                    <Send className="h-3.5 w-3.5" />
+                  </Button>
+                </div>
+              </div>
+              {aiChatMessages.filter((m) => m.role === "user").length > 0 && (
+                <p className="text-[10px] text-purple-500 dark:text-purple-400">
+                  ✓ {aiChatMessages.filter((m) => m.role === "user").length} note
+                  {aiChatMessages.filter((m) => m.role === "user").length !== 1 ? "s" : ""} will be
+                  included in your estimate
+                </p>
+              )}
+            </div>
 
             {error && (
               <div className="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700 dark:border-red-800 dark:bg-red-900/20 dark:text-red-400">
