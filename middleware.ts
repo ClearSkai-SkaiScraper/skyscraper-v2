@@ -67,6 +67,7 @@ const PRO_ROUTES = [
   "/carrier",
   "/estimates",
   "/tasks",
+  "/annotation", // AI Damage Annotation tool
 ];
 
 const CLIENT_ROUTES = ["/portal"];

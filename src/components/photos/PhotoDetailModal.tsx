@@ -345,17 +345,27 @@ export function PhotoDetailModal({
                 {photo.confidence && `AI Confidence: ${Math.round(photo.confidence * 100)}%`}
               </div>
               <div className="flex gap-2">
-                {!photo.analyzed && onAnalyze && (
-                  <Button onClick={() => onAnalyze(photo.id)} disabled={analyzing === photo.id}>
+                {/* Show Reanalyze for already analyzed photos, Quick Analysis for new photos */}
+                {onAnalyze && (
+                  <Button
+                    onClick={() => onAnalyze(photo.id)}
+                    disabled={analyzing === photo.id}
+                    variant={photo.analyzed ? "outline" : "default"}
+                  >
                     {analyzing === photo.id ? (
                       <>
                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                         Analyzing...
                       </>
+                    ) : photo.analyzed ? (
+                      <>
+                        <Sparkles className="mr-2 h-4 w-4" />
+                        Reanalyze
+                      </>
                     ) : (
                       <>
                         <Sparkles className="mr-2 h-4 w-4" />
-                        Quick Analysis
+                        AI Analysis
                       </>
                     )}
                   </Button>
