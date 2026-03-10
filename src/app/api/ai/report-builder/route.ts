@@ -85,8 +85,23 @@ async function POST_INNER(req: NextRequest, ctx: { userId: string; orgId: string
       return NextResponse.json({ success: false, error: "Claim not found" }, { status: 404 });
     }
 
-    // Get org context
+    // Get org context + branding
     const claimOrgId = claim.orgId || orgId || "unknown";
+
+    const [org, branding] = await Promise.all([
+      prisma.org
+        .findUnique({
+          where: { id: claimOrgId },
+          select: { name: true },
+        })
+        .catch(() => null),
+      prisma.org_branding
+        .findFirst({
+          where: { orgId: claimOrgId },
+          select: { phone: true, email: true, website: true, license: true },
+        })
+        .catch(() => null),
+    ]);
 
     // Validate images are valid URLs or data URIs
     const validImages = images.filter((img: string) => {
@@ -123,6 +138,13 @@ async function POST_INNER(req: NextRequest, ctx: { userId: string; orgId: string
       propertyAddress: property?.address,
       lossDate: claim.dateOfLoss || undefined,
       damageType: claim.damageType || undefined,
+      claimContext: {
+        claimNumber: claim.claimNumber || undefined,
+        insuredName: claim.insured_name || undefined,
+        carrier: claim.carrier || undefined,
+        policyNumber: claim.policy_number || undefined,
+        adjusterName: claim.adjusterName || undefined,
+      },
     });
 
     if (!pipelineResult.success || !pipelineResult.results) {
@@ -151,7 +173,27 @@ async function POST_INNER(req: NextRequest, ctx: { userId: string; orgId: string
       analysis: pipelineResult.results,
       generatedAt: new Date().toISOString(),
       generatedBy: userId,
-      orgName: undefined, // Could fetch from org table if needed
+      orgName: org?.name || undefined,
+      claimContext: {
+        insuredName: claim.insured_name || undefined,
+        carrier: claim.carrier || undefined,
+        policyNumber: claim.policy_number || undefined,
+        adjusterName: claim.adjusterName || undefined,
+        adjusterPhone: claim.adjusterPhone || undefined,
+        adjusterEmail: claim.adjusterEmail || undefined,
+        damageType: claim.damageType || undefined,
+        dateOfLoss: claim.dateOfLoss?.toISOString() || undefined,
+        homeownerEmail: claim.homeowner_email || claim.homeownerEmail || undefined,
+      },
+      branding: branding
+        ? {
+            companyName: org?.name || undefined,
+            phone: branding.phone || undefined,
+            email: branding.email || undefined,
+            website: branding.website || undefined,
+            license: branding.license || undefined,
+          }
+        : undefined,
     };
 
     // Generate PDF

@@ -229,6 +229,17 @@ async function handleSummary(claimId: string, orgId: string) {
       dateOfLoss: true,
       carrier: true,
       lifecycle_stage: true,
+      insured_name: true,
+      policy_number: true,
+      adjusterName: true,
+      adjusterPhone: true,
+      adjusterEmail: true,
+      status: true,
+      estimatedJobValue: true,
+      signingStatus: true,
+      properties: {
+        select: { street: true, city: true, state: true, zipCode: true },
+      },
     },
   });
 
@@ -236,14 +247,24 @@ async function handleSummary(claimId: string, orgId: string) {
     return NextResponse.json({ error: "Claim not found" }, { status: 404 });
   }
 
+  const propertyAddr = claim.properties
+    ? `${claim.properties.street}, ${claim.properties.city}, ${claim.properties.state} ${claim.properties.zipCode}`
+    : "N/A";
+
   const prompt = `Generate a concise executive summary for this insurance claim:
 
 Claim #${claim.claimNumber}
 Title: ${claim.title}
+Insured: ${claim.insured_name || "N/A"}
+Property: ${propertyAddr}
 Damage Type: ${claim.damageType}
 Date of Loss: ${claim.dateOfLoss ? new Date(claim.dateOfLoss).toLocaleDateString() : "Unknown"}
 Carrier: ${claim.carrier || "Unknown"}
+Policy Number: ${claim.policy_number || "N/A"}
+Adjuster: ${claim.adjusterName || "N/A"}${claim.adjusterPhone ? ` (${claim.adjusterPhone})` : ""}${claim.adjusterEmail ? ` - ${claim.adjusterEmail}` : ""}
 Current Stage: ${claim.lifecycle_stage}
+Signing Status: ${claim.signingStatus || "N/A"}
+Estimated Job Value: ${claim.estimatedJobValue ? `$${(claim.estimatedJobValue / 100).toFixed(2)}` : "N/A"}
 
 Provide:
 1. Brief overview (2-3 sentences)
@@ -295,8 +316,13 @@ async function handleRebuttal(
   const prompt = `Generate a professional insurance supplement rebuttal letter for:
 
 Claim #${claim.claimNumber}
+Insured: ${claim.insured_name || "N/A"}
 Property: ${claim.properties?.street || "N/A"}
+Carrier: ${claim.carrier || "N/A"}
+Policy Number: ${claim.policy_number || "N/A"}
+Adjuster: ${claim.adjusterName || "N/A"}${claim.adjusterPhone ? ` (${claim.adjusterPhone})` : ""}${claim.adjusterEmail ? ` - ${claim.adjusterEmail}` : ""}
 Damage Type: ${claim.damageType}
+Date of Loss: ${claim.dateOfLoss ? new Date(claim.dateOfLoss).toLocaleDateString() : "Unknown"}
 Supplement Amount: $${(supplement.total_cents / 100).toFixed(2)}
 ${payload.carrierResponse ? `\nCarrier Response: ${payload.carrierResponse}` : ""}
 
@@ -363,8 +389,11 @@ async function handleRebuttalBuilder(
 
 CLAIM DETAILS:
 Claim #: ${claim.claimNumber}
+Insured: ${claim.insured_name || "N/A"}
 Property: ${claim.properties?.street}, ${claim.properties?.city}, ${claim.properties?.state}
 Carrier: ${claim.carrier || claim.properties?.carrier || "Unknown"}
+Policy Number: ${claim.policy_number || claim.properties?.policyNumber || "N/A"}
+Adjuster: ${claim.adjusterName || "N/A"}${claim.adjusterPhone ? ` (${claim.adjusterPhone})` : ""}${claim.adjusterEmail ? ` - ${claim.adjusterEmail}` : ""}
 Damage Type: ${claim.damageType}
 Date of Loss: ${claim.dateOfLoss ? new Date(claim.dateOfLoss).toLocaleDateString() : "Unknown"}
 

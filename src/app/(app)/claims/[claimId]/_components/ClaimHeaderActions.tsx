@@ -3,7 +3,9 @@
 
 import { Edit, MoreVertical, UserPlus } from "lucide-react";
 import Link from "next/link";
-import { useState } from "react";
+import { usePathname, useRouter } from "next/navigation";
+import { useCallback, useState } from "react";
+import { toast } from "sonner";
 
 import { ArchiveJobButton } from "@/components/jobs/ArchiveJobButton";
 import { TransferJobDropdown } from "@/components/jobs/TransferJobDropdown";
@@ -16,6 +18,29 @@ interface ClaimHeaderActionsProps {
 
 export function ClaimHeaderActions({ claimId, claimTitle }: ClaimHeaderActionsProps) {
   const [showMobileMenu, setShowMobileMenu] = useState(false);
+  const pathname = usePathname();
+  const router = useRouter();
+
+  const handleEditClick = useCallback(() => {
+    const isOnOverview = pathname?.endsWith("/overview");
+    if (isOnOverview) {
+      // Already on edit surface — scroll to claim details and notify user
+      const section = document.getElementById("claim-details-section");
+      if (section) {
+        section.scrollIntoView({ behavior: "smooth", block: "start" });
+        // Brief highlight pulse
+        section.classList.add("ring-2", "ring-blue-400", "ring-offset-2");
+        setTimeout(
+          () => section.classList.remove("ring-2", "ring-blue-400", "ring-offset-2"),
+          2000
+        );
+      }
+      toast.info("Click any field to edit it", { duration: 3000 });
+    } else {
+      router.push(`/claims/${claimId}/overview`);
+    }
+    setShowMobileMenu(false);
+  }, [pathname, claimId, router]);
 
   return (
     <>
@@ -33,16 +58,15 @@ export function ClaimHeaderActions({ claimId, claimTitle }: ClaimHeaderActionsPr
         </Link>
         <TransferJobDropdown jobId={claimId} currentCategory="claim" />
         <ArchiveJobButton jobId={claimId} jobTitle={claimTitle} type="claim" />
-        <Link href={`/claims/${claimId}/overview`}>
-          <Button
-            variant="outline"
-            size="sm"
-            className="border-white/20 bg-white/10 text-white hover:bg-white/20"
-          >
-            <Edit className="mr-2 h-4 w-4" />
-            Edit
-          </Button>
-        </Link>
+        <Button
+          variant="outline"
+          size="sm"
+          className="border-white/20 bg-white/10 text-white hover:bg-white/20"
+          onClick={handleEditClick}
+        >
+          <Edit className="mr-2 h-4 w-4" />
+          Edit
+        </Button>
       </div>
 
       {/* Mobile menu toggle */}
@@ -65,12 +89,15 @@ export function ClaimHeaderActions({ claimId, claimTitle }: ClaimHeaderActionsPr
             </Link>
             <TransferJobDropdown jobId={claimId} currentCategory="claim" />
             <ArchiveJobButton jobId={claimId} jobTitle={claimTitle} type="claim" />
-            <Link href={`/claims/${claimId}/overview`}>
-              <Button variant="ghost" size="sm" className="w-full justify-start">
-                <Edit className="mr-2 h-4 w-4" />
-                Edit Claim
-              </Button>
-            </Link>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="w-full justify-start"
+              onClick={handleEditClick}
+            >
+              <Edit className="mr-2 h-4 w-4" />
+              Edit Claim
+            </Button>
           </div>
         )}
       </div>

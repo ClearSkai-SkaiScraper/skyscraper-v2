@@ -22,6 +22,14 @@ export interface StormIntakeInput {
   propertyAddress?: string;
   lossDate?: Date;
   damageType?: string;
+  /** Full claim context for AI-informed analysis */
+  claimContext?: {
+    claimNumber?: string;
+    insuredName?: string;
+    carrier?: string;
+    policyNumber?: string;
+    adjusterName?: string;
+  };
 }
 
 export interface StormIntakeResults {

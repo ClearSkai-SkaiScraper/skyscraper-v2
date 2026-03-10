@@ -1,7 +1,8 @@
 "use client";
 
-import { CheckCircle, CloudRain, Loader2 } from "lucide-react";
+import { CheckCircle, CloudLightning, CloudRain, Download, Loader2 } from "lucide-react";
 import { useState } from "react";
+import { toast } from "sonner";
 
 import { Wizard, WizardStep } from "@/components/common/Wizard";
 import { Badge } from "@/components/ui/badge";
@@ -59,6 +60,37 @@ export default function ClaimWeatherPage({ params }: Props) {
   const [error, setError] = useState<string | null>(null);
 
   const [reportResult, setReportResult] = useState<WeatherReportApiResponse | null>(null);
+  const [generatingPdf, setGeneratingPdf] = useState(false);
+
+  async function downloadVerificationPdf() {
+    setGeneratingPdf(true);
+    try {
+      toast.info("Scanning 12-month weather history…", { duration: 4000 });
+      const res = await fetch(`/api/claims/${claimId}/weather/quick-verify`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+      });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({ error: "Unknown error" }));
+        throw new Error(data.error || `Request failed (${res.status})`);
+      }
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `Weather-Verification-${claimId}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      toast.success("Weather Verification PDF downloaded!");
+    } catch (err) {
+      logger.error("Verification PDF error:", err);
+      toast.error(err instanceof Error ? err.message : "Failed to generate verification PDF");
+    } finally {
+      setGeneratingPdf(false);
+    }
+  }
 
   async function runQuickDol() {
     setIsQuickDolRunning(true);
@@ -345,7 +377,45 @@ export default function ClaimWeatherPage({ params }: Props) {
   ];
 
   return (
-    <div className="mx-auto max-w-4xl py-6">
+    <div className="mx-auto max-w-4xl space-y-6 py-6">
+      {/* Quick one-page Weather Verification PDF */}
+      <Card className="border-emerald-200 bg-gradient-to-r from-emerald-50 to-sky-50 p-5 dark:border-emerald-800 dark:from-emerald-950/30 dark:to-sky-950/30">
+        <div className="flex items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-100 dark:bg-emerald-900/40">
+              <CloudLightning className="h-5 w-5 text-emerald-600" />
+            </div>
+            <div>
+              <h3 className="font-semibold text-emerald-900 dark:text-emerald-100">
+                One-Page Weather Verification PDF
+              </h3>
+              <p className="text-xs text-emerald-700 dark:text-emerald-300">
+                Auto-scans 12 months of NOAA hail &amp; wind data near this property, scores
+                severity, and generates a branded justification document.
+              </p>
+            </div>
+          </div>
+          <Button
+            onClick={downloadVerificationPdf}
+            disabled={generatingPdf}
+            className="shrink-0 bg-emerald-600 text-white hover:bg-emerald-700"
+          >
+            {generatingPdf ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Scanning…
+              </>
+            ) : (
+              <>
+                <Download className="mr-2 h-4 w-4" />
+                Download PDF
+              </>
+            )}
+          </Button>
+        </div>
+      </Card>
+
+      {/* Existing Quick DOL wizard */}
       <Wizard steps={steps} onFinishAction={() => {}} />
     </div>
   );

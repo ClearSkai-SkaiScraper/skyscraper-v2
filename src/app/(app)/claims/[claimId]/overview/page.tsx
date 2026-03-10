@@ -1,7 +1,14 @@
 // src/app/(app)/claims/[claimId]/overview/page.tsx
 "use client";
 
-import { ClipboardCheck, FileText, Layers, PenLine, ShieldCheck } from "lucide-react";
+import {
+  ClipboardCheck,
+  CloudLightning,
+  FileText,
+  Layers,
+  PenLine,
+  ShieldCheck,
+} from "lucide-react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -149,6 +156,7 @@ export default function OverviewPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [pendingSaves, setPendingSaves] = useState<Set<string>>(new Set());
+  const [generatingWeather, setGeneratingWeather] = useState(false);
   const saveQueueRef = useRef<{ [key: string]: any }>({});
   const saveTimerRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -202,6 +210,38 @@ export default function OverviewPage() {
     },
     [queueSave]
   );
+
+  // Weather Verification PDF download
+  const handleWeatherVerification = useCallback(async () => {
+    if (!claimId) return;
+    setGeneratingWeather(true);
+    try {
+      toast.info("Scanning 12-month weather history…", { duration: 4000 });
+      const res = await fetch(`/api/claims/${claimId}/weather/quick-verify`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({ error: "Unknown error" }));
+        throw new Error(err.error || `Failed (${res.status})`);
+      }
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `Weather-Verification-${claim?.title || claimId}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      toast.success("Weather Verification PDF downloaded!");
+    } catch (err: any) {
+      logger.error("[WeatherVerify] Error:", err);
+      toast.error(err.message || "Failed to generate weather verification");
+    } finally {
+      setGeneratingWeather(false);
+    }
+  }, [claimId, claim?.title]);
 
   useEffect(() => {
     fetchData();
@@ -257,7 +297,7 @@ export default function OverviewPage() {
             status: claimInfo.status ?? "active",
             lifecycleStage: null,
             insured_name: claimInfo.insured_name || null,
-            homeowner_email: claimInfo.homeowner_email || null,
+            homeowner_email: claimInfo.homeowner_email || claimInfo.homeownerEmail || null,
             carrier: claimInfo.carrier ?? null,
             policy_number: claimInfo.policyNumber ?? null,
             adjusterName: claimInfo.adjusterName || null,
@@ -502,7 +542,10 @@ export default function OverviewPage() {
 
         {/* 4. Claim Details */}
         <SectionCard title="Claim Details" editable>
-          <div className="space-y-3">
+          <div
+            id="claim-details-section"
+            className="scroll-mt-24 space-y-3 rounded-lg transition-all duration-300"
+          >
             <div className="grid grid-cols-2 gap-4">
               <EditableField
                 label="Title"
@@ -542,12 +585,30 @@ export default function OverviewPage() {
             />
 
             <div className="grid grid-cols-2 gap-4">
-              {claim.damageType && (
-                <div>
-                  <label className="text-xs text-muted-foreground">Damage Type</label>
-                  <p className="text-foreground">{claim.damageType}</p>
-                </div>
-              )}
+              <div>
+                <label className="text-xs font-medium text-muted-foreground">Damage Type</label>
+                <select
+                  value={claim.damageType || ""}
+                  onChange={(e) => {
+                    const newType = e.target.value;
+                    setClaim((prev) => (prev ? { ...prev, damageType: newType || null } : null));
+                    queueSave("damageType", newType || null);
+                  }}
+                  className="mt-1 block w-full rounded-lg border border-slate-300 bg-background px-3 py-2 text-sm font-medium text-foreground shadow-sm transition-colors focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200 dark:border-slate-600"
+                >
+                  <option value="">Select damage type</option>
+                  <option value="Hail">Hail</option>
+                  <option value="Wind">Wind</option>
+                  <option value="Water">Water</option>
+                  <option value="Fire">Fire</option>
+                  <option value="Storm">Storm</option>
+                  <option value="Lightning">Lightning</option>
+                  <option value="Tornado">Tornado</option>
+                  <option value="Hurricane">Hurricane</option>
+                  <option value="Flood">Flood</option>
+                  <option value="Other">Other</option>
+                </select>
+              </div>
               {claim.lifecycleStage && (
                 <div>
                   <label className="text-xs text-muted-foreground">Stage</label>
@@ -582,6 +643,15 @@ export default function OverviewPage() {
                   Generate Rebuttal
                 </Link>
                 <CarrierExportButton claimId={claimId} carrier={claim.carrier} />
+                <button
+                  type="button"
+                  onClick={handleWeatherVerification}
+                  disabled={generatingWeather}
+                  className="inline-flex items-center gap-2 rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white shadow transition-colors hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-400 disabled:opacity-50 dark:bg-emerald-700 dark:hover:bg-emerald-800"
+                >
+                  <CloudLightning className="h-4 w-4" />
+                  {generatingWeather ? "Scanning Weather…" : "Weather Verification"}
+                </button>
                 <GenerateReportButton
                   claimId={claimId}
                   variant="outline"
@@ -631,6 +701,10 @@ export default function OverviewPage() {
             propertyAddress: claim.propertyAddress,
             dateOfLoss: claim.dateOfLoss,
             dateOfInspection: claim.dateOfInspection,
+          }}
+          onFieldUpdate={(field, value) => {
+            // Sync sidebar edits back into overview state
+            setClaim((prev) => (prev ? { ...prev, [field]: value } : null));
           }}
         />
       </div>

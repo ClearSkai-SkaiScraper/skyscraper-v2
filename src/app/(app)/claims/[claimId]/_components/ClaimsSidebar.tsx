@@ -40,9 +40,11 @@ interface ClaimsSidebarProps {
     dateOfLoss?: string | null;
     dateOfInspection?: string | null;
   };
+  /** Called when the sidebar saves a field — lets the parent sync its state */
+  onFieldUpdate?: (field: string, value: string) => void;
 }
 
-export function ClaimsSidebar({ claimId, claim }: ClaimsSidebarProps) {
+export function ClaimsSidebar({ claimId, claim, onFieldUpdate }: ClaimsSidebarProps) {
   const router = useRouter();
   const [editing, setEditing] = useState<string | null>(null);
   const [editValue, setEditValue] = useState("");
@@ -77,13 +79,15 @@ export function ClaimsSidebar({ claimId, claim }: ClaimsSidebarProps) {
         if (!res.ok) throw new Error(`Save failed (${res.status})`);
         setEditing(null);
         toast.success("Field saved");
+        // Notify parent so overview state stays in sync
+        onFieldUpdate?.(field, editValue);
         router.refresh();
       } catch (err) {
         toast.error("Failed to save — please try again");
         setEditing(null);
       }
     },
-    [claimId, editValue, router]
+    [claimId, editValue, router, onFieldUpdate]
   );
 
   const cancelEdit = useCallback(() => {

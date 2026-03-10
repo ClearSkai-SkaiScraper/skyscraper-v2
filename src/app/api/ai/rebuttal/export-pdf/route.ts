@@ -234,7 +234,10 @@ async function POST_INNER(req: NextRequest, ctx: { userId: string; orgId: string
           <strong>RE: Claim Number:</strong> ${claim.claimNumber || claimId}<br/>
           <strong>Property Address:</strong> ${propertyAddress}<br/>
           <strong>Insured:</strong> ${claim.insured_name || "N/A"}<br/>
+          ${claim.policy_number ? `<strong>Policy Number:</strong> ${claim.policy_number}<br/>` : ""}
           <strong>Date of Loss:</strong> ${claim.dateOfLoss ? new Date(claim.dateOfLoss).toLocaleDateString() : "N/A"}
+          ${claim.adjusterPhone ? `<br/><strong>Adjuster Phone:</strong> ${claim.adjusterPhone}` : ""}
+          ${claim.adjusterEmail ? `<br/><strong>Adjuster Email:</strong> ${claim.adjusterEmail}` : ""}
         </div>
 
         <div class="salutation">

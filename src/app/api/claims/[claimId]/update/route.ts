@@ -66,6 +66,9 @@ export const PATCH = withAuth(
       if (body.dateOfLoss !== undefined) {
         updateData.dateOfLoss = body.dateOfLoss ? new Date(body.dateOfLoss) : null;
       }
+      if (body.dateOfInspection !== undefined) {
+        updateData.inspectionDate = body.dateOfInspection ? new Date(body.dateOfInspection) : null;
+      }
 
       // Auto-set signing status audit trail
       if (body.signingStatus !== undefined) {

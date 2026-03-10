@@ -2397,6 +2397,7 @@ model claims {
   description                String?
   damageType                 String
   dateOfLoss                 DateTime
+  inspectionDate             DateTime?
   carrier                    String?
   adjusterName               String?
   adjusterPhone              String?

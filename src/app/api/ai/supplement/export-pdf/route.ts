@@ -80,6 +80,12 @@ export async function POST(req: NextRequest) {
         insured_name: true,
         homeowner_email: true,
         dateOfLoss: true,
+        carrier: true,
+        policy_number: true,
+        damageType: true,
+        adjusterName: true,
+        adjusterPhone: true,
+        adjusterEmail: true,
         properties: {
           select: {
             street: true,
@@ -216,7 +222,13 @@ export async function POST(req: NextRequest) {
           <strong>Property:</strong> ${claim.properties ? `${claim.properties.street}, ${claim.properties.city}, ${claim.properties.state} ${claim.properties.zipCode}` : "N/A"}<br/>
           <strong>Homeowner:</strong> ${claim.insured_name || "N/A"}<br/>
           ${claim.homeowner_email ? `<strong>Email:</strong> ${claim.homeowner_email}<br/>` : ""}
+          ${claim.carrier ? `<strong>Carrier:</strong> ${claim.carrier}<br/>` : ""}
+          ${claim.policy_number ? `<strong>Policy Number:</strong> ${claim.policy_number}<br/>` : ""}
+          ${claim.damageType ? `<strong>Damage Type:</strong> ${claim.damageType}<br/>` : ""}
           <strong>Date of Loss:</strong> ${claim.dateOfLoss ? new Date(claim.dateOfLoss).toLocaleDateString() : "N/A"}<br/>
+          ${claim.adjusterName ? `<strong>Adjuster:</strong> ${claim.adjusterName}` : ""}
+          ${claim.adjusterPhone ? ` • ${claim.adjusterPhone}` : ""}
+          ${claim.adjusterEmail ? ` • ${claim.adjusterEmail}` : ""}<br/>
           <strong>Generated:</strong> ${new Date().toLocaleString()}
         </div>
 
