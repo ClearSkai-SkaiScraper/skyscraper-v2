@@ -7,6 +7,7 @@ import prisma from "@/lib/prisma";
 import { getRateLimitIdentifier, rateLimiters } from "@/lib/rate-limit";
 import { htmlToPdfBuffer } from "@/lib/reports/pdf-utils";
 import { saveAiPdfToStorage } from "@/lib/reports/saveAiPdfToStorage";
+import { saveReportHistory } from "@/lib/reports/saveReportHistory";
 import { safeOrgContext } from "@/lib/safeOrgContext";
 import { rebuttalSchema, validateAIRequest } from "@/lib/validation/aiSchemas";
 
@@ -210,6 +211,21 @@ export async function POST(req: NextRequest) {
     } catch (historyErr) {
       logger.error("[Rebuttal API] Report history save failed", { error: historyErr });
     }
+
+    // ── Save to report_history table for Reports History page ──
+    await saveReportHistory({
+      orgId: ctx.orgId,
+      userId: ctx.userId,
+      type: "rebuttal",
+      title: `Rebuttal Letter — ${claim.claimNumber || claimId}`,
+      sourceId: claimId,
+      fileUrl: null,
+      metadata: {
+        tone,
+        claimNumber: claim.claimNumber,
+        pdfSaved,
+      },
+    });
 
     return NextResponse.json({
       ok: true,

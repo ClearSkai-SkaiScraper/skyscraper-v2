@@ -109,6 +109,7 @@ const navSections: NavSection[] = [
     label: "Reports & Documents",
     items: [
       { label: "Reports Hub", href: "/reports/hub", icon: FileText },
+      { label: "Report History", href: "/reports/history", icon: History },
       { label: "Quick Reports", href: "/reports/templates/pdf-builder", icon: FileText },
       { label: "Templates & Marketplace", href: "/reports/templates", icon: FolderOpen },
       { label: "Bid Package", href: "/reports/contractor-packet", icon: FileText },

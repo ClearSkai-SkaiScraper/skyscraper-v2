@@ -1,11 +1,12 @@
 export const dynamic = "force-dynamic";
 
-import { auth } from "@clerk/nextjs/server";
 import { logger } from "@/lib/logger";
+import { auth } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
 
 import { getResolvedOrgId } from "@/lib/auth/getResolvedOrgId";
 import { db } from "@/lib/db";
+import { saveReportHistory } from "@/lib/reports/saveReportHistory";
 
 // POST /api/contractor-packet - Create new contractor packet generation job
 export async function POST(req: NextRequest) {
@@ -310,30 +311,18 @@ async function generateContractorPacketAsync(
     );
 
     // ── Save to report_history so it appears on Reports History page ──
-    try {
-      await db.query(
-        `INSERT INTO report_history (
-          id, organization_id, report_type, title, status,
-          claim_id, source_id, source_type,
-          created_by, created_at
-        ) VALUES (
-          gen_random_uuid(), $1, 'contractor-packet', $2, 'final',
-          $3, $4, 'contractor_packet',
-          $5, NOW()
-        )
-        ON CONFLICT DO NOTHING`,
-        [
-          orgId,
-          `Contractor Packet — ${new Date().toLocaleDateString("en-US")}`,
-          claimId || null,
-          packetId,
-          "system",
-        ]
-      );
-    } catch (rhErr) {
-      // report_history table may not exist yet — non-blocking
-      logger.warn("[Contractor Packet] Could not save to report_history:", rhErr);
-    }
+    await saveReportHistory({
+      orgId,
+      userId: "system",
+      type: "contractor_packet",
+      title: `Contractor Packet — ${new Date().toLocaleDateString("en-US")}`,
+      sourceId: claimId || packetId,
+      fileUrl: null,
+      metadata: {
+        packetId,
+        claimId: claimId || null,
+      },
+    });
 
     // ── Save to claim_documents so it appears on the claim's Documents tab ──
     if (claimId) {

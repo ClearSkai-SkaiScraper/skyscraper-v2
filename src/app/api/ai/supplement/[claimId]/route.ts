@@ -21,6 +21,7 @@ import {
 } from "@/lib/billing/requireActiveSubscription";
 import prisma from "@/lib/prisma";
 import { checkRateLimit } from "@/lib/rate-limit";
+import { saveReportHistory } from "@/lib/reports/saveReportHistory";
 import { supplementClaimSchema, validateAIRequest } from "@/lib/validation/aiSchemas";
 
 const openai = getOpenAI();
@@ -209,6 +210,22 @@ Be assertive but professional.
     logger.info(
       `[AI Supplement] Generated for claim ${claimId}, type: ${pushbackType}, tokens: ${completion.usage?.total_tokens}`
     );
+
+    // ── Save to report_history for Reports History page ──
+    await saveReportHistory({
+      orgId,
+      userId,
+      type: "supplement",
+      title: `Supplement — ${pushbackType || "General"} (${claim.carrier || "Carrier"})`,
+      sourceId: claimId,
+      fileUrl: null,
+      metadata: {
+        supplementId: savedSupplementId,
+        pushbackType,
+        carrier: claim.carrier,
+        tokensUsed: completion.usage?.total_tokens,
+      },
+    });
 
     return NextResponse.json({
       success: true,

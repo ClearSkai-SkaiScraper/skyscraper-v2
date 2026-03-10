@@ -11,6 +11,15 @@ export type UnifiedReportType =
   | "RETAIL_PROPOSAL"
   | "WEATHER_REPORT"
   | "VIDEO_REPORT"
+  | "DAMAGE_REPORT"
+  | "REBUTTAL"
+  | "SUPPLEMENT"
+  | "CONTRACTOR_PACKET"
+  | "BID_PACKAGE"
+  | "MATERIALS_ESTIMATE"
+  | "PROJECT_PLAN"
+  | "BAD_FAITH"
+  | "CLAIMS_PACKET"
   | "OTHER";
 export type UnifiedReport = {
   id: string;
@@ -71,7 +80,17 @@ export async function getAllUserReports(params?: {
                 ? "WEATHER_REPORT"
                 : r.type.includes("video") || r.type === "video_report"
                   ? "VIDEO_REPORT"
-                  : "OTHER";
+                  : r.type.includes("rebuttal")
+                    ? "REBUTTAL"
+                    : r.type.includes("supplement")
+                      ? "SUPPLEMENT"
+                      : r.type.includes("bad_faith")
+                        ? "BAD_FAITH"
+                        : r.type.includes("damage")
+                          ? "DAMAGE_REPORT"
+                          : r.type.includes("project_plan")
+                            ? "PROJECT_PLAN"
+                            : "OTHER";
       return {
         id: r.id,
         type: mappedType,
@@ -215,12 +234,44 @@ export async function getAllUserReports(params?: {
     );
   }
 
+  // 6. report_history (raw SQL table — damage reports, rebuttals, supplements, etc.)
+  let reportHistoryUnified: UnifiedReport[] = [];
+  try {
+    const rows: any[] = await prisma.$queryRawUnsafe(
+      `SELECT id, org_id, user_id, type, source_id, title, file_url, metadata, created_at
+       FROM report_history
+       WHERE org_id = $1
+       ORDER BY created_at DESC
+       LIMIT 200`,
+      orgId
+    );
+    reportHistoryUnified = rows.map((r: any) => {
+      const mappedType = mapRawTypeToUnified(r.type);
+      return {
+        id: r.id,
+        type: mappedType,
+        claimId: r.source_id || null,
+        title: r.title || fallbackTitle(mappedType),
+        createdAt: new Date(r.created_at).toISOString(),
+        url: r.file_url || null,
+        source: sourceLabel(mappedType),
+        metadata: typeof r.metadata === "string" ? JSON.parse(r.metadata) : r.metadata,
+      };
+    });
+  } catch (e) {
+    console.warn(
+      "[getAllUserReports] report_history fetch failed:",
+      e instanceof Error ? e.message : e
+    );
+  }
+
   let combined = [
     ...historyUnified,
     ...pdfUnified,
     ...weatherUnified,
     ...fileUnified,
     ...retailUnified,
+    ...reportHistoryUnified,
   ];
 
   // Enrich with claimNumber + address for search
@@ -289,6 +340,24 @@ function fallbackTitle(t: UnifiedReportType): string {
       return "Weather Verification";
     case "VIDEO_REPORT":
       return "Video Report";
+    case "DAMAGE_REPORT":
+      return "Damage Report";
+    case "REBUTTAL":
+      return "Rebuttal Letter";
+    case "SUPPLEMENT":
+      return "Supplement";
+    case "CONTRACTOR_PACKET":
+      return "Contractor Packet";
+    case "BID_PACKAGE":
+      return "Bid Package";
+    case "MATERIALS_ESTIMATE":
+      return "Materials Estimate";
+    case "PROJECT_PLAN":
+      return "Project Plan";
+    case "BAD_FAITH":
+      return "Bad Faith Analysis";
+    case "CLAIMS_PACKET":
+      return "Claims Packet";
     default:
       return "Report";
   }
@@ -306,7 +375,58 @@ function sourceLabel(t: UnifiedReportType): string {
       return "Weather Verify";
     case "VIDEO_REPORT":
       return "Video Intelligence";
+    case "DAMAGE_REPORT":
+      return "Damage Inspector";
+    case "REBUTTAL":
+      return "Rebuttal Builder";
+    case "SUPPLEMENT":
+      return "Supplement Builder";
+    case "CONTRACTOR_PACKET":
+      return "Contractor Packet";
+    case "BID_PACKAGE":
+      return "Bid Package";
+    case "MATERIALS_ESTIMATE":
+      return "Material Estimator";
+    case "PROJECT_PLAN":
+      return "Project Planner";
+    case "BAD_FAITH":
+      return "Bad Faith Detector";
+    case "CLAIMS_PACKET":
+      return "Claims Packet";
     default:
       return "Reports";
+  }
+}
+
+/** Map raw type strings from report_history table to UnifiedReportType */
+function mapRawTypeToUnified(raw: string): UnifiedReportType {
+  switch (raw) {
+    case "damage_report":
+      return "DAMAGE_REPORT";
+    case "weather_report":
+      return "WEATHER_REPORT";
+    case "rebuttal":
+      return "REBUTTAL";
+    case "supplement":
+      return "SUPPLEMENT";
+    case "contractor_packet":
+    case "contractor-packet":
+      return "CONTRACTOR_PACKET";
+    case "bid_package":
+      return "BID_PACKAGE";
+    case "materials_estimate":
+      return "MATERIALS_ESTIMATE";
+    case "project_plan":
+      return "PROJECT_PLAN";
+    case "bad_faith":
+      return "BAD_FAITH";
+    case "claim_pdf":
+      return "CLAIM_PDF";
+    case "retail_proposal":
+      return "RETAIL_PROPOSAL";
+    case "claims_packet":
+      return "CLAIMS_PACKET";
+    default:
+      return "OTHER";
   }
 }

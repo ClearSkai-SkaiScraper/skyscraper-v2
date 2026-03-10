@@ -74,10 +74,20 @@ export default function CRMTopbar() {
           <Link
             href="/reports/hub"
             className={`transition-colors hover:text-foreground/80 ${
-              pathname?.startsWith("/reports") ? "text-foreground" : "text-foreground/60"
+              pathname?.startsWith("/reports") && pathname !== "/reports/history"
+                ? "text-foreground"
+                : "text-foreground/60"
             }`}
           >
             Reports
+          </Link>
+          <Link
+            href="/reports/history"
+            className={`transition-colors hover:text-foreground/80 ${
+              pathname === "/reports/history" ? "text-foreground" : "text-foreground/60"
+            }`}
+          >
+            History
           </Link>
           <Link
             href="/tools"

@@ -14,6 +14,7 @@ import prisma from "@/lib/prisma";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { htmlToPdfBuffer } from "@/lib/reports/pdf-utils";
 import { saveAiPdfToStorage } from "@/lib/reports/saveAiPdfToStorage";
+import { saveReportHistory } from "@/lib/reports/saveReportHistory";
 
 export const GET = withAuth(async (req: NextRequest, { userId, orgId }) => {
   try {
@@ -192,6 +193,23 @@ export const POST = withAuth(async (req: NextRequest, { userId, orgId }) => {
       logger.error("[Weather API] PDF generation failed (non-critical):", pdfError);
       // Continue - PDF failure should not break the weather report
     }
+
+    // ── Save to report_history so it appears on Reports History page ──
+    await saveReportHistory({
+      orgId,
+      userId,
+      type: "weather_report",
+      title: `Weather Report — ${body.address}`,
+      sourceId: body.claim_id ?? (body.claimId as string | undefined) ?? null,
+      fileUrl: null,
+      metadata: {
+        address: body.address,
+        dol: body.dol,
+        peril: aiReport.peril,
+        pdfSaved,
+        reportId: report.id,
+      },
+    });
 
     return NextResponse.json({ report, pdfSaved }, { status: 200 });
   } catch (err) {

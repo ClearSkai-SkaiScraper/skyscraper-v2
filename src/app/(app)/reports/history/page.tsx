@@ -25,6 +25,24 @@ function mapTypeLabel(t: UnifiedReport["type"]): { label: string; icon: React.Re
       return { label: "Weather Verification", icon: base };
     case "VIDEO_REPORT":
       return { label: "Video Report", icon: base };
+    case "DAMAGE_REPORT":
+      return { label: "Damage Report", icon: base };
+    case "REBUTTAL":
+      return { label: "Rebuttal Letter", icon: base };
+    case "SUPPLEMENT":
+      return { label: "Supplement", icon: base };
+    case "CONTRACTOR_PACKET":
+      return { label: "Contractor Packet", icon: base };
+    case "BID_PACKAGE":
+      return { label: "Bid Package", icon: base };
+    case "MATERIALS_ESTIMATE":
+      return { label: "Materials Estimate", icon: base };
+    case "PROJECT_PLAN":
+      return { label: "Project Plan", icon: base };
+    case "BAD_FAITH":
+      return { label: "Bad Faith Analysis", icon: base };
+    case "CLAIMS_PACKET":
+      return { label: "Claims Packet", icon: base };
     default:
       return { label: "Report", icon: base };
   }
@@ -109,7 +127,7 @@ export default async function ReportHistoryPage({
       <PageHero
         section="reports"
         title="Report History"
-        description="All AI claims, retail proposals, weather reports, and video reports in one place."
+        description="All generated reports, PDFs, supplements, rebuttals, damage reports, and packets in one place."
         icon={<History className="h-8 w-8" />}
         actions={
           <Link href="/reports">
@@ -141,11 +159,29 @@ export default async function ReportHistoryPage({
                 className="flex-1 bg-transparent text-sm focus:outline-none"
               >
                 <option value="">All Types</option>
-                <option value="AI_CLAIM_SCOPE">AI Claim Scope</option>
-                <option value="claim_pdf">Claim PDF</option>
-                <option value="retail">Retail Proposal</option>
-                <option value="weather">Weather Verification</option>
-                <option value="video">Video Report</option>
+                <optgroup label="AI-Generated">
+                  <option value="AI_CLAIM_SCOPE">AI Claim Scope</option>
+                  <option value="REBUTTAL">Rebuttal Letter</option>
+                  <option value="SUPPLEMENT">Supplement</option>
+                  <option value="BAD_FAITH">Bad Faith Analysis</option>
+                  <option value="PROJECT_PLAN">Project Plan</option>
+                </optgroup>
+                <optgroup label="PDF Reports">
+                  <option value="CLAIM_PDF">Claim PDF</option>
+                  <option value="DAMAGE_REPORT">Damage Report</option>
+                  <option value="WEATHER_REPORT">Weather Verification</option>
+                  <option value="RETAIL_PROPOSAL">Retail Proposal</option>
+                </optgroup>
+                <optgroup label="Packages &amp; Estimates">
+                  <option value="CONTRACTOR_PACKET">Contractor Packet</option>
+                  <option value="BID_PACKAGE">Bid Package</option>
+                  <option value="MATERIALS_ESTIMATE">Materials Estimate</option>
+                  <option value="CLAIMS_PACKET">Claims Packet</option>
+                </optgroup>
+                <optgroup label="Other">
+                  <option value="VIDEO_REPORT">Video Report</option>
+                  <option value="OTHER">Other</option>
+                </optgroup>
               </select>
             </div>
             <select

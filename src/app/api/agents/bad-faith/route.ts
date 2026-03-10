@@ -5,6 +5,7 @@ import { auth } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
 
 import prisma from "@/lib/prisma";
+import { saveReportHistory } from "@/lib/reports/saveReportHistory";
 
 export async function POST(request: NextRequest) {
   try {
@@ -34,12 +35,22 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Claim not found" }, { status: 404 });
     }
 
+    // Check for cached analysis (7-day cache)
     if (!forceRefresh) {
       const existing = await prisma.claim_bad_faith_analysis
         .findUnique({ where: { claim_id: claimId } })
         .catch(() => null);
       if (existing) {
-        return NextResponse.json(existing);
+        // Transform DB format to response format
+        const cachedResult = {
+          hasBadFaithIndicators: (existing.indicators as any[])?.length > 0,
+          indicators: (existing.indicators as any[]) || [],
+          overallSeverity: existing.severity || "none",
+          legalActionRecommended: existing.severity === "critical" || existing.severity === "high",
+          attorneyReferralSuggested: existing.severity === "high" || existing.severity === "medium",
+          summary: existing.summary || "Analysis loaded from cache.",
+        };
+        return NextResponse.json(cachedResult);
       }
     }
 
@@ -52,52 +63,147 @@ export async function POST(request: NextRequest) {
       claim.estimates?.reduce((sum: number, e: any) => sum + (e.total || 0), 0) || 0;
     const supplementCount = claim.supplements?.length || 0;
 
-    const analysis = {
-      claimId,
-      carrier,
-      riskLevel: "low" as string,
-      overallScore: 25,
-      daysSinceLoss,
-      estimateTotal,
-      supplementCount,
-      indicators: [] as { indicator: string; severity: string; details: string }[],
-      recommendations: [
-        "Continue documenting all communications with the carrier",
-        "Ensure all supplemental estimates are submitted in writing",
-        "Keep records of all response timelines from the carrier",
-      ],
-      analyzedAt: new Date().toISOString(),
+    // Build indicators array
+    const indicators: any[] = [];
+    let overallScore = 25;
+
+    if (daysSinceLoss && daysSinceLoss > 90) {
+      indicators.push({
+        type: "extended_timeline",
+        severity: "high",
+        description: `Claim has been open for ${daysSinceLoss} days without resolution`,
+        evidence: [`Date of loss: ${claim.dateOfLoss}`, `Days elapsed: ${daysSinceLoss}`],
+        detectedAt: new Date().toISOString(),
+        legalBasis:
+          "Unreasonable delay in claims handling may constitute bad faith under state insurance regulations",
+        recommendedAction:
+          "Document all carrier communication delays and send a formal demand letter",
+      });
+      overallScore += 25;
+    } else if (daysSinceLoss && daysSinceLoss > 60) {
+      indicators.push({
+        type: "extended_timeline",
+        severity: "medium",
+        description: `Claim has been open for ${daysSinceLoss} days`,
+        evidence: [`Days since loss: ${daysSinceLoss}`],
+        detectedAt: new Date().toISOString(),
+        recommendedAction: "Monitor carrier response times closely",
+      });
+      overallScore += 15;
+    }
+
+    if (supplementCount > 3) {
+      indicators.push({
+        type: "multiple_supplements",
+        severity: "medium",
+        description: `${supplementCount} supplements have been filed, suggesting initial estimate inadequacy`,
+        evidence: [`Number of supplements: ${supplementCount}`],
+        detectedAt: new Date().toISOString(),
+        legalBasis: "Systematic undervaluation of claims may indicate bad faith practices",
+        recommendedAction: "Request detailed justification for initial estimate methodology",
+      });
+      overallScore += 15;
+    } else if (supplementCount > 1) {
+      indicators.push({
+        type: "multiple_supplements",
+        severity: "low",
+        description: `${supplementCount} supplements filed`,
+        evidence: [`Supplement count: ${supplementCount}`],
+        detectedAt: new Date().toISOString(),
+        recommendedAction: "Continue documenting all supplement submissions",
+      });
+      overallScore += 10;
+    }
+
+    // Determine overall severity
+    let overallSeverity: "none" | "low" | "medium" | "high" | "critical" = "none";
+    if (overallScore >= 80) overallSeverity = "critical";
+    else if (overallScore >= 60) overallSeverity = "high";
+    else if (overallScore >= 40) overallSeverity = "medium";
+    else if (overallScore >= 25) overallSeverity = "low";
+
+    const summary =
+      indicators.length > 0
+        ? `Analysis detected ${indicators.length} potential bad faith indicator(s) for claim against ${carrier}. Overall risk assessment: ${overallSeverity.toUpperCase()}.`
+        : `No significant bad faith indicators detected for this claim against ${carrier}. Continue standard documentation practices.`;
+
+    const result = {
+      hasBadFaithIndicators: indicators.length > 0,
+      indicators,
+      overallSeverity,
+      legalActionRecommended: overallSeverity === "critical" || overallSeverity === "high",
+      attorneyReferralSuggested: overallSeverity === "high" || overallSeverity === "medium",
+      summary,
     };
 
-    if (daysSinceLoss && daysSinceLoss > 60) {
-      analysis.indicators.push({
-        indicator: "Extended timeline",
-        severity: "medium",
-        details: daysSinceLoss + " days since loss",
+    // Save analysis to database for caching
+    try {
+      await prisma.claim_bad_faith_analysis.upsert({
+        where: { claim_id: claimId },
+        create: {
+          claim_id: claimId,
+          severity: overallSeverity,
+          summary,
+          indicators: indicators,
+          analyzed_at: new Date(),
+        },
+        update: {
+          severity: overallSeverity,
+          summary,
+          indicators: indicators,
+          analyzed_at: new Date(),
+        },
       });
-      analysis.overallScore += 15;
+      logger.info("[BAD_FAITH_ANALYSIS] Saved to database", { claimId, severity: overallSeverity });
+    } catch (saveError) {
+      logger.error("[BAD_FAITH_ANALYSIS] Failed to save to DB (non-critical)", saveError);
     }
 
-    if (supplementCount > 2) {
-      analysis.indicators.push({
-        indicator: "Multiple supplements",
-        severity: "low",
-        details: supplementCount + " supplements filed",
+    // Also save to ai_reports for report history
+    try {
+      await prisma.ai_reports.create({
+        data: {
+          id: `bad-faith-${claimId}-${Date.now()}`,
+          orgId: orgId || claim.orgId,
+          claimId,
+          userId,
+          userName: "Bad Faith Detector",
+          type: "bad_faith_analysis",
+          title: `Bad Faith Analysis - ${claim.claimNumber || claimId}`,
+          content: JSON.stringify(result),
+          tokensUsed: 0,
+          status: "generated",
+          updatedAt: new Date(),
+        },
       });
-      analysis.overallScore += 10;
+    } catch (reportError) {
+      logger.error("[BAD_FAITH_ANALYSIS] Failed to save to ai_reports", reportError);
     }
 
-    if (analysis.overallScore > 60) analysis.riskLevel = "high";
-    else if (analysis.overallScore > 35) analysis.riskLevel = "medium";
+    logger.info("[BAD_FAITH_ANALYSIS] Complete", {
+      claimId,
+      severity: overallSeverity,
+      indicatorCount: indicators.length,
+    });
 
-    logger.info("Bad-faith analysis complete for " + claimId);
+    // ── Save to report_history for Reports History page ──
+    await saveReportHistory({
+      orgId: orgId || claim.orgId,
+      userId,
+      type: "bad_faith",
+      title: `Bad Faith Analysis — ${claim.claimNumber || claimId}`,
+      sourceId: claimId,
+      fileUrl: null,
+      metadata: {
+        severity: overallSeverity,
+        indicatorCount: indicators.length,
+        claimNumber: claim.claimNumber,
+      },
+    });
 
-    return NextResponse.json(analysis);
+    return NextResponse.json(result);
   } catch (error) {
-    logger.error("Bad-faith analysis error:", error);
-    return NextResponse.json(
-      { error: "Bad faith analysis failed" },
-      { status: 500 }
-    );
+    logger.error("[BAD_FAITH_ANALYSIS] Error:", error);
+    return NextResponse.json({ error: "Bad faith analysis failed" }, { status: 500 });
   }
 }

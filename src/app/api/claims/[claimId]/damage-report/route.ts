@@ -16,6 +16,7 @@ import { apiError } from "@/lib/apiError";
 import { requireAuth } from "@/lib/auth/requireAuth";
 import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
+import { saveReportHistory } from "@/lib/reports/saveReportHistory";
 import { getSupabaseAdmin } from "@/lib/supabaseAdmin";
 
 // IRC Building Codes reference
@@ -546,6 +547,21 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
       reportId,
       photoCount: photos.length,
       pageCount: pdfDoc.getPageCount(),
+    });
+
+    // ── Save to report_history so it appears on Reports History page ──
+    await saveReportHistory({
+      orgId,
+      userId,
+      type: "damage_report",
+      title: `Damage Assessment Report — ${photos.length} photos`,
+      sourceId: claimId,
+      fileUrl: publicUrl,
+      metadata: {
+        reportId,
+        photoCount: photos.length,
+        pageCount: pdfDoc.getPageCount(),
+      },
     });
 
     return NextResponse.json({
