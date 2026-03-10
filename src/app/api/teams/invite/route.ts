@@ -1,10 +1,11 @@
 export const dynamic = "force-dynamic";
 
 import { auth } from "@clerk/nextjs/server";
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { z } from "zod";
 
-import { compose, safeAuth,withOrgScope, withRateLimit, withSentryApi } from "@/lib/api/wrappers";
+import { compose, withRateLimit, withSentryApi } from "@/lib/api/wrappers";
+import { withOrgScope } from "@/lib/auth/tenant";
 
 const TeamInviteSchema = z.object({
   email: z.string().email("Invalid email address"),
@@ -12,7 +13,7 @@ const TeamInviteSchema = z.object({
   name: z.string().optional(),
 });
 
-const basePOST = async (req: NextRequest) => {
+const basePOST = async (req: Request) => {
   const { userId, orgId } = await auth();
   if (!userId || !orgId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   const body = await req.json();
@@ -33,15 +34,21 @@ const basePOST = async (req: NextRequest) => {
 };
 
 // GET endpoint to list pending invitations
-const baseGET = async (req: NextRequest) => {
+const baseGET = async (req: Request) => {
   const { userId, orgId } = await auth();
   if (!userId || !orgId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   const mockInvitations = [
-    { id: "inv_1", email: "newuser@example.com", role: "MEMBER", status: "pending", createdAt: new Date().toISOString() },
+    {
+      id: "inv_1",
+      email: "newuser@example.com",
+      role: "MEMBER",
+      status: "pending",
+      createdAt: new Date().toISOString(),
+    },
   ];
   return NextResponse.json({ invitations: mockInvitations });
 };
 
-const wrap = compose(withSentryApi, withRateLimit, withOrgScope, safeAuth);
-export const POST = wrap(basePOST);
-export const GET = wrap(baseGET);
+const wrap = compose(withSentryApi, withRateLimit);
+export const POST = withOrgScope(wrap(basePOST));
+export const GET = withOrgScope(wrap(baseGET));

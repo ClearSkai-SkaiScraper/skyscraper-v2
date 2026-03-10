@@ -1,7 +1,8 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 
-import { compose, safeAuth, withOrgScope, withRateLimit, withSentryApi } from "@/lib/api/wrappers";
+import { compose, withRateLimit, withSentryApi } from "@/lib/api/wrappers";
 import { createForbiddenResponse, requirePermission } from "@/lib/auth/rbac";
+import { withOrgScope } from "@/lib/auth/tenant";
 import { getCurrentUserPermissions } from "@/lib/permissions";
 import prisma from "@/lib/prisma";
 
@@ -9,7 +10,7 @@ import prisma from "@/lib/prisma";
  * GET /api/clients
  * List all client contacts for the org
  */
-const baseGET = async (req: NextRequest) => {
+const baseGET = async (req: Request) => {
   const { orgId, userId } = await getCurrentUserPermissions();
 
   if (!orgId && !userId) {
@@ -28,7 +29,7 @@ const baseGET = async (req: NextRequest) => {
  * POST /api/clients
  * Create a new client contact
  */
-const basePOST = async (req: NextRequest) => {
+const basePOST = async (req: Request) => {
   try {
     await requirePermission("claims:create");
   } catch (error) {
@@ -79,8 +80,8 @@ const basePOST = async (req: NextRequest) => {
   return NextResponse.json(client, { status: 201 });
 };
 
-const wrap = compose(withSentryApi, withRateLimit, withOrgScope, safeAuth);
-export const GET = wrap(baseGET);
-export const POST = wrap(basePOST);
+const wrap = compose(withSentryApi, withRateLimit);
+export const GET = withOrgScope(wrap(baseGET));
+export const POST = withOrgScope(wrap(basePOST));
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";

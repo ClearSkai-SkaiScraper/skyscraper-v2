@@ -2,21 +2,19 @@ export const dynamic = "force-dynamic";
 
 /**
  * 🔥 PHASE C: QOL - Save AI Output to Lead Notes
- * 
+ *
  * POST /api/leads/[id]/notes/from-ai
  */
 
-import { auth } from "@clerk/nextjs/server";
 import { logger } from "@/lib/logger";
-import { NextRequest, NextResponse } from "next/server";
+import { auth } from "@clerk/nextjs/server";
+import { NextResponse } from "next/server";
 
-import { compose,safeAuth, withOrgScope, withRateLimit, withSentryApi } from "@/lib/api/wrappers";
+import { compose, withRateLimit, withSentryApi } from "@/lib/api/wrappers";
+import { withOrgScope } from "@/lib/auth/tenant";
 import prisma from "@/lib/prisma";
 
-const basePOST = async (
-  req: NextRequest,
-  { params }: { params: { id: string } }
-) => {
+const basePOST = async (req: Request, { params }: { params: { id: string } }) => {
   try {
     const { userId, orgId } = await auth();
     if (!userId || !orgId) {
@@ -36,10 +34,7 @@ const basePOST = async (
     const { type, content } = body;
 
     if (!type || !content) {
-      return NextResponse.json(
-        { error: "type and content are required" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "type and content are required" }, { status: 400 });
     }
 
     // Verify lead belongs to Org
@@ -92,4 +87,4 @@ const basePOST = async (
   }
 };
 
-export const POST = compose(withSentryApi, withRateLimit, withOrgScope, safeAuth)(basePOST);
+export const POST = withOrgScope(compose(withSentryApi, withRateLimit)(basePOST));

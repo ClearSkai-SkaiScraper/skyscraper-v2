@@ -4,72 +4,57 @@ export const dynamic = "force-dynamic";
  * 🔥 PHASE F: Complete Task
  *
  * POST /api/tasks/[id]/complete
+ * Migrated to withOrgScope for DB-verified org scoping.
  */
 
 import { logger } from "@/lib/logger";
-import { auth } from "@clerk/nextjs/server";
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 
+import { withOrgScope } from "@/lib/auth/tenant";
 import prisma from "@/lib/prisma";
 import { checkRateLimit } from "@/lib/rate-limit";
 
-export async function POST(req: NextRequest, { params }: { params: { taskId: string } }) {
-  try {
-    const { userId, orgId } = await auth();
-    if (!userId || !orgId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+export const POST = withOrgScope(
+  async (req: Request, { userId, orgId }, context: { params: Promise<{ taskId: string }> }) => {
+    try {
+      const rl = await checkRateLimit(userId, "API");
+      if (!rl.success) {
+        return NextResponse.json(
+          { error: "rate_limit_exceeded", message: "Too many requests" },
+          { status: 429 }
+        );
+      }
 
-    const rl = await checkRateLimit(userId, "API");
-    if (!rl.success) {
+      const { taskId } = await context.params;
+
+      // Verify task belongs to org
+      const task = await prisma.tasks.findFirst({
+        where: { id: taskId, orgId },
+      });
+
+      if (!task) {
+        return NextResponse.json({ error: "Task not found" }, { status: 404 });
+      }
+
+      // Mark as completed
+      const updatedTask = await prisma.tasks.update({
+        where: { id: taskId },
+        data: {
+          status: "DONE",
+          completedAt: new Date(),
+        },
+      });
+
+      return NextResponse.json({
+        success: true,
+        task: updatedTask,
+      });
+    } catch (error) {
+      logger.error("Error completing task:", error);
       return NextResponse.json(
-        { error: "rate_limit_exceeded", message: "Too many requests" },
-        { status: 429 }
+        { error: "Failed to complete task", details: "Internal server error" },
+        { status: 500 }
       );
     }
-
-    const Org = await prisma.org.findUnique({
-      where: { clerkOrgId: orgId },
-    });
-
-    if (!Org) {
-      return NextResponse.json({ error: "Organization not found" }, { status: 404 });
-    }
-
-    const taskId = params.taskId;
-
-    // Verify task belongs to Org
-    const task = await prisma.tasks.findUnique({
-      where: { id: taskId },
-    });
-
-    if (!task) {
-      return NextResponse.json({ error: "Task not found" }, { status: 404 });
-    }
-
-    // Verify task belongs to Org
-    if (task.orgId !== Org.id) {
-      return NextResponse.json({ error: "Task not found or unauthorized" }, { status: 404 });
-    }
-
-    // Mark as completed
-    const updatedTask = await prisma.tasks.update({
-      where: { id: taskId },
-      data: {
-        status: "DONE",
-        completedAt: new Date(),
-      },
-    });
-
-    return NextResponse.json({
-      success: true,
-      task: updatedTask,
-    });
-  } catch (error) {
-    logger.error("Error completing task:", error);
-    return NextResponse.json(
-      { error: "Failed to complete task", details: "Internal server error" },
-      { status: 500 }
-    );
   }
-}
+);

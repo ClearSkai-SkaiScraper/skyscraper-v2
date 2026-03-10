@@ -13,13 +13,35 @@ export const dynamic = "force-dynamic";
  * - Queues AI intake job
  */
 
-import { NextRequest, NextResponse } from "next/server";
 import { logger } from "@/lib/logger";
+import { NextRequest, NextResponse } from "next/server";
 
 import { handlePublicSubmit } from "@/lib/trades/public-intake";
 
 export async function POST(req: NextRequest) {
   try {
+    // Rate limit by IP — public endpoint, prevent abuse
+    const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
+    const rateLimitKey = `public-submit:${ip}`;
+
+    // Simple in-memory rate limit (5 submissions per minute per IP)
+    // For production, this is backed by the Upstash rate limiter if available
+    const { Ratelimit } = await import("@upstash/ratelimit");
+    const { upstash } = await import("@/lib/upstash");
+    if (upstash) {
+      const limiter = new Ratelimit({
+        redis: upstash,
+        limiter: Ratelimit.slidingWindow(5, "1 m"),
+      });
+      const { success } = await limiter.limit(rateLimitKey);
+      if (!success) {
+        return NextResponse.json(
+          { error: "Too many submissions. Please try again in a minute." },
+          { status: 429 }
+        );
+      }
+    }
+
     const body = await req.json();
 
     const {

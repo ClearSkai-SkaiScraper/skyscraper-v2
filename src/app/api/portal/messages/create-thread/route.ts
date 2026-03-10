@@ -1,7 +1,7 @@
 export const dynamic = "force-dynamic";
 
-import { auth } from "@clerk/nextjs/server";
 import { logger } from "@/lib/logger";
+import { auth } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
 
 import prisma from "@/lib/prisma";
@@ -14,10 +14,32 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { recipientId, companyId, subject, message, orgId } = body;
+    const { recipientId, companyId, subject, message } = body;
 
     if (!recipientId && !companyId) {
       return NextResponse.json({ error: "recipientId or companyId is required" }, { status: 400 });
+    }
+
+    // Derive orgId server-side: if companyId is given, use it as the org context
+    // (tradesCompany.id serves as the orgId for portal threads).
+    // If only recipientId, look up the client's associated org.
+    let resolvedOrgId = "portal";
+    if (companyId) {
+      const company = await prisma.tradesCompany.findUnique({
+        where: { id: companyId },
+        select: { id: true },
+      });
+      if (!company) {
+        return NextResponse.json({ error: "Company not found" }, { status: 404 });
+      }
+      resolvedOrgId = companyId;
+    } else if (recipientId) {
+      // Try to resolve org from the client's connections
+      const connection = await prisma.clientProConnection.findFirst({
+        where: { clientId: recipientId },
+        select: { contractorId: true },
+      });
+      if (connection) resolvedOrgId = connection.contractorId;
     }
 
     const threadId = "thread_" + Date.now() + "_" + Math.random().toString(36).slice(2, 8);
@@ -25,7 +47,7 @@ export async function POST(request: NextRequest) {
     const thread = await prisma.messageThread.create({
       data: {
         id: threadId,
-        orgId: orgId || "portal",
+        orgId: resolvedOrgId,
         clientId: recipientId || null,
         tradePartnerId: companyId || null,
         subject: subject || "New Conversation",

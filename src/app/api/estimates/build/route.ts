@@ -1,18 +1,13 @@
 export const dynamic = "force-dynamic";
 
-import { auth } from "@clerk/nextjs/server";
 import { logger } from "@/lib/logger";
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 
 import { runEstimateBuilder } from "@/lib/ai/estimates";
+import { withOrgScope } from "@/lib/auth/tenant";
 
-export async function POST(req: NextRequest) {
+export const POST = withOrgScope(async (req: Request, { userId, orgId }) => {
   try {
-    const { userId, orgId } = await auth();
-    if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
     const body = await req.json();
     
     if (!body.mode) {
@@ -24,7 +19,7 @@ export async function POST(req: NextRequest) {
 
     const estimate = await runEstimateBuilder({
       userId,
-      orgId: orgId ?? null,
+      orgId,       // DB-verified — never null
       claimId: body.claimId ?? null,
       mode: body.mode,
       lossType: body.lossType ?? null,
@@ -43,4 +38,4 @@ export async function POST(req: NextRequest) {
       { status: 500 }
     );
   }
-}
+});

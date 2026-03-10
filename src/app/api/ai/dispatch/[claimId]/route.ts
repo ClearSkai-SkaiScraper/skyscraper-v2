@@ -127,13 +127,11 @@ async function POST_INNER(
     const trade = tradeMapping[actionType || "FULL_REPLACEMENT"] || "ROOFING";
     const dispatchPriority = priority || "MEDIUM";
 
-    // TODO: When contractor_dispatch table is added to schema, use:
-    // const dispatch = await prisma.contractor_dispatch.create({ ... });
-    // For now, return a simulated dispatch response
+    // STUB: contractor_dispatch model pending schema design.
+    // Returns simulated dispatch response until model is added.
     const dispatchId = randomUUID();
 
-    // TODO: When ai_actions table is added to schema, log AI action here
-    // TODO: When claim_automation_events table is added, create event here
+    // STUB: ai_actions and claim_automation_events models pending schema design.
 
     logger.info("[AI-DISPATCH] Created dispatch:", {
       dispatchId,
@@ -153,10 +151,7 @@ async function POST_INNER(
     });
   } catch (error) {
     logger.error("Contractor Dispatch Error:", error);
-    return NextResponse.json(
-      { error: "Failed to dispatch contractor" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Failed to dispatch contractor" }, { status: 500 });
   }
 }
 

@@ -5,11 +5,11 @@ export const dynamic = "force-dynamic";
  * Manually trigger workflow stage change
  */
 
-import { auth } from "@clerk/nextjs/server";
 import { logger } from "@/lib/logger";
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { z } from "zod";
 
+import { withOrgScope } from "@/lib/auth/tenant";
 import { triggerStage } from "@/lib/workflow/automationEngine";
 
 const TriggerSchema = z.object({
@@ -19,18 +19,12 @@ const TriggerSchema = z.object({
   metadata: z.record(z.any()).optional(),
 });
 
-export async function POST(request: NextRequest) {
-  const { userId, orgId } = await auth();
-
-  if (!userId || !orgId) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
-
+export const POST = withOrgScope(async (request: Request, { userId, orgId }) => {
   try {
     const body = await request.json();
     const { leadId, stageName, eventType, metadata } = TriggerSchema.parse(body);
 
-    // Trigger the stage
+    // Trigger the stage — orgId is DB-verified
     await triggerStage({
       leadId,
       orgId,
@@ -45,9 +39,6 @@ export async function POST(request: NextRequest) {
     });
   } catch (err) {
     logger.error("[Workflow Trigger Error]:", err);
-    return NextResponse.json(
-      { error: "Failed to trigger workflow" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Failed to trigger workflow" }, { status: 500 });
   }
-}
+});

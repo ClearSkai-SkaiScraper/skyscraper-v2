@@ -4,7 +4,6 @@ export const revalidate = 0;
 
 import { logger } from "@/lib/logger";
 import { auth } from "@clerk/nextjs/server";
-import { NextRequest } from "next/server";
 import { z } from "zod";
 
 import { compose, withRateLimit, withSentryApi } from "@/lib/api/wrappers";
@@ -53,7 +52,7 @@ const convertLeadSchema = z.object({
 
 // Prisma singleton imported from @/lib/db/prisma
 
-const baseGET = async (request: NextRequest) => {
+const baseGET = async (request: Request) => {
   try {
     await requirePermission("view_projects");
     const { orgId } = await getCurrentUserPermissions();
@@ -93,8 +92,11 @@ const baseGET = async (request: NextRequest) => {
   }
 };
 
-const basePOST = async (request: NextRequest) => {
+const basePOST = async (request: Request) => {
   try {
+    // Enforce RBAC — require permission to create leads
+    await requirePermission("create_projects");
+
     const { orgId, userId, needsInitialization } = await getCurrentUserPermissions();
 
     // Strict validation - require orgId
@@ -351,7 +353,7 @@ const basePOST = async (request: NextRequest) => {
 };
 
 // Convert lead to project
-const basePUT = async (request: NextRequest) => {
+const basePUT = async (request: Request) => {
   try {
     await requirePermission("create_projects");
     const { orgId, userId } = await getCurrentUserPermissions();

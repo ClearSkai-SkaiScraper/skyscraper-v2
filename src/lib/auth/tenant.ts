@@ -345,7 +345,7 @@ export function withOrgScope<
     req: Request,
     context: { userId: string; orgId: string },
     ...args: any[]
-  ) => Promise<NextResponse>,
+  ) => Promise<Response>,
 >(handler: T) {
   return async (req: Request, ...args: any[]) => {
     try {

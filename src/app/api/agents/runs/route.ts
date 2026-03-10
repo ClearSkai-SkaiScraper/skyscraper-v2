@@ -16,7 +16,7 @@ export async function GET() {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    // TODO: Query agent_runs table when it exists
+    // STUB: agent_runs table not yet in schema. Returns empty array until model is added.
     return NextResponse.json({ runs: [] });
   } catch {
     return NextResponse.json({ runs: [] });

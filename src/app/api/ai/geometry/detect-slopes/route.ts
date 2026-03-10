@@ -1,26 +1,53 @@
 export const dynamic = "force-dynamic";
 /**
  * PHASE 37: Geometry Detection API Endpoints
+ *
+ * Automated slope detection and roof plane segmentation for carrier-grade reporting.
+ * Analyzes property images to identify roof planes, slopes, orientations, and conditions.
  */
 
 import { logger } from "@/lib/logger";
 import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
 
+import {
+  detectSlopes,
+  generateSlopeScorecard,
+  segmentDamagesByPlane,
+  type RoofPlane,
+  type SlopeScorecard,
+} from "@/lib/ai/geometry";
 import { createAiConfig, withAiBilling, type AiBillingContext } from "@/lib/ai/withAiBilling";
 import { checkRateLimit } from "@/lib/rate-limit";
 
-// PHASE 2: Geometry Detection System
-// Planned features:
-// - 3D roof slope analysis using CV models
-// - Damage segmentation by roof plane
-// - Automated slope scorecard generation
-// - Integration with photo analysis pipeline
-// Implementation: Create @/lib/ai/geometry module with detectSlopes, generateSlopeScorecard, segmentDamagesByPlane
-// import { detectSlopes, generateSlopeScorecard, segmentDamagesByPlane } from "@/lib/ai/geometry";
+const detectSlopesSchema = z.object({
+  imageUrl: z.string().url("Valid image URL required"),
+  claimId: z.string().optional(),
+  damages: z
+    .array(
+      z.object({
+        id: z.string(),
+        type: z.string(),
+        severity: z.enum(["none", "minor", "moderate", "severe"]),
+        confidence: z.number().min(0).max(1),
+        boundingBox: z.object({
+          x: z.number(),
+          y: z.number(),
+          width: z.number(),
+          height: z.number(),
+        }),
+      })
+    )
+    .optional(),
+});
 
 async function POST_INNER(req: NextRequest, ctx: AiBillingContext) {
   try {
     const { userId, orgId } = ctx;
+
+    if (!orgId) {
+      return NextResponse.json({ error: "Organization required" }, { status: 401 });
+    }
 
     // Rate limit: AI tier
     const rl = await checkRateLimit(userId, "AI");
@@ -31,34 +58,86 @@ async function POST_INNER(req: NextRequest, ctx: AiBillingContext) {
       );
     }
 
-    // Phase 2 Feature: Not yet implemented
-    // See roadmap comment at top of file for planned implementation
-    return NextResponse.json(
-      { error: "Geometry detection scheduled for Phase 2", phase: 2 },
-      { status: 501 }
-    );
+    const body = await req.json();
+    const validation = detectSlopesSchema.safeParse(body);
 
-    // Future implementation (Phase 2):
-    // const body = await req.json();
-    // const { imageUrl, claimId, damages } = body;
-    // if (!imageUrl) {
-    //   return NextResponse.json({ error: "imageUrl required" }, { status: 400 });
-    // }
-    // const slopeAnalysis = await detectSlopes(imageUrl, orgId, { claimId });
-    // let planesWithDamages = slopeAnalysis.planes;
-    // let scorecards = [];
-    // if (damages && damages.length > 0) {
-    //   planesWithDamages = segmentDamagesByPlane(slopeAnalysis.planes, damages);
-    //   scorecards = planesWithDamages.map((plane) => generateSlopeScorecard(plane, damages));
-    // }
-    // return NextResponse.json({
-    //   success: true,
-    //   slopeAnalysis: { ...slopeAnalysis, planes: planesWithDamages },
-    //   scorecards,
-    // });
+    if (!validation.success) {
+      return NextResponse.json(
+        { error: "Invalid request", details: validation.error.errors },
+        { status: 400 }
+      );
+    }
+
+    const { imageUrl, claimId, damages } = validation.data;
+
+    logger.info("[Geometry API] Detecting slopes", {
+      orgId,
+      claimId,
+      hasDamages: !!damages?.length,
+    });
+
+    // Perform slope detection
+    const slopeAnalysis = await detectSlopes(imageUrl, orgId, { claimId });
+
+    // If damages provided, segment by plane and generate scorecards
+    let planesWithDamages: RoofPlane[] = slopeAnalysis.planes;
+    let scorecards: SlopeScorecard[] = [];
+
+    if (damages && damages.length > 0) {
+      // Map damages to the format expected by geometry functions (DamageRegion)
+      const mappedDamages = damages.map((d) => ({
+        id: d.id,
+        type: d.type,
+        severity: d.severity,
+        confidence: d.confidence,
+        boundingBox: d.boundingBox,
+        description: `${d.type} damage detected`,
+        repairPriority:
+          d.severity === "severe"
+            ? ("urgent" as const)
+            : d.severity === "moderate"
+              ? ("high" as const)
+              : d.severity === "minor"
+                ? ("medium" as const)
+                : ("low" as const),
+      }));
+
+      planesWithDamages = segmentDamagesByPlane(slopeAnalysis.planes, mappedDamages);
+      scorecards = planesWithDamages.map((plane) => generateSlopeScorecard(plane, mappedDamages));
+    }
+
+    logger.info("[Geometry API] Slope detection complete", {
+      orgId,
+      claimId,
+      planesDetected: planesWithDamages.length,
+      totalArea: slopeAnalysis.totalArea,
+      averageSlope: slopeAnalysis.averageSlope,
+    });
+
+    return NextResponse.json({
+      success: true,
+      slopeAnalysis: {
+        ...slopeAnalysis,
+        planes: planesWithDamages,
+      },
+      scorecards,
+      summary: {
+        totalPlanes: planesWithDamages.length,
+        totalArea: slopeAnalysis.totalArea,
+        averageSlope: slopeAnalysis.averageSlope,
+        complexity: slopeAnalysis.complexityRating,
+        safetyNotes: slopeAnalysis.safetyNotes,
+      },
+    });
   } catch (error) {
     logger.error("[Geometry API] Error:", error);
-    return NextResponse.json({ error: "Analysis failed" }, { status: 500 });
+    return NextResponse.json(
+      {
+        error: "Slope analysis failed",
+        message: error instanceof Error ? error.message : "Unknown error",
+      },
+      { status: 500 }
+    );
   }
 }
 

@@ -7,14 +7,35 @@
  */
 
 import { logger } from "@/lib/logger";
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 
 import { compose, withRateLimit, withSentryApi } from "@/lib/api/wrappers";
 import { notifyManagersOfSubmission } from "@/lib/notifications/notifyManagers";
 import { getCurrentUserPermissions, requirePermission } from "@/lib/permissions";
 import prisma from "@/lib/prisma";
+import { z } from "zod";
 
 // Prisma singleton imported from @/lib/db/prisma
+
+// Zod schema for PATCH validation — only allow known fields
+const updateLeadSchema = z
+  .object({
+    title: z.string().min(1).optional(),
+    description: z.string().optional(),
+    source: z.string().optional(),
+    value: z.number().optional(),
+    probability: z.number().min(0).max(100).optional(),
+    stage: z.string().optional(),
+    temperature: z.enum(["hot", "warm", "cold"]).optional(),
+    assignedTo: z.string().optional(),
+    followUpDate: z.string().nullable().optional(),
+    jobCategory: z.string().optional(),
+    clientId: z.string().optional(),
+    estimatedJobValue: z.number().optional(),
+    jobValueStatus: z.enum(["draft", "submitted", "approved", "rejected"]).optional(),
+    jobValueApprovalNotes: z.string().optional(),
+  })
+  .strict();
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -23,7 +44,7 @@ export const revalidate = 0;
 /**
  * GET /api/leads/[id] - Get single lead with full details
  */
-const baseGET = async (request: NextRequest, { params }: { params: { id: string } }) => {
+const baseGET = async (request: Request, { params }: { params: { id: string } }) => {
   try {
     await requirePermission("view_projects");
     const { orgId } = await getCurrentUserPermissions();
@@ -80,7 +101,7 @@ const baseGET = async (request: NextRequest, { params }: { params: { id: string 
 /**
  * PATCH /api/leads/[id] - Update lead
  */
-const basePATCH = async (request: NextRequest, { params }: { params: { id: string } }) => {
+const basePATCH = async (request: Request, { params }: { params: { id: string } }) => {
   try {
     await requirePermission("edit_projects");
     const { orgId, userId } = await getCurrentUserPermissions();
@@ -101,7 +122,18 @@ const basePATCH = async (request: NextRequest, { params }: { params: { id: strin
       return NextResponse.json({ error: "Lead not found" }, { status: 404 });
     }
 
-    const body = await request.json();
+    const rawBody = await request.json();
+
+    // Validate input with Zod — reject unknown fields
+    const validation = updateLeadSchema.safeParse(rawBody);
+    if (!validation.success) {
+      return NextResponse.json(
+        { error: "Invalid request body", details: validation.error.flatten().fieldErrors },
+        { status: 400 }
+      );
+    }
+    const body = validation.data;
+
     const {
       title,
       description,
@@ -118,6 +150,33 @@ const basePATCH = async (request: NextRequest, { params }: { params: { id: strin
       jobValueStatus,
       jobValueApprovalNotes,
     } = body;
+
+    // Verify assignedTo user belongs to the same org if provided
+    if (assignedTo) {
+      const memberCheck = await prisma.user_organizations.findFirst({
+        where: { userId: assignedTo, organizationId: orgId },
+      });
+      if (!memberCheck) {
+        return NextResponse.json(
+          { error: "Assigned user does not belong to this organization" },
+          { status: 400 }
+        );
+      }
+    }
+
+    // Verify contactId belongs to the same org if provided
+    if (clientId) {
+      // clientId on leads is a free-text field, but if it looks like a contactId, verify ownership
+      const contactCheck = await prisma.contacts.findFirst({
+        where: { id: clientId, orgId },
+      });
+      // Only block if it looks like a structured ID but doesn't belong to org
+      if (!contactCheck && clientId.length > 10) {
+        logger.warn(
+          `[PATCH /api/leads/${params.id}] clientId ${clientId} not found in org ${orgId}`
+        );
+      }
+    }
 
     // Build update data
     const updateData: any = {};
@@ -252,7 +311,7 @@ const basePATCH = async (request: NextRequest, { params }: { params: { id: strin
 /**
  * DELETE /api/leads/[id] - Delete lead (soft delete)
  */
-const baseDELETE = async (request: NextRequest, { params }: { params: { id: string } }) => {
+const baseDELETE = async (request: Request, { params }: { params: { id: string } }) => {
   try {
     await requirePermission("delete_projects");
     const { orgId, userId } = await getCurrentUserPermissions();

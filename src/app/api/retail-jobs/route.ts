@@ -1,41 +1,149 @@
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-import { NextRequest } from "next/server";
 import { logger } from "@/lib/logger";
-
-import { getCurrentUserPermissions } from "@/lib/permissions";
+import { getCurrentUserPermissions, requirePermission } from "@/lib/permissions";
+import prisma from "@/lib/prisma";
+import { createId } from "@paralleldrive/cuid2";
+import { NextRequest } from "next/server";
+import { z } from "zod";
 
 /**
  * Retail Jobs API
  *
- * NOTE: The RetailJob, RetailJobMaterial, and RetailJobTimeline models
- * are not yet defined in the Prisma schema. This API is stubbed until
- * the database migration is applied.
- *
- * TODO: Add RetailJob models to prisma/schema.prisma and run migrations
+ * Retail jobs are stored in the `leads` table with jobCategory
+ * set to "out_of_pocket", "financed", or "repair".
+ * This API provides CRUD operations for retail jobs.
  */
 
-export async function POST(_request: NextRequest) {
+const createRetailJobSchema = z.object({
+  title: z.string().min(1),
+  description: z.string().optional(),
+  jobCategory: z.enum(["out_of_pocket", "financed", "repair"]),
+  workType: z.string().optional(),
+  urgency: z.enum(["low", "medium", "high", "urgent"]).optional(),
+  budget: z.number().optional(),
+  contactId: z.string().optional(),
+  contactData: z
+    .object({
+      firstName: z.string().min(1),
+      lastName: z.string().min(1),
+      email: z.string().email().optional(),
+      phone: z.string().optional(),
+      street: z.string().optional(),
+      city: z.string().optional(),
+      state: z.string().optional(),
+      zipCode: z.string().optional(),
+    })
+    .optional(),
+});
+
+export async function POST(request: NextRequest) {
   try {
-    const { orgId } = await getCurrentUserPermissions();
+    // Enforce RBAC — require permission to create leads/retail jobs
+    await requirePermission("create_projects");
+
+    const { userId, orgId } = await getCurrentUserPermissions();
 
     if (!orgId) {
       return Response.json({ error: "Organization not found" }, { status: 404 });
     }
 
-    // RetailJob model not yet implemented in Prisma schema
-    return Response.json(
-      { error: "Retail jobs feature is not yet available. Database migration pending." },
-      { status: 501 }
-    );
+    const body = await request.json();
+    const validation = createRetailJobSchema.safeParse(body);
+
+    if (!validation.success) {
+      return Response.json(
+        { error: "Invalid request body", details: validation.error.errors },
+        { status: 400 }
+      );
+    }
+
+    const data = validation.data;
+
+    // Create or find contact
+    let contactId = data.contactId;
+
+    // If contactId is provided, verify it belongs to this org
+    if (contactId) {
+      const contactCheck = await prisma.contacts.findFirst({
+        where: { id: contactId, orgId },
+      });
+      if (!contactCheck) {
+        return Response.json({ error: "Contact not found in your organization" }, { status: 404 });
+      }
+    }
+
+    if (!contactId && data.contactData) {
+      const contact = await prisma.contacts.create({
+        data: {
+          id: createId(),
+          orgId,
+          firstName: data.contactData.firstName,
+          lastName: data.contactData.lastName,
+          email: data.contactData.email,
+          phone: data.contactData.phone,
+          street: data.contactData.street,
+          city: data.contactData.city,
+          state: data.contactData.state,
+          zipCode: data.contactData.zipCode,
+          source: "RETAIL_JOB",
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+      });
+      contactId = contact.id;
+    }
+
+    if (!contactId) {
+      return Response.json({ error: "Contact information required" }, { status: 400 });
+    }
+
+    // Create the retail job as a lead
+    const retailJob = await prisma.leads.create({
+      data: {
+        id: createId(),
+        orgId,
+        contactId,
+        title: data.title,
+        description: data.description,
+        source: "direct",
+        stage: "new",
+        temperature: data.urgency === "urgent" ? "hot" : data.urgency === "high" ? "warm" : "cold",
+        jobCategory: data.jobCategory,
+        jobType: "RETAIL",
+        workType: data.workType,
+        urgency: data.urgency,
+        budget: data.budget,
+        createdBy: userId,
+        updatedAt: new Date(),
+      },
+      include: {
+        contacts: {
+          select: {
+            firstName: true,
+            lastName: true,
+            email: true,
+            phone: true,
+            street: true,
+            city: true,
+            state: true,
+            zipCode: true,
+          },
+        },
+      },
+    });
+
+    logger.info("[RETAIL_JOBS] Created retail job", { orgId, jobId: retailJob.id });
+
+    return Response.json({ success: true, retailJob }, { status: 201 });
   } catch (error) {
-    logger.error("Error in retail jobs POST:", error);
-    return Response.json({ error: "Failed to process retail job request" }, { status: 500 });
+    logger.error("[RETAIL_JOBS] Error creating retail job:", error);
+    return Response.json({ error: "Failed to create retail job" }, { status: 500 });
   }
 }
 
-export async function GET(_request: NextRequest) {
+export async function GET(request: NextRequest) {
   try {
     const { orgId } = await getCurrentUserPermissions();
 
@@ -43,16 +151,40 @@ export async function GET(_request: NextRequest) {
       return Response.json({ error: "Organization not found" }, { status: 404 });
     }
 
-    // RetailJob model not yet implemented in Prisma schema
-    return Response.json(
-      {
-        retailJobs: [],
-        message: "Retail jobs feature is not yet available. Database migration pending.",
+    const { searchParams } = new URL(request.url);
+    const category = searchParams.get("category");
+    const stage = searchParams.get("stage");
+    const limit = parseInt(searchParams.get("limit") || "50");
+
+    const retailJobs = await prisma.leads.findMany({
+      where: {
+        orgId,
+        jobCategory: category
+          ? { equals: category }
+          : { in: ["out_of_pocket", "financed", "repair"] },
+        ...(stage ? { stage } : {}),
       },
-      { status: 200 }
-    );
+      include: {
+        contacts: {
+          select: {
+            firstName: true,
+            lastName: true,
+            email: true,
+            phone: true,
+            street: true,
+            city: true,
+            state: true,
+            zipCode: true,
+          },
+        },
+      },
+      orderBy: { updatedAt: "desc" },
+      take: limit,
+    });
+
+    return Response.json({ retailJobs, count: retailJobs.length });
   } catch (error) {
-    logger.error("Error in retail jobs GET:", error);
+    logger.error("[RETAIL_JOBS] Error fetching retail jobs:", error);
     return Response.json({ error: "Failed to fetch retail jobs" }, { status: 500 });
   }
 }

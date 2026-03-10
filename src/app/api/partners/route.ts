@@ -1,35 +1,20 @@
 export const dynamic = "force-dynamic";
 
 // app/api/partners/route.ts
-import { auth } from "@clerk/nextjs/server";
 import { logger } from "@/lib/logger";
 import { NextResponse } from "next/server";
 
+import { withOrgScope } from "@/lib/auth/tenant";
 import prisma from "@/lib/prisma";
 
-export async function GET(req: Request) {
-  const { userId } = await auth();
-  if (!userId) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
-
+export const GET = withOrgScope(async (req: Request, { orgId }) => {
   try {
-    // Get user's org
-    const user = await prisma.users.findFirst({
-      where: { clerkUserId: userId },
-      select: { orgId: true },
-    });
-
-    if (!user?.orgId) {
-      return NextResponse.json({ error: "No organization found" }, { status: 404 });
-    }
-
     // Parse query params
     const { searchParams } = new URL(req.url);
     const trade = searchParams.get("trade");
 
     // Build query
-    const where: any = { orgId: user.orgId };
+    const where: any = { orgId };
     if (trade) {
       where.trade = trade;
     }
@@ -44,24 +29,10 @@ export async function GET(req: Request) {
     logger.error("Failed to fetch partners:", error);
     return NextResponse.json({ error: "Failed to fetch partners" }, { status: 500 });
   }
-}
+});
 
-export async function POST(req: Request) {
-  const { userId } = await auth();
-  if (!userId) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
-
+export const POST = withOrgScope(async (req: Request, { orgId }) => {
   try {
-    const user = await prisma.users.findFirst({
-      where: { clerkUserId: userId },
-      select: { orgId: true },
-    });
-
-    if (!user?.orgId) {
-      return NextResponse.json({ error: "No organization found" }, { status: 404 });
-    }
-
     const body = await req.json();
     const { name, trade, email, phone, website, address, notes } = body;
 
@@ -71,7 +42,7 @@ export async function POST(req: Request) {
 
     const newPartner = await prisma.partner.create({
       data: {
-        orgId: user.orgId,
+        orgId,
         name,
         trade,
         email: email || null,
@@ -87,4 +58,4 @@ export async function POST(req: Request) {
     logger.error("Failed to create Partner:", error);
     return NextResponse.json({ error: "Failed to create Partner" }, { status: 500 });
   }
-}
+});

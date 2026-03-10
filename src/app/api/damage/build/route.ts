@@ -1,10 +1,10 @@
 export const dynamic = "force-dynamic";
 
 import { logger } from "@/lib/logger";
-import { auth } from "@clerk/nextjs/server";
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 
 import { runDamageBuilder } from "@/lib/ai/damage";
+import { withOrgScope } from "@/lib/auth/tenant";
 import { requireActiveSubscription, SubscriptionRequiredError } from "@/lib/billing/requireActiveSubscription";
 import { getDelegate } from "@/lib/db/modelAliases";
 import prisma from "@/lib/prisma";
@@ -30,27 +30,19 @@ type DamageBuildRequest = {
  * AI-powered damage assessment builder
  * Analyzes photos and data to generate damage findings
  */
-export async function POST(req: NextRequest) {
+export const POST = withOrgScope(async (req: Request, { userId, orgId }) => {
   try {
-    const { userId, orgId } = await auth();
-
-    if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
     // ── Billing guard ──
-    if (orgId) {
-      try {
-        await requireActiveSubscription(orgId);
-      } catch (error) {
-        if (error instanceof SubscriptionRequiredError) {
-          return NextResponse.json(
-            { error: "subscription_required", message: "Active subscription required" },
-            { status: 402 }
-          );
-        }
-        throw error;
+    try {
+      await requireActiveSubscription(orgId);
+    } catch (error) {
+      if (error instanceof SubscriptionRequiredError) {
+        return NextResponse.json(
+          { error: "subscription_required", message: "Active subscription required" },
+          { status: 402 }
+        );
       }
+      throw error;
     }
 
     // ── Rate limit ──
@@ -83,7 +75,7 @@ export async function POST(req: NextRequest) {
     const aiResult = await runDamageBuilder({
       claimId: body.claimId ?? null,
       leadId: body.leadId ?? null,
-      orgId: orgId ?? null,
+      orgId,       // DB-verified — never null or "default"
       userId,
       photos: body.photos,
       hoverData: body.hoverData ?? null,
@@ -91,17 +83,9 @@ export async function POST(req: NextRequest) {
       notesText: body.notesText ?? null,
     });
 
-    // aiResult includes:
-    // {
-    //   peril: "hail" | "wind" | ...,
-    //   confidence: number,
-    //   summary: string,
-    //   findings: DamageFindingInput[],
-    // }
-
     const damageAssessment = await getDelegate('damageAssessment').create({
       data: {
-        orgId: orgId || "default",
+        orgId,
         claimId: body.claimId || undefined,
         leadId: body.leadId || undefined,
         createdById: userId,
@@ -157,4 +141,4 @@ export async function POST(req: NextRequest) {
       { status: 500 }
     );
   }
-}
+});

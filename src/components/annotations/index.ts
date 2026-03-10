@@ -1,0 +1,1 @@
+export { PhotoAnnotator } from "./PhotoAnnotator";

@@ -1,7 +1,6 @@
 // Unified API wrappers: use Upstash singleton to avoid creating multiple REST clients.
 import * as Sentry from "@sentry/nextjs";
 import { Ratelimit } from "@upstash/ratelimit";
-import { NextRequest } from "next/server";
 
 import { upstash } from "@/lib/upstash";
 
@@ -10,17 +9,19 @@ const limiter: Ratelimit | null = upstash
   ? new Ratelimit({ redis: upstash, limiter: Ratelimit.slidingWindow(20, "1 m") })
   : null;
 
-export type ApiHandler = (req: NextRequest, ctx: any) => Promise<Response>;
+// ApiHandler uses Request (not NextRequest) for compatibility with withOrgScope
+export type ApiHandler = (req: Request, ctx: any) => Promise<Response>;
 
 export function withSentryApi(handler: ApiHandler): ApiHandler {
   return async (req, ctx) => {
+    const url = new URL(req.url);
     const txn = Sentry.startSpan(
-      { name: `API ${req.method} ${req.nextUrl.pathname}`, op: "http.server" },
+      { name: `API ${req.method} ${url.pathname}`, op: "http.server" },
       () => undefined
     );
     try {
       // Enrich Sentry context with route info
-      Sentry.setTag("api.route", req.nextUrl.pathname);
+      Sentry.setTag("api.route", url.pathname);
       Sentry.setTag("api.method", req.method);
 
       // Set user context if available from ctx (from withOrgScope)
@@ -33,7 +34,7 @@ export function withSentryApi(handler: ApiHandler): ApiHandler {
     } catch (err: any) {
       Sentry.captureException(err, {
         tags: {
-          "api.route": req.nextUrl.pathname,
+          "api.route": url.pathname,
           "api.method": req.method,
         },
       });
@@ -65,33 +66,11 @@ export function withRateLimit(handler: ApiHandler): ApiHandler {
   };
 }
 
-export async function resolveAuthOrg(req: NextRequest) {
-  // Placeholder: integrate Clerk. For now header-based.
-  const orgId = req.headers.get("x-org-id");
-  const userId = req.headers.get("x-user-id");
-  if (!orgId) throw new Error("ORG_CONTEXT_MISSING");
-  return { orgId, userId: userId || "system" };
-}
+// withOrgScope REMOVED — was reading from spoofable HTTP headers.
+// Use withOrgScope from "@/lib/auth/tenant" instead (Clerk + DB-backed).
 
-export function withOrgScope(handler: ApiHandler): ApiHandler {
-  return async (req, ctx) => {
-    const auth = await resolveAuthOrg(req);
-    return handler(req, { ...ctx, auth });
-  };
-}
-
-export function safeAuth(handler: ApiHandler): ApiHandler {
-  return async (req, ctx) => {
-    try {
-      return await handler(req, ctx);
-    } catch (e: any) {
-      if (e.message === "ORG_CONTEXT_MISSING") {
-        return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401 });
-      }
-      throw e;
-    }
-  };
-}
+// safeAuth REMOVED — was catching ORG_CONTEXT_MISSING from the old header-based withOrgScope.
+// Use withOrgScope from "@/lib/auth/tenant" for proper Clerk + DB-backed auth.
 
 export function compose(
   ...layers: ((h: ApiHandler) => ApiHandler)[]

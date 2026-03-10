@@ -1028,6 +1028,7 @@ model Org {
   migration_jobs            migration_jobs[]
   support_tickets           support_tickets[]
   canvass_pins              canvass_pins[]
+  hoa_notice_packs          hoa_notice_packs[]
 
   @@index([stripeCustomerId])
   @@index([subscriptionStatus])
@@ -3402,11 +3403,11 @@ model feature_flags {
 }
 
 model file_assets {
-  id              String   @id
+  id              String    @id
   orgId           String
   ownerId         String
-  leadId          String?  @db.VarChar(191)
-  claimId         String?  @db.VarChar(191)
+  leadId          String?   @db.VarChar(191)
+  claimId         String?   @db.VarChar(191)
   filename        String
   mimeType        String
   sizeBytes       Int
@@ -3414,23 +3415,31 @@ model file_assets {
   bucket          String
   publicUrl       String
   checksum        String?
-  category        String   @default("other")
+  category        String    @default("other")
   note            String?
-  createdAt       DateTime @default(now())
+  createdAt       DateTime  @default(now())
   updatedAt       DateTime
-  file_type       String?  @db.VarChar(32)
-  source          String?  @default("user") @db.VarChar(32)
-  analysis_status String?  @db.VarChar(32)
-  photo_angle     String?  @db.VarChar(32)
+  file_type       String?   @db.VarChar(32)
+  source          String?   @default("user") @db.VarChar(32)
+  analysis_status String?   @db.VarChar(32)
+  photo_angle     String?   @db.VarChar(32)
   camera_height   Int?
   ai_tags         String[]
   ai_damage       String[]
-  visibleToClient Boolean  @default(false)
-  Org             Org      @relation(fields: [orgId], references: [id])
+  visibleToClient Boolean   @default(false)
+  // AI Analysis fields
+  metadata        Json?     @default("{}")
+  ai_caption      String?
+  ai_severity     String?   @db.VarChar(32)
+  ai_confidence   Decimal?  @db.Decimal(5, 4)
+  analyzed_at     DateTime?
+  analyzed_by     String?   @db.VarChar(191)
+  Org             Org       @relation(fields: [orgId], references: [id])
 
   @@index([orgId, category, createdAt])
   @@index([orgId, claimId])
   @@index([orgId, leadId])
+  @@index([orgId, claimId, analyzed_at])
 }
 
 model finalization_statuses {
@@ -3487,6 +3496,51 @@ model financial_snapshots {
 
   @@index([claimId])
   @@index([created_at])
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// HOA Notice Pack System
+// ═══════════════════════════════════════════════════════════════════════════════
+
+/// HOA Storm Notice Packs - for community outreach after storm events
+model hoa_notice_packs {
+  id            String   @id @default(dbgenerated("gen_random_uuid()::text"))
+  orgId         String
+  community     String // HOA/Community name
+  stormDate     DateTime // Date of the storm event
+  homeCount     Int // Number of homes in the community
+  mode          String   @default("neutral") // "neutral" or "contractor_assisted"
+  status        String   @default("draft") // draft, pending, sent, archived
+  customMessage String? // Optional custom message from contractor
+
+  // Generated content
+  pdfUrl      String? // URL to generated PDF notice
+  previewHtml String? // HTML preview of the notice
+  generatedAt DateTime? // When the notice was generated
+
+  // Delivery tracking
+  sentAt         DateTime?
+  sentBy         String?
+  deliveryMethod String? // email, print, door-to-door
+  deliveryNotes  String?
+
+  // Storm data snapshot
+  weatherData Json? // Captured weather/storm data for the event
+  hailSize    String? // e.g., "1.5 inch"
+  windSpeed   String? // e.g., "65 mph"
+
+  // Metadata
+  metadata  Json?    @default("{}")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  createdBy String?
+
+  Org Org @relation(fields: [orgId], references: [id], onDelete: Cascade)
+
+  @@index([orgId])
+  @@index([orgId, status])
+  @@index([orgId, community])
+  @@index([stormDate])
 }
 
 model fundings {

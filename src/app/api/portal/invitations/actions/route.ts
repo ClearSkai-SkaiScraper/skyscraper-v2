@@ -196,7 +196,7 @@ async function handleSendInvite(
     },
   });
 
-  // TODO: Send invitation email via Resend / SendGrid
+  // STUB: Email delivery not yet wired. Will use Resend when ready. (Sprint backlog)
 
   return NextResponse.json({
     success: true,
@@ -217,7 +217,7 @@ async function handleSendJobInvite(
     jobId: input.jobId,
   });
 
-  // TODO: Create a job_invitations table and wire up email delivery
+  // STUB: job_invitations model pending schema design. Returns success to prevent UI errors.
 
   return NextResponse.json({
     success: true,

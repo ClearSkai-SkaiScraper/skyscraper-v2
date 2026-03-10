@@ -20,6 +20,7 @@ import Replicate from "replicate";
 import sharp from "sharp";
 
 import { getOpenAI } from "@/lib/ai/client";
+import { fetchBrandingData, type BrandingData } from "@/lib/pdf/brandedHeader";
 
 const openai = getOpenAI();
 const replicate = new Replicate({ auth: process.env.REPLICATE_API_TOKEN });
@@ -345,23 +346,139 @@ export async function generateBATFPresentation(reportData: {
   damageOverlay?: string;
   severityMap?: string;
   analysis: DamageAnalysis;
+  branding?: BrandingData;
 }): Promise<Buffer> {
   const doc = new jsPDF({ format: "letter", unit: "in" });
-  let yPos = 1;
+  const pageWidth = 8.5;
+  const pageHeight = 11;
+  let yPos = 0.5;
+  const branding = reportData.branding;
 
-  // PAGE 1: COVER
-  doc.setFontSize(24);
+  // PAGE 1: BRANDED COVER
+  // ── Brand color bar at top ──
+  const brandHex = branding?.brandColor || "#1e40af";
+  const hexResult = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(brandHex);
+  const [br, bg, bb] = hexResult
+    ? [parseInt(hexResult[1], 16), parseInt(hexResult[2], 16), parseInt(hexResult[3], 16)]
+    : [30, 64, 175];
+
+  doc.setFillColor(br, bg, bb);
+  doc.rect(0, 0, pageWidth, 0.15, "F");
+
+  // ── Header background ──
+  doc.setFillColor(248, 250, 252);
+  doc.rect(0, 0.15, pageWidth, 1.9, "F");
+
+  let infoStartX = 0.6;
+  let infoEndX = pageWidth - 0.6;
+
+  // Logo (left)
+  if (branding?.logoUrl) {
+    try {
+      const logoRes = await fetch(branding.logoUrl);
+      if (logoRes.ok) {
+        const logoBuffer = await logoRes.arrayBuffer();
+        const logoBase64 = Buffer.from(logoBuffer).toString("base64");
+        const ct = logoRes.headers.get("content-type") || "";
+        const fmt = ct.includes("jpeg") || ct.includes("jpg") ? "JPEG" : "PNG";
+        doc.addImage(
+          `data:image/${fmt.toLowerCase()};base64,${logoBase64}`,
+          fmt,
+          0.6,
+          0.35,
+          1.0,
+          1.0
+        );
+        infoStartX = 1.8;
+      }
+    } catch {
+      /* skip logo */
+    }
+  }
+
+  // Headshot (right)
+  if (branding?.headshotUrl) {
+    try {
+      const hsRes = await fetch(branding.headshotUrl);
+      if (hsRes.ok) {
+        const hsBuffer = await hsRes.arrayBuffer();
+        const hsBase64 = Buffer.from(hsBuffer).toString("base64");
+        const ct = hsRes.headers.get("content-type") || "";
+        const fmt = ct.includes("jpeg") || ct.includes("jpg") ? "JPEG" : "PNG";
+        doc.addImage(
+          `data:image/${fmt.toLowerCase()};base64,${hsBase64}`,
+          fmt,
+          pageWidth - 1.6,
+          0.35,
+          1.0,
+          1.0
+        );
+        infoEndX = pageWidth - 1.8;
+      }
+    } catch {
+      /* skip headshot */
+    }
+  }
+
+  // Company name
+  yPos = 0.55;
+  doc.setTextColor(30, 41, 59);
+  doc.setFontSize(15);
   doc.setFont("helvetica", "bold");
-  doc.text("ROOF DAMAGE ANALYSIS", 4.25, yPos, { align: "center" });
-  yPos += 0.5;
+  let companyLine = branding?.companyName || "SkaiScraper";
+  if (branding?.companyLicense) companyLine += ` • Lic #${branding.companyLicense}`;
+  doc.text(companyLine, infoStartX, yPos);
+  yPos += 0.22;
 
+  // Contact line
+  doc.setFontSize(8);
+  doc.setFont("helvetica", "normal");
+  doc.setTextColor(100, 116, 139);
+  const contacts: string[] = [];
+  if (branding?.companyPhone) contacts.push(branding.companyPhone);
+  if (branding?.companyEmail) contacts.push(branding.companyEmail);
+  if (branding?.companyWebsite) contacts.push(branding.companyWebsite);
+  if (contacts.length) {
+    doc.text(contacts.join(" • "), infoStartX, yPos);
+    yPos += 0.18;
+  }
+
+  // Employee info
+  if (branding?.employeeName) {
+    doc.setFontSize(9);
+    doc.setTextColor(51, 65, 85);
+    let empLine = branding.employeeName;
+    if (branding.employeeTitle) empLine += ` — ${branding.employeeTitle}`;
+    doc.text(empLine, infoStartX, yPos);
+    yPos += 0.18;
+  }
+
+  // ── Report type bar ──
+  const barY = 2.05;
+  doc.setFillColor(br, bg, bb);
+  doc.rect(0, barY, pageWidth, 0.4, "F");
+  doc.setTextColor(255, 255, 255);
+  doc.setFontSize(11);
+  doc.setFont("helvetica", "bold");
+  doc.text("ROOF DAMAGE ANALYSIS", 0.6, barY + 0.26);
+  doc.setFontSize(8);
+  doc.setFont("helvetica", "normal");
+  doc.text(
+    `Generated: ${new Date().toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" })}`,
+    pageWidth - 0.6,
+    barY + 0.26,
+    { align: "right" }
+  );
+
+  yPos = 2.8;
+
+  // Property details
   doc.setFontSize(14);
   doc.setFont("helvetica", "normal");
+  doc.setTextColor(60, 60, 60);
   doc.text(`Property: ${reportData.leadAddress}`, 4.25, yPos, { align: "center" });
   yPos += 0.3;
   doc.text(`Roof Type: ${reportData.roofType.toUpperCase()}`, 4.25, yPos, { align: "center" });
-  yPos += 0.3;
-  doc.text(`Report Date: ${new Date().toLocaleDateString()}`, 4.25, yPos, { align: "center" });
 
   // PAGE 2: BEFORE PHOTOS
   doc.addPage();
@@ -459,6 +576,33 @@ export async function generateBATFPresentation(reportData: {
     yPos
   );
 
+  // ── Footer on all pages ──
+  const totalPages = doc.getNumberOfPages();
+  for (let pg = 1; pg <= totalPages; pg++) {
+    doc.setPage(pg);
+    doc.setFontSize(7);
+    doc.setFont("helvetica", "normal");
+    doc.setTextColor(150, 150, 150);
+    doc.setDrawColor(226, 232, 240);
+    doc.line(0.6, 10.3, 7.9, 10.3);
+    doc.text(`Page ${pg} of ${totalPages}`, 4.25, 10.55, { align: "center" });
+    doc.text(
+      `Generated by ${branding?.companyName || "SkaiScraper"} • ${new Date().toLocaleDateString()}`,
+      0.6,
+      10.55
+    );
+    if (pg === totalPages) {
+      doc.setFontSize(6);
+      doc.setTextColor(180, 80, 80);
+      doc.text(
+        "⚠ AI can make mistakes — please review the final report carefully before submission.",
+        4.25,
+        10.75,
+        { align: "center" }
+      );
+    }
+  }
+
   return Buffer.from(doc.output("arraybuffer"));
 }
 
@@ -507,7 +651,12 @@ export async function runBATFPipeline(
   // Step 4: Generate severity map
   const severityMap = await generateSeverityMap(beforePhotos[0].url, analysis);
 
-  // Step 5: Generate presentation PDF
+  // Step 5: Fetch branding + generate presentation PDF
+  const branding = await fetchBrandingData(orgId).catch(() => ({
+    companyName: "SkaiScraper",
+    brandColor: "#1e40af",
+  }));
+
   const presentationPdf = await generateBATFPresentation({
     leadAddress,
     roofType,
@@ -517,6 +666,7 @@ export async function runBATFPipeline(
     damageOverlay: damageOverlay.overlayUrl,
     severityMap: severityMap.imageUrl,
     analysis,
+    branding: branding as BrandingData,
   });
 
   return {

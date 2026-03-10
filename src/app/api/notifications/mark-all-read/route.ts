@@ -4,11 +4,13 @@ export const dynamic = "force-dynamic";
  * API: Mark All Notifications as Read
  */
 
-import { auth } from "@clerk/nextjs/server";
 import { logger } from "@/lib/logger";
 import { NextResponse } from "next/server";
 
+import { getTenant } from "@/lib/auth/tenant";
 import { markAllNotificationsRead } from "@/lib/notifications/notificationHelper";
+
+import { auth } from "@clerk/nextjs/server";
 
 export async function POST(req: Request) {
   try {
@@ -17,15 +19,12 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    // markAllNotificationsRead expects orgId — look up from user first
-    const member = await (
-      await import("@/lib/prisma")
-    ).default.tradesCompanyMember.findFirst({
-      where: { userId },
-      select: { companyId: true },
-    });
+    // Use canonical tenant resolution — DB-verified orgId
+    const orgId = await getTenant();
+    if (!orgId) {
+      return NextResponse.json({ error: "No organization found" }, { status: 403 });
+    }
 
-    const orgId = member?.companyId ?? userId; // fallback to userId if no company
     const count = await markAllNotificationsRead(orgId);
 
     if (count === 0) {

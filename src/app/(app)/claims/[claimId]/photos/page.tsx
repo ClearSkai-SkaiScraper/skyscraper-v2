@@ -4,6 +4,10 @@
 import {
   AlertCircle,
   Camera,
+  Check,
+  Download,
+  Edit3,
+  FileText,
   Image as ImageIcon,
   Loader2,
   Sparkles,
@@ -11,8 +15,9 @@ import {
   ZoomIn,
 } from "lucide-react";
 import { useParams } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
+import { PhotoAnnotator, type Annotation } from "@/components/annotations/PhotoAnnotator";
 import ConfirmDeleteDialog from "@/components/ConfirmDeleteDialog";
 import PhotoOverlay, { type DamageBox } from "@/components/photos/PhotoOverlay";
 import { Badge } from "@/components/ui/badge";
@@ -24,9 +29,11 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ClaimPhotoUpload } from "@/components/uploads";
+import { Progress } from "@/components/ui/progress";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { ClaimPhotoUploadWithAnalysis } from "@/components/uploads/ClaimPhotoUploadWithAnalysis";
 import { logger } from "@/lib/logger";
+import { toast } from "sonner";
 
 import SectionCard from "../_components/SectionCard";
 
@@ -49,6 +56,7 @@ interface Photo {
   note?: string;
   // AI Analysis fields
   aiCaption?: AICaption;
+  annotations?: Annotation[];
   damageBoxes?: DamageBox[];
   severity?: "none" | "minor" | "moderate" | "severe";
   confidence?: number;
@@ -64,7 +72,11 @@ export default function PhotosPage() {
   const [loading, setLoading] = useState(true);
   const [selectedPhoto, setSelectedPhoto] = useState<Photo | null>(null);
   const [analyzing, setAnalyzing] = useState<string | null>(null);
+  const [bulkAnalyzing, setBulkAnalyzing] = useState(false);
+  const [bulkProgress, setBulkProgress] = useState(0);
+  const [generatingReport, setGeneratingReport] = useState(false);
   const [viewMode, setViewMode] = useState<"grid" | "analysis">("grid");
+  const [modalTab, setModalTab] = useState<"view" | "annotate" | "details">("view");
   const [deleteTarget, setDeleteTarget] = useState<{ id: string; label?: string } | null>(null);
 
   const fetchPhotos = async () => {
@@ -90,6 +102,10 @@ export default function PhotosPage() {
   if (!claimId) return null;
 
   const handleUploadComplete = async () => {
+    await fetchPhotos();
+  };
+
+  const handleAnalysisComplete = async () => {
     await fetchPhotos();
   };
 
@@ -122,20 +138,62 @@ export default function PhotosPage() {
     }
 
     try {
-      const res = await fetch("/api/photos/analyze", {
+      // Use the new AI annotation endpoint
+      const res = await fetch("/api/ai/photo-annotate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ imageUrl: photo.publicUrl }),
+        body: JSON.stringify({
+          imageUrl: photo.publicUrl,
+          photoId: photo.id,
+          includeSlopes: true,
+          roofType: "asphalt_shingle",
+        }),
       });
 
       const data = await res.json();
 
       if (!res.ok) {
         logger.error("AI analysis error:", data.error);
-        alert(data.error || "AI analysis failed");
+        toast.error(data.error || "AI analysis failed");
         setAnalyzing(null);
         return;
       }
+
+      // Save annotations
+      if (data.annotations && data.annotations.length > 0) {
+        const annotations = data.annotations.map(
+          (
+            ann: Annotation & {
+              x: number;
+              y: number;
+              width: number;
+              height: number;
+            }
+          ) => ({
+            id: ann.id,
+            type: "ai_detection",
+            x: (ann.x / 100) * 800,
+            y: (ann.y / 100) * 600,
+            width: (ann.width / 100) * 800,
+            height: (ann.height / 100) * 600,
+            color: getSeverityColorHex(ann.severity),
+            damageType: ann.damageType,
+            severity: ann.severity,
+            ircCode: ann.ircCode,
+            caption: ann.caption,
+            confidence: ann.confidence,
+          })
+        );
+
+        await fetch(`/api/claims/photos/${photo.id}/annotations`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ annotations }),
+        });
+      }
+
+      // Determine severity from annotations
+      const severity = determineSeverityFromAnnotations(data.annotations);
 
       setPhotos((prev) =>
         prev.map((p) =>
@@ -143,20 +201,155 @@ export default function PhotosPage() {
             ? {
                 ...p,
                 analyzed: true,
-                severity: data.severity,
+                severity,
                 confidence: data.confidence,
-                aiCaption: data.aiCaption,
-                damageBoxes: data.damageBoxes,
+                aiCaption: {
+                  summary: data.overallCaption,
+                  damageType: data.annotations?.[0]?.damageType,
+                  applicableCode: data.annotations?.[0]?.ircCode,
+                },
+                annotations: data.annotations,
+                damageBoxes: data.annotations?.map(
+                  (ann: {
+                    x: number;
+                    y: number;
+                    width: number;
+                    height: number;
+                    caption: string;
+                  }) => ({
+                    x: ann.x / 100,
+                    y: ann.y / 100,
+                    w: ann.width / 100,
+                    h: ann.height / 100,
+                    label: ann.caption,
+                  })
+                ),
               }
             : p
         )
       );
+
+      toast.success("AI analysis complete");
     } catch (error) {
       logger.error("Analyze error:", error);
-      alert("Failed to run AI analysis. Please try again.");
+      toast.error("Failed to run AI analysis. Please try again.");
     }
 
     setAnalyzing(null);
+  };
+
+  const handleBulkAnalyze = async () => {
+    const unanalyzed = photos.filter((p) => !p.analyzed);
+    if (unanalyzed.length === 0) {
+      toast.info("All photos have already been analyzed");
+      return;
+    }
+
+    setBulkAnalyzing(true);
+    setBulkProgress(0);
+
+    let completed = 0;
+    for (const photo of unanalyzed) {
+      await handleAnalyze(photo.id);
+      completed++;
+      setBulkProgress(Math.round((completed / unanalyzed.length) * 100));
+    }
+
+    setBulkAnalyzing(false);
+    setBulkProgress(0);
+    toast.success(`Analyzed ${unanalyzed.length} photos`);
+    await fetchPhotos();
+  };
+
+  const handleGenerateReport = async () => {
+    const analyzedPhotos = photos.filter((p) => p.analyzed);
+    if (analyzedPhotos.length === 0) {
+      toast.error("No analyzed photos to include in report. Run AI analysis first.");
+      return;
+    }
+
+    setGeneratingReport(true);
+    try {
+      const res = await fetch(`/api/claims/${claimId}/damage-report`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          includePhotos: true,
+          includeAnnotations: true,
+          format: "pdf",
+        }),
+      });
+
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.error || "Failed to generate report");
+      }
+
+      const data = await res.json();
+
+      // Open the PDF in a new tab
+      if (data.pdfUrl) {
+        window.open(data.pdfUrl, "_blank");
+        toast.success("Damage report generated successfully!");
+      }
+    } catch (error) {
+      logger.error("Report generation error:", error);
+      toast.error(error instanceof Error ? error.message : "Failed to generate damage report");
+    } finally {
+      setGeneratingReport(false);
+    }
+  };
+
+  const handleSaveAnnotations = useCallback(
+    async (photoId: string, annotations: Annotation[]) => {
+      try {
+        await fetch(`/api/claims/photos/${photoId}/annotations`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ annotations }),
+        });
+
+        setPhotos((prev) =>
+          prev.map((p) => (p.id === photoId ? { ...p, annotations, analyzed: true } : p))
+        );
+
+        if (selectedPhoto?.id === photoId) {
+          setSelectedPhoto({ ...selectedPhoto, annotations, analyzed: true });
+        }
+
+        toast.success("Annotations saved");
+      } catch (error) {
+        logger.error("Save annotations error:", error);
+        toast.error("Failed to save annotations");
+      }
+    },
+    [selectedPhoto]
+  );
+
+  const getSeverityColorHex = (severity?: string): string => {
+    switch (severity) {
+      case "Critical":
+        return "#ef4444";
+      case "High":
+        return "#f97316";
+      case "Medium":
+        return "#eab308";
+      case "Low":
+        return "#22c55e";
+      default:
+        return "#3b82f6";
+    }
+  };
+
+  const determineSeverityFromAnnotations = (
+    annotations?: Annotation[]
+  ): "none" | "minor" | "moderate" | "severe" => {
+    if (!annotations || annotations.length === 0) return "none";
+    const severities = annotations.map((a) => a.severity).filter(Boolean);
+    if (severities.includes("Critical") || severities.includes("High")) return "severe";
+    if (severities.includes("Medium")) return "moderate";
+    if (severities.includes("Low")) return "minor";
+    return "none";
   };
 
   const getSeverityColor = (severity?: string) => {
@@ -173,13 +366,16 @@ export default function PhotosPage() {
   };
 
   const analyzedCount = photos.filter((p) => p.analyzed).length;
+  const unanalyzedCount = photos.filter((p) => !p.analyzed).length;
   const severeCount = photos.filter((p) => p.severity === "severe").length;
+  const annotationCount = photos.reduce((acc, p) => acc + (p.annotations?.length || 0), 0);
 
   return (
     <SectionCard title="Photos & AI Analysis">
-      {/* Stats Bar */}
+      {/* Action Bar */}
       {photos.length > 0 && (
         <div className="mb-6 flex flex-wrap items-center gap-4 rounded-lg border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-800/50">
+          {/* Stats */}
           <div className="flex items-center gap-2">
             <Camera className="h-5 w-5 text-blue-500" />
             <span className="font-medium">{photos.length} Photos</span>
@@ -188,13 +384,65 @@ export default function PhotosPage() {
             <Sparkles className="h-5 w-5 text-purple-500" />
             <span>{analyzedCount} Analyzed</span>
           </div>
+          {annotationCount > 0 && (
+            <div className="flex items-center gap-2">
+              <Edit3 className="h-5 w-5 text-green-500" />
+              <span>{annotationCount} Annotations</span>
+            </div>
+          )}
           {severeCount > 0 && (
             <div className="flex items-center gap-2">
               <AlertCircle className="h-5 w-5 text-red-500" />
               <span className="text-red-600 dark:text-red-400">{severeCount} Severe</span>
             </div>
           )}
-          <div className="ml-auto">
+
+          {/* Actions */}
+          <div className="ml-auto flex items-center gap-2">
+            {/* Bulk Analyze */}
+            {unanalyzedCount > 0 && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleBulkAnalyze}
+                disabled={bulkAnalyzing}
+              >
+                {bulkAnalyzing ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    {bulkProgress}%
+                  </>
+                ) : (
+                  <>
+                    <Sparkles className="mr-2 h-4 w-4" />
+                    Analyze All ({unanalyzedCount})
+                  </>
+                )}
+              </Button>
+            )}
+
+            {/* Generate Damage Report */}
+            <Button
+              variant="default"
+              size="sm"
+              onClick={handleGenerateReport}
+              disabled={generatingReport || analyzedCount === 0}
+              className="bg-purple-600 hover:bg-purple-700"
+            >
+              {generatingReport ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Generating...
+                </>
+              ) : (
+                <>
+                  <FileText className="mr-2 h-4 w-4" />
+                  Generate Damage Report
+                </>
+              )}
+            </Button>
+
+            {/* View Toggle */}
             <Tabs value={viewMode} onValueChange={(v) => setViewMode(v as "grid" | "analysis")}>
               <TabsList className="h-8">
                 <TabsTrigger value="grid" className="text-xs">
@@ -209,9 +457,28 @@ export default function PhotosPage() {
         </div>
       )}
 
+      {/* Bulk Analysis Progress */}
+      {bulkAnalyzing && (
+        <div className="mb-6 rounded-lg border border-purple-200 bg-purple-50 p-4 dark:border-purple-800 dark:bg-purple-900/20">
+          <div className="mb-2 flex items-center justify-between text-sm">
+            <span className="flex items-center gap-2 text-purple-700 dark:text-purple-300">
+              <Sparkles className="h-4 w-4 animate-pulse" />
+              Running AI analysis on all photos...
+            </span>
+            <span className="font-medium">{bulkProgress}%</span>
+          </div>
+          <Progress value={bulkProgress} className="h-2" />
+        </div>
+      )}
+
       {/* Upload Component */}
       <div className="mb-8">
-        <ClaimPhotoUpload claimId={claimId} onUploadComplete={handleUploadComplete} />
+        <ClaimPhotoUploadWithAnalysis
+          claimId={claimId}
+          onUploadComplete={handleUploadComplete}
+          onAnalysisComplete={handleAnalysisComplete}
+          autoAnalyze={true}
+        />
       </div>
 
       {/* Photos Display */}
@@ -446,102 +713,230 @@ export default function PhotosPage() {
 
       {/* Photo Detail Modal */}
       <Dialog open={!!selectedPhoto} onOpenChange={() => setSelectedPhoto(null)}>
-        <DialogContent className="max-w-4xl">
+        <DialogContent className="max-h-[90vh] max-w-5xl overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>{selectedPhoto?.filename}</DialogTitle>
+            <DialogTitle className="flex items-center gap-2">
+              {selectedPhoto?.filename}
+              {selectedPhoto?.analyzed && (
+                <Badge className={getSeverityColor(selectedPhoto.severity)}>
+                  <Check className="mr-1 h-3 w-3" />
+                  {selectedPhoto.severity}
+                </Badge>
+              )}
+            </DialogTitle>
             <DialogDescription>
               {selectedPhoto?.analyzed
                 ? `AI Analysis: ${selectedPhoto.aiCaption?.summary || "Analysis complete"}`
-                : "Photo not yet analyzed"}
+                : "Photo not yet analyzed - run AI analysis or add manual annotations"}
             </DialogDescription>
           </DialogHeader>
 
           {selectedPhoto && (
             <div className="space-y-4">
-              {/* Large photo with overlay */}
-              <div className="relative overflow-hidden rounded-lg">
-                {selectedPhoto.analyzed && selectedPhoto.damageBoxes ? (
-                  <PhotoOverlay
-                    url={selectedPhoto.publicUrl}
-                    boxes={selectedPhoto.damageBoxes}
-                    showControls={true}
-                    onBoxesChange={(newBoxes) => {
-                      setPhotos((prev) =>
-                        prev.map((p) =>
-                          p.id === selectedPhoto.id ? { ...p, damageBoxes: newBoxes } : p
-                        )
-                      );
-                      setSelectedPhoto({ ...selectedPhoto, damageBoxes: newBoxes });
-                    }}
-                  />
-                ) : (
-                  <img
-                    src={selectedPhoto.publicUrl}
-                    alt={selectedPhoto.filename}
-                    className="h-auto w-full rounded-lg"
-                  />
-                )}
-              </div>
+              {/* Tabs for View / Annotate / Details */}
+              <Tabs
+                value={modalTab}
+                onValueChange={(v) => setModalTab(v as "view" | "annotate" | "details")}
+              >
+                <TabsList className="grid w-full grid-cols-3">
+                  <TabsTrigger value="view">
+                    <ZoomIn className="mr-2 h-4 w-4" />
+                    View
+                  </TabsTrigger>
+                  <TabsTrigger value="annotate">
+                    <Edit3 className="mr-2 h-4 w-4" />
+                    Annotate
+                  </TabsTrigger>
+                  <TabsTrigger value="details">
+                    <Sparkles className="mr-2 h-4 w-4" />
+                    AI Details
+                  </TabsTrigger>
+                </TabsList>
 
-              {/* Analysis details */}
-              {selectedPhoto.aiCaption && (
-                <div className="rounded-lg border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-800">
-                  <h4 className="mb-3 flex items-center gap-2 font-medium">
-                    <Sparkles className="h-4 w-4 text-purple-500" />
-                    AI Analysis Results
-                  </h4>
-                  <div className="grid gap-3 md:grid-cols-2">
-                    <div>
-                      <p className="text-xs font-medium text-slate-500">Material Type</p>
-                      <p className="text-sm">{selectedPhoto.aiCaption.materialType}</p>
-                    </div>
-                    <div>
-                      <p className="text-xs font-medium text-slate-500">Damage Type</p>
-                      <p className="text-sm text-red-600 dark:text-red-400">
-                        {selectedPhoto.aiCaption.damageType}
-                      </p>
-                    </div>
-                    <div>
-                      <p className="text-xs font-medium text-slate-500">Functional Impact</p>
-                      <p className="text-sm">{selectedPhoto.aiCaption.functionalImpact}</p>
-                    </div>
-                    <div>
-                      <p className="text-xs font-medium text-slate-500">Applicable Code</p>
-                      <p className="text-sm text-blue-600 dark:text-blue-400">
-                        {selectedPhoto.aiCaption.applicableCode}
-                      </p>
-                    </div>
-                    <div className="md:col-span-2">
-                      <p className="text-xs font-medium text-slate-500">Date of Loss Correlation</p>
-                      <p className="text-sm">{selectedPhoto.aiCaption.dolTieIn}</p>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* Actions */}
-              <div className="flex justify-end gap-2">
-                {!selectedPhoto.analyzed && (
-                  <Button
-                    onClick={() => handleAnalyze(selectedPhoto.id)}
-                    disabled={analyzing === selectedPhoto.id}
-                  >
-                    {analyzing === selectedPhoto.id ? (
-                      <>
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        Analyzing...
-                      </>
+                {/* View Tab */}
+                <TabsContent value="view" className="mt-4">
+                  <div className="relative overflow-hidden rounded-lg">
+                    {selectedPhoto.analyzed && selectedPhoto.damageBoxes ? (
+                      <PhotoOverlay
+                        url={selectedPhoto.publicUrl}
+                        boxes={selectedPhoto.damageBoxes}
+                        showControls={true}
+                        onBoxesChange={(newBoxes) => {
+                          setPhotos((prev) =>
+                            prev.map((p) =>
+                              p.id === selectedPhoto.id ? { ...p, damageBoxes: newBoxes } : p
+                            )
+                          );
+                          setSelectedPhoto({ ...selectedPhoto, damageBoxes: newBoxes });
+                        }}
+                      />
                     ) : (
-                      <>
-                        <Sparkles className="mr-2 h-4 w-4" />
-                        Run AI Analysis
-                      </>
+                      <img
+                        src={selectedPhoto.publicUrl}
+                        alt={selectedPhoto.filename}
+                        className="h-auto w-full rounded-lg"
+                      />
                     )}
+                  </div>
+                </TabsContent>
+
+                {/* Annotate Tab */}
+                <TabsContent value="annotate" className="mt-4">
+                  <PhotoAnnotator
+                    imageUrl={selectedPhoto.publicUrl}
+                    initialAnnotations={selectedPhoto.annotations || []}
+                    onSave={(annotations) => handleSaveAnnotations(selectedPhoto.id, annotations)}
+                    onAnalyze={() => handleAnalyze(selectedPhoto.id)}
+                    isAnalyzing={analyzing === selectedPhoto.id}
+                  />
+                </TabsContent>
+
+                {/* Details Tab */}
+                <TabsContent value="details" className="mt-4">
+                  {selectedPhoto.aiCaption ? (
+                    <div className="rounded-lg border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-800">
+                      <h4 className="mb-3 flex items-center gap-2 font-medium">
+                        <Sparkles className="h-4 w-4 text-purple-500" />
+                        AI Analysis Results
+                      </h4>
+                      <div className="grid gap-3 md:grid-cols-2">
+                        <div>
+                          <p className="text-xs font-medium text-slate-500">Material Type</p>
+                          <p className="text-sm">{selectedPhoto.aiCaption.materialType || "N/A"}</p>
+                        </div>
+                        <div>
+                          <p className="text-xs font-medium text-slate-500">Damage Type</p>
+                          <p className="text-sm text-red-600 dark:text-red-400">
+                            {selectedPhoto.aiCaption.damageType || "N/A"}
+                          </p>
+                        </div>
+                        <div>
+                          <p className="text-xs font-medium text-slate-500">Functional Impact</p>
+                          <p className="text-sm">
+                            {selectedPhoto.aiCaption.functionalImpact || "N/A"}
+                          </p>
+                        </div>
+                        <div>
+                          <p className="text-xs font-medium text-slate-500">Applicable IRC Code</p>
+                          <p className="text-sm text-blue-600 dark:text-blue-400">
+                            {selectedPhoto.aiCaption.applicableCode || "N/A"}
+                          </p>
+                        </div>
+                        <div className="md:col-span-2">
+                          <p className="text-xs font-medium text-slate-500">
+                            Date of Loss Correlation
+                          </p>
+                          <p className="text-sm">{selectedPhoto.aiCaption.dolTieIn || "N/A"}</p>
+                        </div>
+                        {selectedPhoto.aiCaption.summary && (
+                          <div className="md:col-span-2">
+                            <p className="text-xs font-medium text-slate-500">Summary</p>
+                            <p className="text-sm">{selectedPhoto.aiCaption.summary}</p>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Annotations List */}
+                      {selectedPhoto.annotations && selectedPhoto.annotations.length > 0 && (
+                        <div className="mt-4 border-t border-slate-200 pt-4 dark:border-slate-600">
+                          <h5 className="mb-2 text-sm font-medium">
+                            Detected Damage ({selectedPhoto.annotations.length})
+                          </h5>
+                          <div className="space-y-2">
+                            {selectedPhoto.annotations.map((ann, i) => (
+                              <div
+                                key={ann.id || i}
+                                className="flex items-center gap-3 rounded-lg bg-white p-2 text-sm dark:bg-slate-900"
+                              >
+                                <div
+                                  className="h-3 w-3 rounded-full"
+                                  // eslint-disable-next-line react/forbid-dom-props
+                                  style={{ backgroundColor: ann.color }}
+                                />
+                                <span className="font-medium">{ann.damageType || "Damage"}</span>
+                                {ann.ircCode && (
+                                  <Badge variant="outline" className="text-xs">
+                                    {ann.ircCode}
+                                  </Badge>
+                                )}
+                                {ann.severity && (
+                                  <Badge className={getSeverityColor(ann.severity.toLowerCase())}>
+                                    {ann.severity}
+                                  </Badge>
+                                )}
+                                {ann.confidence && (
+                                  <span className="text-xs text-slate-500">
+                                    {Math.round(ann.confidence * 100)}%
+                                  </span>
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    <div className="flex flex-col items-center justify-center rounded-lg border border-dashed border-slate-300 bg-slate-50 p-8 dark:border-slate-600 dark:bg-slate-800/50">
+                      <Sparkles className="mb-3 h-10 w-10 text-slate-400" />
+                      <p className="mb-2 text-slate-600 dark:text-slate-300">
+                        No AI analysis available yet
+                      </p>
+                      <Button
+                        onClick={() => handleAnalyze(selectedPhoto.id)}
+                        disabled={analyzing === selectedPhoto.id}
+                      >
+                        {analyzing === selectedPhoto.id ? (
+                          <>
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            Analyzing...
+                          </>
+                        ) : (
+                          <>
+                            <Sparkles className="mr-2 h-4 w-4" />
+                            Run AI Analysis
+                          </>
+                        )}
+                      </Button>
+                    </div>
+                  )}
+                </TabsContent>
+              </Tabs>
+
+              {/* Footer Actions */}
+              <div className="flex justify-between border-t border-slate-200 pt-4 dark:border-slate-700">
+                <div className="flex gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => window.open(selectedPhoto.publicUrl, "_blank")}
+                  >
+                    <Download className="mr-2 h-4 w-4" />
+                    Download
                   </Button>
-                )}
-                <Button variant="outline" onClick={() => setSelectedPhoto(null)}>
-                  Close
-                </Button>
+                </div>
+                <div className="flex gap-2">
+                  {!selectedPhoto.analyzed && (
+                    <Button
+                      onClick={() => handleAnalyze(selectedPhoto.id)}
+                      disabled={analyzing === selectedPhoto.id}
+                    >
+                      {analyzing === selectedPhoto.id ? (
+                        <>
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          Analyzing...
+                        </>
+                      ) : (
+                        <>
+                          <Sparkles className="mr-2 h-4 w-4" />
+                          Run AI Analysis
+                        </>
+                      )}
+                    </Button>
+                  )}
+                  <Button variant="outline" onClick={() => setSelectedPhoto(null)}>
+                    Close
+                  </Button>
+                </div>
               </div>
             </div>
           )}

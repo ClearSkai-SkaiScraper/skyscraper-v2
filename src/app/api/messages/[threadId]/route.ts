@@ -23,14 +23,42 @@ export async function GET(req: NextRequest, context: RouteContext) {
 
     const { threadId } = await context.params;
 
-    const thread = await prisma.messageThread.findUnique({
-      where: { id: threadId },
-      include: {
-        Message: {
-          orderBy: { createdAt: "asc" },
+    // Pre-check: try to resolve user's org context for tenant-scoped lookup
+    let orgFilter: string | undefined;
+    try {
+      const ctx = await safeOrgContext();
+      if (ctx.status === "ok" && ctx.orgId) {
+        orgFilter = ctx.orgId;
+      }
+    } catch {
+      // Client users won't have org context — that's ok, we'll fall back
+    }
+
+    // Fetch thread — prefer org-scoped query when possible
+    let thread;
+    if (orgFilter) {
+      // Pro user: scope to their org first
+      thread = await prisma.messageThread.findFirst({
+        where: { id: threadId, orgId: orgFilter },
+        include: {
+          Message: {
+            orderBy: { createdAt: "asc" },
+          },
         },
-      },
-    });
+      });
+    }
+
+    // Fallback for client users or cross-org portal threads
+    if (!thread) {
+      thread = await prisma.messageThread.findUnique({
+        where: { id: threadId },
+        include: {
+          Message: {
+            orderBy: { createdAt: "asc" },
+          },
+        },
+      });
+    }
 
     if (!thread) {
       return NextResponse.json({ error: "Thread not found" }, { status: 404 });

@@ -29,6 +29,20 @@ export async function POST(): Promise<NextResponse> {
       return NextResponse.json({ ok: false, error: "Unauthorized" }, { status: 401 });
     }
 
+    // Verify user has ADMIN/OWNER role before allowing destructive reset
+    const currentMembership = await prisma.user_organizations.findFirst({
+      where: { userId },
+      select: { role: true, organizationId: true },
+      orderBy: { createdAt: "asc" },
+    });
+
+    if (currentMembership && !["ADMIN", "OWNER"].includes(currentMembership.role)) {
+      return NextResponse.json(
+        { ok: false, error: "Only ADMIN or OWNER can perform a nuclear reset" },
+        { status: 403 }
+      );
+    }
+
     const user = await currentUser();
     const userName = user
       ? [user.firstName, user.lastName].filter(Boolean).join(" ") || "User"
@@ -128,10 +142,7 @@ export async function POST(): Promise<NextResponse> {
     });
   } catch (error) {
     logger.error("[NUCLEAR RESET] Error:", error);
-    return NextResponse.json(
-      { ok: false, error: "Reset failed" },
-      { status: 500 }
-    );
+    return NextResponse.json({ ok: false, error: "Reset failed" }, { status: 500 });
   }
 }
 

@@ -1,12 +1,11 @@
 export const dynamic = "force-dynamic";
 
-import { auth } from "@clerk/nextjs/server";
 import { logger } from "@/lib/logger";
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { z } from "zod";
 
+import { withOrgScope } from "@/lib/auth/tenant";
 import { getDelegate } from "@/lib/db/modelAliases";
-import prisma from "@/lib/prisma";
 
 const CreateDamageAssessmentSchema = z.object({
   claimId: z.string().optional(),
@@ -58,13 +57,9 @@ const CreateDamageAssessmentSchema = z.object({
  * POST /api/damage
  * Create a new damage assessment
  */
-export async function POST(req: NextRequest) {
-  try {
-    const { userId, orgId } = await auth();
-    if (!userId || !orgId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
 
+export const POST = withOrgScope(async (req: Request, { userId, orgId }) => {
+  try {
     const body = await req.json();
     const data = CreateDamageAssessmentSchema.parse(body);
 
@@ -128,24 +123,16 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Invalid input", details: error.errors }, { status: 400 });
     }
 
-    return NextResponse.json(
-      { error: "Failed to save damage assessment" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Failed to save damage assessment" }, { status: 500 });
   }
-}
+});
 
 /**
  * GET /api/damage
  * List all damage assessments for the organization
  */
-export async function GET(req: NextRequest) {
+export const GET = withOrgScope(async (req: Request, { userId, orgId }) => {
   try {
-    const { userId, orgId } = await auth();
-    if (!userId || !orgId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
     const { searchParams } = new URL(req.url);
     const claimId = searchParams.get("claimId");
 
@@ -179,9 +166,6 @@ export async function GET(req: NextRequest) {
     });
   } catch (error) {
     logger.error("[API] List damage assessments error:", error);
-    return NextResponse.json(
-      { error: "Failed to fetch damage assessments" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Failed to fetch damage assessments" }, { status: 500 });
   }
-}
+});

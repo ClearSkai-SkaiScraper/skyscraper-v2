@@ -1,9 +1,10 @@
 export const dynamic = "force-dynamic";
 
-import { auth } from "@clerk/nextjs/server";
 import { logger } from "@/lib/logger";
+import { auth } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
 
+import { resolveOrg } from "@/lib/org/resolveOrg";
 import prisma from "@/lib/prisma";
 
 export async function POST(request: NextRequest) {
@@ -12,6 +13,19 @@ export async function POST(request: NextRequest) {
 
     if (!userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    // Resolve org server-side
+    let orgId: string | null = null;
+    try {
+      const org = await resolveOrg();
+      orgId = org.orgId;
+    } catch {
+      return NextResponse.json({ error: "Organization not found" }, { status: 404 });
+    }
+
+    if (!orgId) {
+      return NextResponse.json({ error: "Organization not found" }, { status: 404 });
     }
 
     const body = await request.json();
@@ -30,22 +44,38 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Client not found" }, { status: 404 });
     }
 
-    // ENHANCEMENT: Implement connection logic based on your system
-    // This could be:
-    // 1. Send notification to client
-    // 2. Create connection request record
-    // 3. Send email notification
-    // 4. Add to messages/conversations
+    // Check if connection already exists
+    const existing = await prisma.clientConnection.findFirst({
+      where: { orgId, clientId },
+    });
 
-    // For now, we'll return success
-    // In a real implementation, you'd want to:
-    // - Check if connection already exists
-    // - Create connection request record
-    // - Send appropriate notifications
+    if (existing) {
+      return NextResponse.json({
+        success: true,
+        message: "Connection already exists",
+        connection: existing,
+      });
+    }
+
+    // Create the connection record
+    const connection = await prisma.clientConnection.create({
+      data: {
+        id: crypto.randomUUID(),
+        orgId,
+        clientId,
+        status: "active",
+        invitedBy: userId,
+        invitedAt: new Date(),
+        connectedAt: new Date(),
+      },
+    });
+
+    logger.info("[CLIENTS_CONNECT] Connection created", { orgId, clientId });
 
     return NextResponse.json({
       success: true,
-      message: "Connection request sent successfully",
+      message: "Connection created successfully",
+      connection,
     });
   } catch (error) {
     logger.error("Error creating connection:", error);

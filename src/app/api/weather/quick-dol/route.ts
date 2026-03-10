@@ -6,6 +6,7 @@ import { auth } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
 
 import { QuickDolInput, runQuickDol } from "@/lib/ai/weather";
+import { getTenant } from "@/lib/auth/tenant";
 import prisma from "@/lib/prisma";
 import { getRateLimitIdentifier, rateLimiters } from "@/lib/rate-limit";
 
@@ -104,13 +105,14 @@ export async function POST(req: NextRequest) {
       notes: result.bestGuess ? `Best guess: ${result.bestGuess}` : undefined,
     };
 
-    // Save to ai_reports for demo visibility
-    if (body.orgId && effectiveUserId !== "dev-weather-bypass") {
+    // Save to ai_reports for demo visibility — derive orgId server-side
+    const resolvedOrgId = effectiveUserId !== "dev-weather-bypass" ? await getTenant() : null;
+    if (resolvedOrgId && effectiveUserId !== "dev-weather-bypass") {
       try {
         await prisma.ai_reports.create({
           data: {
             id: crypto.randomUUID(),
-            orgId: body.orgId,
+            orgId: resolvedOrgId,
             userId: effectiveUserId,
             userName: "system",
             claimId: body.claimId || null,

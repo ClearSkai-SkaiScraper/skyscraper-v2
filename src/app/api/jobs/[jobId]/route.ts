@@ -24,8 +24,8 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
-import { NextResponse } from "next/server";
 import { logger } from "@/lib/logger";
+import { NextResponse } from "next/server";
 
 import { requireApiAuth } from "@/lib/auth/apiAuth";
 import { pgPool } from "@/lib/db";
@@ -42,28 +42,45 @@ export async function GET(req: Request, { params }: { params: { jobId: string } 
   try {
     const { jobId } = params;
 
-    // Get all events for this job
+    // Get all events for this job — scoped to the user's org for tenant isolation
+    // NOTE: job_events table has no orgId column. We verify ownership by checking
+    // the payload JSONB (which stores the pg-boss job data including orgId/userId).
     const result = await client.query(
       `
       SELECT 
-        id,
-        job_name,
-        job_id,
-        status,
-        message,
-        payload,
-        result,
-        attempts,
-        created_at
-      FROM job_events
-      WHERE job_id = $1
-      ORDER BY created_at ASC
+        je.id,
+        je.job_name,
+        je.job_id,
+        je.status,
+        je.message,
+        je.payload,
+        je.result,
+        je.attempts,
+        je.created_at
+      FROM job_events je
+      WHERE je.job_id = $1
+      ORDER BY je.created_at ASC
     `,
       [jobId]
     );
 
     if (result.rows.length === 0) {
       return NextResponse.json({ error: "Job not found" }, { status: 404 });
+    }
+
+    // SECURITY: Verify the job belongs to the requesting user's org or user
+    const firstEvent = result.rows[0];
+    const payload = firstEvent.payload;
+    if (payload && typeof payload === "object") {
+      const jobOrgId = payload.orgId || payload.org_id;
+      const jobUserId = payload.userId || payload.user_id;
+      // If the job has org/user info, verify it matches the caller
+      if (jobOrgId && orgId && jobOrgId !== orgId) {
+        return NextResponse.json({ error: "Job not found" }, { status: 404 });
+      }
+      if (jobUserId && jobUserId !== userId && !jobOrgId) {
+        return NextResponse.json({ error: "Job not found" }, { status: 404 });
+      }
     }
 
     // Get the latest event (most recent status)

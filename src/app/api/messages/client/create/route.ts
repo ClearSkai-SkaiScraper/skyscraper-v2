@@ -1,7 +1,7 @@
 export const dynamic = "force-dynamic";
 
-import { auth, currentUser } from "@clerk/nextjs/server";
 import { logger } from "@/lib/logger";
+import { auth, currentUser } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
 
 import prisma from "@/lib/prisma";
@@ -81,6 +81,40 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Professional not found" }, { status: 404 });
     }
 
+    // Verify client has an active connection with this pro
+    const connection = await prisma.clientProConnection.findFirst({
+      where: {
+        clientId: client.id,
+        contractorId: proId,
+        status: { in: ["accepted", "active", "connected"] },
+      },
+    });
+
+    // Also check legacy ClientConnection as fallback
+    let hasLegacyConnection = false;
+    if (!connection) {
+      const legacyConn = await prisma.clientConnection.findFirst({
+        where: {
+          clientId: client.id,
+          status: { in: ["accepted", "active", "connected"] },
+        },
+      });
+      hasLegacyConnection = !!legacyConn;
+    }
+
+    // Also allow if there's an existing thread (backward compat for pre-connection threads)
+    const existingThread = await prisma.messageThread.findFirst({
+      where: { clientId: client.id, tradePartnerId: proId },
+      select: { id: true },
+    });
+
+    if (!connection && !hasLegacyConnection && !existingThread) {
+      return NextResponse.json(
+        { error: "You must be connected with this professional to send messages" },
+        { status: 403 }
+      );
+    }
+
     // Check for existing thread between client and pro
     let thread = await prisma.messageThread.findFirst({
       where: {
@@ -106,7 +140,7 @@ export async function POST(req: NextRequest) {
       thread = await prisma.messageThread.create({
         data: {
           id: crypto.randomUUID(),
-          orgId: proId, // Use proId as orgId since tradesCompany doesn't have orgId
+          orgId: proCompany.id, // Use verified proCompany.id as orgId for the thread
           clientId: client.id,
           tradePartnerId: proId,
           participants: [userId, client.id, proId],
@@ -151,9 +185,6 @@ export async function POST(req: NextRequest) {
     });
   } catch (error) {
     logger.error("[messages/client/create] Error:", error);
-    return NextResponse.json(
-      { error: "Failed to create message" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Failed to create message" }, { status: 500 });
   }
 }

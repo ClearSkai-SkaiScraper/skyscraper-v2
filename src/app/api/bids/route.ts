@@ -9,8 +9,8 @@ export const dynamic = "force-dynamic";
  * GET /api/bids?proId=xxx - Get all bids by a pro
  */
 
-import { auth } from "@clerk/nextjs/server";
 import { logger } from "@/lib/logger";
+import { auth } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
 
 import prisma from "@/lib/prisma";
@@ -84,6 +84,9 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Validate validDays is a safe integer
+    const safeValidDays = Math.min(Math.max(Math.floor(Number(validDays) || 30), 1), 365);
+
     // Create the bid
     const bid = await prisma.$executeRaw`
       INSERT INTO project_bids (
@@ -108,7 +111,7 @@ export async function POST(request: NextRequest) {
         ${message},
         ${includesPermits ?? false},
         ${includesMaterials ?? false},
-        NOW() + INTERVAL '${validDays} days',
+        NOW() + make_interval(days => ${safeValidDays}),
         'pending',
         NOW(),
         NOW()
@@ -251,6 +254,24 @@ export async function PATCH(request: NextRequest) {
       );
     }
 
+    // SECURITY: Verify the user owns this bid (pro who submitted) before allowing mutation
+    const proProfile = await prisma.tradesProfile.findFirst({
+      where: { userId },
+    });
+
+    if (!proProfile) {
+      return NextResponse.json({ error: "Pro profile not found" }, { status: 403 });
+    }
+
+    const bidOwnership = await prisma.$queryRaw<{ id: string }[]>`
+      SELECT id FROM project_bids
+      WHERE id = ${bidId}::uuid AND pro_profile_id = ${proProfile.id}
+    `;
+
+    if (!Array.isArray(bidOwnership) || bidOwnership.length === 0) {
+      return NextResponse.json({ error: "Bid not found or access denied" }, { status: 404 });
+    }
+
     const statusMap: Record<string, string> = {
       accept: "accepted",
       decline: "declined",
@@ -260,7 +281,7 @@ export async function PATCH(request: NextRequest) {
     await prisma.$executeRaw`
       UPDATE project_bids
       SET status = ${statusMap[action]}, updated_at = NOW()
-      WHERE id = ${bidId}::uuid
+      WHERE id = ${bidId}::uuid AND pro_profile_id = ${proProfile.id}
     `;
 
     return NextResponse.json({

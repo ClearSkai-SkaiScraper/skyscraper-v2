@@ -183,8 +183,7 @@ export async function POST(req: Request) {
 
           logger.debug(`[EMAIL:WELCOME] Sent to ${cs.customer_details.email}`);
 
-          // TODO: Send receipt email to customer via Resend
-          // Include: amount paid, plan name, next billing date, invoice PDF link
+          // STUB: Receipt email not yet wired. Will use Resend when template is ready.
         } else {
           logger.error(`[EMAIL:MISSING_EMAIL] checkout.session.completed without email`, {
             sessionId: cs.id,
