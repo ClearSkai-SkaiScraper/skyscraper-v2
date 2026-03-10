@@ -52,6 +52,7 @@ interface ClaimData {
   adjusterPhone: string | null;
   adjusterEmail: string | null;
   propertyId: string | null;
+  contactId: string | null;
   propertyAddress: string | null;
   // Signing status
   signingStatus: string;
@@ -318,6 +319,7 @@ export default function OverviewPage() {
             adjusterPhone: claimInfo.adjusterPhone || null,
             adjusterEmail: claimInfo.adjusterEmail || null,
             propertyId: claimInfo.propertyId ?? null,
+            contactId: claimInfo.contactId ?? null,
             propertyAddress: claimInfo.propertyAddress || null,
             // Signing status
             signingStatus: claimInfo.signingStatus || "pending",
@@ -405,7 +407,7 @@ export default function OverviewPage() {
         {/* 1. Connected Client — first so user sees who's attached */}
         <TabErrorBoundary tabName="Client Management">
           <SectionCard title="Connected Client">
-            <ClientConnectSection claimId={claimId} currentClientId={claim.propertyId} />
+            <ClientConnectSection claimId={claimId} currentClientId={claim.contactId} />
           </SectionCard>
         </TabErrorBoundary>
 

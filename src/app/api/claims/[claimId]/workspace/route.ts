@@ -283,6 +283,7 @@ export async function GET(request: NextRequest, { params }: { params: { claimId:
         adjusterPhone: claim.adjusterPhone || null,
         adjusterEmail: claim.adjusterEmail || null,
         propertyId: claim.propertyId || null,
+        contactId: (claim as any).contactId || null,
         createdAt: claim.createdAt.toISOString(),
         updatedAt: claim.updatedAt.toISOString(),
         // Signing status
