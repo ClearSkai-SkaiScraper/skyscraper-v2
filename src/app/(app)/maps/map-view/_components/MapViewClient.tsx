@@ -483,10 +483,10 @@ export default function MapViewClient({ markers, initialCenter }: MapViewClientP
                     {selectedMarker.status && (
                       <div className="flex items-center gap-2">
                         <div
-                          className="h-2.5 w-2.5 rounded-full ring-2 ring-offset-1"
+                          className="h-2.5 w-2.5 rounded-full"
                           style={{
                             background: STATUS_COLORS[selectedMarker.status] || cfg.color,
-                            ringColor: STATUS_COLORS[selectedMarker.status] || cfg.color,
+                            boxShadow: `0 0 0 2px white, 0 0 0 4px ${STATUS_COLORS[selectedMarker.status] || cfg.color}`,
                           }}
                         />
                         <Badge
