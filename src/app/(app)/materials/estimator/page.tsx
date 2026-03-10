@@ -554,12 +554,9 @@ export default function MaterialEstimatorPage() {
     }
   };
 
-  // Build cumulative user notes from chat for the AI estimate
+  // Build cumulative user notes from the final notes input for the AI estimate
   const buildUserNotes = () => {
-    return aiChatMessages
-      .filter((m) => m.role === "user")
-      .map((m) => m.text)
-      .join("\n");
+    return aiChatInput.trim();
   };
 
   // ── Auto-estimate linear feet from area if user leaves them blank ────────
@@ -1501,8 +1498,9 @@ export default function MaterialEstimatorPage() {
                   </Label>
                   <Button
                     type="button"
-                    variant="outline"
+                    variant="default"
                     size="sm"
+                    className="bg-blue-600 hover:bg-blue-700"
                     onClick={() =>
                       setWindowItems((prev) => [
                         ...prev,
@@ -1516,7 +1514,7 @@ export default function MaterialEstimatorPage() {
                       ])
                     }
                   >
-                    <Plus className="mr-1 h-3 w-3" /> Add Window
+                    <Plus className="mr-1 h-4 w-4" /> Add Window
                   </Button>
                 </div>
                 <div className="space-y-2">
@@ -1637,8 +1635,9 @@ export default function MaterialEstimatorPage() {
                   </Label>
                   <Button
                     type="button"
-                    variant="outline"
+                    variant="default"
                     size="sm"
+                    className="bg-blue-600 hover:bg-blue-700"
                     onClick={() =>
                       setDoorItems((prev) => [
                         ...prev,
@@ -1652,7 +1651,7 @@ export default function MaterialEstimatorPage() {
                       ])
                     }
                   >
-                    <Plus className="mr-1 h-3 w-3" /> Add Door
+                    <Plus className="mr-1 h-4 w-4" /> Add Door
                   </Button>
                 </div>
                 <div className="space-y-2">
@@ -1815,103 +1814,31 @@ export default function MaterialEstimatorPage() {
               </div>
             )}
 
-            {/* ── AI CHAT BOX ── */}
+            {/* ── FINAL NOTES BOX (Simple) ── */}
             <div className="space-y-2">
               <Label className="flex items-center gap-2">
                 <Sparkles className="h-4 w-4 text-purple-500" />
-                AI Assistant Chat
+                Final Notes for AI
               </Label>
               <div className="overflow-hidden rounded-xl border border-purple-200 bg-gradient-to-b from-purple-50/50 to-white dark:border-purple-800 dark:from-purple-950/30 dark:to-slate-900">
-                {/* Chat messages area */}
-                <div className="max-h-52 min-h-[80px] overflow-y-auto p-3">
-                  {aiChatMessages.length === 0 ? (
-                    <div className="flex flex-col items-center justify-center py-4 text-center">
-                      <Sparkles className="mb-1.5 h-6 w-6 text-purple-300 dark:text-purple-700" />
-                      <p className="text-xs font-medium text-purple-400 dark:text-purple-500">
-                        Tell the AI anything before building your estimate
-                      </p>
-                      <p className="mt-0.5 text-[10px] text-slate-400">
-                        &quot;Use premium materials&quot; &bull; &quot;Include code upgrades&quot;
-                        &bull; &quot;Homeowner wants energy-efficient&quot;
-                      </p>
-                    </div>
-                  ) : (
-                    <div className="space-y-2.5">
-                      {aiChatMessages.map((msg, i) => (
-                        <div
-                          key={i}
-                          className={`flex ${
-                            msg.role === "user" ? "justify-end" : "justify-start"
-                          }`}
-                        >
-                          <div
-                            className={`max-w-[85%] rounded-xl px-3 py-2 text-[12px] leading-relaxed ${
-                              msg.role === "user"
-                                ? "bg-purple-600 text-white"
-                                : "border border-purple-100 bg-white text-slate-700 dark:border-purple-800 dark:bg-slate-800 dark:text-slate-200"
-                            }`}
-                          >
-                            {msg.role === "ai" && (
-                              <div className="mb-0.5 flex items-center gap-1">
-                                <Sparkles className="h-3 w-3 text-purple-500" />
-                                <span className="text-[10px] font-semibold text-purple-500">
-                                  SkaiAI
-                                </span>
-                              </div>
-                            )}
-                            <p className="whitespace-pre-wrap">{msg.text}</p>
-                            <p
-                              className={`mt-0.5 text-right text-[9px] ${
-                                msg.role === "user" ? "text-purple-200" : "text-slate-400"
-                              }`}
-                            >
-                              {msg.time}
-                            </p>
-                          </div>
-                        </div>
-                      ))}
-                      {aiChatLoading && (
-                        <div className="flex justify-start">
-                          <div className="flex items-center gap-1.5 rounded-xl border border-purple-100 bg-white px-3 py-2 dark:border-purple-800 dark:bg-slate-800">
-                            <Loader2 className="h-3 w-3 animate-spin text-purple-500" />
-                            <span className="text-[11px] text-purple-500">Thinking…</span>
-                          </div>
-                        </div>
-                      )}
-                      <div ref={chatEndRef} />
-                    </div>
-                  )}
-                </div>
-                {/* Chat input */}
-                <div className="flex items-center gap-2 border-t border-purple-200/60 bg-white/80 px-3 py-2 dark:border-purple-800/40 dark:bg-slate-900/60">
-                  <Input
-                    value={aiChatInput}
-                    onChange={(e) => setAiChatInput(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter" && !e.shiftKey) {
-                        e.preventDefault();
-                        handleAiChatSend();
-                      }
-                    }}
-                    placeholder="Tell the AI what to include or adjust…"
-                    className="border-0 bg-transparent text-sm shadow-none focus-visible:ring-0"
-                    disabled={aiChatLoading}
-                  />
-                  <Button
-                    size="sm"
-                    onClick={handleAiChatSend}
-                    disabled={!aiChatInput.trim() || aiChatLoading}
-                    className="h-8 shrink-0 bg-purple-600 px-3 hover:bg-purple-700"
-                  >
-                    <Send className="h-3.5 w-3.5" />
-                  </Button>
-                </div>
+                <Textarea
+                  value={aiChatInput}
+                  onChange={(e) => setAiChatInput(e.target.value)}
+                  placeholder="Add any special instructions for the AI estimate...
+
+Examples:
+• Use premium materials only
+• Include code upgrades for ice dam protection
+• Homeowner prefers energy-efficient options
+• Add 4 extra windows to the west side
+• Include ice and water shield on all valleys"
+                  className="min-h-[120px] resize-none border-0 bg-transparent text-sm shadow-none focus-visible:ring-0"
+                  rows={5}
+                />
               </div>
-              {aiChatMessages.filter((m) => m.role === "user").length > 0 && (
+              {aiChatInput.trim() && (
                 <p className="text-[10px] text-purple-500 dark:text-purple-400">
-                  ✓ {aiChatMessages.filter((m) => m.role === "user").length} note
-                  {aiChatMessages.filter((m) => m.role === "user").length !== 1 ? "s" : ""} will be
-                  included in your estimate
+                  ✓ Your notes will be included in the AI estimate
                 </p>
               )}
             </div>

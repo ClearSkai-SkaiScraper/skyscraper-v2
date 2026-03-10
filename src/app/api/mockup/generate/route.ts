@@ -85,29 +85,39 @@ export async function POST(request: NextRequest) {
         messages: [
           {
             role: "system",
-            content: `You are an expert architectural photographer and property analyst. Your job is to study a property photo and write an image-generation prompt that will recreate the EXACT SAME building with renovations applied.
+            content: `You are an expert architectural photographer specializing in real estate photography. Your task is to analyze a property photo and write a highly detailed DALL-E 3 prompt that will generate a HYPER-REALISTIC photograph of the SAME building after renovations.
+
+PHOTOREALISM IS MANDATORY. The generated image must be indistinguishable from an actual photograph.
 
 CRITICAL RULES:
-1. NEVER describe any damage, wear, deterioration, debris, tarps, or current disrepair.
-2. ONLY describe the FINISHED result with brand-new materials installed.
-3. ALWAYS begin with: "A professional real estate photograph taken with a DSLR camera in natural daylight of a..."
-4. PRECISELY describe the building's exact structure: number of stories, roof shape (gable/hip/flat/mansard), facade width, window count and placement, door position, garage location, chimney position, porch/entry style.
-5. PRECISELY describe the camera angle: eye-level/elevated/street-level, facing direction, distance from building, what's visible on left/right edges.
-6. Describe the surrounding environment: sky condition, trees (type, placement), driveway material, yard, neighboring structures visible.
-7. Describe specific NEW material textures, colors, and architectural details for the renovation.
-8. NEVER use words like "illustration", "render", "drawing", "cartoon", "digital art", "concept", "3D", "CGI".
-9. The generated image must look like the photographer returned to the SAME EXACT house and took another photo after the renovation was complete.`,
+1. ALWAYS START WITH: "Ultra-realistic professional real estate photograph, shot on Canon EOS R5, 24mm lens, f/8, natural afternoon sunlight, high dynamic range, 8K resolution, showing..."
+2. DESCRIBE EXACT ARCHITECTURE: precise roof pitch and shape, exact window count and placement (left to right, floor by floor), door style and position, siding type and direction, any architectural trim, gutters, downspouts, foundation visible.
+3. DESCRIBE EXACT CAMERA POSITION: distance from house, height (eye-level/elevated/ground), angle (straight on/3/4 view), what appears at frame edges.
+4. DESCRIBE ENVIRONMENT IN DETAIL: exact sky (clear blue/partly cloudy/overcast), sun direction (shadows cast where), trees (species, size, placement), lawn condition, driveway material, neighboring homes visible, power lines if any.
+5. FOR THE RENOVATION: describe pristine NEW materials with photographic detail - visible shingle granules, paint sheen, wood grain, mortar lines, metal flashing, etc.
+6. ABSOLUTELY FORBIDDEN WORDS: illustration, render, drawing, cartoon, digital art, concept art, 3D model, CGI, stylized, artistic, painting, sketch, graphic.
+7. The result must look like the photographer returned 6 months later and photographed the completed renovation.`,
           },
           {
             role: "user",
             content: [
               {
                 type: "text",
-                text: `Study this property photo in extreme detail. Note EVERY architectural feature: the exact roof shape, number of dormers, window sizes and positions, siding pattern, entry style, garage door style, landscaping placement, fence type, driveway material, and camera angle/distance.
+                text: `Study this property photo with extreme precision. Document EVERY architectural detail:
 
-Now write a DALL-E 3 prompt that describes a photograph of this SAME EXACT property from this SAME EXACT camera angle, but after a completed renovation: ${aiPrompt}
+- Roof: exact shape, pitch, dormers, valleys, ridges, overhangs
+- Windows: count each floor left-to-right, note sizes and styles
+- Siding/exterior: material, color, pattern direction
+- Entry: door style, steps, porch, railings
+- Garage: if visible, style and placement
+- Trim: fascia, soffit, corner boards, window surrounds
+- Foundation: visible portion
+- Camera: exact angle and distance from building
+- Environment: sky, landscaping, driveway, neighboring structures
 
-The building MUST have the identical footprint, roof shape, window positions, and surrounding environment. Only the renovation materials should change.`,
+Now write a DALL-E 3 prompt for a HYPER-REALISTIC photograph of this IDENTICAL property after a completed renovation: ${aiPrompt}
+
+The building must have the IDENTICAL footprint, proportions, and surrounding environment. Only the renovation materials should appear new and pristine.`,
               },
               {
                 type: "image_url",
@@ -116,7 +126,7 @@ The building MUST have the identical footprint, roof shape, window positions, an
             ],
           },
         ],
-        max_tokens: 500,
+        max_tokens: 700,
       });
 
       const enhancedPrompt = descriptionResponse.choices[0]?.message?.content || aiPrompt;
@@ -124,7 +134,20 @@ The building MUST have the identical footprint, roof shape, window positions, an
       // Generate the "after" image with DALL-E 3 (HD quality, natural style)
       const imageResponse = await openai.images.generate({
         model: "dall-e-3",
-        prompt: `${enhancedPrompt}\n\nIMPORTANT CONSTRAINTS: This MUST be an actual photograph of a real building — NOT an illustration, NOT a render, NOT a 3D model, NOT a drawing, NOT digital art. Shot with a DSLR camera, 35mm lens, natural daylight with realistic shadows. The building has brand-new pristine materials with absolutely no damage, no wear, no debris. Every surface is freshly installed and perfect. Realistic material textures (visible shingle granules, wood grain, brick mortar lines), natural sky with clouds, real landscaping with individual leaves visible, authentic driveway and sidewalk textures.`,
+        prompt: `${enhancedPrompt}
+
+PHOTOREALISM REQUIREMENTS - THIS MUST LOOK LIKE A REAL PHOTOGRAPH:
+- Shot on professional DSLR camera (Canon EOS R5 or Sony A7R IV), 24-35mm lens, f/8, ISO 100
+- Natural afternoon sunlight creating soft shadows, golden hour warmth
+- 8K resolution with extreme detail visible: individual shingle granules, wood grain textures, mortar lines
+- Realistic lens characteristics: subtle vignette, proper depth of field, natural bokeh on background
+- Atmospheric perspective: slight haze in distance, natural sky gradients
+- Authentic material textures: glossy paint with subtle reflections, matte shingles absorbing light, visible brick pitting
+- Real landscaping: individual grass blades, leaf details, natural growth patterns
+- True photographic colors: no oversaturation, proper white balance, accurate material colors
+- Professional real estate photography composition: level horizon, balanced framing, optimal exposure
+
+ABSOLUTELY NOT: illustration, digital art, render, 3D model, CGI, drawing, painting, artistic interpretation, stylized, concept art, cartoon, anime, graphic design. This must be indistinguishable from an actual photograph taken by a professional real estate photographer.`,
         n: 1,
         size: "1024x1024",
         quality: "hd",

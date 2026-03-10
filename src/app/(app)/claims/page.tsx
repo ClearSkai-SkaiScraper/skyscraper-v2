@@ -389,7 +389,9 @@ export default async function ClaimsPage({ searchParams }: { searchParams: Claim
                           {claim.properties?.city && (
                             <span className="flex items-center gap-1">
                               <MapPin className="h-3 w-3" />
-                              {claim.properties.city}, {claim.properties.state}
+                              {claim.properties.street
+                                ? `${claim.properties.street}, ${claim.properties.city}, ${claim.properties.state}`
+                                : `${claim.properties.city}, ${claim.properties.state}`}
                             </span>
                           )}
                           {claim.createdAt && (
