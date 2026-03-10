@@ -123,11 +123,27 @@ export const PATCH = withAuth(
       }
 
       // Update property address if provided
-      if (body.propertyAddress !== undefined && (updated as any)?.propertyId) {
-        await prisma.properties.update({
-          where: { id: (updated as any).propertyId },
-          data: { street: body.propertyAddress },
-        });
+      if (body.propertyAddress !== undefined) {
+        const propertyId = (updated as any)?.propertyId;
+        if (propertyId) {
+          // Update existing property
+          await prisma.properties.update({
+            where: { id: propertyId },
+            data: { street: body.propertyAddress },
+          });
+        } else {
+          // Create new property and link to claim
+          const newProperty = await prisma.properties.create({
+            data: {
+              street: body.propertyAddress,
+              orgId,
+            },
+          });
+          await prisma.claims.update({
+            where: { id: claimId },
+            data: { propertyId: newProperty.id },
+          });
+        }
       }
 
       return NextResponse.json({ success: true, claim: updated });
