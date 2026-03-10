@@ -68,7 +68,7 @@ export default function MockupClient() {
     }
 
     // Validate file size (10MB max)
-    if (file.size > 10 * 1024 * 1024) {
+    if (file.size > 25 * 1024 * 1024) {
       toast.error("Image must be less than 10MB");
       return;
     }

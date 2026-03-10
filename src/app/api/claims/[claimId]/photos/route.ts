@@ -141,14 +141,21 @@ export const POST = withAuth(
         return NextResponse.json({ error: "No file provided" }, { status: 400 });
       }
 
-      const maxSize = 10 * 1024 * 1024; // 10MB
-      const allowed = ["image/jpeg", "image/jpg", "image/png", "image/webp", "image/heic"];
+      const maxSize = 25 * 1024 * 1024; // 25MB per photo
+      const allowed = [
+        "image/jpeg",
+        "image/jpg",
+        "image/png",
+        "image/webp",
+        "image/heic",
+        "image/heif",
+      ];
 
       if (!allowed.includes(file.type)) {
         return NextResponse.json({ error: `Invalid file type: ${file.type}` }, { status: 400 });
       }
       if (file.size > maxSize) {
-        return NextResponse.json({ error: "File too large (max 10MB)" }, { status: 400 });
+        return NextResponse.json({ error: "File too large (max 25MB)" }, { status: 400 });
       }
 
       const bytes = await file.arrayBuffer();

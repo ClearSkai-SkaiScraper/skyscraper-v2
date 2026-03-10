@@ -69,8 +69,8 @@ export default function DamageVisionUploader({
       return;
     }
 
-    // Validate file size (max 10MB)
-    if (file.size > 10 * 1024 * 1024) {
+    // Validate file size (max 25MB)
+    if (file.size > 25 * 1024 * 1024) {
       setError("Image must be smaller than 10MB");
       return;
     }
@@ -177,7 +177,7 @@ export default function DamageVisionUploader({
                 Choose Image
               </label>
               <p className="mt-4 text-xs text-[color:var(--muted)]">
-                Supports JPG, PNG, HEIC • Max 10MB
+                Supports JPG, PNG, HEIC • Max 25MB
               </p>
             </>
           )}

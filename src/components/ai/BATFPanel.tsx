@@ -1,7 +1,7 @@
 /**
  * PHASE 43: BATF FRONTEND PANEL
  * Before-After Transformation Flow UI Component
- * 
+ *
  * Features:
  * - Multi-photo upload with preview
  * - Roof type selector (shingle, tile, metal, flat)
@@ -13,9 +13,9 @@
 
 "use client";
 
-import { AlertCircle,CheckCircle2, Download, Loader2, Share2, Upload, XCircle } from "lucide-react";
 import { logger } from "@/lib/logger";
-import { useCallback,useState } from "react";
+import { AlertCircle, Download, Loader2, Share2, Upload, XCircle } from "lucide-react";
+import { useCallback, useState } from "react";
 import { useDropzone } from "react-dropzone";
 
 interface BATFPanelProps {
@@ -67,43 +67,46 @@ export function BATFPanel({ leadId, claimId }: BATFPanelProps) {
   const [reports, setReports] = useState<BATFReport[]>([]);
 
   // File upload handler
-  const onDrop = useCallback(async (acceptedFiles: File[]) => {
-    setError("");
-    const maxFiles = 10 - uploadedPhotos.length;
-    
-    if (acceptedFiles.length > maxFiles) {
-      setError(`Maximum 10 photos allowed. You can upload ${maxFiles} more.`);
-      return;
-    }
+  const onDrop = useCallback(
+    async (acceptedFiles: File[]) => {
+      setError("");
+      const maxFiles = 10 - uploadedPhotos.length;
 
-    // Upload to storage (mock - replace with Supabase)
-    const newPhotos: BATFPhoto[] = await Promise.all(
-      acceptedFiles.map(async (file) => {
-        // TODO: Upload to Supabase storage
-        const mockUrl = URL.createObjectURL(file);
-        return {
-          url: mockUrl,
-          uploadedAt: new Date().toISOString(),
-          metadata: {
-            width: 0,
-            height: 0,
-            format: file.type,
-            size: file.size
-          }
-        };
-      })
-    );
+      if (acceptedFiles.length > maxFiles) {
+        setError(`Maximum 10 photos allowed. You can upload ${maxFiles} more.`);
+        return;
+      }
 
-    setUploadedPhotos((prev) => [...prev, ...newPhotos]);
-  }, [uploadedPhotos]);
+      // Upload to storage (mock - replace with Supabase)
+      const newPhotos: BATFPhoto[] = await Promise.all(
+        acceptedFiles.map(async (file) => {
+          // TODO: Upload to Supabase storage
+          const mockUrl = URL.createObjectURL(file);
+          return {
+            url: mockUrl,
+            uploadedAt: new Date().toISOString(),
+            metadata: {
+              width: 0,
+              height: 0,
+              format: file.type,
+              size: file.size,
+            },
+          };
+        })
+      );
+
+      setUploadedPhotos((prev) => [...prev, ...newPhotos]);
+    },
+    [uploadedPhotos]
+  );
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
     accept: {
-      "image/*": [".jpg", ".jpeg", ".png", ".webp"]
+      "image/*": [".jpg", ".jpeg", ".png", ".webp"],
     },
-    maxSize: 10 * 1024 * 1024, // 10MB
-    disabled: uploadedPhotos.length >= 10 || isGenerating
+    maxSize: 25 * 1024 * 1024, // 25MB
+    disabled: uploadedPhotos.length >= 10 || isGenerating,
   });
 
   // Generate BATF report
@@ -124,8 +127,8 @@ export function BATFPanel({ leadId, claimId }: BATFPanelProps) {
         body: JSON.stringify({
           roofType,
           beforePhotos: uploadedPhotos,
-          claimId
-        })
+          claimId,
+        }),
       });
 
       if (!response.ok) {
@@ -134,16 +137,16 @@ export function BATFPanel({ leadId, claimId }: BATFPanelProps) {
       }
 
       setProgress("Generating damage overlay...");
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      await new Promise((resolve) => setTimeout(resolve, 1000));
 
       setProgress("Creating AI reconstruction...");
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      await new Promise((resolve) => setTimeout(resolve, 1000));
 
       setProgress("Building severity map...");
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      await new Promise((resolve) => setTimeout(resolve, 1000));
 
       setProgress("Generating presentation PDF...");
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      await new Promise((resolve) => setTimeout(resolve, 1000));
 
       const data = await response.json();
 
@@ -157,7 +160,7 @@ export function BATFPanel({ leadId, claimId }: BATFPanelProps) {
         severityMap: data.overlays.severityMap,
         findings: data.analysis,
         presentationPdf: data.presentationPdf,
-        createdAt: new Date().toISOString()
+        createdAt: new Date().toISOString(),
       };
 
       setCurrentReport(newReport);
@@ -200,12 +203,14 @@ export function BATFPanel({ leadId, claimId }: BATFPanelProps) {
 
     try {
       const response = await fetch(`/api/batf/${currentReport.id}/share`, {
-        method: "POST"
+        method: "POST",
       });
 
       if (response.ok) {
         const data = await response.json();
-        alert(`Public link: ${data.publicUrl}\nExpires: ${new Date(data.expiresAt).toLocaleString()}`);
+        alert(
+          `Public link: ${data.publicUrl}\nExpires: ${new Date(data.expiresAt).toLocaleString()}`
+        );
       }
     } catch (err) {
       setError("Failed to create public link");
@@ -247,23 +252,18 @@ export function BATFPanel({ leadId, claimId }: BATFPanelProps) {
         <div className="space-y-4">
           {/* Roof Type Selector */}
           <div>
-            <label className="mb-2 block text-sm font-medium text-gray-700">
-              Roof Type
-            </label>
+            <label className="mb-2 block text-sm font-medium text-gray-700">Roof Type</label>
             <div className="grid grid-cols-4 gap-3">
               {(["shingle", "tile", "metal", "flat"] as const).map((type) => (
                 <button
                   key={type}
                   onClick={() => setRoofType(type)}
                   disabled={isGenerating}
-                  className={`
-                    rounded-lg border-2 px-4 py-3 font-medium capitalize transition-all
-                    ${roofType === type
+                  className={`rounded-lg border-2 px-4 py-3 font-medium capitalize transition-all ${
+                    roofType === type
                       ? "border-purple-600 bg-purple-50 text-purple-700"
                       : "border-gray-300 bg-white text-gray-700 hover:border-gray-400"
-                    }
-                    ${isGenerating ? "cursor-not-allowed opacity-50" : ""}
-                  `}
+                  } ${isGenerating ? "cursor-not-allowed opacity-50" : ""} `}
                 >
                   {type}
                 </button>
@@ -274,11 +274,7 @@ export function BATFPanel({ leadId, claimId }: BATFPanelProps) {
           {/* Photo Upload Dropzone */}
           <div
             {...getRootProps()}
-            className={`
-              cursor-pointer rounded-lg border-2 border-dashed p-8 text-center transition-colors
-              ${isDragActive ? "border-purple-500 bg-purple-50" : "border-gray-300 hover:border-gray-400"}
-              ${isGenerating ? "cursor-not-allowed opacity-50" : ""}
-            `}
+            className={`cursor-pointer rounded-lg border-2 border-dashed p-8 text-center transition-colors ${isDragActive ? "border-purple-500 bg-purple-50" : "border-gray-300 hover:border-gray-400"} ${isGenerating ? "cursor-not-allowed opacity-50" : ""} `}
           >
             <input {...getInputProps()} />
             <Upload className="mx-auto mb-4 h-12 w-12 text-gray-400" />
@@ -288,9 +284,7 @@ export function BATFPanel({ leadId, claimId }: BATFPanelProps) {
             <p className="mt-2 text-sm text-gray-500">
               Drag & drop or click to select • Max 10 photos • JPG, PNG, WEBP
             </p>
-            <p className="mt-1 text-xs text-gray-400">
-              {uploadedPhotos.length}/10 photos uploaded
-            </p>
+            <p className="mt-1 text-xs text-gray-400">{uploadedPhotos.length}/10 photos uploaded</p>
           </div>
 
           {/* Photo Preview Grid */}
@@ -318,13 +312,11 @@ export function BATFPanel({ leadId, claimId }: BATFPanelProps) {
           <button
             onClick={handleGenerate}
             disabled={uploadedPhotos.length === 0 || isGenerating}
-            className={`
-              w-full rounded-lg py-4 font-semibold text-white transition-all
-              ${isGenerating
+            className={`w-full rounded-lg py-4 font-semibold text-white transition-all ${
+              isGenerating
                 ? "cursor-not-allowed bg-purple-400"
                 : "bg-purple-600 hover:bg-purple-700"
-              }
-            `}
+            } `}
           >
             {isGenerating ? (
               <span className="flex items-center justify-center gap-2">
@@ -361,9 +353,7 @@ export function BATFPanel({ leadId, claimId }: BATFPanelProps) {
               </div>
               <div>
                 <p className="text-sm opacity-90">Severity</p>
-                <p className="text-lg font-semibold">
-                  {currentReport.findings?.severity || 0}/10
-                </p>
+                <p className="text-lg font-semibold">{currentReport.findings?.severity || 0}/10</p>
               </div>
               <div>
                 <p className="text-sm opacity-90">Estimated Cost</p>
@@ -422,7 +412,9 @@ export function BATFPanel({ leadId, claimId }: BATFPanelProps) {
           {currentReport.findings?.estimatedImpact.recommendation && (
             <div className="rounded-lg border border-blue-200 bg-blue-50 p-4">
               <h4 className="mb-2 font-semibold text-blue-900">Recommendation</h4>
-              <p className="text-blue-800">{currentReport.findings.estimatedImpact.recommendation}</p>
+              <p className="text-blue-800">
+                {currentReport.findings.estimatedImpact.recommendation}
+              </p>
             </div>
           )}
 

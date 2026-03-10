@@ -9,19 +9,19 @@
  * - Rate limiting for uploads
  */
 
-import prisma from "@/lib/prisma";
 import { logger } from "@/lib/logger";
+import prisma from "@/lib/prisma";
 
 // Default storage limits by plan
 export const STORAGE_LIMITS = {
   free: {
     maxStorageBytes: 1 * 1024 * 1024 * 1024, // 1GB
-    maxFileSizeBytes: 10 * 1024 * 1024, // 10MB
+    maxFileSizeBytes: 25 * 1024 * 1024, // 25MB for photos
     maxFilesPerClaim: 50,
     maxClaimsPerMonth: 10,
   },
   starter: {
-    maxStorageBytes: 10 * 1024 * 1024 * 1024, // 10GB
+    maxStorageBytes: 100 * 1024 * 1024 * 1024, // 100GB per org
     maxFileSizeBytes: 25 * 1024 * 1024, // 25MB
     maxFilesPerClaim: 100,
     maxClaimsPerMonth: 50,

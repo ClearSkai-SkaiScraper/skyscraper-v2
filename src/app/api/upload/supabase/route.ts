@@ -56,8 +56,15 @@ const UPLOAD_CONFIGS: Record<
 > = {
   claimPhotos: {
     bucket: "claim-photos",
-    maxSize: 10 * 1024 * 1024, // 10MB
-    allowedTypes: ["image/jpeg", "image/jpg", "image/png", "image/webp", "image/heic"],
+    maxSize: 25 * 1024 * 1024, // 25MB per photo
+    allowedTypes: [
+      "image/jpeg",
+      "image/jpg",
+      "image/png",
+      "image/webp",
+      "image/heic",
+      "image/heif",
+    ],
   },
   claimDocuments: {
     bucket: "claim-documents",
@@ -66,8 +73,15 @@ const UPLOAD_CONFIGS: Record<
   },
   completionPhotos: {
     bucket: "completion-photos",
-    maxSize: 10 * 1024 * 1024,
-    allowedTypes: ["image/jpeg", "image/jpg", "image/png", "image/webp"],
+    maxSize: 25 * 1024 * 1024, // 25MB per photo
+    allowedTypes: [
+      "image/jpeg",
+      "image/jpg",
+      "image/png",
+      "image/webp",
+      "image/heic",
+      "image/heif",
+    ],
   },
   evidence: {
     bucket: "evidence",

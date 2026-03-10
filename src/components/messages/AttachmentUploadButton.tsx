@@ -41,8 +41,8 @@ export function AttachmentUploadButton({
 
       for (const file of Array.from(files)) {
         // Validate file size (10MB max)
-        if (file.size > 10 * 1024 * 1024) {
-          toast.error(`${file.name} is too large (max 10MB)`);
+        if (file.size > 25 * 1024 * 1024) {
+          toast.error(`${file.name} is too large (max 25MB)`);
           continue;
         }
 

@@ -168,7 +168,7 @@ export function ClientOnboardingWizard({ onComplete, onSkip }: ClientOnboardingW
     onDrop,
     accept: { "image/*": [".png", ".jpg", ".jpeg", ".webp"] },
     maxFiles: 5,
-    maxSize: 10 * 1024 * 1024, // 10MB
+    maxSize: 25 * 1024 * 1024, // 25MB
   });
 
   const removePhoto = (index: number) => {

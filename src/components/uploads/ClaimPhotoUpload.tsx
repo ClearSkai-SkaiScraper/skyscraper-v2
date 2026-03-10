@@ -1,7 +1,7 @@
 "use client";
 
-import { CheckCircle, Loader2, Upload, X } from "lucide-react";
 import { logger } from "@/lib/logger";
+import { CheckCircle, Loader2, Upload, X } from "lucide-react";
 import { useCallback, useState } from "react";
 import { useDropzone } from "react-dropzone";
 
@@ -35,7 +35,7 @@ export function ClaimPhotoUpload({ claimId, onUploadComplete }: ClaimPhotoUpload
     accept: {
       "image/*": [".jpg", ".jpeg", ".png", ".heic", ".heif", ".webp"],
     },
-    maxSize: 10 * 1024 * 1024,
+    maxSize: 25 * 1024 * 1024, // 25MB per photo
     maxFiles: 20,
   });
 
@@ -108,7 +108,7 @@ export function ClaimPhotoUpload({ claimId, onUploadComplete }: ClaimPhotoUpload
               Drag and drop photos here, or click to select
             </p>
             <p className="text-sm text-gray-500">
-              Supports: JPG, PNG, HEIC, WebP (max 10MB each, 20 files max)
+              Supports: JPG, PNG, HEIC, WebP (max 25MB each, 100 files per claim)
             </p>
           </>
         )}

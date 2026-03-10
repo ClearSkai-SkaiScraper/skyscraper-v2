@@ -61,8 +61,8 @@ export function ClaimPhotoUploadWithAnalysis({
     accept: {
       "image/*": [".jpg", ".jpeg", ".png", ".heic", ".heif", ".webp"],
     },
-    maxSize: 10 * 1024 * 1024,
-    maxFiles: 20,
+    maxSize: 25 * 1024 * 1024, // 25MB per photo
+    maxFiles: 50, // 50 per batch, 100 total per claim
   });
 
   const removeFile = (index: number) => {
@@ -300,7 +300,7 @@ export function ClaimPhotoUploadWithAnalysis({
               Drag and drop photos here, or click to select
             </p>
             <p className="text-sm text-gray-500 dark:text-gray-400">
-              Supports: JPG, PNG, HEIC, WebP (max 10MB each, 20 files max)
+              Supports: JPG, PNG, HEIC, WebP (max 25MB each, 100 files per claim)
             </p>
           </>
         )}

@@ -18,7 +18,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { logger } from "@/lib/logger";
 
 // Max file size: 10MB
-const MAX_SIZE = 10 * 1024 * 1024;
+const MAX_SIZE = 25 * 1024 * 1024; // 25MB for attachments
 
 export async function POST(req: NextRequest) {
   try {
@@ -35,7 +35,7 @@ export async function POST(req: NextRequest) {
     }
 
     if (file.size > MAX_SIZE) {
-      return NextResponse.json({ error: "File too large (max 10MB)" }, { status: 400 });
+      return NextResponse.json({ error: "File too large (max 25MB)" }, { status: 400 });
     }
 
     // Sanitize filename

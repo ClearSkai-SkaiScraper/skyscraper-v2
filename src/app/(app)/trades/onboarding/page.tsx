@@ -130,7 +130,7 @@ export default function TradesOnboardingPage() {
   const handleCoverSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    if (file.size > 10 * 1024 * 1024) {
+    if (file.size > 25 * 1024 * 1024) {
       toast.error("Cover image must be less than 10MB");
       return;
     }

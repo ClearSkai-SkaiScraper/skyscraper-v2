@@ -1,7 +1,7 @@
 "use client";
 
-import { Camera, Loader2, X } from "lucide-react";
 import { logger } from "@/lib/logger";
+import { Camera, Loader2, X } from "lucide-react";
 import Image from "next/image";
 import { useCallback, useState } from "react";
 import { toast } from "sonner";
@@ -37,8 +37,8 @@ export default function PhotoUploader({
           toast.error(`${file.name} is not an image`);
           return false;
         }
-        if (file.size > 10 * 1024 * 1024) {
-          toast.error(`${file.name} is too large (max 10MB)`);
+        if (file.size > 25 * 1024 * 1024) {
+          toast.error(`${file.name} is too large (max 25MB)`);
           return false;
         }
         return true;
@@ -145,7 +145,7 @@ export default function PhotoUploader({
             <div>
               <p className="font-medium text-foreground">Drop photos here or click to upload</p>
               <p className="text-xs text-muted-foreground">
-                {photos.length}/{maxPhotos} photos • Max 10MB each • JPG, PNG, WEBP
+                {photos.length}/{maxPhotos} photos • Max 25MB each • JPG, PNG, WEBP
               </p>
             </div>
           </div>

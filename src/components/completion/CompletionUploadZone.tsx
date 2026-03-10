@@ -1,7 +1,7 @@
 "use client";
 
-import { FileText, Image as ImageIcon, X } from "lucide-react";
 import { logger } from "@/lib/logger";
+import { FileText, Image as ImageIcon, X } from "lucide-react";
 import { useCallback, useState } from "react";
 import { useDropzone } from "react-dropzone";
 import { toast } from "sonner";
@@ -82,7 +82,7 @@ export function CompletionUploadZone({
       type === "document"
         ? { "application/pdf": [".pdf"], "image/*": [".jpg", ".jpeg", ".png"] }
         : { "image/*": [".jpg", ".jpeg", ".png"] },
-    maxSize: 10 * 1024 * 1024, // 10MB
+    maxSize: 25 * 1024 * 1024, // 25MB per photo
   });
 
   const removeFile = (id: string) => {
@@ -120,7 +120,7 @@ export function CompletionUploadZone({
               </p>
               <p className="text-sm text-gray-500">Drag & drop files here, or click to browse</p>
               <p className="text-xs text-gray-400">
-                {type === "document" ? "PDF, JPG, PNG (max 10MB)" : "JPG, PNG (max 10MB per file)"}
+                {type === "document" ? "PDF, JPG, PNG (max 50MB)" : "JPG, PNG (max 25MB per file)"}
               </p>
             </>
           )}

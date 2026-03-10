@@ -126,8 +126,8 @@ function PropertyPhotoGallery() {
 
     let successCount = 0;
     for (const file of Array.from(files)) {
-      if (file.size > 10 * 1024 * 1024) {
-        toast.error(`${file.name} is too large (max 10MB)`);
+      if (file.size > 25 * 1024 * 1024) {
+        toast.error(`${file.name} is too large (max 25MB)`);
         continue;
       }
       try {
