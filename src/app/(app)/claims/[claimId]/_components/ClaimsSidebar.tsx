@@ -108,7 +108,8 @@ export function ClaimsSidebar({ claimId, claim, onFieldUpdate }: ClaimsSidebarPr
   }) => {
     if (editing === field) {
       return (
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-2">
+          <Icon className="h-4 w-4 shrink-0 text-blue-600" />
           <Input
             value={editValue}
             onChange={(e) => setEditValue(e.target.value)}
@@ -116,25 +117,19 @@ export function ClaimsSidebar({ claimId, claim, onFieldUpdate }: ClaimsSidebarPr
               if (e.key === "Enter") void saveField(field);
               if (e.key === "Escape") cancelEdit();
             }}
-            className="h-7 text-xs"
+            onBlur={() => {
+              // Auto-save on blur if value changed
+              setTimeout(() => {
+                if (editValue !== (value || "")) {
+                  void saveField(field);
+                } else {
+                  cancelEdit();
+                }
+              }, 100);
+            }}
+            className="h-7 flex-1 text-xs"
             autoFocus
           />
-          <Button
-            size="sm"
-            variant="ghost"
-            className="h-7 px-2 text-xs text-green-600"
-            onClick={() => void saveField(field)}
-          >
-            ✓
-          </Button>
-          <Button
-            size="sm"
-            variant="ghost"
-            className="h-7 px-2 text-xs text-red-500"
-            onClick={cancelEdit}
-          >
-            ✕
-          </Button>
         </div>
       );
     }

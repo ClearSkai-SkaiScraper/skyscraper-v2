@@ -138,15 +138,67 @@ export default function PhotosPage() {
     }
 
     try {
-      // Use the new AI annotation endpoint
+      // Auto-detect component type from filename/category
+      const filename = photo.filename?.toLowerCase() || "";
+      const category = photo.category?.toLowerCase() || "";
+
+      let componentType = "roof"; // default
+      let claimType = "general"; // default - let AI determine
+
+      // Smart detection based on filename or category
+      if (
+        filename.includes("window") ||
+        filename.includes("glass") ||
+        category.includes("window")
+      ) {
+        componentType = "window";
+      } else if (filename.includes("screen") || category.includes("screen")) {
+        componentType = "screen";
+      } else if (
+        filename.includes("siding") ||
+        filename.includes("trim") ||
+        filename.includes("fascia") ||
+        category.includes("siding")
+      ) {
+        componentType = "siding";
+      } else if (
+        filename.includes("gutter") ||
+        filename.includes("downspout") ||
+        category.includes("gutter")
+      ) {
+        componentType = "gutter";
+      } else if (
+        filename.includes("hvac") ||
+        filename.includes("ac") ||
+        filename.includes("condenser") ||
+        category.includes("hvac")
+      ) {
+        componentType = "hvac";
+      } else if (filename.includes("paint") || filename.includes("chip")) {
+        componentType = "siding"; // paint chipping is typically on siding
+      } else if (
+        filename.includes("roof") ||
+        filename.includes("shingle") ||
+        category.includes("roof")
+      ) {
+        componentType = "roof";
+      } else {
+        // Default to "general" so AI auto-detects the component
+        // This is better than assuming roof for everything
+        componentType = "general";
+      }
+
+      // Use the new AI annotation endpoint with smart detection
       const res = await fetch("/api/ai/photo-annotate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           imageUrl: photo.publicUrl,
           photoId: photo.id,
-          includeSlopes: true,
+          includeSlopes: componentType === "roof",
           roofType: "asphalt_shingle",
+          componentType: componentType,
+          claimType: claimType,
         }),
       });
 

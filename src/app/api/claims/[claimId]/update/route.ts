@@ -42,6 +42,7 @@ export const PATCH = withAuth(
         "title",
         "description",
         "status",
+        "claimNumber",
         "damageType",
         "insured_name",
         "homeowner_email",
@@ -87,14 +88,27 @@ export const PATCH = withAuth(
         updateData.jobValueApprovedBy = userId;
       }
 
-      if (Object.keys(updateData).length === 0) {
-        return NextResponse.json({ success: true, message: "No changes" });
+      // Track if we made any changes at all (including property address)
+      const hasPropertyAddressUpdate = body.propertyAddress !== undefined;
+
+      // Update the claim record if we have claim-level changes
+      let updated;
+      if (Object.keys(updateData).length > 0) {
+        updated = await prisma.claims.update({
+          where: { id: claimId },
+          data: updateData,
+        });
+      } else {
+        // Still need the claim for propertyId lookup even if no claim-level changes
+        updated = await prisma.claims.findUnique({
+          where: { id: claimId },
+          select: { id: true, title: true, propertyId: true },
+        });
       }
 
-      const updated = await prisma.claims.update({
-        where: { id: claimId },
-        data: updateData,
-      });
+      if (!updated && !hasPropertyAddressUpdate) {
+        return NextResponse.json({ success: true, message: "No changes" });
+      }
 
       // Notify managers when a job value is submitted for approval
       if (body.jobValueStatus === "submitted" && body.estimatedJobValue) {
@@ -103,15 +117,15 @@ export const PATCH = withAuth(
           submittedByUserId: userId,
           entityType: "claim",
           entityId: claimId,
-          entityTitle: updated.title || "Claim",
+          entityTitle: (updated as any)?.title || "Claim",
           estimatedValue: body.estimatedJobValue,
         });
       }
 
       // Update property address if provided
-      if (body.propertyAddress !== undefined && updated.propertyId) {
+      if (body.propertyAddress !== undefined && (updated as any)?.propertyId) {
         await prisma.properties.update({
-          where: { id: updated.propertyId },
+          where: { id: (updated as any).propertyId },
           data: { street: body.propertyAddress },
         });
       }

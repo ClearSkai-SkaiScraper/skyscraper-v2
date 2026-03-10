@@ -45,23 +45,59 @@ export const GET = withAuth(
 
       return NextResponse.json({
         success: true,
-        photos: photos.map((p) => ({
-          id: p.id,
-          filename: p.filename,
-          publicUrl: p.publicUrl,
-          url: p.publicUrl,
-          category: p.category,
-          note: p.note,
-          mimeType: p.mimeType,
-          sizeBytes: p.sizeBytes,
-          createdAt: p.createdAt,
-          // AI analysis fields — populated by /api/photos/analyze
-          aiCaption: null,
-          damageBoxes: null,
-          severity: null,
-          confidence: null,
-          analyzed: false,
-        })),
+        photos: photos.map((p) => {
+          // Parse metadata for annotations
+          const metadata = (p.metadata as Record<string, unknown>) || {};
+          const annotations = metadata.annotations || [];
+          const hasAnnotations = Array.isArray(annotations) && annotations.length > 0;
+
+          // Build damage boxes from annotations for overlay display
+          const damageBoxes = hasAnnotations
+            ? (
+                annotations as Array<{
+                  x: number;
+                  y: number;
+                  width?: number;
+                  height?: number;
+                  caption?: string;
+                  damageType?: string;
+                  severity?: string;
+                }>
+              ).map((ann) => ({
+                x: (ann.x || 0) / 800, // Convert back to percentage
+                y: (ann.y || 0) / 600,
+                w: (ann.width || 50) / 800,
+                h: (ann.height || 50) / 600,
+                label: ann.caption || ann.damageType || "Damage",
+              }))
+            : null;
+
+          return {
+            id: p.id,
+            filename: p.filename,
+            publicUrl: p.publicUrl,
+            url: p.publicUrl,
+            category: p.category,
+            note: p.note,
+            mimeType: p.mimeType,
+            sizeBytes: p.sizeBytes,
+            createdAt: p.createdAt,
+            // AI analysis fields from saved data
+            aiCaption: p.ai_caption
+              ? {
+                  summary: p.ai_caption,
+                  damageType: (annotations[0] as { damageType?: string })?.damageType || null,
+                  applicableCode: (annotations[0] as { ircCode?: string })?.ircCode || null,
+                }
+              : null,
+            annotations: annotations,
+            damageBoxes: damageBoxes,
+            severity: p.ai_severity || null,
+            confidence: p.ai_confidence ? Number(p.ai_confidence) : null,
+            analyzed: !!p.analyzed_at || hasAnnotations,
+            analyzedAt: p.analyzed_at,
+          };
+        }),
       });
     } catch (error) {
       if (error instanceof OrgScopeError) {

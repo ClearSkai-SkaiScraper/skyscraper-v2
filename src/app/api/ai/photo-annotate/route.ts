@@ -578,6 +578,69 @@ Document slope issues affecting drainage.
 Always be thorough but conservative - only identify damage you can clearly see.`;
   }
 
+  if (componentType === "window") {
+    return `You are an expert window and glazing damage assessor for insurance claims.
+You analyze photos to identify damage on:
+- Window glass: cracks (impact, stress, thermal), chips, scratches
+- Window frames: dents, warping, rot, paint chipping
+- Seals and glazing: seal failure (fogging between panes), caulk deterioration
+- Hardware: broken latches, hinges, operators
+- Trim and casing: paint chipping, wood rot, cracks, dents from hail
+
+HAIL DAMAGE INDICATORS:
+- Paint chipping on window trim in circular patterns
+- Dents on aluminum frames
+- Impact marks on sills and casings
+- Spatter marks on painted surfaces
+
+Draw precise bounding boxes around ALL damaged areas.
+Always be thorough but conservative - only identify damage you can clearly see.`;
+  }
+
+  if (componentType === "screen") {
+    return `You are an expert screen and mesh damage assessor for insurance claims.
+You analyze photos to identify damage on:
+- Window screens: tears, holes, stretched mesh, popped corners
+- Screen frames: bends, dents, broken corners
+- Screen door panels: tears, punctures, frame damage
+- Pool/patio screens: large tears, frame damage
+
+HAIL DAMAGE INDICATORS:
+- Small holes punched through mesh
+- Stretched/bulging mesh from impacts
+- Dented aluminum frames
+- Multiple small punctures in pattern
+
+Draw precise bounding boxes around ALL damaged areas, even small holes.
+Always be thorough but conservative - only identify damage you can clearly see.`;
+  }
+
+  if (componentType === "general") {
+    return `You are an expert property damage assessor for insurance claims with comprehensive knowledge.
+You can identify damage on ANY component shown in the image.
+
+FIRST: Identify what component/material is shown in this photo:
+- Roofing (shingles, tile, metal, flat)
+- Siding (vinyl, fiber cement, wood, stucco)
+- Windows (glass, frames, trim)
+- Screens (window, door, patio)
+- Gutters and downspouts
+- HVAC equipment (AC units, vents)
+- Paint surfaces (trim, fascia, soffits)
+- Fencing and decking
+
+THEN: Identify ALL visible damage appropriate to that component:
+- Hail: dents, punctures, spatter marks, paint chips, impact marks
+- Wind: lifted materials, torn sections, displaced items
+- General: cracks, holes, rot, wear, fading
+
+IMPORTANT: Draw precise bounding boxes around EVERY damaged area you can see.
+For paint chipping, circle/box each chip or cluster of chips.
+For screen damage, box each tear, hole, or damaged section.
+
+Always be thorough - identify ALL damage visible in the image.`;
+  }
+
   // Default roofing expert
   return `You are an expert property damage assessor specializing in roofing and exterior damage for insurance claims.
 You analyze photos to identify damage and provide precise bounding box locations.
@@ -633,8 +696,14 @@ function buildAnnotationPrompt(
   if (componentType === "gutter") {
     return buildGutterPrompt(claimType);
   }
-  if (componentType === "window" || componentType === "screen") {
-    return buildWindowScreenPrompt(claimType);
+  if (componentType === "window") {
+    return buildWindowPrompt(claimType);
+  }
+  if (componentType === "screen") {
+    return buildScreenPrompt(claimType);
+  }
+  if (componentType === "general") {
+    return buildGeneralPrompt(claimType);
   }
 
   // Default: Comprehensive roofing analysis prompt
@@ -1090,6 +1159,197 @@ Return JSON:
   "overallAssessment": {
     "totalDamageAreas": number,
     "highestSeverity": "Low" | "Medium" | "High" | "Critical",
+    "primaryDamageType": "string",
+    "recommendedAction": "string"
+  }
+}`;
+}
+
+function buildWindowPrompt(claimType: string): string {
+  const hailSpecific =
+    claimType === "hail"
+      ? `
+HAIL DAMAGE SIGNATURES:
+- Impact cracks in glass (star, bulls-eye patterns)
+- Chips in glass edges or corners
+- Dents in aluminum frames
+- Chips in vinyl/wood frames from impacts
+- Damaged glazing seals`
+      : "";
+
+  return `You are an expert property damage assessor. Analyze this WINDOW photo with extreme precision.
+
+IDENTIFY WINDOW TYPE:
+- Single-hung, Double-hung, Casement, Sliding, Fixed, Bay/Bow
+- Frame material: Vinyl, Aluminum, Wood, Fiberglass, Composite
+- Glass type: Single-pane, Double-pane (IGU), Triple-pane, Tempered, Laminated
+
+${hailSpecific}
+
+CRITICAL: Draw bounding boxes around ALL damage, no matter how small:
+- Glass damage: Cracks, chips, scratches, fogging (seal failure)
+- Frame damage: Dents, chips, warping, rot, paint peeling/chipping
+- Trim damage: Rotted trim, missing caulk, paint failure, chips
+- Hardware: Broken locks, damaged handles, failed weatherstripping
+- Seal failure: Condensation between panes, visible moisture
+
+PAINT CHIPPING IS DAMAGE - Always box it:
+- Peeling paint on frames
+- Chipped paint on trim/casing
+- Flaking finish on sills
+- Exposed wood from paint failure
+
+Return JSON:
+{
+  "materialAnalysis": {
+    "primaryMaterial": "Window",
+    "materialSubtype": "string - e.g., 'Double-hung vinyl window'",
+    "frameCondition": "good" | "fair" | "poor" | "failed",
+    "glassCondition": "good" | "fair" | "poor" | "failed"
+  },
+  "detections": [
+    {
+      "type": "window_crack" | "window_chip" | "seal_failure" | "frame_dent" | "frame_rot" | "paint_chipping" | "trim_damage" | "hardware_damage",
+      "severity": "Low" | "Medium" | "High" | "Critical",
+      "description": "string - detailed description of damage",
+      "boundingBox": { "x": number, "y": number, "width": number, "height": number },
+      "confidence": number,
+      "ircCode": "string if applicable"
+    }
+  ],
+  "overallAssessment": {
+    "totalDamageAreas": number,
+    "highestSeverity": "Low" | "Medium" | "High" | "Critical",
+    "primaryDamageType": "string",
+    "recommendedAction": "string"
+  }
+}`;
+}
+
+function buildScreenPrompt(claimType: string): string {
+  const hailSpecific =
+    claimType === "hail"
+      ? `
+HAIL DAMAGE SIGNATURES:
+- Small holes through mesh (often in pattern)
+- Stretched/bulging mesh from impacts
+- Multiple dents following hail trajectory
+- Frame dents in aluminum screens`
+      : "";
+
+  return `You are an expert property damage assessor. Analyze this SCREEN photo with extreme precision.
+
+IDENTIFY SCREEN TYPE:
+- Window screen, Door screen, Porch/lanai screen
+- Frame material: Aluminum, Vinyl, Wood
+- Mesh type: Fiberglass, Aluminum, Pet-resistant, Solar
+
+${hailSpecific}
+
+CRITICAL: Draw bounding boxes around ALL damage, even minor:
+- Mesh damage: Tears, holes, punctures, stretched areas, bulges
+- Frame damage: Dents, bends, cracks, corners pulling apart
+- Spline damage: Pulling out, degraded
+- Hardware: Broken clips, missing tabs, damaged pull tabs
+
+Look carefully for:
+- Small puncture holes (often missed)
+- Mesh stretching or bulging
+- Corner separations
+- Bent frame sections
+- Torn or loose spline
+
+Return JSON:
+{
+  "materialAnalysis": {
+    "primaryMaterial": "Screen",
+    "materialSubtype": "string - e.g., 'Aluminum frame fiberglass mesh'",
+    "meshCondition": "good" | "fair" | "poor" | "failed",
+    "frameCondition": "good" | "fair" | "poor" | "failed"
+  },
+  "detections": [
+    {
+      "type": "screen_tear" | "screen_hole" | "screen_stretched" | "screen_frame_dent" | "screen_frame_bent" | "screen_corner_damage" | "screen_spline_damage",
+      "severity": "Low" | "Medium" | "High" | "Critical",
+      "description": "string - detailed description",
+      "boundingBox": { "x": number, "y": number, "width": number, "height": number },
+      "confidence": number
+    }
+  ],
+  "overallAssessment": {
+    "totalDamageAreas": number,
+    "highestSeverity": "Low" | "Medium" | "High" | "Critical",
+    "primaryDamageType": "string",
+    "meshReplacementNeeded": boolean,
+    "recommendedAction": "string"
+  }
+}`;
+}
+
+function buildGeneralPrompt(claimType: string): string {
+  const claimContext = {
+    hail: "Focus on impact damage patterns: dents, chips, holes, cracked surfaces",
+    wind: "Focus on torn/lifted materials, displaced items, structural shifts",
+    fire: "Focus on charring, smoke damage, heat warping, discoloration",
+    water: "Focus on staining, warping, mold, rot, water lines",
+    storm: "Look for impact damage, wind damage, water intrusion signs",
+    general: "Identify all visible damage regardless of cause",
+  };
+
+  return `You are an expert property damage assessor. Analyze this photo and identify ALL visible damage.
+
+CLAIM TYPE: ${claimType.toUpperCase()}
+${claimContext[claimType as keyof typeof claimContext] || claimContext.general}
+
+FIRST - Identify what you're looking at:
+- Roof (what type?)
+- Siding (what type?)
+- Window
+- Screen
+- Door
+- Gutter
+- HVAC/AC unit
+- Fence
+- Deck/patio
+- Foundation
+- Paint/finish
+- Trim/fascia
+- Other structure
+
+THEN - Draw bounding boxes around EVERY piece of damage:
+- Cracks, chips, dents, holes
+- Peeling, flaking, bubbling paint
+- Warping, buckling, sagging
+- Staining, discoloration
+- Rot, deterioration, corrosion
+- Missing pieces, gaps
+- Loose or displaced materials
+- Any anomaly that indicates damage
+
+BE AGGRESSIVE in identifying damage - circle everything suspicious.
+Even "cosmetic" damage like paint chips should be boxed.
+
+Return JSON:
+{
+  "materialAnalysis": {
+    "primaryMaterial": "string - what component is this (roof, siding, window, etc.)",
+    "materialSubtype": "string - specific type/style",
+    "condition": "good" | "fair" | "poor" | "failed"
+  },
+  "detections": [
+    {
+      "type": "string - damage type",
+      "severity": "Low" | "Medium" | "High" | "Critical",
+      "description": "string - detailed description",
+      "boundingBox": { "x": number, "y": number, "width": number, "height": number },
+      "confidence": number,
+      "ircCode": "string if applicable"
+    }
+  ],
+  "overallAssessment": {
+    "totalDamageAreas": number,
+    "highestSeverity": "Low" | "Medium" | "High" | "Critical",
+    "componentIdentified": "string",
     "primaryDamageType": "string",
     "recommendedAction": "string"
   }

@@ -76,25 +76,43 @@ function EditableTextareaField({
   const [isEditing, setIsEditing] = useState(false);
   const [draft, setDraft] = useState(value || "");
   const [saving, setSaving] = useState(false);
+  const [justSaved, setJustSaved] = useState(false);
+  const savingRef = useRef(false);
 
   useEffect(() => {
     if (!isEditing) setDraft(value || "");
   }, [isEditing, value]);
 
   const commit = async () => {
+    if (savingRef.current) return;
+    if (draft === (value || "")) {
+      setIsEditing(false);
+      return;
+    }
+    savingRef.current = true;
     setSaving(true);
     try {
       await onSave(draft);
       setIsEditing(false);
+      setJustSaved(true);
+      setTimeout(() => setJustSaved(false), 1500);
     } finally {
       setSaving(false);
+      savingRef.current = false;
     }
   };
 
   if (!isEditing) {
     return (
       <div>
-        <label className="text-xs font-medium text-muted-foreground">{label}</label>
+        <label className="text-xs font-medium text-muted-foreground">
+          {label}
+          {justSaved && (
+            <span className="ml-2 text-xs font-normal text-emerald-600 dark:text-emerald-400">
+              ✓ Saved
+            </span>
+          )}
+        </label>
         <button
           type="button"
           onClick={() => setIsEditing(true)}
@@ -109,33 +127,29 @@ function EditableTextareaField({
   return (
     <div>
       <label className="text-xs font-medium text-muted-foreground">{label}</label>
-      <div className="mt-1 space-y-2">
+      <div className="mt-1">
         <textarea
           value={draft}
           onChange={(e) => setDraft(e.target.value)}
+          onBlur={() => {
+            setTimeout(() => {
+              if (!savingRef.current) commit();
+            }, 100);
+          }}
+          onKeyDown={(e) => {
+            if (e.key === "Escape") {
+              e.preventDefault();
+              setDraft(value || "");
+              setIsEditing(false);
+            }
+          }}
           rows={4}
           placeholder={placeholder}
           disabled={saving}
+          autoFocus
           className="w-full rounded-lg border border-blue-400 bg-background px-3 py-2 text-sm text-foreground outline-none ring-2 ring-blue-200 transition-colors focus:border-blue-500 focus:ring-blue-300 disabled:opacity-50"
         />
-        <div className="flex items-center gap-2">
-          <button
-            type="button"
-            onClick={commit}
-            disabled={saving}
-            className="rounded-lg bg-blue-600 px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-blue-700 disabled:opacity-50"
-          >
-            {saving ? "Saving…" : "Save"}
-          </button>
-          <button
-            type="button"
-            onClick={() => setIsEditing(false)}
-            disabled={saving}
-            className="rounded-lg bg-muted px-3 py-2 text-sm font-medium text-foreground transition-colors hover:bg-muted/80 disabled:opacity-50"
-          >
-            Cancel
-          </button>
-        </div>
+        {saving && <p className="mt-1 animate-pulse text-xs text-muted-foreground">Saving…</p>}
       </div>
     </div>
   );
