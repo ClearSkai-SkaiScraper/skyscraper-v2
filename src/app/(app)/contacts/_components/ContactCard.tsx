@@ -55,7 +55,7 @@ export function ContactCard({ contact }: ContactCardProps) {
             <div className="text-sm text-slate-600 dark:text-slate-400">{contact.phone}</div>
           )}
         </div>
-        <div className="pointer-events-auto mt-4 flex items-center gap-2 sm:hidden">
+        <div className="pointer-events-auto mt-4 flex items-center gap-2">
           {contact.phone && (
             <a
               href={`tel:${contact.phone}`}

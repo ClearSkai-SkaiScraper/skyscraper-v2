@@ -310,18 +310,25 @@ export default async function ContactDetailPage({ params }: Props) {
         {contact.phone && (
           <ActionButton icon={Phone} label="Call" href={`tel:${contact.phone}`} color="green" />
         )}
+        {contact.phone && (
+          <ActionButton
+            icon={MessageCircle}
+            label="Text"
+            href={`sms:${contact.phone}`}
+            color="green"
+          />
+        )}
         {contact.email && (
           <ActionButton icon={Mail} label="Email" href={`mailto:${contact.email}`} color="blue" />
         )}
         {contact.phone && (
           <ActionButton
-            icon={MessageCircle}
-            label="Message"
-            href={`sms:${contact.phone}`}
+            icon={Video}
+            label="FaceTime"
+            href={`facetime:${contact.phone}`}
             color="green"
           />
         )}
-        <ActionButton icon={Video} label="FaceTime" color="green" />
       </div>
 
       {/* Contact Information Card */}
@@ -476,10 +483,12 @@ export default async function ContactDetailPage({ params }: Props) {
 
       {/* Edit & Share Actions */}
       <div className="flex gap-3">
-        <Button variant="outline" className="flex-1 gap-2">
-          <Edit2 className="h-4 w-4" />
-          Edit Contact
-        </Button>
+        <Link href={`/contacts/${contact.id}/edit`} className="flex-1">
+          <Button variant="outline" className="w-full gap-2">
+            <Edit2 className="h-4 w-4" />
+            Edit Contact
+          </Button>
+        </Link>
         <Button variant="outline" className="gap-2">
           <Share className="h-4 w-4" />
           Share

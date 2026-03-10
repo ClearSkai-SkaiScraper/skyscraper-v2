@@ -43,9 +43,11 @@ export async function GET(req: NextRequest) {
       (v): v is string => typeof v === "string" && v.length > 0
     );
 
-    // Fetch branding from database
+    // Fetch branding from database — use orderBy to always get the most recent
+    // (handles case where legacy Clerk orgId record + new DB UUID record coexist)
     const branding = await prisma.org_branding.findFirst({
       where: { orgId: { in: orgIdCandidates } },
+      orderBy: { updatedAt: "desc" },
       select: {
         companyName: true,
         license: true,

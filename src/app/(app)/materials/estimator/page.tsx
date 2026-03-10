@@ -100,8 +100,125 @@ const COMPLEXITY_OPTIONS = [
   { label: "Very Complex (turrets, multi-level)", value: "VERY_HIGH" },
 ];
 
+// ── All supported trades ─────────────────────────────────────────────────────
+const TRADE_TYPES = [
+  { value: "roofing", label: "🏠 Roofing", description: "Shingles, underlayment, flashing" },
+  { value: "siding", label: "🧱 Siding", description: "Vinyl, hardie board, stone veneer" },
+  { value: "gutters", label: "🌧️ Gutters", description: "Gutters, downspouts, guards" },
+  { value: "windows", label: "🪟 Windows & Doors", description: "Window units, doors, trim" },
+  { value: "painting", label: "🎨 Painting", description: "Interior/exterior paint, primer" },
+  { value: "flooring", label: "🪵 Flooring", description: "Tile, hardwood, LVP, carpet" },
+  { value: "drywall", label: "🧱 Drywall", description: "Sheetrock, mud, tape, texture" },
+  { value: "insulation", label: "🧊 Insulation", description: "Batts, blown-in, spray foam" },
+  { value: "fencing", label: "🏗️ Fencing", description: "Wood, vinyl, chain link" },
+  { value: "decking", label: "🪜 Decking", description: "Composite, wood, railing" },
+  { value: "concrete", label: "🏛️ Concrete / Flatwork", description: "Patio, driveway, sidewalk" },
+  { value: "plumbing", label: "🔧 Plumbing", description: "Fixtures, piping, fittings" },
+  { value: "electrical", label: "⚡ Electrical", description: "Panels, wiring, fixtures" },
+  { value: "hvac", label: "❄️ HVAC", description: "Units, ductwork, vents" },
+] as const;
+
+// ── Per-trade measurement config ─────────────────────────────────────────────
+interface TradeMeasurement {
+  id: string;
+  label: string;
+  unit: string;
+  placeholder: string;
+  required?: boolean;
+}
+
+const TRADE_MEASUREMENTS: Record<string, TradeMeasurement[]> = {
+  siding: [
+    { id: "area", label: "Wall Area", unit: "sq ft", placeholder: "1800", required: true },
+    { id: "stories", label: "Stories", unit: "", placeholder: "2" },
+    { id: "windows", label: "Window Count", unit: "", placeholder: "12" },
+    { id: "doors", label: "Door Count", unit: "", placeholder: "3" },
+  ],
+  gutters: [
+    { id: "linearFt", label: "Total Linear Feet", unit: "ft", placeholder: "180", required: true },
+    { id: "corners", label: "Corners", unit: "", placeholder: "6" },
+    { id: "downspouts", label: "Downspout Drops", unit: "", placeholder: "4" },
+    { id: "stories", label: "Stories", unit: "", placeholder: "2" },
+  ],
+  windows: [
+    { id: "windowCount", label: "Window Count", unit: "", placeholder: "10", required: true },
+    { id: "avgWidth", label: "Avg Width", unit: "in", placeholder: "36" },
+    { id: "avgHeight", label: "Avg Height", unit: "in", placeholder: "48" },
+    { id: "doorCount", label: "Ext. Door Count", unit: "", placeholder: "2" },
+  ],
+  painting: [
+    { id: "area", label: "Paint Area", unit: "sq ft", placeholder: "3000", required: true },
+    { id: "scope", label: "Scope", unit: "", placeholder: "Interior / Exterior / Both" },
+    { id: "coats", label: "Coats", unit: "", placeholder: "2" },
+    { id: "trimLf", label: "Trim Linear Ft", unit: "ft", placeholder: "200" },
+  ],
+  flooring: [
+    { id: "area", label: "Floor Area", unit: "sq ft", placeholder: "1200", required: true },
+    { id: "rooms", label: "Room Count", unit: "", placeholder: "5" },
+    { id: "material", label: "Material", unit: "", placeholder: "LVP / Tile / Hardwood" },
+    { id: "transitions", label: "Transitions", unit: "", placeholder: "4" },
+  ],
+  drywall: [
+    { id: "area", label: "Wall/Ceiling Area", unit: "sq ft", placeholder: "2000", required: true },
+    { id: "ceilings", label: "Ceiling sq ft", unit: "sq ft", placeholder: "800" },
+    { id: "patches", label: "Patch Count", unit: "", placeholder: "0" },
+    {
+      id: "texture",
+      label: "Texture Type",
+      unit: "",
+      placeholder: "Smooth / Orange Peel / Knockdown",
+    },
+  ],
+  insulation: [
+    { id: "area", label: "Insulation Area", unit: "sq ft", placeholder: "1500", required: true },
+    { id: "rValue", label: "R-Value Target", unit: "", placeholder: "R-38" },
+    { id: "type", label: "Type", unit: "", placeholder: "Batts / Blown / Spray Foam" },
+    { id: "depth", label: "Depth", unit: "in", placeholder: "12" },
+  ],
+  fencing: [
+    { id: "linearFt", label: "Total Linear Feet", unit: "ft", placeholder: "200", required: true },
+    { id: "height", label: "Height", unit: "ft", placeholder: "6" },
+    { id: "gates", label: "Gate Count", unit: "", placeholder: "2" },
+    { id: "material", label: "Material", unit: "", placeholder: "Wood / Vinyl / Chain Link" },
+  ],
+  decking: [
+    { id: "area", label: "Deck Area", unit: "sq ft", placeholder: "400", required: true },
+    { id: "railingLf", label: "Railing Linear Ft", unit: "ft", placeholder: "60" },
+    { id: "stairCount", label: "Stair Sets", unit: "", placeholder: "1" },
+    { id: "material", label: "Material", unit: "", placeholder: "Composite / Pressure Treated" },
+  ],
+  concrete: [
+    { id: "area", label: "Surface Area", unit: "sq ft", placeholder: "600", required: true },
+    { id: "thickness", label: "Thickness", unit: "in", placeholder: "4" },
+    { id: "type", label: "Type", unit: "", placeholder: "Patio / Driveway / Sidewalk" },
+    { id: "finish", label: "Finish", unit: "", placeholder: "Broom / Stamped / Exposed Aggregate" },
+  ],
+  plumbing: [
+    { id: "fixtures", label: "Fixture Count", unit: "", placeholder: "6", required: true },
+    { id: "type", label: "Scope", unit: "", placeholder: "New / Repipe / Repair" },
+    { id: "linearFt", label: "Pipe Run (ft)", unit: "ft", placeholder: "100" },
+    { id: "waterHeater", label: "Water Heater", unit: "", placeholder: "Yes / No" },
+  ],
+  electrical: [
+    { id: "circuits", label: "Circuit Count", unit: "", placeholder: "10", required: true },
+    { id: "outlets", label: "Outlet/Switch Count", unit: "", placeholder: "20" },
+    { id: "panelUpgrade", label: "Panel Upgrade", unit: "", placeholder: "200A / No" },
+    { id: "fixtures", label: "Light Fixture Count", unit: "", placeholder: "12" },
+  ],
+  hvac: [
+    { id: "sqft", label: "Conditioned Area", unit: "sq ft", placeholder: "2000", required: true },
+    { id: "tonnage", label: "Tonnage", unit: "ton", placeholder: "3" },
+    { id: "type", label: "System Type", unit: "", placeholder: "Split / Package / Mini-Split" },
+    { id: "ductwork", label: "New Ductwork", unit: "", placeholder: "Yes / No / Partial" },
+  ],
+};
+
 export default function MaterialEstimatorPage() {
-  // Measurements
+  // Trade selection
+  const [selectedTrade, setSelectedTrade] = useState("roofing");
+  const [tradeMeasurements, setTradeMeasurements] = useState<Record<string, string>>({});
+
+  // Roofing-specific measurements
   const [totalArea, setTotalArea] = useState("");
   const [pitch, setPitch] = useState("6/12");
   const [complexity, setComplexity] = useState("MEDIUM");
@@ -161,41 +278,62 @@ export default function MaterialEstimatorPage() {
   }
 
   const handleEstimate = async () => {
-    const areaNum = Number(totalArea);
-    if (!totalArea || areaNum <= 0) {
-      setError("Enter a valid roof area in square feet");
-      return;
-    }
-
     setIsLoading(true);
     setError("");
+
     try {
-      const derived = deriveLinearFeet(areaNum);
+      if (selectedTrade === "roofing") {
+        // ── Roofing: use existing detailed calculator ──
+        const areaNum = Number(totalArea);
+        if (!totalArea || areaNum <= 0) {
+          setError("Enter a valid roof area in square feet");
+          setIsLoading(false);
+          return;
+        }
+        const derived = deriveLinearFeet(areaNum);
+        const res = await fetch("/api/materials/estimate", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            action: "calculate",
+            measurements: { totalArea: areaNum, pitch, complexity, ...derived },
+            shingleSpec: { type: shingleType },
+          }),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || "Estimation failed");
+        setResult(data.estimate);
+      } else {
+        // ── All other trades: AI-powered estimation ──
+        const tradeConfig = TRADE_TYPES.find((t) => t.value === selectedTrade);
+        const measurements = TRADE_MEASUREMENTS[selectedTrade] || [];
+        const requiredField = measurements.find((m) => m.required);
+        if (requiredField && !tradeMeasurements[requiredField.id]) {
+          setError(`Please enter ${requiredField.label}`);
+          setIsLoading(false);
+          return;
+        }
 
-      const res = await fetch("/api/materials/estimate", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          action: "calculate",
-          measurements: {
-            totalArea: areaNum,
-            pitch,
-            complexity,
-            ...derived,
-          },
-          shingleSpec: {
-            type: shingleType,
-          },
-        }),
-      });
+        const measurementSummary = measurements
+          .filter((m) => tradeMeasurements[m.id])
+          .map((m) => `${m.label}: ${tradeMeasurements[m.id]}${m.unit ? ` ${m.unit}` : ""}`)
+          .join(", ");
 
-      const data = await res.json();
-
-      if (!res.ok) {
-        throw new Error(data.error || "Estimation failed");
+        const res = await fetch("/api/materials/estimate", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            action: "ai-estimate",
+            trade: selectedTrade,
+            tradeLabel: tradeConfig?.label?.replace(/^[^\s]+\s/, "") || selectedTrade,
+            measurements: tradeMeasurements,
+            measurementSummary,
+          }),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || "Estimation failed");
+        setResult(data.estimate);
       }
-
-      setResult(data.estimate);
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Estimation failed");
     } finally {
@@ -238,9 +376,17 @@ export default function MaterialEstimatorPage() {
     setValleyLf("");
     setEaveLf("");
     setRakeLf("");
+    setTradeMeasurements({});
     setResult(null);
     setError("");
     setRouteStatus("idle");
+  };
+
+  const handleTradeChange = (trade: string) => {
+    setSelectedTrade(trade);
+    setTradeMeasurements({});
+    setResult(null);
+    setError("");
   };
 
   // ── Save current estimate to DB ────────────────────────────────────────────
@@ -380,19 +526,39 @@ export default function MaterialEstimatorPage() {
       <PageHero
         section="trades"
         title="Material Estimator"
-        subtitle="Calculate materials from roof measurements. Route orders to ABC Supply with one click."
+        subtitle="Calculate materials for any trade — roofing, siding, flooring, electrical, and more. Route orders to suppliers with one click."
         icon={<Calculator className="h-7 w-7" />}
       />
       <div className="grid gap-6 lg:grid-cols-2">
         {/* ── Input Form ─────────────────────────────────────────────────── */}
         <Card>
           <CardHeader>
-            <CardTitle>Roof Measurements</CardTitle>
+            <CardTitle>Project Measurements</CardTitle>
             <CardDescription>
-              Enter measurements from your inspection or Xactimate sketch
+              Select a trade and enter measurements for your estimate
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-5">
+            {/* Trade Selector */}
+            <div className="space-y-2">
+              <Label>Trade Type</Label>
+              <Select value={selectedTrade} onValueChange={handleTradeChange}>
+                <SelectTrigger className="font-medium">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {TRADE_TYPES.map((t) => (
+                    <SelectItem key={t.value} value={t.value}>
+                      <div className="flex items-center gap-2">
+                        <span>{t.label}</span>
+                        <span className="text-[10px] text-muted-foreground">— {t.description}</span>
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
             {/* Link to Job / Claim */}
             <div className="space-y-2">
               <Label>Link to Job / Claim (optional)</Label>
@@ -410,137 +576,179 @@ export default function MaterialEstimatorPage() {
               />
             </div>
 
-            {/* Total Area */}
-            <div className="space-y-2">
-              <Label htmlFor="sqft">Total Roof Area (sq ft) *</Label>
-              <Input
-                id="sqft"
-                type="number"
-                placeholder="2400"
-                value={totalArea}
-                onChange={(e) => setTotalArea(e.target.value)}
-              />
-            </div>
+            {/* ── ROOFING-SPECIFIC INPUTS ── */}
+            {selectedTrade === "roofing" && (
+              <>
+                {/* Total Area */}
+                <div className="space-y-2">
+                  <Label htmlFor="sqft">Total Roof Area (sq ft) *</Label>
+                  <Input
+                    id="sqft"
+                    type="number"
+                    placeholder="2400"
+                    value={totalArea}
+                    onChange={(e) => setTotalArea(e.target.value)}
+                  />
+                </div>
 
-            {/* Pitch & Complexity side-by-side */}
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label>Roof Pitch</Label>
-                <Select value={pitch} onValueChange={setPitch}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {ROOF_PITCHES.map((p) => (
-                      <SelectItem key={p.value} value={p.value}>
-                        {p.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label>Complexity</Label>
-                <Select value={complexity} onValueChange={setComplexity}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {COMPLEXITY_OPTIONS.map((c) => (
-                      <SelectItem key={c.value} value={c.value}>
-                        {c.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
+                {/* Pitch & Complexity side-by-side */}
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label>Roof Pitch</Label>
+                    <Select value={pitch} onValueChange={setPitch}>
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {ROOF_PITCHES.map((p) => (
+                          <SelectItem key={p.value} value={p.value}>
+                            {p.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Complexity</Label>
+                    <Select value={complexity} onValueChange={setComplexity}>
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {COMPLEXITY_OPTIONS.map((c) => (
+                          <SelectItem key={c.value} value={c.value}>
+                            {c.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
 
-            {/* Shingle Type */}
-            <div className="space-y-2">
-              <Label>Shingle Type</Label>
-              <Select value={shingleType} onValueChange={setShingleType}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {SHINGLE_TYPES.map((s) => (
-                    <SelectItem key={s.value} value={s.value}>
-                      {s.label}
-                    </SelectItem>
+                {/* Shingle Type */}
+                <div className="space-y-2">
+                  <Label>Shingle Type</Label>
+                  <Select value={shingleType} onValueChange={setShingleType}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {SHINGLE_TYPES.map((s) => (
+                        <SelectItem key={s.value} value={s.value}>
+                          {s.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {/* Linear measurements — optional, auto-estimated if blank */}
+                <div>
+                  <Label className="mb-2 block text-xs font-medium text-muted-foreground">
+                    Linear Measurements (optional — estimated from area if blank)
+                  </Label>
+                  <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+                    <div className="space-y-1">
+                      <Label htmlFor="ridge" className="text-xs">
+                        Ridge (ft)
+                      </Label>
+                      <Input
+                        id="ridge"
+                        type="number"
+                        placeholder="auto"
+                        value={ridgeLf}
+                        onChange={(e) => setRidgeLf(e.target.value)}
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <Label htmlFor="hip" className="text-xs">
+                        Hip (ft)
+                      </Label>
+                      <Input
+                        id="hip"
+                        type="number"
+                        placeholder="0"
+                        value={hipLf}
+                        onChange={(e) => setHipLf(e.target.value)}
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <Label htmlFor="valley" className="text-xs">
+                        Valley (ft)
+                      </Label>
+                      <Input
+                        id="valley"
+                        type="number"
+                        placeholder="0"
+                        value={valleyLf}
+                        onChange={(e) => setValleyLf(e.target.value)}
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <Label htmlFor="eave" className="text-xs">
+                        Eave (ft)
+                      </Label>
+                      <Input
+                        id="eave"
+                        type="number"
+                        placeholder="auto"
+                        value={eaveLf}
+                        onChange={(e) => setEaveLf(e.target.value)}
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <Label htmlFor="rake" className="text-xs">
+                        Rake (ft)
+                      </Label>
+                      <Input
+                        id="rake"
+                        type="number"
+                        placeholder="auto"
+                        value={rakeLf}
+                        onChange={(e) => setRakeLf(e.target.value)}
+                      />
+                    </div>
+                  </div>
+                </div>
+              </>
+            )}
+
+            {/* ── OTHER TRADES: Dynamic measurements ── */}
+            {selectedTrade !== "roofing" && TRADE_MEASUREMENTS[selectedTrade] && (
+              <div className="space-y-3">
+                <Label className="text-xs font-medium text-muted-foreground">
+                  {TRADE_TYPES.find((t) => t.value === selectedTrade)?.label?.replace(
+                    /^[^\s]+\s/,
+                    ""
+                  )}{" "}
+                  Measurements
+                </Label>
+                <div className="grid grid-cols-2 gap-3">
+                  {TRADE_MEASUREMENTS[selectedTrade].map((field) => (
+                    <div key={field.id} className="space-y-1">
+                      <Label htmlFor={`trade-${field.id}`} className="text-xs">
+                        {field.label} {field.unit && `(${field.unit})`} {field.required && "*"}
+                      </Label>
+                      <Input
+                        id={`trade-${field.id}`}
+                        placeholder={field.placeholder}
+                        value={tradeMeasurements[field.id] || ""}
+                        onChange={(e) =>
+                          setTradeMeasurements((prev) => ({ ...prev, [field.id]: e.target.value }))
+                        }
+                      />
+                    </div>
                   ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            {/* Linear measurements — optional, auto-estimated if blank */}
-            <div>
-              <Label className="mb-2 block text-xs font-medium text-muted-foreground">
-                Linear Measurements (optional — estimated from area if blank)
-              </Label>
-              <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-                <div className="space-y-1">
-                  <Label htmlFor="ridge" className="text-xs">
-                    Ridge (ft)
-                  </Label>
-                  <Input
-                    id="ridge"
-                    type="number"
-                    placeholder="auto"
-                    value={ridgeLf}
-                    onChange={(e) => setRidgeLf(e.target.value)}
-                  />
                 </div>
-                <div className="space-y-1">
-                  <Label htmlFor="hip" className="text-xs">
-                    Hip (ft)
-                  </Label>
-                  <Input
-                    id="hip"
-                    type="number"
-                    placeholder="0"
-                    value={hipLf}
-                    onChange={(e) => setHipLf(e.target.value)}
-                  />
-                </div>
-                <div className="space-y-1">
-                  <Label htmlFor="valley" className="text-xs">
-                    Valley (ft)
-                  </Label>
-                  <Input
-                    id="valley"
-                    type="number"
-                    placeholder="0"
-                    value={valleyLf}
-                    onChange={(e) => setValleyLf(e.target.value)}
-                  />
-                </div>
-                <div className="space-y-1">
-                  <Label htmlFor="eave" className="text-xs">
-                    Eave (ft)
-                  </Label>
-                  <Input
-                    id="eave"
-                    type="number"
-                    placeholder="auto"
-                    value={eaveLf}
-                    onChange={(e) => setEaveLf(e.target.value)}
-                  />
-                </div>
-                <div className="space-y-1">
-                  <Label htmlFor="rake" className="text-xs">
-                    Rake (ft)
-                  </Label>
-                  <Input
-                    id="rake"
-                    type="number"
-                    placeholder="auto"
-                    value={rakeLf}
-                    onChange={(e) => setRakeLf(e.target.value)}
-                  />
+                <div className="flex items-start gap-2 rounded-lg border border-blue-200 bg-blue-50/60 p-2.5 dark:border-blue-900 dark:bg-blue-950/30">
+                  <span className="text-sm">🤖</span>
+                  <p className="text-[11px] text-blue-700 dark:text-blue-300">
+                    AI-powered estimation — materials, quantities, and pricing are estimated using
+                    industry standards. Verify with your supplier before ordering.
+                  </p>
                 </div>
               </div>
-            </div>
+            )}
 
             {error && (
               <div className="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700 dark:border-red-800 dark:bg-red-900/20 dark:text-red-400">

@@ -1,9 +1,10 @@
 "use client";
 
-import { Building2, UserCheck } from "lucide-react";
+import { Building2, Mail, Phone, UserCheck } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 
 interface ConnectionCardProps {
   conn: {
@@ -94,6 +95,28 @@ export function ConnectionCard({ conn }: ConnectionCardProps) {
               ))}
             </div>
           )}
+        </div>
+        {/* Action buttons */}
+        {(conn.phone || conn.email) && (
+          <div className="pointer-events-auto mt-4 flex items-center gap-2">
+            {conn.phone && (
+              <a href={`tel:${conn.phone}`} className="flex-1" onClick={(e) => e.stopPropagation()}>
+                <Button variant="outline" size="sm" className="w-full gap-2">
+                  <Phone className="h-4 w-4" />
+                  Call
+                </Button>
+              </a>
+            )}
+            {conn.email && (
+              <a href={`mailto:${conn.email}`} className="flex-1" onClick={(e) => e.stopPropagation()}>
+                <Button variant="outline" size="sm" className="w-full gap-2">
+                  <Mail className="h-4 w-4" />
+                  Email
+                </Button>
+              </a>
+            )}
+          </div>
+        )}
         </div>
       </div>
     </div>

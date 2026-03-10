@@ -78,39 +78,53 @@ export async function POST(request: NextRequest) {
     try {
       const openai = getOpenAI();
 
-      // DALL-E 3 doesn't support image editing directly, so we'll use GPT-4o-mini to describe the transformation
-      // and generate a detailed prompt, then generate a new image
+      // Use GPT-4o (best vision model) to deeply analyze the property and write
+      // an architecture-preserving prompt for DALL-E 3 image generation.
       const descriptionResponse = await openai.chat.completions.create({
-        model: "gpt-4o-mini",
+        model: "gpt-4o",
         messages: [
           {
             role: "system",
-            content:
-              "You write image generation prompts that produce PHOTOREALISTIC results, not cartoons or illustrations. CRITICAL RULES: 1) NEVER describe any damage, wear, deterioration, debris, tarps, or current disrepair. 2) ONLY describe the FINISHED result with brand-new materials. 3) Always specify: 'photograph taken with a DSLR camera, natural daylight, shallow depth of field, 35mm lens'. 4) Describe specific material textures, colors, and architectural details. 5) Include environmental details: sky, trees, driveway, landscaping. 6) Never use words like 'illustration', 'render', 'drawing', 'cartoon', 'digital art', or 'concept'.",
+            content: `You are an expert architectural photographer and property analyst. Your job is to study a property photo and write an image-generation prompt that will recreate the EXACT SAME building with renovations applied.
+
+CRITICAL RULES:
+1. NEVER describe any damage, wear, deterioration, debris, tarps, or current disrepair.
+2. ONLY describe the FINISHED result with brand-new materials installed.
+3. ALWAYS begin with: "A professional real estate photograph taken with a DSLR camera in natural daylight of a..."
+4. PRECISELY describe the building's exact structure: number of stories, roof shape (gable/hip/flat/mansard), facade width, window count and placement, door position, garage location, chimney position, porch/entry style.
+5. PRECISELY describe the camera angle: eye-level/elevated/street-level, facing direction, distance from building, what's visible on left/right edges.
+6. Describe the surrounding environment: sky condition, trees (type, placement), driveway material, yard, neighboring structures visible.
+7. Describe specific NEW material textures, colors, and architectural details for the renovation.
+8. NEVER use words like "illustration", "render", "drawing", "cartoon", "digital art", "concept", "3D", "CGI".
+9. The generated image must look like the photographer returned to the SAME EXACT house and took another photo after the renovation was complete.`,
           },
           {
             role: "user",
             content: [
               {
                 type: "text",
-                text: `Study this property photo carefully. Note the exact architecture style, roof shape, siding type, window placement, landscaping, driveway, surrounding environment, and camera angle. Now write a prompt describing a PHOTOGRAPH of this SAME property after a completed, professional renovation: ${aiPrompt}. The prompt MUST begin with 'A professional real estate photograph taken with a DSLR camera in natural daylight of a...' and describe the exact same building from the same angle, but with brand-new pristine materials perfectly installed.`,
+                text: `Study this property photo in extreme detail. Note EVERY architectural feature: the exact roof shape, number of dormers, window sizes and positions, siding pattern, entry style, garage door style, landscaping placement, fence type, driveway material, and camera angle/distance.
+
+Now write a DALL-E 3 prompt that describes a photograph of this SAME EXACT property from this SAME EXACT camera angle, but after a completed renovation: ${aiPrompt}
+
+The building MUST have the identical footprint, roof shape, window positions, and surrounding environment. Only the renovation materials should change.`,
               },
               {
                 type: "image_url",
-                image_url: { url: beforeImageDataUrl },
+                image_url: { url: beforeImageDataUrl, detail: "high" },
               },
             ],
           },
         ],
-        max_tokens: 300,
+        max_tokens: 500,
       });
 
       const enhancedPrompt = descriptionResponse.choices[0]?.message?.content || aiPrompt;
 
-      // Generate the "after" image with DALL-E 3
+      // Generate the "after" image with DALL-E 3 (HD quality, natural style)
       const imageResponse = await openai.images.generate({
         model: "dall-e-3",
-        prompt: `A professional real estate photograph taken with a DSLR camera in natural daylight. ${enhancedPrompt}. Shot with a 35mm lens, shallow depth of field, golden hour lighting. The property has brand-new pristine materials with no damage, no wear, no debris. Every surface is freshly installed and perfect. This is NOT an illustration, NOT a render, NOT a drawing — it is an actual photograph of a real building. Realistic textures, natural shadows, real sky with clouds, visible landscaping details.`,
+        prompt: `${enhancedPrompt}\n\nIMPORTANT CONSTRAINTS: This MUST be an actual photograph of a real building — NOT an illustration, NOT a render, NOT a 3D model, NOT a drawing, NOT digital art. Shot with a DSLR camera, 35mm lens, natural daylight with realistic shadows. The building has brand-new pristine materials with absolutely no damage, no wear, no debris. Every surface is freshly installed and perfect. Realistic material textures (visible shingle granules, wood grain, brick mortar lines), natural sky with clouds, real landscaping with individual leaves visible, authentic driveway and sidewalk textures.`,
         n: 1,
         size: "1024x1024",
         quality: "hd",
@@ -120,7 +134,7 @@ export async function POST(request: NextRequest) {
       const afterImageUrl = imageResponse.data![0]?.url;
 
       if (afterImageUrl) {
-        logger.debug(`[Mockup Generate] SUCCESS via OpenAI DALL-E 3`);
+        logger.debug(`[Mockup Generate] SUCCESS via GPT-4o + DALL-E 3 HD`);
 
         // Persist the generated mockup to the database
         try {
@@ -131,10 +145,14 @@ export async function POST(request: NextRequest) {
               title: `${projectType} Mockup — ${new Date().toLocaleDateString()}`,
               content: enhancedPrompt,
               fileUrl: afterImageUrl,
-              model: "dall-e-3",
+              model: "gpt-4o+dall-e-3",
               tokensUsed: 1,
               status: "completed",
-              metadata: { projectType, projectDescription, method: "OpenAI DALL-E 3" },
+              metadata: {
+                projectType,
+                projectDescription,
+                method: "GPT-4o Vision + DALL-E 3 HD",
+              },
             },
           });
         } catch (saveErr) {
@@ -147,7 +165,7 @@ export async function POST(request: NextRequest) {
           projectType,
           projectDescription,
           aiPrompt: enhancedPrompt,
-          method: "OpenAI DALL-E 3",
+          method: "GPT-4o Vision + DALL-E 3 HD",
         });
       }
     } catch (error) {

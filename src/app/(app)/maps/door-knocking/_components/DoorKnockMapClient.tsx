@@ -280,11 +280,7 @@ export default function DoorKnockMapClient() {
   useEffect(() => {
     if (!mapRef.current || !mapReady || !mapboxRef.current) return;
 
-    // Clear existing markers and popups
-    if (activePopupRef.current) {
-      activePopupRef.current.remove();
-      activePopupRef.current = null;
-    }
+    // Clear existing markers (no Mapbox popups — they cause auto-pan)
     markersRef.current.forEach((m) => m.remove());
     markersRef.current = [];
 
@@ -313,48 +309,15 @@ export default function DoorKnockMapClient() {
         el.style.transform = "scale(1)";
       });
 
-      const marker = new mapboxRef.current.Marker(el)
+      // Use anchor:'center' so the pin dot IS the marker, no offset
+      const marker = new mapboxRef.current.Marker({ element: el, anchor: "center" })
         .setLngLat([pin.lng, pin.lat])
         .addTo(mapRef.current!);
 
-      // Popup
-      const popupHtml = `
-        <div style="padding: 8px; min-width: 180px; font-family: system-ui;">
-          <div style="font-weight: 600; font-size: 13px; margin-bottom: 4px;">
-            ${cfg.emoji} ${pin.address || "Dropped Pin"}
-          </div>
-          ${pin.ownerName ? `<div style="font-size: 12px; color: #666;">👤 ${pin.ownerName}</div>` : ""}
-          <div style="font-size: 12px; color: #666; margin-top: 2px;">
-            Status: <strong>${cfg.label}</strong>
-          </div>
-          ${pin.notes ? `<div style="font-size: 11px; color: #888; margin-top: 4px; border-top: 1px solid #eee; padding-top: 4px;">${pin.notes}</div>` : ""}
-          ${pin.areaTag ? `<div style="font-size: 11px; color: #666; margin-top: 2px;">📍 ${pin.areaTag}</div>` : ""}
-        </div>
-      `;
-      // Manual popup — do NOT use marker.setPopup() (causes double-toggle + auto-pan)
-      // anchor:'bottom' prevents Mapbox from auto-panning/sliding the map when popup opens
-      const popup = new mapboxRef.current.Popup({
-        offset: [0, -12],
-        maxWidth: "250px",
-        closeOnClick: true,
-        closeButton: true,
-        focusAfterOpen: false,
-        anchor: "bottom",
-      }).setHTML(popupHtml);
-
-      // Click: show popup + open edit form
-      el.addEventListener("click", (e) => {
-        e.stopPropagation();
-
-        // Close any previously open popup
-        if (activePopupRef.current) {
-          activePopupRef.current.remove();
-        }
-        // Show popup at marker location
-        popup.setLngLat([pin.lng, pin.lat]).addTo(mapRef.current!);
-        activePopupRef.current = popup;
-
-        // Open edit form
+      // Click: open edit form — NO Mapbox Popup (it auto-pans the map
+      // making pins appear to "jump to the top-left")
+      el.addEventListener("click", () => {
+        // Don't stopPropagation — let Mapbox handle events normally
         setEditingPin(pin);
         setFormData({
           lat: pin.lat,

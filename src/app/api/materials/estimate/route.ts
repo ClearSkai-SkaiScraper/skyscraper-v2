@@ -22,6 +22,15 @@ import {
   type ShingleSpec,
 } from "@/lib/materials/estimator";
 
+let _openai: any = null;
+async function getOpenAI() {
+  if (!_openai) {
+    const { default: OpenAI } = await import("openai");
+    _openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+  }
+  return _openai;
+}
+
 export const runtime = "nodejs";
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -143,6 +152,93 @@ export async function POST(req: NextRequest) {
       const order = await submitOrder(draft, orgId, poNumber, notes);
 
       return NextResponse.json({ ok: true, order });
+    }
+
+    // ── Action: AI-powered estimate for non-roofing trades ──────────────────
+    if (action === "ai-estimate") {
+      const { trade, tradeLabel, measurements, measurementSummary } = body as {
+        trade: string;
+        tradeLabel: string;
+        measurements: Record<string, string>;
+        measurementSummary: string;
+      };
+
+      if (!trade || !measurementSummary) {
+        return NextResponse.json(
+          { ok: false, error: "Missing trade or measurements" },
+          { status: 400 }
+        );
+      }
+
+      try {
+        const openai = await getOpenAI();
+
+        const response = await openai.chat.completions.create({
+          model: "gpt-4o-mini",
+          messages: [
+            {
+              role: "system",
+              content: `You are a senior construction estimator with 20+ years experience. Generate a detailed material list for a ${tradeLabel} project based on measurements. Return ONLY a valid JSON array with NO markdown formatting, NO code fences.
+
+Each item in the array must have these exact fields:
+- "category": string (material category)
+- "productName": string (specific product name)
+- "quantity": number (quantity needed, rounded up)
+- "unit": string (unit of measure: "ea", "sq ft", "lin ft", "gal", "box", "roll", "bundle", etc.)
+- "unitPrice": number (estimated retail unit price in USD)
+- "totalPrice": number (quantity × unitPrice)
+- "coverage": string (optional coverage note)
+
+Include ALL materials needed including fasteners, adhesives, underlayments, transition pieces, trim, and accessories. Use realistic 2024 Home Depot / Lowe's retail pricing. Add 10% waste factor to quantities. Include at least 6-15 line items for a thorough estimate.`,
+            },
+            {
+              role: "user",
+              content: `Generate a complete material list for this ${tradeLabel} project:\n${measurementSummary}\n\nReturn ONLY the JSON array, no explanation.`,
+            },
+          ],
+          max_tokens: 1500,
+          temperature: 0.3,
+        });
+
+        const content = response.choices[0]?.message?.content || "[]";
+        // Strip any markdown code fences
+        const cleaned = content
+          .replace(/```json?\n?/g, "")
+          .replace(/```/g, "")
+          .trim();
+        const materials = JSON.parse(cleaned);
+
+        const totalCost = materials.reduce(
+          (sum: number, m: { totalPrice: number }) => sum + (m.totalPrice || 0),
+          0
+        );
+
+        const estimate = {
+          id: `ai-${Date.now()}`,
+          materials,
+          totalCost: Math.round(totalCost * 100) / 100,
+          wasteFactor: 1.1,
+          measurements: {
+            totalArea: Number(measurements.area || measurements.sqft || measurements.linearFt || 0),
+            pitch: "N/A",
+          },
+          trade,
+          tradeLabel,
+          method: "AI-Powered Estimate",
+        };
+
+        logger.info(
+          `[MATERIALS] AI estimate for ${trade}: ${materials.length} items, $${totalCost}`
+        );
+
+        return NextResponse.json({ ok: true, estimate });
+      } catch (aiErr) {
+        logger.error("[MATERIALS] AI estimate error:", aiErr);
+        return NextResponse.json(
+          { ok: false, error: "AI estimation failed — check OpenAI API key" },
+          { status: 500 }
+        );
+      }
     }
 
     return NextResponse.json({ ok: false, error: "Unknown action" }, { status: 400 });
