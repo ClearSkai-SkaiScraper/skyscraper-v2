@@ -4,22 +4,33 @@ import {
   Bookmark,
   Calculator,
   CheckCircle,
+  ChevronDown,
+  ChevronUp,
   Clock,
   DollarSign,
+  Download,
+  FileText,
   Link2,
+  Loader2,
   Mail,
   MoreVertical,
   Package,
+  Plus,
   RotateCcw,
   Send,
+  ShoppingCart,
+  Sparkles,
   Trash2,
   Truck,
+  Upload,
+  X,
 } from "lucide-react";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 import { PageContainer } from "@/components/layout/PageContainer";
 import { PageHero } from "@/components/layout/PageHero";
 import { ClaimJobSelect, type ClaimJobSelection } from "@/components/selectors/ClaimJobSelect";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -59,6 +70,11 @@ interface EstimateResult {
     totalArea: number;
     pitch: string;
   };
+  trade?: string;
+  tradeLabel?: string;
+  method?: string;
+  jobContextType?: string;
+  aiSummary?: string;
 }
 
 interface SavedEstimate {
@@ -73,6 +89,17 @@ interface SavedEstimate {
   materials: MaterialLine[];
   totalCost: number;
   wasteFactor: number;
+  trade?: string;
+  tradeLabel?: string;
+}
+
+// ── Dynamic item for windows/doors with multiple sizes ──────────────────────
+interface DynamicItem {
+  id: string;
+  width: string;
+  height: string;
+  type: string;
+  qty: string;
 }
 
 // ── Pitch options — value is the actual pitch string the API expects ────────
@@ -100,22 +127,43 @@ const COMPLEXITY_OPTIONS = [
   { label: "Very Complex (turrets, multi-level)", value: "VERY_HIGH" },
 ];
 
-// ── All supported trades ─────────────────────────────────────────────────────
+// ── Job context options ──────────────────────────────────────────────────────
+const JOB_CONTEXTS = [
+  { value: "claim", label: "Insurance Claim" },
+  { value: "retail", label: "Retail / Out-of-Pocket" },
+  { value: "lead", label: "Lead / Sales Estimate" },
+  { value: "repair", label: "Repair / Service" },
+] as const;
+
+// ── All supported trades (NO EMOJIS — roofing first) ────────────────────────
 const TRADE_TYPES = [
-  { value: "roofing", label: "🏠 Roofing", description: "Shingles, underlayment, flashing" },
-  { value: "siding", label: "🧱 Siding", description: "Vinyl, hardie board, stone veneer" },
-  { value: "gutters", label: "🌧️ Gutters", description: "Gutters, downspouts, guards" },
-  { value: "windows", label: "🪟 Windows & Doors", description: "Window units, doors, trim" },
-  { value: "painting", label: "🎨 Painting", description: "Interior/exterior paint, primer" },
-  { value: "flooring", label: "🪵 Flooring", description: "Tile, hardwood, LVP, carpet" },
-  { value: "drywall", label: "🧱 Drywall", description: "Sheetrock, mud, tape, texture" },
-  { value: "insulation", label: "🧊 Insulation", description: "Batts, blown-in, spray foam" },
-  { value: "fencing", label: "🏗️ Fencing", description: "Wood, vinyl, chain link" },
-  { value: "decking", label: "🪜 Decking", description: "Composite, wood, railing" },
-  { value: "concrete", label: "🏛️ Concrete / Flatwork", description: "Patio, driveway, sidewalk" },
-  { value: "plumbing", label: "🔧 Plumbing", description: "Fixtures, piping, fittings" },
-  { value: "electrical", label: "⚡ Electrical", description: "Panels, wiring, fixtures" },
-  { value: "hvac", label: "❄️ HVAC", description: "Units, ductwork, vents" },
+  { value: "roofing", label: "Roofing", description: "Shingles, underlayment, flashing, ridge" },
+  { value: "siding", label: "Siding", description: "Vinyl, hardie board, stone veneer" },
+  { value: "gutters", label: "Gutters", description: "Gutters, downspouts, guards" },
+  { value: "windows", label: "Windows", description: "Window units, trim, hardware" },
+  { value: "doors", label: "Doors", description: "Interior, exterior, storm, patio" },
+  { value: "painting", label: "Painting", description: "Interior/exterior paint, primer" },
+  { value: "flooring", label: "Flooring", description: "Tile, hardwood, LVP, carpet" },
+  { value: "drywall", label: "Drywall", description: "Sheetrock, mud, tape, texture" },
+  { value: "insulation", label: "Insulation", description: "Batts, blown-in, spray foam" },
+  { value: "fencing", label: "Fencing", description: "Wood, vinyl, chain link" },
+  { value: "decking", label: "Decking / Porch", description: "Composite, wood, railing" },
+  { value: "concrete", label: "Concrete / Flatwork", description: "Patio, driveway, sidewalk" },
+  { value: "plumbing", label: "Plumbing", description: "Fixtures, piping, water heater" },
+  { value: "electrical", label: "Electrical", description: "Panels, wiring, fixtures" },
+  { value: "hvac", label: "HVAC", description: "Units, ductwork, vents, controls" },
+  { value: "framing", label: "Framing", description: "Structural framing, trusses" },
+  { value: "finish_carpentry", label: "Finish Carpentry", description: "Trim, molding, built-ins" },
+  { value: "cabinets", label: "Cabinets & Countertops", description: "Kitchen, bath, vanity" },
+  { value: "demolition", label: "Demolition", description: "Tear-out, haul-off, debris" },
+  { value: "mitigation", label: "Mitigation", description: "Water/fire/mold mitigation" },
+  { value: "masonry", label: "Masonry", description: "Brick, block, stone, tuckpointing" },
+  { value: "solar", label: "Solar", description: "Panels, inverters, mounting" },
+  { value: "landscaping", label: "Landscaping", description: "Grading, sod, irrigation" },
+  { value: "garage_doors", label: "Garage Doors", description: "Doors, openers, hardware" },
+  { value: "appliances", label: "Appliances", description: "Kitchen, laundry, install" },
+  { value: "fire_sprinkler", label: "Fire / Sprinkler", description: "Sprinkler systems, alarms" },
+  { value: "low_voltage", label: "Low Voltage", description: "Data, security, AV, cameras" },
 ] as const;
 
 // ── Per-trade measurement config ─────────────────────────────────────────────
@@ -141,11 +189,9 @@ const TRADE_MEASUREMENTS: Record<string, TradeMeasurement[]> = {
     { id: "stories", label: "Stories", unit: "", placeholder: "2" },
   ],
   windows: [
-    { id: "windowCount", label: "Window Count", unit: "", placeholder: "10", required: true },
-    { id: "avgWidth", label: "Avg Width", unit: "in", placeholder: "36" },
-    { id: "avgHeight", label: "Avg Height", unit: "in", placeholder: "48" },
-    { id: "doorCount", label: "Ext. Door Count", unit: "", placeholder: "2" },
+    { id: "_dynamic_windows", label: "Window Items", unit: "", placeholder: "", required: true },
   ],
+  doors: [{ id: "_dynamic_doors", label: "Door Items", unit: "", placeholder: "", required: true }],
   painting: [
     { id: "area", label: "Paint Area", unit: "sq ft", placeholder: "3000", required: true },
     { id: "scope", label: "Scope", unit: "", placeholder: "Interior / Exterior / Both" },
@@ -211,12 +257,93 @@ const TRADE_MEASUREMENTS: Record<string, TradeMeasurement[]> = {
     { id: "type", label: "System Type", unit: "", placeholder: "Split / Package / Mini-Split" },
     { id: "ductwork", label: "New Ductwork", unit: "", placeholder: "Yes / No / Partial" },
   ],
+  framing: [
+    { id: "area", label: "Wall/Floor Area", unit: "sq ft", placeholder: "1000", required: true },
+    { id: "stories", label: "Stories", unit: "", placeholder: "1" },
+    { id: "scope", label: "Scope", unit: "", placeholder: "New / Repair / Addition" },
+    { id: "openings", label: "Openings (windows/doors)", unit: "", placeholder: "8" },
+  ],
+  finish_carpentry: [
+    { id: "linearFt", label: "Trim Linear Ft", unit: "ft", placeholder: "400", required: true },
+    { id: "crownLf", label: "Crown Molding (ft)", unit: "ft", placeholder: "200" },
+    { id: "baseLf", label: "Base Molding (ft)", unit: "ft", placeholder: "300" },
+    { id: "doors", label: "Door Casings", unit: "", placeholder: "10" },
+  ],
+  cabinets: [
+    { id: "linearFt", label: "Cabinet Linear Ft", unit: "ft", placeholder: "20", required: true },
+    { id: "counterSqft", label: "Counter Top (sq ft)", unit: "sq ft", placeholder: "40" },
+    { id: "tier", label: "Grade", unit: "", placeholder: "Stock / Semi-Custom / Custom" },
+    { id: "sink", label: "Sink + Faucet", unit: "", placeholder: "Yes / No" },
+  ],
+  demolition: [
+    { id: "area", label: "Demo Area", unit: "sq ft", placeholder: "500", required: true },
+    { id: "type", label: "Material Type", unit: "", placeholder: "Drywall / Flooring / Mixed" },
+    { id: "dumpsters", label: "Dumpster Count", unit: "", placeholder: "1" },
+    { id: "hazmat", label: "Hazardous Materials", unit: "", placeholder: "None / Asbestos / Lead" },
+  ],
+  mitigation: [
+    { id: "area", label: "Affected Area", unit: "sq ft", placeholder: "800", required: true },
+    { id: "type", label: "Damage Type", unit: "", placeholder: "Water / Fire / Mold" },
+    { id: "class", label: "Water Class (1-4)", unit: "", placeholder: "2" },
+    { id: "category", label: "Category (1-3)", unit: "", placeholder: "1" },
+  ],
+  masonry: [
+    { id: "area", label: "Wall Area", unit: "sq ft", placeholder: "300", required: true },
+    { id: "material", label: "Material", unit: "", placeholder: "Brick / Block / Stone" },
+    { id: "scope", label: "Scope", unit: "", placeholder: "New / Tuckpoint / Repair" },
+    { id: "height", label: "Height", unit: "ft", placeholder: "8" },
+  ],
+  solar: [
+    { id: "sqft", label: "Roof Area Available", unit: "sq ft", placeholder: "600", required: true },
+    { id: "kw", label: "System Size (kW)", unit: "kW", placeholder: "8" },
+    { id: "panels", label: "Panel Count", unit: "", placeholder: "20" },
+    { id: "battery", label: "Battery Storage", unit: "", placeholder: "Yes / No" },
+  ],
+  landscaping: [
+    { id: "area", label: "Landscape Area", unit: "sq ft", placeholder: "2000", required: true },
+    { id: "scope", label: "Scope", unit: "", placeholder: "Sod / Plants / Hardscape / Full" },
+    { id: "irrigation", label: "Irrigation", unit: "", placeholder: "New / Repair / None" },
+    { id: "grading", label: "Grading Needed", unit: "", placeholder: "Yes / No" },
+  ],
+  garage_doors: [
+    { id: "doorCount", label: "Door Count", unit: "", placeholder: "2", required: true },
+    { id: "width", label: "Width (ft)", unit: "ft", placeholder: "16" },
+    { id: "height", label: "Height (ft)", unit: "ft", placeholder: "7" },
+    { id: "opener", label: "Opener Included", unit: "", placeholder: "Yes / No" },
+  ],
+  appliances: [
+    { id: "count", label: "Appliance Count", unit: "", placeholder: "4", required: true },
+    { id: "types", label: "Types", unit: "", placeholder: "Fridge, Range, Dishwasher, Micro" },
+    { id: "tier", label: "Grade", unit: "", placeholder: "Standard / Mid / Premium" },
+    { id: "install", label: "Install Included", unit: "", placeholder: "Yes / No" },
+  ],
+  fire_sprinkler: [
+    { id: "heads", label: "Head Count", unit: "", placeholder: "12", required: true },
+    { id: "linearFt", label: "Pipe Run (ft)", unit: "ft", placeholder: "200" },
+    { id: "type", label: "System Type", unit: "", placeholder: "Wet / Dry / Pre-Action" },
+    { id: "scope", label: "Scope", unit: "", placeholder: "New / Retrofit / Repair" },
+  ],
+  low_voltage: [
+    { id: "drops", label: "Data/Cable Drops", unit: "", placeholder: "10", required: true },
+    { id: "cameras", label: "Camera Count", unit: "", placeholder: "4" },
+    { id: "speakers", label: "Speaker/AV Count", unit: "", placeholder: "6" },
+    { id: "panel", label: "Network Panel", unit: "", placeholder: "Yes / No" },
+  ],
 };
 
 export default function MaterialEstimatorPage() {
   // Trade selection
   const [selectedTrade, setSelectedTrade] = useState("roofing");
   const [tradeMeasurements, setTradeMeasurements] = useState<Record<string, string>>({});
+  const [jobContextType, setJobContextType] = useState("claim");
+
+  // Dynamic items for windows & doors (multiple sizes)
+  const [windowItems, setWindowItems] = useState<DynamicItem[]>([
+    { id: "w1", width: "", height: "", type: "Double Hung", qty: "1" },
+  ]);
+  const [doorItems, setDoorItems] = useState<DynamicItem[]>([
+    { id: "d1", width: "36", height: "80", type: "Entry", qty: "1" },
+  ]);
 
   // Roofing-specific measurements
   const [totalArea, setTotalArea] = useState("");
@@ -246,6 +373,32 @@ export default function MaterialEstimatorPage() {
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [estimatesLoading, setEstimatesLoading] = useState(true);
 
+  // PDF ref
+  const reportRef = useRef<HTMLDivElement>(null);
+
+  // AI Summary toggle
+  const [summaryExpanded, setSummaryExpanded] = useState(true);
+
+  // Scope of Work uploader
+  const [scopeFile, setScopeFile] = useState<File | null>(null);
+  const [scopeParsing, setScopeParsing] = useState(false);
+  const [scopeResult, setScopeResult] = useState<{
+    trade?: string;
+    measurements?: Record<string, string>;
+    lineItems?: Array<{
+      description: string;
+      quantity: string;
+      unit: string;
+      xactimateCode?: string;
+      approvedAmount?: number;
+    }>;
+    carrierName?: string;
+    claimNumber?: string;
+    totalApproved?: number;
+    notes?: string;
+  } | null>(null);
+  const scopeInputRef = useRef<HTMLInputElement>(null);
+
   // ── Fetch saved estimates from DB on mount ────────────────────────────────
   const loadEstimates = useCallback(async () => {
     try {
@@ -264,6 +417,85 @@ export default function MaterialEstimatorPage() {
   useEffect(() => {
     loadEstimates();
   }, [loadEstimates]);
+
+  // ── Handle scope of work file upload ────────────────────────────────────
+  const handleScopeUpload = async (file: File) => {
+    setScopeFile(file);
+    setScopeParsing(true);
+    setScopeResult(null);
+    setError("");
+
+    try {
+      let scopeText = "";
+
+      if (file.type === "text/plain" || file.name.endsWith(".txt")) {
+        scopeText = await file.text();
+      } else if (file.type === "application/pdf" || file.name.endsWith(".pdf")) {
+        // Extract text from PDF using pdf.js
+        const arrayBuffer = await file.arrayBuffer();
+        const pdfjsLib = await import("pdfjs-dist");
+        pdfjsLib.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`;
+        const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+        const pages: string[] = [];
+        for (let i = 1; i <= Math.min(pdf.numPages, 20); i++) {
+          const page = await pdf.getPage(i);
+          const textContent = await page.getTextContent();
+          const pageText = textContent.items
+            .map((item: any) => ("str" in item ? item.str : ""))
+            .join(" ");
+          pages.push(pageText);
+        }
+        scopeText = pages.join("\n\n");
+      } else {
+        // For images or other files, read as base64 text
+        scopeText = `[Uploaded file: ${file.name}, type: ${file.type}, size: ${file.size} bytes. Please provide the scope text manually.]`;
+      }
+
+      if (scopeText.length < 20) {
+        setError("Could not extract enough text from the document. Try a text or PDF file.");
+        setScopeParsing(false);
+        return;
+      }
+
+      const res = await fetch("/api/materials/estimate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "parse-scope", scopeText }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Scope parsing failed");
+
+      const scope = data.scopeData;
+      setScopeResult(scope);
+
+      // Auto-populate trade selector
+      if (scope.trade) {
+        const matched = TRADE_TYPES.find(
+          (t) =>
+            t.value === scope.trade || t.label.toLowerCase().includes(scope.trade.toLowerCase())
+        );
+        if (matched) {
+          handleTradeChange(matched.value);
+        }
+      }
+
+      // Auto-populate measurements
+      if (scope.measurements) {
+        setTradeMeasurements((prev) => ({ ...prev, ...scope.measurements }));
+        // If scope has area and trade is roofing, also set totalArea
+        if (scope.measurements.area && selectedTrade === "roofing") {
+          setTotalArea(scope.measurements.area);
+        }
+      }
+
+      // Auto-set job context to "claim" when uploading a scope
+      setJobContextType("claim");
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "Failed to parse scope document");
+    } finally {
+      setScopeParsing(false);
+    }
+  };
 
   // ── Auto-estimate linear feet from area if user leaves them blank ────────
   function deriveLinearFeet(areaNum: number) {
@@ -307,17 +539,51 @@ export default function MaterialEstimatorPage() {
         // ── All other trades: AI-powered estimation ──
         const tradeConfig = TRADE_TYPES.find((t) => t.value === selectedTrade);
         const measurements = TRADE_MEASUREMENTS[selectedTrade] || [];
-        const requiredField = measurements.find((m) => m.required);
-        if (requiredField && !tradeMeasurements[requiredField.id]) {
-          setError(`Please enter ${requiredField.label}`);
-          setIsLoading(false);
-          return;
+
+        // Build measurement summary — handle dynamic items for windows/doors
+        let measurementSummary = "";
+
+        if (selectedTrade === "windows") {
+          if (windowItems.length === 0 || !windowItems.some((w) => w.width && w.height)) {
+            setError("Add at least one window with width and height");
+            setIsLoading(false);
+            return;
+          }
+          measurementSummary = windowItems
+            .filter((w) => w.width && w.height)
+            .map(
+              (w, i) =>
+                `Window ${i + 1}: ${w.width}"W x ${w.height}"H, Type: ${w.type}, Qty: ${w.qty || 1}`
+            )
+            .join("; ");
+        } else if (selectedTrade === "doors") {
+          if (doorItems.length === 0 || !doorItems.some((d) => d.width && d.height)) {
+            setError("Add at least one door with width and height");
+            setIsLoading(false);
+            return;
+          }
+          measurementSummary = doorItems
+            .filter((d) => d.width && d.height)
+            .map(
+              (d, i) =>
+                `Door ${i + 1}: ${d.width}"W x ${d.height}"H, Type: ${d.type}, Qty: ${d.qty || 1}`
+            )
+            .join("; ");
+        } else {
+          const requiredField = measurements.find((m) => m.required);
+          if (requiredField && !tradeMeasurements[requiredField.id]) {
+            setError(`Please enter ${requiredField.label}`);
+            setIsLoading(false);
+            return;
+          }
+          measurementSummary = measurements
+            .filter((m) => tradeMeasurements[m.id])
+            .map((m) => `${m.label}: ${tradeMeasurements[m.id]}${m.unit ? ` ${m.unit}` : ""}`)
+            .join(", ");
         }
 
-        const measurementSummary = measurements
-          .filter((m) => tradeMeasurements[m.id])
-          .map((m) => `${m.label}: ${tradeMeasurements[m.id]}${m.unit ? ` ${m.unit}` : ""}`)
-          .join(", ");
+        const contextLabel =
+          JOB_CONTEXTS.find((c) => c.value === jobContextType)?.label || "Estimate";
 
         const res = await fetch("/api/materials/estimate", {
           method: "POST",
@@ -325,9 +591,11 @@ export default function MaterialEstimatorPage() {
           body: JSON.stringify({
             action: "ai-estimate",
             trade: selectedTrade,
-            tradeLabel: tradeConfig?.label?.replace(/^[^\s]+\s/, "") || selectedTrade,
+            tradeLabel: tradeConfig?.label || selectedTrade,
             measurements: tradeMeasurements,
             measurementSummary,
+            jobContextType,
+            jobContextLabel: contextLabel,
           }),
         });
         const data = await res.json();
@@ -377,6 +645,8 @@ export default function MaterialEstimatorPage() {
     setEaveLf("");
     setRakeLf("");
     setTradeMeasurements({});
+    setWindowItems([{ id: "w1", width: "", height: "", type: "Double Hung", qty: "1" }]);
+    setDoorItems([{ id: "d1", width: "36", height: "80", type: "Entry", qty: "1" }]);
     setResult(null);
     setError("");
     setRouteStatus("idle");
@@ -518,8 +788,301 @@ export default function MaterialEstimatorPage() {
   };
 
   // ── Derived stats for the results header ─────────────────────────────────
-  const totalSquares = result ? (result.measurements.totalArea / 100).toFixed(1) : null;
   const wasteLabel = result?.wasteFactor ? `${Math.round((result.wasteFactor - 1) * 100)}%` : null;
+
+  // ── Transfer current estimate to localStorage cart ──────────────────────
+  const handleTransferToCart = () => {
+    if (!result) return;
+    try {
+      const existingRaw = localStorage.getItem("skai-material-cart");
+      const existing = existingRaw ? JSON.parse(existingRaw) : [];
+      const newItems = result.materials.map((m) => ({
+        productId: `est-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+        sku: "",
+        name: m.productName,
+        quantity: m.quantity,
+        unitPrice: m.unitPrice,
+        unit: m.unit,
+        imageUrl: "",
+        supplier: "home-depot",
+      }));
+      localStorage.setItem("skai-material-cart", JSON.stringify([...existing, ...newItems]));
+      window.location.href = "/materials/cart";
+    } catch {
+      setError("Failed to transfer to cart");
+    }
+  };
+
+  // ── Download Professional PDF report ─────────────────────────────────────
+  const handleDownloadPDF = async () => {
+    if (!result) return;
+    try {
+      const { jsPDF } = await import("jspdf");
+      const pdf = new jsPDF("p", "mm", "a4");
+      const pageWidth = pdf.internal.pageSize.getWidth();
+      const pageHeight = pdf.internal.pageSize.getHeight();
+      const margin = 15;
+      const contentWidth = pageWidth - margin * 2;
+      let y = margin;
+
+      const tradeLabel =
+        result.tradeLabel ||
+        TRADE_TYPES.find((t) => t.value === selectedTrade)?.label ||
+        selectedTrade;
+      const contextLabel = JOB_CONTEXTS.find((c) => c.value === jobContextType)?.label || "";
+
+      // ── Helper: add footer to each page ──
+      const addFooter = () => {
+        pdf.setFontSize(7);
+        pdf.setTextColor(148, 163, 184);
+        pdf.text(
+          "This estimate is for planning purposes only. Verify all quantities with your supplier before ordering.",
+          margin,
+          pageHeight - 10
+        );
+        pdf.text(
+          `Generated by SkaiScraper  •  ${new Date().toLocaleString()}  •  Page ${pdf.getNumberOfPages()}`,
+          margin,
+          pageHeight - 6
+        );
+        pdf.setDrawColor(226, 232, 240);
+        pdf.line(margin, pageHeight - 14, pageWidth - margin, pageHeight - 14);
+      };
+
+      // ── Helper: check page break ──
+      const checkPageBreak = (needed: number) => {
+        if (y + needed > pageHeight - 20) {
+          addFooter();
+          pdf.addPage();
+          y = margin;
+        }
+      };
+
+      // ── HEADER: Gradient bar ──
+      pdf.setFillColor(30, 41, 59); // slate-900
+      pdf.rect(0, 0, pageWidth, 32, "F");
+      pdf.setFillColor(249, 115, 22); // orange-500 accent bar
+      pdf.rect(0, 32, pageWidth, 2, "F");
+
+      // Title on dark bar
+      pdf.setFontSize(20);
+      pdf.setTextColor(255, 255, 255);
+      pdf.setFont("helvetica", "bold");
+      pdf.text("Material Estimate Report", margin, 16);
+      pdf.setFontSize(10);
+      pdf.setFont("helvetica", "normal");
+      pdf.setTextColor(203, 213, 225); // slate-300
+      pdf.text(
+        `${tradeLabel}  •  ${contextLabel}  •  ${new Date().toLocaleDateString()}`,
+        margin,
+        24
+      );
+
+      y = 42;
+
+      // ── PROJECT SUMMARY BOX ──
+      pdf.setFillColor(248, 250, 252); // slate-50
+      pdf.setDrawColor(226, 232, 240);
+      pdf.roundedRect(margin, y, contentWidth, 24, 3, 3, "FD");
+
+      pdf.setFontSize(8);
+      pdf.setTextColor(100, 116, 139);
+      pdf.setFont("helvetica", "normal");
+      const summaryItems = [
+        { label: "Trade", value: tradeLabel },
+        { label: "Context", value: contextLabel },
+        { label: "Items", value: `${result.materials.length}` },
+        { label: "Waste Factor", value: wasteLabel || "10%" },
+        { label: "Total", value: `$${result.totalCost.toLocaleString()}` },
+      ];
+      const boxColWidth = contentWidth / summaryItems.length;
+      summaryItems.forEach((item, i) => {
+        const xPos = margin + boxColWidth * i + boxColWidth / 2;
+        pdf.setFont("helvetica", "normal");
+        pdf.setFontSize(7);
+        pdf.setTextColor(100, 116, 139);
+        pdf.text(item.label, xPos, y + 9, { align: "center" });
+        pdf.setFont("helvetica", "bold");
+        pdf.setFontSize(10);
+        pdf.setTextColor(30, 41, 59);
+        pdf.text(item.value, xPos, y + 17, { align: "center" });
+      });
+
+      y += 32;
+
+      // ── MATERIALS TABLE ──
+      // Table header
+      pdf.setFillColor(30, 41, 59);
+      pdf.rect(margin, y, contentWidth, 8, "F");
+      pdf.setFontSize(7);
+      pdf.setFont("helvetica", "bold");
+      pdf.setTextColor(255, 255, 255);
+      const cols = {
+        item: margin + 2,
+        qty: margin + 95,
+        unit: margin + 112,
+        unitPrice: margin + 132,
+        total: margin + 158,
+      };
+      pdf.text("Material / Product", cols.item, y + 5.5);
+      pdf.text("Qty", cols.qty, y + 5.5);
+      pdf.text("Unit", cols.unit, y + 5.5);
+      pdf.text("Unit Price", cols.unitPrice, y + 5.5);
+      pdf.text("Total", cols.total, y + 5.5);
+      y += 8;
+
+      // Table rows
+      let currentCategory = "";
+      result.materials.forEach((mat, idx) => {
+        checkPageBreak(14);
+
+        // Category header row
+        if (mat.category && mat.category !== currentCategory) {
+          currentCategory = mat.category;
+          pdf.setFillColor(241, 245, 249); // slate-100
+          pdf.rect(margin, y, contentWidth, 6, "F");
+          pdf.setFontSize(7);
+          pdf.setFont("helvetica", "bold");
+          pdf.setTextColor(71, 85, 105); // slate-600
+          pdf.text(mat.category.toUpperCase(), cols.item, y + 4.2);
+          y += 6;
+          checkPageBreak(10);
+        }
+
+        // Alternating row background
+        if (idx % 2 === 0) {
+          pdf.setFillColor(255, 255, 255);
+        } else {
+          pdf.setFillColor(248, 250, 252);
+        }
+        pdf.rect(margin, y, contentWidth, 8, "F");
+
+        // Row border
+        pdf.setDrawColor(241, 245, 249);
+        pdf.line(margin, y + 8, margin + contentWidth, y + 8);
+
+        pdf.setFontSize(7.5);
+        pdf.setFont("helvetica", "normal");
+        pdf.setTextColor(30, 41, 59);
+
+        // Product name (truncated if too long)
+        const name =
+          mat.productName.length > 50 ? mat.productName.slice(0, 48) + "…" : mat.productName;
+        pdf.text(name, cols.item, y + 5.5);
+
+        pdf.setFont("helvetica", "bold");
+        pdf.text(String(mat.quantity), cols.qty, y + 5.5);
+        pdf.setFont("helvetica", "normal");
+        pdf.setTextColor(100, 116, 139);
+        pdf.text(mat.unit, cols.unit, y + 5.5);
+        pdf.setTextColor(30, 41, 59);
+        pdf.text(`$${mat.unitPrice.toLocaleString()}`, cols.unitPrice, y + 5.5);
+        pdf.setFont("helvetica", "bold");
+        pdf.text(`$${mat.totalPrice.toLocaleString()}`, cols.total, y + 5.5);
+
+        // Coverage note (small)
+        if (mat.coverage) {
+          pdf.setFont("helvetica", "italic");
+          pdf.setFontSize(6);
+          pdf.setTextColor(148, 163, 184);
+          const covText = mat.coverage.length > 60 ? mat.coverage.slice(0, 58) + "…" : mat.coverage;
+          pdf.text(covText, cols.item + 2, y + 8 + 3.5);
+          y += 4; // extra space for coverage line
+        }
+
+        y += 8;
+      });
+
+      // ── TOTAL ROW ──
+      checkPageBreak(14);
+      pdf.setFillColor(249, 115, 22); // orange-500
+      pdf.rect(margin, y + 2, contentWidth, 10, "F");
+      pdf.setFontSize(10);
+      pdf.setFont("helvetica", "bold");
+      pdf.setTextColor(255, 255, 255);
+      pdf.text("ESTIMATED TOTAL", cols.item, y + 9);
+      pdf.setFontSize(12);
+      pdf.text(`$${result.totalCost.toLocaleString()}`, cols.total, y + 9);
+      y += 16;
+
+      // ── AI SUMMARY SECTION ──
+      if (result.aiSummary) {
+        checkPageBreak(30);
+        pdf.setFillColor(239, 246, 255); // blue-50
+        pdf.setDrawColor(59, 130, 246); // blue-500
+        pdf.roundedRect(margin, y, contentWidth, 6, 2, 2, "FD");
+        pdf.setFontSize(9);
+        pdf.setFont("helvetica", "bold");
+        pdf.setTextColor(30, 64, 175); // blue-800
+        pdf.text("AI Analysis & Recommendations", margin + 3, y + 4.3);
+        y += 8;
+
+        pdf.setFont("helvetica", "normal");
+        pdf.setFontSize(7.5);
+        pdf.setTextColor(51, 65, 85); // slate-700
+
+        // Word-wrap the summary
+        const summaryLines = pdf.splitTextToSize(result.aiSummary, contentWidth - 6);
+        for (const line of summaryLines) {
+          checkPageBreak(5);
+          pdf.text(line, margin + 3, y + 3);
+          y += 4;
+        }
+        y += 4;
+      }
+
+      // ── SCOPE OF WORK REFERENCE ──
+      if (scopeResult) {
+        checkPageBreak(20);
+        pdf.setFillColor(240, 253, 244); // green-50
+        pdf.setDrawColor(34, 197, 94); // green-500
+        pdf.roundedRect(margin, y, contentWidth, 6, 2, 2, "FD");
+        pdf.setFontSize(9);
+        pdf.setFont("helvetica", "bold");
+        pdf.setTextColor(22, 101, 52); // green-800
+        pdf.text("Insurance Scope Reference", margin + 3, y + 4.3);
+        y += 8;
+
+        pdf.setFontSize(7.5);
+        pdf.setFont("helvetica", "normal");
+        pdf.setTextColor(51, 65, 85);
+        if (scopeResult.carrierName) {
+          pdf.text(`Carrier: ${scopeResult.carrierName}`, margin + 3, y + 3);
+          y += 5;
+        }
+        if (scopeResult.claimNumber) {
+          pdf.text(`Claim #: ${scopeResult.claimNumber}`, margin + 3, y + 3);
+          y += 5;
+        }
+        if (scopeResult.totalApproved) {
+          pdf.text(
+            `Approved Amount: $${scopeResult.totalApproved.toLocaleString()}`,
+            margin + 3,
+            y + 3
+          );
+          y += 5;
+        }
+        if (scopeResult.notes) {
+          const noteLines = pdf.splitTextToSize(`Notes: ${scopeResult.notes}`, contentWidth - 6);
+          for (const line of noteLines) {
+            checkPageBreak(5);
+            pdf.text(line, margin + 3, y + 3);
+            y += 4;
+          }
+        }
+        y += 4;
+      }
+
+      // Add footer to last page
+      addFooter();
+
+      const filename = `SkaiScraper-Estimate-${tradeLabel.replace(/\s+/g, "-")}-${Date.now()}.pdf`;
+      pdf.save(filename);
+    } catch (err) {
+      console.error("PDF generation failed:", err);
+      setError("PDF download failed — try again");
+    }
+  };
 
   return (
     <PageContainer maxWidth="5xl">
@@ -575,6 +1138,156 @@ export default function MaterialEstimatorPage() {
                 placeholder="Link estimate to a job or claim…"
               />
             </div>
+
+            {/* Job Context Type */}
+            <div className="space-y-2">
+              <Label>Job Context</Label>
+              <Select value={jobContextType} onValueChange={setJobContextType}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {JOB_CONTEXTS.map((c) => (
+                    <SelectItem key={c.value} value={c.value}>
+                      {c.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <p className="text-[11px] text-muted-foreground">
+                {jobContextType === "claim"
+                  ? "Insurance claim — includes Xactimate codes & supplement notes"
+                  : jobContextType === "retail"
+                    ? "Out-of-pocket job — includes good/better/best tiers"
+                    : jobContextType === "lead"
+                      ? "Sales estimate — pricing for proposals & bids"
+                      : "Service/repair — diagnostic + parts breakdown"}
+              </p>
+            </div>
+
+            {/* ── INSURANCE SCOPE OF WORK UPLOADER ── */}
+            {jobContextType === "claim" && (
+              <div className="space-y-3">
+                <Label className="flex items-center gap-2">
+                  <FileText className="h-4 w-4 text-blue-500" />
+                  Insurance Approved Scope of Work
+                </Label>
+                <div
+                  className={`relative flex flex-col items-center justify-center rounded-xl border-2 border-dashed px-4 py-6 text-center transition-all ${
+                    scopeFile
+                      ? "border-green-300 bg-green-50/50 dark:border-green-700 dark:bg-green-900/20"
+                      : "border-slate-300 bg-slate-50/50 hover:border-orange-400 hover:bg-orange-50/30 dark:border-slate-600 dark:bg-slate-800/50 dark:hover:border-orange-600"
+                  }`}
+                  onDragOver={(e) => {
+                    e.preventDefault();
+                    e.currentTarget.classList.add("border-orange-400", "bg-orange-50/30");
+                  }}
+                  onDragLeave={(e) => {
+                    e.currentTarget.classList.remove("border-orange-400", "bg-orange-50/30");
+                  }}
+                  onDrop={(e) => {
+                    e.preventDefault();
+                    e.currentTarget.classList.remove("border-orange-400", "bg-orange-50/30");
+                    const file = e.dataTransfer.files[0];
+                    if (file) handleScopeUpload(file);
+                  }}
+                >
+                  <input
+                    ref={scopeInputRef}
+                    type="file"
+                    accept=".pdf,.txt,.doc,.docx"
+                    className="hidden"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file) handleScopeUpload(file);
+                    }}
+                  />
+                  {scopeParsing ? (
+                    <div className="flex flex-col items-center gap-2">
+                      <Loader2 className="h-8 w-8 animate-spin text-orange-500" />
+                      <p className="text-sm font-medium text-slate-600 dark:text-slate-300">
+                        Parsing scope document with AI…
+                      </p>
+                      <p className="text-xs text-slate-400">
+                        Extracting trades, measurements & line items
+                      </p>
+                    </div>
+                  ) : scopeFile && scopeResult ? (
+                    <div className="w-full space-y-2">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <CheckCircle className="h-5 w-5 text-green-500" />
+                          <span className="text-sm font-medium text-green-700 dark:text-green-400">
+                            Scope parsed successfully
+                          </span>
+                        </div>
+                        <button
+                          onClick={() => {
+                            setScopeFile(null);
+                            setScopeResult(null);
+                            if (scopeInputRef.current) scopeInputRef.current.value = "";
+                          }}
+                          className="rounded-md p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-700"
+                        >
+                          <X className="h-4 w-4" />
+                        </button>
+                      </div>
+                      <p className="text-xs text-slate-500">{scopeFile.name}</p>
+                      <div className="flex flex-wrap gap-1.5">
+                        {scopeResult.trade && (
+                          <Badge variant="secondary" className="text-[10px]">
+                            Trade: {scopeResult.trade}
+                          </Badge>
+                        )}
+                        {scopeResult.carrierName && (
+                          <Badge variant="secondary" className="text-[10px]">
+                            {scopeResult.carrierName}
+                          </Badge>
+                        )}
+                        {scopeResult.claimNumber && (
+                          <Badge variant="secondary" className="text-[10px]">
+                            Claim #{scopeResult.claimNumber}
+                          </Badge>
+                        )}
+                        {scopeResult.totalApproved && (
+                          <Badge className="bg-green-100 text-[10px] text-green-700 dark:bg-green-900/30 dark:text-green-400">
+                            Approved: ${scopeResult.totalApproved.toLocaleString()}
+                          </Badge>
+                        )}
+                        {scopeResult.lineItems && (
+                          <Badge variant="outline" className="text-[10px]">
+                            {scopeResult.lineItems.length} line items
+                          </Badge>
+                        )}
+                      </div>
+                      {scopeResult.notes && (
+                        <p className="mt-1 text-[11px] text-amber-600 dark:text-amber-400">
+                          📋 {scopeResult.notes.slice(0, 150)}
+                          {scopeResult.notes.length > 150 ? "…" : ""}
+                        </p>
+                      )}
+                    </div>
+                  ) : (
+                    <>
+                      <Upload className="mb-2 h-8 w-8 text-slate-400" />
+                      <p className="text-sm font-medium text-slate-600 dark:text-slate-300">
+                        Drop scope document here or{" "}
+                        <button
+                          onClick={() => scopeInputRef.current?.click()}
+                          className="text-orange-600 underline hover:text-orange-700 dark:text-orange-400"
+                        >
+                          browse files
+                        </button>
+                      </p>
+                      <p className="mt-1 text-[11px] text-slate-400">
+                        Upload your insurance-approved scope (PDF or TXT) — AI will auto-extract
+                        trade, measurements & line items
+                      </p>
+                    </>
+                  )}
+                </div>
+              </div>
+            )}
 
             {/* ── ROOFING-SPECIFIC INPUTS ── */}
             {selectedTrade === "roofing" && (
@@ -714,39 +1427,325 @@ export default function MaterialEstimatorPage() {
             )}
 
             {/* ── OTHER TRADES: Dynamic measurements ── */}
-            {selectedTrade !== "roofing" && TRADE_MEASUREMENTS[selectedTrade] && (
+            {selectedTrade !== "roofing" && selectedTrade === "windows" && (
               <div className="space-y-3">
-                <Label className="text-xs font-medium text-muted-foreground">
-                  {TRADE_TYPES.find((t) => t.value === selectedTrade)?.label?.replace(
-                    /^[^\s]+\s/,
-                    ""
-                  )}{" "}
-                  Measurements
-                </Label>
-                <div className="grid grid-cols-2 gap-3">
-                  {TRADE_MEASUREMENTS[selectedTrade].map((field) => (
-                    <div key={field.id} className="space-y-1">
-                      <Label htmlFor={`trade-${field.id}`} className="text-xs">
-                        {field.label} {field.unit && `(${field.unit})`} {field.required && "*"}
-                      </Label>
-                      <Input
-                        id={`trade-${field.id}`}
-                        placeholder={field.placeholder}
-                        value={tradeMeasurements[field.id] || ""}
-                        onChange={(e) =>
-                          setTradeMeasurements((prev) => ({ ...prev, [field.id]: e.target.value }))
-                        }
-                      />
+                <div className="flex items-center justify-between">
+                  <Label className="text-xs font-medium text-muted-foreground">
+                    Windows — Add each size separately
+                  </Label>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() =>
+                      setWindowItems((prev) => [
+                        ...prev,
+                        {
+                          id: `w${Date.now()}`,
+                          width: "",
+                          height: "",
+                          type: "Double Hung",
+                          qty: "1",
+                        },
+                      ])
+                    }
+                  >
+                    <Plus className="mr-1 h-3 w-3" /> Add Window
+                  </Button>
+                </div>
+                <div className="space-y-2">
+                  {windowItems.map((item, idx) => (
+                    <div
+                      key={item.id}
+                      className="flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50/50 p-2.5 dark:border-slate-700 dark:bg-slate-800/50"
+                    >
+                      <span className="w-5 shrink-0 text-xs font-medium text-muted-foreground">
+                        {idx + 1}
+                      </span>
+                      <div className="grid flex-1 grid-cols-4 gap-2">
+                        <div className="space-y-0.5">
+                          <Label className="text-[10px]">Width (in)</Label>
+                          <Input
+                            placeholder="36"
+                            value={item.width}
+                            onChange={(e) =>
+                              setWindowItems((prev) =>
+                                prev.map((w) =>
+                                  w.id === item.id ? { ...w, width: e.target.value } : w
+                                )
+                              )
+                            }
+                            className="h-8 text-sm"
+                          />
+                        </div>
+                        <div className="space-y-0.5">
+                          <Label className="text-[10px]">Height (in)</Label>
+                          <Input
+                            placeholder="60"
+                            value={item.height}
+                            onChange={(e) =>
+                              setWindowItems((prev) =>
+                                prev.map((w) =>
+                                  w.id === item.id ? { ...w, height: e.target.value } : w
+                                )
+                              )
+                            }
+                            className="h-8 text-sm"
+                          />
+                        </div>
+                        <div className="space-y-0.5">
+                          <Label className="text-[10px]">Type</Label>
+                          <Select
+                            value={item.type}
+                            onValueChange={(v) =>
+                              setWindowItems((prev) =>
+                                prev.map((w) => (w.id === item.id ? { ...w, type: v } : w))
+                              )
+                            }
+                          >
+                            <SelectTrigger className="h-8 text-sm">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {[
+                                "Double Hung",
+                                "Single Hung",
+                                "Casement",
+                                "Sliding",
+                                "Picture",
+                                "Bay",
+                                "Awning",
+                                "Egress",
+                              ].map((t) => (
+                                <SelectItem key={t} value={t}>
+                                  {t}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div className="space-y-0.5">
+                          <Label className="text-[10px]">Qty</Label>
+                          <Input
+                            placeholder="1"
+                            type="number"
+                            min="1"
+                            value={item.qty}
+                            onChange={(e) =>
+                              setWindowItems((prev) =>
+                                prev.map((w) =>
+                                  w.id === item.id ? { ...w, qty: e.target.value } : w
+                                )
+                              )
+                            }
+                            className="h-8 text-sm"
+                          />
+                        </div>
+                      </div>
+                      {windowItems.length > 1 && (
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setWindowItems((prev) => prev.filter((w) => w.id !== item.id))
+                          }
+                          className="shrink-0 rounded p-1 text-slate-400 hover:bg-red-50 hover:text-red-500"
+                        >
+                          <X className="h-3.5 w-3.5" />
+                        </button>
+                      )}
                     </div>
                   ))}
                 </div>
-                <div className="flex items-start gap-2 rounded-lg border border-blue-200 bg-blue-50/60 p-2.5 dark:border-blue-900 dark:bg-blue-950/30">
-                  <span className="text-sm">🤖</span>
-                  <p className="text-[11px] text-blue-700 dark:text-blue-300">
-                    AI-powered estimation — materials, quantities, and pricing are estimated using
-                    industry standards. Verify with your supplier before ordering.
-                  </p>
+                <p className="text-[11px] text-muted-foreground">
+                  Total: {windowItems.reduce((sum, w) => sum + (Number(w.qty) || 1), 0)} window
+                  {windowItems.reduce((sum, w) => sum + (Number(w.qty) || 1), 0) !== 1 ? "s" : ""}
+                </p>
+              </div>
+            )}
+
+            {selectedTrade !== "roofing" && selectedTrade === "doors" && (
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <Label className="text-xs font-medium text-muted-foreground">
+                    Doors — Add each size and type separately
+                  </Label>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() =>
+                      setDoorItems((prev) => [
+                        ...prev,
+                        {
+                          id: `d${Date.now()}`,
+                          width: "36",
+                          height: "80",
+                          type: "Entry",
+                          qty: "1",
+                        },
+                      ])
+                    }
+                  >
+                    <Plus className="mr-1 h-3 w-3" /> Add Door
+                  </Button>
                 </div>
+                <div className="space-y-2">
+                  {doorItems.map((item, idx) => (
+                    <div
+                      key={item.id}
+                      className="flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50/50 p-2.5 dark:border-slate-700 dark:bg-slate-800/50"
+                    >
+                      <span className="w-5 shrink-0 text-xs font-medium text-muted-foreground">
+                        {idx + 1}
+                      </span>
+                      <div className="grid flex-1 grid-cols-4 gap-2">
+                        <div className="space-y-0.5">
+                          <Label className="text-[10px]">Width (in)</Label>
+                          <Input
+                            placeholder="36"
+                            value={item.width}
+                            onChange={(e) =>
+                              setDoorItems((prev) =>
+                                prev.map((d) =>
+                                  d.id === item.id ? { ...d, width: e.target.value } : d
+                                )
+                              )
+                            }
+                            className="h-8 text-sm"
+                          />
+                        </div>
+                        <div className="space-y-0.5">
+                          <Label className="text-[10px]">Height (in)</Label>
+                          <Input
+                            placeholder="80"
+                            value={item.height}
+                            onChange={(e) =>
+                              setDoorItems((prev) =>
+                                prev.map((d) =>
+                                  d.id === item.id ? { ...d, height: e.target.value } : d
+                                )
+                              )
+                            }
+                            className="h-8 text-sm"
+                          />
+                        </div>
+                        <div className="space-y-0.5">
+                          <Label className="text-[10px]">Type</Label>
+                          <Select
+                            value={item.type}
+                            onValueChange={(v) =>
+                              setDoorItems((prev) =>
+                                prev.map((d) => (d.id === item.id ? { ...d, type: v } : d))
+                              )
+                            }
+                          >
+                            <SelectTrigger className="h-8 text-sm">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {[
+                                "Entry",
+                                "Interior",
+                                "Patio / Sliding Glass",
+                                "French",
+                                "Storm",
+                                "Garage Entry",
+                                "Barn",
+                                "Pocket",
+                                "Bifold",
+                              ].map((t) => (
+                                <SelectItem key={t} value={t}>
+                                  {t}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div className="space-y-0.5">
+                          <Label className="text-[10px]">Qty</Label>
+                          <Input
+                            placeholder="1"
+                            type="number"
+                            min="1"
+                            value={item.qty}
+                            onChange={(e) =>
+                              setDoorItems((prev) =>
+                                prev.map((d) =>
+                                  d.id === item.id ? { ...d, qty: e.target.value } : d
+                                )
+                              )
+                            }
+                            className="h-8 text-sm"
+                          />
+                        </div>
+                      </div>
+                      {doorItems.length > 1 && (
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setDoorItems((prev) => prev.filter((d) => d.id !== item.id))
+                          }
+                          className="shrink-0 rounded p-1 text-slate-400 hover:bg-red-50 hover:text-red-500"
+                        >
+                          <X className="h-3.5 w-3.5" />
+                        </button>
+                      )}
+                    </div>
+                  ))}
+                </div>
+                <p className="text-[11px] text-muted-foreground">
+                  Total: {doorItems.reduce((sum, d) => sum + (Number(d.qty) || 1), 0)} door
+                  {doorItems.reduce((sum, d) => sum + (Number(d.qty) || 1), 0) !== 1 ? "s" : ""}
+                </p>
+              </div>
+            )}
+
+            {selectedTrade !== "roofing" &&
+              selectedTrade !== "windows" &&
+              selectedTrade !== "doors" &&
+              TRADE_MEASUREMENTS[selectedTrade] && (
+                <div className="space-y-3">
+                  <Label className="text-xs font-medium text-muted-foreground">
+                    {TRADE_TYPES.find((t) => t.value === selectedTrade)?.label} Measurements
+                  </Label>
+                  <div className="grid grid-cols-2 gap-3">
+                    {TRADE_MEASUREMENTS[selectedTrade].map((field) => (
+                      <div key={field.id} className="space-y-1">
+                        <Label htmlFor={`trade-${field.id}`} className="text-xs">
+                          {field.label} {field.unit && `(${field.unit})`} {field.required && "*"}
+                        </Label>
+                        <Input
+                          id={`trade-${field.id}`}
+                          placeholder={field.placeholder}
+                          value={tradeMeasurements[field.id] || ""}
+                          onChange={(e) =>
+                            setTradeMeasurements((prev) => ({
+                              ...prev,
+                              [field.id]: e.target.value,
+                            }))
+                          }
+                        />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+            {/* AI Notice */}
+            {selectedTrade !== "roofing" && (
+              <div className="flex items-start gap-2 rounded-lg border border-blue-200 bg-blue-50/60 p-2.5 dark:border-blue-900 dark:bg-blue-950/30">
+                <Badge
+                  variant="outline"
+                  className="mt-0.5 shrink-0 border-blue-300 text-blue-600 dark:border-blue-700 dark:text-blue-400"
+                >
+                  AI
+                </Badge>
+                <p className="text-[11px] text-blue-700 dark:text-blue-300">
+                  AI-powered estimation using GPT-4o — materials, quantities, and pricing are
+                  estimated using industry standards for{" "}
+                  <strong>{JOB_CONTEXTS.find((c) => c.value === jobContextType)?.label}</strong>{" "}
+                  context. Verify with your supplier before ordering.
+                </p>
               </div>
             )}
 
@@ -783,59 +1782,172 @@ export default function MaterialEstimatorPage() {
             </CardTitle>
             <CardDescription>
               {result
-                ? `${totalSquares} squares • ${wasteLabel} waste • ${pitch} pitch`
+                ? `${result.tradeLabel || TRADE_TYPES.find((t) => t.value === selectedTrade)?.label || selectedTrade} — ${result.materials.length} items`
                 : "Enter measurements and click Calculate"}
             </CardDescription>
           </CardHeader>
           <CardContent>
             {result ? (
               <div className="space-y-4">
-                <div className="divide-y divide-slate-100 rounded-lg border border-slate-200 dark:divide-slate-800 dark:border-slate-700">
-                  {result.materials.map((mat, idx) => (
-                    <div key={idx} className="flex items-center justify-between px-4 py-3">
-                      <div>
-                        <p className="font-medium text-slate-900 dark:text-white">
-                          {mat.productName}
-                        </p>
-                        <p className="text-xs text-slate-500">
-                          {mat.category}
-                          {mat.coverage ? ` • ${mat.coverage}` : ""}
-                        </p>
-                      </div>
-                      <div className="text-right">
-                        <span className="text-lg font-bold text-slate-900 dark:text-white">
-                          {mat.quantity}
-                        </span>
-                        <span className="ml-1 text-sm text-slate-500">{mat.unit}</span>
-                        <p className="text-xs text-slate-400">${mat.totalPrice.toLocaleString()}</p>
-                      </div>
+                {/* PDF-capturable report area */}
+                <div ref={reportRef} className="space-y-4 bg-white p-1 dark:bg-slate-900">
+                  {/* Trade & Context badge row */}
+                  <div className="flex flex-wrap items-center gap-2">
+                    <Badge className="bg-orange-100 text-orange-700 dark:bg-orange-900/40 dark:text-orange-300">
+                      {result.tradeLabel ||
+                        TRADE_TYPES.find((t) => t.value === selectedTrade)?.label}
+                    </Badge>
+                    <Badge variant="outline">
+                      {JOB_CONTEXTS.find((c) => c.value === jobContextType)?.label}
+                    </Badge>
+                    {result.method && (
+                      <Badge
+                        variant="outline"
+                        className="border-blue-300 text-blue-600 dark:border-blue-700 dark:text-blue-400"
+                      >
+                        {result.method}
+                      </Badge>
+                    )}
+                    {wasteLabel && (
+                      <Badge variant="outline" className="text-muted-foreground">
+                        {wasteLabel} waste
+                      </Badge>
+                    )}
+                  </div>
+
+                  {/* Materials table */}
+                  <div className="divide-y divide-slate-100 rounded-lg border border-slate-200 dark:divide-slate-800 dark:border-slate-700">
+                    {/* Table header */}
+                    <div className="grid grid-cols-12 gap-2 px-4 py-2 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
+                      <span className="col-span-5">Product</span>
+                      <span className="col-span-2 text-right">Qty</span>
+                      <span className="col-span-2 text-right">Unit Price</span>
+                      <span className="col-span-3 text-right">Total</span>
                     </div>
-                  ))}
+                    {result.materials.map((mat, idx) => (
+                      <div key={idx} className="grid grid-cols-12 items-center gap-2 px-4 py-3">
+                        <div className="col-span-5">
+                          <p className="text-sm font-medium text-slate-900 dark:text-white">
+                            {mat.productName}
+                          </p>
+                          <p className="text-[11px] text-slate-500">
+                            {mat.category}
+                            {mat.coverage ? ` — ${mat.coverage}` : ""}
+                          </p>
+                        </div>
+                        <div className="col-span-2 text-right">
+                          <span className="font-semibold text-slate-900 dark:text-white">
+                            {mat.quantity}
+                          </span>
+                          <span className="ml-1 text-xs text-slate-500">{mat.unit}</span>
+                        </div>
+                        <div className="col-span-2 text-right text-sm text-slate-600 dark:text-slate-400">
+                          ${mat.unitPrice.toLocaleString()}
+                        </div>
+                        <div className="col-span-3 text-right text-sm font-semibold text-slate-900 dark:text-white">
+                          ${mat.totalPrice.toLocaleString()}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Total Cost */}
+                  <div className="flex items-center justify-between rounded-lg bg-gradient-to-r from-slate-50 to-slate-100 px-4 py-3 dark:from-slate-800/60 dark:to-slate-800/40">
+                    <span className="flex items-center gap-2 font-semibold text-slate-700 dark:text-slate-200">
+                      <DollarSign className="h-4 w-4" />
+                      Estimated Total
+                    </span>
+                    <span className="text-2xl font-bold text-slate-900 dark:text-white">
+                      ${result.totalCost.toLocaleString()}
+                    </span>
+                  </div>
                 </div>
 
-                {/* Total Cost */}
-                <div className="flex items-center justify-between rounded-lg bg-slate-50 px-4 py-3 dark:bg-slate-800/60">
-                  <span className="flex items-center gap-2 font-semibold text-slate-700 dark:text-slate-200">
-                    <DollarSign className="h-4 w-4" />
-                    Estimated Total
-                  </span>
-                  <span className="text-xl font-bold text-slate-900 dark:text-white">
-                    ${result.totalCost.toLocaleString()}
-                  </span>
-                </div>
+                {/* ── AI SUMMARY / ANALYSIS BOX ── */}
+                {result.aiSummary && (
+                  <div className="overflow-hidden rounded-xl border border-blue-200 bg-gradient-to-br from-blue-50/80 to-indigo-50/60 dark:border-blue-800 dark:from-blue-950/40 dark:to-indigo-950/30">
+                    <button
+                      onClick={() => setSummaryExpanded(!summaryExpanded)}
+                      className="flex w-full items-center justify-between px-4 py-3 text-left transition-colors hover:bg-blue-100/50 dark:hover:bg-blue-900/30"
+                    >
+                      <div className="flex items-center gap-2">
+                        <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-blue-100 dark:bg-blue-900/50">
+                          <Sparkles className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                        </div>
+                        <div>
+                          <h3 className="text-sm font-semibold text-blue-900 dark:text-blue-100">
+                            AI Analysis & Recommendations
+                          </h3>
+                          <p className="text-[11px] text-blue-600/70 dark:text-blue-400/60">
+                            Powered by GPT-4o
+                          </p>
+                        </div>
+                      </div>
+                      {summaryExpanded ? (
+                        <ChevronUp className="h-4 w-4 text-blue-500" />
+                      ) : (
+                        <ChevronDown className="h-4 w-4 text-blue-500" />
+                      )}
+                    </button>
+                    {summaryExpanded && (
+                      <div className="border-t border-blue-200/60 px-4 pb-4 pt-3 dark:border-blue-800/40">
+                        <div className="prose prose-sm max-w-none text-slate-700 dark:text-slate-300">
+                          {result.aiSummary.split("\n").map((paragraph, i) =>
+                            paragraph.trim() ? (
+                              <p key={i} className="mb-2 text-[13px] leading-relaxed">
+                                {paragraph}
+                              </p>
+                            ) : null
+                          )}
+                        </div>
+                        {/* Scope reference if available */}
+                        {scopeResult && scopeResult.totalApproved && (
+                          <div className="mt-3 flex items-center gap-2 rounded-lg bg-green-50 px-3 py-2 dark:bg-green-900/20">
+                            <FileText className="h-4 w-4 text-green-600 dark:text-green-400" />
+                            <span className="text-xs text-green-700 dark:text-green-300">
+                              Insurance approved: ${scopeResult.totalApproved.toLocaleString()}
+                              {scopeResult.totalApproved &&
+                                result.totalCost > scopeResult.totalApproved && (
+                                  <span className="ml-1 font-semibold text-amber-600 dark:text-amber-400">
+                                    — Estimate exceeds approved amount by $
+                                    {(
+                                      result.totalCost - scopeResult.totalApproved
+                                    ).toLocaleString()}{" "}
+                                    (supplement opportunity)
+                                  </span>
+                                )}
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                )}
 
                 {/* Actions row */}
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+                  <Button
+                    onClick={handleTransferToCart}
+                    className="bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700"
+                  >
+                    <ShoppingCart className="mr-2 h-4 w-4" />
+                    Add to Cart
+                  </Button>
+                  <Button onClick={handleDownloadPDF} variant="outline">
+                    <Download className="mr-2 h-4 w-4" />
+                    PDF Report
+                  </Button>
                   <Button
                     onClick={handleRouteToABC}
                     disabled={routeStatus !== "idle"}
-                    className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700"
+                    variant="outline"
+                    className="border-orange-300 text-orange-600 hover:bg-orange-50 dark:border-orange-700 dark:text-orange-400"
                   >
                     {routeStatus === "routing" ? (
                       "Routing..."
                     ) : routeStatus === "routed" ? (
                       <>
-                        <Truck className="mr-2 h-4 w-4" />✅ Routed
+                        <Truck className="mr-2 h-4 w-4" /> Routed
                       </>
                     ) : (
                       <>
@@ -857,7 +1969,7 @@ export default function MaterialEstimatorPage() {
                     ) : (
                       <>
                         <Bookmark className="mr-2 h-4 w-4" />
-                        Save Estimate
+                        Save
                       </>
                     )}
                   </Button>
