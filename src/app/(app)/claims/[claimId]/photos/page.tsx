@@ -31,6 +31,7 @@ import {
 } from "@/components/ui/dialog";
 import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Textarea } from "@/components/ui/textarea";
 import { ClaimPhotoUploadWithAnalysis } from "@/components/uploads/ClaimPhotoUploadWithAnalysis";
 import { logger } from "@/lib/logger";
 import { toast } from "sonner";
