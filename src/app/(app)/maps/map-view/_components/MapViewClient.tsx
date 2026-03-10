@@ -4,20 +4,24 @@ import "mapbox-gl/dist/mapbox-gl.css";
 
 import {
   ChevronRight,
+  Crosshair,
   DoorOpen,
   ExternalLink,
   Layers,
+  Loader2,
   MapPin,
+  Navigation,
   Pencil,
   Search,
   X,
 } from "lucide-react";
 import Link from "next/link";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
 import { logger } from "@/lib/logger";
 
 /* ───── types ───── */
@@ -92,6 +96,20 @@ export default function MapViewClient({ markers, initialCenter }: MapViewClientP
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedMarker, setSelectedMarker] = useState<JobMarker | null>(null);
 
+  // Address search state
+  const [addressSearch, setAddressSearch] = useState("");
+  const [addressResults, setAddressResults] = useState<
+    Array<{ place_name: string; center: [number, number] }>
+  >([]);
+  const [addressSearching, setAddressSearching] = useState(false);
+
+  // GPS tracking state
+  const [gpsEnabled, setGpsEnabled] = useState(false);
+  const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
+  const [gpsError, setGpsError] = useState<string | null>(null);
+  const userMarkerRef = useRef<any>(null);
+  const gpsWatchRef = useRef<number | null>(null);
+
   // Map refs
   const mapContainer = useRef<HTMLDivElement>(null);
   const mapRef = useRef<any>(null);
@@ -138,6 +156,123 @@ export default function MapViewClient({ markers, initialCenter }: MapViewClientP
       return next;
     });
   };
+
+  /* ───── address search (forward geocoding) ───── */
+  const searchAddressForMap = useCallback(async (query: string) => {
+    if (!query || query.length < 3) {
+      setAddressResults([]);
+      return;
+    }
+    const token =
+      process.env.NEXT_PUBLIC_MAPBOX_TOKEN ||
+      process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN ||
+      process.env.NEXT_PUBLIC_MAPBOXGL_ACCESS_TOKEN;
+    if (!token) return;
+
+    try {
+      setAddressSearching(true);
+      const res = await fetch(
+        `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(query)}.json?country=us&types=address,place,neighborhood&limit=5&access_token=${token}`
+      );
+      const json = await res.json();
+      setAddressResults(json.features || []);
+    } catch (err) {
+      logger.error("[MapView] Search error:", err);
+      setAddressResults([]);
+    } finally {
+      setAddressSearching(false);
+    }
+  }, []);
+
+  const goToSearchedAddress = useCallback((center: [number, number], placeName: string) => {
+    setAddressResults([]);
+    setAddressSearch(placeName.split(",")[0] || "");
+    mapRef.current?.flyTo({ center, zoom: 17, duration: 1500 });
+  }, []);
+
+  /* ───── GPS tracking ───── */
+  const startGpsTracking = useCallback(() => {
+    if (!navigator.geolocation) {
+      setGpsError("Geolocation not supported by your browser");
+      return;
+    }
+
+    setGpsEnabled(true);
+    setGpsError(null);
+
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        const { latitude, longitude } = pos.coords;
+        setUserLocation({ lat: latitude, lng: longitude });
+        mapRef.current?.flyTo({ center: [longitude, latitude], zoom: 16, duration: 1000 });
+      },
+      (err) => {
+        setGpsError(err.message);
+        setGpsEnabled(false);
+      },
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 5000 }
+    );
+
+    gpsWatchRef.current = navigator.geolocation.watchPosition(
+      (pos) => {
+        const { latitude, longitude } = pos.coords;
+        setUserLocation({ lat: latitude, lng: longitude });
+      },
+      (err) => {
+        logger.error("[GPS] Watch error:", err);
+      },
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 2000 }
+    );
+  }, []);
+
+  const stopGpsTracking = useCallback(() => {
+    if (gpsWatchRef.current !== null) {
+      navigator.geolocation.clearWatch(gpsWatchRef.current);
+      gpsWatchRef.current = null;
+    }
+    setGpsEnabled(false);
+    setUserLocation(null);
+    userMarkerRef.current?.remove();
+    userMarkerRef.current = null;
+  }, []);
+
+  // Update user location marker on map
+  useEffect(() => {
+    if (!mapRef.current || !mapboxRef.current || !userLocation) return;
+
+    userMarkerRef.current?.remove();
+
+    const el = document.createElement("div");
+    el.innerHTML = `
+      <div style="
+        width: 20px; height: 20px; background: #3b82f6;
+        border-radius: 50%; border: 3px solid white;
+        box-shadow: 0 0 0 8px rgba(59,130,246,0.3), 0 2px 8px rgba(0,0,0,0.3);
+        animation: pulse 2s infinite;
+      "></div>
+      <style>
+        @keyframes pulse {
+          0% { box-shadow: 0 0 0 0 rgba(59,130,246,0.5), 0 2px 8px rgba(0,0,0,0.3); }
+          70% { box-shadow: 0 0 0 15px rgba(59,130,246,0), 0 2px 8px rgba(0,0,0,0.3); }
+          100% { box-shadow: 0 0 0 0 rgba(59,130,246,0), 0 2px 8px rgba(0,0,0,0.3); }
+        }
+      </style>
+    `;
+    el.title = "Your Location";
+
+    userMarkerRef.current = new mapboxRef.current.Marker({ element: el, anchor: "center" })
+      .setLngLat([userLocation.lng, userLocation.lat])
+      .addTo(mapRef.current);
+  }, [userLocation]);
+
+  // Cleanup GPS on unmount
+  useEffect(() => {
+    return () => {
+      if (gpsWatchRef.current !== null) {
+        navigator.geolocation.clearWatch(gpsWatchRef.current);
+      }
+    };
+  }, []);
 
   /* ───── map init ───── */
   useEffect(() => {
@@ -299,14 +434,92 @@ export default function MapViewClient({ markers, initialCenter }: MapViewClientP
           </CardContent>
         </Card>
 
-        {/* Search */}
+        {/* Address Search */}
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="flex items-center gap-2 text-sm font-semibold">
+              <Navigation className="h-4 w-4 text-emerald-500" />
+              Go to Address
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-2">
+            <div className="relative">
+              <Search className="absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
+              <Input
+                type="text"
+                value={addressSearch}
+                onChange={(e) => {
+                  setAddressSearch(e.target.value);
+                  searchAddressForMap(e.target.value);
+                }}
+                placeholder="Enter an address..."
+                className="h-8 pl-8 pr-8 text-xs"
+              />
+              {addressSearching && (
+                <Loader2 className="absolute right-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 animate-spin text-muted-foreground" />
+              )}
+            </div>
+            {/* Address Results */}
+            {addressResults.length > 0 && (
+              <div className="max-h-32 overflow-y-auto rounded-lg border bg-background">
+                {addressResults.map((result) => (
+                  <button
+                    key={result.id}
+                    onClick={() => goToSearchedAddress(result)}
+                    className="w-full border-b px-2.5 py-1.5 text-left text-xs hover:bg-muted/50 last:border-b-0"
+                  >
+                    <p className="font-medium">{result.text}</p>
+                    <p className="text-muted-foreground truncate">{result.place_name}</p>
+                  </button>
+                ))}
+              </div>
+            )}
+            {/* GPS Toggle + Center */}
+            <div className="flex items-center gap-2">
+              <Button
+                variant={gpsEnabled ? "default" : "outline"}
+                size="sm"
+                onClick={gpsEnabled ? stopGpsTracking : startGpsTracking}
+                className="flex-1 text-xs"
+              >
+                {gpsEnabled ? (
+                  <>
+                    <Crosshair className="mr-1.5 h-3.5 w-3.5 animate-pulse" />
+                    GPS Active
+                  </>
+                ) : (
+                  <>
+                    <Navigation className="mr-1.5 h-3.5 w-3.5" />
+                    Enable GPS
+                  </>
+                )}
+              </Button>
+              {gpsEnabled && userLocation && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => mapRef.current?.flyTo({ center: userLocation, zoom: 16, duration: 800 })}
+                  className="text-xs"
+                >
+                  <Crosshair className="mr-1.5 h-3.5 w-3.5" />
+                  Center
+                </Button>
+              )}
+            </div>
+            {gpsError && (
+              <p className="text-xs text-red-500">{gpsError}</p>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Filter Search */}
         <div className="relative">
           <Search className="absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
           <input
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search locations…"
+            placeholder="Filter locations…"
             className="w-full rounded-lg border bg-background py-2 pl-8 pr-8 text-xs"
           />
           {searchQuery && (

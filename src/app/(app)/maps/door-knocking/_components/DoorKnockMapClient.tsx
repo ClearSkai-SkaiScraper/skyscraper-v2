@@ -102,6 +102,20 @@ export default function DoorKnockMapClient() {
   const [filterArea, setFilterArea] = useState<string>("");
   const [filterOutcome, setFilterOutcome] = useState<string>("");
 
+  // Address search
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchResults, setSearchResults] = useState<
+    Array<{ place_name: string; center: [number, number] }>
+  >([]);
+  const [searching, setSearching] = useState(false);
+
+  // GPS tracking
+  const [gpsEnabled, setGpsEnabled] = useState(false);
+  const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
+  const [gpsError, setGpsError] = useState<string | null>(null);
+  const userMarkerRef = useRef<any>(null);
+  const gpsWatchRef = useRef<number | null>(null);
+
   // New pin form
   const [showForm, setShowForm] = useState(false);
   const [editingPin, setEditingPin] = useState<CanvassPin | null>(null);
@@ -173,6 +187,127 @@ export default function DoorKnockMapClient() {
     } finally {
       setGeocoding(false);
     }
+  }, []);
+
+  /* ───── address search (forward geocoding) ───── */
+  const searchAddress = useCallback(async (query: string) => {
+    if (!query || query.length < 3) {
+      setSearchResults([]);
+      return;
+    }
+    const token =
+      process.env.NEXT_PUBLIC_MAPBOX_TOKEN ||
+      process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN ||
+      process.env.NEXT_PUBLIC_MAPBOXGL_ACCESS_TOKEN;
+    if (!token) return;
+
+    try {
+      setSearching(true);
+      const res = await fetch(
+        `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(query)}.json?country=us&types=address,place,neighborhood&limit=5&access_token=${token}`
+      );
+      const json = await res.json();
+      setSearchResults(json.features || []);
+    } catch (err) {
+      logger.error("[DoorKnockMap] Search error:", err);
+      setSearchResults([]);
+    } finally {
+      setSearching(false);
+    }
+  }, []);
+
+  const goToAddress = useCallback((center: [number, number], placeName: string) => {
+    setSearchResults([]);
+    setSearchQuery(placeName.split(",")[0] || "");
+    mapRef.current?.flyTo({ center, zoom: 17, duration: 1500 });
+  }, []);
+
+  /* ───── GPS tracking ───── */
+  const startGpsTracking = useCallback(() => {
+    if (!navigator.geolocation) {
+      setGpsError("Geolocation not supported by your browser");
+      return;
+    }
+
+    setGpsEnabled(true);
+    setGpsError(null);
+
+    // Get initial position
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        const { latitude, longitude } = pos.coords;
+        setUserLocation({ lat: latitude, lng: longitude });
+        mapRef.current?.flyTo({ center: [longitude, latitude], zoom: 16, duration: 1000 });
+      },
+      (err) => {
+        setGpsError(err.message);
+        setGpsEnabled(false);
+      },
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 5000 }
+    );
+
+    // Watch position for live updates
+    gpsWatchRef.current = navigator.geolocation.watchPosition(
+      (pos) => {
+        const { latitude, longitude } = pos.coords;
+        setUserLocation({ lat: latitude, lng: longitude });
+      },
+      (err) => {
+        logger.error("[GPS] Watch error:", err);
+      },
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 2000 }
+    );
+  }, []);
+
+  const stopGpsTracking = useCallback(() => {
+    if (gpsWatchRef.current !== null) {
+      navigator.geolocation.clearWatch(gpsWatchRef.current);
+      gpsWatchRef.current = null;
+    }
+    setGpsEnabled(false);
+    setUserLocation(null);
+    userMarkerRef.current?.remove();
+    userMarkerRef.current = null;
+  }, []);
+
+  // Update user location marker on map
+  useEffect(() => {
+    if (!mapRef.current || !mapboxRef.current || !userLocation) return;
+
+    // Remove existing user marker
+    userMarkerRef.current?.remove();
+
+    // Create user location marker (blue pulsing dot)
+    const el = document.createElement("div");
+    el.innerHTML = `
+      <div style="
+        width: 20px; height: 20px; background: #3b82f6;
+        border-radius: 50%; border: 3px solid white;
+        box-shadow: 0 0 0 8px rgba(59,130,246,0.3), 0 2px 8px rgba(0,0,0,0.3);
+        animation: pulse 2s infinite;
+      "></div>
+      <style>
+        @keyframes pulse {
+          0% { box-shadow: 0 0 0 0 rgba(59,130,246,0.5), 0 2px 8px rgba(0,0,0,0.3); }
+          70% { box-shadow: 0 0 0 15px rgba(59,130,246,0), 0 2px 8px rgba(0,0,0,0.3); }
+          100% { box-shadow: 0 0 0 0 rgba(59,130,246,0), 0 2px 8px rgba(0,0,0,0.3); }
+        }
+      </style>
+    `;
+    el.title = "Your Location";
+
+    userMarkerRef.current = new mapboxRef.current.Marker({ element: el, anchor: "center" })
+      .setLngLat([userLocation.lng, userLocation.lat])
+      .addTo(mapRef.current);
+  }, [userLocation]);
+
+  // Cleanup GPS on unmount
+  useEffect(() => {
+    return () => {
+      if (gpsWatchRef.current !== null) {
+        navigator.geolocation.clearWatch(gpsWatchRef.current);
+      }
+    };
   }, []);
 
   /* ───── data fetching ───── */
@@ -404,6 +539,82 @@ export default function DoorKnockMapClient() {
     <div className="flex h-[calc(100vh-8rem)] flex-col gap-4 lg:flex-row">
       {/* ─── Sidebar ─── */}
       <div className="flex w-full flex-col gap-3 overflow-y-auto lg:w-80">
+        {/* Address Search */}
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="flex items-center gap-2 text-xs font-semibold">
+              <Search className="h-3.5 w-3.5" /> Search Address
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-2">
+            <div className="relative">
+              <Input
+                placeholder="Enter an address..."
+                value={searchQuery}
+                onChange={(e) => {
+                  setSearchQuery(e.target.value);
+                  searchAddress(e.target.value);
+                }}
+                className="pr-8 text-xs"
+              />
+              {searching && (
+                <Loader2 className="absolute right-2 top-2.5 h-3.5 w-3.5 animate-spin text-muted-foreground" />
+              )}
+            </div>
+            {searchResults.length > 0 && (
+              <div className="max-h-40 overflow-y-auto rounded-md border bg-background">
+                {searchResults.map((result, i) => (
+                  <button
+                    key={i}
+                    onClick={() => goToAddress(result.center, result.place_name)}
+                    className="flex w-full items-center gap-2 px-2 py-1.5 text-left text-xs hover:bg-accent"
+                  >
+                    <MapPin className="h-3 w-3 shrink-0 text-muted-foreground" />
+                    <span className="truncate">{result.place_name}</span>
+                  </button>
+                ))}
+              </div>
+            )}
+            {/* GPS Tracking Button */}
+            <Button
+              onClick={gpsEnabled ? stopGpsTracking : startGpsTracking}
+              variant={gpsEnabled ? "default" : "outline"}
+              size="sm"
+              className="w-full"
+            >
+              {gpsEnabled ? (
+                <>
+                  <Navigation className="mr-1.5 h-3.5 w-3.5 animate-pulse" />
+                  Tracking Your Location
+                </>
+              ) : (
+                <>
+                  <Crosshair className="mr-1.5 h-3.5 w-3.5" />
+                  Enable GPS Tracking
+                </>
+              )}
+            </Button>
+            {gpsError && <p className="text-xs text-red-500">{gpsError}</p>}
+            {userLocation && (
+              <Button
+                onClick={() =>
+                  mapRef.current?.flyTo({
+                    center: [userLocation.lng, userLocation.lat],
+                    zoom: 17,
+                    duration: 800,
+                  })
+                }
+                variant="ghost"
+                size="sm"
+                className="w-full text-xs"
+              >
+                <Navigation className="mr-1.5 h-3 w-3" />
+                Center on Me
+              </Button>
+            )}
+          </CardContent>
+        </Card>
+
         {/* Stats */}
         <Card>
           <CardHeader className="pb-2">
