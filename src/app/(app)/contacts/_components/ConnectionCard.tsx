@@ -108,7 +108,11 @@ export function ConnectionCard({ conn }: ConnectionCardProps) {
               </a>
             )}
             {conn.email && (
-              <a href={`mailto:${conn.email}`} className="flex-1" onClick={(e) => e.stopPropagation()}>
+              <a
+                href={`mailto:${conn.email}`}
+                className="flex-1"
+                onClick={(e) => e.stopPropagation()}
+              >
                 <Button variant="outline" size="sm" className="w-full gap-2">
                   <Mail className="h-4 w-4" />
                   Email
@@ -117,7 +121,6 @@ export function ConnectionCard({ conn }: ConnectionCardProps) {
             )}
           </div>
         )}
-        </div>
       </div>
     </div>
   );
