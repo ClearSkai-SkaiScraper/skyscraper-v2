@@ -361,7 +361,14 @@ Trade: ${tradeLabel}`,
 
     // ── Action: AI Chat — conversational assistant for estimates ──────────
     if (action === "ai-chat") {
-      const { trade, tradeLabel, jobContextType: ctxType, jobContextLabel: ctxLabel, userMessage, chatHistory } = body as {
+      const {
+        trade,
+        tradeLabel,
+        jobContextType: ctxType,
+        jobContextLabel: ctxLabel,
+        userMessage,
+        chatHistory,
+      } = body as {
         trade: string;
         tradeLabel: string;
         jobContextType?: string;
@@ -371,10 +378,7 @@ Trade: ${tradeLabel}`,
       };
 
       if (!userMessage) {
-        return NextResponse.json(
-          { ok: false, error: "Missing message" },
-          { status: 400 }
-        );
+        return NextResponse.json({ ok: false, error: "Missing message" }, { status: 400 });
       }
 
       try {
@@ -382,7 +386,7 @@ Trade: ${tradeLabel}`,
 
         // Build conversation history
         const history = (chatHistory || []).map((m) => ({
-          role: m.role === "user" ? "user" as const : "assistant" as const,
+          role: m.role === "user" ? ("user" as const) : ("assistant" as const),
           content: m.text,
         }));
 
@@ -414,15 +418,14 @@ Do NOT generate material lists or prices — that happens when they click "Calcu
           temperature: 0.4,
         });
 
-        const reply = chatResponse.choices[0]?.message?.content || "I'm here to help — could you rephrase that?";
+        const reply =
+          chatResponse.choices[0]?.message?.content ||
+          "I'm here to help — could you rephrase that?";
 
         return NextResponse.json({ ok: true, reply });
       } catch (chatErr) {
         logger.error("[MATERIALS] AI chat error:", chatErr);
-        return NextResponse.json(
-          { ok: false, error: "AI chat failed" },
-          { status: 500 }
-        );
+        return NextResponse.json({ ok: false, error: "AI chat failed" }, { status: 500 });
       }
     }
 
