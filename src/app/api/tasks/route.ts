@@ -190,6 +190,34 @@ export async function POST(request: NextRequest) {
       },
     });
 
+    // ── Log to Claim Timeline (Pro-Only) ───────────────────────────
+    if (claimId) {
+      try {
+        const { nanoid } = await import("nanoid");
+        await prisma.claim_timeline_events.create({
+          data: {
+            id: nanoid(),
+            claim_id: claimId,
+            type: "task_created",
+            description: `Task created: "${title}"${description ? ` — ${description}` : ""}`,
+            actor_id: userId,
+            visible_to_client: false, // Pro-only, never shown to clients
+            metadata: {
+              title: `Task Created: ${title}`,
+              taskId: task.id,
+              priority,
+              status,
+              dueAt: dueAt || null,
+            } as unknown as any,
+          },
+        });
+        logger.debug(`[POST /api/tasks] Logged task to claim timeline for claim ${claimId}`);
+      } catch (timelineError) {
+        // Timeline logging failure should NOT block task creation
+        logger.warn("[POST /api/tasks] Failed to log task to claim timeline:", timelineError);
+      }
+    }
+
     // ── Sprint 27: Send TASK_ASSIGNED notification ───────────────
     const effectiveAssignee = assigneeId || userId;
     if (effectiveAssignee && effectiveAssignee !== userId) {

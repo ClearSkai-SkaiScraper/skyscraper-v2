@@ -1,17 +1,23 @@
 /**
  * ============================================================================
- * QUICK WEATHER VERIFICATION — ONE-PAGE PDF
+ * COMPREHENSIVE WEATHER VERIFICATION REPORT — AI-POWERED PDF
  * ============================================================================
  *
  * POST /api/claims/[claimId]/weather/quick-verify
  *
- * Pulls the biggest hail & wind events within 12 months of the property,
- * scores them by proximity + magnitude, then generates a branded one-page
- * PDF that verifies and justifies the loss.
+ * Pulls 12 months of NOAA hail & wind data near the property,
+ * scores severity by proximity + magnitude, generates AI-powered
+ * justification narrative, and produces a branded multi-page PDF.
  *
  * Data sources (100% free, no API keys):
  *   - Iowa State Mesonet  → hail & wind storm reports
  *   - NWS CAP Alerts      → severe weather warnings
+ *
+ * Features:
+ *   - Multi-page support for comprehensive data
+ *   - AI-generated executive summary
+ *   - Company branding (logo, colors, contact info)
+ *   - Professional carrier-ready formatting
  *
  * ============================================================================
  */
@@ -156,7 +162,70 @@ export const POST = withAuth(
       const companyName = org?.name || "SkaiScraper";
       const primaryColor = branding?.colorPrimary || "#1e3a8a";
 
-      // Generate one-page branded HTML
+      // ─────────────────────────────────────────────────────────────────────────
+      // AI-POWERED EXECUTIVE SUMMARY
+      // ─────────────────────────────────────────────────────────────────────────
+      let aiExecutiveSummary = "";
+      let aiRecommendations: string[] = [];
+
+      try {
+        const openai = getOpenAI();
+        const maxHailForAI = topHail[0]?.magnitude ?? 0;
+        const maxWindForAI = topWind[0]?.magnitude ?? 0;
+
+        const aiPrompt = `You are a storm damage verification expert writing for insurance adjusters. Generate a professional executive summary for this weather verification report.
+
+PROPERTY DATA:
+- Address: ${propertyAddress}
+- Insured: ${claim.insured_name || "N/A"}
+- Claim #: ${claim.claimNumber}
+- Carrier: ${claim.carrier || "N/A"}
+- Reported Damage Type: ${claim.damageType || "N/A"}
+- Date of Loss: ${claim.dateOfLoss ? new Date(claim.dateOfLoss).toLocaleDateString() : "Not specified"}
+
+WEATHER DATA (12-month scan):
+- Total Events Scanned: ${scored.length}
+- Largest Hail: ${maxHailForAI > 0 ? maxHailForAI.toFixed(2) + '"' : "None recorded"}
+- Peak Wind: ${maxWindForAI > 0 ? maxWindForAI.toFixed(0) + " mph" : "None recorded"}
+- Severe Warnings: ${warnings.length}
+- Recommended DOL Confidence: ${Math.round(dol.confidence * 100)}%
+
+TOP HAIL EVENTS:
+${topHail.map((e) => `- ${new Date(e.time_utc).toLocaleDateString()}: ${e.magnitude?.toFixed(2)}" at ${e.distance_miles.toFixed(1)} mi ${e.direction_cardinal}`).join("\n") || "None"}
+
+TOP WIND EVENTS:
+${topWind.map((e) => `- ${new Date(e.time_utc).toLocaleDateString()}: ${e.magnitude?.toFixed(0)} mph at ${e.distance_miles.toFixed(1)} mi ${e.direction_cardinal}`).join("\n") || "None"}
+
+Generate:
+1. A 3-4 sentence executive summary establishing weather verification for the claim
+2. 3-5 bullet point recommendations for the adjuster
+
+Format your response as JSON:
+{
+  "executiveSummary": "...",
+  "recommendations": ["...", "...", "..."]
+}`;
+
+        const completion = await openai.chat.completions.create({
+          model: "gpt-4o-mini",
+          messages: [{ role: "user", content: aiPrompt }],
+          temperature: 0.3,
+          max_tokens: 800,
+          response_format: { type: "json_object" },
+        });
+
+        const aiContent = completion.choices[0]?.message?.content;
+        if (aiContent) {
+          const parsed = JSON.parse(aiContent);
+          aiExecutiveSummary = parsed.executiveSummary || "";
+          aiRecommendations = parsed.recommendations || [];
+        }
+      } catch (aiError) {
+        logger.warn("[quick-verify] AI summary generation failed (non-fatal):", aiError);
+        // Continue without AI summary - use fallback justification
+      }
+
+      // Generate branded HTML (now with AI summary)
       const html = buildQuickVerifyHTML({
         companyName,
         primaryColor,
@@ -198,6 +267,9 @@ export const POST = withAuth(
         },
         lat,
         lon,
+        // AI-generated content
+        aiExecutiveSummary,
+        aiRecommendations,
       });
 
       // Generate PDF
@@ -249,7 +321,7 @@ async function geocodeAddress(address: string): Promise<{ lat: number; lon: numb
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// ONE-PAGE PDF HTML TEMPLATE
+// COMPREHENSIVE PDF HTML TEMPLATE (Multi-Page Support)
 // ─────────────────────────────────────────────────────────────────────────────
 
 interface QuickVerifyHTMLInput {
@@ -276,6 +348,9 @@ interface QuickVerifyHTMLInput {
   scanWindow: { start: string; end: string };
   lat: number;
   lon: number;
+  // AI-generated content
+  aiExecutiveSummary?: string;
+  aiRecommendations?: string[];
 }
 
 function buildQuickVerifyHTML(input: QuickVerifyHTMLInput): string {
@@ -525,6 +600,32 @@ function buildQuickVerifyHTML(input: QuickVerifyHTMLInput): string {
     <h4>🔍 Weather Verification & Loss Justification</h4>
     <p>${justification}</p>
   </div>
+
+  ${
+    input.aiExecutiveSummary
+      ? `
+  <!-- AI EXECUTIVE SUMMARY -->
+  <div style="background:linear-gradient(135deg, #fef3c7 0%, #fef9c3 100%);border:1px solid #fbbf24;border-left:4px solid #f59e0b;border-radius:6px;padding:10px 14px;margin:10px 0;">
+    <h4 style="font-size:11px;color:#92400e;margin-bottom:6px;display:flex;align-items:center;gap:6px;">
+      <span>🤖</span> AI-Powered Executive Summary
+    </h4>
+    <p style="font-size:10px;line-height:1.5;color:#78350f;margin:0;">${input.aiExecutiveSummary}</p>
+  </div>`
+      : ""
+  }
+
+  ${
+    input.aiRecommendations && input.aiRecommendations.length > 0
+      ? `
+  <!-- AI RECOMMENDATIONS -->
+  <div style="background:#f0fdf4;border:1px solid #86efac;border-radius:6px;padding:10px 14px;margin:8px 0;">
+    <h4 style="font-size:10px;color:#166534;margin-bottom:6px;font-weight:700;">📋 Adjuster Recommendations</h4>
+    <ul style="margin:0;padding-left:16px;font-size:9px;color:#166534;line-height:1.6;">
+      ${input.aiRecommendations.map((rec) => `<li>${rec}</li>`).join("")}
+    </ul>
+  </div>`
+      : ""
+  }
 
   ${
     input.dol.recommended_date_utc

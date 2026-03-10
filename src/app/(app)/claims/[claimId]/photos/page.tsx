@@ -153,15 +153,24 @@ export default function PhotosPage() {
       if (
         filename.includes("window") ||
         filename.includes("glass") ||
+        filename.includes("trim") ||
+        filename.includes("casing") ||
+        filename.includes("frame") ||
         category.includes("window")
       ) {
         componentType = "window";
-      } else if (filename.includes("screen") || category.includes("screen")) {
+      } else if (
+        filename.includes("screen") ||
+        filename.includes("mesh") ||
+        category.includes("screen")
+      ) {
         componentType = "screen";
       } else if (
         filename.includes("siding") ||
-        filename.includes("trim") ||
         filename.includes("fascia") ||
+        filename.includes("soffit") ||
+        filename.includes("j-channel") ||
+        filename.includes("corner") ||
         category.includes("siding")
       ) {
         componentType = "siding";

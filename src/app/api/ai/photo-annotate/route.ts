@@ -545,9 +545,24 @@ You analyze photos to identify damage on:
 - Stucco: cracks (structural vs. cosmetic), spalling, water intrusion
 - Brick veneer: mortar damage, spalling, cracks
 
-Look for hail impact patterns: dents, holes, and "hail spatter" marks.
+CRITICAL - TRIM AND FASCIA DAMAGE (commonly missed):
+- Painted wood trim/fascia: Look for paint CHIPPING in patterns (hail signature)
+- Wind trim/J-channel: Look for dents, bends, holes from hail impacts
+- Corner boards: Impact marks, chips, cracks
+- Window/door casings: Paint chips in circular patterns = hail damage
+- Soffit panels: Punctures, dents, seam separation
+- Drip edge: Dents following roofline
+
+HAIL DAMAGE SIGNATURES ON PAINTED SURFACES:
+- Random circular paint chips (NOT peeling from age)
+- Fresh exposed wood under chips (bright color)
+- Dents with cracked paint on top
+- "Spatter" marks on horizontal surfaces
+- Multiple chips in a directional pattern
+
+Draw bounding boxes around EVERY paint chip, dent, or impact mark.
 Understand IRC R703 exterior wall covering requirements.
-Always be thorough but conservative - only identify damage you can clearly see.`;
+Be AGGRESSIVE in identifying damage - every chip matters for insurance.`;
   }
 
   if (componentType === "hvac") {
@@ -587,14 +602,23 @@ You analyze photos to identify damage on:
 - Hardware: broken latches, hinges, operators
 - Trim and casing: paint chipping, wood rot, cracks, dents from hail
 
-HAIL DAMAGE INDICATORS:
-- Paint chipping on window trim in circular patterns
-- Dents on aluminum frames
+HAIL DAMAGE INDICATORS - BE VERY AGGRESSIVE:
+- Paint chipping on window trim in circular patterns (MAJOR INDICATOR)
+- Dents on aluminum frames (even subtle ones)
 - Impact marks on sills and casings
 - Spatter marks on painted surfaces
+- Chips along horizontal surfaces (trim tops, sills)
+
+WIND TRIM DAMAGE - LOOK FOR:
+- J-channel dents or separation
+- Corner trim damage
+- Fascia trim with paint chips
+- Drip cap damage above windows
+- Brick mold damage around frames
 
 Draw precise bounding boxes around ALL damaged areas.
-Always be thorough but conservative - only identify damage you can clearly see.`;
+Every paint chip on trim = HAIL DAMAGE that must be documented.
+Be AGGRESSIVE - subtle damage is still damage.`;
   }
 
   if (componentType === "screen") {
@@ -605,14 +629,24 @@ You analyze photos to identify damage on:
 - Screen door panels: tears, punctures, frame damage
 - Pool/patio screens: large tears, frame damage
 
-HAIL DAMAGE INDICATORS:
-- Small holes punched through mesh
-- Stretched/bulging mesh from impacts
-- Dented aluminum frames
-- Multiple small punctures in pattern
+HAIL DAMAGE INDICATORS - BE VERY THOROUGH:
+- Small holes punched through mesh (look carefully, they can be tiny)
+- Stretched/bulging mesh from impacts (fabric pulling away from frame)
+- Dented aluminum frames (often subtle)
+- Multiple small punctures in pattern (follow hail direction)
+- Frayed or broken mesh strands near impact points
+- Mesh "dimples" where hail hit but didn't punch through
+
+WINDOW SCREEN HITS - COMMON PATTERNS:
+- Look for ANY distortion in the mesh pattern
+- Small tears often appear as darker spots
+- Frame corners often take the most damage
+- Check where mesh meets frame (often separates from impacts)
+- Solar screens show damage as bright spots (coating damaged)
 
 Draw precise bounding boxes around ALL damaged areas, even small holes.
-Always be thorough but conservative - only identify damage you can clearly see.`;
+Zoom in mentally on each quadrant of the screen to find damage.
+Be AGGRESSIVE - mark every hole, tear, stretch, or dent you see.`;
   }
 
   if (componentType === "general") {
@@ -634,11 +668,19 @@ THEN: Identify ALL visible damage appropriate to that component:
 - Wind: lifted materials, torn sections, displaced items
 - General: cracks, holes, rot, wear, fading
 
-IMPORTANT: Draw precise bounding boxes around EVERY damaged area you can see.
-For paint chipping, circle/box each chip or cluster of chips.
-For screen damage, box each tear, hole, or damaged section.
+CRITICAL DAMAGE PATTERNS TO LOOK FOR:
+- PAINT CHIPPING on trim/fascia: Random circular chips = HAIL DAMAGE (not age)
+- SCREEN HOLES: Even tiny holes or stretched mesh = HAIL DAMAGE
+- SOFT METAL DENTS: Gutters, downspouts, vents, AC units
+- CRACKED SHINGLES: Impacts that broke the seal
+- BENT/LIFTED materials: Wind damage signature
 
-Always be thorough - identify ALL damage visible in the image.`;
+IMPORTANT: Draw precise bounding boxes around EVERY damaged area you can see.
+For paint chipping, circle/box each chip or cluster of chips - THEY ALL COUNT.
+For screen damage, box each tear, hole, or damaged section - even small ones.
+
+BE AGGRESSIVE in identifying damage. Insurance adjusters miss subtle damage.
+Mark everything suspicious. Let the adjuster rule out false positives.`;
   }
 
   // Default roofing expert

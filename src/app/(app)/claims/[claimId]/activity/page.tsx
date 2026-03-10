@@ -6,6 +6,7 @@
 import { format } from "date-fns";
 import {
   CheckCircle,
+  CheckSquare,
   Clock,
   Edit,
   Eye,
@@ -14,8 +15,7 @@ import {
   Upload,
   Users,
 } from "lucide-react";
-import { redirect } from "next/navigation";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 
 import { getClaimActivity } from "@/lib/claims/activityLog";
 import prisma from "@/lib/prisma";
@@ -26,6 +26,7 @@ interface ActivityPageProps {
 }
 
 const getIconForType = (type: string) => {
+  if (type.includes("task_created") || type.includes("task_completed")) return CheckSquare;
   if (type.includes("file") || type.includes("upload")) return Upload;
   if (type.includes("message")) return MessageSquare;
   if (type.includes("status")) return CheckCircle;
@@ -36,6 +37,8 @@ const getIconForType = (type: string) => {
 };
 
 const getColorForType = (type: string) => {
+  if (type.includes("task_created")) return "bg-indigo-500";
+  if (type.includes("task_completed")) return "bg-emerald-500";
   if (type.includes("file") || type.includes("upload")) return "bg-blue-500";
   if (type.includes("message")) return "bg-green-500";
   if (type.includes("status")) return "bg-purple-500";

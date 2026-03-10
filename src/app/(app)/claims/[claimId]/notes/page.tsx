@@ -104,7 +104,7 @@ export default function NotesPage() {
         <button
           onClick={handleSave}
           disabled={saving || !newNote.trim()}
-          className="rounded-lg border border-blue-500/30 bg-blue-500/20 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-blue-500/30 disabled:opacity-50"
+          className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-blue-700 disabled:opacity-50"
         >
           {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : "Add Note"}
         </button>

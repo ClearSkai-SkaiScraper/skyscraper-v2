@@ -3,8 +3,8 @@
  * Tracks all events on a claim for audit trail
  */
 
-import { nanoid } from "nanoid";
 import { logger } from "@/lib/logger";
+import { nanoid } from "nanoid";
 
 import prisma from "@/lib/prisma";
 
@@ -20,7 +20,9 @@ export type ActivityEventType =
   | "estimate_added"
   | "supplement_created"
   | "document_shared"
-  | "review_submitted";
+  | "review_submitted"
+  | "task_created"
+  | "task_completed";
 
 export interface LogActivityParams {
   claimId: string;

@@ -5,14 +5,17 @@ import "mapbox-gl/dist/mapbox-gl.css";
 import {
   CalendarClock,
   Check,
+  Crosshair,
   DoorOpen,
   Filter,
   Loader2,
   MapPin,
   MessageSquare,
+  Navigation,
   Pencil,
   Plus,
   RefreshCw,
+  Search,
   Trash2,
   User,
   X,
@@ -22,6 +25,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
 import { logger } from "@/lib/logger";
 
 /* ───── types ───── */

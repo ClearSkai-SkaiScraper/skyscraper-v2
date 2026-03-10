@@ -151,7 +151,7 @@ export default function TradesPage() {
         !showForm && (
           <button
             onClick={() => setShowForm(true)}
-            className="rounded-lg border border-blue-500/30 bg-blue-500/20 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-blue-500/30"
+            className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-blue-700"
           >
             Add Trade
           </button>
@@ -311,7 +311,7 @@ export default function TradesPage() {
               </div>
               <button
                 onClick={() => handleDelete(trade.id)}
-                className="rounded-lg border border-red-500/30 bg-red-500/20 p-2 text-red-400 transition-colors hover:bg-red-500/30"
+                className="rounded-lg bg-red-600 p-2 text-white transition-colors hover:bg-red-700"
                 aria-label="Delete trade"
                 title="Delete trade"
               >

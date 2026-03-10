@@ -45,6 +45,37 @@ export const POST = withOrgScope(
         },
       });
 
+      // ── Log to Claim Timeline if task is linked to a claim (Pro-Only) ───────
+      if (task.claimId) {
+        try {
+          const { nanoid } = await import("nanoid");
+          await prisma.claim_timeline_events.create({
+            data: {
+              id: nanoid(),
+              claim_id: task.claimId,
+              type: "task_completed",
+              description: `Task completed: "${task.title}"`,
+              actor_id: userId,
+              visible_to_client: false, // Pro-only, never shown to clients
+              metadata: {
+                title: `Task Completed: ${task.title}`,
+                taskId: task.id,
+                completedAt: new Date().toISOString(),
+              } as unknown as any,
+            },
+          });
+          logger.debug(
+            `[POST /api/tasks/complete] Logged task completion to claim timeline for claim ${task.claimId}`
+          );
+        } catch (timelineError) {
+          // Timeline logging failure should NOT block task completion
+          logger.warn(
+            "[POST /api/tasks/complete] Failed to log task completion to claim timeline:",
+            timelineError
+          );
+        }
+      }
+
       return NextResponse.json({
         success: true,
         task: updatedTask,

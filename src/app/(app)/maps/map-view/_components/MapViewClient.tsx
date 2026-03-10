@@ -99,7 +99,7 @@ export default function MapViewClient({ markers, initialCenter }: MapViewClientP
   // Address search state
   const [addressSearch, setAddressSearch] = useState("");
   const [addressResults, setAddressResults] = useState<
-    Array<{ place_name: string; center: [number, number] }>
+    Array<{ id: string; text: string; place_name: string; center: [number, number] }>
   >([]);
   const [addressSearching, setAddressSearching] = useState(false);
 
@@ -465,11 +465,11 @@ export default function MapViewClient({ markers, initialCenter }: MapViewClientP
                 {addressResults.map((result) => (
                   <button
                     key={result.id}
-                    onClick={() => goToSearchedAddress(result)}
-                    className="w-full border-b px-2.5 py-1.5 text-left text-xs hover:bg-muted/50 last:border-b-0"
+                    onClick={() => goToSearchedAddress(result.center, result.place_name)}
+                    className="w-full border-b px-2.5 py-1.5 text-left text-xs last:border-b-0 hover:bg-muted/50"
                   >
                     <p className="font-medium">{result.text}</p>
-                    <p className="text-muted-foreground truncate">{result.place_name}</p>
+                    <p className="truncate text-muted-foreground">{result.place_name}</p>
                   </button>
                 ))}
               </div>
@@ -498,7 +498,9 @@ export default function MapViewClient({ markers, initialCenter }: MapViewClientP
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => mapRef.current?.flyTo({ center: userLocation, zoom: 16, duration: 800 })}
+                  onClick={() =>
+                    mapRef.current?.flyTo({ center: userLocation, zoom: 16, duration: 800 })
+                  }
                   className="text-xs"
                 >
                   <Crosshair className="mr-1.5 h-3.5 w-3.5" />
@@ -506,9 +508,7 @@ export default function MapViewClient({ markers, initialCenter }: MapViewClientP
                 </Button>
               )}
             </div>
-            {gpsError && (
-              <p className="text-xs text-red-500">{gpsError}</p>
-            )}
+            {gpsError && <p className="text-xs text-red-500">{gpsError}</p>}
           </CardContent>
         </Card>
 
