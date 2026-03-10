@@ -126,22 +126,17 @@ export const PATCH = withAuth(
       if (body.propertyAddress !== undefined) {
         const propertyId = (updated as any)?.propertyId;
         if (propertyId) {
-          // Update existing property
+          // Update existing property street
           await prisma.properties.update({
             where: { id: propertyId },
             data: { street: body.propertyAddress },
           });
         } else {
-          // Create new property and link to claim
-          const newProperty = await prisma.properties.create({
-            data: {
-              street: body.propertyAddress,
-              orgId,
-            },
-          });
-          await prisma.claims.update({
-            where: { id: claimId },
-            data: { propertyId: newProperty.id },
+          // No linked property yet — cannot create one without required fields
+          // (contactId, name, propertyType, city, state, zipCode).
+          // Log and skip; user should create a full property via the property form.
+          logger.warn("[PATCH /api/claims/update] No propertyId on claim; cannot update address", {
+            claimId,
           });
         }
       }

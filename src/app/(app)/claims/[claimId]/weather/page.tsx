@@ -325,7 +325,21 @@ export default function ClaimWeatherPage({ params }: Props) {
             </div>
           </Card>
 
-          <Button onClick={runWeatherReport} disabled={isReportRunning || !selectedDol}>
+          {!selectedDol && (
+            <Card className="border-amber-200 bg-amber-50 p-3 text-sm text-amber-700 dark:border-amber-800 dark:bg-amber-900/20 dark:text-amber-300">
+              <p className="font-medium">⚠️ No Date of Loss Selected</p>
+              <p className="mt-1 text-xs">
+                Run Quick DOL in the previous step and select a candidate date before generating a
+                full weather report.
+              </p>
+            </Card>
+          )}
+
+          <Button
+            onClick={runWeatherReport}
+            disabled={isReportRunning || !selectedDol}
+            className={selectedDol ? "bg-emerald-600 hover:bg-emerald-700" : ""}
+          >
             {isReportRunning ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />

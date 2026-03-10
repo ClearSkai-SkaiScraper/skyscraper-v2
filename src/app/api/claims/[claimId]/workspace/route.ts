@@ -228,16 +228,26 @@ export async function GET(request: NextRequest, { params }: { params: { claimId:
 
     const [evidenceCount, documentsCount, reportCount, timelineEventCount, property] =
       await Promise.all([
-        // evidence: count inspections photos or gracefully degrade
-        prismaModel("inspections")
-          .count({ where: { claimId: claim.id } })
-          .catch(() => 0),
-        // documents: filter by projectId (claims → projects → documents)
-        claim.projectId
-          ? prismaModel("documents")
-              .count({ where: { projectId: claim.projectId } })
-              .catch(() => 0)
-          : Promise.resolve(0),
+        // photos: count file_assets for this claim (the actual photos table)
+        prisma.file_assets.count({ where: { claimId: claim.id, orgId } }).catch(() => 0),
+        // documents: count from file_assets with document categories OR from documents table
+        Promise.all([
+          prisma.file_assets
+            .count({
+              where: {
+                claimId: claim.id,
+                orgId,
+                category: { in: ["document", "contract", "estimate", "invoice", "other"] },
+              },
+            })
+            .catch(() => 0),
+          claim.projectId
+            ? prismaModel("documents")
+                .count({ where: { projectId: claim.projectId } })
+                .catch(() => 0)
+            : Promise.resolve(0),
+        ]).then(([fileAssetDocs, projectDocs]) => fileAssetDocs + projectDocs),
+        // reports: count ai_reports
         prismaModel("ai_reports")
           .count({ where: { claimId: claim.id } })
           .catch(() => 0),

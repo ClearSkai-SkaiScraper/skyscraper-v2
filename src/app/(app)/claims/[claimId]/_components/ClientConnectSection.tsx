@@ -1,8 +1,29 @@
 // src/app/(app)/claims/[claimId]/_components/ClientConnectSection.tsx
 "use client";
 
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { logger } from "@/lib/logger";
-import { CheckCircle2, Copy, Loader2, Search, Send, UserPlus } from "lucide-react";
+import {
+  CheckCircle2,
+  Copy,
+  Loader2,
+  Mail,
+  Search,
+  UserCheck,
+  UserPlus,
+  Users,
+} from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
@@ -12,6 +33,16 @@ interface Contact {
   lastName: string | null;
   email: string | null;
   phone: string | null;
+  companyName?: string | null;
+}
+
+interface Connection {
+  id: string;
+  name: string;
+  email: string | null;
+  phone: string | null;
+  companyName?: string | null;
+  contactId?: string;
 }
 
 interface ClientConnectSectionProps {
@@ -20,9 +51,18 @@ interface ClientConnectSectionProps {
 }
 
 export function ClientConnectSection({ claimId, currentClientId }: ClientConnectSectionProps) {
+  // Connections (from Trades Network)
+  const [connections, setConnections] = useState<Connection[]>([]);
+  const [selectedConnectionId, setSelectedConnectionId] = useState<string>("");
+  const [loadingConnections, setLoadingConnections] = useState(true);
+  const [attachingConnection, setAttachingConnection] = useState(false);
+
+  // Search state
   const [searchQuery, setSearchQuery] = useState("");
-  const [contacts, setContacts] = useState<Contact[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [searchResults, setSearchResults] = useState<Contact[]>([]);
+  const [searching, setSearching] = useState(false);
+
+  // Attached client
   const [attachedClient, setAttachedClient] = useState<Contact | null>(null);
 
   // Invite state
@@ -32,12 +72,41 @@ export function ClientConnectSection({ claimId, currentClientId }: ClientConnect
   const [inviting, setInviting] = useState(false);
   const [copied, setCopied] = useState(false);
 
+  // Fetch connections from Trades Network
+  useEffect(() => {
+    fetchConnections();
+  }, []);
+
   // Fetch current attached client
   useEffect(() => {
     if (currentClientId) {
       fetchAttachedClient(currentClientId);
     }
   }, [currentClientId]);
+
+  const fetchConnections = async () => {
+    setLoadingConnections(true);
+    try {
+      // Fetch from company connections endpoint
+      const res = await fetch("/api/company/connections?limit=100");
+      if (res.ok) {
+        const data = await res.json();
+        const conns: Connection[] = (data.connections || []).map((c: any) => ({
+          id: c.id,
+          name: c.name || `${c.firstName || ""} ${c.lastName || ""}`.trim() || "Unknown",
+          email: c.email,
+          phone: c.phone,
+          companyName: c.companyName,
+          contactId: c.contactId || c.id,
+        }));
+        setConnections(conns);
+      }
+    } catch (error) {
+      logger.error("Failed to fetch connections:", error);
+    } finally {
+      setLoadingConnections(false);
+    }
+  };
 
   const fetchAttachedClient = async (clientId: string) => {
     try {
@@ -51,21 +120,66 @@ export function ClientConnectSection({ claimId, currentClientId }: ClientConnect
     }
   };
 
-  const searchContacts = async () => {
-    if (!searchQuery.trim()) {
-      setContacts([]);
+  const attachFromConnection = async () => {
+    if (!selectedConnectionId) {
+      toast.error("Please select a connection first");
       return;
     }
 
-    setLoading(true);
+    setAttachingConnection(true);
+    try {
+      const connection = connections.find((c) => c.id === selectedConnectionId);
+      if (!connection) {
+        throw new Error("Connection not found");
+      }
+
+      // Use the contactId if available, otherwise create/attach by ID
+      const contactId = connection.contactId || connection.id;
+
+      const res = await fetch(`/api/claims/${claimId}/attach-contact`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ contactId }),
+      });
+
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.error || "Failed to attach client");
+      }
+
+      setAttachedClient({
+        id: contactId,
+        firstName: connection.name.split(" ")[0] || null,
+        lastName: connection.name.split(" ").slice(1).join(" ") || null,
+        email: connection.email,
+        phone: connection.phone,
+      });
+      setSelectedConnectionId("");
+      toast.success("Client attached successfully!");
+    } catch (error: any) {
+      logger.error("Attach from connection failed:", error);
+      toast.error(error.message || "Failed to attach client");
+    } finally {
+      setAttachingConnection(false);
+    }
+  };
+
+  const searchContacts = async () => {
+    if (!searchQuery.trim()) {
+      setSearchResults([]);
+      return;
+    }
+
+    setSearching(true);
     try {
       const res = await fetch(`/api/contacts/search?q=${encodeURIComponent(searchQuery)}`);
       const data = await res.json();
-      setContacts(data.contacts || []);
+      setSearchResults(data.contacts || []);
     } catch (error) {
       logger.error("Search failed:", error);
+      toast.error("Search failed. Please try again.");
     } finally {
-      setLoading(false);
+      setSearching(false);
     }
   };
 
@@ -82,14 +196,14 @@ export function ClientConnectSection({ claimId, currentClientId }: ClientConnect
         throw new Error(err.error || "Failed to attach client");
       }
 
-      const data = await res.json();
-      setAttachedClient(contacts.find((c) => c.id === contactId) || null);
+      const attached = searchResults.find((c) => c.id === contactId);
+      setAttachedClient(attached || null);
       setSearchQuery("");
-      setContacts([]);
+      setSearchResults([]);
       toast.success("Client attached successfully!");
-    } catch (error) {
+    } catch (error: any) {
       logger.error("Attach client failed:", error);
-      toast.error(error.message || "Failed to attach client. Please try again.");
+      toast.error(error.message || "Failed to attach client");
     }
   };
 
@@ -117,7 +231,6 @@ export function ClientConnectSection({ claimId, currentClientId }: ClientConnect
       }
 
       const data = await res.json();
-      // Build the invite link from the returned link ID
       const appUrl = window.location.origin;
       const linkId = data.link?.id;
       if (linkId) {
@@ -126,9 +239,9 @@ export function ClientConnectSection({ claimId, currentClientId }: ClientConnect
       toast.success("Invite sent successfully!");
       setInviteEmail("");
       setInviteName("");
-    } catch (error) {
+    } catch (error: any) {
       logger.error("Send invite failed:", error);
-      toast.error(error.message || "Failed to send invite. Please try again.");
+      toast.error(error.message || "Failed to send invite");
     } finally {
       setInviting(false);
     }
@@ -144,161 +257,246 @@ export function ClientConnectSection({ claimId, currentClientId }: ClientConnect
   };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       {/* Current Attached Client */}
       {attachedClient && (
-        <div className="rounded-lg border border-green-200 bg-green-50 p-4 dark:border-green-800 dark:bg-green-900/20">
-          <div className="flex items-center gap-2 text-sm text-green-800 dark:text-green-300">
-            <CheckCircle2 className="h-5 w-5" />
+        <Card className="border-emerald-200 bg-emerald-50 dark:border-emerald-800 dark:bg-emerald-900/20">
+          <CardContent className="flex items-center gap-3 py-4">
+            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-100 dark:bg-emerald-900/50">
+              <UserCheck className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
+            </div>
             <div>
-              <p className="font-medium">
-                Client Attached: {attachedClient.firstName} {attachedClient.lastName}
+              <p className="font-semibold text-emerald-900 dark:text-emerald-100">
+                Client Connected: {attachedClient.firstName} {attachedClient.lastName}
               </p>
               {attachedClient.email && (
-                <p className="text-xs text-green-700 dark:text-green-400">{attachedClient.email}</p>
+                <p className="text-sm text-emerald-700 dark:text-emerald-300">
+                  {attachedClient.email}
+                </p>
               )}
             </div>
-          </div>
-        </div>
+          </CardContent>
+        </Card>
       )}
 
-      {/* Search Existing Clients */}
-      <div>
-        <label className="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300">
-          Search Existing Clients
-        </label>
-        <div className="flex gap-2">
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && searchContacts()}
-              placeholder="Search by name, email, or phone..."
-              className="w-full rounded-lg border border-slate-300 bg-white py-2 pl-10 pr-4 text-sm text-slate-900 placeholder:text-slate-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100"
-            />
-          </div>
-          <button
-            onClick={searchContacts}
-            disabled={loading || !searchQuery.trim()}
-            className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
-          >
-            {loading ? "Searching..." : "Search"}
-          </button>
-        </div>
-      </div>
-
-      {/* Search Results */}
-      {contacts.length > 0 && (
-        <div className="space-y-2 rounded-lg border border-slate-200 bg-slate-50 p-3 dark:border-slate-700 dark:bg-slate-800">
-          <p className="text-xs font-medium uppercase tracking-wide text-slate-600 dark:text-slate-400">
-            Search Results
-          </p>
-          {contacts.map((contact) => (
-            <div
-              key={contact.id}
-              className="flex items-center justify-between rounded-lg border border-slate-200 bg-white p-3 dark:border-slate-700 dark:bg-slate-900"
-            >
-              <div>
-                <p className="font-medium text-slate-900 dark:text-slate-100">
-                  {contact.firstName} {contact.lastName}
-                </p>
-                <p className="text-xs text-slate-600 dark:text-slate-400">
-                  {contact.email || contact.phone || "No contact info"}
-                </p>
-              </div>
-              <button
-                onClick={() => attachClient(contact.id)}
-                className="rounded-lg border border-blue-200 bg-blue-50 px-3 py-1.5 text-xs font-medium text-blue-700 transition-colors hover:bg-blue-100"
-              >
-                <UserPlus className="mr-1 inline-block h-3 w-3" />
-                Attach
-              </button>
-            </div>
-          ))}
-        </div>
-      )}
-
-      {/* Send Invite Section */}
-      <div className="rounded-lg border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-800">
-        <h4 className="mb-2 text-sm font-semibold text-slate-900 dark:text-slate-100">
-          Or Send New Invite
-        </h4>
-        <p className="mb-3 text-xs text-slate-600 dark:text-slate-400">
-          Enter the client&apos;s email to send them an invite to access this claim
-        </p>
-        <div className="space-y-3">
-          <div className="grid grid-cols-2 gap-3">
-            <input
-              type="text"
-              value={inviteName}
-              onChange={(e) => setInviteName(e.target.value)}
-              placeholder="Client name (optional)"
-              className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100"
-            />
-            <input
-              type="email"
-              value={inviteEmail}
-              onChange={(e) => setInviteEmail(e.target.value)}
-              placeholder="Client email (required)"
-              className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100"
-            />
-          </div>
-          <button
-            onClick={sendInvite}
-            disabled={inviting || !inviteEmail.trim()}
-            className="w-full rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
-          >
-            {inviting ? (
-              <>
-                <Loader2 className="mr-2 inline-block h-4 w-4 animate-spin" />
-                Sending Invite...
-              </>
-            ) : (
-              <>
-                <Send className="mr-2 inline-block h-4 w-4" />
+      {/* Main Selection Card */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Users className="h-5 w-5" />
+            Connect a Client
+          </CardTitle>
+          <CardDescription>
+            Select an existing connection, search your contacts, or send a new invite
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Tabs defaultValue="connections" className="w-full">
+            <TabsList className="grid w-full grid-cols-3">
+              <TabsTrigger value="connections">
+                <Users className="mr-2 h-4 w-4" />
+                Connections
+              </TabsTrigger>
+              <TabsTrigger value="search">
+                <Search className="mr-2 h-4 w-4" />
+                Search
+              </TabsTrigger>
+              <TabsTrigger value="invite">
+                <Mail className="mr-2 h-4 w-4" />
                 Send Invite
-              </>
-            )}
-          </button>
-        </div>
+              </TabsTrigger>
+            </TabsList>
 
-        {inviteLink && (
-          <div className="mt-3 rounded-lg border border-blue-200 bg-blue-50 p-3 dark:border-blue-800 dark:bg-blue-900/20">
-            <p className="mb-2 text-xs font-medium text-blue-900 dark:text-blue-300">
-              Invite Link Generated:
-            </p>
-            <div className="flex gap-2">
-              <input
-                type="text"
-                value={inviteLink}
-                readOnly
-                className="flex-1 rounded border border-blue-300 bg-white px-2 py-1 text-xs text-slate-700 dark:border-blue-700 dark:bg-slate-800 dark:text-slate-200"
-                aria-label="Invite Link"
-                title="Invite Link"
-                placeholder="Invite Link"
-              />
-              <button
-                onClick={copyInviteLink}
-                className="rounded bg-blue-600 px-3 py-1 text-xs font-medium text-white transition-colors hover:bg-blue-700"
+            {/* Tab 1: Select from Connections (Trades Network) */}
+            <TabsContent value="connections" className="space-y-4 pt-4">
+              <div className="space-y-2">
+                <Label htmlFor="connection-select">Select from Your Network</Label>
+                <Select
+                  value={selectedConnectionId}
+                  onValueChange={setSelectedConnectionId}
+                  disabled={loadingConnections}
+                >
+                  <SelectTrigger id="connection-select">
+                    <SelectValue
+                      placeholder={
+                        loadingConnections ? "Loading connections..." : "Choose a connection..."
+                      }
+                    />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {connections.length === 0 && !loadingConnections ? (
+                      <SelectItem value="_none" disabled>
+                        No connections found
+                      </SelectItem>
+                    ) : (
+                      connections.map((conn) => (
+                        <SelectItem key={conn.id} value={conn.id}>
+                          <div className="flex flex-col">
+                            <span>{conn.name}</span>
+                            {conn.email && (
+                              <span className="text-xs text-muted-foreground">{conn.email}</span>
+                            )}
+                          </div>
+                        </SelectItem>
+                      ))
+                    )}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <Button
+                onClick={attachFromConnection}
+                disabled={!selectedConnectionId || attachingConnection}
+                className="w-full"
               >
-                {copied ? (
+                {attachingConnection ? (
                   <>
-                    <CheckCircle2 className="mr-1 inline-block h-3 w-3" />
-                    Copied
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Attaching...
                   </>
                 ) : (
                   <>
-                    <Copy className="mr-1 inline-block h-3 w-3" />
-                    Copy
+                    <UserPlus className="mr-2 h-4 w-4" />
+                    Attach Selected Connection
                   </>
                 )}
-              </button>
-            </div>
-          </div>
-        )}
-      </div>
+              </Button>
+
+              {connections.length === 0 && !loadingConnections && (
+                <p className="text-center text-sm text-muted-foreground">
+                  No connections yet.{" "}
+                  <a href="/company/connections" className="text-primary underline">
+                    Add connections
+                  </a>{" "}
+                  in your Trades Network.
+                </p>
+              )}
+            </TabsContent>
+
+            {/* Tab 2: Search Existing Contacts */}
+            <TabsContent value="search" className="space-y-4 pt-4">
+              <div className="space-y-2">
+                <Label htmlFor="search-input">Search Contacts</Label>
+                <div className="flex gap-2">
+                  <Input
+                    id="search-input"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    onKeyDown={(e) => e.key === "Enter" && searchContacts()}
+                    placeholder="Search by name, email, or phone..."
+                  />
+                  <Button onClick={searchContacts} disabled={searching || !searchQuery.trim()}>
+                    {searching ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <Search className="h-4 w-4" />
+                    )}
+                  </Button>
+                </div>
+              </div>
+
+              {searchResults.length > 0 && (
+                <div className="space-y-2 rounded-lg border bg-muted/50 p-3">
+                  <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                    Results ({searchResults.length})
+                  </p>
+                  {searchResults.map((contact) => (
+                    <div
+                      key={contact.id}
+                      className="flex items-center justify-between rounded-lg border bg-background p-3"
+                    >
+                      <div>
+                        <p className="font-medium">
+                          {contact.firstName} {contact.lastName}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          {contact.email || contact.phone || "No contact info"}
+                        </p>
+                      </div>
+                      <Button size="sm" variant="outline" onClick={() => attachClient(contact.id)}>
+                        <UserPlus className="mr-1 h-3 w-3" />
+                        Attach
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </TabsContent>
+
+            {/* Tab 3: Send Email Invite */}
+            <TabsContent value="invite" className="space-y-4 pt-4">
+              <div className="space-y-3">
+                <div className="space-y-2">
+                  <Label htmlFor="invite-name">Client Name (optional)</Label>
+                  <Input
+                    id="invite-name"
+                    value={inviteName}
+                    onChange={(e) => setInviteName(e.target.value)}
+                    placeholder="John Smith"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="invite-email">Client Email *</Label>
+                  <Input
+                    id="invite-email"
+                    type="email"
+                    value={inviteEmail}
+                    onChange={(e) => setInviteEmail(e.target.value)}
+                    placeholder="client@email.com"
+                  />
+                </div>
+              </div>
+
+              <Button
+                onClick={sendInvite}
+                disabled={inviting || !inviteEmail.trim()}
+                className="w-full"
+              >
+                {inviting ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Sending Invite...
+                  </>
+                ) : (
+                  <>
+                    <Mail className="mr-2 h-4 w-4" />
+                    Send Portal Invite
+                  </>
+                )}
+              </Button>
+
+              {inviteLink && (
+                <Card className="border-primary/20 bg-primary/5">
+                  <CardContent className="py-3">
+                    <p className="mb-2 text-sm font-medium">Invite Link Generated:</p>
+                    <div className="flex gap-2">
+                      <Input
+                        value={inviteLink}
+                        readOnly
+                        className="flex-1 text-xs"
+                        aria-label="Invite Link"
+                      />
+                      <Button size="sm" variant="secondary" onClick={copyInviteLink}>
+                        {copied ? (
+                          <>
+                            <CheckCircle2 className="mr-1 h-3 w-3" />
+                            Copied
+                          </>
+                        ) : (
+                          <>
+                            <Copy className="mr-1 h-3 w-3" />
+                            Copy
+                          </>
+                        )}
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+            </TabsContent>
+          </Tabs>
+        </CardContent>
+      </Card>
     </div>
   );
 }

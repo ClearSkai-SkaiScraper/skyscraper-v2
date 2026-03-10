@@ -48,7 +48,10 @@ export async function runQuickDol(input: QuickDolInput): Promise<QuickDolResult>
           type: "object",
           properties: {
             peril: { type: "string" },
-            bestGuess: { type: ["string", "null"] as any },
+            bestGuess: {
+              type: "string",
+              description: "Best guess date or empty string if unknown",
+            },
             candidates: {
               type: "array",
               items: {
@@ -58,12 +61,12 @@ export async function runQuickDol(input: QuickDolInput): Promise<QuickDolResult>
                   score: { type: "number" },
                   reason: { type: "string" },
                 },
-                required: ["date", "score"],
+                required: ["date", "score", "reason"],
                 additionalProperties: false,
               },
             },
           },
-          required: ["peril", "candidates"],
+          required: ["peril", "bestGuess", "candidates"],
           additionalProperties: false,
         } as const,
       },
