@@ -189,13 +189,27 @@ export async function GET(request: NextRequest, { params }: { params: { claimId:
         type: d.type,
         createdAt: d.createdAt?.toISOString(),
       })),
-      completionPhotos: [] as Array<{
-        id: string;
-        url: string | null;
-        type: string;
-        category: string | null;
-        createdAt: string | null;
-      }>, // Photos are linked via projects, not claims directly
+      completionPhotos: await (async () => {
+        const photos = await prisma.completion_photos.findMany({
+          where: { claim_id: claimId, org_id: orgId },
+          orderBy: { created_at: "desc" },
+          select: {
+            id: true,
+            url: true,
+            category: true,
+            file_name: true,
+            created_at: true,
+          },
+        });
+        return photos.map((p) => ({
+          id: p.id,
+          url: p.url,
+          type: "completion",
+          category: p.category,
+          fileName: p.file_name,
+          createdAt: p.created_at?.toISOString() ?? null,
+        }));
+      })()
       job: job
         ? {
             id: job.id,

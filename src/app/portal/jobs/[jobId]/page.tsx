@@ -252,17 +252,9 @@ export default function JobDetailPage() {
       setLoading(true);
       setNotFound(false);
 
-      // Check if this is an explicit demo job request
+      // Legacy demo job IDs - show not found instead
       if (jobId === "demo-job-1" || jobId.startsWith("demo-")) {
-        const demoData = getDemoJobWorkspace(jobId);
-        setIsDemo(true);
-        setProject(demoData.project);
-        setPhotos(demoData.photos);
-        setDocuments(demoData.documents);
-        setSignedDocs(demoData.signedDocs);
-        setInvoices(demoData.invoices);
-        setTimeline(demoData.timeline);
-        setMessages(demoData.messages);
+        setNotFound(true);
         setLoading(false);
         return;
       }
@@ -287,25 +279,8 @@ export default function JobDetailPage() {
           });
         }
       } else {
-        // Job not found - check if demo mode is enabled via API
-        const demoRes = await fetch("/api/portal/demo-status");
-        const demoData = await demoRes.json().catch(() => ({ isDemoEnabled: false }));
-
-        if (demoData.isDemoEnabled) {
-          // Demo mode is ON - show demo data
-          const demoWorkspace = getDemoJobWorkspace(jobId);
-          setIsDemo(true);
-          setProject(demoWorkspace.project);
-          setPhotos(demoWorkspace.photos);
-          setDocuments(demoWorkspace.documents);
-          setSignedDocs(demoWorkspace.signedDocs);
-          setInvoices(demoWorkspace.invoices);
-          setTimeline(demoWorkspace.timeline);
-          setMessages(demoWorkspace.messages);
-        } else {
-          // Real mode - show not found
-          setNotFound(true);
-        }
+        // Job not found - show not found state
+        setNotFound(true);
         setLoading(false);
         return;
       }

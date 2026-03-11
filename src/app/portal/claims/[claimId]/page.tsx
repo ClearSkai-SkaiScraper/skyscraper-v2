@@ -297,16 +297,9 @@ export default function PortalClaimDetailPage() {
       setLoading(true);
       setError("");
 
-      // Check if this is the demo claim
+      // Check if this is the legacy demo claim - redirect to claims list
       if (claimId === "demo-claim-1") {
-        setIsDemo(true);
-        setProject(DEMO_CLAIM_PROJECT);
-        setPhotos(DEMO_CLAIM_PHOTOS);
-        setDocuments(DEMO_CLAIM_DOCUMENTS);
-        setSignedDocs(DEMO_CLAIM_SIGNED_DOCS);
-        setInvoices(DEMO_CLAIM_INVOICES);
-        setTimeline(DEMO_CLAIM_TIMELINE);
-        setMessages(DEMO_CLAIM_MESSAGES);
+        setError("Demo claims are no longer available. Please create or view real claims.");
         setLoading(false);
         return;
       }
@@ -337,15 +330,8 @@ export default function PortalClaimDetailPage() {
           contractor: claimData.claim.contractor,
         });
       } else {
-        // Claim not found - show demo
-        setIsDemo(true);
-        setProject(DEMO_CLAIM_PROJECT);
-        setPhotos(DEMO_CLAIM_PHOTOS);
-        setDocuments(DEMO_CLAIM_DOCUMENTS);
-        setSignedDocs(DEMO_CLAIM_SIGNED_DOCS);
-        setInvoices(DEMO_CLAIM_INVOICES);
-        setTimeline(DEMO_CLAIM_TIMELINE);
-        setMessages(DEMO_CLAIM_MESSAGES);
+        // Claim not found — show error
+        setError("Claim not found or you don't have access to this claim.");
         setLoading(false);
         return;
       }

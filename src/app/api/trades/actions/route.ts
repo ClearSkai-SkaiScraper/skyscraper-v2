@@ -153,11 +153,11 @@ async function handleAccept(userId: string, input: Extract<ActionInput, { action
   }
 
   if (input.inviteId) {
-    // No tradesInvite table — graceful stub
-    logger.info("[Trades] Invite accept requested (feature not available)", {
-      inviteId: input.inviteId,
+    await prisma.trades_invites.update({
+      where: { id: input.inviteId },
+      data: { status: "accepted", respondedAt: new Date(), updatedAt: new Date() },
     });
-    return NextResponse.json({ success: true, message: "Accepted" });
+    return NextResponse.json({ success: true, message: "Invite accepted" });
   }
 
   return NextResponse.json({ error: "connectionId or inviteId required" }, { status: 400 });
@@ -173,18 +173,17 @@ async function handleDecline(userId: string, input: Extract<ActionInput, { actio
   }
 
   if (input.inviteId) {
-    // No tradesInvite table — graceful stub
-    logger.info("[Trades] Invite decline requested (feature not available)", {
-      inviteId: input.inviteId,
+    await prisma.trades_invites.update({
+      where: { id: input.inviteId },
+      data: { status: "declined", respondedAt: new Date(), updatedAt: new Date() },
     });
-    return NextResponse.json({ success: true, message: "Declined" });
+    return NextResponse.json({ success: true, message: "Invite declined" });
   }
 
   return NextResponse.json({ error: "connectionId or inviteId required" }, { status: 400 });
 }
 
 async function handleApply(userId: string, input: Extract<ActionInput, { action: "apply" }>) {
-  // No jobApplication table — log and return "coming soon"
   const profile = await prisma.tradesProfile.findFirst({
     where: { userId },
   });
@@ -193,15 +192,34 @@ async function handleApply(userId: string, input: Extract<ActionInput, { action:
     return NextResponse.json({ error: "Trades profile required" }, { status: 400 });
   }
 
-  logger.info("[Trades] Job application submitted", {
+  // Check for duplicate application
+  const existing = await prisma.trades_job_applications.findUnique({
+    where: { jobId_applicantId: { jobId: input.jobId, applicantId: userId } },
+  });
+  if (existing) {
+    return NextResponse.json({ error: "Already applied to this job" }, { status: 409 });
+  }
+
+  const application = await prisma.trades_job_applications.create({
+    data: {
+      jobId: input.jobId,
+      applicantId: userId,
+      profileId: profile.id,
+      message: input.message || null,
+      quoteCents: input.quote ? Math.round(input.quote * 100) : null,
+      status: "pending",
+    },
+  });
+
+  logger.info("[Trades] Job application created", {
     userId,
     jobId: input.jobId,
-    profileId: profile.id,
+    applicationId: application.id,
   });
 
   return NextResponse.json({
     success: true,
-    application: { id: crypto.randomUUID(), status: "pending" },
+    application: { id: application.id, status: application.status },
     message: "Application submitted",
   });
 }
@@ -306,11 +324,30 @@ async function handleInviteClient(
     });
   }
 
-  // No claimId — just log
-  logger.info("[Trades] Client invite without claim", { email: input.email, userId });
+  // Standalone client invitation (no claim)
+  const membership = await prisma.user_organizations.findFirst({
+    where: { userId },
+  });
+
+  const invitation = await prisma.client_invitations.create({
+    data: {
+      email: input.email.toLowerCase(),
+      invitedBy: userId,
+      orgId: membership?.organizationId || null,
+      message: input.message || null,
+      expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days
+    },
+  });
+
+  logger.info("[Trades] Client invitation created", {
+    invitationId: invitation.id,
+    email: input.email,
+    userId,
+  });
+
   return NextResponse.json({
     success: true,
-    invitation: { id: crypto.randomUUID() },
+    invitation: { id: invitation.id, token: invitation.token },
     message: "Invitation sent",
   });
 }
@@ -386,7 +423,27 @@ async function handleAttachToClaim(
   userId: string,
   input: Extract<ActionInput, { action: "attach_to_claim" }>
 ) {
-  // No claimTradesCompany table — log as claim activity instead
+  // Create proper join record + activity log
+  const attachment = await prisma.claim_trades_companies.upsert({
+    where: {
+      claimId_tradesCompanyId: {
+        claimId: input.claimId,
+        tradesCompanyId: input.tradesCompanyId,
+      },
+    },
+    update: {
+      role: input.role || "vendor",
+      status: "active",
+    },
+    create: {
+      claimId: input.claimId,
+      tradesCompanyId: input.tradesCompanyId,
+      role: input.role || "vendor",
+      assignedBy: userId,
+    },
+  });
+
+  // Also log as claim activity for audit trail
   await prisma.claim_activities.create({
     data: {
       id: crypto.randomUUID(),
@@ -397,12 +454,13 @@ async function handleAttachToClaim(
       metadata: {
         tradesCompanyId: input.tradesCompanyId,
         role: input.role || "vendor",
+        attachmentId: attachment.id,
       },
     },
   });
 
   return NextResponse.json({
     success: true,
-    attachment: { id: crypto.randomUUID() },
+    attachment: { id: attachment.id },
   });
 }

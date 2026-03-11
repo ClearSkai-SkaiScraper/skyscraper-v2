@@ -7,7 +7,7 @@ const aliasMap: Record<string, keyof typeof prisma> = {
   // stormEvent: 'storm_events',
   // contractorForm: 'contractor_forms',
   // claimTimelineEvent: 'claim_timeline_events',
-  // completionPhoto: 'completion_photos',
+  completionPhoto: "completion_photos",
   // damageAssessment: 'damage_assessments',
   // propertyImpact: 'property_impacts',
   reportRecord: "reports",

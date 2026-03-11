@@ -51,7 +51,41 @@ export async function GET(req: NextRequest) {
       companyId?: string;
     }> = [];
 
-    // 1. Get posts from connected companies (their recent work/updates)
+    // 1. Get user-created community posts from DB
+    const communityPosts = await prisma.community_posts.findMany({
+      where: { isHidden: false },
+      orderBy: { createdAt: "desc" },
+      take: limit,
+      include: {
+        post_likes: { where: { userId }, select: { id: true } },
+        _count: { select: { post_likes: true, post_comments: true } },
+      },
+    });
+
+    for (const post of communityPosts) {
+      // Look up author name from client or user registry
+      let authorName = "Community Member";
+      const authorClient = await prisma.client
+        .findFirst({
+          where: { userId: post.authorId },
+          select: { name: true },
+        })
+        .catch(() => null);
+      if (authorClient?.name) authorName = authorClient.name;
+
+      feedItems.push({
+        id: post.id,
+        type: (post.type as "post" | "tip" | "update" | "showcase") || "post",
+        author: { name: authorName, avatar: null, verified: false },
+        content: post.content,
+        media: (post.mediaUrls as string[]) || [],
+        likes: post._count.post_likes,
+        comments: post._count.post_comments,
+        createdAt: post.createdAt,
+      });
+    }
+
+    // 2. Get posts from connected companies (their recent work/updates)
     if (connectedCompanyIds.length > 0) {
       const companyProfiles = await prisma.tradesCompany.findMany({
         where: { id: { in: connectedCompanyIds } },
@@ -76,8 +110,8 @@ export async function GET(req: NextRequest) {
               verified: company.isVerified ?? false,
             },
             content: company.description,
-            likes: Math.floor(Math.random() * 50) + 5,
-            comments: Math.floor(Math.random() * 10),
+            likes: 0,
+            comments: 0,
             createdAt: company.updatedAt ?? new Date(),
             companyId: company.id,
           });
@@ -85,7 +119,7 @@ export async function GET(req: NextRequest) {
       }
     }
 
-    // 2. Add insurance tips (static content for now, can be DB-driven later)
+    // 3. Add a few static tips (clearly marked as platform tips)
     const tips = [
       {
         id: "tip-1",
@@ -102,51 +136,22 @@ export async function GET(req: NextRequest) {
         content:
           "💡 Getting multiple estimates from licensed contractors helps ensure you receive fair compensation for repairs.",
       },
-      {
-        id: "tip-4",
-        content:
-          "📞 Keep a copy of your insurance policy accessible. Know your deductible and coverage limits before filing a claim.",
-      },
-      {
-        id: "tip-5",
-        content:
-          "🔍 Review your policy annually. Home improvements and market changes may require coverage adjustments.",
-      },
     ];
 
-    // Add 2-3 random tips to the feed
-    const shuffledTips = tips.sort(() => Math.random() - 0.5).slice(0, 3);
-    for (const tip of shuffledTips) {
-      feedItems.push({
-        id: tip.id,
-        type: "tip",
-        author: {
-          name: "SkaiScrape Insurance Tips",
-          avatar: null,
-          verified: true,
-        },
-        content: tip.content,
-        likes: Math.floor(Math.random() * 100) + 20,
-        comments: Math.floor(Math.random() * 15),
-        createdAt: new Date(Date.now() - Math.random() * 7 * 24 * 60 * 60 * 1000),
-      });
+    // Only show tips if there are few real posts
+    if (feedItems.length < 5) {
+      for (const tip of tips.slice(0, 2)) {
+        feedItems.push({
+          id: tip.id,
+          type: "tip",
+          author: { name: "SkaiScrape Insurance Tips", avatar: null, verified: true },
+          content: tip.content,
+          likes: 0,
+          comments: 0,
+          createdAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000),
+        });
+      }
     }
-
-    // 3. Add community updates
-    feedItems.push({
-      id: "update-welcome",
-      type: "update",
-      author: {
-        name: "SkaiScrape Community",
-        avatar: null,
-        verified: true,
-      },
-      content:
-        "Welcome to the SkaiScrape community! 🎉 Connect with trusted contractors, track your claims, and get expert advice on navigating the insurance process.",
-      likes: 156,
-      comments: 23,
-      createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000),
-    });
 
     // Sort by date and apply pagination
     feedItems.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
@@ -185,15 +190,24 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Content is required" }, { status: 400 });
     }
 
-    // For now, just acknowledge the post. In production, this would save to a CommunityPost table.
+    // Persist the post to the community_posts table
+    const post = await prisma.community_posts.create({
+      data: {
+        authorId: userId,
+        content: content.trim(),
+        type: body.type || "text",
+        mediaUrls: media || [],
+      },
+    });
+
     return NextResponse.json({
       success: true,
       message: "Post created successfully",
       post: {
-        id: `post-${Date.now()}`,
-        content: content.trim(),
-        media: media || [],
-        createdAt: new Date(),
+        id: post.id,
+        content: post.content,
+        media: post.mediaUrls,
+        createdAt: post.createdAt,
       },
     });
   } catch (error) {

@@ -13,7 +13,7 @@ interface ClientLayoutProps {
 
 export default async function ClientLayout({ children, params }: ClientLayoutProps) {
   const { userId } = await auth();
-  if (!userId) redirect("/portal/sign-in");
+  if (!userId) redirect("/client/sign-in");
 
   const { slug } = params;
 

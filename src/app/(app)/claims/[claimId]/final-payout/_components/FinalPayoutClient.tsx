@@ -25,7 +25,7 @@ import {
   Upload,
 } from "lucide-react";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 
 import { Badge } from "@/components/ui/badge";
@@ -190,6 +190,84 @@ export function FinalPayoutClient({ claim, orgId, userId }: FinalPayoutClientPro
     { id: "ventilation", label: "Ventilation", required: false, uploaded: 0 },
     { id: "final", label: "Final Restoration", required: true, uploaded: 0 },
   ]);
+  const [uploadingCategory, setUploadingCategory] = useState<string | null>(null);
+  const fileInputRefs = useRef<Record<string, HTMLInputElement | null>>({});
+
+  // Upload handler for completion photos
+  const handlePhotoUpload = useCallback(
+    async (categoryId: string, files: FileList | null) => {
+      if (!files || files.length === 0) return;
+      setUploadingCategory(categoryId);
+
+      let successCount = 0;
+      try {
+        for (const file of Array.from(files)) {
+          // Step 1: Upload file to Supabase via claims/files/upload
+          const formData = new FormData();
+          formData.append("file", file);
+          formData.append("claimId", claim.id);
+          formData.append("type", "completion");
+          formData.append("category", categoryId);
+
+          const uploadRes = await fetch("/api/claims/files/upload", {
+            method: "POST",
+            body: formData,
+          });
+
+          if (!uploadRes.ok) {
+            const err = await uploadRes.json().catch(() => ({}));
+            toast.error(`Failed to upload ${file.name}: ${err.error || "Upload error"}`);
+            continue;
+          }
+
+          const uploadData = await uploadRes.json();
+          const fileUrl = uploadData.url || uploadData.publicUrl;
+
+          // Step 2: Create completion_photos DB record via metadata endpoint
+          const metaRes = await fetch("/api/completion/upload-photo", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              claimId: claim.id,
+              url: fileUrl,
+              fileName: file.name,
+              fileSize: file.size,
+              category: categoryId,
+              storageKey: uploadData.storageKey || uploadData.key,
+            }),
+          });
+
+          if (metaRes.ok) {
+            successCount++;
+          } else {
+            const err = await metaRes.json().catch(() => ({}));
+            toast.error(`Failed to save ${file.name}: ${err.error || "Metadata error"}`);
+          }
+        }
+
+        if (successCount > 0) {
+          toast.success(
+            `${successCount} photo${successCount > 1 ? "s" : ""} uploaded to ${categoryId}`
+          );
+          // Update local counts
+          setPhotoCategories((prev) =>
+            prev.map((cat) =>
+              cat.id === categoryId ? { ...cat, uploaded: cat.uploaded + successCount } : cat
+            )
+          );
+        }
+      } catch (err) {
+        console.error("[FINAL_PAYOUT] Photo upload error:", err);
+        toast.error("Photo upload failed. Please try again.");
+      } finally {
+        setUploadingCategory(null);
+        // Reset file input
+        const input = fileInputRefs.current[categoryId];
+        if (input) input.value = "";
+      }
+    },
+    [claim.id]
+  );
 
   // Fetch final payout data from API
   useEffect(() => {
@@ -247,13 +325,17 @@ export function FinalPayoutClient({ claim, orgId, userId }: FinalPayoutClientPro
             );
           }
 
-          // Update photo counts
+          // Update photo counts from real per-category data
           if (data.completionPhotos) {
-            const photoCount = data.completionPhotos.length;
+            const categoryCounts: Record<string, number> = {};
+            for (const photo of data.completionPhotos) {
+              const cat = photo.category || "unknown";
+              categoryCounts[cat] = (categoryCounts[cat] || 0) + 1;
+            }
             setPhotoCategories((prev) =>
               prev.map((cat) => ({
                 ...cat,
-                uploaded: Math.floor(photoCount / 6) + (cat.id === "final" ? photoCount % 6 : 0),
+                uploaded: categoryCounts[cat.id] || 0,
               }))
             );
           }
@@ -970,10 +1052,30 @@ export function FinalPayoutClient({ claim, orgId, userId }: FinalPayoutClientPro
                           <AlertCircle className="h-5 w-5 text-amber-500" />
                         )}
                       </div>
-                      <Button variant="outline" className="mt-3 w-full" size="sm">
-                        <Upload className="mr-2 h-4 w-4" />
-                        Upload Photos
+                      <Button
+                        variant="outline"
+                        className="mt-3 w-full"
+                        size="sm"
+                        disabled={uploadingCategory === category.id}
+                        onClick={() => fileInputRefs.current[category.id]?.click()}
+                      >
+                        {uploadingCategory === category.id ? (
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        ) : (
+                          <Upload className="mr-2 h-4 w-4" />
+                        )}
+                        {uploadingCategory === category.id ? "Uploading..." : "Upload Photos"}
                       </Button>
+                      <input
+                        ref={(el) => {
+                          fileInputRefs.current[category.id] = el;
+                        }}
+                        type="file"
+                        accept="image/*"
+                        multiple
+                        className="hidden"
+                        onChange={(e) => handlePhotoUpload(category.id, e.target.files)}
+                      />
                     </CardContent>
                   </Card>
                 ))}

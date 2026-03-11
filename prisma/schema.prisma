@@ -6747,3 +6747,149 @@ model push_subscriptions {
   @@index([userId])
   @@map("push_subscriptions")
 }
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// Trades — Missing Persistence Tables
+// ═══════════════════════════════════════════════════════════════════════════════
+
+/// Company-to-company invitations in the trades network
+model trades_invites {
+  id          String    @id @default(dbgenerated("gen_random_uuid()::text"))
+  fromUserId  String
+  toUserId    String?
+  toEmail     String?
+  type        String    @default("connect") // connect | job | collab
+  message     String?
+  status      String    @default("pending") // pending | accepted | declined | expired
+  expiresAt   DateTime?
+  respondedAt DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @default(now())
+
+  @@index([fromUserId])
+  @@index([toUserId])
+  @@index([toEmail])
+  @@index([status])
+}
+
+/// Job applications from trades contractors
+model trades_job_applications {
+  id          String    @id @default(dbgenerated("gen_random_uuid()::text"))
+  jobId       String
+  applicantId String // userId of the applicant
+  profileId   String? // tradesCompanyMember id
+  message     String?
+  quoteCents  Int?
+  status      String    @default("pending") // pending | accepted | rejected | withdrawn
+  reviewedAt  DateTime?
+  reviewedBy  String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @default(now())
+
+  @@unique([jobId, applicantId])
+  @@index([jobId])
+  @@index([applicantId])
+  @@index([status])
+}
+
+/// Join table linking claims to trades companies
+model claim_trades_companies {
+  id              String   @id @default(dbgenerated("gen_random_uuid()::text"))
+  claimId         String
+  tradesCompanyId String
+  role            String   @default("vendor") // vendor | subcontractor | consultant
+  status          String   @default("active") // active | removed
+  assignedBy      String
+  createdAt       DateTime @default(now())
+
+  @@unique([claimId, tradesCompanyId])
+  @@index([claimId])
+  @@index([tradesCompanyId])
+}
+
+/// Standalone client invitations (without a claim context)
+model client_invitations {
+  id         String    @id @default(dbgenerated("gen_random_uuid()::text"))
+  email      String
+  invitedBy  String // userId of the pro who invited
+  orgId      String?
+  message    String?
+  status     String    @default("sent") // sent | opened | accepted | expired
+  token      String    @unique @default(dbgenerated("gen_random_uuid()::text"))
+  expiresAt  DateTime?
+  acceptedAt DateTime?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @default(now())
+
+  @@index([email])
+  @@index([invitedBy])
+  @@index([status])
+  @@index([token])
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// Portal — Community & Settings Persistence
+// ═══════════════════════════════════════════════════════════════════════════════
+
+/// Community posts in the client portal feed
+model community_posts {
+  id        String   @id @default(dbgenerated("gen_random_uuid()::text"))
+  authorId  String // clerkUserId
+  content   String
+  type      String   @default("text") // text | update | question | tip
+  mediaUrls Json     @default("[]")
+  likes     Int      @default(0)
+  comments  Int      @default(0)
+  isHidden  Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now())
+
+  post_likes    community_post_likes[]
+  post_comments community_post_comments[]
+
+  @@index([authorId])
+  @@index([createdAt(sort: Desc)])
+  @@index([type])
+}
+
+/// Likes on community posts
+model community_post_likes {
+  id        String   @id @default(dbgenerated("gen_random_uuid()::text"))
+  postId    String
+  userId    String
+  createdAt DateTime @default(now())
+
+  post community_posts @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  @@unique([postId, userId])
+  @@index([postId])
+  @@index([userId])
+}
+
+/// Comments on community posts
+model community_post_comments {
+  id        String   @id @default(dbgenerated("gen_random_uuid()::text"))
+  postId    String
+  authorId  String
+  content   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now())
+
+  post community_posts @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  @@index([postId])
+  @@index([authorId])
+}
+
+/// Key-value store for portal user settings/preferences
+model portal_settings {
+  id        String   @id @default(dbgenerated("gen_random_uuid()::text"))
+  userId    String
+  key       String
+  value     String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now())
+
+  @@unique([userId, key])
+  @@index([userId])
+}

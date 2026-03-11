@@ -158,7 +158,7 @@ export default function CRMTopbar() {
 
           {/* Auth Controls */}
           <SignedOut>
-            <SignInButton mode="modal" forceRedirectUrl="/dashboard">
+            <SignInButton mode="modal" forceRedirectUrl="/after-sign-in?mode=pro">
               <Button size="sm" variant="outline">
                 Sign in
               </Button>

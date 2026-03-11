@@ -12,7 +12,7 @@ export default async function ClientClaimPage({
 }) {
   // SECURITY: Require authentication
   const { userId } = await auth();
-  if (!userId) redirect("/sign-in");
+  if (!userId) redirect("/client/sign-in");
 
   const user = await currentUser();
   const userEmail = user?.emailAddresses?.[0]?.emailAddress;

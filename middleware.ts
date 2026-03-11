@@ -70,7 +70,7 @@ const PRO_ROUTES = [
   "/annotation", // AI Damage Annotation tool
 ];
 
-const CLIENT_ROUTES = ["/portal"];
+const CLIENT_ROUTES = ["/portal", "/client"];
 
 const isPublicRoute = createRouteMatcher([
   "/",

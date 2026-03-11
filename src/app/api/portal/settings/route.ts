@@ -49,32 +49,22 @@ export async function GET() {
       return NextResponse.json({ ok: false, error: "Unauthorized" }, { status: 401 });
     }
 
-    // Try to read stored preferences from users table metadata or
-    // use a dedicated key in the user record
-    const user = await prisma.users.findUnique({
-      where: { id: portalUser.userId },
-      select: { id: true },
+    // Read preferences from portal_settings table
+    const settings = await prisma.portal_settings.findMany({
+      where: { userId: portalUser.userId },
+      select: { key: true, value: true },
     });
 
-    if (!user) {
-      return NextResponse.json({ ok: true, preferences: DEFAULT_PREFS });
+    const preferences = { ...DEFAULT_PREFS };
+    for (const s of settings) {
+      if (s.key in preferences) {
+        (preferences as Record<string, unknown>)[s.key] = s.value === "true";
+      }
     }
-
-    // Store prefs in a lightweight JSON table — use push_subscriptions metadata pattern
-    // For now, use a simple key-value approach via the user_registry if available
-    // or fall back to defaults
-    const prefRecord = await prisma.$queryRaw<Array<{ value: string }>>`
-      SELECT value FROM key_value_store 
-      WHERE key = ${"portal_prefs:" + portalUser.userId}
-      LIMIT 1
-    `.catch(() => null);
-
-    const preferences = prefRecord?.[0]?.value ? JSON.parse(prefRecord[0].value) : DEFAULT_PREFS;
 
     return NextResponse.json({ ok: true, preferences });
   } catch (error) {
     logger.error("[PORTAL_SETTINGS_GET]", error);
-    // Return defaults on error instead of failing
     return NextResponse.json({ ok: true, preferences: DEFAULT_PREFS });
   }
 }
@@ -103,26 +93,15 @@ export async function PUT(req: NextRequest) {
           : DEFAULT_PREFS.marketingEmails,
     };
 
-    // Upsert into key_value_store
-    await prisma.$executeRaw`
-      INSERT INTO key_value_store (key, value, updated_at) 
-      VALUES (${"portal_prefs:" + portalUser.userId}, ${JSON.stringify(preferences)}, NOW())
-      ON CONFLICT (key) DO UPDATE SET value = ${JSON.stringify(preferences)}, updated_at = NOW()
-    `.catch(async () => {
-      // If key_value_store doesn't exist, create it
-      await prisma.$executeRaw`
-        CREATE TABLE IF NOT EXISTS key_value_store (
-          key TEXT PRIMARY KEY,
-          value TEXT NOT NULL,
-          updated_at TIMESTAMPTZ DEFAULT NOW()
-        )
-      `;
-      await prisma.$executeRaw`
-        INSERT INTO key_value_store (key, value, updated_at) 
-        VALUES (${"portal_prefs:" + portalUser.userId}, ${JSON.stringify(preferences)}, NOW())
-        ON CONFLICT (key) DO UPDATE SET value = ${JSON.stringify(preferences)}, updated_at = NOW()
-      `;
-    });
+    // Upsert each preference into portal_settings
+    const upserts = Object.entries(preferences).map(([key, value]) =>
+      prisma.portal_settings.upsert({
+        where: { userId_key: { userId: portalUser.userId, key } },
+        update: { value: String(value), updatedAt: new Date() },
+        create: { userId: portalUser.userId, key, value: String(value) },
+      })
+    );
+    await Promise.all(upserts);
 
     logger.info("[PORTAL_SETTINGS_SAVE]", { userId: portalUser.userId, preferences });
 
