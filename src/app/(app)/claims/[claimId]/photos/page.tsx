@@ -650,13 +650,13 @@ export default function PhotosPage() {
                 />
               )}
 
-              {/* Delete button */}
+              {/* Delete button — z-50 ensures it's above the analyze overlay */}
               <button
                 onClick={(e) => {
                   e.stopPropagation();
                   handleDelete(photo.id);
                 }}
-                className="absolute right-2 top-2 rounded-full bg-red-500/80 p-1.5 text-white opacity-0 transition-opacity hover:bg-red-600 group-hover:opacity-100"
+                className="absolute right-2 top-2 z-50 rounded-full bg-red-500/80 p-1.5 text-white opacity-0 transition-opacity hover:bg-red-600 group-hover:opacity-100"
                 aria-label="Delete photo"
                 title="Delete photo"
               >
