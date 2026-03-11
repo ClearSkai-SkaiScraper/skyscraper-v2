@@ -88,6 +88,8 @@ export interface Annotation {
   ircCode?: IRCCodeKey;
   caption?: string;
   confidence?: number;
+  // If true, x/y/width/height are percentages (0-100) that need to be scaled to canvas size
+  isPercentage?: boolean;
 }
 
 interface PhotoAnnotatorProps {
@@ -151,13 +153,30 @@ export function PhotoAnnotator({
   const [zoom, setZoom] = useState(1);
   const [pan, setPan] = useState({ x: 0, y: 0 });
   const [imageLoaded, setImageLoaded] = useState(false);
+  const [canvasSize, setCanvasSize] = useState({ width: 800, height: 600 });
 
-  // Load image
+  // Load image and set canvas size to match aspect ratio
   useEffect(() => {
     const img = new Image();
     img.crossOrigin = "anonymous";
     img.onload = () => {
       imageRef.current = img;
+      // Scale to fit within 800px max width while preserving aspect ratio
+      const maxWidth = 800;
+      const maxHeight = 700;
+      let width = img.naturalWidth;
+      let height = img.naturalHeight;
+
+      if (width > maxWidth) {
+        height = (height * maxWidth) / width;
+        width = maxWidth;
+      }
+      if (height > maxHeight) {
+        width = (width * maxHeight) / height;
+        height = maxHeight;
+      }
+
+      setCanvasSize({ width: Math.round(width), height: Math.round(height) });
       setImageLoaded(true);
       drawCanvas();
     };
@@ -183,6 +202,19 @@ export function PhotoAnnotator({
     // Draw image
     ctx.drawImage(img, 0, 0, canvas.width / zoom, canvas.height / zoom);
 
+    // Helper to convert percentage coords to pixels
+    const toPixels = (
+      val: number,
+      dimension: "x" | "y" | "width" | "height",
+      isPercent?: boolean
+    ) => {
+      if (!isPercent) return val;
+      const canvasW = canvas.width / zoom;
+      const canvasH = canvas.height / zoom;
+      if (dimension === "x" || dimension === "width") return (val / 100) * canvasW;
+      return (val / 100) * canvasH;
+    };
+
     // Draw annotations
     annotations.forEach((ann) => {
       const isSelected = selectedAnnotation === ann.id;
@@ -190,47 +222,54 @@ export function PhotoAnnotator({
       ctx.fillStyle = ann.color + "33"; // 20% opacity fill
       ctx.lineWidth = isSelected ? 4 : 2;
 
-      if (ann.type === "circle" && ann.radius) {
+      // Convert coordinates if they're percentages
+      const x = toPixels(ann.x, "x", ann.isPercentage);
+      const y = toPixels(ann.y, "y", ann.isPercentage);
+      const w = ann.width ? toPixels(ann.width, "width", ann.isPercentage) : 0;
+      const h = ann.height ? toPixels(ann.height, "height", ann.isPercentage) : 0;
+      const r = ann.radius ? toPixels(ann.radius, "width", ann.isPercentage) : 0;
+
+      if (ann.type === "circle" && (ann.radius || r)) {
         ctx.beginPath();
-        ctx.arc(ann.x, ann.y, ann.radius, 0, Math.PI * 2);
+        ctx.arc(x, y, r || ann.radius!, 0, Math.PI * 2);
         ctx.fill();
         ctx.stroke();
-      } else if (ann.type === "rectangle" && ann.width && ann.height) {
-        ctx.fillRect(ann.x, ann.y, ann.width, ann.height);
-        ctx.strokeRect(ann.x, ann.y, ann.width, ann.height);
+      } else if (ann.type === "rectangle" && (ann.width || w) && (ann.height || h)) {
+        ctx.fillRect(x, y, w || ann.width!, h || ann.height!);
+        ctx.strokeRect(x, y, w || ann.width!, h || ann.height!);
       } else if (ann.type === "freehand" && ann.points && ann.points.length > 0) {
         ctx.beginPath();
         ctx.moveTo(ann.points[0].x, ann.points[0].y);
         ann.points.forEach((pt) => ctx.lineTo(pt.x, pt.y));
         ctx.stroke();
-      } else if (ann.type === "ai_detection" && ann.width && ann.height) {
+      } else if (ann.type === "ai_detection" && (ann.width || w) && (ann.height || h)) {
         // AI detection boxes with dashed lines
         ctx.setLineDash([5, 5]);
-        ctx.fillRect(ann.x, ann.y, ann.width, ann.height);
-        ctx.strokeRect(ann.x, ann.y, ann.width, ann.height);
+        ctx.fillRect(x, y, w || ann.width!, h || ann.height!);
+        ctx.strokeRect(x, y, w || ann.width!, h || ann.height!);
         ctx.setLineDash([]);
 
         // Draw confidence badge
         if (ann.confidence) {
           ctx.fillStyle = ann.color;
-          ctx.fillRect(ann.x, ann.y - 20, 60, 18);
+          ctx.fillRect(x, y - 20, 60, 18);
           ctx.fillStyle = "#fff";
           ctx.font = "12px Arial";
-          ctx.fillText(`${Math.round(ann.confidence * 100)}%`, ann.x + 4, ann.y - 6);
+          ctx.fillText(`${Math.round(ann.confidence * 100)}%`, x + 4, y - 6);
         }
       }
 
       // Draw label for selected annotation
       if (isSelected && (ann.damageType || ann.ircCode)) {
-        const labelY = ann.y + (ann.height || ann.radius || 0) + 20;
+        const labelY = y + (h || ann.height || r || ann.radius || 0) + 20;
         ctx.fillStyle = "#000";
         ctx.font = "bold 12px Arial";
         if (ann.damageType) {
-          ctx.fillText(ann.damageType, ann.x, labelY);
+          ctx.fillText(ann.damageType, x, labelY);
         }
         if (ann.ircCode) {
           ctx.fillStyle = "#0066cc";
-          ctx.fillText(IRC_CODES[ann.ircCode].code, ann.x, labelY + 14);
+          ctx.fillText(IRC_CODES[ann.ircCode].code, x, labelY + 14);
         }
       }
     });
@@ -607,12 +646,12 @@ export function PhotoAnnotator({
       <div
         ref={containerRef}
         className="relative overflow-hidden rounded-lg border bg-slate-100 dark:bg-slate-800"
-        style={{ height: "500px" }}
+        style={{ height: `${canvasSize.height + 20}px` }}
       >
         <canvas
           ref={canvasRef}
-          width={800}
-          height={600}
+          width={canvasSize.width}
+          height={canvasSize.height}
           className={cn(
             "cursor-crosshair",
             selectedTool === "select" && "cursor-default",

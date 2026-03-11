@@ -17,7 +17,7 @@ const tabs = [
   { label: "Photos", href: "/photos" },
   { label: "Documents", href: "/documents" },
   { label: "AI Assistant", href: "/ai" },
-  { label: "Scope", href: "/scope" },
+  { label: "Supplement Builder", href: "/scope" },
   { label: "Measurements", href: "/measurements" },
   { label: "Messages", href: "/messages" },
   { label: "Timeline", href: "/timeline" },

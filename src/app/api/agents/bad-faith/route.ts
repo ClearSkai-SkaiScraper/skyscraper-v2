@@ -42,13 +42,16 @@ export async function POST(request: NextRequest) {
         .catch(() => null);
       if (existing) {
         // Transform DB format to response format
+        const cached = (existing.analysis as Record<string, any>) || {};
+        const cachedIndicators = cached.indicators || [];
+        const cachedSeverity = cached.overallSeverity || "none";
         const cachedResult = {
-          hasBadFaithIndicators: (existing.indicators as any[])?.length > 0,
-          indicators: (existing.indicators as any[]) || [],
-          overallSeverity: existing.severity || "none",
-          legalActionRecommended: existing.severity === "critical" || existing.severity === "high",
-          attorneyReferralSuggested: existing.severity === "high" || existing.severity === "medium",
-          summary: existing.summary || "Analysis loaded from cache.",
+          hasBadFaithIndicators: cachedIndicators.length > 0,
+          indicators: cachedIndicators,
+          overallSeverity: cachedSeverity,
+          legalActionRecommended: cachedSeverity === "critical" || cachedSeverity === "high",
+          attorneyReferralSuggested: cachedSeverity === "high" || cachedSeverity === "medium",
+          summary: cached.summary || "Analysis loaded from cache.",
         };
         return NextResponse.json(cachedResult);
       }
@@ -141,17 +144,24 @@ export async function POST(request: NextRequest) {
       await prisma.claim_bad_faith_analysis.upsert({
         where: { claim_id: claimId },
         create: {
+          id: `bf-${claimId}-${Date.now()}`,
           claim_id: claimId,
-          severity: overallSeverity,
-          summary,
-          indicators: indicators,
-          analyzed_at: new Date(),
+          severity: typeof overallSeverity === "number" ? overallSeverity : indicators.length,
+          analysis: {
+            overallSeverity,
+            summary,
+            indicators,
+            analyzedAt: new Date().toISOString(),
+          },
         },
         update: {
-          severity: overallSeverity,
-          summary,
-          indicators: indicators,
-          analyzed_at: new Date(),
+          severity: typeof overallSeverity === "number" ? overallSeverity : indicators.length,
+          analysis: {
+            overallSeverity,
+            summary,
+            indicators,
+            analyzedAt: new Date().toISOString(),
+          },
         },
       });
       logger.info("[BAD_FAITH_ANALYSIS] Saved to database", { claimId, severity: overallSeverity });

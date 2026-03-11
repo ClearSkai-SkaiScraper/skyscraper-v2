@@ -19,6 +19,8 @@ export default function ClaimsError({
       tags: { component: "claims-error-boundary" },
       extra: { digest: error.digest },
     });
+    // Also log to console for debugging
+    console.error("[Claims Error Boundary]", error.message, error.stack);
   }, [error]);
 
   return (

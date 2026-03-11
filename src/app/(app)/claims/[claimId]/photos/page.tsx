@@ -14,6 +14,7 @@ import {
   X,
   ZoomIn,
 } from "lucide-react";
+import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 
@@ -224,7 +225,8 @@ export default function PhotosPage() {
         return;
       }
 
-      // Save annotations
+      // Save annotations - store as percentages (0-100) and convert to pixels at render time
+      // This ensures proper alignment regardless of canvas/display size
       if (data.annotations && data.annotations.length > 0) {
         const annotations = data.annotations.map(
           (
@@ -237,10 +239,13 @@ export default function PhotosPage() {
           ) => ({
             id: ann.id,
             type: "ai_detection",
-            x: (ann.x / 100) * 800,
-            y: (ann.y / 100) * 600,
-            width: (ann.width / 100) * 800,
-            height: (ann.height / 100) * 600,
+            // Store as percentage values (0-100) for proper scaling at render time
+            x: ann.x,
+            y: ann.y,
+            width: ann.width,
+            height: ann.height,
+            // Add flag to indicate these are percentages
+            isPercentage: true,
             color: getSeverityColorHex(ann.severity),
             damageType: ann.damageType,
             severity: ann.severity,
@@ -352,10 +357,18 @@ export default function PhotosPage() {
 
       const data = await res.json();
 
-      // Open the PDF in a new tab
+      // Download PDF using a temp link to avoid popup blocker
       if (data.pdfUrl) {
-        window.open(data.pdfUrl, "_blank");
+        const link = document.createElement("a");
+        link.href = data.pdfUrl;
+        link.target = "_blank";
+        link.rel = "noopener noreferrer";
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
         toast.success("Damage report generated successfully!");
+      } else {
+        toast.error("Report generated but download URL was not returned");
       }
     } catch (error) {
       logger.error("Report generation error:", error);
@@ -943,12 +956,12 @@ export default function PhotosPage() {
                           ) : (
                             <p className="text-xs text-amber-600 dark:text-amber-400">
                               → Update material type on{" "}
-                              <a
+                              <Link
                                 href={`/claims/${claimId}/overview`}
                                 className="underline hover:text-amber-700"
                               >
                                 Claim Overview
-                              </a>
+                              </Link>
                             </p>
                           )}
                         </div>
@@ -961,12 +974,12 @@ export default function PhotosPage() {
                           ) : (
                             <p className="text-xs text-amber-600 dark:text-amber-400">
                               → Set loss type on{" "}
-                              <a
+                              <Link
                                 href={`/claims/${claimId}/overview`}
                                 className="underline hover:text-amber-700"
                               >
                                 Claim Overview
-                              </a>
+                              </Link>
                             </p>
                           )}
                         </div>
@@ -977,12 +990,12 @@ export default function PhotosPage() {
                           ) : (
                             <p className="text-xs text-amber-600 dark:text-amber-400">
                               → Add functional damage details on{" "}
-                              <a
+                              <Link
                                 href={`/claims/${claimId}/overview`}
                                 className="underline hover:text-amber-700"
                               >
                                 Claim Overview
-                              </a>
+                              </Link>
                             </p>
                           )}
                         </div>
@@ -1005,12 +1018,12 @@ export default function PhotosPage() {
                           ) : (
                             <p className="text-xs text-amber-600 dark:text-amber-400">
                               → Run Quick DOL Verification on{" "}
-                              <a
+                              <Link
                                 href={`/claims/${claimId}/overview`}
                                 className="underline hover:text-amber-700"
                               >
                                 Claim Overview
-                              </a>{" "}
+                              </Link>{" "}
                               to correlate damage with weather events
                             </p>
                           )}
