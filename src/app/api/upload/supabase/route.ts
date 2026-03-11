@@ -349,10 +349,11 @@ export async function POST(request: NextRequest) {
     } = supabase.storage.from(config.bucket).getPublicUrl(filePath);
 
     // Create file_assets DB record so photos/documents appear in the UI
+    const fileAssetId = crypto.randomUUID();
     try {
       await prisma.file_assets.create({
         data: {
-          id: crypto.randomUUID(),
+          id: fileAssetId,
           orgId: safeOrgId,
           ownerId: userId,
           claimId: claimId || null,
@@ -390,6 +391,7 @@ export async function POST(request: NextRequest) {
     });
 
     return NextResponse.json({
+      id: fileAssetId,
       url: publicUrl,
       path: data.path,
       name: file.name,

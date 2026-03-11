@@ -37,7 +37,7 @@ function getOpenAI(): OpenAI {
 }
 
 const RequestSchema = z.object({
-  imageUrl: z.string().url(),
+  imageUrl: z.string().min(1),
   photoId: z.string().optional(),
   includeSlopes: z.boolean().default(false),
   // Extended to support all roof and component types
