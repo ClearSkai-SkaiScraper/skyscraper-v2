@@ -140,11 +140,36 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: `Invalid upload type: ${uploadType}` }, { status: 400 });
     }
 
+    // ── HEIC MIME-type fix ──────────────────────────────────────────────
+    // Safari / macOS sometimes report HEIC files with empty or generic
+    // MIME type. Detect from extension so the file passes validation.
+    let effectiveType = file.type;
+    if (!effectiveType || effectiveType === "application/octet-stream") {
+      const ext = file.name.split(".").pop()?.toLowerCase();
+      const extMimeMap: Record<string, string> = {
+        jpg: "image/jpeg",
+        jpeg: "image/jpeg",
+        png: "image/png",
+        webp: "image/webp",
+        heic: "image/heic",
+        heif: "image/heif",
+        pdf: "application/pdf",
+      };
+      if (ext && extMimeMap[ext]) {
+        effectiveType = extMimeMap[ext];
+        logger.info("[Supabase Upload] MIME type detected from extension", {
+          originalType: file.type,
+          ext,
+          detectedType: effectiveType,
+        });
+      }
+    }
+
     // ==== GUARDRAILS: Enhanced validation ====
 
     // 1. Validate file with guardrails
     const fileValidation = validateFile(
-      { name: file.name, type: file.type, size: file.size },
+      { name: file.name, type: effectiveType, size: file.size },
       { maxSizeBytes: config.maxSize, allowedTypes: config.allowedTypes }
     );
 
@@ -155,7 +180,7 @@ export async function POST(request: NextRequest) {
         action: "upload",
         filePath: file.name,
         fileSize: file.size,
-        fileType: file.type,
+        fileType: effectiveType,
         claimId: claimId || undefined,
         success: false,
         error: fileValidation.error,
@@ -211,9 +236,11 @@ export async function POST(request: NextRequest) {
 
     // Legacy validation (keeping for safety, guardrails now handles this)
     // Validate file type
-    if (!config.allowedTypes.includes(file.type)) {
+    if (!config.allowedTypes.includes(effectiveType)) {
       return NextResponse.json(
-        { error: `Invalid file type: ${file.type}. Allowed: ${config.allowedTypes.join(", ")}` },
+        {
+          error: `Invalid file type: ${effectiveType}. Allowed: ${config.allowedTypes.join(", ")}`,
+        },
         { status: 400 }
       );
     }
@@ -255,7 +282,7 @@ export async function POST(request: NextRequest) {
 
     // Upload file to Supabase
     const { data, error } = await supabase.storage.from(config.bucket).upload(filePath, buffer, {
-      contentType: file.type,
+      contentType: effectiveType,
       upsert: true,
     });
 
@@ -274,7 +301,7 @@ export async function POST(request: NextRequest) {
           const uint8Array = new Uint8Array(buffer);
 
           await uploadBytes(storageRef, uint8Array, {
-            contentType: file.type,
+            contentType: effectiveType,
             customMetadata: {
               originalName: file.name,
               uploadedAt: new Date().toISOString(),
@@ -295,7 +322,7 @@ export async function POST(request: NextRequest) {
                 ownerId: userId,
                 claimId: claimId || null,
                 filename: file.name,
-                mimeType: file.type,
+                mimeType: effectiveType,
                 sizeBytes: file.size,
                 storageKey: firebasePath,
                 bucket: config.bucket,
@@ -321,7 +348,7 @@ export async function POST(request: NextRequest) {
             action: "upload",
             filePath: firebasePath,
             fileSize: file.size,
-            fileType: file.type,
+            fileType: effectiveType,
             claimId: claimId || undefined,
             success: true,
           });
@@ -331,7 +358,7 @@ export async function POST(request: NextRequest) {
             path: firebasePath,
             name: file.name,
             size: file.size,
-            type: file.type,
+            type: effectiveType,
             uploadType,
             storage: "firebase",
           });
@@ -358,7 +385,7 @@ export async function POST(request: NextRequest) {
           ownerId: userId,
           claimId: claimId || null,
           filename: file.name,
-          mimeType: file.type,
+          mimeType: effectiveType,
           sizeBytes: file.size,
           storageKey: filePath,
           bucket: config.bucket,
@@ -385,7 +412,7 @@ export async function POST(request: NextRequest) {
       action: "upload",
       filePath,
       fileSize: file.size,
-      fileType: file.type,
+      fileType: effectiveType,
       claimId: claimId || undefined,
       success: true,
     });
@@ -396,7 +423,7 @@ export async function POST(request: NextRequest) {
       path: data.path,
       name: file.name,
       size: file.size,
-      type: file.type,
+      type: effectiveType,
       uploadType,
       storage: "supabase",
     });

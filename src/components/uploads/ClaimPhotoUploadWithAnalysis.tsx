@@ -1,8 +1,8 @@
 "use client";
 
-import { CheckCircle, Loader2, Sparkles, Upload, X } from "lucide-react";
-import { useCallback, useState } from "react";
-import { useDropzone } from "react-dropzone";
+import { AlertCircle, CheckCircle, Loader2, Sparkles, Upload, X } from "lucide-react";
+import { useCallback, useMemo, useState } from "react";
+import { type FileRejection, useDropzone } from "react-dropzone";
 
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -28,10 +28,46 @@ interface AnalysisResult {
 }
 
 /**
+ * Safe wrapper around URL.createObjectURL — returns empty string on failure.
+ * Safari can throw for certain file types (HEIC edge cases).
+ */
+function safeObjectUrl(file: File): string {
+  try {
+    return URL.createObjectURL(file);
+  } catch {
+    return "";
+  }
+}
+
+/**
+ * Detect MIME type from file extension when the browser reports empty/generic type.
+ * macOS Safari sometimes reports HEIC files with empty type.
+ */
+function detectMimeType(file: File): string {
+  if (file.type && file.type !== "application/octet-stream") return file.type;
+
+  const ext = file.name.split(".").pop()?.toLowerCase();
+  const mimeMap: Record<string, string> = {
+    jpg: "image/jpeg",
+    jpeg: "image/jpeg",
+    png: "image/png",
+    webp: "image/webp",
+    heic: "image/heic",
+    heif: "image/heif",
+  };
+  return mimeMap[ext || ""] || file.type || "application/octet-stream";
+}
+
+/**
  * ClaimPhotoUploadWithAnalysis - Upload + Auto AI Analysis
  *
  * Uploads photos to Supabase and optionally triggers AI damage detection
  * with IRC code mapping and automatic captioning.
+ *
+ * Resilient design:
+ * - Per-file error handling (one bad file doesn't kill the batch)
+ * - HEIC MIME type detection fallback
+ * - Safe object URL creation for thumbnails
  */
 export function ClaimPhotoUploadWithAnalysis({
   claimId,
@@ -47,13 +83,30 @@ export function ClaimPhotoUploadWithAnalysis({
   const [uploadedPhotos, setUploadedPhotos] = useState<{ id: string; url: string }[]>([]);
   const [analysisResults, setAnalysisResults] = useState<AnalysisResult[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const [failedFiles, setFailedFiles] = useState<{ name: string; error: string }[]>([]);
   const [autoAnalyze, setAutoAnalyze] = useState(defaultAutoAnalyze);
 
-  const onDrop = useCallback((acceptedFiles: File[]) => {
+  // Memoize object URLs so they aren't recreated on every render
+  const previewUrls = useMemo(() => {
+    return files.map((file) => safeObjectUrl(file));
+  }, [files]);
+
+  const onDrop = useCallback((acceptedFiles: File[], rejections: FileRejection[]) => {
     setFiles((prev) => [...prev, ...acceptedFiles]);
     setError(null);
+    setFailedFiles([]);
     setUploadedPhotos([]);
     setAnalysisResults([]);
+
+    // Show rejection reasons (e.g., file too large, wrong type)
+    if (rejections.length > 0) {
+      const reasons = rejections
+        .slice(0, 3)
+        .map((r) => `${r.file.name}: ${r.errors.map((e) => e.message).join(", ")}`)
+        .join("; ");
+      const suffix = rejections.length > 3 ? ` (+${rejections.length - 3} more)` : "";
+      setError(`Some files were rejected: ${reasons}${suffix}`);
+    }
   }, []);
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
@@ -75,15 +128,27 @@ export function ClaimPhotoUploadWithAnalysis({
     setUploading(true);
     setProgress(0);
     setError(null);
+    setFailedFiles([]);
 
     const uploaded: { id: string; url: string; filename: string }[] = [];
+    const failed: { name: string; error: string }[] = [];
     let completed = 0;
 
-    try {
-      // Upload all files
-      for (const file of files) {
+    // Upload each file individually — one failure doesn't stop the batch
+    for (const file of files) {
+      try {
         const formData = new FormData();
-        formData.append("file", file);
+
+        // Detect MIME type (fix for Safari HEIC empty-type issue)
+        const detectedType = detectMimeType(file);
+
+        // If browser-reported type is wrong, create a new File with correct type
+        let uploadFile: File | Blob = file;
+        if (file.type !== detectedType) {
+          uploadFile = new File([file], file.name, { type: detectedType });
+        }
+
+        formData.append("file", uploadFile);
         formData.append("type", "claimPhotos");
         formData.append("claimId", claimId);
 
@@ -93,40 +158,77 @@ export function ClaimPhotoUploadWithAnalysis({
         });
 
         if (!res.ok) {
-          const data = await res.json();
-          throw new Error(data.error || "Upload failed");
+          let errorMsg = "Upload failed";
+          try {
+            const data = await res.json();
+            errorMsg = data.error || errorMsg;
+          } catch {
+            errorMsg = `Upload failed (HTTP ${res.status})`;
+          }
+          failed.push({ name: file.name, error: errorMsg });
+        } else {
+          let data: { id?: string; url?: string };
+          try {
+            data = await res.json();
+          } catch {
+            failed.push({ name: file.name, error: "Invalid response from server" });
+            completed++;
+            setProgress(Math.round((completed / files.length) * 100));
+            continue;
+          }
+
+          if (!data.url) {
+            failed.push({ name: file.name, error: "No URL returned from upload" });
+          } else {
+            uploaded.push({
+              id: data.id || `photo-${Date.now()}-${completed}`,
+              url: data.url,
+              filename: file.name,
+            });
+          }
         }
-
-        const data = await res.json();
-        uploaded.push({
-          id: data.id || `photo-${Date.now()}-${completed}`,
-          url: data.url,
-          filename: file.name,
-        });
-
-        completed++;
-        setProgress(Math.round((completed / files.length) * 100));
+      } catch (err: unknown) {
+        const msg = err instanceof Error ? err.message : "Upload failed";
+        logger.error(`Upload error for ${file.name}:`, err);
+        failed.push({ name: file.name, error: msg });
       }
 
-      setUploadedPhotos(uploaded);
-      onUploadComplete?.(uploaded.map((p) => p.url));
+      completed++;
+      setProgress(Math.round((completed / files.length) * 100));
+    }
+
+    setUploadedPhotos(uploaded);
+    setFailedFiles(failed);
+
+    if (uploaded.length > 0) {
+      try {
+        onUploadComplete?.(uploaded.map((p) => p.url));
+      } catch (err) {
+        logger.error("onUploadComplete callback error:", err);
+      }
 
       // Auto-analyze if enabled
-      if (autoAnalyze && uploaded.length > 0) {
+      if (autoAnalyze) {
         await analyzePhotos(uploaded);
       }
+    }
 
-      // Clear files after successful upload
+    // Show error summary for failures
+    if (failed.length > 0 && uploaded.length === 0) {
+      setError(`All ${failed.length} uploads failed. ${failed[0]?.error || "Unknown error"}`);
+    } else if (failed.length > 0) {
+      setError(`${failed.length} of ${files.length} uploads failed. ${uploaded.length} succeeded.`);
+    }
+
+    // Clear files after upload (success or partial success)
+    if (uploaded.length > 0) {
       setTimeout(() => {
         setFiles([]);
         setProgress(0);
       }, 2000);
-    } catch (err: unknown) {
-      logger.error("Upload error:", err);
-      setError(err instanceof Error ? err.message : "Upload failed");
-    } finally {
-      setUploading(false);
     }
+
+    setUploading(false);
   };
 
   const analyzePhotos = async (photos: { id: string; url: string; filename: string }[]) => {
@@ -307,8 +409,21 @@ export function ClaimPhotoUploadWithAnalysis({
       </div>
 
       {error && (
-        <div className="mt-4 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700 dark:border-red-800 dark:bg-red-900/20 dark:text-red-300">
-          {error}
+        <div className="mt-4 flex items-start gap-2 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700 dark:border-red-800 dark:bg-red-900/20 dark:text-red-300">
+          <AlertCircle className="mt-0.5 h-4 w-4 flex-shrink-0" />
+          <div>
+            <p>{error}</p>
+            {failedFiles.length > 0 && (
+              <ul className="mt-1 list-inside list-disc text-xs">
+                {failedFiles.slice(0, 5).map((f, i) => (
+                  <li key={i}>
+                    {f.name}: {f.error}
+                  </li>
+                ))}
+                {failedFiles.length > 5 && <li>+{failedFiles.length - 5} more failed</li>}
+              </ul>
+            )}
+          </div>
         </div>
       )}
 
@@ -325,11 +440,17 @@ export function ClaimPhotoUploadWithAnalysis({
             >
               <div className="flex min-w-0 flex-1 items-center gap-3">
                 <div className="h-10 w-10 flex-shrink-0 overflow-hidden rounded bg-gray-200 dark:bg-gray-700">
-                  <img
-                    src={URL.createObjectURL(file)}
-                    alt={file.name}
-                    className="h-full w-full object-cover"
-                  />
+                  {previewUrls[index] ? (
+                    <img
+                      src={previewUrls[index]}
+                      alt={file.name}
+                      className="h-full w-full object-cover"
+                    />
+                  ) : (
+                    <div className="flex h-full w-full items-center justify-center text-xs text-gray-400">
+                      IMG
+                    </div>
+                  )}
                 </div>
                 <div className="min-w-0 flex-1">
                   <p className="truncate text-sm font-medium text-gray-900 dark:text-white">
