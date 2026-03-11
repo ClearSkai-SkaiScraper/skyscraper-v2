@@ -93,7 +93,6 @@ export const DELETE = withAuth(async (req: NextRequest, { orgId }) => {
         id: true,
         orgId: true,
         publicUrl: true,
-        storagePath: true,
       },
     });
 
@@ -101,8 +100,8 @@ export const DELETE = withAuth(async (req: NextRequest, { orgId }) => {
       return new NextResponse("File not found", { status: 404 });
     }
 
-    // 1. Delete from Supabase storage if we have a storage path or Supabase URL
-    const storagePath = file.storagePath || extractStoragePath(file.publicUrl);
+    // 1. Delete from Supabase storage if we have a Supabase URL
+    const storagePath = extractStoragePath(file.publicUrl);
     if (storagePath) {
       try {
         const supabase = getSupabaseAdmin();
