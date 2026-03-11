@@ -114,6 +114,8 @@ export default function PhotosPage() {
 
   // ── Computed damage summary values ──
   const analyzedCount = photos.filter((p) => p.analyzed).length;
+  const unanalyzedCount = photos.filter((p) => !p.analyzed).length;
+  const severeCount = photos.filter((p) => p.severity === "severe").length;
   const annotationCount = photos.reduce((sum, p) => sum + (p.annotations?.length || 0), 0);
 
   const getSeverityColor = (severity: string) => {
@@ -494,24 +496,6 @@ export default function PhotosPage() {
     if (severities.includes("Low")) return "minor";
     return "none";
   };
-
-  const getSeverityColor = (severity?: string) => {
-    switch (severity) {
-      case "severe":
-        return "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400";
-      case "moderate":
-        return "bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400";
-      case "minor":
-        return "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400";
-      default:
-        return "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-400";
-    }
-  };
-
-  const analyzedCount = photos.filter((p) => p.analyzed).length;
-  const unanalyzedCount = photos.filter((p) => !p.analyzed).length;
-  const severeCount = photos.filter((p) => p.severity === "severe").length;
-  const annotationCount = photos.reduce((acc, p) => acc + (p.annotations?.length || 0), 0);
 
   return (
     <SectionCard title="Photos & AI Analysis">
