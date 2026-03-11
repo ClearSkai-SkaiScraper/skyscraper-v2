@@ -5,6 +5,7 @@ import {
   Brain,
   CheckCircle2,
   Clock,
+  Copy,
   DollarSign,
   Download,
   ExternalLink,
