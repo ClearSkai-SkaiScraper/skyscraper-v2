@@ -184,8 +184,10 @@ export default function SupplementBuilderPage() {
       if (!response.ok) throw new Error("Failed to fetch scope");
 
       const data = await response.json();
-      if (data.items && Array.isArray(data.items)) {
-        const scopeItems: LineItem[] = data.items
+      // API returns lineItems, not items
+      const scopeData = data.lineItems || data.items || [];
+      if (Array.isArray(scopeData) && scopeData.length > 0) {
+        const scopeItems: LineItem[] = scopeData
           .filter((item: any) => item.disputed)
           .map((item: any) => ({
             id: `scope-${item.id}`,
@@ -203,8 +205,11 @@ export default function SupplementBuilderPage() {
           setItems([...items, ...scopeItems]);
           toast.success(`Imported ${scopeItems.length} disputed items from scope`);
         } else {
-          toast.info("No disputed items found in scope editor");
+          // Items exist but none are disputed
+          toast.info("No disputed items found in scope. Mark items as disputed first.");
         }
+      } else {
+        toast.info("No scope items found for this claim");
       }
     } catch (error) {
       logger.error("Import error:", error);

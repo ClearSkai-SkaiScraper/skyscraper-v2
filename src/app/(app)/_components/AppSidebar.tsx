@@ -56,7 +56,6 @@ const navSections: NavSection[] = [
       { label: "Claims Timeline", href: "/analytics/claims-timeline" },
       { label: "Claim Packet", href: "/claims-ready-folder" },
       { label: "Supplement Builder", href: "/ai/tools/supplement" },
-      { label: "Supplement Tracker", href: "/supplements" },
       { label: "Depreciation Builder", href: "/ai/tools/depreciation" },
       { label: "Rebuttal Builder", href: "/ai/tools/rebuttal" },
       { label: "Bad Faith Analysis", href: "/ai/bad-faith" },
