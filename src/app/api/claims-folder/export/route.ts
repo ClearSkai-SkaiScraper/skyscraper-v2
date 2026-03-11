@@ -68,7 +68,7 @@ export async function POST(request: NextRequest) {
         const pdfDoc = generatePDFDocument(folder, includeSections);
         const pdfBytes = await renderPDFBytes(pdfDoc);
 
-        return new NextResponse(Buffer.from(pdfBytes), {
+        return new NextResponse(new Uint8Array(pdfBytes), {
           status: 200,
           headers: {
             "Content-Type": "application/pdf",

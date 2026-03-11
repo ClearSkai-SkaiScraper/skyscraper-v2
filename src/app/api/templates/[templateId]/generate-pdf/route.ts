@@ -1,6 +1,6 @@
-import * as Sentry from "@sentry/nextjs";
 import { logger } from "@/lib/logger";
-import { NextRequest, NextResponse } from "next/server";
+import * as Sentry from "@sentry/nextjs";
+import { NextResponse } from "next/server";
 
 import { withOrgScope } from "@/lib/auth/tenant";
 import { generateTemplatePDF } from "@/lib/templates/generateTemplatePDF";
@@ -30,7 +30,7 @@ export const POST = withOrgScope(
       });
 
       // Return PDF as downloadable file
-      return new NextResponse(pdfBuffer as any, {
+      return new NextResponse(new Uint8Array(pdfBuffer), {
         status: 200,
         headers: {
           "Content-Type": "application/pdf",

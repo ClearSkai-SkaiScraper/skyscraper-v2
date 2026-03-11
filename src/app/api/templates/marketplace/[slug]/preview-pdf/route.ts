@@ -9,8 +9,8 @@
  * 3) Generated lightweight PDF (pdf-lib) with the correct template title/header
  */
 
-import fs from "fs/promises";
 import { logger } from "@/lib/logger";
+import fs from "fs/promises";
 import { NextRequest, NextResponse } from "next/server";
 import path from "path";
 import { PDFDocument, rgb, StandardFonts } from "pdf-lib";
@@ -134,7 +134,7 @@ async function serveFallbackPdf(options: {
   const publicDir = path.join(process.cwd(), "public");
   const fallbackPath = path.join(publicDir, getFallbackPdfRelativePath(options.category));
   const fileBuffer = await fs.readFile(fallbackPath);
-  return new NextResponse(fileBuffer, {
+  return new NextResponse(new Uint8Array(fileBuffer), {
     headers: {
       "Content-Type": "application/pdf",
       "Content-Disposition": `inline; filename="${options.slug}-preview.pdf"`,
@@ -156,7 +156,7 @@ async function tryServePremiumPreviewPdf(options: {
   for (const abs of candidates) {
     try {
       const pdfBuffer = await fs.readFile(abs);
-      return new NextResponse(pdfBuffer, {
+      return new NextResponse(new Uint8Array(pdfBuffer), {
         headers: {
           "Content-Type": "application/pdf",
           "Content-Disposition": `inline; filename="${options.filename}"`,
@@ -202,7 +202,7 @@ export async function GET(req: NextRequest, { params }: { params: { slug: string
     const description = template?.description ?? registryTemplate?.description ?? null;
 
     const pdfBytes = await generatePreviewPdf({ slug, title, category, description });
-    return new NextResponse(Buffer.from(pdfBytes), {
+    return new NextResponse(new Uint8Array(pdfBytes), {
       headers: {
         "Content-Type": "application/pdf",
         "Content-Disposition": `inline; filename="${slug}-preview.pdf"`,

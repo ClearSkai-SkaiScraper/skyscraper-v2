@@ -64,4 +64,46 @@ const prismaClient = globalThis.__prisma ?? createPrismaClient();
 // Cache in EVERY environment (dev, preview, AND production)
 globalThis.__prisma = prismaClient;
 
+// ── Graceful shutdown: release connections on process exit ──────────
+// Prevents "Too many connections" on hot-reload (dev) and process recycling.
+if (typeof process !== "undefined") {
+  const shutdown = async () => {
+    try {
+      await prismaClient.$disconnect();
+    } catch {
+      // Swallow — process is exiting anyway
+    }
+  };
+
+  // Only register once per process (guard against HMR re-registration)
+  if (!(globalThis as any).__prismaShutdownRegistered) {
+    process.on("beforeExit", shutdown);
+    process.on("SIGINT", () => shutdown().then(() => process.exit(0)));
+    process.on("SIGTERM", () => shutdown().then(() => process.exit(0)));
+    (globalThis as any).__prismaShutdownRegistered = true;
+  }
+}
+
+/**
+ * Warm-up helper: call once per cold start (e.g. in health checks)
+ * to eagerly establish the DB connection rather than waiting for
+ * the first query to fail.
+ */
+export async function ensurePrismaConnection(): Promise<boolean> {
+  try {
+    await prismaClient.$connect();
+    return true;
+  } catch (err) {
+    console.error("[PRISMA] Connection warmup failed:", err);
+    // Attempt to disconnect and reconnect once
+    try {
+      await prismaClient.$disconnect();
+      await prismaClient.$connect();
+      return true;
+    } catch {
+      return false;
+    }
+  }
+}
+
 export default prismaClient;

@@ -233,7 +233,7 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
           claimNumber: true,
           dateOfLoss: true,
           carrier: true,
-          policyNumber: true,
+          policy_number: true,
           properties: {
             select: { street: true, city: true, state: true, zipCode: true },
           },
@@ -423,7 +423,7 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
       ]);
     }
     if (claim.carrier) details.push(["Insurance Carrier", claim.carrier]);
-    if (claim.policyNumber) details.push(["Policy Number", claim.policyNumber]);
+    if (claim.policy_number) details.push(["Policy Number", claim.policy_number]);
     details.push([
       "Report Date",
       new Date().toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" }),

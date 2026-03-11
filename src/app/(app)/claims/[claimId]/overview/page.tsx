@@ -20,6 +20,7 @@ import { TabErrorBoundary } from "@/components/errors/TabErrorBoundary";
 import { JobValueBox } from "@/components/jobs/JobValueBox";
 import { ClaimWorkspaceSkeleton } from "@/components/loading/LoadingStates";
 
+import { retryQueue } from "@/lib/client/retryQueue";
 import { logger } from "@/lib/logger";
 import { CarrierExportButton } from "../_components/CarrierExportButton";
 import { ClaimsSidebar } from "../_components/ClaimsSidebar";
@@ -205,6 +206,12 @@ export default function OverviewPage() {
           toast.success("Changes saved", { duration: 2000 });
         } catch (err) {
           toast.error(err.message || "Failed to save changes");
+          // Enqueue for retry on next session
+          retryQueue.enqueue({
+            url: `/api/claims/${claimId}/update`,
+            method: "PATCH",
+            body: updates,
+          });
           // Revert optimistic updates on failure
           fetchData();
         }

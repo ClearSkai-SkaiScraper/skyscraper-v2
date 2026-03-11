@@ -9,8 +9,8 @@
  * - Supports ?preview=1 for branded preview mode
  */
 
-import { auth } from "@clerk/nextjs/server";
 import { logger } from "@/lib/logger";
+import { auth } from "@clerk/nextjs/server";
 import fs from "fs/promises";
 import { NextRequest, NextResponse } from "next/server";
 import path from "path";
@@ -150,7 +150,7 @@ export async function GET(req: NextRequest, { params }: { params: { templateId: 
         const disposition = download ? "attachment" : "inline";
         const filename = `${templateTitle}.pdf`;
 
-        return new NextResponse(fileBuffer, {
+        return new NextResponse(new Uint8Array(fileBuffer), {
           headers: {
             "Content-Type": "application/pdf",
             "Content-Disposition": `${disposition}; filename="${filename}"`,
@@ -237,7 +237,7 @@ export async function GET(req: NextRequest, { params }: { params: { templateId: 
         const disposition = download ? "attachment" : "inline";
         const filename = `${templateTitle}.pdf`;
 
-        return new NextResponse(fileBuffer, {
+        return new NextResponse(new Uint8Array(fileBuffer), {
           headers: {
             "Content-Type": "application/pdf",
             "Content-Disposition": `${disposition}; filename="${filename}"`,

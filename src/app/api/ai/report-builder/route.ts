@@ -203,7 +203,7 @@ async function POST_INNER(req: NextRequest, ctx: { userId: string; orgId: string
     logger.debug(`[Report Builder] PDF size: ${(pdfBuffer.length / 1024).toFixed(2)} KB`);
 
     // Return PDF as downloadable file
-    return new NextResponse(pdfBuffer as unknown as BodyInit, {
+    return new NextResponse(new Uint8Array(pdfBuffer), {
       status: 200,
       headers: {
         "Content-Type": "application/pdf",

@@ -103,7 +103,7 @@ export const POST = withAuth(async (req: NextRequest, { orgId, userId }, routePa
         zip: "application/zip",
       };
 
-      return new NextResponse(result.buffer as any, {
+      return new NextResponse(new Uint8Array(result.buffer), {
         headers: {
           "Content-Type": contentTypes[format] || "application/octet-stream",
           "Content-Disposition": `attachment; filename="contractor-packet-${reportId}.${format}"`,

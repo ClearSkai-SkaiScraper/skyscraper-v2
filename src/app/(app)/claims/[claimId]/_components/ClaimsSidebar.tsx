@@ -22,6 +22,7 @@ import { useCallback, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { retryQueue } from "@/lib/client/retryQueue";
 import { toast } from "sonner";
 
 interface ClaimsSidebarProps {
@@ -83,7 +84,12 @@ export function ClaimsSidebar({ claimId, claim, onFieldUpdate }: ClaimsSidebarPr
         onFieldUpdate?.(field, editValue);
         router.refresh();
       } catch (err) {
-        toast.error("Failed to save — please try again");
+        toast.error("Failed to save — queued for retry");
+        retryQueue.enqueue({
+          url: `/api/claims/${claimId}/update`,
+          method: "PATCH",
+          body: { [field]: editValue },
+        });
         setEditing(null);
       }
     },

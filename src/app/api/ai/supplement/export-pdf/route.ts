@@ -275,7 +275,7 @@ export async function POST(req: NextRequest) {
     const pdfBuffer = await htmlToPdfBuffer(html, { format: "Letter" });
 
     // Return PDF as download
-    return new NextResponse(pdfBuffer as unknown as BodyInit, {
+    return new NextResponse(new Uint8Array(pdfBuffer), {
       status: 200,
       headers: {
         "Content-Type": "application/pdf",

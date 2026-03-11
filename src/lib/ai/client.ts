@@ -17,6 +17,9 @@
 
 import OpenAI from "openai";
 
+import { aiCircuitBreaker, CircuitBreakerOpenError } from "@/lib/ai/circuitBreaker";
+import { aiCostGuard } from "@/lib/ai/costGuard";
+
 // ============================================================================
 // CLIENT INITIALIZATION (Lazy Singleton)
 // ============================================================================
@@ -95,6 +98,9 @@ export type AiCallOptions<T = unknown> = {
 
   /** Additional context for error logging (e.g. claimId, userId) */
   context?: Record<string, any>;
+
+  /** Organization ID — when provided, enforces per-org daily token budget */
+  orgId?: string;
 };
 
 export type AiCallResult<T> =
@@ -147,11 +153,38 @@ export async function callOpenAI<T = unknown>(opts: AiCallOptions<T>): Promise<A
     timeoutMs = DEFAULT_TIMEOUT_MS,
     parseJson = false,
     context = {},
+    orgId,
   } = opts;
 
   const startTime = Date.now();
 
   try {
+    // Cost guard check — reject if org exceeded daily token budget
+    if (orgId) {
+      const budget = await aiCostGuard.checkBudget(orgId);
+      if (!budget.ok) {
+        return {
+          success: false,
+          error: budget.reason || "AI daily budget exceeded",
+          code: "API_ERROR" as const,
+        };
+      }
+    }
+
+    // Circuit breaker check — reject early if OpenAI is down
+    try {
+      aiCircuitBreaker.guard();
+    } catch (cbError) {
+      if (cbError instanceof CircuitBreakerOpenError) {
+        return {
+          success: false,
+          error: `AI temporarily unavailable. Retry in ${Math.ceil(cbError.retryAfterMs / 1000)}s.`,
+          code: "API_ERROR" as const,
+        };
+      }
+      throw cbError;
+    }
+
     // Get OpenAI client
     const openaiClient = getOpenAI();
 
@@ -180,6 +213,16 @@ export async function callOpenAI<T = unknown>(opts: AiCallOptions<T>): Promise<A
 
       const raw = response.choices[0]?.message?.content ?? "";
       const tokensUsed = response.usage?.total_tokens;
+
+      // Record success with circuit breaker
+      aiCircuitBreaker.recordSuccess();
+
+      // Record token usage for cost guardrails
+      if (orgId && tokensUsed) {
+        aiCostGuard.recordUsage(orgId, tokensUsed).catch(() => {
+          // Non-blocking — don't fail the request if Redis is down
+        });
+      }
 
       // Log success
       console.log("[AI SUCCESS]", {
@@ -232,6 +275,7 @@ export async function callOpenAI<T = unknown>(opts: AiCallOptions<T>): Promise<A
 
       // Handle timeout
       if (apiError.name === "AbortError" || apiError.code === "ECONNABORTED") {
+        aiCircuitBreaker.recordFailure(apiError);
         console.error("[AI TIMEOUT]", {
           tag,
           model,
@@ -248,6 +292,7 @@ export async function callOpenAI<T = unknown>(opts: AiCallOptions<T>): Promise<A
       }
 
       // Handle API errors
+      aiCircuitBreaker.recordFailure(apiError);
       console.error("[AI API ERROR]", {
         tag,
         model,

@@ -10,6 +10,7 @@
  * - Structured observability metrics
  */
 
+import { aiCircuitBreaker } from "@/lib/ai/circuitBreaker";
 import { generateTraceId, recordMetric, withSpan } from "@/lib/observability/tracing";
 import prisma from "@/lib/prisma";
 
@@ -37,6 +38,11 @@ interface HealthCheck {
     latencyMs: number;
   };
   integrations: IntegrationStatus[];
+  aiCircuitBreaker: {
+    state: string;
+    consecutiveFailures: number;
+    totalTrips: number;
+  };
   memory: {
     heapUsedMB: number;
     heapTotalMB: number;
@@ -159,10 +165,14 @@ export async function deepHealthCheck(): Promise<HealthCheck> {
     version = process.env.npm_package_version || "1.0.0";
   }
 
+  // ── AI Circuit Breaker ──────────────────────────────────────────
+  const cbState = aiCircuitBreaker.getState();
+
   // ── Overall status ──────────────────────────────────────────────
   let status: HealthCheck["status"] = "healthy";
   if (!dbConnected) status = "unhealthy";
-  else if (dbLatency > 500 || !cacheAvailable || !storageAvailable) status = "degraded";
+  else if (dbLatency > 500 || !cacheAvailable || !storageAvailable || cbState.state === "OPEN")
+    status = "degraded";
 
   recordMetric(
     "health.status",
@@ -178,6 +188,11 @@ export async function deepHealthCheck(): Promise<HealthCheck> {
     cache: { available: cacheAvailable, latencyMs: cacheLatency },
     storage: { available: storageAvailable, latencyMs: storageLatency },
     integrations,
+    aiCircuitBreaker: {
+      state: cbState.state,
+      consecutiveFailures: cbState.consecutiveFailures,
+      totalTrips: cbState.totalTrips,
+    },
     memory: {
       heapUsedMB,
       heapTotalMB,
