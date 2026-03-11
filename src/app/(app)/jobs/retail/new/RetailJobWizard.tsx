@@ -187,8 +187,8 @@ export function RetailJobWizard({ orgId }: Props) {
       const data = await res.json();
       const leadId = data.lead?.id || data.id;
 
-      // Upload photos if any
-      if (photos.length > 0) {
+      // Upload photos if any - link to leadId
+      if (photos.length > 0 && leadId) {
         setIsUploading(true);
         setUploadProgress(0);
         let completed = 0;
@@ -197,6 +197,7 @@ export function RetailJobWizard({ orgId }: Props) {
             const fd = new FormData();
             fd.append("file", photo.file);
             fd.append("type", "leadPhotos");
+            fd.append("leadId", leadId); // Link photos to the lead
             await fetch("/api/upload/supabase", { method: "POST", body: fd });
             completed++;
             setUploadProgress(Math.round((completed / photos.length) * 100));
@@ -211,7 +212,7 @@ export function RetailJobWizard({ orgId }: Props) {
       toast.success("✅ Retail job created successfully!");
       router.push(`/jobs/retail/${leadId}`);
     } catch (err) {
-      setError(err.message ?? "Something went wrong.");
+      setError(err instanceof Error ? err.message : "Something went wrong.");
     } finally {
       setLoading(false);
       setIsUploading(false);
