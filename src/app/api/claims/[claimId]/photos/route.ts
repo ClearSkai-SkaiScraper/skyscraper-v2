@@ -43,9 +43,10 @@ export const GET = withAuth(
           claimId,
           orgId,
           mimeType: { startsWith: "image/" },
-          // Use notIn — Prisma's notIn correctly includes NULL values,
-          // whereas { not: "damage_report" } excludes NULL rows in Postgres
-          file_type: { notIn: ["damage_report"] },
+          // Exclude damage_report files but INCLUDE NULLs
+          // IMPORTANT: Prisma's notIn does NOT include NULL values (SQL behavior),
+          // so we must use OR to explicitly allow NULLs
+          OR: [{ file_type: { notIn: ["damage_report"] } }, { file_type: null }],
         },
         orderBy: { createdAt: "desc" },
       });

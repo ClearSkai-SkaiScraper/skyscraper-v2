@@ -254,7 +254,9 @@ export async function checkClaimFileLimit(
     where: {
       claimId,
       // Only count user-uploaded files, not system-generated ones like damage reports
-      file_type: { notIn: ["damage_report"] },
+      // IMPORTANT: Prisma's notIn does NOT include NULL values (SQL behavior),
+      // so we must use OR to explicitly allow NULLs
+      OR: [{ file_type: { notIn: ["damage_report"] } }, { file_type: null }],
     },
   });
 
