@@ -24,9 +24,10 @@ import {
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 
+import { PageHero } from "@/components/layout/PageHero";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { FinancialAnalysisResult } from "@/lib/intel/financial/engine";
 
 /* ── Helpers ────────────────────────────────────────────────── */
@@ -34,20 +35,19 @@ import { FinancialAnalysisResult } from "@/lib/intel/financial/engine";
 const fmt = (n: number) =>
   n.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
-const fmtShort = (n: number) =>
-  n.toLocaleString("en-US", { maximumFractionDigits: 0 });
+const fmtShort = (n: number) => n.toLocaleString("en-US", { maximumFractionDigits: 0 });
 
 /* ── Tab Configuration ──────────────────────────────────────── */
 
 type TabKey = "overview" | "depreciation" | "lineItems" | "supplements" | "settlement" | "exports";
 
 const TABS: { key: TabKey; label: string; icon: React.ReactNode }[] = [
-  { key: "overview",      label: "Overview",       icon: <PieChart className="h-4 w-4" /> },
-  { key: "depreciation",  label: "Depreciation",   icon: <TrendingDown className="h-4 w-4" /> },
-  { key: "lineItems",     label: "Line Items",     icon: <BarChart3 className="h-4 w-4" /> },
-  { key: "supplements",   label: "Supplements",    icon: <TrendingUp className="h-4 w-4" /> },
-  { key: "settlement",    label: "Settlement",     icon: <Target className="h-4 w-4" /> },
-  { key: "exports",       label: "Exports",        icon: <Download className="h-4 w-4" /> },
+  { key: "overview", label: "Overview", icon: <PieChart className="h-4 w-4" /> },
+  { key: "depreciation", label: "Depreciation", icon: <TrendingDown className="h-4 w-4" /> },
+  { key: "lineItems", label: "Line Items", icon: <BarChart3 className="h-4 w-4" /> },
+  { key: "supplements", label: "Supplements", icon: <TrendingUp className="h-4 w-4" /> },
+  { key: "settlement", label: "Settlement", icon: <Target className="h-4 w-4" /> },
+  { key: "exports", label: "Exports", icon: <Download className="h-4 w-4" /> },
 ];
 
 /* ════════════════════════════════════════════════════════════ */
@@ -117,8 +117,8 @@ export default function ClaimFinancialPage() {
             </div>
             <h2 className="mb-2 text-xl font-bold">Financial Analysis</h2>
             <p className="mb-6 text-sm text-muted-foreground">
-              Generate a comprehensive financial audit including RCV/ACV calculations,
-              underpayment detection, and settlement projections.
+              Generate a comprehensive financial audit including RCV/ACV calculations, underpayment
+              detection, and settlement projections.
             </p>
             <Button onClick={runAnalysis} size="lg" className="w-full">
               <BarChart3 className="mr-2 h-4 w-4" />
@@ -135,30 +135,26 @@ export default function ClaimFinancialPage() {
   return (
     <div className="space-y-6">
       {/* ── Header ──────────────────────────────────────── */}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 shadow">
-            <DollarSign className="h-5 w-5 text-white" />
-          </div>
-          <div>
-            <h1 className="text-2xl font-bold tracking-tight text-foreground">
-              Financial Analysis Engine
-            </h1>
-            <p className="text-sm text-muted-foreground">
-              Complete financial audit and underpayment detection
-            </p>
-          </div>
-        </div>
-
-        <Button onClick={runAnalysis} variant="outline" disabled={loading} className="shrink-0">
-          {loading ? (
-            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-          ) : (
-            <RefreshCw className="mr-2 h-4 w-4" />
-          )}
-          {loading ? "Refreshing..." : "Refresh"}
-        </Button>
-      </div>
+      <PageHero
+        title="Financial Analysis Engine"
+        subtitle="Complete financial audit and underpayment detection"
+        icon={<DollarSign className="h-6 w-6" />}
+        actions={
+          <Button
+            onClick={runAnalysis}
+            variant="outline"
+            disabled={loading}
+            className="shrink-0 border-white/30 text-white hover:bg-white/10"
+          >
+            {loading ? (
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            ) : (
+              <RefreshCw className="mr-2 h-4 w-4" />
+            )}
+            {loading ? "Refreshing..." : "Refresh"}
+          </Button>
+        }
+      />
 
       {/* ── Summary Banner ──────────────────────────────── */}
       <Card className="border-emerald-200 bg-gradient-to-r from-emerald-50 to-teal-50 dark:border-emerald-800 dark:from-emerald-900/20 dark:to-teal-900/20">
@@ -220,14 +216,64 @@ function OverviewTab({
   analysis: FinancialAnalysisResult;
 }) {
   const statCards = [
-    { label: "Carrier RCV",     value: totals.rcvCarrier,    color: "text-blue-600 dark:text-blue-400",       border: "border-l-blue-500",    bg: "bg-blue-50 dark:bg-blue-950/40" },
-    { label: "Contractor RCV",  value: totals.rcvContractor, color: "text-emerald-600 dark:text-emerald-400", border: "border-l-emerald-500",  bg: "bg-emerald-50 dark:bg-emerald-950/40" },
-    { label: "Deductible",      value: totals.deductible,    color: "text-orange-600 dark:text-orange-400",   border: "border-l-orange-500",  bg: "bg-orange-50 dark:bg-orange-950/40" },
-    { label: "Total ACV",       value: totals.acvContractor, color: "text-purple-600 dark:text-purple-400",   border: "border-l-purple-500",  bg: "bg-purple-50 dark:bg-purple-950/40" },
-    { label: "Underpayment",    value: totals.underpayment,  color: "text-red-600 dark:text-red-400",         border: "border-l-red-500",     bg: "bg-red-50 dark:bg-red-950/40",   isBad: true },
-    { label: "Payments So Far", value: 0,                    color: "text-slate-600 dark:text-slate-400",     border: "border-l-slate-400",   bg: "bg-slate-50 dark:bg-slate-800/40", note: "No payments recorded" },
-    { label: "Tax",             value: totals.tax,           color: "text-indigo-600 dark:text-indigo-400",   border: "border-l-indigo-500",  bg: "bg-indigo-50 dark:bg-indigo-950/40" },
-    { label: "Final Owed",      value: totals.netOwed,       color: "text-teal-700 dark:text-teal-300",       border: "border-l-teal-600",    bg: "bg-teal-50 dark:bg-teal-950/40" },
+    {
+      label: "Carrier RCV",
+      value: totals.rcvCarrier,
+      color: "text-blue-600 dark:text-blue-400",
+      border: "border-l-blue-500",
+      bg: "bg-blue-50 dark:bg-blue-950/40",
+    },
+    {
+      label: "Contractor RCV",
+      value: totals.rcvContractor,
+      color: "text-emerald-600 dark:text-emerald-400",
+      border: "border-l-emerald-500",
+      bg: "bg-emerald-50 dark:bg-emerald-950/40",
+    },
+    {
+      label: "Deductible",
+      value: totals.deductible,
+      color: "text-orange-600 dark:text-orange-400",
+      border: "border-l-orange-500",
+      bg: "bg-orange-50 dark:bg-orange-950/40",
+    },
+    {
+      label: "Total ACV",
+      value: totals.acvContractor,
+      color: "text-purple-600 dark:text-purple-400",
+      border: "border-l-purple-500",
+      bg: "bg-purple-50 dark:bg-purple-950/40",
+    },
+    {
+      label: "Underpayment",
+      value: totals.underpayment,
+      color: "text-red-600 dark:text-red-400",
+      border: "border-l-red-500",
+      bg: "bg-red-50 dark:bg-red-950/40",
+      isBad: true,
+    },
+    {
+      label: "Payments So Far",
+      value: 0,
+      color: "text-slate-600 dark:text-slate-400",
+      border: "border-l-slate-400",
+      bg: "bg-slate-50 dark:bg-slate-800/40",
+      note: "No payments recorded",
+    },
+    {
+      label: "Tax",
+      value: totals.tax,
+      color: "text-indigo-600 dark:text-indigo-400",
+      border: "border-l-indigo-500",
+      bg: "bg-indigo-50 dark:bg-indigo-950/40",
+    },
+    {
+      label: "Final Owed",
+      value: totals.netOwed,
+      color: "text-teal-700 dark:text-teal-300",
+      border: "border-l-teal-600",
+      bg: "bg-teal-50 dark:bg-teal-950/40",
+    },
   ];
 
   return (
@@ -241,7 +287,9 @@ function OverviewTab({
               <p className={`text-xs font-semibold uppercase tracking-wide ${s.color}`}>
                 {s.label}
               </p>
-              <p className={`mt-1 text-2xl font-bold ${s.isBad && s.value > 0 ? "text-red-600 dark:text-red-400" : "text-foreground"}`}>
+              <p
+                className={`mt-1 text-2xl font-bold ${s.isBad && s.value > 0 ? "text-red-600 dark:text-red-400" : "text-foreground"}`}
+              >
                 ${fmt(s.value)}
               </p>
               {s.note && <p className="mt-1 text-[11px] text-muted-foreground">{s.note}</p>}
@@ -259,7 +307,10 @@ function OverviewTab({
           </h4>
           <div className="space-y-2">
             {analysis.underpaymentReasons.map((reason: string, idx: number) => (
-              <div key={idx} className="flex items-start gap-3 rounded-lg border border-red-200 bg-red-50 p-3 dark:border-red-800 dark:bg-red-950/30">
+              <div
+                key={idx}
+                className="flex items-start gap-3 rounded-lg border border-red-200 bg-red-50 p-3 dark:border-red-800 dark:bg-red-950/30"
+              >
                 <MinusCircle className="mt-0.5 h-4 w-4 shrink-0 text-red-500" />
                 <p className="text-sm font-medium text-red-800 dark:text-red-200">{reason}</p>
               </div>
@@ -286,14 +337,22 @@ function OverviewTab({
                     : "border-yellow-200 bg-yellow-50 dark:border-yellow-800 dark:bg-yellow-950/30";
 
               return (
-                <div key={idx} className={`flex items-start justify-between rounded-lg border p-4 ${sevStyles}`}>
+                <div
+                  key={idx}
+                  className={`flex items-start justify-between rounded-lg border p-4 ${sevStyles}`}
+                >
                   <div>
                     <p className="text-sm font-semibold text-foreground">{finding.category}</p>
                     <p className="mt-0.5 text-sm text-muted-foreground">{finding.issue}</p>
                   </div>
                   <div className="flex flex-col items-end gap-1">
-                    <span className="text-lg font-bold text-foreground">${fmt(finding.impact)}</span>
-                    <Badge variant={sev === "high" ? "destructive" : "secondary"} className="text-[10px] uppercase">
+                    <span className="text-lg font-bold text-foreground">
+                      ${fmt(finding.impact)}
+                    </span>
+                    <Badge
+                      variant={sev === "high" ? "destructive" : "secondary"}
+                      className="text-[10px] uppercase"
+                    >
                       {sev}
                     </Badge>
                   </div>
@@ -320,7 +379,8 @@ function DepreciationTab({
 }) {
   const dep = analysis.depreciation;
   const carrierRate = totals.rcvCarrier > 0 ? (dep.carrierApplied / totals.rcvCarrier) * 100 : 0;
-  const correctRate = totals.rcvContractor > 0 ? (dep.correctAmount / totals.rcvContractor) * 100 : 0;
+  const correctRate =
+    totals.rcvContractor > 0 ? (dep.correctAmount / totals.rcvContractor) * 100 : 0;
   const hasViolations = dep.violations && dep.violations.length > 0;
 
   return (
@@ -330,24 +390,36 @@ function DepreciationTab({
       <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
         <Card className="border-l-4 border-l-red-500 bg-red-50 dark:bg-red-950/30">
           <CardContent className="px-5 py-5">
-            <p className="text-xs font-semibold uppercase text-red-600 dark:text-red-400">Carrier Applied</p>
+            <p className="text-xs font-semibold uppercase text-red-600 dark:text-red-400">
+              Carrier Applied
+            </p>
             <p className="mt-1 text-2xl font-bold text-foreground">${fmt(dep.carrierApplied)}</p>
-            <p className="mt-1 text-xs text-muted-foreground">{carrierRate.toFixed(1)}% depreciation rate</p>
+            <p className="mt-1 text-xs text-muted-foreground">
+              {carrierRate.toFixed(1)}% depreciation rate
+            </p>
           </CardContent>
         </Card>
 
         <Card className="border-l-4 border-l-emerald-500 bg-emerald-50 dark:bg-emerald-950/30">
           <CardContent className="px-5 py-5">
-            <p className="text-xs font-semibold uppercase text-emerald-600 dark:text-emerald-400">Correct Amount</p>
+            <p className="text-xs font-semibold uppercase text-emerald-600 dark:text-emerald-400">
+              Correct Amount
+            </p>
             <p className="mt-1 text-2xl font-bold text-foreground">${fmt(dep.correctAmount)}</p>
-            <p className="mt-1 text-xs text-muted-foreground">{correctRate.toFixed(1)}% depreciation rate</p>
+            <p className="mt-1 text-xs text-muted-foreground">
+              {correctRate.toFixed(1)}% depreciation rate
+            </p>
           </CardContent>
         </Card>
 
         <Card className="border-l-4 border-l-orange-500 bg-orange-50 dark:bg-orange-950/30">
           <CardContent className="px-5 py-5">
-            <p className="text-xs font-semibold uppercase text-orange-600 dark:text-orange-400">Recoverable</p>
-            <p className="mt-1 text-2xl font-bold text-orange-700 dark:text-orange-300">${fmt(dep.difference)}</p>
+            <p className="text-xs font-semibold uppercase text-orange-600 dark:text-orange-400">
+              Recoverable
+            </p>
+            <p className="mt-1 text-2xl font-bold text-orange-700 dark:text-orange-300">
+              ${fmt(dep.difference)}
+            </p>
             <p className="mt-1 text-xs text-muted-foreground">Overcalculated depreciation</p>
           </CardContent>
         </Card>
@@ -357,7 +429,9 @@ function DepreciationTab({
         <CardContent className="flex items-start gap-3 py-5">
           <FileText className="mt-0.5 h-5 w-5 shrink-0 text-blue-600 dark:text-blue-400" />
           <div>
-            <p className="text-xs font-semibold uppercase text-blue-600 dark:text-blue-400">Analysis</p>
+            <p className="text-xs font-semibold uppercase text-blue-600 dark:text-blue-400">
+              Analysis
+            </p>
             <p className="mt-1 text-sm text-blue-900 dark:text-blue-100">{dep.explanation}</p>
           </div>
         </CardContent>
@@ -380,7 +454,9 @@ function DepreciationTab({
               ) : (
                 <>
                   <CheckCircle2 className="h-4 w-4 text-emerald-500" />
-                  <span className="font-bold text-emerald-600 dark:text-emerald-400">Compliant</span>
+                  <span className="font-bold text-emerald-600 dark:text-emerald-400">
+                    Compliant
+                  </span>
                 </>
               )}
             </div>
@@ -395,7 +471,10 @@ function DepreciationTab({
             Policy Violations
           </h4>
           {dep.violations!.map((v: string, i: number) => (
-            <div key={i} className="flex items-start gap-3 rounded-lg border border-red-200 bg-red-50 p-3 dark:border-red-800 dark:bg-red-950/30">
+            <div
+              key={i}
+              className="flex items-start gap-3 rounded-lg border border-red-200 bg-red-50 p-3 dark:border-red-800 dark:bg-red-950/30"
+            >
               <MinusCircle className="mt-0.5 h-4 w-4 shrink-0 text-red-500" />
               <p className="text-sm font-medium text-red-800 dark:text-red-200">{v}</p>
             </div>
@@ -420,8 +499,12 @@ function LineItemsTab({ analysis }: { analysis: FinancialAnalysisResult }) {
       <div className="flex items-center justify-between">
         <h3 className="text-lg font-bold text-foreground">Line Item Financial Audit</h3>
         <div className="flex gap-3 text-xs text-muted-foreground">
-          <span><strong className="text-red-600">{missingCount}</strong> missing from carrier</span>
-          <span><strong className="text-orange-600">{supplementCount}</strong> need supplement</span>
+          <span>
+            <strong className="text-red-600">{missingCount}</strong> missing from carrier
+          </span>
+          <span>
+            <strong className="text-orange-600">{supplementCount}</strong> need supplement
+          </span>
         </div>
       </div>
 
@@ -430,17 +513,36 @@ function LineItemsTab({ analysis }: { analysis: FinancialAnalysisResult }) {
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b bg-muted/50">
-                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-muted-foreground">Code</th>
-                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-muted-foreground">Description</th>
-                <th className="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-muted-foreground">Carrier</th>
-                <th className="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-muted-foreground">Contractor</th>
-                <th className="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-muted-foreground">Diff</th>
-                <th className="px-4 py-3 text-center text-xs font-semibold uppercase tracking-wider text-muted-foreground">Status</th>
+                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                  Code
+                </th>
+                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                  Description
+                </th>
+                <th className="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                  Carrier
+                </th>
+                <th className="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                  Contractor
+                </th>
+                <th className="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                  Diff
+                </th>
+                <th className="px-4 py-3 text-center text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                  Status
+                </th>
               </tr>
             </thead>
             <tbody className="divide-y">
               {items.map((item, idx: number) => (
-                <tr key={idx} className={item.missingFromCarrier ? "bg-red-50/50 dark:bg-red-950/20" : "hover:bg-muted/30"}>
+                <tr
+                  key={idx}
+                  className={
+                    item.missingFromCarrier
+                      ? "bg-red-50/50 dark:bg-red-950/20"
+                      : "hover:bg-muted/30"
+                  }
+                >
                   <td className="whitespace-nowrap px-4 py-3 font-mono text-xs font-semibold text-foreground">
                     {item.lineCode}
                   </td>
@@ -452,7 +554,9 @@ function LineItemsTab({ analysis }: { analysis: FinancialAnalysisResult }) {
                   </td>
                   <td className="whitespace-nowrap px-4 py-3 text-right text-sm">
                     {item.missingFromCarrier ? (
-                      <Badge variant="destructive" className="text-[10px]">Missing</Badge>
+                      <Badge variant="destructive" className="text-[10px]">
+                        Missing
+                      </Badge>
                     ) : (
                       <span className="text-foreground">${fmt(item.carrier)}</span>
                     )}
@@ -462,18 +566,26 @@ function LineItemsTab({ analysis }: { analysis: FinancialAnalysisResult }) {
                   </td>
                   <td className="whitespace-nowrap px-4 py-3 text-right text-sm font-bold">
                     {item.underpaid > 0 ? (
-                      <span className="text-red-600 dark:text-red-400">-${fmt(item.underpaid)}</span>
+                      <span className="text-red-600 dark:text-red-400">
+                        -${fmt(item.underpaid)}
+                      </span>
                     ) : (
                       <span className="text-emerald-600 dark:text-emerald-400">$0.00</span>
                     )}
                   </td>
                   <td className="whitespace-nowrap px-4 py-3 text-center">
                     {item.recommendedSupplement ? (
-                      <Badge variant="secondary" className="text-[10px] text-orange-700 dark:text-orange-300 bg-orange-100 dark:bg-orange-900/40">
+                      <Badge
+                        variant="secondary"
+                        className="bg-orange-100 text-[10px] text-orange-700 dark:bg-orange-900/40 dark:text-orange-300"
+                      >
                         Supplement
                       </Badge>
                     ) : (
-                      <Badge variant="outline" className="text-[10px] text-emerald-700 dark:text-emerald-300">
+                      <Badge
+                        variant="outline"
+                        className="text-[10px] text-emerald-700 dark:text-emerald-300"
+                      >
                         OK
                       </Badge>
                     )}
@@ -500,14 +612,22 @@ function SupplementsTab({ analysis }: { analysis: FinancialAnalysisResult }) {
           <CheckCircle2 className="h-8 w-8 text-emerald-600 dark:text-emerald-400" />
         </div>
         <h3 className="mt-4 text-lg font-bold text-foreground">No Supplements Required</h3>
-        <p className="mt-1 text-sm text-muted-foreground">All line items are properly accounted for</p>
+        <p className="mt-1 text-sm text-muted-foreground">
+          All line items are properly accounted for
+        </p>
       </div>
     );
   }
 
-  const highImpact = analysis.lineItemAnalysis.filter((i) => i.recommendedSupplement && i.contractor > 1000).length;
-  const medImpact = analysis.lineItemAnalysis.filter((i) => i.recommendedSupplement && i.contractor >= 500 && i.contractor <= 1000).length;
-  const lowImpact = analysis.lineItemAnalysis.filter((i) => i.recommendedSupplement && i.contractor < 500).length;
+  const highImpact = analysis.lineItemAnalysis.filter(
+    (i) => i.recommendedSupplement && i.contractor > 1000
+  ).length;
+  const medImpact = analysis.lineItemAnalysis.filter(
+    (i) => i.recommendedSupplement && i.contractor >= 500 && i.contractor <= 1000
+  ).length;
+  const lowImpact = analysis.lineItemAnalysis.filter(
+    (i) => i.recommendedSupplement && i.contractor < 500
+  ).length;
 
   return (
     <div className="space-y-6">
@@ -516,19 +636,25 @@ function SupplementsTab({ analysis }: { analysis: FinancialAnalysisResult }) {
       <div className="grid grid-cols-3 gap-3">
         <Card className="border-l-4 border-l-red-500 bg-red-50 dark:bg-red-950/30">
           <CardContent className="px-4 py-4 text-center">
-            <p className="text-xs font-semibold uppercase text-red-600 dark:text-red-400">High Impact</p>
+            <p className="text-xs font-semibold uppercase text-red-600 dark:text-red-400">
+              High Impact
+            </p>
             <p className="mt-1 text-3xl font-bold text-foreground">{highImpact}</p>
           </CardContent>
         </Card>
         <Card className="border-l-4 border-l-orange-500 bg-orange-50 dark:bg-orange-950/30">
           <CardContent className="px-4 py-4 text-center">
-            <p className="text-xs font-semibold uppercase text-orange-600 dark:text-orange-400">Medium</p>
+            <p className="text-xs font-semibold uppercase text-orange-600 dark:text-orange-400">
+              Medium
+            </p>
             <p className="mt-1 text-3xl font-bold text-foreground">{medImpact}</p>
           </CardContent>
         </Card>
         <Card className="border-l-4 border-l-yellow-500 bg-yellow-50 dark:bg-yellow-950/30">
           <CardContent className="px-4 py-4 text-center">
-            <p className="text-xs font-semibold uppercase text-yellow-600 dark:text-yellow-400">Low</p>
+            <p className="text-xs font-semibold uppercase text-yellow-600 dark:text-yellow-400">
+              Low
+            </p>
             <p className="mt-1 text-3xl font-bold text-foreground">{lowImpact}</p>
           </CardContent>
         </Card>
@@ -539,7 +665,12 @@ function SupplementsTab({ analysis }: { analysis: FinancialAnalysisResult }) {
           const item = analysis.lineItemAnalysis.find(
             (i) => supplement.includes(i.lineCode) || supplement.includes(i.description)
           );
-          const priority = item && item.contractor > 1000 ? "high" : item && item.contractor >= 500 ? "medium" : "low";
+          const priority =
+            item && item.contractor > 1000
+              ? "high"
+              : item && item.contractor >= 500
+                ? "medium"
+                : "low";
           const styles =
             priority === "high"
               ? "border-red-200 bg-red-50 dark:border-red-800 dark:bg-red-950/30"
@@ -548,7 +679,10 @@ function SupplementsTab({ analysis }: { analysis: FinancialAnalysisResult }) {
                 : "border-yellow-200 bg-yellow-50 dark:border-yellow-800 dark:bg-yellow-950/30";
 
           return (
-            <div key={idx} className={`flex items-start justify-between rounded-lg border p-4 ${styles}`}>
+            <div
+              key={idx}
+              className={`flex items-start justify-between rounded-lg border p-4 ${styles}`}
+            >
               <div className="flex items-start gap-3">
                 <ChevronRight className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
                 <div>
@@ -578,7 +712,12 @@ function SupplementsTab({ analysis }: { analysis: FinancialAnalysisResult }) {
 function SettlementTab({ analysis }: { analysis: FinancialAnalysisResult }) {
   const proj = analysis.settlementProjection;
   const riskLevel = proj.confidence > 80 ? "Low" : proj.confidence > 60 ? "Medium" : "High";
-  const riskColor = riskLevel === "Low" ? "text-emerald-600 dark:text-emerald-400" : riskLevel === "Medium" ? "text-orange-600 dark:text-orange-400" : "text-red-600 dark:text-red-400";
+  const riskColor =
+    riskLevel === "Low"
+      ? "text-emerald-600 dark:text-emerald-400"
+      : riskLevel === "Medium"
+        ? "text-orange-600 dark:text-orange-400"
+        : "text-red-600 dark:text-red-400";
 
   return (
     <div className="space-y-6">
@@ -665,7 +804,12 @@ function SettlementTab({ analysis }: { analysis: FinancialAnalysisResult }) {
               Recommended Strategy
             </h4>
             <div className="mt-2 space-y-1.5">
-              {["Prepare detailed supplement packet", "Include weather verification", "Attach manufacturer specs", "Document all discrepancies"].map((s, i) => (
+              {[
+                "Prepare detailed supplement packet",
+                "Include weather verification",
+                "Attach manufacturer specs",
+                "Document all discrepancies",
+              ].map((s, i) => (
                 <div key={i} className="flex items-center gap-2 text-xs text-foreground">
                   <CheckCircle2 className="h-3 w-3 text-blue-500" />
                   {s}
@@ -713,7 +857,9 @@ function ExportsTab({ analysis, claimId }: { analysis: FinancialAnalysisResult; 
       a.summary,
       "",
       "=== AUDIT FINDINGS ===",
-      ...a.auditFindings.map((f, i) => `${i + 1}. [${f.severity}] ${f.category}: ${f.issue} (impact: $${fmt(f.impact)})`),
+      ...a.auditFindings.map(
+        (f, i) => `${i + 1}. [${f.severity}] ${f.category}: ${f.issue} (impact: $${fmt(f.impact)})`
+      ),
       "",
       "=== REQUIRED SUPPLEMENTS ===",
       ...a.requiredSupplements.map((s, i) => `${i + 1}. ${s}`),
@@ -723,7 +869,8 @@ function ExportsTab({ analysis, claimId }: { analysis: FinancialAnalysisResult; 
       "",
       "=== LINE ITEM ANALYSIS ===",
       ...a.lineItemAnalysis.map(
-        (li) => `- ${li.description}: Carrier $${fmt(li.carrier)} vs Contractor $${fmt(li.contractor)}${li.underpaid > 0 ? ` (underpaid $${fmt(li.underpaid)})` : ""}`
+        (li) =>
+          `- ${li.description}: Carrier $${fmt(li.carrier)} vs Contractor $${fmt(li.contractor)}${li.underpaid > 0 ? ` (underpaid $${fmt(li.underpaid)})` : ""}`
       ),
     ]);
   }
@@ -742,7 +889,9 @@ function ExportsTab({ analysis, claimId }: { analysis: FinancialAnalysisResult; 
       `Deductible: $${fmt(a.totals.deductible)}`,
       `Net Owed to You: $${fmt(a.totals.netOwed)}`,
       "",
-      a.requiredSupplements.length ? "ADDITIONAL WORK NEEDED:" : "No additional supplements needed at this time.",
+      a.requiredSupplements.length
+        ? "ADDITIONAL WORK NEEDED:"
+        : "No additional supplements needed at this time.",
       ...a.requiredSupplements.map((s, i) => `  ${i + 1}. ${s}`),
       "",
       "If you have any questions, please contact your contractor.",
@@ -762,7 +911,8 @@ function ExportsTab({ analysis, claimId }: { analysis: FinancialAnalysisResult; 
   const exports = [
     {
       title: "Adjuster-Ready Report",
-      description: "Professional report with full financial audit, depreciation analysis, and supplement justifications",
+      description:
+        "Professional report with full financial audit, depreciation analysis, and supplement justifications",
       icon: <FileText className="h-6 w-6 text-blue-600 dark:text-blue-400" />,
       color: "border-blue-200 bg-blue-50 dark:border-blue-800 dark:bg-blue-950/30",
       label: "Download Report",
@@ -770,7 +920,8 @@ function ExportsTab({ analysis, claimId }: { analysis: FinancialAnalysisResult; 
     },
     {
       title: "Homeowner Summary",
-      description: "Plain-language summary explaining what is owed, supplements needed, and simple pricing",
+      description:
+        "Plain-language summary explaining what is owed, supplements needed, and simple pricing",
       icon: <ArrowDownToLine className="h-6 w-6 text-emerald-600 dark:text-emerald-400" />,
       color: "border-emerald-200 bg-emerald-50 dark:border-emerald-800 dark:bg-emerald-950/30",
       label: "Download Summary",
@@ -778,7 +929,8 @@ function ExportsTab({ analysis, claimId }: { analysis: FinancialAnalysisResult; 
     },
     {
       title: "Raw JSON Data",
-      description: "Complete financial analysis data in JSON format for integration with other systems",
+      description:
+        "Complete financial analysis data in JSON format for integration with other systems",
       icon: <Download className="h-6 w-6 text-purple-600 dark:text-purple-400" />,
       color: "border-purple-200 bg-purple-50 dark:border-purple-800 dark:bg-purple-950/30",
       label: "Download JSON",
@@ -786,11 +938,15 @@ function ExportsTab({ analysis, claimId }: { analysis: FinancialAnalysisResult; 
     },
     {
       title: "Send Supplement Packet",
-      description: "Email complete supplement packet directly to carrier adjuster with all documentation",
+      description:
+        "Email complete supplement packet directly to carrier adjuster with all documentation",
       icon: <Mail className="h-6 w-6 text-orange-600 dark:text-orange-400" />,
       color: "border-orange-200 bg-orange-50 dark:border-orange-800 dark:bg-orange-950/30",
       label: "Send to Adjuster",
-      onClick: () => alert("Email integration coming soon. Use Download buttons to export and attach to an email manually."),
+      onClick: () =>
+        alert(
+          "Email integration coming soon. Use Download buttons to export and attach to an email manually."
+        ),
     },
   ];
 

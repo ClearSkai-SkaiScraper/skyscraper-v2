@@ -96,6 +96,7 @@ const navSections: NavSection[] = [
       { label: "Bid Package", href: "/reports/contractor-packet" },
       { label: "Smart Documents", href: "/smart-docs" },
       { label: "Carrier Exports", href: "/ai/exports" },
+      { label: "HOA Storm Notices", href: "/hoa/notices" },
       { label: "Company Documents", href: "/settings/company-documents" },
     ],
   },

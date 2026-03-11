@@ -28,6 +28,7 @@ export const GET = withAuth(
           mimeType: true,
           sizeBytes: true,
           category: true,
+          file_type: true,
           note: true,
           visibleToClient: true,
           createdAt: true,
@@ -35,22 +36,26 @@ export const GET = withAuth(
         },
       });
 
-      // Map category to document type
-      const categoryToType = (cat: string, mime: string): string => {
+      // Map category + file_type to document type
+      const categoryToType = (cat: string, mime: string, fileType?: string | null): string => {
+        // Damage reports get their own type
+        if (fileType === "damage_report") return "DAMAGE_REPORT";
         if (mime?.startsWith("image/")) return "PHOTO";
         const map: Record<string, string> = {
-          report: "DEPRECIATION",
+          document: "OTHER",
+          report: "DAMAGE_REPORT",
           supplement: "SUPPLEMENT",
           certificate: "CERTIFICATE",
           invoice: "INVOICE",
           contract: "CONTRACT",
+          depreciation: "DEPRECIATION",
         };
         return map[cat] || "OTHER";
       };
 
       const documents = assets.map((doc) => ({
         id: doc.id,
-        type: categoryToType(doc.category, doc.mimeType),
+        type: categoryToType(doc.category, doc.mimeType, doc.file_type),
         title: doc.filename,
         description: doc.note,
         publicUrl: doc.publicUrl,

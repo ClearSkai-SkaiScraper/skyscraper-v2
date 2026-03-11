@@ -5,6 +5,7 @@
 
 import { format } from "date-fns";
 import {
+  Activity,
   CheckCircle,
   CheckSquare,
   Clock,
@@ -17,6 +18,7 @@ import {
 } from "lucide-react";
 import { notFound, redirect } from "next/navigation";
 
+import { PageHero } from "@/components/layout/PageHero";
 import { getClaimActivity } from "@/lib/claims/activityLog";
 import prisma from "@/lib/prisma";
 import { safeOrgContext } from "@/lib/safeOrgContext";
@@ -77,12 +79,11 @@ export default async function ClaimActivityPage({ params }: ActivityPageProps) {
 
   return (
     <div className="mx-auto max-w-[1200px] space-y-6 px-6 py-8">
-      <div>
-        <h1 className="text-2xl font-semibold text-foreground">Activity Log</h1>
-        <p className="mt-2 text-sm text-muted-foreground">
-          Complete audit trail for {claim.title} (#{claim.claimNumber})
-        </p>
-      </div>
+      <PageHero
+        title="Activity Log"
+        subtitle={`Complete audit trail for ${claim.title} (#${claim.claimNumber})`}
+        icon={<Activity className="h-6 w-6" />}
+      />
 
       {activities.length === 0 ? (
         <div className="rounded-2xl border border-border bg-card px-8 py-12 text-center shadow-sm">

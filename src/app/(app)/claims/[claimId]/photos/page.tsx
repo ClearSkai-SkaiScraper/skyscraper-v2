@@ -366,7 +366,7 @@ export default function PhotosPage() {
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
-        toast.success("Damage report generated successfully!");
+        toast.success("Damage report generated! Saved to Documents tab & Report History.");
       } else {
         toast.error("Report generated but download URL was not returned");
       }

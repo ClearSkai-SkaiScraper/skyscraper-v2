@@ -197,16 +197,35 @@ function drawFooter(
 // ── Helper: safely fetch & embed image ──
 async function embedImageSafe(pdfDoc: PDFDocument, url: string): Promise<PDFImage | null> {
   try {
-    const res = await fetch(url, { signal: AbortSignal.timeout(15000) });
-    if (!res.ok) return null;
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 15000);
+    const res = await fetch(url, { signal: controller.signal });
+    clearTimeout(timeout);
+    if (!res.ok) {
+      logger.warn("[DAMAGE_REPORT] Image fetch failed", { url, status: res.status });
+      return null;
+    }
     const buf = new Uint8Array(await res.arrayBuffer());
-    if (buf.length < 100) return null;
+    if (buf.length < 100) {
+      logger.warn("[DAMAGE_REPORT] Image too small", { url, size: buf.length });
+      return null;
+    }
 
     const contentType = res.headers.get("content-type") || "";
     if (contentType.includes("png") || url.toLowerCase().endsWith(".png")) {
       return await pdfDoc.embedPng(buf);
     }
-    return await pdfDoc.embedJpg(buf);
+    // Try jpg first, fallback to png if it fails
+    try {
+      return await pdfDoc.embedJpg(buf);
+    } catch {
+      try {
+        return await pdfDoc.embedPng(buf);
+      } catch {
+        logger.warn("[DAMAGE_REPORT] Could not embed as JPG or PNG", { url });
+        return null;
+      }
+    }
   } catch (e) {
     logger.warn("[DAMAGE_REPORT] Could not embed image", { url, error: (e as Error).message });
     return null;
@@ -1000,8 +1019,9 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
     }
 
     // ── Save PDF ──
+    logger.info("[DAMAGE_REPORT] Saving PDF...", { claimId, pageCount: pdfDoc.getPageCount() });
     const pdfBytes = await pdfDoc.save();
-    const pdfBuffer = Buffer.from(pdfBytes);
+    const pdfUint8 = new Uint8Array(pdfBytes);
 
     // Upload to Supabase
     const supabase = getSupabaseAdmin();
@@ -1014,31 +1034,35 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
     const bucket = "claim-photos";
     const storagePath = `${orgId}/${claimId}/reports/${filename}`;
 
-    const { data: buckets } = await supabase.storage.listBuckets();
-    if (!buckets?.some((b: { name: string }) => b.name === bucket)) {
-      await supabase.storage.createBucket(bucket, {
-        public: true,
-        fileSizeLimit: 50 * 1024 * 1024,
-      });
+    try {
+      const { data: buckets } = await supabase.storage.listBuckets();
+      if (!buckets?.some((b: { name: string }) => b.name === bucket)) {
+        await supabase.storage.createBucket(bucket, {
+          public: true,
+          fileSizeLimit: 50 * 1024 * 1024,
+        });
+      }
+    } catch (bucketErr) {
+      logger.warn("[DAMAGE_REPORT] Bucket check/create error (non-fatal)", { bucketErr });
     }
 
     const { error: uploadError } = await supabase.storage
       .from(bucket)
-      .upload(storagePath, pdfBuffer, {
+      .upload(storagePath, pdfUint8, {
         contentType: "application/pdf",
         upsert: true,
       });
 
     if (uploadError) {
       logger.error("[DAMAGE_REPORT] Upload error", { uploadError });
-      throw new Error("Failed to upload PDF");
+      return apiError(500, "UPLOAD_ERROR", "Failed to upload report PDF to storage");
     }
 
     const {
       data: { publicUrl },
     } = supabase.storage.from(bucket).getPublicUrl(storagePath);
 
-    // Save to file_assets
+    // Save to file_assets as a document (NOT a photo)
     await prisma.file_assets.create({
       data: {
         id: reportId,
@@ -1047,11 +1071,11 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
         claimId,
         filename,
         mimeType: "application/pdf",
-        sizeBytes: pdfBuffer.length,
+        sizeBytes: pdfUint8.length,
         storageKey: storagePath,
         bucket,
         publicUrl,
-        category: "report",
+        category: "document",
         file_type: "damage_report",
         source: "ai_generated",
         note: `Professional Damage Assessment Report — ${photos.length} photos, ${overallSeverity} severity`,
@@ -1068,19 +1092,24 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
       hasLogo: !!logoImage,
     });
 
-    await saveReportHistory({
-      orgId,
-      userId,
-      type: "damage_report",
-      title: `Damage Assessment Report — ${photos.length} photos`,
-      sourceId: claimId,
-      fileUrl: publicUrl,
-      metadata: {
-        reportId,
-        photoCount: photos.length,
-        pageCount: pdfDoc.getPageCount(),
-      },
-    });
+    // Save to Report History (non-blocking)
+    try {
+      await saveReportHistory({
+        orgId,
+        userId,
+        type: "damage_report",
+        title: `Damage Assessment Report — ${photos.length} photos`,
+        sourceId: claimId,
+        fileUrl: publicUrl,
+        metadata: {
+          reportId,
+          photoCount: photos.length,
+          pageCount: pdfDoc.getPageCount(),
+        },
+      });
+    } catch (historyErr) {
+      logger.warn("[DAMAGE_REPORT] Report history save failed (non-fatal)", { historyErr });
+    }
 
     return NextResponse.json({
       success: true,
@@ -1096,8 +1125,10 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
         errors: error.errors,
       });
     }
-    logger.error("[DAMAGE_REPORT] Error", { error, claimId });
-    return apiError(500, "INTERNAL_ERROR", "Failed to generate damage report");
+    const errMsg = error instanceof Error ? error.message : String(error);
+    const errStack = error instanceof Error ? error.stack : undefined;
+    logger.error("[DAMAGE_REPORT] Generation failed", { error: errMsg, stack: errStack, claimId });
+    return apiError(500, "INTERNAL_ERROR", `Failed to generate damage report: ${errMsg}`);
   }
 }
 

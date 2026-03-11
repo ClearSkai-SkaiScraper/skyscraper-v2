@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import ClientDocumentSharing from "@/components/claims/ClientDocumentSharing";
 import { DocActionsMenu } from "@/components/documents/DocActionsMenu";
 import { DocumentForwardButton } from "@/components/documents/DocumentForwardButton";
+import { PageHero } from "@/components/layout/PageHero";
 import { Button } from "@/components/ui/button";
 import { DocumentUpload } from "@/components/uploads";
 import { clientFetch } from "@/lib/http/clientFetch";
@@ -81,6 +82,7 @@ export default function ClaimDocumentsPage() {
 
   const getDocTypeLabel = (type: string) => {
     const labels: Record<string, string> = {
+      DAMAGE_REPORT: "Damage Report",
       DEPRECIATION: "Depreciation Package",
       SUPPLEMENT: "Supplement Request",
       CERTIFICATE: "Completion Certificate",
@@ -94,6 +96,7 @@ export default function ClaimDocumentsPage() {
 
   const getDocTypeBadgeColor = (type: string) => {
     const colors: Record<string, string> = {
+      DAMAGE_REPORT: "bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300",
       DEPRECIATION: "bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300",
       SUPPLEMENT: "bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300",
       CERTIFICATE: "bg-purple-100 text-purple-700 dark:bg-purple-900 dark:text-purple-300",
@@ -148,20 +151,17 @@ export default function ClaimDocumentsPage() {
   return (
     <div className="p-6">
       {/* Header */}
-      <div className="mb-6 flex items-center justify-between">
-        <div>
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Documents</h2>
-          <p className="mt-1 text-sm text-gray-600 dark:text-gray-400 dark:text-gray-600">
-            Generated PDFs, reports, and claim documents
-          </p>
-        </div>
-        <div className="flex items-center gap-2">
+      <PageHero
+        title="Documents"
+        subtitle="Generated PDFs, reports, and claim documents"
+        icon={<FileText className="h-6 w-6" />}
+        actions={
           <Button onClick={() => router.push(`/claims/${claimId}/completion`)} className="gap-2">
             <FileCheck className="h-5 w-5" />
             Generate Documents
           </Button>
-        </div>
-      </div>
+        }
+      />
 
       {/* Upload Component */}
       <div className="mb-8">

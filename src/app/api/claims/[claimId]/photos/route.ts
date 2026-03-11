@@ -39,7 +39,12 @@ export const GET = withAuth(
       await getOrgClaimOrThrow(orgId, claimId);
 
       const photos = await prisma.file_assets.findMany({
-        where: { claimId, orgId },
+        where: {
+          claimId,
+          orgId,
+          mimeType: { startsWith: "image/" },
+          file_type: { not: "damage_report" },
+        },
         orderBy: { createdAt: "desc" },
       });
 

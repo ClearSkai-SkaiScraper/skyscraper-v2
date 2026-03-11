@@ -14,6 +14,7 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 
+import { PageHero } from "@/components/layout/PageHero";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -244,185 +245,184 @@ export default function ClaimMeasurementsPage() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h2 className="text-xl font-bold text-slate-900 dark:text-white">Measurements</h2>
-          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-            Order roof, siding &amp; gutter measurements for this claim
-          </p>
-        </div>
-        <div className="flex gap-2">
-          <Link href="/measurements">
-            <Button variant="outline" size="sm">
-              <Ruler className="mr-2 h-4 w-4" />
-              All Measurements
-            </Button>
-          </Link>
-          <Dialog open={manualOpen} onOpenChange={setManualOpen}>
-            <DialogTrigger asChild>
+      <PageHero
+        title="Measurements"
+        subtitle="Order roof, siding & gutter measurements for this claim"
+        icon={<Ruler className="h-6 w-6" />}
+        actions={
+          <div className="flex gap-2">
+            <Link href="/measurements">
               <Button variant="outline" size="sm">
                 <Ruler className="mr-2 h-4 w-4" />
-                Add Hand Measurements
+                All Measurements
               </Button>
-            </DialogTrigger>
-            <DialogContent className="sm:max-w-md">
-              <DialogHeader>
-                <DialogTitle>Add Hand Measurements</DialogTitle>
-                <DialogDescription>
-                  Enter measurements gathered on-site for this claim.
-                </DialogDescription>
-              </DialogHeader>
-              <div className="space-y-4 py-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <Label>Measurement Type</Label>
-                    <Select value={manualType} onValueChange={setManualType}>
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="roof">Roof</SelectItem>
-                        <SelectItem value="siding">Siding</SelectItem>
-                        <SelectItem value="gutters">Gutters</SelectItem>
-                        <SelectItem value="full">Full Property</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div>
-                    <Label>Total Area (sq ft)</Label>
-                    <Input
-                      type="number"
-                      placeholder="e.g. 2400"
-                      value={manualArea}
-                      onChange={(e) => setManualArea(e.target.value)}
-                    />
-                  </div>
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <Label>Pitch</Label>
-                    <Input
-                      placeholder="e.g. 6/12"
-                      value={manualPitch}
-                      onChange={(e) => setManualPitch(e.target.value)}
-                    />
-                  </div>
-                  <div>
-                    <Label>Perimeter (ft)</Label>
-                    <Input
-                      type="number"
-                      placeholder="e.g. 320"
-                      value={manualPerimeter}
-                      onChange={(e) => setManualPerimeter(e.target.value)}
-                    />
-                  </div>
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <Label>Ridges (ft)</Label>
-                    <Input
-                      type="number"
-                      placeholder="e.g. 45"
-                      value={manualRidges}
-                      onChange={(e) => setManualRidges(e.target.value)}
-                    />
-                  </div>
-                  <div>
-                    <Label>Valleys (ft)</Label>
-                    <Input
-                      type="number"
-                      placeholder="e.g. 30"
-                      value={manualValleys}
-                      onChange={(e) => setManualValleys(e.target.value)}
-                    />
-                  </div>
-                </div>
-                <div>
-                  <Label>Notes</Label>
-                  <Input
-                    placeholder="Additional notes about the measurements..."
-                    value={manualNotes}
-                    onChange={(e) => setManualNotes(e.target.value)}
-                  />
-                </div>
-              </div>
-              <DialogFooter>
-                <Button variant="outline" onClick={() => setManualOpen(false)}>
-                  Cancel
+            </Link>
+            <Dialog open={manualOpen} onOpenChange={setManualOpen}>
+              <DialogTrigger asChild>
+                <Button variant="outline" size="sm">
+                  <Ruler className="mr-2 h-4 w-4" />
+                  Add Hand Measurements
                 </Button>
-                <Button onClick={handleManualCreate} disabled={manualSaving || !manualArea}>
-                  {manualSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                  Save Measurements
-                </Button>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
-          <Dialog open={createOpen} onOpenChange={setCreateOpen}>
-            <DialogTrigger asChild>
-              <Button size="sm">
-                <Plus className="mr-2 h-4 w-4" />
-                Order Measurement
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="sm:max-w-md">
-              <DialogHeader>
-                <DialogTitle>Order Measurement</DialogTitle>
-                <DialogDescription>
-                  Order a measurement report for this claim&apos;s property.
-                </DialogDescription>
-              </DialogHeader>
-              <div className="space-y-4 py-4">
-                <div>
-                  <Label>Property Address</Label>
-                  <Input
-                    placeholder="123 Main St, Phoenix, AZ 85001"
-                    value={address}
-                    onChange={(e) => setAddress(e.target.value)}
-                  />
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <Label>Provider</Label>
-                    <Select value={provider} onValueChange={setProvider}>
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="gaf">GAF QuickMeasure</SelectItem>
-                        <SelectItem value="eagleview">EagleView</SelectItem>
-                        <SelectItem value="manual">Manual Upload</SelectItem>
-                      </SelectContent>
-                    </Select>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-md">
+                <DialogHeader>
+                  <DialogTitle>Add Hand Measurements</DialogTitle>
+                  <DialogDescription>
+                    Enter measurements gathered on-site for this claim.
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="space-y-4 py-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <Label>Measurement Type</Label>
+                      <Select value={manualType} onValueChange={setManualType}>
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="roof">Roof</SelectItem>
+                          <SelectItem value="siding">Siding</SelectItem>
+                          <SelectItem value="gutters">Gutters</SelectItem>
+                          <SelectItem value="full">Full Property</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div>
+                      <Label>Total Area (sq ft)</Label>
+                      <Input
+                        type="number"
+                        placeholder="e.g. 2400"
+                        value={manualArea}
+                        onChange={(e) => setManualArea(e.target.value)}
+                      />
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <Label>Pitch</Label>
+                      <Input
+                        placeholder="e.g. 6/12"
+                        value={manualPitch}
+                        onChange={(e) => setManualPitch(e.target.value)}
+                      />
+                    </div>
+                    <div>
+                      <Label>Perimeter (ft)</Label>
+                      <Input
+                        type="number"
+                        placeholder="e.g. 320"
+                        value={manualPerimeter}
+                        onChange={(e) => setManualPerimeter(e.target.value)}
+                      />
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <Label>Ridges (ft)</Label>
+                      <Input
+                        type="number"
+                        placeholder="e.g. 45"
+                        value={manualRidges}
+                        onChange={(e) => setManualRidges(e.target.value)}
+                      />
+                    </div>
+                    <div>
+                      <Label>Valleys (ft)</Label>
+                      <Input
+                        type="number"
+                        placeholder="e.g. 30"
+                        value={manualValleys}
+                        onChange={(e) => setManualValleys(e.target.value)}
+                      />
+                    </div>
                   </div>
                   <div>
-                    <Label>Type</Label>
-                    <Select value={orderType} onValueChange={setOrderType}>
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="roof">Roof</SelectItem>
-                        <SelectItem value="siding">Siding</SelectItem>
-                        <SelectItem value="gutters">Gutters</SelectItem>
-                        <SelectItem value="full">Full Property</SelectItem>
-                      </SelectContent>
-                    </Select>
+                    <Label>Notes</Label>
+                    <Input
+                      placeholder="Additional notes about the measurements..."
+                      value={manualNotes}
+                      onChange={(e) => setManualNotes(e.target.value)}
+                    />
                   </div>
                 </div>
-              </div>
-              <DialogFooter>
-                <Button variant="outline" onClick={() => setCreateOpen(false)}>
-                  Cancel
+                <DialogFooter>
+                  <Button variant="outline" onClick={() => setManualOpen(false)}>
+                    Cancel
+                  </Button>
+                  <Button onClick={handleManualCreate} disabled={manualSaving || !manualArea}>
+                    {manualSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                    Save Measurements
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+            <Dialog open={createOpen} onOpenChange={setCreateOpen}>
+              <DialogTrigger asChild>
+                <Button size="sm">
+                  <Plus className="mr-2 h-4 w-4" />
+                  Order Measurement
                 </Button>
-                <Button onClick={handleCreate} disabled={creating || !address}>
-                  {creating && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                  Order Now
-                </Button>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
-        </div>
-      </div>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-md">
+                <DialogHeader>
+                  <DialogTitle>Order Measurement</DialogTitle>
+                  <DialogDescription>
+                    Order a measurement report for this claim&apos;s property.
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="space-y-4 py-4">
+                  <div>
+                    <Label>Property Address</Label>
+                    <Input
+                      placeholder="123 Main St, Phoenix, AZ 85001"
+                      value={address}
+                      onChange={(e) => setAddress(e.target.value)}
+                    />
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <Label>Provider</Label>
+                      <Select value={provider} onValueChange={setProvider}>
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="gaf">GAF QuickMeasure</SelectItem>
+                          <SelectItem value="eagleview">EagleView</SelectItem>
+                          <SelectItem value="manual">Manual Upload</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div>
+                      <Label>Type</Label>
+                      <Select value={orderType} onValueChange={setOrderType}>
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="roof">Roof</SelectItem>
+                          <SelectItem value="siding">Siding</SelectItem>
+                          <SelectItem value="gutters">Gutters</SelectItem>
+                          <SelectItem value="full">Full Property</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                </div>
+                <DialogFooter>
+                  <Button variant="outline" onClick={() => setCreateOpen(false)}>
+                    Cancel
+                  </Button>
+                  <Button onClick={handleCreate} disabled={creating || !address}>
+                    {creating && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                    Order Now
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+          </div>
+        }
+      />
 
       {/* Mini stats */}
       <div className="grid grid-cols-3 gap-3">
