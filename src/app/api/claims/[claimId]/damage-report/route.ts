@@ -503,10 +503,20 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
 
     const reportId = createId();
     const filename = `damage-report-${claim.claimNumber || claimId}-${Date.now()}.pdf`;
-    const storagePath = `damage-reports/${orgId}/${filename}`;
+    const bucket = "claim-photos"; // Use same bucket as photos - guaranteed to exist
+    const storagePath = `${orgId}/${claimId}/reports/${filename}`;
+
+    // Ensure bucket exists (same pattern as photos route)
+    const { data: buckets } = await supabase.storage.listBuckets();
+    if (!buckets?.some((b: { name: string }) => b.name === bucket)) {
+      await supabase.storage.createBucket(bucket, {
+        public: true,
+        fileSizeLimit: 50 * 1024 * 1024, // 50MB for reports
+      });
+    }
 
     const { error: uploadError } = await supabase.storage
-      .from("uploads")
+      .from(bucket)
       .upload(storagePath, pdfBuffer, {
         contentType: "application/pdf",
         upsert: true,
@@ -519,7 +529,7 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
 
     const {
       data: { publicUrl },
-    } = supabase.storage.from("uploads").getPublicUrl(storagePath);
+    } = supabase.storage.from(bucket).getPublicUrl(storagePath);
 
     // Save to file_assets
     await prisma.file_assets.create({
@@ -532,7 +542,7 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
         mimeType: "application/pdf",
         sizeBytes: pdfBuffer.length,
         storageKey: storagePath,
-        bucket: "uploads",
+        bucket, // Use the same bucket variable
         publicUrl,
         category: "report",
         file_type: "damage_report",
