@@ -210,7 +210,7 @@ export default function OverviewPage() {
           retryQueue.enqueue({
             url: `/api/claims/${claimId}/update`,
             method: "PATCH",
-            body: updates,
+            body: JSON.stringify(updates),
           });
           // Revert optimistic updates on failure
           fetchData();

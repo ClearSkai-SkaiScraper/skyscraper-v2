@@ -88,7 +88,7 @@ export function ClaimsSidebar({ claimId, claim, onFieldUpdate }: ClaimsSidebarPr
         retryQueue.enqueue({
           url: `/api/claims/${claimId}/update`,
           method: "PATCH",
-          body: { [field]: editValue },
+          body: JSON.stringify({ [field]: editValue }),
         });
         setEditing(null);
       }
