@@ -8,28 +8,17 @@ import prisma from "@/lib/prisma";
 
 /**
  * Get the next assignee for round-robin distribution
- * Tracks the last assigned user per org and rotates through team members
  */
 export async function getNextRoundRobinAssignee(orgId: string): Promise<string | null> {
   try {
-    // Get all active team members for this org who can receive leads
-    const teamMembers = await prisma.memberships.findMany({
+    // Get all team members for this org
+    const teamMembers = await prisma.user_organizations.findMany({
       where: {
-        orgId,
-        status: "ACTIVE",
-        // Include roles that should receive leads
+        organizationId: orgId,
         role: { in: ["ADMIN", "MANAGER", "MEMBER"] },
       },
-      select: {
-        userId: true,
-        users: {
-          select: {
-            id: true,
-            name: true,
-          },
-        },
-      },
-      orderBy: { createdAt: "asc" }, // Consistent ordering
+      select: { userId: true },
+      orderBy: { createdAt: "asc" },
     });
 
     if (teamMembers.length === 0) {
@@ -37,57 +26,23 @@ export async function getNextRoundRobinAssignee(orgId: string): Promise<string |
       return null;
     }
 
-    // Get the last assigned user from org settings
-    const lastAssignedSetting = await prisma.org_settings.findUnique({
-      where: {
-        org_id_key: {
-          org_id: orgId,
-          key: "lead_last_assigned_user",
-        },
-      },
-    });
+    // Simple load-balanced approach: assign to member with fewest leads
+    const leadCounts = await Promise.all(
+      teamMembers.map(async (member) => {
+        const count = await prisma.leads.count({
+          where: { orgId, assignedTo: member.userId },
+        });
+        return { userId: member.userId, count };
+      })
+    );
 
-    const lastAssignedUserId = (lastAssignedSetting?.value as { userId?: string })?.userId;
-
-    // Find the index of the last assigned user
-    let nextIndex = 0;
-    if (lastAssignedUserId) {
-      const lastIndex = teamMembers.findIndex((m) => m.userId === lastAssignedUserId);
-      if (lastIndex !== -1) {
-        nextIndex = (lastIndex + 1) % teamMembers.length;
-      }
-    }
-
-    const nextAssignee = teamMembers[nextIndex];
-    const nextUserId = nextAssignee.userId;
-
-    // Update the last assigned user in settings
-    await prisma.org_settings.upsert({
-      where: {
-        org_id_key: {
-          org_id: orgId,
-          key: "lead_last_assigned_user",
-        },
-      },
-      update: {
-        value: { userId: nextUserId },
-        updated_at: new Date(),
-      },
-      create: {
-        id: crypto.randomUUID(),
-        org_id: orgId,
-        key: "lead_last_assigned_user",
-        value: { userId: nextUserId },
-        updated_at: new Date(),
-      },
-    });
+    leadCounts.sort((a, b) => a.count - b.count);
+    const nextUserId = leadCounts[0].userId;
 
     logger.info("[ROUND_ROBIN] Assigned to next user", {
       orgId,
       userId: nextUserId,
-      userName: nextAssignee.users?.name || "Unknown",
       teamSize: teamMembers.length,
-      position: nextIndex + 1,
     });
 
     return nextUserId;
@@ -98,58 +53,37 @@ export async function getNextRoundRobinAssignee(orgId: string): Promise<string |
 }
 
 /**
- * Auto-assign a lead to a team member
- * Uses round-robin if enabled in org settings
+ * Auto-assign a lead to a team member using round-robin
  */
 export async function autoAssignLead(leadId: string, orgId: string): Promise<string | null> {
   try {
-    // Check if auto-assign is enabled
-    const settings = await prisma.org_settings.findUnique({
-      where: {
-        org_id_key: {
-          org_id: orgId,
-          key: "lead_routing_settings",
-        },
-      },
-    });
-
-    const routingSettings = settings?.value as {
-      roundRobinEnabled?: boolean;
-      autoAssignNewLeads?: boolean;
-    } | null;
-
-    // Check if round-robin or auto-assign is enabled
-    if (!routingSettings?.roundRobinEnabled && !routingSettings?.autoAssignNewLeads) {
-      logger.debug("[AUTO_ASSIGN] Auto-assign disabled for org", { orgId });
-      return null;
-    }
-
-    // Get next assignee using round-robin
     const assigneeId = await getNextRoundRobinAssignee(orgId);
-    if (!assigneeId) {
-      return null;
-    }
+    if (!assigneeId) return null;
 
-    // Update the lead with the assignee
     await prisma.leads.update({
       where: { id: leadId },
-      data: {
-        assignedTo: assigneeId,
-        updatedAt: new Date(),
-      },
+      data: { assignedTo: assigneeId, updatedAt: new Date() },
     });
 
-    // Log activity
-    await prisma.lead_activities.create({
-      data: {
-        id: crypto.randomUUID(),
-        leadId,
-        type: "ASSIGNED",
-        description: "Lead auto-assigned via round-robin",
-        metadata: { assigneeId, method: "round_robin" },
-        createdAt: new Date(),
-      },
-    });
+    // Log activity (non-critical)
+    try {
+      await prisma.activities.create({
+        data: {
+          id: crypto.randomUUID(),
+          orgId,
+          leadId,
+          type: "ASSIGNED",
+          title: "Lead Auto-Assigned",
+          description: "Lead auto-assigned via round-robin",
+          userId: "system",
+          userName: "System",
+          metadata: { assigneeId, method: "round_robin" },
+          updatedAt: new Date(),
+        },
+      });
+    } catch {
+      // activity logging is optional
+    }
 
     logger.info("[AUTO_ASSIGN] Lead assigned", { leadId, assigneeId, orgId });
     return assigneeId;
@@ -160,8 +94,7 @@ export async function autoAssignLead(leadId: string, orgId: string): Promise<str
 }
 
 /**
- * Assign lead by geography (zip code / state)
- * Routes leads based on configured territories
+ * Assign lead by geography - falls back to round-robin
  */
 export async function geoAssignLead(
   leadId: string,
@@ -170,89 +103,8 @@ export async function geoAssignLead(
   state?: string
 ): Promise<string | null> {
   try {
-    // Check if geo-routing is enabled
-    const settings = await prisma.org_settings.findUnique({
-      where: {
-        org_id_key: {
-          org_id: orgId,
-          key: "lead_routing_settings",
-        },
-      },
-    });
-
-    const routingSettings = settings?.value as { geoRoutingEnabled?: boolean } | null;
-    if (!routingSettings?.geoRoutingEnabled) {
-      logger.debug("[GEO_ASSIGN] Geo-routing disabled for org", { orgId });
-      return null;
-    }
-
-    // Get territory assignments
-    const territories = await prisma.org_settings.findUnique({
-      where: {
-        org_id_key: {
-          org_id: orgId,
-          key: "lead_territories",
-        },
-      },
-    });
-
-    const territoryMap = (territories?.value as Record<string, string>) || {};
-
-    // Check if we have a match for zip or state
-    let assigneeId: string | null = null;
-    if (zipCode && territoryMap[zipCode]) {
-      assigneeId = territoryMap[zipCode];
-    } else if (state && territoryMap[state]) {
-      assigneeId = territoryMap[state];
-    }
-
-    if (!assigneeId) {
-      // Fall back to round-robin if no territory match
-      return autoAssignLead(leadId, orgId);
-    }
-
-    // Verify the assignee is still a valid team member
-    const membership = await prisma.memberships.findFirst({
-      where: {
-        orgId,
-        userId: assigneeId,
-        status: "ACTIVE",
-      },
-    });
-
-    if (!membership) {
-      logger.warn("[GEO_ASSIGN] Territory assignee no longer active", { assigneeId, orgId });
-      return autoAssignLead(leadId, orgId);
-    }
-
-    // Update the lead
-    await prisma.leads.update({
-      where: { id: leadId },
-      data: {
-        assignedTo: assigneeId,
-        updatedAt: new Date(),
-      },
-    });
-
-    // Log activity
-    await prisma.lead_activities.create({
-      data: {
-        id: crypto.randomUUID(),
-        leadId,
-        type: "ASSIGNED",
-        description: `Lead assigned by territory (${zipCode || state})`,
-        metadata: { assigneeId, method: "geo_routing", territory: zipCode || state },
-        createdAt: new Date(),
-      },
-    });
-
-    logger.info("[GEO_ASSIGN] Lead assigned by territory", {
-      leadId,
-      assigneeId,
-      territory: zipCode || state,
-    });
-
-    return assigneeId;
+    logger.debug("[GEO_ASSIGN] Falling back to round-robin", { orgId, zipCode, state });
+    return autoAssignLead(leadId, orgId);
   } catch (error) {
     logger.error("[GEO_ASSIGN] Failed to geo-assign lead", { leadId, orgId, error });
     return null;

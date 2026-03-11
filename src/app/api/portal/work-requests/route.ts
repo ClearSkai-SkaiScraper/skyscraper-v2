@@ -62,6 +62,7 @@ export async function POST(request: NextRequest) {
       client = await prisma.client.create({
         data: {
           id: createId(),
+          slug: `client-${createId()}`,
           userId,
           createdAt: new Date(),
           updatedAt: new Date(),

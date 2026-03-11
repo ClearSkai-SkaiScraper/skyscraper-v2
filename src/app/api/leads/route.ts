@@ -9,6 +9,7 @@ import { z } from "zod";
 import { compose, withRateLimit, withSentryApi } from "@/lib/api/wrappers";
 import { apiError } from "@/lib/apiError";
 import { generateContactSlug } from "@/lib/generateContactSlug";
+import { autoAssignLead, geoAssignLead } from "@/lib/leads/autoAssign";
 import { logInfo } from "@/lib/log";
 import { getCurrentUserPermissions, requirePermission } from "@/lib/permissions";
 import prisma from "@/lib/prisma";
@@ -282,14 +283,15 @@ const basePOST = async (request: Request) => {
         (measurements.roofSquares || measurements.sidingLinearFeet || measurements.stories)
       ) {
         try {
-          // Find or create property profile for this contact
-          let property = await prisma.propertyProfiles.findFirst({
-            where: { contactId: contact.id },
+          // Find or create property profile using the full address as identifier
+          const fullAddr = [street, city, state, zipCode].filter(Boolean).join(", ");
+          let property = await prisma.property_profiles.findFirst({
+            where: { orgId: effectiveOrgId, fullAddress: fullAddr },
           });
 
           if (property) {
             // Update existing property with measurements
-            await prisma.propertyProfiles.update({
+            await prisma.property_profiles.update({
               where: { id: property.id },
               data: {
                 roofSquares: measurements.roofSquares ?? property.roofSquares,
@@ -300,11 +302,13 @@ const basePOST = async (request: Request) => {
             });
           } else {
             // Create new PropertyProfile with measurements
-            await prisma.propertyProfiles.create({
+            const propertyId = crypto.randomUUID();
+            await prisma.property_profiles.create({
               data: {
                 id: crypto.randomUUID(),
+                propertyId,
                 orgId: effectiveOrgId,
-                contactId: contact.id,
+                fullAddress: fullAddr || "Unknown",
                 streetAddress: street || "",
                 city: city || "",
                 state: state || "",
