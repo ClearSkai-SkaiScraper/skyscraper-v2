@@ -207,7 +207,6 @@ const IRC_CODE_MAP: Record<string, string> = {
   paint_peeling: "water_damage",
   paint_spatter: "siding_damage",
   paint_bubbling: "water_damage",
-  hail_spatter: "siding_damage",
   surface_spatter: "siding_damage",
 
   // ─── GARAGE DOOR ────────────────────────────────────────────────────────────
