@@ -118,7 +118,7 @@ export default function PhotosPage() {
   const severeCount = photos.filter((p) => p.severity === "severe").length;
   const annotationCount = photos.reduce((sum, p) => sum + (p.annotations?.length || 0), 0);
 
-  const getSeverityColor = (severity: string) => {
+  const getSeverityColor = (severity?: string) => {
     switch (severity?.toLowerCase()) {
       case "severe":
       case "critical":
