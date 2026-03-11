@@ -813,7 +813,7 @@ export default function PhotosPage() {
               </button>
 
               {/* AI Badge */}
-              {photo.analyzed && (
+              {photo.analyzed && photo.severity && (
                 <div className="absolute left-2 top-2">
                   <Badge className={getSeverityColor(photo.severity)}>
                     <Sparkles className="mr-1 h-3 w-3" />
