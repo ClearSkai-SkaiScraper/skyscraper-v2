@@ -1306,7 +1306,18 @@ function PhotosSection({ claimId }: { claimId: string }) {
   const [uploading, setUploading] = React.useState(false);
   const [dragActive, setDragActive] = React.useState(false);
   const [selectedPhoto, setSelectedPhoto] = React.useState<string | null>(null);
+  const [analyzingPhotoId, setAnalyzingPhotoId] = React.useState<string | null>(null);
+  const [analyzingAll, setAnalyzingAll] = React.useState(false);
+  const [analyzeProgress, setAnalyzeProgress] = React.useState(0);
+  const [generatingReport, setGeneratingReport] = React.useState(false);
   const fileInputRef = React.useRef<HTMLInputElement>(null);
+
+  // Stats
+  const analyzedCount = photos.filter((p) => p.analyzed).length;
+  const unanalyzedCount = photos.length - analyzedCount;
+  const damageCount = photos.filter(
+    (p) => p.analyzed && p.severity && p.severity !== "none"
+  ).length;
 
   // Fetch photos on mount
   React.useEffect(() => {
@@ -1322,6 +1333,168 @@ function PhotosSection({ claimId }: { claimId: string }) {
       }
     } catch (err) {
       logger.error("Failed to fetch photos", { error: err });
+    }
+  }
+
+  // Delete photo handler
+  async function handleDeletePhoto(photoId: string) {
+    if (!confirm("Delete this photo?")) return;
+    try {
+      const res = await fetch(`/api/claims/${claimId}/files/${photoId}`, {
+        method: "DELETE",
+      });
+      if (res.ok) {
+        setPhotos((prev) => prev.filter((p) => p.id !== photoId));
+      }
+    } catch (err) {
+      logger.error("Failed to delete photo", { error: err });
+    }
+  }
+
+  // Analyze single photo handler - analyzes AND saves to DB
+  async function handleAnalyzePhoto(photoId: string) {
+    const photo = photos.find((p) => p.id === photoId);
+    if (!photo) return;
+
+    setAnalyzingPhotoId(photoId);
+    try {
+      // Step 1: Get AI analysis
+      const analyzeRes = await fetch("/api/ai/photo-annotate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          imageUrl: photo.publicUrl,
+          claimId,
+          photoId,
+          componentType: "roof",
+        }),
+      });
+
+      if (analyzeRes.ok) {
+        const data = await analyzeRes.json();
+
+        // Step 2: Save annotations to database (this sets analyzed_at)
+        const saveRes = await fetch(`/api/claims/photos/${photoId}/annotations`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            annotations: data.annotations || [],
+            note: data.overallCaption || null,
+          }),
+        });
+
+        const severity = saveRes.ok
+          ? (await saveRes.json()).severity
+          : data.overallAssessment?.severity || "none";
+
+        // Update local state
+        setPhotos((prev) =>
+          prev.map((p) =>
+            p.id === photoId
+              ? { ...p, analyzed: true, severity, aiCaption: data, annotations: data.annotations }
+              : p
+          )
+        );
+      }
+    } catch (err) {
+      logger.error("Failed to analyze photo", { error: err });
+    } finally {
+      setAnalyzingPhotoId(null);
+    }
+  }
+
+  // Analyze ALL unanalyzed photos - analyzes AND saves each to DB
+  async function handleAnalyzeAll() {
+    const unanalyzed = photos.filter((p) => !p.analyzed);
+    if (unanalyzed.length === 0) return;
+
+    setAnalyzingAll(true);
+    setAnalyzeProgress(0);
+
+    for (let i = 0; i < unanalyzed.length; i++) {
+      const photo = unanalyzed[i];
+      try {
+        // Step 1: Get AI analysis
+        const analyzeRes = await fetch("/api/ai/photo-annotate", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            imageUrl: photo.publicUrl,
+            claimId,
+            photoId: photo.id,
+            componentType: "roof",
+          }),
+        });
+
+        if (analyzeRes.ok) {
+          const data = await analyzeRes.json();
+
+          // Step 2: Save annotations to database (this sets analyzed_at)
+          const saveRes = await fetch(`/api/claims/photos/${photo.id}/annotations`, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              annotations: data.annotations || [],
+              note: data.overallCaption || null,
+            }),
+          });
+
+          const severity = saveRes.ok
+            ? (await saveRes.json()).severity
+            : data.overallAssessment?.severity || "none";
+
+          // Update local state
+          setPhotos((prev) =>
+            prev.map((p) =>
+              p.id === photo.id
+                ? { ...p, analyzed: true, severity, aiCaption: data, annotations: data.annotations }
+                : p
+            )
+          );
+        }
+      } catch (err) {
+        logger.error("Failed to analyze photo", { photoId: photo.id, error: err });
+      }
+      setAnalyzeProgress(Math.round(((i + 1) / unanalyzed.length) * 100));
+    }
+
+    setAnalyzingAll(false);
+    setAnalyzeProgress(0);
+  }
+
+  // Generate Damage Report (uses only analyzed photos)
+  async function handleGenerateReport() {
+    if (analyzedCount === 0) {
+      alert("Please analyze at least one photo before generating a report.");
+      return;
+    }
+
+    setGeneratingReport(true);
+    try {
+      const res = await fetch(`/api/claims/${claimId}/damage-report`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ includePhotos: true, includeAnnotations: true }),
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        // Open the PDF in a new tab
+        if (data.pdfUrl) {
+          window.open(data.pdfUrl, "_blank");
+        }
+        alert(
+          `✅ Damage report generated! ${data.photoCount} photos, ${data.pageCount} pages.\n\nSaved to Documents tab & Report History.`
+        );
+      } else {
+        const err = await res.json().catch(() => ({}));
+        alert(`Failed to generate report: ${err.error || "Unknown error"}`);
+      }
+    } catch (err) {
+      logger.error("Failed to generate report", { error: err });
+      alert("Failed to generate damage report. Please try again.");
+    } finally {
+      setGeneratingReport(false);
     }
   }
 
@@ -1406,7 +1579,8 @@ function PhotosSection({ claimId }: { claimId: string }) {
           onChange={(e) => handleFileUpload(e.target.files)}
         />
 
-        <div className="mb-4 flex gap-2">
+        {/* Action buttons row */}
+        <div className="mb-4 flex flex-wrap gap-2">
           <Button
             onClick={() => fileInputRef.current?.click()}
             disabled={uploading}
@@ -1415,7 +1589,71 @@ function PhotosSection({ claimId }: { claimId: string }) {
             <Upload className="h-4 w-4" />
             {uploading ? "Uploading..." : "Upload Photos"}
           </Button>
+
+          {/* Analyze All button - only show if there are unanalyzed photos */}
+          {unanalyzedCount > 0 && (
+            <Button
+              onClick={handleAnalyzeAll}
+              disabled={analyzingAll || analyzingPhotoId !== null}
+              variant="outline"
+              className="gap-2 border-purple-300 text-purple-700 hover:bg-purple-50 dark:border-purple-700 dark:text-purple-300"
+            >
+              <Sparkles className="h-4 w-4" />
+              {analyzingAll
+                ? `Analyzing... ${analyzeProgress}%`
+                : `Analyze All (${unanalyzedCount})`}
+            </Button>
+          )}
+
+          {/* Generate Report button - only show if there are analyzed photos */}
+          {analyzedCount > 0 && (
+            <Button
+              onClick={handleGenerateReport}
+              disabled={generatingReport || analyzingAll}
+              className="gap-2 bg-green-600 hover:bg-green-700"
+            >
+              <FileText className="h-4 w-4" />
+              {generatingReport ? "Generating..." : "Generate Damage Report"}
+            </Button>
+          )}
         </div>
+
+        {/* Analysis Stats - show when photos exist */}
+        {photos.length > 0 && (
+          <div className="mb-4 grid grid-cols-3 gap-3 rounded-lg border bg-slate-50 p-3 dark:border-slate-700 dark:bg-slate-800/50">
+            <div className="text-center">
+              <p className="text-2xl font-bold text-slate-900 dark:text-white">{photos.length}</p>
+              <p className="text-xs text-slate-500">Total Photos</p>
+            </div>
+            <div className="text-center">
+              <p className="text-2xl font-bold text-purple-600">{analyzedCount}</p>
+              <p className="text-xs text-slate-500">Analyzed</p>
+            </div>
+            <div className="text-center">
+              <p className="text-2xl font-bold text-red-600">{damageCount}</p>
+              <p className="text-xs text-slate-500">With Damage</p>
+            </div>
+          </div>
+        )}
+
+        {/* Analyze All Progress Bar */}
+        {analyzingAll && (
+          <div className="mb-4 space-y-2">
+            <div className="flex items-center justify-between text-sm">
+              <span className="flex items-center gap-2 text-purple-600">
+                <Sparkles className="h-4 w-4 animate-pulse" />
+                Running AI damage analysis...
+              </span>
+              <span className="font-medium">{analyzeProgress}%</span>
+            </div>
+            <div className="h-2 w-full overflow-hidden rounded-full bg-purple-100 dark:bg-purple-900">
+              <div
+                className="h-full bg-purple-600 transition-all duration-300"
+                style={{ width: `${analyzeProgress}%` }}
+              />
+            </div>
+          </div>
+        )}
 
         {/* Upload Error */}
         {uploadError && (
@@ -1455,7 +1693,7 @@ function PhotosSection({ claimId }: { claimId: string }) {
               {photos.map((photo) => (
                 <div
                   key={photo.id}
-                  className="group relative cursor-pointer overflow-hidden rounded-lg"
+                  className="group relative cursor-pointer overflow-hidden rounded-lg border border-slate-200 dark:border-slate-700"
                   onClick={() => setSelectedPhoto(photo.publicUrl)}
                 >
                   <img
@@ -1463,7 +1701,67 @@ function PhotosSection({ claimId }: { claimId: string }) {
                     alt={photo.note || photo.filename}
                     className="h-32 w-full object-cover transition-transform group-hover:scale-110"
                   />
-                  <div className="absolute inset-0 bg-black/0 transition-colors group-hover:bg-black/20" />
+
+                  {/* Delete button - red X */}
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleDeletePhoto(photo.id);
+                    }}
+                    className="absolute right-2 top-2 z-50 rounded-full bg-red-500/80 p-1.5 text-white opacity-0 transition-opacity hover:bg-red-600 group-hover:opacity-100"
+                    aria-label="Delete photo"
+                    title="Delete photo"
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
+
+                  {/* AI Badge if analyzed */}
+                  {photo.analyzed && (
+                    <div className="absolute left-2 top-2">
+                      <span
+                        className={`inline-flex items-center rounded-full px-2 py-1 text-xs font-medium ${
+                          photo.severity === "severe"
+                            ? "bg-red-500 text-white"
+                            : photo.severity === "moderate"
+                              ? "bg-orange-500 text-white"
+                              : photo.severity === "minor"
+                                ? "bg-yellow-500 text-black"
+                                : "bg-green-500 text-white"
+                        }`}
+                      >
+                        <Sparkles className="mr-1 h-3 w-3" />
+                        {photo.severity || "analyzed"}
+                      </span>
+                    </div>
+                  )}
+
+                  {/* Analyze overlay for non-analyzed photos */}
+                  {!photo.analyzed && (
+                    <div className="absolute inset-0 flex items-center justify-center bg-black/50 opacity-0 transition-opacity group-hover:opacity-100">
+                      <Button
+                        size="sm"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleAnalyzePhoto(photo.id);
+                        }}
+                        disabled={analyzingPhotoId === photo.id}
+                        className="bg-purple-600 hover:bg-purple-700"
+                      >
+                        {analyzingPhotoId === photo.id ? (
+                          <>
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            Analyzing...
+                          </>
+                        ) : (
+                          <>
+                            <Sparkles className="mr-2 h-4 w-4" />
+                            Analyze
+                          </>
+                        )}
+                      </Button>
+                    </div>
+                  )}
+
                   <p className="absolute bottom-0 left-0 right-0 bg-black/60 p-2 text-xs text-white">
                     {photo.note || photo.filename}
                   </p>
