@@ -503,10 +503,10 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
 
     const reportId = createId();
     const filename = `damage-report-${claim.claimNumber || claimId}-${Date.now()}.pdf`;
-    const storagePath = `${orgId}/claims/${claimId}/reports/${filename}`;
+    const storagePath = `${orgId}/damage-reports/${filename}`;
 
     const { error: uploadError } = await supabase.storage
-      .from("claim-files")
+      .from("reports")
       .upload(storagePath, pdfBuffer, {
         contentType: "application/pdf",
         upsert: true,
@@ -519,7 +519,7 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
 
     const {
       data: { publicUrl },
-    } = supabase.storage.from("claim-files").getPublicUrl(storagePath);
+    } = supabase.storage.from("reports").getPublicUrl(storagePath);
 
     // Save to file_assets
     await prisma.file_assets.create({
@@ -532,7 +532,7 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
         mimeType: "application/pdf",
         sizeBytes: pdfBuffer.length,
         storageKey: storagePath,
-        bucket: "claim-files",
+        bucket: "reports",
         publicUrl,
         category: "report",
         file_type: "damage_report",
