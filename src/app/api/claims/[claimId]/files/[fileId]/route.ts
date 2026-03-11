@@ -123,17 +123,7 @@ export const DELETE = withAuth(async (req: NextRequest, { orgId }) => {
       }
     }
 
-    // 2. Delete related photo annotations (if any)
-    try {
-      await prisma.photo_annotations.deleteMany({
-        where: { photoId: fileId },
-      });
-    } catch {
-      // photo_annotations table may not exist in all environments
-      logger.debug("[CLAIM_FILE_DELETE] No annotations to clean up for", { fileId });
-    }
-
-    // 3. Delete the file_assets record
+    // 2. Delete the file_assets record (annotations are stored in metadata JSON)
     await prisma.file_assets.delete({
       where: { id: fileId },
     });
