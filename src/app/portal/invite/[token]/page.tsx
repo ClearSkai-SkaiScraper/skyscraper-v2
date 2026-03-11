@@ -78,10 +78,12 @@ export default async function InviteAcceptancePage({ params }: InvitePageProps) 
     );
   }
 
-  // If not signed in, redirect to sign-in with return URL
+  // If not signed in, redirect to CLIENT sign-in with return URL
+  // CRITICAL: Must use /client/sign-in so mode=client is set and user is
+  // registered as a client, not a pro user.
   if (!userId) {
     const returnUrl = `/portal/invite/${token}`;
-    redirect(`/sign-in?redirect_url=${encodeURIComponent(returnUrl)}`);
+    redirect(`/client/sign-in?redirect_url=${encodeURIComponent(returnUrl)}`);
   }
 
   // Activate the invite - update status and link to user

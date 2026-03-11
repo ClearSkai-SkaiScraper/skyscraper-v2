@@ -70,10 +70,10 @@ export default function CreateCompanyPage() {
     setLoading(true);
 
     try {
-      const res = await fetch("/api/trades/onboarding/create-company", {
+      const res = await fetch("/api/trades/onboarding", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
+        body: JSON.stringify({ step: "create_company", data: formData }),
       });
 
       const data = await res.json();
@@ -86,7 +86,7 @@ export default function CreateCompanyPage() {
       router.push("/trades/onboarding/job-photos");
     } catch (error) {
       logger.error("Company creation error:", error);
-      toast.error(error.message || "Failed to create company");
+      toast.error(error instanceof Error ? error.message : "Failed to create company");
     } finally {
       setLoading(false);
     }

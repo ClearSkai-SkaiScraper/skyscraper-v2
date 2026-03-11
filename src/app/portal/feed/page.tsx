@@ -125,31 +125,7 @@ export default function FeedPage() {
       )
     );
 
-    try {
-      const res = await fetch(`/api/portal/community/posts/${postId}/like`, {
-        method: "POST",
-      });
-      if (!res.ok) {
-        // Revert on error
-        setSocialPosts((prev) =>
-          prev.map((p) =>
-            p.id === postId
-              ? { ...p, isLiked: !p.isLiked, likes: p.isLiked ? p.likes - 1 : p.likes + 1 }
-              : p
-          )
-        );
-        toast.error("Failed to like post");
-      }
-    } catch {
-      // Revert on error
-      setSocialPosts((prev) =>
-        prev.map((p) =>
-          p.id === postId
-            ? { ...p, isLiked: !p.isLiked, likes: p.isLiked ? p.likes - 1 : p.likes + 1 }
-            : p
-        )
-      );
-    }
+    // Like is optimistic-only for now — community persistence is coming soon
   }
 
   // Share a post

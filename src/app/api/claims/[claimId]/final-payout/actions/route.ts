@@ -214,14 +214,17 @@ async function handleSaveCertificate(
       certificate_date: new Date(payload.certificateData.completionDate),
       certificate_notes: payload.certificateData.notes,
       updated_at: new Date(),
-    } as any,
+    },
     create: {
+      id: (await import("@paralleldrive/cuid2")).createId(),
       claim_id: claimId,
       org_id: orgId,
+      total_depreciation: 0,
       status: "work_completed",
       certificate_date: new Date(payload.certificateData.completionDate),
       certificate_notes: payload.certificateData.notes,
-    } as any,
+      updated_at: new Date(),
+    },
   });
 
   return NextResponse.json({
@@ -271,23 +274,29 @@ async function handleCaptureSignature(
   userId: string,
   payload: Extract<ActionPayload, { action: "capture_signature" }>
 ) {
+  // Build signature fields based on signer role
+  const sigFields: Record<string, unknown> = {
+    [`${payload.signerRole}_signature`]: payload.signatureData,
+    [`${payload.signerRole}_name`]: payload.signerName,
+    [`${payload.signerRole}_signed_at`]: new Date(),
+  };
+
   // Store signature in depreciation tracker
   const tracker = await prisma.depreciation_trackers.upsert({
     where: { claim_id: claimId },
     update: {
-      [`${payload.signerRole}_signature`]: payload.signatureData,
-      [`${payload.signerRole}_name`]: payload.signerName,
-      [`${payload.signerRole}_signed_at`]: new Date(),
+      ...sigFields,
       updated_at: new Date(),
-    } as any,
+    } as any, // Dynamic field names require cast
     create: {
+      id: (await import("@paralleldrive/cuid2")).createId(),
       claim_id: claimId,
       org_id: orgId,
+      total_depreciation: 0,
       status: "docs_uploaded",
-      [`${payload.signerRole}_signature`]: payload.signatureData,
-      [`${payload.signerRole}_name`]: payload.signerName,
-      [`${payload.signerRole}_signed_at`]: new Date(),
-    } as any,
+      ...sigFields,
+      updated_at: new Date(),
+    } as any, // Dynamic field names require cast
   });
 
   return NextResponse.json({
@@ -328,14 +337,17 @@ async function handleSubmit(
       submitted_at: new Date(),
       submitted_by: userId,
       updated_at: new Date(),
-    } as any,
+    },
     create: {
+      id: (await import("@paralleldrive/cuid2")).createId(),
       claim_id: claimId,
       org_id: orgId,
+      total_depreciation: 0,
       status: "submitted",
       submitted_at: new Date(),
       submitted_by: userId,
-    } as any,
+      updated_at: new Date(),
+    },
   });
 
   // Update claim status

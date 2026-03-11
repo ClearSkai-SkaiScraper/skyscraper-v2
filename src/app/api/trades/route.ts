@@ -2,8 +2,8 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
-import { auth } from "@clerk/nextjs/server";
 import { logger } from "@/lib/logger";
+import { auth } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
 
 import prisma from "@/lib/prisma";
@@ -15,9 +15,9 @@ export async function GET(req: NextRequest) {
   }
 
   try {
-    // Note: contractors model doesn't have orgId field
-    // Returning all contractors for now
+    // Scope to current user's contractors — never return all
     const trades = await prisma.contractors.findMany({
+      where: { user_id: userId },
       orderBy: { user_id: "asc" },
     });
 

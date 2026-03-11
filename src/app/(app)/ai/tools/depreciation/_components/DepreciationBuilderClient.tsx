@@ -273,29 +273,8 @@ export function DepreciationBuilderClient({
               }))
             );
           } else {
-            // Default items if no API data
-            setLineItems([
-              {
-                id: "1",
-                description: "Remove & Replace Shingles - Main Roof",
-                coverage: "A",
-                rcv: 15420.0,
-                depreciation: 3084.0,
-                acv: 12336.0,
-                completed: true,
-                recoverable: true,
-              },
-              {
-                id: "2",
-                description: "Remove & Replace Underlayment",
-                coverage: "A",
-                rcv: 2850.0,
-                depreciation: 570.0,
-                acv: 2280.0,
-                completed: true,
-                recoverable: true,
-              },
-            ]);
+            // No line items from API — start with empty state
+            setLineItems([]);
           }
 
           // Set supplements from API
@@ -401,19 +380,13 @@ export function DepreciationBuilderClient({
   const handleGenerateInvoice = async () => {
     setIsGeneratingInvoice(true);
     try {
-      const res = await fetch(`/api/claims/${claim.id}/final-payout/generate-packet`, {
+      const res = await fetch(`/api/claims/${claim.id}/final-payout/actions`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          notesToCarrier,
+          action: "generate_packet",
           includePhotos: true,
-          includeLienWaiver: true,
-          includeCompletionCert: true,
-          lineItems: lineItems.map((item) => ({
-            ...item,
-            completed: item.completed,
-            recoverable: item.recoverable,
-          })),
+          includeSupplements: true,
         }),
       });
 
@@ -428,7 +401,7 @@ export function DepreciationBuilderClient({
       toast.success("Final payout packet generated successfully!");
     } catch (error) {
       logger.error("Generate packet error:", error);
-      toast.error(error.message || "Failed to generate invoice");
+      toast.error(error instanceof Error ? error.message : "Failed to generate invoice");
     } finally {
       setIsGeneratingInvoice(false);
     }
@@ -440,14 +413,15 @@ export function DepreciationBuilderClient({
       setSignatureDataUrl(dataUrl);
       setCertificationSigned(true);
 
-      // Save signature to API
-      await fetch(`/api/claims/${claim.id}/final-payout/signature`, {
+      // Save signature to API via unified actions endpoint
+      await fetch(`/api/claims/${claim.id}/final-payout/actions`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          signatureDataUrl: dataUrl,
-          signedBy: claim.insured_name || "Property Owner",
-          signedAt: new Date().toISOString(),
+          action: "capture_signature",
+          signatureData: dataUrl,
+          signerName: claim.insured_name || "Property Owner",
+          signerRole: "homeowner",
         }),
       });
 
@@ -461,9 +435,14 @@ export function DepreciationBuilderClient({
   // Send certificate to client for remote signature
   const handleSendToClient = async () => {
     try {
-      const res = await fetch(`/api/claims/${claim.id}/final-payout/send-certificate`, {
+      const res = await fetch(`/api/claims/${claim.id}/final-payout/actions`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "send_certificate",
+          recipientEmail: claim.homeownerEmail || claim.adjusterEmail || "",
+          recipientName: claim.insured_name || "Property Owner",
+        }),
       });
 
       if (!res.ok) {
@@ -475,20 +454,23 @@ export function DepreciationBuilderClient({
       toast.success(data.message || "Certificate sent to client!");
     } catch (error) {
       logger.error("Failed to send to client:", error);
-      toast.error(error.message || "Failed to send certificate");
+      toast.error(error instanceof Error ? error.message : "Failed to send certificate");
     }
   };
 
   // Download certificate and save to claim
   const handleDownloadCertificate = async (signatureDataUrl?: string) => {
     try {
-      // Save to claim first
-      await fetch(`/api/claims/${claim.id}/final-payout/save-certificate`, {
+      // Save to claim first via unified actions endpoint
+      await fetch(`/api/claims/${claim.id}/final-payout/actions`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          signatureDataUrl,
-          signedBy: claim.insured_name || "Property Owner",
+          action: "save_certificate",
+          certificateData: {
+            completionDate: new Date().toISOString(),
+            notes: `Signed by ${claim.insured_name || "Property Owner"}`,
+          },
         }),
       });
 
@@ -511,15 +493,16 @@ export function DepreciationBuilderClient({
 
     setIsSubmitting(true);
     try {
-      const res = await fetch(`/api/claims/${claim.id}/final-payout/submit`, {
+      const res = await fetch(`/api/claims/${claim.id}/final-payout/actions`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          certificationSigned: true,
-          signedBy: claim.insured_name || "Property Owner",
-          signedAt: new Date().toISOString(),
-          notesToCarrier,
-          sendEmail: true,
+          action: "submit",
+          confirmationChecks: {
+            workCompleted: true,
+            documentsUploaded: true,
+            invoiceGenerated: !!generatedPacketUrl,
+          },
         }),
       });
 
@@ -535,7 +518,7 @@ export function DepreciationBuilderClient({
       );
     } catch (error) {
       logger.error("Submit error:", error);
-      toast.error(error.message || "Failed to submit to carrier");
+      toast.error(error instanceof Error ? error.message : "Failed to submit to carrier");
     } finally {
       setIsSubmitting(false);
     }
@@ -777,13 +760,13 @@ export function DepreciationBuilderClient({
                     <div className="rounded-lg bg-amber-50 p-3 text-center dark:bg-amber-950">
                       <p className="text-xs text-muted-foreground">Coverage B</p>
                       <p className="text-lg font-bold text-amber-700">
-                        ${(claim.coverageB || 1800).toLocaleString()}
+                        {claim.coverageB != null ? `$${claim.coverageB.toLocaleString()}` : "N/A"}
                       </p>
                     </div>
                     <div className="rounded-lg bg-purple-50 p-3 text-center dark:bg-purple-950">
                       <p className="text-xs text-muted-foreground">Coverage C</p>
                       <p className="text-lg font-bold text-purple-700">
-                        ${(claim.coverageC || 0).toLocaleString()}
+                        {claim.coverageC != null ? `$${claim.coverageC.toLocaleString()}` : "N/A"}
                       </p>
                     </div>
                   </div>

@@ -91,7 +91,7 @@ export default function NewVendorPage() {
     <div className="mx-auto max-w-2xl space-y-6 p-6">
       <div className="flex items-center gap-4">
         <Link
-          href="/app/vendors"
+          href="/vendors"
           className="flex h-10 w-10 items-center justify-center rounded-lg border border-border hover:bg-accent"
         >
           <ArrowLeft className="h-5 w-5" />

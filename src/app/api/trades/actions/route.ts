@@ -336,8 +336,39 @@ async function handleCancelSubscription(
     return NextResponse.json({ error: "No active subscription" }, { status: 404 });
   }
 
-  // Subscription doesn't have cancelAtPeriodEnd fields — log for manual handling
-  logger.info("[Trades] Subscription cancellation requested", {
+  // Actually cancel via Stripe if stripeSubId exists
+  if (subscription.stripeSubId) {
+    try {
+      const { getStripeClient } = await import("@/lib/stripe");
+      const stripe = getStripeClient();
+      if (stripe) {
+        await stripe.subscriptions.update(subscription.stripeSubId, {
+          cancel_at_period_end: true,
+          metadata: { cancelReason: input.reason || "user_requested" },
+        });
+        logger.info("[Trades] Stripe subscription set to cancel at period end", {
+          stripeSubId: subscription.stripeSubId,
+        });
+      }
+    } catch (stripeError) {
+      logger.error("[Trades] Stripe cancellation failed:", stripeError);
+      return NextResponse.json(
+        { error: "Failed to process cancellation. Please contact support." },
+        { status: 500 }
+      );
+    }
+  }
+
+  // Update local subscription record
+  await prisma.subscription.update({
+    where: { id: subscription.id },
+    data: {
+      status: "canceling",
+      updatedAt: new Date(),
+    },
+  });
+
+  logger.info("[Trades] Subscription cancellation processed", {
     userId,
     orgId: membership.organizationId,
     subscriptionId: subscription.id,
@@ -347,7 +378,7 @@ async function handleCancelSubscription(
   return NextResponse.json({
     success: true,
     message:
-      "Cancellation request submitted. Your subscription will remain active until the end of the billing period.",
+      "Your subscription has been cancelled. It will remain active until the end of the current billing period.",
   });
 }
 

@@ -118,6 +118,41 @@ export function FinalInvoice({
     window.print();
   };
 
+  const handleDownloadPDF = async () => {
+    try {
+      const { default: html2canvas } = await import("html2canvas");
+      const { default: jsPDF } = await import("jspdf");
+
+      const invoiceEl = document.getElementById("final-invoice-content");
+      if (!invoiceEl) return;
+
+      const canvas = await html2canvas(invoiceEl, { scale: 2, useCORS: true });
+      const imgData = canvas.toDataURL("image/png");
+      const pdf = new jsPDF("p", "mm", "a4");
+      const pageWidth = pdf.internal.pageSize.getWidth();
+      const pageHeight = pdf.internal.pageSize.getHeight();
+      const imgWidth = pageWidth - 20; // 10mm margins
+      const imgHeight = (canvas.height * imgWidth) / canvas.width;
+
+      let yOffset = 10;
+      let remainingHeight = imgHeight;
+
+      // Handle multi-page if content is long
+      while (remainingHeight > 0) {
+        pdf.addImage(imgData, "PNG", 10, yOffset, imgWidth, imgHeight);
+        remainingHeight -= pageHeight - 20;
+        if (remainingHeight > 0) {
+          pdf.addPage();
+          yOffset = -pageHeight + 20 + yOffset;
+        }
+      }
+
+      pdf.save(`Invoice-${claimNumber}-${invoiceNum}.pdf`);
+    } catch (error) {
+      console.error("Failed to generate PDF:", error);
+    }
+  };
+
   const fullAddress = [
     propertyAddress,
     [propertyCity, propertyState, propertyZip].filter(Boolean).join(", "),
@@ -126,7 +161,7 @@ export function FinalInvoice({
     .join(", ");
 
   return (
-    <Card className="overflow-hidden print:border-0 print:shadow-none">
+    <Card id="final-invoice-content" className="overflow-hidden print:border-0 print:shadow-none">
       <CardHeader className="bg-gradient-to-r from-slate-800 to-slate-900 text-white print:bg-white print:text-black">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
@@ -346,7 +381,7 @@ export function FinalInvoice({
             <Printer className="h-4 w-4" />
             Print Invoice
           </Button>
-          <Button variant="outline" className="gap-2">
+          <Button variant="outline" onClick={handleDownloadPDF} className="gap-2">
             <Download className="h-4 w-4" />
             Download PDF
           </Button>

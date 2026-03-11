@@ -3171,6 +3171,22 @@ model depreciation_trackers {
   follow_up_count        Int       @default(0)
   payment_ids            Json      @default("[]")
   notes                  String?
+  // Certificate fields
+  certificate_date       DateTime?
+  certificate_notes      String?
+  // Signature fields
+  homeowner_signature    String?
+  homeowner_name         String?
+  homeowner_signed_at    DateTime?
+  contractor_signature   String?
+  contractor_name        String?
+  contractor_signed_at   DateTime?
+  adjuster_signature     String?
+  adjuster_name          String?
+  adjuster_signed_at     DateTime?
+  // Submission fields
+  submitted_at           DateTime?
+  submitted_by           String?
   created_at             DateTime  @default(now())
   updated_at             DateTime
 

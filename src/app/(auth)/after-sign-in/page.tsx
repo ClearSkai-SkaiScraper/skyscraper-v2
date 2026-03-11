@@ -211,7 +211,13 @@ export default async function AfterSignInPage({
   }
 
   // -- New user: determine from mode param --
-  const newType: "pro" | "client" = mode === "pro" ? "pro" : "client";
+  // IMPORTANT: If mode is explicitly "client", register as client.
+  // Otherwise default to "pro" — the ClerkProvider afterSignInUrl includes
+  // mode=pro by default, and /client/sign-in passes mode=client explicitly.
+  // Defaulting unknown users to "pro" is safer because pro users have org
+  // membership checks that will catch misclassification, while a client
+  // wrongly classified as pro gets permanently stuck on the wrong surface.
+  const newType: "pro" | "client" = mode === "client" ? "client" : "pro";
   logger.info("[AFTER-SIGN-IN] NEW USER", { mode, newType });
 
   try {

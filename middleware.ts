@@ -118,7 +118,6 @@ const isPublicRoute = createRouteMatcher([
   // Client portal authentication (clients, not org members)
   "/client/sign-in(.*)",
   "/client/sign-up(.*)",
-  "/client/sign-up(.*)",
   // Portal pages are PROTECTED — layout.tsx handles auth gracefully
   // and individual pages call currentUser() which requires auth() context.
   // Marking portal as public was starving currentUser() of session data.
@@ -277,7 +276,6 @@ export default clerkMiddleware((auth, req) => {
 
   // APIs should return JSON 401 instead of HTML redirects
   if (isApiRoute) {
-    const { userId } = auth();
     if (!userId) {
       res.headers.set("x-auth-mode", "protected-json-401");
       return NextResponse.json({ error: "unauthorized" }, { status: 401 });
