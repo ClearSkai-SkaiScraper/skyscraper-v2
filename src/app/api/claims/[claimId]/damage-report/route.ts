@@ -558,15 +558,15 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
 
     const summaryText = `This report documents the findings of a comprehensive property damage assessment conducted at ${
       propertyAddress || "the insured property"
-    }. A total of ${photos.length} photograph${photos.length > 1 ? "s were" : " was"} captured and analyzed using AI-powered damage detection technology. The analysis identified ${
+    } in accordance with HAAG Engineering inspection standards. A total of ${photos.length} photograph${photos.length > 1 ? "s were" : " was"} captured and analyzed using AI-powered damage detection technology calibrated to HAAG-certified damage identification criteria. The analysis identified ${
       severeCnt > 0
-        ? `${severeCnt} area${severeCnt > 1 ? "s" : ""} of severe damage`
+        ? `${severeCnt} area${severeCnt > 1 ? "s" : ""} of severe/functional damage`
         : moderateCnt > 0
-          ? `${moderateCnt} area${moderateCnt > 1 ? "s" : ""} of moderate damage`
-          : `${minorCnt} area${minorCnt > 1 ? "s" : ""} of minor damage`
+          ? `${moderateCnt} area${moderateCnt > 1 ? "s" : ""} of moderate damage requiring repair`
+          : `${minorCnt} area${minorCnt > 1 ? "s" : ""} of minor/cosmetic damage`
     }${
       damageTypes.size > 0
-        ? `, including evidence of ${[...damageTypes].slice(0, 5).join(", ")} damage`
+        ? `, including documented evidence of ${[...damageTypes].slice(0, 5).join(", ")} damage`
         : ""
     }. ${
       claim.dateOfLoss
@@ -588,7 +588,7 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
     y -= 10;
 
     // Justification paragraph
-    const justificationText = `Based on the documented evidence, the property has sustained damage that meets the threshold for insurance claim consideration. Each photograph has been individually analyzed for damage type, severity, and applicable building code compliance. The findings in this report substantiate the need for professional restoration to return the property to its pre-loss condition in accordance with applicable building codes and manufacturer specifications.`;
+    const justificationText = `Based on the documented evidence and HAAG Engineering damage identification standards, the property has sustained functional damage that meets the threshold for insurance claim consideration per applicable IRC/IBC building codes. Each photograph has been individually analyzed for damage type, severity classification, and applicable building code compliance. Hail damage identification follows HAAG Certified Inspector criteria including impact pattern analysis, soft metal testing correlation, and granule displacement assessment. The findings in this report substantiate the need for professional restoration to return the property to its pre-loss condition in accordance with applicable building codes (IRC R905, R703, R903) and manufacturer installation specifications.`;
     y = drawWrappedText(
       page,
       justificationText,

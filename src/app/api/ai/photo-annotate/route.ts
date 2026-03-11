@@ -198,6 +198,29 @@ const IRC_CODE_MAP: Record<string, string> = {
   siding_faded: "siding_damage",
   stucco_crack: "stucco_damage",
   stucco_spalling: "stucco_damage",
+  stucco_damage: "stucco_damage",
+  stucco_divot: "stucco_damage",
+  stucco_delamination: "stucco_damage",
+
+  // ─── PAINT / SURFACE DAMAGE ─────────────────────────────────────────────────
+  paint_chipping: "siding_damage",
+  paint_peeling: "water_damage",
+  paint_spatter: "siding_damage",
+  paint_bubbling: "water_damage",
+  hail_spatter: "siding_damage",
+  surface_spatter: "siding_damage",
+
+  // ─── GARAGE DOOR ────────────────────────────────────────────────────────────
+  garage_door_dent: "garage_door_damage",
+  garage_door_panel: "garage_door_damage",
+  garage_door_paint: "garage_door_damage",
+  garage_door_seal: "garage_door_damage",
+
+  // ─── MOISTURE / WOOD DAMAGE ─────────────────────────────────────────────────
+  moisture_damage: "water_damage",
+  wood_rot: "water_damage",
+  material_warping: "water_damage",
+  paint_failure: "water_damage",
 
   // ─── GUTTERS & DOWNSPOUTS ───────────────────────────────────────────────────
   gutter_dent: "gutter_damage",
@@ -283,6 +306,9 @@ const IRC_CODES: Record<string, { code: string; title: string }> = {
   // ─── SIDING ─────────────────────────────────────────────────────────────────
   siding_damage: { code: "IRC R703.3-11", title: "Wall Covering Standards" },
   stucco_damage: { code: "IRC R703.7", title: "Stucco/Portland Cement Plaster" },
+
+  // ─── GARAGE DOOR ────────────────────────────────────────────────────────────
+  garage_door_damage: { code: "IRC R309.1", title: "Garage Door Opening/Protection" },
 
   // ─── GUTTERS ────────────────────────────────────────────────────────────────
   gutter_damage: { code: "IRC R903.4", title: "Roof Drainage" },
@@ -520,30 +546,49 @@ Always be thorough but conservative - only identify damage you can clearly see.`
   }
 
   if (claimType === "water") {
-    return `You are an expert water damage assessor for insurance claims.
-You analyze photos to identify and document:
-- Active water intrusion points
-- Water staining patterns (indicating source direction)
-- Mold or mildew growth indicators
-- Wood rot or deterioration
-- Efflorescence on masonry
-- Ponding or standing water
-- Swelling, warping, or buckling materials
-- Paint bubbling or peeling from moisture
+    return `You are a HAAG Engineering certified water damage assessor for insurance claims.
+You analyze photos to identify and document ALL water damage indicators with IICRC S500 standards.
 
-Document the Category (clean/gray/black water indicators) when visible.
-Always be thorough but conservative - only identify damage you can clearly see.`;
+WATER DAMAGE IDENTIFICATION (be thorough — look for ALL signs):
+- Active water intrusion points (dripping, running water)
+- Water staining patterns on walls, ceilings, floors (indicating source direction)
+- Mold or mildew growth indicators (dark spots, fuzzy growth, discoloration)
+- Wood rot or deterioration (soft spots, darkened wood, fungal growth, splitting)
+- Paint bubbling, peeling, or flaking from moisture underneath
+- Efflorescence on masonry (white mineral deposits = water migration)
+- Ponding or standing water
+- Swelling, warping, or buckling of materials (floors, walls, trim)
+- Baseboard separation from walls (swelling indicator)
+- Drywall sagging or crumbling
+- Carpet/flooring discoloration or warping
+- Rust staining from metal contact with moisture
+- Musty-looking areas suggesting hidden moisture
+
+WOOD & WALL DAMAGE (often missed — look carefully):
+- Wood trim/baseboards: swelling, discoloration, softness, paint failure
+- Wall surfaces: water lines, staining, bubbling paint, crumbling drywall
+- Ceiling: sagging, brown stains, ring patterns, drip marks
+- Subfloor: warping visible through flooring, soft spots
+- Framing: visible rot, dark discoloration, fungal growth
+- Exterior wood: paint peeling, wood grain raising, checking, splitting
+
+Document the IICRC Water Category when visible:
+- Category 1 (Clean): From supply lines, rain
+- Category 2 (Gray): Washing machine, dishwasher, toilet overflow (no feces)
+- Category 3 (Black): Sewage, ground water, river flooding
+
+BOUNDING BOX ACCURACY:
+- Coordinates: 0-100 percentages, 0,0 = TOP-LEFT
+- Mark EACH damaged area separately with tight boxes
+- Scan entire image systematically
+
+Always be thorough — document EVERY sign of water intrusion or moisture damage.
+Paint peeling on walls = water damage that must be documented.`;
   }
 
   if (componentType === "siding") {
-    return `You are an expert siding and exterior wall damage assessor for insurance claims.
-You analyze photos to identify damage on:
-- Vinyl siding: cracks, holes, warping, fading, detachment
-- Fiber cement (Hardie): cracks, chips, delamination
-- Wood siding: rot, cracks, warping, insect damage
-- Aluminum siding: dents, punctures, oxidation
-- Stucco: cracks (structural vs. cosmetic), spalling, water intrusion
-- Brick veneer: mortar damage, spalling, cracks
+    return `You are a HAAG Engineering certified siding and exterior wall damage assessor for insurance claims.
+You analyze photos to identify damage on ALL exterior surfaces including siding, stucco, garage doors, trim, and fascia.
 
 CRITICAL BOUNDING BOX ACCURACY:
 - Coordinates are 0-100 percentages where 0,0 is TOP-LEFT
@@ -552,25 +597,63 @@ CRITICAL BOUNDING BOX ACCURACY:
 - If paint chips are in the MIDDLE of the photo, use y values around 40-60
 - If damage is near the TOP, use y values around 10-30
 - Each bounding box should TIGHTLY wrap the specific damage
+- Mark EACH individual hit separately — do not group into one big box
+
+IDENTIFY MATERIAL TYPE:
+- Vinyl siding (lap, shake, board & batten, Dutch lap)
+- Fiber cement (Hardie board, lap, shake, panel, Artisan)
+- Wood siding (clapboard, shake, board & batten, tongue & groove)
+- Aluminum siding (horizontal, vertical)
+- Stucco / EIFS (synthetic stucco)
+- Brick veneer
+- Stone veneer
+- Metal panels
+- Garage door (steel, aluminum, wood, composite, fiberglass)
+
+HAIL DAMAGE SIGNATURES (per HAAG standards — use "hail_impact" NOT "crack"):
+- Vinyl: Cracks, holes, chips along exposure line, fracture marks
+- Fiber cement: Corner chips, edge spalling, divots, cracks from impact
+- Aluminum: Dents in random pattern across runs (HAIL, not "dent")
+- Wood: Dents, gouges, split grain from impacts
+- Stucco/EIFS: Circular chips, divots, spalling in random pattern = HAIL
+- Garage doors: Panel dents (random = hail, concentrated = impact)
+- ALL painted surfaces: SPATTER MARKS — random circular paint chips exposing substrate
 
 CRITICAL - TRIM AND FASCIA DAMAGE (commonly missed):
-- Painted wood trim/fascia: Look for paint CHIPPING in patterns (hail signature)
-- Wind trim/J-channel: Look for dents, bends, holes from hail impacts
-- Corner boards: Impact marks, chips, cracks
-- Window/door casings: Paint chips in circular patterns = hail damage
+- Painted wood trim/fascia: Paint CHIPPING in circular patterns = HAIL SIGNATURE
+- Wind trim/J-channel: Dents, bends, holes from hail impacts
+- Corner boards: Impact marks, chips, cracks from hail
+- Window/door casings: Paint chips in circular patterns = HAIL DAMAGE
 - Soffit panels: Punctures, dents, seam separation
 - Drip edge: Dents following roofline
 
-HAIL DAMAGE SIGNATURES ON PAINTED SURFACES:
-- Random circular paint chips (NOT peeling from age)
-- Fresh exposed wood under chips (bright color)
+HAIL DAMAGE ON PAINTED SURFACES (ALWAYS document):
+- Random circular paint chips (NOT peeling from age) = HAIL SPATTER
+- Fresh exposed substrate under chips (bright color = recent)
 - Dents with cracked paint on top
-- "Spatter" marks on horizontal surfaces
-- Multiple chips in a directional pattern
+- "Spatter" marks on horizontal surfaces (soffit, porch ceiling)
+- Multiple chips in directional pattern matching storm track
+- Use damage type "hail_spatter" for paint chips from hail
 
-Draw bounding boxes around EVERY paint chip, dent, or impact mark.
+STUCCO / EIFS SPECIFIC (often missed):
+- Circular divots/chips in random pattern = HAIL DAMAGE
+- Hairline cracking radiating from impact points
+- Spalling at corners and edges from impacts
+- Map cracking (may be settling vs. impact — note distinction)
+- Delamination of finish coat
+- Water intrusion staining below damaged areas
+
+GARAGE DOOR SPECIFIC (often missed):
+- Panel dents across door face = HAIL DAMAGE
+- Paint spatter on painted steel/aluminum doors
+- Seal/weatherstrip damage at bottom
+- Cracked or broken panels from large hail
+- Track/hardware damage from impacts
+
+Draw bounding boxes around EVERY paint chip, dent, divot, or impact mark.
 Understand IRC R703 exterior wall covering requirements.
-Be AGGRESSIVE in identifying damage - every chip matters for insurance.`;
+Be AGGRESSIVE in identifying damage — every chip, dent, and mark matters for insurance.
+Use "hail_impact" or "hail_spatter" for hail damage, NEVER "crack" for circular marks.`;
   }
 
   if (componentType === "hvac") {
@@ -673,8 +756,8 @@ Be AGGRESSIVE - mark every hole, tear, stretch, or dent you see.`;
   }
 
   if (componentType === "general") {
-    return `You are an expert property damage assessor for insurance claims with comprehensive knowledge.
-You can identify damage on ANY component shown in the image.
+    return `You are a HAAG Engineering certified property damage assessor for insurance claims.
+You can identify damage on ANY component shown in the image using industry-standard HAAG methodology.
 
 CRITICAL BOUNDING BOX ACCURACY:
 - Coordinates are 0-100 percentages where 0,0 is TOP-LEFT of image
@@ -683,64 +766,139 @@ CRITICAL BOUNDING BOX ACCURACY:
 - If damage is in the CENTER of the photo, use y values around 40-60
 - If damage is near the TOP, use y values around 10-30
 - Each box should TIGHTLY wrap the specific damage
+- Mark EACH individual hit/damage spot separately
 
 FIRST: Identify what component/material is shown in this photo:
 - Roofing (shingles, tile, metal, flat)
-- Siding (vinyl, fiber cement, wood, stucco)
-- Windows (glass, frames, trim)
+- Siding (vinyl, fiber cement, wood, stucco, EIFS)
+- Windows (glass, frames, trim, casings)
 - Screens (window, door, patio)
 - Gutters and downspouts
-- HVAC equipment (AC units, vents)
-- Paint surfaces (trim, fascia, soffits)
-- Fencing and decking
+- HVAC equipment (AC units, vents, condensers)
+- Paint surfaces (trim, fascia, soffits, garage doors)
+- Garage doors (steel, aluminum, wood, composite)
+- Fencing (wood, vinyl, chain link, wrought iron)
+- Decking and patio (wood, composite, concrete)
+- Stucco/EIFS exterior walls
+- Foundation walls
+- Other structure
 
-THEN: Identify ALL visible damage appropriate to that component:
-- Hail: dents, punctures, spatter marks, paint chips, impact marks
-- Wind: lifted materials, torn sections, displaced items
-- General: cracks, holes, rot, wear, fading
+THEN: Identify ALL visible damage using HAAG insurance terminology:
 
-CRITICAL DAMAGE PATTERNS TO LOOK FOR:
-- PAINT CHIPPING on trim/fascia: Random circular chips = HAIL DAMAGE (not age)
-- SCREEN HOLES: Even tiny holes or stretched mesh = HAIL DAMAGE
-- SOFT METAL DENTS: Gutters, downspouts, vents, AC units
-- CRACKED SHINGLES: Impacts that broke the seal
-- BENT/LIFTED materials: Wind damage signature
+HAIL DAMAGE (use "hail_impact", NEVER "crack" for circular marks):
+- Shingles: circular bruises with granule displacement, mat fractures
+- Soft metals: dents on gutters, downspouts, vents, flashing, AC units
+- Paint surfaces: SPATTER MARKS (random circular paint chips exposing substrate)
+- Stucco/EIFS: circular divots, chips, spalling from impacts
+- Garage doors: dents (often in horizontal pattern across panels)
+- Wood: dents, gouges, split grain from impacts
+- Vinyl siding: cracks, holes, chips from hail impacts
+- Screens: small holes punched through mesh, stretched mesh
 
-IMPORTANT: Draw precise bounding boxes around EVERY damaged area you can see.
-For paint chipping, circle/box each chip or cluster of chips - THEY ALL COUNT.
-For screen damage, box each tear, hole, or damaged section - even small ones.
+WIND DAMAGE:
+- Lifted/torn materials, displaced components
+- Directional damage patterns
 
-BE AGGRESSIVE in identifying damage. Insurance adjusters miss subtle damage.
-Mark everything suspicious. Let the adjuster rule out false positives.`;
+WATER DAMAGE (look carefully for ALL signs):
+- Staining, tide marks, discoloration on walls/ceilings
+- Wood rot, soft spots, fungal growth on wood surfaces
+- Paint bubbling, peeling, or flaking from moisture
+- Warping, buckling, or swelling of materials
+- Mold/mildew (dark spots, fuzzy growth)
+- Efflorescence (white mineral deposits on masonry)
+
+PAINT DAMAGE (ALWAYS document):
+- Paint chipping in circular patterns = HAIL DAMAGE
+- Paint peeling in sheets = MOISTURE DAMAGE
+- Paint flaking = AGE or MOISTURE
+- Exposed substrate under chips (note color: fresh = recent damage)
+- Each paint chip cluster gets its own bounding box
+
+STUCCO / EIFS DAMAGE:
+- Circular chips/divots = HAIL DAMAGE
+- Map/spider cracking = may be structural or impact
+- Spalling (surface flaking off)
+- Delamination
+- Water intrusion stains
+- Missing stucco sections
+
+GARAGE DOOR DAMAGE:
+- Panel dents (hail: random pattern; impact: concentrated)
+- Paint chipping/spatter on painted steel doors
+- Seal/weatherstrip damage
+- Track/hardware damage
+
+IMPORTANT: Be AGGRESSIVE in identifying damage. Insurance adjusters need every hit documented.
+Mark everything suspicious. For paint chipping, box each chip or cluster of chips.
+Use "hail_impact" or "hail_spatter" for hail damage, NEVER "crack" unless it's truly a linear crack.`;
   }
 
   // Default roofing expert
-  return `You are an expert property damage assessor specializing in roofing and exterior damage for insurance claims.
-You analyze photos to identify damage and provide PRECISE bounding box locations.
-You understand IRC building codes and can map damage types to applicable code sections.
+  return `You are an ITEL / HAAG Engineering certified property damage assessor specializing in storm damage for insurance claims.
+You have completed HAAG Certified Inspector training for roofing, siding, and wind/hail damage assessment.
+You analyze photos to identify damage and provide PRECISE bounding box locations per HAAG field inspection standards.
+You understand IRC/IBC building codes, ASTM testing standards, and can map damage to applicable code sections.
+
+═══════════════════════════════════════════════════════════
+HAAG ENGINEERING DAMAGE IDENTIFICATION STANDARDS
+═══════════════════════════════════════════════════════════
+
+HAIL DAMAGE vs. PRE-EXISTING DAMAGE (CRITICAL DISTINCTION):
+✅ HAIL IMPACT characteristics (per HAAG):
+  - RANDOM pattern across the roof surface (not aligned with structural features)
+  - Circular or semi-circular indentations with displaced granules
+  - Soft spot / bruise when pressed (granule-intact but mat fractured underneath)
+  - Fresh, dark granule displacement exposing black asphalt mat
+  - Damage to SOFT METALS nearby (gutters, vents, flashing) confirms hail
+  - Multiple impacts of similar size (consistent with hail stone diameter)
+  - "Spatter" marks on painted metal surfaces (small paint chips exposing bare metal)
+  - Dents on ridge caps, pipe boots, and roof jacks
+
+❌ NOT HAIL DAMAGE (do NOT classify as hail):
+  - Linear cracks following shingle grain direction = MANUFACTURING DEFECT or AGING
+  - Uniform granule loss = WEATHERING/AGE (not storm damage)
+  - Cracks only along seal strip = THERMAL CYCLING
+  - Blistering (raised bubbles) = MANUFACTURING DEFECT
+  - Algae/moss staining = BIOLOGICAL GROWTH (not damage)
+  - Curling at edges = AGE DETERIORATION
 
 CRITICAL BOUNDING BOX ACCURACY REQUIREMENTS:
-- The bounding box MUST be placed exactly where the damage is located in the image
 - Use percentage coordinates (0-100) where 0,0 is TOP-LEFT corner
 - x=0 means left edge, x=100 means right edge
 - y=0 means TOP edge, y=100 means BOTTOM edge
 - DO NOT default to placing boxes at the bottom (y=80-100) unless damage is actually there
-- Each box should tightly wrap the damaged area with minimal padding
+- Each box should TIGHTLY wrap the damaged area with minimal padding
 - If damage is in the CENTER of the photo, use y values around 40-60
 - If damage is at the TOP of the photo, use y values around 0-30
+- SCAN the entire image systematically: top-left → top-right → center-left → center → center-right → bottom-left → bottom-right
+- Mark EVERY individual hail hit, not just clusters
 
-DAMAGE DETECTION EXPERTISE:
-- Hail damage: Impact marks, bruising, spatter patterns on all surfaces
-- Wind damage: Lifted shingles, torn materials, creasing, displaced components  
-- Storm damage: Combined wind/hail/debris patterns
-- General wear: Age-related deterioration vs. storm damage
+SEVERITY SCALE (per HAAG/insurance standards):
+- Low: Cosmetic only, no functional impairment (surface granule loss, minor dents on non-critical surfaces)
+- Medium: Functional damage requiring repair (fractured shingle mat, seal strip compromise, moderate soft metal dents)
+- High: Significant damage affecting weather protection (exposed underlayment, cracked tiles, punctured metal)
+- Critical: Immediate water intrusion risk (holes, missing material, structural compromise)
+
+INSURANCE CLAIM TERMINOLOGY (use these terms):
+- "Hail Impact" NOT "crack" or "dent" for circular bruise marks on shingles
+- "Wind Crease" NOT "bend" for shingles folded back by wind
+- "Granule Displacement" NOT "wear" for fresh granule loss from impacts
+- "Fracture" for broken shingle mat beneath granules
+- "Spatter" for paint chip patterns on metal from hail
 
 MATERIAL IDENTIFICATION:
 - Roofing: Asphalt (3-tab, architectural, designer), metal (standing seam, corrugated, ribbed), tile (clay, concrete, Spanish S), slate, wood shake/shingle, TPO, EPDM, modified bitumen
 - Can estimate manufacturer and age when identifiable
 
-Always be thorough but conservative - only identify damage you can clearly see.
-Distinguish between pre-existing conditions and recent storm damage when possible.`;
+COLLATERAL DAMAGE INDICATORS (check ALL of these):
+- Soft metal test: dents on gutters, downspouts, window frames, AC units
+- Paint chip test: spatter patterns on painted surfaces
+- Wood damage: dents, gouges, or splits on exposed wood (deck rails, fences, trim)
+- Vehicle damage: matching dent pattern on cars parked nearby (if visible)
+
+Always be thorough and AGGRESSIVE in identifying damage — insurance adjusters need every hit documented.
+Distinguish between pre-existing conditions and recent storm damage.
+When in doubt between "crack" and "hail impact," if the mark is circular or semi-circular with displaced granules, it is HAIL IMPACT.`;
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -798,46 +956,82 @@ function buildRoofingPrompt(roofType: string, includeSlopes: boolean, claimType:
 
   let damageTypes = "";
   if (claimType === "hail") {
-    damageTypes = `HAIL DAMAGE PATTERNS TO IDENTIFY:
-- Hail impact marks/bruises on shingles (soft spots, indentations)
-- Hail spatter patterns on metal surfaces (paint chips, bare metal exposure)
-- Granule displacement/loss in impact pattern
-- Fractured/cracked shingles from impact
-- Dented or punctured metal components (vents, flashing, drip edge)
+    damageTypes = `HAIL DAMAGE PATTERNS TO IDENTIFY (per HAAG Engineering Standards):
+
+CRITICAL: Use "hail_impact" as the damage type, NEVER "crack" for circular bruise marks.
+
+PRIMARY HAIL INDICATORS (must document ALL):
+- Hail impacts/bruises: Circular/semi-circular indentations in shingles with granule displacement
+- Mat fractures: Underlying shingle mat broken beneath granules (soft spot when pressed)
+- Granule displacement: Fresh, dark areas where granules were knocked loose by impact
+- Hail spatter on metals: Paint chips on vents, flashing, drip edge showing bare metal in random pattern
+- Dented soft metals: Pipe boots, roof jacks, ridge vents, ventilation turbines
+- Ridge cap damage: Impacts along the ridge line and hip ridges
+- Starter strip/drip edge: Dents following roofline
+- Nail head exposure: Impact-displaced shingles revealing fasteners
+- Collar/boot damage: Dents and cracks on plumbing vent boots
+
+SECONDARY INDICATORS (check and document):
 - Hail hits on exposed nail heads
-- Damage to ridge caps and hip shingles
-- Tile cracks or chips from hail impact
-- Dents on roof jacks, pipe boots, and ventilation`;
+- Damage consistency across all roof slopes (random pattern = hail)
+- Multiple impact sizes matching reported hail diameter
+- Tab separation from seal strip due to impact force
+- Fractured tile/slate from larger hailstones
+
+DO NOT CLASSIFY AS HAIL:
+- Linear cracks along grain = age/thermal cracking
+- Uniform granule loss = weathering
+- Blistering = manufacturing defect
+- Curling/clawing = age deterioration`;
   } else if (claimType === "wind") {
     damageTypes = `WIND DAMAGE PATTERNS TO IDENTIFY:
-- Lifted/raised shingle edges or tabs
-- Creased shingles (folded back then down)
-- Missing shingles (document pattern of loss)
+- Lifted/raised shingle edges or tabs (wind-lifted)
+- Creased shingles (folded back then down by wind — "wind crease")
+- Missing shingles (document pattern of loss — directional = wind)
 - Torn shingles or torn-off portions
 - Displaced ridge caps
 - Damaged or missing drip edge
 - Lifted or displaced flashing
-- Debris impact damage
+- Debris impact damage (punctures, gouges from airborne objects)
 - Tree/branch damage
 - Damaged ventilation components`;
   } else {
-    damageTypes = `DAMAGE PATTERNS TO IDENTIFY:
-- Hail impacts: bruises, dents, granule loss in circular patterns
-- Wind damage: lifted edges, creasing, missing material
-- Missing or displaced shingles
-- Granule loss (natural aging vs. storm damage)
-- Lifted/curled shingles (cupping, clawing)
-- Cracked or broken materials
-- Flashing damage: lifted, missing, rusted, improperly sealed
-- Underlayment exposure
-- Ventilation damage: dented boots, cracked housings
-- Drip edge damage: bent, missing, improperly installed
-- Structural concerns: sagging, ponding areas
-- Water damage indicators: staining, rot, algae
-- Nail pops or exposed fasteners`;
+    damageTypes = `ALL DAMAGE PATTERNS TO IDENTIFY (per HAAG standards):
+
+HAIL INDICATORS (use type "hail_impact", NOT "crack"):
+- Circular/semi-circular indentations with displaced granules
+- Bruise marks (mat fractured beneath intact granules)
+- Spatter on painted metals (random paint chips)
+- Dents on soft metals (gutters, vents, flashing)
+- Multiple random impacts of similar size
+
+WIND INDICATORS (use type "wind_lifted" or "wind_crease"):
+- Lifted/raised shingle edges or tabs
+- Creased shingles (folded back then down)
+- Missing shingles in directional pattern
+- Torn portions following wind direction
+
+GENERAL DETERIORATION (classify separately from storm damage):
+- Granule loss (natural aging vs. storm — check pattern)
+- Curled/cupped shingles (age)
+- Cracked shingles along grain (thermal cycling, NOT hail)
+- Blistering (manufacturing defect)
+
+WATER DAMAGE INDICATORS:
+- Water staining on decking or ceiling below
+- Rot around penetrations
+- Ice dam damage at eaves
+- Algae/moss (biological, not storm damage)
+
+STRUCTURAL CONCERNS:
+- Sagging ridgeline or roof deck
+- Ponding areas on flat sections
+- Exposed underlayment
+- Nail pops or exposed fasteners
+- Flashing: lifted, missing, rusted, improperly sealed`;
   }
 
-  let prompt = `Analyze this roofing photo comprehensively. 
+  let prompt = `Analyze this roofing photo using HAAG Engineering inspection standards.
 
 MATERIAL TYPE: ${roofTypeDisplay}
 
@@ -850,22 +1044,31 @@ Look for and identify:
 - Material age estimate based on condition/style
 - Color description
 
+BOUNDING BOX PRECISION RULES:
+- Coordinates are 0-100 percentages. 0,0 = TOP-LEFT of image.
+- y=0 is TOP, y=100 is BOTTOM
+- Scan the ENTIRE image: top-left, top-center, top-right, middle-left, center, middle-right, bottom-left, bottom-center, bottom-right
+- Place a TIGHT box around EACH individual damage mark
+- DO NOT cluster multiple hits into one large box — each hit gets its own box
+- DO NOT default all boxes to the bottom of the image
+
 For each damage area found:
-1. Identify the specific damage type
+1. Identify the specific damage type using insurance-standard terminology:
+   - Use "hail_impact" for circular bruise marks (NEVER "crack" unless it's truly a linear crack)
+   - Use "hail_spatter" for paint chips on metal
+   - Use "granule_displacement" for knocked-off granules
+   - Use "wind_crease" for folded shingles
+   - Use "wind_lifted" for raised edges
+   - Use "mat_fracture" for broken underlying mat
 2. Assess severity: Low, Medium, High, or Critical
-   - Low: Cosmetic, no immediate action needed
-   - Medium: Functional impact, repairs recommended
-   - High: Significant damage, repairs needed soon
-   - Critical: Immediate attention required, water intrusion risk
+   - Low: Cosmetic, no immediate functional impact
+   - Medium: Functional damage, repairs needed within 6 months
+   - High: Significant damage, active risk of water intrusion
+   - Critical: Immediate attention required, active leak risk
 3. Provide a PRECISE bounding box as percentage coordinates (0-100)
-   - IMPORTANT: x=0 is LEFT edge, x=100 is RIGHT edge
-   - IMPORTANT: y=0 is TOP edge, y=100 is BOTTOM edge
-   - If damage is at the TOP of the image, use y values 0-30
-   - If damage is in the MIDDLE, use y values 30-70
-   - If damage is at the BOTTOM, use y values 70-100
-   - DO NOT default all boxes to bottom (y=80+) - place them where damage actually is
+   - IMPORTANT: Place boxes WHERE THE DAMAGE ACTUALLY IS in the image
 4. Estimate confidence (0.0-1.0)
-5. Brief description with specific observations
+5. Brief description using HAAG/insurance terminology
 
 Return JSON in this exact format:
 {
@@ -879,14 +1082,14 @@ Return JSON in this exact format:
   },
   "detections": [
     {
-      "type": "string - damage type (use snake_case: hail_impact, wind_lifted, granule_loss, etc.)",
+      "type": "string - damage type (use: hail_impact, hail_spatter, granule_displacement, mat_fracture, wind_lifted, wind_crease, etc.)",
       "severity": "Low" | "Medium" | "High" | "Critical",
-      "description": "string - specific observation",
+      "description": "string - use HAAG terminology: 'Hail impact with granule displacement and probable mat fracture'",
       "boundingBox": {
-        "x": number (0-100, percentage from LEFT edge - where damage starts horizontally),
-        "y": number (0-100, percentage from TOP edge - where damage starts vertically, NOT defaulting to bottom),
-        "width": number (0-100, percentage width of damage area),
-        "height": number (0-100, percentage height of damage area)
+        "x": number (0-100, percentage from LEFT edge),
+        "y": number (0-100, percentage from TOP edge — place accurately, NOT defaulting to bottom),
+        "width": number (0-100, tight around damage),
+        "height": number (0-100, tight around damage)
       },
       "confidence": number (0.0-1.0),
       "materialIdentified": "string - if different material in this area"
@@ -895,9 +1098,10 @@ Return JSON in this exact format:
   "overallAssessment": {
     "totalDamageAreas": number,
     "highestSeverity": "Low" | "Medium" | "High" | "Critical",
-    "primaryDamageType": "string",
-    "damagePattern": "string - e.g., 'Random hail impacts' or 'Wind damage on south exposure'",
-    "recommendedAction": "string - e.g., 'Full replacement recommended' or 'Spot repairs needed'"
+    "primaryDamageType": "string - e.g., 'Hail Impact' (NEVER 'Crack' for hail bruises)",
+    "damagePattern": "string - e.g., 'Random hail impacts consistent with [size] hailstones' or 'Directional wind damage from [direction]'",
+    "haagClassification": "string - e.g., 'Functional damage per HAAG standards — replacement recommended'",
+    "recommendedAction": "string - e.g., 'Full slope replacement per IRC R905.2.7 — hail impacts exceed threshold for functional damage'"
   }`;
 
   if (includeSlopes) {
@@ -913,9 +1117,10 @@ Return JSON in this exact format:
   prompt += `
 }
 
-Be precise with bounding boxes. Only identify damage you can clearly see. 
-If no damage is visible, return an empty detections array.
-Distinguish between storm damage and pre-existing wear when possible.`;
+Be AGGRESSIVE in marking damage — every hail hit matters for insurance documentation.
+Mark each individual impact separately with its own tight bounding box.
+Use HAAG-standard terminology: "hail impact" not "crack", "wind crease" not "bend".
+If no damage is visible, return an empty detections array.`;
 
   return prompt;
 }
@@ -1377,59 +1582,92 @@ Return JSON:
 
 function buildGeneralPrompt(claimType: string): string {
   const claimContext = {
-    hail: "Focus on impact damage patterns: dents, chips, holes, cracked surfaces",
-    wind: "Focus on torn/lifted materials, displaced items, structural shifts",
+    hail: "Focus on hail impact patterns: circular dents/bruises, paint spatter, soft metal dents, screen punctures. Use 'hail_impact' NOT 'crack' for circular marks.",
+    wind: "Focus on torn/lifted materials, displaced items, directional damage patterns, structural shifts",
     fire: "Focus on charring, smoke damage, heat warping, discoloration",
-    water: "Focus on staining, warping, mold, rot, water lines",
-    storm: "Look for impact damage, wind damage, water intrusion signs",
-    general: "Identify all visible damage regardless of cause",
+    water: "Focus on staining, warping, mold, rot, water lines, paint bubbling/peeling",
+    storm: "Look for ALL damage: hail impacts, wind damage, water intrusion, debris damage",
+    general: "Identify all visible damage regardless of cause — be thorough and aggressive",
   };
 
-  return `You are an expert property damage assessor. Analyze this photo and identify ALL visible damage.
+  return `You are a HAAG Engineering certified property damage assessor. Analyze this photo and identify ALL visible damage using insurance-standard terminology.
 
 CLAIM TYPE: ${claimType.toUpperCase()}
 ${claimContext[claimType as keyof typeof claimContext] || claimContext.general}
 
 FIRST - Identify what you're looking at:
-- Roof (what type?)
-- Siding (what type?)
-- Window
-- Screen
-- Door
-- Gutter
-- HVAC/AC unit
-- Fence
-- Deck/patio
-- Foundation
-- Paint/finish
-- Trim/fascia
+- Roof (what type of roofing material?)
+- Siding (vinyl, fiber cement, wood, stucco, EIFS?)
+- Window (glass, frame type, trim)
+- Screen (mesh type, frame material)
+- Door / Garage Door (material, style)
+- Gutter / Downspout
+- HVAC/AC unit (condenser, package unit)
+- Fence (wood, vinyl, metal, chain link)
+- Deck/patio (wood, composite, concrete)
+- Paint/finish surface (trim, fascia, soffit)
+- Stucco / EIFS wall
+- Foundation / masonry
 - Other structure
 
 THEN - Draw bounding boxes around EVERY piece of damage:
-- Cracks, chips, dents, holes
-- Peeling, flaking, bubbling paint
-- Warping, buckling, sagging
-- Staining, discoloration
-- Rot, deterioration, corrosion
-- Missing pieces, gaps
-- Loose or displaced materials
-- Any anomaly that indicates damage
 
-BE AGGRESSIVE in identifying damage - circle everything suspicious.
-Even "cosmetic" damage like paint chips should be boxed.
+HAIL DAMAGE (use type "hail_impact" or "hail_spatter", NEVER "crack"):
+- Circular/semi-circular indentations on any surface
+- Paint spatter: random circular paint chips exposing substrate
+- Soft metal dents: gutters, downspouts, AC fins, vents, flashing
+- Shingle bruises: granule displacement in circular pattern
+- Stucco chips/divots from impacts
+- Garage door panel dents
+- Screen punctures/holes from hailstones
+- Wood surface dents/gouges
+
+WIND DAMAGE (use type "wind_lifted" or "wind_crease"):
+- Lifted, torn, or displaced materials
+- Creased/folded shingles or panels
+- Missing components in directional pattern
+
+WATER DAMAGE (use type "water_damage" or "moisture_damage"):
+- Water staining, tide marks, discoloration
+- Paint bubbling, peeling, or flaking from moisture
+- Wood rot, soft spots, fungal growth
+- Warping, buckling, swelling of materials
+- Mold/mildew growth (dark spots)
+- Efflorescence on masonry
+
+PAINT / SURFACE DAMAGE:
+- Paint chipping in circular pattern = HAIL (use "hail_spatter")
+- Paint peeling in sheets = MOISTURE (use "paint_peeling")
+- Each paint chip cluster gets its own bounding box
+
+STRUCTURAL DAMAGE:
+- Cracks in foundation, masonry, stucco
+- Sagging, settling, displacement
+- Missing or broken structural elements
+
+BOUNDING BOX RULES:
+- Coordinates: 0-100 percentages, 0,0 = TOP-LEFT
+- y=0 is TOP, y=100 is BOTTOM
+- Mark EACH individual damage spot with its own tight box
+- Scan entire image systematically — don't miss anything
+- DO NOT cluster multiple hits into one large box
+
+BE AGGRESSIVE in identifying damage — circle everything suspicious.
+Even "cosmetic" damage like paint chips is documentable for insurance.
+Use HAAG-standard insurance terminology in all descriptions.
 
 Return JSON:
 {
   "materialAnalysis": {
-    "primaryMaterial": "string - what component is this (roof, siding, window, etc.)",
+    "primaryMaterial": "string - what component is this (roof, siding, window, garage door, stucco, etc.)",
     "materialSubtype": "string - specific type/style",
     "condition": "good" | "fair" | "poor" | "failed"
   },
   "detections": [
     {
-      "type": "string - damage type",
+      "type": "string - use: hail_impact, hail_spatter, wind_lifted, wind_crease, water_damage, paint_peeling, stucco_damage, garage_door_dent, screen_hole, etc.",
       "severity": "Low" | "Medium" | "High" | "Critical",
-      "description": "string - detailed description",
+      "description": "string - HAAG-standard description: 'Hail impact with granule displacement' NOT 'crack'",
       "boundingBox": { "x": number, "y": number, "width": number, "height": number },
       "confidence": number,
       "ircCode": "string if applicable"
@@ -1439,7 +1677,8 @@ Return JSON:
     "totalDamageAreas": number,
     "highestSeverity": "Low" | "Medium" | "High" | "Critical",
     "componentIdentified": "string",
-    "primaryDamageType": "string",
+    "primaryDamageType": "string - use HAAG terminology",
+    "haagClassification": "string - e.g., 'Functional damage — replacement recommended'",
     "recommendedAction": "string"
   }
 }`;
@@ -1451,6 +1690,7 @@ Return JSON:
 
 function determineCodeFromType(damageTypeKey: string): string {
   // Fallback code determination based on damage type patterns
+  if (damageTypeKey.includes("hail")) return "shingle_damage";
   if (damageTypeKey.includes("metal") || damageTypeKey.includes("dent")) return "metal_damage";
   if (damageTypeKey.includes("tile")) return "tile_damage";
   if (damageTypeKey.includes("shake") || damageTypeKey.includes("wood")) return "wood_damage";
@@ -1465,7 +1705,14 @@ function determineCodeFromType(damageTypeKey: string): string {
   if (damageTypeKey.includes("vent")) return "ventilation";
   if (damageTypeKey.includes("gutter") || damageTypeKey.includes("downspout"))
     return "gutter_damage";
-  if (damageTypeKey.includes("siding") || damageTypeKey.includes("stucco")) return "siding_damage";
+  if (damageTypeKey.includes("stucco")) return "stucco_damage";
+  if (damageTypeKey.includes("garage")) return "garage_door_damage";
+  if (
+    damageTypeKey.includes("siding") ||
+    damageTypeKey.includes("spatter") ||
+    damageTypeKey.includes("paint_chip")
+  )
+    return "siding_damage";
   if (
     damageTypeKey.includes("hvac") ||
     damageTypeKey.includes("ac_") ||
@@ -1483,7 +1730,10 @@ function determineCodeFromType(damageTypeKey: string): string {
   if (
     damageTypeKey.includes("water") ||
     damageTypeKey.includes("moisture") ||
-    damageTypeKey.includes("mold")
+    damageTypeKey.includes("mold") ||
+    damageTypeKey.includes("rot") ||
+    damageTypeKey.includes("paint_peel") ||
+    damageTypeKey.includes("paint_bubbl")
   )
     return "water_damage";
   if (damageTypeKey.includes("thermal")) return "thermal_anomaly";
@@ -1491,16 +1741,80 @@ function determineCodeFromType(damageTypeKey: string): string {
 }
 
 function formatDamageType(type: string): string {
-  // Convert snake_case or other formats to Title Case
+  // Map snake_case AI types to proper HAAG/insurance terminology
+  const HAAG_LABELS: Record<string, string> = {
+    hail_impact: "Hail Impact",
+    hail_bruise: "Hail Bruise",
+    hail_dent: "Hail Dent",
+    hail_spatter: "Hail Spatter",
+    hail_crack: "Hail Fracture",
+    hail_puncture: "Hail Puncture",
+    mat_fracture: "Mat Fracture",
+    granule_displacement: "Granule Displacement",
+    granule_loss: "Granule Loss",
+    wind_lifted: "Wind Lifted",
+    wind_crease: "Wind Crease",
+    wind_torn: "Wind Torn",
+    wind_displaced: "Wind Displaced",
+    wind_damage: "Wind Damage",
+    missing_shingles: "Missing Shingles",
+    paint_chipping: "Paint Damage (Hail)",
+    paint_peeling: "Paint Failure (Moisture)",
+    paint_spatter: "Hail Spatter (Paint)",
+    paint_bubbling: "Paint Bubbling (Moisture)",
+    surface_spatter: "Surface Spatter",
+    stucco_damage: "Stucco Damage",
+    stucco_crack: "Stucco Crack",
+    stucco_spalling: "Stucco Spalling",
+    stucco_divot: "Stucco Divot (Hail)",
+    stucco_delamination: "Stucco Delamination",
+    garage_door_dent: "Garage Door Dent",
+    garage_door_panel: "Garage Door Panel Damage",
+    garage_door_paint: "Garage Door Paint Damage",
+    siding_crack: "Siding Crack",
+    siding_dent: "Siding Dent",
+    siding_hole: "Siding Hole",
+    water_damage: "Water Damage",
+    water_intrusion: "Water Intrusion",
+    water_staining: "Water Staining",
+    moisture_damage: "Moisture Damage",
+    wood_rot: "Wood Rot",
+    mold_indicators: "Mold Indicators",
+    rot_damage: "Rot Damage",
+    material_warping: "Material Warping",
+    screen_tear: "Screen Tear",
+    screen_hole: "Screen Hole",
+    screen_stretched: "Screen Stretched",
+    window_crack: "Window Crack",
+    window_chip: "Window Chip",
+    seal_failure: "Seal Failure",
+    frame_dent: "Frame Dent",
+    frame_rot: "Frame Rot",
+    ac_fin_damage: "AC Fin Damage",
+    condenser_dent: "Condenser Dent",
+    gutter_dent: "Gutter Dent",
+    gutter_separation: "Gutter Separation",
+  };
+
+  const key = type.toLowerCase().replace(/[^a-z_]/g, "_");
+  if (HAAG_LABELS[key]) return HAAG_LABELS[key];
+
+  // Fallback: Convert snake_case to Title Case
   return type.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
 function buildCaption(detection: DamageDetection, ircCodeKey: string): string {
   const ircInfo = IRC_CODES[ircCodeKey];
-  let caption = `${formatDamageType(detection.type)} - ${detection.severity} severity. ${detection.description}`;
+  const formattedType = formatDamageType(detection.type);
+  let caption = `${formattedType} — ${detection.severity} severity. ${detection.description}`;
 
   if (ircInfo) {
-    caption += ` Ref: ${ircInfo.code} (${ircInfo.title})`;
+    caption += ` [${ircInfo.code}: ${ircInfo.title}]`;
+  }
+
+  // Add HAAG standard reference for hail damage
+  if (detection.type.toLowerCase().includes("hail")) {
+    caption += " (Per HAAG Engineering hail damage criteria)";
   }
 
   return caption;
@@ -1512,9 +1826,9 @@ function generateOverallCaption(
 ): string {
   if (annotations.length === 0) {
     if (materialAnalysis) {
-      return `No visible damage detected. Material identified: ${materialAnalysis.primaryMaterial}. Condition: ${materialAnalysis.condition}.`;
+      return `No visible storm damage detected per HAAG inspection standards. Material identified: ${materialAnalysis.primaryMaterial}. Condition: ${materialAnalysis.condition}.`;
     }
-    return "No visible damage detected in this photo.";
+    return "No visible storm damage detected in this photo per HAAG inspection standards.";
   }
 
   const damageTypes = [...new Set(annotations.map((a) => a.damageType))];
@@ -1529,13 +1843,13 @@ function generateOverallCaption(
 
   const ircCodes = [...new Set(annotations.map((a) => a.ircCode).filter(Boolean))];
 
-  let caption = `AI detected ${annotations.length} damage area${annotations.length > 1 ? "s" : ""}.`;
+  let caption = `HAAG Assessment: ${annotations.length} damage area${annotations.length > 1 ? "s" : ""} identified.`;
 
   if (materialAnalysis?.primaryMaterial) {
     caption += ` Material: ${materialAnalysis.primaryMaterial}.`;
   }
 
-  caption += ` Primary damage: ${damageTypes.slice(0, 3).join(", ")}.`;
+  caption += ` Damage types: ${damageTypes.slice(0, 4).join(", ")}.`;
   caption += ` Highest severity: ${highestSeverity}.`;
 
   if (ircCodes.length > 0) {
@@ -1546,6 +1860,13 @@ function generateOverallCaption(
     if (codeRefs.length > 0) {
       caption += ` Applicable codes: ${codeRefs.join(", ")}.`;
     }
+  }
+
+  // Add recommendation based on severity
+  if (highestSeverity === "Critical" || highestSeverity === "High") {
+    caption += " Recommendation: Replacement per applicable IRC code section.";
+  } else if (highestSeverity === "Medium") {
+    caption += " Recommendation: Repair or replacement evaluation needed.";
   }
 
   return caption;

@@ -5,12 +5,15 @@ import {
   AlertCircle,
   Camera,
   Check,
+  CheckSquare,
   Download,
   Edit3,
   FileText,
   Image as ImageIcon,
   Loader2,
   Sparkles,
+  Square,
+  Trash2,
   X,
   ZoomIn,
 } from "lucide-react";
@@ -83,6 +86,9 @@ export default function PhotosPage() {
   const [deleteTarget, setDeleteTarget] = useState<{ id: string; label?: string } | null>(null);
   const [photoNote, setPhotoNote] = useState("");
   const [savingNote, setSavingNote] = useState(false);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [selectMode, setSelectMode] = useState(false);
+  const [batchDeleting, setBatchDeleting] = useState(false);
 
   const fetchPhotos = useCallback(async () => {
     if (!claimId) return;
@@ -179,9 +185,82 @@ export default function PhotosPage() {
 
       if (res.ok) {
         setPhotos((prev) => prev.filter((p) => p.id !== deleteTarget.id));
+        setSelectedIds((prev) => {
+          const next = new Set(prev);
+          next.delete(deleteTarget.id);
+          return next;
+        });
+        toast.success("Photo deleted");
+      } else {
+        const errBody = await res.json().catch(() => ({ error: "Unknown error" }));
+        toast.error(
+          `Failed to delete photo: ${errBody?.error || errBody?.message || `HTTP ${res.status}`}`
+        );
       }
     } catch (error) {
       logger.error("Delete error:", error);
+      toast.error("Failed to delete photo. Please try again.");
+    }
+  };
+
+  const toggleSelect = (photoId: string) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(photoId)) {
+        next.delete(photoId);
+      } else {
+        next.add(photoId);
+      }
+      return next;
+    });
+  };
+
+  const toggleSelectAll = () => {
+    if (selectedIds.size === photos.length) {
+      setSelectedIds(new Set());
+    } else {
+      setSelectedIds(new Set(photos.map((p) => p.id)));
+    }
+  };
+
+  const handleBatchDelete = async () => {
+    if (selectedIds.size === 0) return;
+    setBatchDeleting(true);
+    let deleted = 0;
+    let failed = 0;
+
+    for (const id of selectedIds) {
+      try {
+        const res = await fetch(`/api/claims/${claimId}/files/${id}`, {
+          method: "DELETE",
+        });
+        if (res.ok) {
+          deleted++;
+        } else {
+          failed++;
+        }
+      } catch {
+        failed++;
+      }
+    }
+
+    // Update local state - remove all successfully deleted
+    if (deleted > 0) {
+      setPhotos((prev) => prev.filter((p) => !selectedIds.has(p.id) || failed > 0));
+      // Re-fetch to get accurate state if some failed
+      if (failed > 0) {
+        await fetchPhotos();
+      }
+    }
+
+    setSelectedIds(new Set());
+    setBatchDeleting(false);
+    setSelectMode(false);
+
+    if (failed === 0) {
+      toast.success(`Deleted ${deleted} photo${deleted > 1 ? "s" : ""}`);
+    } else {
+      toast.error(`Deleted ${deleted}, failed to delete ${failed} photo${failed > 1 ? "s" : ""}`);
     }
   };
 
@@ -240,6 +319,18 @@ export default function PhotosPage() {
         category.includes("hvac")
       ) {
         componentType = "hvac";
+      } else if (
+        filename.includes("garage") ||
+        filename.includes("door") ||
+        category.includes("garage")
+      ) {
+        componentType = "siding"; // garage doors analyzed under siding prompt
+      } else if (
+        filename.includes("stucco") ||
+        filename.includes("eifs") ||
+        category.includes("stucco")
+      ) {
+        componentType = "siding"; // stucco analyzed under siding prompt
       } else if (filename.includes("paint") || filename.includes("chip")) {
         componentType = "siding"; // paint chipping is typically on siding
       } else if (
@@ -545,6 +636,68 @@ export default function PhotosPage() {
 
           {/* Actions */}
           <div className="ml-auto flex items-center gap-2">
+            {/* Select Mode Toggle */}
+            <Button
+              variant={selectMode ? "default" : "outline"}
+              size="sm"
+              onClick={() => {
+                setSelectMode(!selectMode);
+                if (selectMode) setSelectedIds(new Set());
+              }}
+            >
+              {selectMode ? (
+                <>
+                  <X className="mr-2 h-4 w-4" />
+                  Cancel
+                </>
+              ) : (
+                <>
+                  <CheckSquare className="mr-2 h-4 w-4" />
+                  Select
+                </>
+              )}
+            </Button>
+
+            {/* Batch actions (visible when in select mode) */}
+            {selectMode && (
+              <>
+                <Button variant="outline" size="sm" onClick={toggleSelectAll}>
+                  {selectedIds.size === photos.length ? (
+                    <>
+                      <Square className="mr-2 h-4 w-4" />
+                      Deselect All
+                    </>
+                  ) : (
+                    <>
+                      <CheckSquare className="mr-2 h-4 w-4" />
+                      Select All
+                    </>
+                  )}
+                </Button>
+
+                {selectedIds.size > 0 && (
+                  <Button
+                    variant="destructive"
+                    size="sm"
+                    onClick={handleBatchDelete}
+                    disabled={batchDeleting}
+                  >
+                    {batchDeleting ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Deleting...
+                      </>
+                    ) : (
+                      <>
+                        <Trash2 className="mr-2 h-4 w-4" />
+                        Delete ({selectedIds.size})
+                      </>
+                    )}
+                  </Button>
+                )}
+              </>
+            )}
+
             {/* Bulk Analyze */}
             {unanalyzedCount > 0 && (
               <Button
@@ -793,12 +946,37 @@ export default function PhotosPage() {
           {photos.map((photo) => (
             <div
               key={photo.id}
-              className="group relative aspect-square cursor-pointer overflow-hidden rounded-lg border border-slate-200 transition-all hover:shadow-lg dark:border-slate-700"
+              className={`group relative aspect-square cursor-pointer overflow-hidden rounded-lg border transition-all hover:shadow-lg ${
+                selectedIds.has(photo.id)
+                  ? "border-blue-500 ring-2 ring-blue-500 dark:border-blue-400 dark:ring-blue-400"
+                  : "border-slate-200 dark:border-slate-700"
+              }`}
               onClick={() => {
-                setSelectedPhoto(photo);
-                setPhotoNote(photo.note || "");
+                if (selectMode) {
+                  toggleSelect(photo.id);
+                } else {
+                  setSelectedPhoto(photo);
+                  setPhotoNote(photo.note || "");
+                }
               }}
             >
+              {/* Selection Checkbox */}
+              {selectMode && (
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    toggleSelect(photo.id);
+                  }}
+                  className="absolute left-2 top-2 z-50 flex h-6 w-6 items-center justify-center rounded border-2 border-white bg-white/80 shadow-sm transition-colors dark:border-slate-300 dark:bg-slate-800/80"
+                  aria-label={selectedIds.has(photo.id) ? "Deselect photo" : "Select photo"}
+                >
+                  {selectedIds.has(photo.id) ? (
+                    <Check className="h-4 w-4 text-blue-600" />
+                  ) : (
+                    <Square className="h-4 w-4 text-slate-400" />
+                  )}
+                </button>
+              )}
               {/* Photo with overlay if analyzed */}
               {photo.analyzed && photo.damageBoxes && photo.damageBoxes.length > 0 ? (
                 <div className="relative h-full w-full">
@@ -845,7 +1023,7 @@ export default function PhotosPage() {
 
               {/* AI Badge */}
               {photo.analyzed && photo.severity && (
-                <div className="absolute left-2 top-2">
+                <div className={selectMode ? "absolute left-10 top-2" : "absolute left-2 top-2"}>
                   <Badge className={getSeverityColor(photo.severity)}>
                     <Sparkles className="mr-1 h-3 w-3" />
                     {photo.severity}
