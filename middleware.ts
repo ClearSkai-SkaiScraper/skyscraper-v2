@@ -162,6 +162,22 @@ export default clerkMiddleware((auth, req) => {
   }
 
   // =========================================================================
+  // STALE COOKIE CLEANUP
+  // When a user signs out, the x-user-type cookie persists (7-day TTL).
+  // If a DIFFERENT user signs in next, the stale cookie routes them to the
+  // wrong surface. Clear it whenever there's no authenticated user.
+  // =========================================================================
+  if (!userId) {
+    const staleCookie = req.cookies.get("x-user-type")?.value;
+    if (staleCookie) {
+      res.cookies.set("x-user-type", "", { path: "/", maxAge: 0 });
+      if (process.env.NODE_ENV !== "production") {
+        console.log(`[MIDDLEWARE] Cleared stale x-user-type cookie (was: ${staleCookie})`);
+      }
+    }
+  }
+
+  // =========================================================================
   // IDENTITY-BASED CROSS-SURFACE ROUTING
   // This is THE authority for routing - no layout should redirect across surfaces
   // =========================================================================
@@ -172,15 +188,20 @@ export default clerkMiddleware((auth, req) => {
     (route) => pathname === route || pathname.startsWith(`${route}/`)
   );
 
-  // Get user type from Clerk sessionClaims (preferred) or cookie (fallback)
-  // Clerk publicMetadata is set when user registers/onboards
+  // Get user type — COOKIE takes priority over Clerk sessionClaims.
+  // Why: The after-sign-in page is the AUTHORITATIVE source for user type.
+  // It sets the cookie immediately, but Clerk publicMetadata in sessionClaims
+  // is cached for the session lifetime and does NOT update mid-session.
+  // Using sessionClaims first caused stale routing when switching between
+  // pro and client accounts in the same browser.
+  const cookieUserType = req.cookies.get("x-user-type")?.value;
   const sessionClaims = auth().sessionClaims as { publicMetadata?: { userType?: string } } | null;
   const clerkUserType = sessionClaims?.publicMetadata?.userType;
-  const cookieUserType = req.cookies.get("x-user-type")?.value;
-  const userType = clerkUserType || cookieUserType;
+  const userType = cookieUserType || clerkUserType;
 
   // CROSS-SURFACE REDIRECT LOGIC (Only for authenticated users with known type)
-  if (userId && userType) {
+  // Skip for /after-sign-in — that page MUST run to set the correct user type
+  if (userId && userType && !pathname.startsWith("/after-sign-in")) {
     // Client trying to access Pro routes → redirect to /portal
     if (userType === "client" && isProRoute) {
       console.log(`[MIDDLEWARE] Client user on Pro route, redirecting to /portal`);

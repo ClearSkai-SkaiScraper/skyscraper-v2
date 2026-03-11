@@ -78,10 +78,8 @@ export default function RootLayout({ children }: { children: ReactNode }) {
       publishableKey={clerkKey || ""}
       signInUrl="/sign-in"
       signUpUrl="/sign-up"
-      afterSignInUrl="/after-sign-in"
-      afterSignUpUrl="/after-sign-in"
-      signInForceRedirectUrl="/after-sign-in"
-      signUpForceRedirectUrl="/after-sign-in"
+      afterSignInUrl="/after-sign-in?mode=pro"
+      afterSignUpUrl="/after-sign-in?mode=pro"
       appearance={{
         baseTheme: dark,
         variables: {
