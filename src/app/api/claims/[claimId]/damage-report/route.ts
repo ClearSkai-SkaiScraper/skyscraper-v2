@@ -253,12 +253,19 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
           dateOfLoss: true,
           carrier: true,
           policy_number: true,
+          insured_name: true,
+          homeownerEmail: true,
+          homeowner_email: true,
+          adjusterName: true,
+          adjusterPhone: true,
+          adjusterEmail: true,
+          damageType: true,
           properties: {
             select: { street: true, city: true, state: true, zipCode: true },
           },
         },
       }),
-      prisma.org_branding.findFirst({ where: { orgId } }),
+      prisma.org_branding.findFirst({ where: { orgId } }).catch(() => null),
       prisma.users.findFirst({
         where: { id: userId },
         select: { name: true, email: true, headshot_url: true },
@@ -274,6 +281,9 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
       : null;
 
     const companyName = branding?.companyName || "Storm Restoration Report";
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const companyLocation: string | null =
+      (branding as any)?.companyAddress || branding?.business_state || null;
     const primaryColor = branding?.colorPrimary
       ? hexToRgb(branding.colorPrimary)
       : rgb(0.067, 0.486, 1); // #117CFF
@@ -355,37 +365,54 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
     });
 
     // ── Company logo + name header ──
-    const headerStartX = MARGIN;
     let headerY = y - 10;
 
     if (logoImage) {
       const logoDims = logoImage.scaleToFit(120, 60);
       page.drawImage(logoImage, {
-        x: headerStartX,
+        x: MARGIN,
         y: headerY - logoDims.height + 10,
         width: logoDims.width,
         height: logoDims.height,
       });
-      // Company name next to logo
+      const textX = MARGIN + logoDims.width + 16;
       page.drawText(companyName.toUpperCase(), {
-        x: headerStartX + logoImage.scaleToFit(120, 60).width + 16,
-        y: headerY - 6,
+        x: textX,
+        y: headerY - 2,
         size: 18,
         font: helveticaBold,
         color: primaryColor,
       });
+      if (companyLocation) {
+        page.drawText(companyLocation, {
+          x: textX,
+          y: headerY - 18,
+          size: 9,
+          font: helvetica,
+          color: rgb(0.4, 0.4, 0.4),
+        });
+      }
     } else {
       page.drawText(companyName.toUpperCase(), {
-        x: headerStartX,
+        x: MARGIN,
         y: headerY,
         size: 22,
         font: helveticaBold,
         color: primaryColor,
       });
+      if (companyLocation) {
+        page.drawText(companyLocation, {
+          x: MARGIN,
+          y: headerY - 20,
+          size: 9,
+          font: helvetica,
+          color: rgb(0.4, 0.4, 0.4),
+        });
+      }
     }
 
     // Contact row under company name
-    headerY -= 75;
+    headerY -= companyLocation ? 85 : 75;
     const contactParts: string[] = [];
     if (branding?.phone) contactParts.push(branding.phone);
     if (branding?.email) contactParts.push(branding.email);
@@ -406,33 +433,93 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
     y = headerY - 30;
 
     // ── Report Title ──
-    page.drawText("DAMAGE ASSESSMENT", {
+    page.drawText("DAMAGE ASSESSMENT REPORT", {
       x: MARGIN,
       y,
-      size: 28,
+      size: 24,
       font: timesBold,
       color: rgb(0.1, 0.1, 0.15),
     });
-    y -= 30;
-    page.drawText("REPORT", {
-      x: MARGIN,
-      y,
-      size: 28,
-      font: timesBold,
-      color: rgb(0.1, 0.1, 0.15),
-    });
-    y -= 50;
+    y -= 35;
 
-    // ── Claim details table ──
+    // ── Client Information & Claim Details ──
     const labelColor = rgb(0.45, 0.45, 0.45);
     const valueColor = rgb(0.1, 0.1, 0.1);
-    const detailX = MARGIN;
-    const detailValX = MARGIN + 130;
+    const detailValX = MARGIN + 140;
 
-    const details: [string, string][] = [["Claim Number", claim.claimNumber || claimId]];
-    if (propertyAddress) details.push(["Property Address", propertyAddress]);
+    // Client Information section header
+    page.drawRectangle({
+      x: MARGIN - 4,
+      y: y - 5,
+      width: CONTENT_W + 8,
+      height: 22,
+      color: rgb(0.95, 0.96, 0.97),
+    });
+    page.drawText("CLIENT INFORMATION", {
+      x: MARGIN,
+      y,
+      size: 11,
+      font: helveticaBold,
+      color: primaryColor,
+    });
+    y -= 28;
+
+    const clientDetails: [string, string][] = [];
+    if (claim.insured_name) clientDetails.push(["Insured Name", claim.insured_name]);
+    if (propertyAddress) clientDetails.push(["Property Address", propertyAddress]);
+    const clientEmail = claim.homeowner_email || claim.homeownerEmail;
+    if (clientEmail) clientDetails.push(["Contact Email", clientEmail]);
+
+    if (clientDetails.length > 0) {
+      for (const [label, value] of clientDetails) {
+        page.drawText(label + ":", {
+          x: MARGIN + 8,
+          y,
+          size: 10,
+          font: helveticaBold,
+          color: labelColor,
+        });
+        const valWidth = CONTENT_W - 156;
+        const textWidth = helvetica.widthOfTextAtSize(value, 10);
+        if (textWidth > valWidth) {
+          y = drawWrappedText(page, value, detailValX, y, valWidth, helvetica, 10, valueColor, 14);
+        } else {
+          page.drawText(value, { x: detailValX, y, size: 10, font: helvetica, color: valueColor });
+          y -= 18;
+        }
+      }
+    } else {
+      page.drawText("Client information not available", {
+        x: MARGIN + 8,
+        y,
+        size: 10,
+        font: helvetica,
+        color: labelColor,
+      });
+      y -= 18;
+    }
+    y -= 12;
+
+    // Claim Details section header
+    page.drawRectangle({
+      x: MARGIN - 4,
+      y: y - 5,
+      width: CONTENT_W + 8,
+      height: 22,
+      color: rgb(0.95, 0.96, 0.97),
+    });
+    page.drawText("CLAIM DETAILS", {
+      x: MARGIN,
+      y,
+      size: 11,
+      font: helveticaBold,
+      color: primaryColor,
+    });
+    y -= 28;
+
+    const claimDetailRows: [string, string][] = [["Claim Number", claim.claimNumber || claimId]];
     if (claim.dateOfLoss) {
-      details.push([
+      claimDetailRows.push([
         "Date of Loss",
         new Date(claim.dateOfLoss).toLocaleDateString("en-US", {
           year: "numeric",
@@ -441,79 +528,120 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
         }),
       ]);
     }
-    if (claim.carrier) details.push(["Insurance Carrier", claim.carrier]);
-    if (claim.policy_number) details.push(["Policy Number", claim.policy_number]);
-    details.push([
+    if (claim.carrier) claimDetailRows.push(["Insurance Carrier", claim.carrier]);
+    if (claim.policy_number) claimDetailRows.push(["Policy Number", claim.policy_number]);
+    if (claim.adjusterName) {
+      let adjusterInfo = claim.adjusterName;
+      if (claim.adjusterPhone) adjusterInfo += `  •  ${claim.adjusterPhone}`;
+      claimDetailRows.push(["Adjuster", adjusterInfo]);
+    }
+    if (claim.damageType) {
+      claimDetailRows.push([
+        "Damage Type",
+        claim.damageType.replace(/_/g, " ").replace(/\b\w/g, (c: string) => c.toUpperCase()),
+      ]);
+    }
+    claimDetailRows.push([
       "Report Date",
       new Date().toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" }),
     ]);
-    details.push(["Photos Analyzed", String(photos.length)]);
-    details.push(["Overall Severity", overallSeverity]);
+    claimDetailRows.push(["Photos Analyzed", String(photos.length)]);
+    claimDetailRows.push(["Overall Severity", overallSeverity]);
 
-    for (const [label, value] of details) {
+    for (const [label, value] of claimDetailRows) {
       page.drawText(label + ":", {
-        x: detailX,
+        x: MARGIN + 8,
         y,
         size: 10,
         font: helveticaBold,
         color: labelColor,
       });
       page.drawText(value, { x: detailValX, y, size: 10, font: helvetica, color: valueColor });
-      y -= 20;
+      y -= 18;
     }
+    y -= 10;
 
     // ── Inspector / Prepared By ──
+    drawHR(page, y + 4);
     y -= 20;
-    drawHR(page, y + 8);
-    y -= 15;
 
+    page.drawRectangle({
+      x: MARGIN - 4,
+      y: y - 5,
+      width: CONTENT_W + 8,
+      height: 22,
+      color: rgb(0.95, 0.96, 0.97),
+    });
+    page.drawText("PREPARED BY", {
+      x: MARGIN,
+      y,
+      size: 11,
+      font: helveticaBold,
+      color: primaryColor,
+    });
+    y -= 30;
+
+    const inspectorTextX = headshotImage ? MARGIN + 70 : MARGIN + 8;
     if (headshotImage) {
-      const hdDims = headshotImage.scaleToFit(50, 50);
+      const hdDims = headshotImage.scaleToFit(55, 55);
+      page.drawRectangle({
+        x: MARGIN + 6,
+        y: y - hdDims.height - 2,
+        width: hdDims.width + 4,
+        height: hdDims.height + 4,
+        borderColor: rgb(0.82, 0.82, 0.82),
+        borderWidth: 1,
+        color: rgb(0.97, 0.97, 0.97),
+      });
       page.drawImage(headshotImage, {
-        x: MARGIN,
-        y: y - hdDims.height + 10,
+        x: MARGIN + 8,
+        y: y - hdDims.height,
         width: hdDims.width,
         height: hdDims.height,
       });
-      page.drawText("Prepared By", {
-        x: MARGIN + 60,
+    }
+
+    // Company name (prominent)
+    page.drawText(companyName, {
+      x: inspectorTextX,
+      y,
+      size: 13,
+      font: helveticaBold,
+      color: primaryColor,
+    });
+    y -= 18;
+
+    // Inspector name
+    page.drawText(user?.name || "Inspector", {
+      x: inspectorTextX,
+      y,
+      size: 11,
+      font: helveticaBold,
+      color: valueColor,
+    });
+    y -= 15;
+
+    // Inspector contact
+    if (user?.email) {
+      page.drawText(user.email, {
+        x: inspectorTextX,
         y,
-        size: 8,
+        size: 9,
         font: helvetica,
         color: labelColor,
       });
-      y -= 14;
-      page.drawText(user?.name || "Inspector", {
-        x: MARGIN + 60,
+      y -= 13;
+    }
+
+    // License info
+    if (branding?.license) {
+      page.drawText(`License: ${branding.license}`, {
+        x: inspectorTextX,
         y,
-        size: 12,
-        font: helveticaBold,
-        color: valueColor,
+        size: 9,
+        font: helvetica,
+        color: labelColor,
       });
-      y -= 14;
-      if (user?.email) {
-        page.drawText(user.email, {
-          x: MARGIN + 60,
-          y,
-          size: 9,
-          font: helvetica,
-          color: labelColor,
-        });
-      }
-    } else {
-      page.drawText("Prepared By", { x: MARGIN, y, size: 8, font: helvetica, color: labelColor });
-      y -= 14;
-      page.drawText(user?.name || "Inspector", {
-        x: MARGIN,
-        y,
-        size: 12,
-        font: helveticaBold,
-        color: valueColor,
-      });
-      y -= 14;
-      if (user?.email) {
-        page.drawText(user.email, { x: MARGIN, y, size: 9, font: helvetica, color: labelColor });
-      }
     }
 
     // ═══════════════════════════════════════════════

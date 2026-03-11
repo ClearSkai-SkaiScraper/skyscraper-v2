@@ -19,6 +19,7 @@ interface BrandingData {
   colorAccent?: string | null;
   logoUrl?: string | null;
   teamPhotoUrl?: string | null;
+  companyAddress?: string | null;
 }
 
 interface BrandingFormProps {
@@ -40,6 +41,7 @@ export default function BrandingForm({ initial, orgId, userId }: BrandingFormPro
     colorAccent: initial?.colorAccent || "#FFC838",
     logoUrl: initial?.logoUrl || "",
     teamPhotoUrl: initial?.teamPhotoUrl || "",
+    companyAddress: initial?.companyAddress || "",
   });
 
   const handleInputChange = (field: string, value: string) => {
@@ -165,6 +167,22 @@ export default function BrandingForm({ initial, orgId, userId }: BrandingFormPro
           />
           <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
             Optional - include https:// for external links
+          </p>
+        </div>
+
+        <div className="md:col-span-2">
+          <label className="mb-2 block text-sm font-medium text-slate-900 dark:text-slate-100">
+            Company Address / Location
+          </label>
+          <input
+            type="text"
+            value={formData.companyAddress}
+            onChange={(e) => handleInputChange("companyAddress", e.target.value)}
+            className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-slate-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-500 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
+            placeholder="123 Main St, Phoenix, AZ 85001"
+          />
+          <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+            Displayed on damage reports and professional documents
           </p>
         </div>
       </div>

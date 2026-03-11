@@ -301,6 +301,7 @@ export const BrandingSchema = z.object({
     .or(z.literal("")),
   logoUrl: z.string().optional().or(z.literal("")),
   teamPhotoUrl: z.string().optional().or(z.literal("")),
+  companyAddress: z.string().optional().or(z.literal("")),
 });
 
 export type BrandingInput = z.infer<typeof BrandingSchema>;

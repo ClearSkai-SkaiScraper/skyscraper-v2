@@ -99,6 +99,7 @@ export async function POST(req: Request) {
       logoUrl,
       teamPhotoUrl,
       coverPhotoUrl,
+      companyAddress,
     } = body;
 
     // Use internal DB org UUID consistently (matches PDF branding fetchers)
@@ -148,6 +149,7 @@ export async function POST(req: Request) {
         colorAccent: colorAccent || "#FFC838",
         logoUrl: logoUrl ?? undefined,
         teamPhotoUrl: teamPhotoUrl ?? undefined,
+        companyAddress: companyAddress ?? undefined,
         updatedAt: new Date(),
       },
       create: {
@@ -163,6 +165,7 @@ export async function POST(req: Request) {
         colorAccent: colorAccent ?? "#FFC838",
         logoUrl: logoUrl ?? null,
         teamPhotoUrl: teamPhotoUrl ?? null,
+        companyAddress: companyAddress ?? null,
         updatedAt: new Date(),
       },
     });

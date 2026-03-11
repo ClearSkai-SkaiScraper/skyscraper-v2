@@ -4116,6 +4116,7 @@ model org_branding {
   tax_rate       Decimal? @default(0.00) @db.Decimal(5, 2)
   tax_enabled    Boolean? @default(false)
   business_state String?  @db.VarChar(2)
+  companyAddress String?
 
   @@unique([orgId])
   @@index([ownerId])
