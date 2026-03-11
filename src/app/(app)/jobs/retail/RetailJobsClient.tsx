@@ -1,6 +1,17 @@
 "use client";
 
-import { Briefcase, CreditCard, DollarSign, Filter, Plus, Search, Wrench, X } from "lucide-react";
+import {
+  Briefcase,
+  ChevronLeft,
+  ChevronRight,
+  CreditCard,
+  DollarSign,
+  Filter,
+  Plus,
+  Search,
+  Wrench,
+  X,
+} from "lucide-react";
 import Link from "next/link";
 import { useMemo, useState } from "react";
 

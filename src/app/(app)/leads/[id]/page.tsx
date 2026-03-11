@@ -18,6 +18,8 @@ import { notFound, redirect } from "next/navigation";
 
 import { getResolvedOrgResult } from "@/lib/auth/getResolvedOrgId";
 import prisma from "@/lib/prisma";
+
+import { LeadAssignmentDropdown } from "./_components/LeadAssignmentDropdown";
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
@@ -61,10 +63,10 @@ async function getLead(id: string, internalOrgId: string) {
   if (lead.assignedTo) {
     const assignee = await prisma.users.findUnique({
       where: { id: lead.assignedTo },
-      select: { firstName: true, lastName: true },
+      select: { name: true },
     });
     if (assignee) {
-      assigneeName = `${assignee.firstName || ""} ${assignee.lastName || ""}`.trim() || null;
+      assigneeName = assignee.name || null;
     }
   }
 

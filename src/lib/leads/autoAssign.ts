@@ -25,8 +25,7 @@ export async function getNextRoundRobinAssignee(orgId: string): Promise<string |
         users: {
           select: {
             id: true,
-            firstName: true,
-            lastName: true,
+            name: true,
           },
         },
       },
@@ -86,8 +85,7 @@ export async function getNextRoundRobinAssignee(orgId: string): Promise<string |
     logger.info("[ROUND_ROBIN] Assigned to next user", {
       orgId,
       userId: nextUserId,
-      userName:
-        `${nextAssignee.users?.firstName || ""} ${nextAssignee.users?.lastName || ""}`.trim(),
+      userName: nextAssignee.users?.name || "Unknown",
       teamSize: teamMembers.length,
       position: nextIndex + 1,
     });
