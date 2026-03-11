@@ -15,27 +15,27 @@ import prisma from "@/lib/prisma";
 // Default storage limits by plan
 export const STORAGE_LIMITS = {
   free: {
-    maxStorageBytes: 1 * 1024 * 1024 * 1024, // 1GB
+    maxStorageBytes: 5 * 1024 * 1024 * 1024, // 5GB
     maxFileSizeBytes: 25 * 1024 * 1024, // 25MB for photos
-    maxFilesPerClaim: 50,
-    maxClaimsPerMonth: 10,
+    maxFilesPerClaim: 200,
+    maxClaimsPerMonth: 25,
   },
   starter: {
     maxStorageBytes: 100 * 1024 * 1024 * 1024, // 100GB per org
-    maxFileSizeBytes: 25 * 1024 * 1024, // 25MB
-    maxFilesPerClaim: 100,
-    maxClaimsPerMonth: 50,
-  },
-  pro: {
-    maxStorageBytes: 100 * 1024 * 1024 * 1024, // 100GB
     maxFileSizeBytes: 50 * 1024 * 1024, // 50MB
     maxFilesPerClaim: 500,
-    maxClaimsPerMonth: 200,
+    maxClaimsPerMonth: 100,
   },
-  enterprise: {
-    maxStorageBytes: 1000 * 1024 * 1024 * 1024, // 1TB
+  pro: {
+    maxStorageBytes: 500 * 1024 * 1024 * 1024, // 500GB
     maxFileSizeBytes: 100 * 1024 * 1024, // 100MB
     maxFilesPerClaim: 1000,
+    maxClaimsPerMonth: 500,
+  },
+  enterprise: {
+    maxStorageBytes: 2000 * 1024 * 1024 * 1024, // 2TB
+    maxFileSizeBytes: 200 * 1024 * 1024, // 200MB
+    maxFilesPerClaim: 5000,
     maxClaimsPerMonth: -1, // Unlimited
   },
 };
@@ -251,7 +251,11 @@ export async function checkClaimFileLimit(
   const limits = STORAGE_LIMITS[plan] || STORAGE_LIMITS.free;
 
   const count = await prisma.file_assets.count({
-    where: { claimId },
+    where: {
+      claimId,
+      // Only count user-uploaded files, not system-generated ones like damage reports
+      file_type: { notIn: ["damage_report"] },
+    },
   });
 
   if (count >= limits.maxFilesPerClaim) {

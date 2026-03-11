@@ -738,7 +738,7 @@ export default function PhotosPage() {
           claimId={claimId}
           onUploadComplete={handleUploadComplete}
           onAnalysisComplete={handleAnalysisComplete}
-          autoAnalyze={true}
+          autoAnalyze={false}
         />
       </div>
 

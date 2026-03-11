@@ -73,7 +73,7 @@ export function ClaimPhotoUploadWithAnalysis({
   claimId,
   onUploadComplete,
   onAnalysisComplete,
-  autoAnalyze: defaultAutoAnalyze = true,
+  autoAnalyze: defaultAutoAnalyze = false,
 }: ClaimPhotoUploadWithAnalysisProps) {
   const [files, setFiles] = useState<File[]>([]);
   const [uploading, setUploading] = useState(false);
@@ -115,7 +115,7 @@ export function ClaimPhotoUploadWithAnalysis({
       "image/*": [".jpg", ".jpeg", ".png", ".heic", ".heif", ".webp"],
     },
     maxSize: 25 * 1024 * 1024, // 25MB per photo
-    maxFiles: 50, // 50 per batch, 100 total per claim
+    maxFiles: 100, // 100 per batch
   });
 
   const removeFile = (index: number) => {
