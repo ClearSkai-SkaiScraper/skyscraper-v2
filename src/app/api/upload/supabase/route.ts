@@ -117,8 +117,13 @@ export async function POST(request: NextRequest) {
     try {
       const ctx = await resolveOrg();
       resolvedOrgId = ctx.orgId;
-    } catch {
-      // Fall through — use clerkOrgId or userId as fallback
+    } catch (orgErr) {
+      logger.warn("[Supabase Upload] resolveOrg failed, using clerkOrgId fallback:", {
+        clerkOrgId,
+        userId,
+        error: orgErr instanceof Error ? orgErr.message : orgErr,
+      });
+      // Fall through — use clerkOrgId
     }
 
     const supabase = getSupabaseAdmin();
@@ -338,7 +343,17 @@ export async function POST(request: NextRequest) {
               },
             });
           } catch (dbErr) {
-            logger.warn("[Firebase Upload] file_assets record creation failed:", dbErr);
+            logger.error("[Firebase Upload] CRITICAL: file_assets record creation failed:", {
+              error: dbErr instanceof Error ? dbErr.message : dbErr,
+              orgId: safeOrgId,
+              userId,
+              claimId,
+              filename: file.name,
+            });
+            return NextResponse.json(
+              { error: "Photo uploaded to storage but database record failed. Please retry." },
+              { status: 500 }
+            );
           }
 
           // Log successful Firebase upload
@@ -376,6 +391,7 @@ export async function POST(request: NextRequest) {
     } = supabase.storage.from(config.bucket).getPublicUrl(filePath);
 
     // Create file_assets DB record so photos/documents appear in the UI
+    // CRITICAL: Without this record, the photo won't appear in any listing
     const fileAssetId = crypto.randomUUID();
     try {
       await prisma.file_assets.create({
@@ -401,8 +417,18 @@ export async function POST(request: NextRequest) {
         },
       });
     } catch (dbErr) {
-      logger.warn("[Supabase Upload] file_assets record creation failed:", dbErr);
-      // File is uploaded successfully, DB record is secondary
+      logger.error("[Supabase Upload] CRITICAL: file_assets record creation failed:", {
+        error: dbErr instanceof Error ? dbErr.message : dbErr,
+        orgId: safeOrgId,
+        userId,
+        claimId,
+        filename: file.name,
+      });
+      // Return error — without the DB record the photo is invisible in the UI
+      return NextResponse.json(
+        { error: "Photo uploaded to storage but database record failed. Please retry." },
+        { status: 500 }
+      );
     }
 
     // Log successful Supabase upload

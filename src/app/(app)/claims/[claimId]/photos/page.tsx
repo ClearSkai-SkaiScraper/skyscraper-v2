@@ -84,12 +84,17 @@ export default function PhotosPage() {
   const [photoNote, setPhotoNote] = useState("");
   const [savingNote, setSavingNote] = useState(false);
 
-  const fetchPhotos = async () => {
+  const fetchPhotos = useCallback(async () => {
     if (!claimId) return;
     try {
-      const res = await fetch(`/api/claims/${claimId}/photos`);
+      // Cache-busting parameter to prevent stale responses
+      const res = await fetch(`/api/claims/${claimId}/photos?t=${Date.now()}`);
       if (!res.ok) {
-        logger.error("Failed to fetch photos: HTTP", res.status);
+        const errBody = await res.json().catch(() => ({ error: "Unknown error" }));
+        logger.error("Failed to fetch photos:", res.status, errBody);
+        toast.error(
+          `Failed to load photos: ${errBody?.error || errBody?.message || `HTTP ${res.status}`}`
+        );
         return;
       }
       const data = await res.json();
@@ -97,13 +102,15 @@ export default function PhotosPage() {
         setPhotos(data.photos);
       } else {
         logger.error("Unexpected photos response shape", data);
+        toast.error("Unexpected response format when loading photos");
       }
     } catch (error) {
       logger.error("Failed to fetch photos:", error);
+      toast.error("Network error loading photos. Please check your connection.");
     } finally {
       setLoading(false);
     }
-  };
+  }, [claimId]);
 
   useEffect(() => {
     fetchPhotos();
@@ -136,14 +143,26 @@ export default function PhotosPage() {
   };
 
   const handleUploadComplete = async () => {
+    toast.success("Upload complete! Loading photos...");
     // Short delay to ensure DB writes are committed before fetching
-    await new Promise((r) => setTimeout(r, 500));
+    await new Promise((r) => setTimeout(r, 800));
     await fetchPhotos();
+    // If photos still empty after first fetch, retry once more
+    // (handles DB replication lag)
+    setTimeout(async () => {
+      const res = await fetch(`/api/claims/${claimId}/photos?t=${Date.now()}`);
+      if (res.ok) {
+        const data = await res.json();
+        if (Array.isArray(data.photos) && data.photos.length > 0) {
+          setPhotos(data.photos);
+        }
+      }
+    }, 2000);
   };
 
   const handleAnalysisComplete = async () => {
     // Re-fetch to pick up all analysis results saved to DB
-    await new Promise((r) => setTimeout(r, 500));
+    await new Promise((r) => setTimeout(r, 800));
     await fetchPhotos();
   };
 
@@ -755,6 +774,18 @@ export default function PhotosPage() {
           <p className="text-slate-700 dark:text-slate-300">
             No photos yet. Upload your first photo above.
           </p>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => {
+              setLoading(true);
+              fetchPhotos();
+            }}
+            className="mt-4"
+          >
+            <Camera className="mr-2 h-4 w-4" />
+            Refresh Photos
+          </Button>
         </div>
       ) : viewMode === "grid" ? (
         /* Grid View */

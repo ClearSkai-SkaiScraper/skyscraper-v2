@@ -9,6 +9,7 @@ import { Card } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Progress } from "@/components/ui/progress";
 import { Switch } from "@/components/ui/switch";
+import { compressImage } from "@/lib/imageCompression";
 import { logger } from "@/lib/logger";
 
 interface ClaimPhotoUploadWithAnalysisProps {
@@ -137,15 +138,17 @@ export function ClaimPhotoUploadWithAnalysis({
     // Upload each file individually — one failure doesn't stop the batch
     for (const file of files) {
       try {
+        // Compress large images client-side to avoid Vercel's 4.5MB body limit
+        let uploadFile: File | Blob = await compressImage(file);
+
         const formData = new FormData();
 
         // Detect MIME type (fix for Safari HEIC empty-type issue)
-        const detectedType = detectMimeType(file);
+        const detectedType = detectMimeType(uploadFile as File);
 
         // If browser-reported type is wrong, create a new File with correct type
-        let uploadFile: File | Blob = file;
-        if (file.type !== detectedType) {
-          uploadFile = new File([file], file.name, { type: detectedType });
+        if ((uploadFile as File).type !== detectedType) {
+          uploadFile = new File([uploadFile], (uploadFile as File).name, { type: detectedType });
         }
 
         formData.append("file", uploadFile);
@@ -163,7 +166,11 @@ export function ClaimPhotoUploadWithAnalysis({
             const data = await res.json();
             errorMsg = data.error || errorMsg;
           } catch {
-            errorMsg = `Upload failed (HTTP ${res.status})`;
+            if (res.status === 413) {
+              errorMsg = `File too large for server (${((uploadFile as File).size / (1024 * 1024)).toFixed(1)}MB). Try converting HEIC to JPEG first.`;
+            } else {
+              errorMsg = `Upload failed (HTTP ${res.status})`;
+            }
           }
           failed.push({ name: file.name, error: errorMsg });
         } else {
