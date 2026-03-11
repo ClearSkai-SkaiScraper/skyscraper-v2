@@ -267,92 +267,125 @@ export default function ProductsPage() {
   };
 
   // ── Export PDF ───────────────────────────────────────────────────────
-  const exportPDF = () => {
+  const exportPDF = async () => {
     if (designBoard.length === 0) {
       toast.error("Add items to your design board first");
       return;
     }
 
-    // Build a printable HTML document
-    const itemRows = designBoard
-      .map(
-        (item, i) => `
-      <tr style="border-bottom: 1px solid #e2e8f0;">
-        <td style="padding: 12px; font-weight: 600;">${i + 1}</td>
-        <td style="padding: 12px;">
-          <strong>${item.productName}</strong><br/>
-          <span style="color: #64748b; font-size: 13px;">${item.manufacturer}</span>
-        </td>
-        <td style="padding: 12px; color: #64748b;">${item.category || "—"}</td>
-        <td style="padding: 12px; color: #059669; font-weight: 500;">${item.priceRange || "Contact for pricing"}</td>
-        <td style="padding: 12px; color: #64748b; font-style: italic;">${item.notes || "—"}</td>
-      </tr>
-    `
-      )
-      .join("");
+    toast.loading("Generating PDF...", { id: "pdf-export" });
 
-    const html = `
-    <!DOCTYPE html>
-    <html>
-    <head>
-      <title>${boardName}</title>
-      <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; padding: 40px; color: #1e293b; }
-        .header { text-align: center; margin-bottom: 32px; padding-bottom: 24px; border-bottom: 3px solid #0ea5e9; }
-        .header h1 { font-size: 28px; color: #0f172a; margin-bottom: 4px; }
-        .header p { color: #64748b; font-size: 14px; }
-        .logo { font-size: 14px; color: #0ea5e9; font-weight: 600; margin-bottom: 8px; }
-        table { width: 100%; border-collapse: collapse; margin-top: 16px; }
-        th { background: #f1f5f9; padding: 12px; text-align: left; font-size: 13px; font-weight: 600; color: #475569; text-transform: uppercase; letter-spacing: 0.5px; }
-        tr:nth-child(even) td { background: #f8fafc; }
-        .footer { margin-top: 32px; padding-top: 16px; border-top: 1px solid #e2e8f0; text-align: center; color: #94a3b8; font-size: 12px; }
-        .summary { background: #f0f9ff; border: 1px solid #bae6fd; border-radius: 8px; padding: 16px; margin-bottom: 24px; }
-        .summary h3 { color: #0369a1; margin-bottom: 8px; }
-        @media print { body { padding: 20px; } }
-      </style>
-    </head>
-    <body>
-      <div class="header">
-        <div class="logo">SkaiScrape — Material Selection Sheet</div>
-        <h1>${boardName}</h1>
-        <p>Prepared by ${user?.fullName || "Client"} • ${new Date().toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" })}</p>
-      </div>
+    try {
+      // Dynamically import jsPDF and autotable for code splitting
+      const [{ jsPDF }, autoTable] = await Promise.all([
+        import("jspdf"),
+        import("jspdf-autotable"),
+      ]);
 
-      <div class="summary">
-        <h3>📋 Summary</h3>
-        <p><strong>${designBoard.length}</strong> items selected from <strong>${new Set(designBoard.map((i) => i.manufacturer)).size}</strong> manufacturers</p>
-      </div>
+      const doc = new jsPDF();
+      const pageWidth = doc.internal.pageSize.getWidth();
 
-      <table>
-        <thead>
-          <tr>
-            <th>#</th>
-            <th>Product / Manufacturer</th>
-            <th>Category</th>
-            <th>Est. Price</th>
-            <th>Notes</th>
-          </tr>
-        </thead>
-        <tbody>
-          ${itemRows}
-        </tbody>
-      </table>
+      // Header
+      doc.setFillColor(14, 165, 233); // sky-500
+      doc.rect(0, 0, pageWidth, 35, "F");
 
-      <div class="footer">
-        <p>Generated via SkaiScrape Products — ${new Date().toLocaleString()}</p>
-        <p>Share this with your contractor for material ordering assistance.</p>
-      </div>
-    </body>
-    </html>
-    `;
+      doc.setTextColor(255, 255, 255);
+      doc.setFontSize(10);
+      doc.text("SkaiScrape — Material Selection Sheet", 14, 15);
 
-    const printWindow = window.open("", "_blank");
-    if (printWindow) {
-      printWindow.document.write(html);
-      printWindow.document.close();
-      printWindow.focus();
-      setTimeout(() => printWindow.print(), 500);
+      doc.setFontSize(18);
+      doc.setFont("helvetica", "bold");
+      doc.text(boardName, 14, 26);
+
+      // Metadata line
+      doc.setTextColor(100);
+      doc.setFontSize(10);
+      doc.setFont("helvetica", "normal");
+      const dateStr = new Date().toLocaleDateString("en-US", {
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+      });
+      doc.text(`Prepared by ${user?.fullName || "Client"} • ${dateStr}`, 14, 45);
+
+      // Summary box
+      doc.setFillColor(240, 249, 255); // sky-50
+      doc.setDrawColor(186, 230, 253); // sky-200
+      doc.roundedRect(14, 52, pageWidth - 28, 18, 3, 3, "FD");
+      doc.setTextColor(3, 105, 161); // sky-700
+      doc.setFontSize(11);
+      doc.setFont("helvetica", "bold");
+      doc.text("Summary", 20, 62);
+      doc.setFont("helvetica", "normal");
+      doc.setTextColor(60);
+      const uniqueManufacturers = new Set(designBoard.map((i) => i.manufacturer)).size;
+      doc.text(
+        `${designBoard.length} items selected from ${uniqueManufacturers} manufacturers`,
+        20,
+        67
+      );
+
+      // Table with autotable
+      const tableData = designBoard.map((item, i) => [
+        (i + 1).toString(),
+        `${item.productName}\n${item.manufacturer}`,
+        item.category || "—",
+        item.priceRange || "Contact for pricing",
+        item.notes || "—",
+      ]);
+
+      (autoTable as unknown as { default: typeof autoTable.default }).default(doc, {
+        startY: 78,
+        head: [["#", "Product / Manufacturer", "Category", "Est. Price", "Notes"]],
+        body: tableData,
+        theme: "striped",
+        headStyles: {
+          fillColor: [241, 245, 249], // slate-100
+          textColor: [71, 85, 105], // slate-600
+          fontStyle: "bold",
+          fontSize: 9,
+        },
+        bodyStyles: {
+          fontSize: 9,
+          cellPadding: 4,
+        },
+        alternateRowStyles: {
+          fillColor: [248, 250, 252], // slate-50
+        },
+        columnStyles: {
+          0: { cellWidth: 10, halign: "center" },
+          1: { cellWidth: 55 },
+          2: { cellWidth: 30 },
+          3: { cellWidth: 35, textColor: [5, 150, 105] }, // emerald-600
+          4: { cellWidth: 50, fontStyle: "italic", textColor: [100, 116, 139] },
+        },
+        margin: { left: 14, right: 14 },
+      });
+
+      // Footer
+      const finalY =
+        (doc as unknown as { lastAutoTable: { finalY: number } }).lastAutoTable?.finalY || 200;
+      doc.setDrawColor(226, 232, 240); // slate-200
+      doc.line(14, finalY + 10, pageWidth - 14, finalY + 10);
+      doc.setFontSize(9);
+      doc.setTextColor(148, 163, 184); // slate-400
+      doc.text(
+        `Generated via SkaiScrape Products — ${new Date().toLocaleString()}`,
+        14,
+        finalY + 18
+      );
+      doc.text(
+        "Share this with your contractor for material ordering assistance.",
+        14,
+        finalY + 24
+      );
+
+      // Save the PDF
+      doc.save(`${boardName.replace(/[^a-z0-9]/gi, "_")}_${Date.now()}.pdf`);
+      toast.success("PDF downloaded successfully!", { id: "pdf-export" });
+    } catch (error) {
+      console.error("PDF export error:", error);
+      toast.error("Failed to generate PDF. Please try again.", { id: "pdf-export" });
     }
   };
 
@@ -511,7 +544,7 @@ export default function ProductsPage() {
                       className="gap-1 bg-emerald-600 hover:bg-emerald-700"
                     >
                       <Download className="h-4 w-4" />
-                      Export & Print PDF
+                      Download PDF
                     </Button>
                   </div>
                 </div>

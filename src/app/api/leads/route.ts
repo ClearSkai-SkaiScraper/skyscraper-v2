@@ -26,6 +26,17 @@ const contactDataSchema = z.object({
   zipCode: z.string().optional(),
 });
 
+const measurementsSchema = z.object({
+  roofSquares: z.number().optional(),
+  sidingLinearFeet: z.number().optional(),
+  gutterLinearFeet: z.number().optional(),
+  windowCount: z.number().optional(),
+  doorCount: z.number().optional(),
+  stories: z.number().optional(),
+  pitch: z.string().optional(),
+  notes: z.string().optional(),
+});
+
 const createLeadSchema = z.object({
   title: z.string().min(1),
   description: z.string().optional(),
@@ -43,6 +54,7 @@ const createLeadSchema = z.object({
   urgency: z.string().optional(),
   budget: z.number().optional(),
   jobCategory: z.string().default("lead"),
+  measurements: measurementsSchema.optional(),
 });
 
 const convertLeadSchema = z.object({
@@ -161,6 +173,7 @@ const basePOST = async (request: Request) => {
       urgency,
       budget,
       jobCategory,
+      measurements,
     } = parsed.data;
 
     if (!title) {
@@ -262,6 +275,57 @@ const basePOST = async (request: Request) => {
           // Don't fail the lead creation if property creation fails
         }
       }
+
+      // Save measurements to PropertyProfiles if provided
+      if (
+        measurements &&
+        (measurements.roofSquares || measurements.sidingLinearFeet || measurements.stories)
+      ) {
+        try {
+          // Find or create property profile for this contact
+          let property = await prisma.propertyProfiles.findFirst({
+            where: { contactId: contact.id },
+          });
+
+          if (property) {
+            // Update existing property with measurements
+            await prisma.propertyProfiles.update({
+              where: { id: property.id },
+              data: {
+                roofSquares: measurements.roofSquares ?? property.roofSquares,
+                numStories: measurements.stories ?? property.numStories,
+                roofPitch: measurements.pitch ?? property.roofPitch,
+                updatedAt: new Date(),
+              },
+            });
+          } else {
+            // Create new PropertyProfile with measurements
+            await prisma.propertyProfiles.create({
+              data: {
+                id: crypto.randomUUID(),
+                orgId: effectiveOrgId,
+                contactId: contact.id,
+                streetAddress: street || "",
+                city: city || "",
+                state: state || "",
+                zipCode: zipCode || "",
+                roofSquares: measurements.roofSquares,
+                numStories: measurements.stories,
+                roofPitch: measurements.pitch,
+                createdAt: new Date(),
+                updatedAt: new Date(),
+              },
+            });
+          }
+          logger.info("[POST /api/leads] Saved measurements to property profile", {
+            contactId: contact.id,
+            measurements,
+          });
+        } catch (measureError) {
+          logger.warn("[POST /api/leads] Failed to save measurements:", measureError);
+          // Don't fail the lead creation
+        }
+      }
     }
 
     if (!finalContactId) {
@@ -304,6 +368,28 @@ const basePOST = async (request: Request) => {
     });
     const createMs = Date.now() - createStartTime;
     logInfo("lead.create.completed", { leadId: lead.id, orgId: effectiveOrgId, ms: createMs });
+
+    // Auto-assign if no assignee was specified
+    let finalAssignee = lead.assignedTo;
+    if (!assignedTo) {
+      try {
+        // Try geo-routing first if contact has address
+        const contactZip = contactData?.zipCode;
+        const contactState = contactData?.state;
+
+        if (contactZip || contactState) {
+          finalAssignee = await geoAssignLead(lead.id, effectiveOrgId, contactZip, contactState);
+        }
+
+        // Fall back to round-robin if geo-routing didn't assign
+        if (!finalAssignee) {
+          finalAssignee = await autoAssignLead(lead.id, effectiveOrgId);
+        }
+      } catch (assignError) {
+        logger.warn("[POST /api/leads] Auto-assign failed:", assignError);
+        // Don't fail the request
+      }
+    }
 
     // Create initial activity (optional - don't fail if it errors)
     try {

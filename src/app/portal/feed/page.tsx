@@ -114,6 +114,66 @@ export default function FeedPage() {
     }
   }
 
+  // Like a post
+  async function handleLikePost(postId: string) {
+    // Optimistic update
+    setSocialPosts((prev) =>
+      prev.map((p) =>
+        p.id === postId
+          ? { ...p, isLiked: !p.isLiked, likes: p.isLiked ? p.likes - 1 : p.likes + 1 }
+          : p
+      )
+    );
+
+    try {
+      const res = await fetch(`/api/portal/community/posts/${postId}/like`, {
+        method: "POST",
+      });
+      if (!res.ok) {
+        // Revert on error
+        setSocialPosts((prev) =>
+          prev.map((p) =>
+            p.id === postId
+              ? { ...p, isLiked: !p.isLiked, likes: p.isLiked ? p.likes - 1 : p.likes + 1 }
+              : p
+          )
+        );
+        toast.error("Failed to like post");
+      }
+    } catch {
+      // Revert on error
+      setSocialPosts((prev) =>
+        prev.map((p) =>
+          p.id === postId
+            ? { ...p, isLiked: !p.isLiked, likes: p.isLiked ? p.likes - 1 : p.likes + 1 }
+            : p
+        )
+      );
+    }
+  }
+
+  // Share a post
+  async function handleSharePost(post: SocialPost) {
+    const shareUrl = `${window.location.origin}/portal/network?post=${post.id}`;
+
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: `Post by ${post.author.name}`,
+          text: post.content.slice(0, 100),
+          url: shareUrl,
+        });
+        toast.success("Shared successfully!");
+      } catch {
+        // User cancelled or share failed
+      }
+    } else {
+      // Fallback: copy to clipboard
+      await navigator.clipboard.writeText(shareUrl);
+      toast.success("Link copied to clipboard!");
+    }
+  }
+
   const searchMentions = useCallback(async (query: string) => {
     if (!query || query.length < 2) {
       setMentionSuggestions([]);
@@ -429,25 +489,22 @@ export default function FeedPage() {
                     </p>
                     <div className="mt-2 flex gap-4">
                       <button
-                        disabled
-                        title="Coming soon"
-                        className="flex cursor-not-allowed items-center gap-1 text-xs text-slate-300"
+                        onClick={() => handleLikePost(post.id)}
+                        className={`flex items-center gap-1 text-xs transition-colors ${post.isLiked ? "text-pink-600" : "text-slate-500 hover:text-pink-600"}`}
                       >
-                        <Heart className="h-3.5 w-3.5" />
+                        <Heart className={`h-3.5 w-3.5 ${post.isLiked ? "fill-current" : ""}`} />
                         {post.likes || 0}
                       </button>
-                      <button
-                        disabled
-                        title="Coming soon"
-                        className="flex cursor-not-allowed items-center gap-1 text-xs text-slate-300"
+                      <Link
+                        href={`/portal/network?post=${post.id}`}
+                        className="flex items-center gap-1 text-xs text-slate-500 transition-colors hover:text-purple-600"
                       >
                         <MessageCircle className="h-3.5 w-3.5" />
                         {post.comments || 0}
-                      </button>
+                      </Link>
                       <button
-                        disabled
-                        title="Coming soon"
-                        className="flex cursor-not-allowed items-center gap-1 text-xs text-slate-300"
+                        onClick={() => handleSharePost(post)}
+                        className="flex items-center gap-1 text-xs text-slate-500 transition-colors hover:text-blue-600"
                       >
                         <Share2 className="h-3.5 w-3.5" />
                         Share

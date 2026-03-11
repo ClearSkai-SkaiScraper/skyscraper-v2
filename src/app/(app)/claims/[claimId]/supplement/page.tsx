@@ -79,7 +79,10 @@ export default async function SupplementPage({ params }: { params: { claimId: st
             Claim #{claims.claimNumber || params.claimId}
           </div>
         </div>
-        <SupplementWorkspace />
+        <SupplementWorkspace
+          claimId={params.claimId}
+          claimNumber={claims.claimNumber || undefined}
+        />
       </div>
     </div>
   );

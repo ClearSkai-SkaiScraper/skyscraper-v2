@@ -56,6 +56,18 @@ async function getLead(id: string, internalOrgId: string) {
     },
   });
 
+  // Get assignee name if assigned
+  let assigneeName: string | null = null;
+  if (lead.assignedTo) {
+    const assignee = await prisma.users.findUnique({
+      where: { id: lead.assignedTo },
+      select: { firstName: true, lastName: true },
+    });
+    if (assignee) {
+      assigneeName = `${assignee.firstName || ""} ${assignee.lastName || ""}`.trim() || null;
+    }
+  }
+
   const contact = contactRow
     ? {
         ...contactRow,
@@ -65,7 +77,7 @@ async function getLead(id: string, internalOrgId: string) {
       }
     : null;
 
-  return { lead, contact };
+  return { lead, contact, assigneeName };
 }
 
 export default async function LeadDetailPage({ params }: { params: Promise<{ id: string }> }) {
@@ -81,7 +93,7 @@ export default async function LeadDetailPage({ params }: { params: Promise<{ id:
   const result = await getLead(id, orgResult.orgId);
   if (!result) notFound();
 
-  const { lead, contact } = result;
+  const { lead, contact, assigneeName } = result;
 
   const formatCurrency = (amount?: number) => {
     if (!amount) return "Not set";
@@ -187,6 +199,13 @@ export default async function LeadDetailPage({ params }: { params: Promise<{ id:
                   </p>
                 </div>
               </div>
+
+              {/* Assignment Dropdown */}
+              <LeadAssignmentDropdown
+                leadId={lead.id}
+                currentAssigneeId={lead.assignedTo}
+                currentAssigneeName={assigneeName}
+              />
 
               {/* Action Buttons - Horizontal row */}
               <div className="flex items-center gap-2">

@@ -119,6 +119,9 @@ interface RetailJobClientProps {
 
 export function RetailJobClient({ jobId, initialJob }: RetailJobClientProps) {
   const [job, setJob] = useState(initialJob);
+  const [isEditingDescription, setIsEditingDescription] = useState(false);
+  const [descriptionValue, setDescriptionValue] = useState(initialJob.description || "");
+  const [savingDescription, setSavingDescription] = useState(false);
 
   const handleUpdate = async (field: string, value: any) => {
     const res = await fetch(`/api/leads/${jobId}`, {
@@ -134,6 +137,19 @@ export function RetailJobClient({ jobId, initialJob }: RetailJobClientProps) {
     const data = await res.json();
     if (data.lead) {
       setJob((prev) => ({ ...prev, [field]: value }));
+    }
+  };
+
+  const handleSaveDescription = async () => {
+    setSavingDescription(true);
+    try {
+      await handleUpdate("description", descriptionValue);
+      toast.success("Description updated");
+      setIsEditingDescription(false);
+    } catch {
+      toast.error("Failed to update description");
+    } finally {
+      setSavingDescription(false);
     }
   };
 
@@ -169,20 +185,54 @@ export function RetailJobClient({ jobId, initialJob }: RetailJobClientProps) {
         </div>
       </div>
 
-      {job.description !== undefined && (
-        <div
-          className="group cursor-pointer rounded-lg border border-slate-200 p-4 transition-colors hover:border-amber-300 hover:bg-amber-50/50 dark:border-slate-700 dark:hover:border-amber-700 dark:hover:bg-amber-900/10"
-          onClick={() => {}}
-        >
-          <div className="flex items-center justify-between">
-            <p className="text-sm font-medium text-slate-700 dark:text-slate-300">Description</p>
-            <Pencil className="h-3 w-3 text-slate-400 opacity-0 transition-opacity group-hover:opacity-100" />
+      {job.description !== undefined &&
+        (isEditingDescription ? (
+          <div className="rounded-lg border border-amber-300 bg-amber-50/50 p-4 dark:border-amber-700 dark:bg-amber-900/10">
+            <div className="mb-2 flex items-center justify-between">
+              <p className="text-sm font-medium text-amber-700 dark:text-amber-300">
+                Edit Description
+              </p>
+            </div>
+            <Textarea
+              value={descriptionValue}
+              onChange={(e) => setDescriptionValue(e.target.value)}
+              className="mb-2 min-h-[100px]"
+              placeholder="Add a description..."
+              disabled={savingDescription}
+            />
+            <div className="flex justify-end gap-2">
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => {
+                  setDescriptionValue(job.description || "");
+                  setIsEditingDescription(false);
+                }}
+                disabled={savingDescription}
+              >
+                <X className="mr-1 h-4 w-4" />
+                Cancel
+              </Button>
+              <Button size="sm" onClick={handleSaveDescription} disabled={savingDescription}>
+                <Check className="mr-1 h-4 w-4" />
+                {savingDescription ? "Saving..." : "Save"}
+              </Button>
+            </div>
           </div>
-          <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
-            {job.description || "Click to add description..."}
-          </p>
-        </div>
-      )}
+        ) : (
+          <div
+            className="group cursor-pointer rounded-lg border border-slate-200 p-4 transition-colors hover:border-amber-300 hover:bg-amber-50/50 dark:border-slate-700 dark:hover:border-amber-700 dark:hover:bg-amber-900/10"
+            onClick={() => setIsEditingDescription(true)}
+          >
+            <div className="flex items-center justify-between">
+              <p className="text-sm font-medium text-slate-700 dark:text-slate-300">Description</p>
+              <Pencil className="h-3 w-3 text-slate-400 opacity-0 transition-opacity group-hover:opacity-100" />
+            </div>
+            <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
+              {job.description || "Click to add description..."}
+            </p>
+          </div>
+        ))}
     </div>
   );
 }

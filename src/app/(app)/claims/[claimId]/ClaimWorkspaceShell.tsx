@@ -203,6 +203,43 @@ export function ClaimWorkspaceShell({
     }
   };
 
+  // Copy claim summary to clipboard
+  const copyClaimSummary = async () => {
+    const address = [claim.addressLine1, claim.city, claim.state, claim.postalCode]
+      .filter(Boolean)
+      .join(", ");
+
+    const summary = `CLAIM SUMMARY
+═══════════════════════════════════
+Claim #: ${claim.claimNumber || "N/A"}
+Status: ${claim.status || "N/A"}
+Insured: ${claim.insured_name || "N/A"}
+Address: ${address || "N/A"}
+Date of Loss: ${claim.dateOfLoss ? new Intl.DateTimeFormat("en-US").format(new Date(claim.dateOfLoss)) : "N/A"}
+
+INSURANCE
+Carrier: ${claim.carrier || "N/A"}
+Policy #: ${claim.policyNumber || "N/A"}
+Adjuster: ${claim.adjusterName || "N/A"}
+Phone: ${claim.adjusterPhone || "N/A"}
+Email: ${claim.adjusterEmail || "N/A"}
+
+FINANCIALS
+RCV: ${formatCurrency(claim.rcvTotal)}
+ACV: ${formatCurrency(claim.acvTotal)}
+Deductible: ${formatCurrency(claim.deductible)}
+═══════════════════════════════════`;
+
+    try {
+      await navigator.clipboard.writeText(summary);
+      setSaveMessage("✓ Copied to clipboard");
+      setTimeout(() => setSaveMessage(null), 2000);
+    } catch {
+      setSaveMessage("✗ Failed to copy");
+      setTimeout(() => setSaveMessage(null), 3000);
+    }
+  };
+
   const tabs: { id: TabId; label: string; icon: React.ComponentType<any> }[] = [
     { id: "overview", label: "Overview", icon: FileText },
     { id: "details", label: "Claim Details", icon: FileText },
@@ -312,6 +349,15 @@ export function ClaimWorkspaceShell({
             </div>
             <StatusBadge status={claim.status || "Draft"} />
             <div className="ml-4 flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={copyClaimSummary}
+                title="Copy claim summary to clipboard"
+              >
+                <Copy className="mr-1.5 h-3.5 w-3.5" />
+                Copy
+              </Button>
               <TransferJobDropdown jobId={claim.id} currentCategory="claim" />
               <ArchiveJobButton
                 jobId={claim.id}
@@ -1327,9 +1373,13 @@ function PhotosSection({ claimId }: { claimId: string }) {
   async function fetchPhotos() {
     try {
       const res = await fetch(`/api/claims/${claimId}/photos`);
-      if (res.ok) {
-        const data = await res.json();
-        setPhotos(data.photos || []);
+      if (!res.ok) {
+        logger.error("Failed to fetch photos", { status: res.status });
+        return;
+      }
+      const data = await res.json();
+      if (Array.isArray(data.photos)) {
+        setPhotos(data.photos);
       }
     } catch (err) {
       logger.error("Failed to fetch photos", { error: err });
@@ -1387,11 +1437,29 @@ function PhotosSection({ claimId }: { claimId: string }) {
           ? (await saveRes.json()).severity
           : data.overallAssessment?.severity || "none";
 
+        // Build damageBoxes from annotations for immediate overlay display
+        const damageBoxes = (data.annotations || []).map(
+          (ann: { x: number; y: number; width: number; height: number; label?: string }) => ({
+            x: ann.x / 100,
+            y: ann.y / 100,
+            w: ann.width / 100,
+            h: ann.height / 100,
+            label: ann.label || "",
+          })
+        );
+
         // Update local state
         setPhotos((prev) =>
           prev.map((p) =>
             p.id === photoId
-              ? { ...p, analyzed: true, severity, aiCaption: data, annotations: data.annotations }
+              ? {
+                  ...p,
+                  analyzed: true,
+                  severity,
+                  aiCaption: data,
+                  annotations: data.annotations,
+                  damageBoxes,
+                }
               : p
           )
         );
@@ -1443,11 +1511,29 @@ function PhotosSection({ claimId }: { claimId: string }) {
             ? (await saveRes.json()).severity
             : data.overallAssessment?.severity || "none";
 
+          // Build damageBoxes from annotations for immediate overlay display
+          const damageBoxes = (data.annotations || []).map(
+            (ann: { x: number; y: number; width: number; height: number; label?: string }) => ({
+              x: ann.x / 100,
+              y: ann.y / 100,
+              w: ann.width / 100,
+              h: ann.height / 100,
+              label: ann.label || "",
+            })
+          );
+
           // Update local state
           setPhotos((prev) =>
             prev.map((p) =>
               p.id === photo.id
-                ? { ...p, analyzed: true, severity, aiCaption: data, annotations: data.annotations }
+                ? {
+                    ...p,
+                    analyzed: true,
+                    severity,
+                    aiCaption: data,
+                    annotations: data.annotations,
+                    damageBoxes,
+                  }
                 : p
             )
           );
@@ -1460,6 +1546,8 @@ function PhotosSection({ claimId }: { claimId: string }) {
 
     setAnalyzingAll(false);
     setAnalyzeProgress(0);
+    // Re-fetch to get canonical damageBoxes from the DB
+    await fetchPhotos();
   }
 
   // Generate Damage Report (uses only analyzed photos)
@@ -1537,6 +1625,8 @@ function PhotosSection({ claimId }: { claimId: string }) {
 
     setUploading(false);
     if (uploadedCount.length > 0) {
+      // Short delay to ensure DB writes are committed before fetching
+      await new Promise((r) => setTimeout(r, 500));
       await fetchPhotos();
     }
     if (failedFiles.length > 0) {
@@ -1696,11 +1786,39 @@ function PhotosSection({ claimId }: { claimId: string }) {
                   className="group relative cursor-pointer overflow-hidden rounded-lg border border-slate-200 dark:border-slate-700"
                   onClick={() => setSelectedPhoto(photo.publicUrl)}
                 >
-                  <img
-                    src={photo.publicUrl}
-                    alt={photo.note || photo.filename}
-                    className="h-32 w-full object-cover transition-transform group-hover:scale-110"
-                  />
+                  {/* Show damage box overlays for analyzed photos */}
+                  {photo.analyzed && photo.damageBoxes && photo.damageBoxes.length > 0 ? (
+                    <div className="relative h-32 w-full">
+                      <img
+                        src={photo.publicUrl}
+                        alt={photo.note || photo.filename}
+                        className="h-full w-full object-cover transition-transform group-hover:scale-110"
+                      />
+                      {photo.damageBoxes.map(
+                        (
+                          box: { x: number; y: number; w: number; h: number; label?: string },
+                          i: number
+                        ) => (
+                          <div
+                            key={i}
+                            className="absolute border-2 border-red-500 bg-red-500/10"
+                            style={{
+                              left: `${box.x * 100}%`,
+                              top: `${box.y * 100}%`,
+                              width: `${box.w * 100}%`,
+                              height: `${box.h * 100}%`,
+                            }}
+                          />
+                        )
+                      )}
+                    </div>
+                  ) : (
+                    <img
+                      src={photo.publicUrl}
+                      alt={photo.note || photo.filename}
+                      className="h-32 w-full object-cover transition-transform group-hover:scale-110"
+                    />
+                  )}
 
                   {/* Delete button - red X */}
                   <button

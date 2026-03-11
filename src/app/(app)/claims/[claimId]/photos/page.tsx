@@ -88,9 +88,15 @@ export default function PhotosPage() {
     if (!claimId) return;
     try {
       const res = await fetch(`/api/claims/${claimId}/photos`);
+      if (!res.ok) {
+        logger.error("Failed to fetch photos: HTTP", res.status);
+        return;
+      }
       const data = await res.json();
-      if (data.photos) {
+      if (Array.isArray(data.photos)) {
         setPhotos(data.photos);
+      } else {
+        logger.error("Unexpected photos response shape", data);
       }
     } catch (error) {
       logger.error("Failed to fetch photos:", error);
@@ -106,11 +112,36 @@ export default function PhotosPage() {
 
   if (!claimId) return null;
 
+  // ── Computed damage summary values ──
+  const analyzedCount = photos.filter((p) => p.analyzed).length;
+  const annotationCount = photos.reduce((sum, p) => sum + (p.annotations?.length || 0), 0);
+
+  const getSeverityColor = (severity: string) => {
+    switch (severity?.toLowerCase()) {
+      case "severe":
+      case "critical":
+      case "high":
+        return "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400";
+      case "moderate":
+      case "medium":
+        return "bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400";
+      case "minor":
+      case "low":
+        return "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400";
+      default:
+        return "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300";
+    }
+  };
+
   const handleUploadComplete = async () => {
+    // Short delay to ensure DB writes are committed before fetching
+    await new Promise((r) => setTimeout(r, 500));
     await fetchPhotos();
   };
 
   const handleAnalysisComplete = async () => {
+    // Re-fetch to pick up all analysis results saved to DB
+    await new Promise((r) => setTimeout(r, 500));
     await fetchPhotos();
   };
 
@@ -225,8 +256,8 @@ export default function PhotosPage() {
         return;
       }
 
-      // Save annotations - store as percentages (0-100) and convert to pixels at render time
-      // This ensures proper alignment regardless of canvas/display size
+      // Save annotations - convert from AI percentages (0-100) to pixel space (800×600)
+      // The GET endpoint divides by 800/600 to normalize back to 0-1 fractions for display
       if (data.annotations && data.annotations.length > 0) {
         const annotations = data.annotations.map(
           (
@@ -239,13 +270,12 @@ export default function PhotosPage() {
           ) => ({
             id: ann.id,
             type: "ai_detection",
-            // Store as percentage values (0-100) for proper scaling at render time
-            x: ann.x,
-            y: ann.y,
-            width: ann.width,
-            height: ann.height,
-            // Add flag to indicate these are percentages
-            isPercentage: true,
+            // Convert percentage (0-100) to pixel coords in 800×600 space
+            // This matches the format ClaimPhotoUploadWithAnalysis uses
+            x: (ann.x / 100) * 800,
+            y: (ann.y / 100) * 600,
+            width: (ann.width / 100) * 800,
+            height: (ann.height / 100) * 600,
             color: getSeverityColorHex(ann.severity),
             damageType: ann.damageType,
             severity: ann.severity,
@@ -287,6 +317,7 @@ export default function PhotosPage() {
                     height: number;
                     caption: string;
                   }) => ({
+                    // AI returns percentages (0-100), convert to 0-1 fractions for CSS positioning
                     x: ann.x / 100,
                     y: ann.y / 100,
                     w: ann.width / 100,
@@ -580,6 +611,140 @@ export default function PhotosPage() {
             <span className="font-medium">{bulkProgress}%</span>
           </div>
           <Progress value={bulkProgress} className="h-2" />
+        </div>
+      )}
+
+      {/* ═══ AI Damage Summary Panel ═══ */}
+      {analyzedCount > 0 && !bulkAnalyzing && (
+        <div className="mb-6 rounded-xl border border-purple-200 bg-gradient-to-br from-purple-50 to-indigo-50 p-5 dark:border-purple-800 dark:from-purple-900/20 dark:to-indigo-900/20">
+          <h3 className="mb-3 flex items-center gap-2 text-base font-semibold text-purple-900 dark:text-purple-100">
+            <Sparkles className="h-5 w-5 text-purple-600" />
+            AI Damage Summary
+          </h3>
+
+          {/* Severity Breakdown */}
+          <div className="mb-4 grid grid-cols-2 gap-3 md:grid-cols-4">
+            <div className="rounded-lg bg-white/80 p-3 dark:bg-slate-900/60">
+              <p className="text-2xl font-bold text-slate-900 dark:text-white">{analyzedCount}</p>
+              <p className="text-xs text-slate-500">Photos Analyzed</p>
+            </div>
+            <div className="rounded-lg bg-white/80 p-3 dark:bg-slate-900/60">
+              <p className="text-2xl font-bold text-red-600">
+                {photos.filter((p) => p.severity === "severe").length}
+              </p>
+              <p className="text-xs text-slate-500">Severe Damage</p>
+            </div>
+            <div className="rounded-lg bg-white/80 p-3 dark:bg-slate-900/60">
+              <p className="text-2xl font-bold text-orange-600">
+                {photos.filter((p) => p.severity === "moderate").length}
+              </p>
+              <p className="text-xs text-slate-500">Moderate Damage</p>
+            </div>
+            <div className="rounded-lg bg-white/80 p-3 dark:bg-slate-900/60">
+              <p className="text-2xl font-bold text-green-600">{annotationCount}</p>
+              <p className="text-xs text-slate-500">Total Findings</p>
+            </div>
+          </div>
+
+          {/* Damage Types Found */}
+          {(() => {
+            const damageTypes = new Map<string, { count: number; severity: string }>();
+            const ircCodes = new Set<string>();
+            photos.forEach((p) => {
+              if (!p.annotations) return;
+              (p.annotations as Annotation[]).forEach((ann) => {
+                if (ann.damageType) {
+                  const existing = damageTypes.get(ann.damageType);
+                  damageTypes.set(ann.damageType, {
+                    count: (existing?.count || 0) + 1,
+                    severity: ann.severity || existing?.severity || "Low",
+                  });
+                }
+                if (ann.ircCode) ircCodes.add(ann.ircCode);
+              });
+            });
+
+            if (damageTypes.size === 0) return null;
+
+            return (
+              <div className="space-y-3">
+                <div>
+                  <h4 className="mb-2 text-sm font-medium text-slate-700 dark:text-slate-300">
+                    Damage Types Detected
+                  </h4>
+                  <div className="flex flex-wrap gap-2">
+                    {[...damageTypes.entries()].map(([type, info]) => (
+                      <Badge
+                        key={type}
+                        className={
+                          info.severity === "Critical" || info.severity === "High"
+                            ? "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400"
+                            : info.severity === "Medium"
+                              ? "bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400"
+                              : "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400"
+                        }
+                      >
+                        {type.replace(/_/g, " ")} ({info.count})
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+
+                {ircCodes.size > 0 && (
+                  <div>
+                    <h4 className="mb-2 text-sm font-medium text-slate-700 dark:text-slate-300">
+                      Applicable IRC Codes
+                    </h4>
+                    <div className="flex flex-wrap gap-2">
+                      {[...ircCodes].map((code) => (
+                        <Badge key={code} variant="outline" className="text-xs">
+                          {code.replace(/_/g, " ")}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Per-photo summary captions */}
+                <div>
+                  <h4 className="mb-2 text-sm font-medium text-slate-700 dark:text-slate-300">
+                    Photo-by-Photo Findings
+                  </h4>
+                  <div className="space-y-2">
+                    {photos
+                      .filter((p) => p.analyzed && p.aiCaption?.summary)
+                      .map((p) => (
+                        <div
+                          key={p.id}
+                          className="flex items-start gap-2 rounded-lg bg-white/60 p-2 text-sm dark:bg-slate-800/60"
+                        >
+                          <img
+                            src={p.publicUrl}
+                            alt={p.filename}
+                            className="h-10 w-10 flex-shrink-0 rounded object-cover"
+                          />
+                          <div className="min-w-0 flex-1">
+                            <div className="flex items-center gap-2">
+                              <span className="truncate text-xs font-medium text-slate-700 dark:text-slate-300">
+                                {p.filename}
+                              </span>
+                              {p.severity && p.severity !== "none" && (
+                                <Badge className={`text-[10px] ${getSeverityColor(p.severity)}`}>
+                                  {p.severity}
+                                </Badge>
+                              )}
+                            </div>
+                            <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">
+                              {p.aiCaption?.summary}
+                            </p>
+                          </div>
+                        </div>
+                      ))}
+                  </div>
+                </div>
+              </div>
+            );
+          })()}
         </div>
       )}
 

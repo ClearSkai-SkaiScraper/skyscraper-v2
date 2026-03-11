@@ -59,6 +59,10 @@ export const GET = withAuth(
           const hasAnnotations = Array.isArray(annotations) && annotations.length > 0;
 
           // Build damage boxes from annotations for overlay display
+          // Annotations may be stored in two formats:
+          //   - Pixel-based: x/y in 0-800, width/height in 0-800/600 (from ClaimPhotoUploadWithAnalysis)
+          //   - Percentage-based: x/y in 0-100, with isPercentage=true flag (legacy)
+          // Both need to be converted to 0-1 fractions for CSS positioning
           const damageBoxes = hasAnnotations
             ? (
                 annotations as Array<{
@@ -69,14 +73,20 @@ export const GET = withAuth(
                   caption?: string;
                   damageType?: string;
                   severity?: string;
+                  isPercentage?: boolean;
                 }>
-              ).map((ann) => ({
-                x: (ann.x || 0) / 800, // Convert back to percentage
-                y: (ann.y || 0) / 600,
-                w: (ann.width || 50) / 800,
-                h: (ann.height || 50) / 600,
-                label: ann.caption || ann.damageType || "Damage",
-              }))
+              ).map((ann) => {
+                // Detect format: if isPercentage flag is set, divide by 100
+                // Otherwise assume pixel-based (0-800/0-600) and divide accordingly
+                const isPercent = ann.isPercentage === true;
+                return {
+                  x: isPercent ? (ann.x || 0) / 100 : (ann.x || 0) / 800,
+                  y: isPercent ? (ann.y || 0) / 100 : (ann.y || 0) / 600,
+                  w: isPercent ? (ann.width || 5) / 100 : (ann.width || 50) / 800,
+                  h: isPercent ? (ann.height || 5) / 100 : (ann.height || 50) / 600,
+                  label: ann.caption || ann.damageType || "Damage",
+                };
+              })
             : null;
 
           return {

@@ -82,12 +82,12 @@ interface WorkRequest {
   contractor?: { name: string; logo?: string } | null;
 }
 
-// Demo job to show homeowners the flow - with ClearSkai Technologies
+// Demo job to show homeowners the flow - with generic contractor
 const DEMO_JOB: Job = {
   id: "demo-job-1",
   title: "Security Cameras & Driveway Lighting",
   description:
-    "ClearSkai Technologies is scheduled to assess your property for security camera placement and smart driveway lighting installation. They'll determine optimal camera angles and lighting zones.",
+    "Your contractor is scheduled to assess your property for security camera placement and smart driveway lighting installation. They'll determine optimal camera angles and lighting zones.",
   status: "in_progress",
   createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24).toISOString(), // 1 day ago
   tradeType: "Smart Home & Technology",
@@ -106,7 +106,7 @@ const DEMO_SHARED_CLAIM: SharedClaim = {
   category: "Smart Home & Technology",
   contractor: {
     id: "demo-contractor-1",
-    name: "ClearSkai Technologies",
+    name: "Demo Contractor",
     logo: null,
     trade: "Smart Home",
   },

@@ -751,8 +751,28 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
           });
 
           // Draw damage boxes on the photo
+          // Build damageBoxes from annotations (annotations are saved to metadata.annotations,
+          // NOT metadata.damageBoxes, so we must convert here)
           const meta = photo.metadata;
-          const damageBoxes = meta?.damageBoxes || [];
+          const rawAnnotations = (meta?.annotations || []) as Array<{
+            x: number;
+            y: number;
+            width?: number;
+            height?: number;
+            caption?: string;
+            damageType?: string;
+            isPercentage?: boolean;
+          }>;
+          const damageBoxes = rawAnnotations.map((ann) => {
+            const isPct = ann.isPercentage === true;
+            return {
+              x: isPct ? (ann.x || 0) / 100 : (ann.x || 0) / 800,
+              y: isPct ? (ann.y || 0) / 100 : (ann.y || 0) / 600,
+              w: isPct ? (ann.width || 5) / 100 : (ann.width || 50) / 800,
+              h: isPct ? (ann.height || 5) / 100 : (ann.height || 50) / 600,
+              label: ann.caption || ann.damageType || "Damage",
+            };
+          });
           for (const box of damageBoxes) {
             const bx = imgX + box.x * dims.width;
             const by = y - dims.height + (1 - box.y - box.h) * dims.height;
@@ -885,58 +905,136 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
         y -= 8;
       }
 
-      // ── Annotations ──
+      // ── Detailed Damage Summary for this photo ──
       const annMeta = photo.metadata as PhotoWithMetadata["metadata"];
       if (options.includeAnnotations && annMeta?.annotations && annMeta.annotations.length > 0) {
         if (y < 120) {
           page = newPage();
           y = PAGE_H - MARGIN - 10;
         }
-        page.drawText(`Damage Annotations (${annMeta.annotations.length})`, {
-          x: MARGIN,
-          y,
-          size: 10,
-          font: helveticaBold,
-          color: rgb(0.2, 0.2, 0.2),
-        });
-        y -= 16;
 
-        for (const ann of annMeta.annotations) {
-          if (y < 80) {
+        // Summary header
+        page.drawRectangle({
+          x: MARGIN - 4,
+          y: y - 5,
+          width: CONTENT_W + 8,
+          height: 22,
+          color: rgb(0.95, 0.96, 0.97),
+        });
+        page.drawText(
+          `DETAILED DAMAGE FINDINGS — ${annMeta.annotations.length} Area${annMeta.annotations.length > 1 ? "s" : ""} Identified`,
+          {
+            x: MARGIN,
+            y,
+            size: 10,
+            font: helveticaBold,
+            color: primaryColor,
+          }
+        );
+        y -= 28;
+
+        for (let ai = 0; ai < annMeta.annotations.length; ai++) {
+          const ann = annMeta.annotations[ai];
+          if (y < 100) {
             page = newPage();
             y = PAGE_H - MARGIN - 10;
           }
-          const annLabel = [
-            ann.damageType || "Damage",
-            ann.severity ? `(${ann.severity})` : "",
-            ann.ircCode ? `— ${IRC_CODES[ann.ircCode]?.code || ann.ircCode}` : "",
-          ]
-            .filter(Boolean)
-            .join(" ");
 
-          page.drawText(`●  ${annLabel}`, {
-            x: MARGIN + 8,
+          // Finding number + damage type
+          const sevColor =
+            ann.severity === "Critical" || ann.severity === "High"
+              ? rgb(0.85, 0.15, 0.15)
+              : ann.severity === "Medium"
+                ? rgb(0.9, 0.55, 0.1)
+                : rgb(0.2, 0.7, 0.3);
+
+          page.drawText(`Finding #${ai + 1}`, {
+            x: MARGIN + 4,
             y,
             size: 9,
-            font: helvetica,
+            font: helveticaBold,
+            color: primaryColor,
+          });
+          y -= 14;
+
+          // Damage type + severity inline
+          const damageLabel = ann.damageType || "Damage";
+          page.drawText(`Type: ${damageLabel.replace(/_/g, " ")}`, {
+            x: MARGIN + 12,
+            y,
+            size: 9,
+            font: helveticaBold,
             color: rgb(0.2, 0.2, 0.2),
           });
-          y -= 13;
+          if (ann.severity) {
+            const sevText = `  Severity: ${ann.severity}`;
+            const dmgW = helveticaBold.widthOfTextAtSize(
+              `Type: ${damageLabel.replace(/_/g, " ")}`,
+              9
+            );
+            page.drawText(sevText, {
+              x: MARGIN + 12 + dmgW + 8,
+              y,
+              size: 9,
+              font: helveticaBold,
+              color: sevColor,
+            });
+          }
+          y -= 14;
 
+          // IRC code reference
+          if (ann.ircCode) {
+            const codeInfo = IRC_CODES[ann.ircCode];
+            if (codeInfo) {
+              page.drawText(`Code Reference: ${codeInfo.code} — ${codeInfo.title}`, {
+                x: MARGIN + 12,
+                y,
+                size: 8.5,
+                font: helvetica,
+                color: rgb(0.15, 0.35, 0.65),
+              });
+              y -= 12;
+            }
+          }
+
+          // Confidence score
+          if (ann.confidence) {
+            page.drawText(`Confidence: ${Math.round(ann.confidence * 100)}%`, {
+              x: MARGIN + 12,
+              y,
+              size: 8,
+              font: helvetica,
+              color: rgb(0.5, 0.5, 0.5),
+            });
+            y -= 12;
+          }
+
+          // Caption / description
           if (ann.caption) {
             y = drawWrappedText(
               page,
-              `"${ann.caption}"`,
-              MARGIN + 20,
+              ann.caption,
+              MARGIN + 12,
               y,
-              CONTENT_W - 24,
-              helvetica,
-              8.5,
-              rgb(0.4, 0.4, 0.4),
-              12
+              CONTENT_W - 16,
+              timesRoman,
+              9,
+              rgb(0.25, 0.25, 0.25),
+              13
             );
           }
-          y -= 4;
+          y -= 10;
+
+          // Separator between findings
+          if (ai < annMeta.annotations.length - 1) {
+            page.drawLine({
+              start: { x: MARGIN + 12, y: y + 4 },
+              end: { x: MARGIN + CONTENT_W / 2, y: y + 4 },
+              thickness: 0.5,
+              color: rgb(0.85, 0.85, 0.85),
+            });
+            y -= 6;
+          }
         }
       }
     }
