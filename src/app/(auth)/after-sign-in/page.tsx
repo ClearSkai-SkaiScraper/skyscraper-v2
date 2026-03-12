@@ -104,7 +104,7 @@ export default async function AfterSignInPage({
   // 3. __clerk_status=sign_up combined with no org membership = likely new client
   let mode = params?.mode;
   const pendingRedirect = params?.redirect_url;
-  
+
   // If no explicit mode but redirect_url points to client portal, infer client mode
   if (!mode && pendingRedirect) {
     if (pendingRedirect.startsWith("/portal") || pendingRedirect.startsWith("/client")) {
@@ -230,7 +230,7 @@ export default async function AfterSignInPage({
   // stuck on the pro dashboard with "no organization" errors.
   const hasOrgMembership = (user.organizationMemberships?.length ?? 0) > 0;
   let newType: "pro" | "client";
-  
+
   if (mode === "client") {
     newType = "client";
   } else if (mode === "pro") {

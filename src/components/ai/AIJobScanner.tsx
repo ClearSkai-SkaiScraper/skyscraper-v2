@@ -273,7 +273,11 @@ export function AIJobScanner() {
               </p>
             )}
             <Link href="/ai/smart-actions">
-              <Button variant="link" size="sm" className="h-auto p-0 text-xs text-indigo-600 hover:text-indigo-700">
+              <Button
+                variant="link"
+                size="sm"
+                className="h-auto p-0 text-xs text-indigo-600 hover:text-indigo-700"
+              >
                 Open Smart Actions Engine →
               </Button>
             </Link>
