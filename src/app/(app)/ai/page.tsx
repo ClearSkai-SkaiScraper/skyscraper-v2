@@ -2,7 +2,7 @@
  * /ai — AI Tools Hub
  * Landing page for all AI-powered features
  */
-import { Brain, FileSearch, FileText, Hammer, Scale, Sparkles, Wrench } from "lucide-react";
+import { Brain, FileSearch, FileText, Scale, Sparkles, Wrench } from "lucide-react";
 import Link from "next/link";
 
 const tools = [
@@ -19,13 +19,6 @@ const tools = [
     href: "/ai/claims-analysis",
     icon: FileSearch,
     color: "bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300",
-  },
-  {
-    name: "Damage Builder",
-    description: "AI-assisted damage scope and line item generation",
-    href: "/ai/damage-builder",
-    icon: Hammer,
-    color: "bg-orange-100 text-orange-700 dark:bg-orange-900 dark:text-orange-300",
   },
   {
     name: "Smart Actions",

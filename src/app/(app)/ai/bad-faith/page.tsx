@@ -9,10 +9,13 @@ import {
   Clock,
   Download,
   FileText,
+  Loader2,
+  Paperclip,
   RefreshCw,
   Scale,
   Shield,
   TrendingUp,
+  X,
   XCircle,
 } from "lucide-react";
 import Link from "next/link";
@@ -23,7 +26,9 @@ import { ClaimSelect } from "@/components/claims/ClaimSelect";
 import { PageContainer } from "@/components/layout/PageContainer";
 import { PageHero } from "@/components/layout/PageHero";
 import { PageSectionCard } from "@/components/layout/PageSectionCard";
+import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Textarea } from "@/components/ui/textarea";
 
 interface BadFaithIndicator {
   type: string;
@@ -70,6 +75,14 @@ interface RiskScoringResult {
 
 type AnalysisTab = "bad-faith" | "policy" | "risk";
 
+interface UploadedDoc {
+  id: string;
+  name: string;
+  size: number;
+  extractedText: string;
+  status: "extracting" | "ready" | "error";
+}
+
 export default function BadFaithDetectorPage() {
   const router = useNextRouter();
   const { isLoaded, isSignedIn } = useUser();
@@ -90,6 +103,64 @@ export default function BadFaithDetectorPage() {
   const [policyLoading, setPolicyLoading] = useState(false);
   const [riskLoading, setRiskLoading] = useState(false);
 
+  // Document upload & extra context state
+  const [uploadedDocs, setUploadedDocs] = useState<UploadedDoc[]>([]);
+  const [additionalContext, setAdditionalContext] = useState("");
+
+  // --- Document upload handler ---
+  const handleFileUpload = useCallback(async (files: FileList | null) => {
+    if (!files || files.length === 0) return;
+    for (const file of Array.from(files)) {
+      const docId = `doc-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+      const newDoc: UploadedDoc = {
+        id: docId,
+        name: file.name,
+        size: file.size,
+        extractedText: "",
+        status: "extracting",
+      };
+      setUploadedDocs((prev) => [...prev, newDoc]);
+      try {
+        let text: string;
+        if (file.type === "text/plain" || file.name.endsWith(".txt")) {
+          text = await file.text();
+        } else {
+          try {
+            text = await file.text();
+          } catch {
+            text = `[${file.name} — paste text manually for best results]`;
+          }
+        }
+        setUploadedDocs((prev) =>
+          prev.map((d) => (d.id === docId ? { ...d, extractedText: text, status: "ready" } : d))
+        );
+      } catch {
+        setUploadedDocs((prev) =>
+          prev.map((d) => (d.id === docId ? { ...d, status: "error" } : d))
+        );
+      }
+    }
+  }, []);
+
+  const removeDocument = (docId: string) => {
+    setUploadedDocs((prev) => prev.filter((d) => d.id !== docId));
+  };
+
+  /** Build supplemental context string from uploads + context box */
+  const buildSupplementalContext = useCallback(() => {
+    const parts: string[] = [];
+    const readyDocs = uploadedDocs.filter((d) => d.status === "ready" && d.extractedText);
+    if (readyDocs.length > 0) {
+      parts.push(
+        ...readyDocs.map((d) => `--- Uploaded Document: ${d.name} ---\n${d.extractedText}`)
+      );
+    }
+    if (additionalContext.trim()) {
+      parts.push(`--- Additional Context ---\n${additionalContext.trim()}`);
+    }
+    return parts.join("\n\n");
+  }, [uploadedDocs, additionalContext]);
+
   const handleAnalyze = useCallback(
     async (refresh = false) => {
       if (!claimId.trim()) {
@@ -107,6 +178,7 @@ export default function BadFaithDetectorPage() {
           body: JSON.stringify({
             claimId,
             forceRefresh: refresh,
+            supplementalContext: buildSupplementalContext() || undefined,
           }),
         });
 
@@ -127,7 +199,7 @@ export default function BadFaithDetectorPage() {
         setLoading(false);
       }
     },
-    [claimId]
+    [claimId, buildSupplementalContext]
   );
 
   /** Export bad-faith analysis as a branded PDF */
@@ -196,7 +268,10 @@ export default function BadFaithDetectorPage() {
       const response = await fetch("/api/agents/policy-coverage", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ claimId }),
+        body: JSON.stringify({
+          claimId,
+          supplementalContext: buildSupplementalContext() || undefined,
+        }),
       });
 
       const data = await response.json();
@@ -213,7 +288,7 @@ export default function BadFaithDetectorPage() {
     } finally {
       setPolicyLoading(false);
     }
-  }, [claimId]);
+  }, [claimId, buildSupplementalContext]);
 
   // Risk Scoring Analysis
   const handleRiskAnalysis = useCallback(async () => {
@@ -229,7 +304,10 @@ export default function BadFaithDetectorPage() {
       const response = await fetch("/api/agents/risk-scoring", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ claimId }),
+        body: JSON.stringify({
+          claimId,
+          supplementalContext: buildSupplementalContext() || undefined,
+        }),
       });
 
       const data = await response.json();
@@ -246,7 +324,7 @@ export default function BadFaithDetectorPage() {
     } finally {
       setRiskLoading(false);
     }
-  }, [claimId]);
+  }, [claimId, buildSupplementalContext]);
 
   useEffect(() => {
     if (isLoaded && !isSignedIn) {
@@ -352,6 +430,100 @@ export default function BadFaithDetectorPage() {
               Select from your active claims for{" "}
               {activeTab === "bad-faith" ? "bad faith" : activeTab === "policy" ? "policy" : "risk"}{" "}
               analysis
+            </p>
+          </div>
+
+          {/* Document Upload Section */}
+          <div>
+            <label className="mb-2 block text-sm font-medium text-muted-foreground">
+              Upload Supporting Documents (Optional)
+            </label>
+            <div
+              className="group relative flex min-h-[100px] cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed border-slate-300 bg-slate-50/50 p-4 transition-all hover:border-sky-400 hover:bg-sky-50/30 dark:border-slate-700 dark:bg-slate-950/30 dark:hover:border-sky-600 dark:hover:bg-sky-950/20"
+              onClick={() => document.getElementById("bad-faith-upload")?.click()}
+              onDragOver={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+              }}
+              onDrop={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                handleFileUpload(e.dataTransfer.files);
+              }}
+            >
+              <Paperclip className="mb-1 h-6 w-6 text-slate-400 group-hover:text-sky-500" />
+              <p className="text-sm font-medium text-slate-600 dark:text-slate-400">
+                Drop denial letters, policy docs, or correspondence here or{" "}
+                <span className="text-sky-600 underline">browse</span>
+              </p>
+              <p className="mt-1 text-xs text-slate-400">PDF, DOCX, TXT, or images</p>
+              <input
+                id="bad-faith-upload"
+                type="file"
+                multiple
+                accept=".pdf,.doc,.docx,.txt,.png,.jpg,.jpeg"
+                className="hidden"
+                onChange={(e) => handleFileUpload(e.target.files)}
+              />
+            </div>
+            {uploadedDocs.length > 0 && (
+              <div className="mt-3 space-y-2">
+                {uploadedDocs.map((doc) => (
+                  <div
+                    key={doc.id}
+                    className="flex items-center justify-between rounded-lg border border-slate-200 bg-white p-2.5 dark:border-slate-700 dark:bg-slate-800"
+                  >
+                    <div className="flex items-center gap-2 overflow-hidden">
+                      <FileText className="h-4 w-4 shrink-0 text-slate-500" />
+                      <span className="truncate text-sm text-slate-700 dark:text-slate-300">
+                        {doc.name}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      {doc.status === "extracting" && (
+                        <Badge variant="secondary" className="gap-1 bg-amber-100 text-amber-700">
+                          <Loader2 className="h-3 w-3 animate-spin" /> Processing
+                        </Badge>
+                      )}
+                      {doc.status === "ready" && (
+                        <Badge
+                          variant="secondary"
+                          className="bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300"
+                        >
+                          ✓ Ready
+                        </Badge>
+                      )}
+                      {doc.status === "error" && (
+                        <Badge variant="destructive" className="gap-1">
+                          <AlertTriangle className="h-3 w-3" /> Error
+                        </Badge>
+                      )}
+                      <button
+                        onClick={() => removeDocument(doc.id)}
+                        className="rounded p-1 text-slate-400 hover:bg-slate-100 hover:text-red-500 dark:hover:bg-slate-700"
+                      >
+                        <X className="h-4 w-4" />
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Additional Context Box */}
+          <div>
+            <label className="mb-2 block text-sm font-medium text-muted-foreground">
+              Additional Context for AI (Optional)
+            </label>
+            <Textarea
+              value={additionalContext}
+              onChange={(e) => setAdditionalContext(e.target.value)}
+              placeholder="Add field notes, adjuster observations, timeline details, or anything else the AI should consider..."
+              className="min-h-[80px] bg-white text-sm dark:bg-slate-950"
+            />
+            <p className="mt-1 text-xs text-muted-foreground">
+              This context will be included in all three analysis types alongside your claim data.
             </p>
           </div>
 

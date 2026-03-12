@@ -1,6 +1,6 @@
 "use client";
 
-import { CloudRain, FileText, Hammer, MapPin, Package, Sparkles } from "lucide-react";
+import { CloudRain, FileText, MapPin, Package, Sparkles } from "lucide-react";
 import Link from "next/link";
 
 import { PATHS } from "@/lib/paths";
@@ -38,17 +38,6 @@ let cards: AICard[] = [
     runHref: PATHS.AI_TOOLS_MOCKUP,
     historyHref: PATHS.AI_TOOLS_MOCKUP_HISTORY,
     color: "purple",
-  },
-  {
-    id: "damage-builder",
-    title: "AI Damage Builder",
-    description:
-      "Auto-detect damage from photos with AI-powered analysis, code references, and severity ratings.",
-    icon: Hammer,
-    badge: "Included",
-    runHref: PATHS.AI_DAMAGE_BUILDER,
-    historyHref: PATHS.AI_DAMAGE_HISTORY,
-    color: "red",
   },
   {
     id: "dol",

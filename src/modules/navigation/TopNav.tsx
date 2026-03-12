@@ -82,11 +82,6 @@ export function TopNav() {
           description: "Build supplements",
         },
         { label: "Rebuttal Builder", href: "/ai/tools/rebuttal", description: "Create rebuttals" },
-        {
-          label: "Damage Report Builder",
-          href: "/ai/damage-builder",
-          description: "AI damage detection",
-        },
         { label: "Vision Labs", href: "/vision-lab", description: "AI-powered photo analysis" },
         {
           label: "Weather Analytics",

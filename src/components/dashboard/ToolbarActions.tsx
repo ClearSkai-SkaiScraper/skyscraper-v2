@@ -1,6 +1,6 @@
 "use client";
 
-import { Camera, CloudRain, FilePlus, FileText, Hammer, MapPin, Sparkles } from "lucide-react";
+import { Camera, CloudRain, FilePlus, FileText, MapPin, Sparkles } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 import { PATHS } from "@/lib/paths";
@@ -21,9 +21,6 @@ export default function ToolbarActions() {
     switch (action) {
       case "mockup":
         router.push(PATHS.AI_TOOLS_MOCKUP);
-        break;
-      case "damage-builder":
-        router.push(PATHS.AI_DAMAGE_BUILDER);
         break;
       case "dol":
         router.push(PATHS.AI_DOL);
@@ -58,13 +55,6 @@ export default function ToolbarActions() {
       icon: Sparkles,
       onClick: () => handleAIAction("mockup"),
       color: "bg-purple-600 hover:bg-purple-700",
-    },
-    {
-      id: "damage-builder",
-      label: "Damage Builder",
-      icon: Hammer,
-      onClick: () => handleAIAction("damage-builder"),
-      color: "bg-red-600 hover:bg-red-700",
     },
     {
       id: "quick-dol",

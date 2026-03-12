@@ -19,7 +19,6 @@ import {
   CreditCard,
   FileText,
   FolderOpen,
-  Hammer,
   HardHat,
   History,
   Landmark,
@@ -97,7 +96,6 @@ const navSections: NavSection[] = [
   {
     label: "Build Tools & Materials",
     items: [
-      { label: "Damage & Inspection Builder", href: "/ai/damage-builder", icon: Hammer },
       { label: "Project Plan Builder", href: "/ai/roofplan-builder", icon: Sparkles },
       { label: "Mockup Generator", href: "/ai/mockup", icon: Sparkles },
       { label: "Vision Labs", href: "/vision-lab", icon: Camera },

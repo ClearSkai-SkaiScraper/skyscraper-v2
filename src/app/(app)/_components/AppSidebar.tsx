@@ -78,7 +78,6 @@ const navSections: NavSection[] = [
   {
     label: "Build Tools & Materials",
     items: [
-      { label: "Damage & Inspection Builder", href: "/ai/damage-builder" },
       { label: "Project Plan Builder", href: "/ai/roofplan-builder" },
       { label: "Mockup Generator", href: "/ai/mockup", featureFlag: "FEATURE_MOCKUP_GENERATOR" },
       { label: "Vision Labs", href: "/vision-lab", featureFlag: "FEATURE_VISION_AI" },

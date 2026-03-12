@@ -6,7 +6,6 @@ import {
   ClipboardCheck,
   FileBarChart,
   FileCheck,
-  FileText,
   FolderOpen,
   History,
   Image,
@@ -91,13 +90,6 @@ export default async function ReportsHubPage() {
       desc: "Create polished homeowner-facing proposals with professional layouts and branding.",
       icon: PenLine,
       color: "from-emerald-500 to-emerald-600",
-    },
-    {
-      href: "/ai/damage-builder",
-      title: "Damage Report",
-      desc: "Document property damage with AI-assisted analysis and photo annotation.",
-      icon: FileText,
-      color: "from-amber-500 to-amber-600",
     },
     {
       href: "/ai/roofplan-builder",
