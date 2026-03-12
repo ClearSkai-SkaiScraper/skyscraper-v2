@@ -140,7 +140,7 @@ export default async function CompanyConnectionsPage() {
     <PageContainer maxWidth="6xl">
       <PageHero
         section="network"
-        title="Trades Connections"
+        title="Connections & Contacts"
         subtitle="Manage your network of vendors, subcontractors, contractors, and clients"
       >
         <div className="flex gap-2">

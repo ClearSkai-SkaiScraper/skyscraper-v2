@@ -275,8 +275,8 @@ export async function GET(request: NextRequest, { params }: { params: { claimId:
         propertyAddress: property
           ? `${property.street}, ${property.city}, ${property.state} ${property.zipCode}`
           : null,
-        lossDate: claim.dateOfLoss?.toISOString() || null,
-        inspectionDate: claim.inspectionDate?.toISOString?.() || null,
+        lossDate: claim.dateOfLoss?.toISOString().split("T")[0] || null,
+        inspectionDate: claim.inspectionDate?.toISOString()?.split("T")[0] || null,
         carrier: claim.carrier || null,
         policyNumber: claim.policyNumber || null,
         insured_name: claim.insured_name || null,

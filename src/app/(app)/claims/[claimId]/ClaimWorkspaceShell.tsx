@@ -1307,7 +1307,11 @@ function PhotosSection({ claimId }: { claimId: string }) {
   const [photos, setPhotos] = React.useState<any[]>([]);
   const [uploading, setUploading] = React.useState(false);
   const [dragActive, setDragActive] = React.useState(false);
-  const [selectedPhoto, setSelectedPhoto] = React.useState<string | null>(null);
+  const [selectedPhoto, setSelectedPhoto] = React.useState<{
+    url: string;
+    note: string | null;
+    filename: string | null;
+  } | null>(null);
   const [analyzingPhotoId, setAnalyzingPhotoId] = React.useState<string | null>(null);
   const [analyzingAll, setAnalyzingAll] = React.useState(false);
   const [analyzeProgress, setAnalyzeProgress] = React.useState(0);
@@ -1774,7 +1778,13 @@ function PhotosSection({ claimId }: { claimId: string }) {
                 <div
                   key={photo.id}
                   className="group relative cursor-pointer overflow-hidden rounded-lg border border-slate-200 dark:border-slate-700"
-                  onClick={() => setSelectedPhoto(photo.publicUrl)}
+                  onClick={() =>
+                    setSelectedPhoto({
+                      url: photo.publicUrl,
+                      note: photo.note || null,
+                      filename: photo.filename || null,
+                    })
+                  }
                 >
                   {/* Show damage box overlays for analyzed photos */}
                   {photo.analyzed && photo.damageBoxes && photo.damageBoxes.length > 0 ? (
@@ -1883,21 +1893,46 @@ function PhotosSection({ claimId }: { claimId: string }) {
       {/* Lightbox Viewer */}
       {selectedPhoto && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/90"
+          className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-black/90"
           onClick={() => setSelectedPhoto(null)}
         >
           <button
-            className="absolute right-4 top-4 text-white hover:text-gray-300"
+            className="absolute right-4 top-4 z-10 text-white hover:text-gray-300"
             onClick={() => setSelectedPhoto(null)}
             aria-label="Close photo preview"
           >
             <X className="h-8 w-8" />
           </button>
           <img
-            src={selectedPhoto}
-            alt="Preview"
-            className="max-h-[90vh] max-w-[90vw] object-contain"
+            src={selectedPhoto.url}
+            alt={selectedPhoto.note || "Preview"}
+            className="max-h-[80vh] max-w-[90vw] object-contain"
+            onClick={(e) => e.stopPropagation()}
+            onError={(e) => {
+              const target = e.currentTarget;
+              target.style.display = "none";
+              const fallback = document.createElement("div");
+              fallback.className =
+                "flex flex-col items-center justify-center gap-3 rounded-xl bg-slate-800/80 p-12 text-white";
+              fallback.innerHTML =
+                '<svg class="h-16 w-16 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg><p class="text-lg font-medium">Image unavailable</p><p class="text-sm text-slate-400">This photo may have expired or been removed</p>';
+              target.parentElement?.appendChild(fallback);
+            }}
           />
+          {/* Note & filename overlay */}
+          {(selectedPhoto.note || selectedPhoto.filename) && (
+            <div
+              className="mt-3 max-w-[90vw] rounded-lg bg-black/70 px-6 py-3 text-center backdrop-blur-sm"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {selectedPhoto.note && (
+                <p className="text-sm font-medium text-white">{selectedPhoto.note}</p>
+              )}
+              {selectedPhoto.filename && (
+                <p className="mt-1 text-xs text-slate-400">{selectedPhoto.filename}</p>
+              )}
+            </div>
+          )}
         </div>
       )}
 

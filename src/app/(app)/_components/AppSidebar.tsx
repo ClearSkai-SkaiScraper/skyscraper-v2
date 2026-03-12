@@ -124,7 +124,7 @@ const navSections: NavSection[] = [
     label: "Network",
     items: [
       { label: "Trades Network Hub", href: "/trades" },
-      { label: "Connections", href: "/company/connections" },
+      { label: "Connections & Contacts", href: "/company/connections" },
       { label: "Job Board", href: "/trades/jobs" },
       { label: "Vendor Intelligence", href: "/vendor-network" },
       { label: "Invitations", href: "/invitations" },

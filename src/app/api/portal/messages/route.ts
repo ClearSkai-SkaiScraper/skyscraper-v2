@@ -1,11 +1,60 @@
-import { auth, currentUser } from "@clerk/nextjs/server";
 import { logger } from "@/lib/logger";
+import { auth, currentUser } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
 
 import { getOrCreatePortalThread } from "@/lib/messages/getOrCreatePortalThread";
 import prisma from "@/lib/prisma";
 
 export const dynamic = "force-dynamic";
+
+/**
+ * Verify portal access to a claim using ALL access paths:
+ * 1. client_access (email-based)
+ * 2. ClaimClientLink (userId-based, status=ACCEPTED)
+ * 3. claims.clientId (direct attachment by pro)
+ *
+ * Returns the claim's orgId if access is granted, null otherwise.
+ */
+async function resolveClaimAccess(
+  claimId: string,
+  userId: string,
+  userEmail: string
+): Promise<string | null> {
+  // Path 1: client_access (email-based)
+  const portalAccess = await prisma.client_access.findFirst({
+    where: { claimId, email: userEmail },
+    include: { claims: { select: { orgId: true } } },
+  });
+  if (portalAccess) return portalAccess.claims.orgId;
+
+  // Path 2 & 3: need the Client record
+  const client = await prisma.client.findFirst({
+    where: { OR: [{ userId }, { email: userEmail }] },
+    select: { id: true },
+  });
+
+  if (client) {
+    // Path 2: ClaimClientLink
+    const link = await prisma.claimClientLink.findFirst({
+      where: {
+        claimId,
+        OR: [{ clientUserId: client.id }, { clientEmail: userEmail }],
+        status: "ACCEPTED",
+      },
+      include: { claims: { select: { orgId: true } } },
+    });
+    if (link) return link.claims.orgId;
+
+    // Path 3: claims.clientId
+    const claimByClientId = await prisma.claims.findFirst({
+      where: { id: claimId, clientId: client.id },
+      select: { orgId: true },
+    });
+    if (claimByClientId) return claimByClientId.orgId;
+  }
+
+  return null;
+}
 
 /**
  * GET /api/portal/messages?claimId=xxx
@@ -32,28 +81,15 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: "No email found" }, { status: 400 });
     }
 
-    // Verify portal access to this claim
-    const portalAccess = await prisma.client_access.findFirst({
-      where: {
-        claimId,
-        email: userEmail,
-      },
-      include: {
-        claims: {
-          select: {
-            orgId: true,
-          },
-        },
-      },
-    });
-
-    if (!portalAccess) {
+    // Verify portal access using all access paths
+    const claimOrgId = await resolveClaimAccess(claimId, userId, userEmail);
+    if (!claimOrgId) {
       return NextResponse.json({ error: "You do not have access to this claim" }, { status: 403 });
     }
 
     // Get or create the portal thread
     const thread = await getOrCreatePortalThread({
-      orgId: portalAccess.claims.orgId,
+      orgId: claimOrgId,
       claimId,
     });
 
@@ -90,10 +126,7 @@ export async function GET(req: NextRequest) {
     });
   } catch (error) {
     logger.error("[GET /api/portal/messages] Error:", error);
-    return NextResponse.json(
-      { error: "Failed to fetch messages" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Failed to fetch messages" }, { status: 500 });
   }
 }
 
@@ -126,28 +159,15 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "No email found" }, { status: 400 });
     }
 
-    // Verify portal access to this claim
-    const portalAccess = await prisma.client_access.findFirst({
-      where: {
-        claimId,
-        email: userEmail,
-      },
-      include: {
-        claims: {
-          select: {
-            orgId: true,
-          },
-        },
-      },
-    });
-
-    if (!portalAccess) {
+    // Verify portal access using all access paths
+    const claimOrgId = await resolveClaimAccess(claimId, userId, userEmail);
+    if (!claimOrgId) {
       return NextResponse.json({ error: "You do not have access to this claim" }, { status: 403 });
     }
 
     // Get or create the portal thread
     const thread = await getOrCreatePortalThread({
-      orgId: portalAccess.claims.orgId,
+      orgId: claimOrgId,
       claimId,
     });
 

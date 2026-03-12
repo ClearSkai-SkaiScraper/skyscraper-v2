@@ -63,12 +63,18 @@ export const PATCH = withAuth(
         }
       }
 
-      // Handle date fields specially
+      // Handle date fields specially — use noon UTC to prevent timezone off-by-one
       if (body.dateOfLoss !== undefined) {
-        updateData.dateOfLoss = body.dateOfLoss ? new Date(body.dateOfLoss) : null;
+        updateData.dateOfLoss = body.dateOfLoss
+          ? new Date(body.dateOfLoss + (body.dateOfLoss.includes("T") ? "" : "T12:00:00Z"))
+          : null;
       }
       if (body.dateOfInspection !== undefined) {
-        updateData.inspectionDate = body.dateOfInspection ? new Date(body.dateOfInspection) : null;
+        updateData.inspectionDate = body.dateOfInspection
+          ? new Date(
+              body.dateOfInspection + (body.dateOfInspection.includes("T") ? "" : "T12:00:00Z")
+            )
+          : null;
       }
 
       // Auto-set signing status audit trail
@@ -90,6 +96,64 @@ export const PATCH = withAuth(
 
       // Track if we made any changes at all (including property address)
       const hasPropertyAddressUpdate = body.propertyAddress !== undefined;
+
+      // ── Auto-save adjuster as a reusable contact (adjuster recall) ──
+      const hasAdjusterUpdate = body.adjusterName || body.adjusterPhone || body.adjusterEmail;
+      if (hasAdjusterUpdate) {
+        const adjName = body.adjusterName || updateData.adjusterName;
+        const adjEmail = body.adjusterEmail || updateData.adjusterEmail;
+        const adjPhone = body.adjusterPhone || updateData.adjusterPhone;
+        const carrier = body.carrier || updateData.carrier;
+
+        if (adjName && (adjEmail || adjPhone)) {
+          try {
+            // Upsert by email (if provided) or name within this org
+            const existing = adjEmail
+              ? await prisma.contacts.findFirst({
+                  where: { orgId, email: adjEmail, tags: { has: "adjuster" } },
+                })
+              : await prisma.contacts.findFirst({
+                  where: {
+                    orgId,
+                    firstName: adjName.split(" ")[0],
+                    lastName: adjName.split(" ").slice(1).join(" ") || "",
+                    tags: { has: "adjuster" },
+                  },
+                });
+
+            if (!existing) {
+              const { createId } = await import("@paralleldrive/cuid2");
+              await prisma.contacts.create({
+                data: {
+                  id: createId(),
+                  orgId,
+                  firstName: adjName.split(" ")[0] || adjName,
+                  lastName: adjName.split(" ").slice(1).join(" ") || "",
+                  email: adjEmail || null,
+                  phone: adjPhone || null,
+                  company: carrier || null,
+                  title: "Insurance Adjuster",
+                  tags: ["adjuster"],
+                  source: "claim_adjuster",
+                  updatedAt: new Date(),
+                },
+              });
+            } else {
+              // Update existing adjuster contact with latest info
+              await prisma.contacts.update({
+                where: { id: existing.id },
+                data: {
+                  phone: adjPhone || existing.phone,
+                  company: carrier || existing.company,
+                },
+              });
+            }
+          } catch (adjErr) {
+            // Non-blocking — don't fail the claim update if contact save fails
+            logger.warn("[CLAIM_UPDATE] Adjuster contact upsert failed:", adjErr);
+          }
+        }
+      }
 
       // Update the claim record if we have claim-level changes
       let updated;

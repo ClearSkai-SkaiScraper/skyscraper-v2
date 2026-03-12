@@ -108,6 +108,13 @@ async function verifyClaimAccess(
       },
     });
     if (link) return true;
+
+    // Path 3: claims.clientId match (from pro attach-contact)
+    const claimByClientId = await prisma.claims.findFirst({
+      where: { id: claimId, clientId: client.id },
+      select: { id: true },
+    });
+    if (claimByClientId) return true;
   }
 
   return false;

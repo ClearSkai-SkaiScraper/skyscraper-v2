@@ -1,4 +1,4 @@
-import { auth } from "@clerk/nextjs/server";
+import { auth, currentUser } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
 
 import { logger } from "@/lib/logger";
@@ -9,6 +9,49 @@ export const dynamic = "force-dynamic";
 type RouteContext = {
   params: Promise<{ claimId: string }>;
 };
+
+/**
+ * Verify claim access via all paths.
+ * Returns { claimId, orgId } if access is granted, null otherwise.
+ */
+async function verifyClaimAccess(
+  claimId: string,
+  userId: string,
+  userEmail: string | null
+): Promise<{ claimId: string; orgId: string } | null> {
+  if (userEmail) {
+    const access = await prisma.client_access.findFirst({
+      where: { claimId, email: userEmail },
+      include: { claims: { select: { orgId: true } } },
+    });
+    if (access) return { claimId, orgId: access.claims.orgId };
+  }
+
+  const client = await prisma.client.findFirst({
+    where: { OR: [{ userId }, ...(userEmail ? [{ email: userEmail }] : [])] },
+    select: { id: true },
+  });
+
+  if (client) {
+    const link = await prisma.claimClientLink.findFirst({
+      where: {
+        claimId,
+        OR: [{ clientUserId: client.id }, ...(userEmail ? [{ clientEmail: userEmail }] : [])],
+        status: "ACCEPTED",
+      },
+      include: { claims: { select: { orgId: true } } },
+    });
+    if (link) return { claimId, orgId: link.claims.orgId };
+
+    const claimByClientId = await prisma.claims.findFirst({
+      where: { id: claimId, clientId: client.id },
+      select: { id: true, orgId: true },
+    });
+    if (claimByClientId) return { claimId: claimByClientId.id, orgId: claimByClientId.orgId };
+  }
+
+  return null;
+}
 
 /**
  * GET /api/portal/claims/[claimId]/documents
@@ -22,26 +65,11 @@ export async function GET(req: NextRequest, context: RouteContext) {
     }
 
     const { claimId } = await context.params;
+    const user = await currentUser();
+    const userEmail = user?.emailAddresses?.[0]?.emailAddress || null;
 
-    // Verify client owns this claim
-    const client = await prisma.client.findFirst({
-      where: { userId },
-      select: { id: true },
-    });
-
-    if (!client) {
-      return NextResponse.json({ error: "Client not found" }, { status: 404 });
-    }
-
-    const claim = await prisma.claims.findFirst({
-      where: {
-        id: claimId,
-        clientId: client.id,
-      },
-      select: { id: true },
-    });
-
-    if (!claim) {
+    const access = await verifyClaimAccess(claimId, userId, userEmail);
+    if (!access) {
       return NextResponse.json({ error: "Claim not found" }, { status: 404 });
     }
 
@@ -96,26 +124,11 @@ export async function POST(req: NextRequest, context: RouteContext) {
     }
 
     const { claimId } = await context.params;
+    const user = await currentUser();
+    const userEmail = user?.emailAddresses?.[0]?.emailAddress || null;
 
-    // Verify client owns this claim
-    const client = await prisma.client.findFirst({
-      where: { userId },
-      select: { id: true },
-    });
-
-    if (!client) {
-      return NextResponse.json({ error: "Client not found" }, { status: 404 });
-    }
-
-    const claim = await prisma.claims.findFirst({
-      where: {
-        id: claimId,
-        clientId: client.id,
-      },
-      select: { id: true, orgId: true },
-    });
-
-    if (!claim) {
+    const access = await verifyClaimAccess(claimId, userId, userEmail);
+    if (!access) {
       return NextResponse.json({ error: "Claim not found" }, { status: 404 });
     }
 
@@ -131,7 +144,7 @@ export async function POST(req: NextRequest, context: RouteContext) {
       data: {
         id: crypto.randomUUID(),
         claimId,
-        orgId: claim.orgId,
+        orgId: access.orgId,
         ownerId: userId,
         filename: filename || "document",
         publicUrl: url,

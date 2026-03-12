@@ -32,9 +32,9 @@ export async function GET(req: NextRequest) {
 
     // If fetching a specific pro by ID
     if (proId) {
-      // First try to find as TradesCompanyMember
-      let pro = await prisma.tradesCompanyMember.findUnique({
-        where: { id: proId },
+      // First try to find as TradesCompanyMember (must be active & onboarding complete)
+      let pro = await prisma.tradesCompanyMember.findFirst({
+        where: { id: proId, isActive: true, onboardingStep: "complete" },
         select: {
           id: true,
           userId: true,
@@ -525,6 +525,86 @@ export async function GET(req: NextRequest) {
         }, new Map<string, { pro: (typeof formattedPros)[number]; score: number }>())
         .values()
     ).map((entry) => entry.pro);
+
+    // ── Fallback: also include tradesCompany records not already represented ──
+    // This catches companies whose members haven't completed onboarding yet
+    // (e.g., the pro admin created a company but skipped the trades onboarding wizard)
+    try {
+      const existingCompanyIds = new Set(dedupedPros.map((p) => p.companyId).filter(Boolean));
+
+      const companyWhere: Record<string, unknown> = { isActive: true };
+      if (search) {
+        companyWhere.OR = [
+          { name: { contains: search, mode: "insensitive" } },
+          { city: { contains: search, mode: "insensitive" } },
+          { description: { contains: search, mode: "insensitive" } },
+        ];
+      }
+
+      const fallbackCompanies = await prisma.tradesCompany.findMany({
+        where: companyWhere,
+        take: 10,
+        orderBy: [{ rating: "desc" }, { reviewCount: "desc" }],
+        select: {
+          id: true,
+          name: true,
+          slug: true,
+          city: true,
+          state: true,
+          phone: true,
+          email: true,
+          website: true,
+          description: true,
+          logo: true,
+          coverimage: true,
+          specialties: true,
+          licenseNumber: true,
+          rating: true,
+          reviewCount: true,
+          isVerified: true,
+        },
+      });
+
+      for (const company of fallbackCompanies) {
+        if (!existingCompanyIds.has(company.id)) {
+          dedupedPros.push({
+            id: company.id,
+            companyId: company.id,
+            slug: company.slug,
+            name: company.name || "Pro",
+            companyName: company.name,
+            tradeType: (company.specialties as string[])?.[0] || "General Contractor",
+            title: null,
+            avatar: company.logo,
+            coverPhoto: company.coverimage,
+            tagline: null,
+            bio: company.description,
+            city: company.city,
+            state: company.state,
+            phone: company.phone,
+            website: company.website,
+            yearsExperience: null,
+            foundedYear: null,
+            teamSize: null,
+            isVerified: company.isVerified || !!company.licenseNumber,
+            isLicensed: !!company.licenseNumber,
+            isBonded: false,
+            isInsured: false,
+            rocNumber: company.licenseNumber,
+            emergencyAvailable: false,
+            freeEstimates: true,
+            portfolioImages: [],
+            certifications: [],
+            specialties: (company.specialties as string[]) || [],
+            rating: company.rating ? parseFloat(company.rating.toString()) : 5.0,
+            reviewCount: company.reviewCount || 0,
+            engagementScore: 0,
+          });
+        }
+      }
+    } catch (companyErr) {
+      logger.warn("[find-pro] Fallback company search failed:", companyErr);
+    }
 
     return NextResponse.json({
       pros: dedupedPros,

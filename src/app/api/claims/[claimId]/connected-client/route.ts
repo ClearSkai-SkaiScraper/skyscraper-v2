@@ -26,7 +26,65 @@ export const GET = withAuth(
 
       const clientId = (claim as any).clientId;
 
+      // ── Try 0: Check ClaimClientLink first (invite-based connections never set clientId) ──
       if (!clientId) {
+        const link = await prisma.claimClientLink.findFirst({
+          where: { claimId, status: "CONNECTED" },
+          select: {
+            clientEmail: true,
+            clientName: true,
+            clientUserId: true,
+          },
+        });
+
+        if (link) {
+          // If we have a userId from the link, look up the Client record
+          if (link.clientUserId) {
+            const linkedClient = await prisma.client.findFirst({
+              where: { userId: link.clientUserId },
+              select: {
+                id: true,
+                name: true,
+                firstName: true,
+                lastName: true,
+                email: true,
+                phone: true,
+              },
+            });
+
+            if (linkedClient) {
+              return NextResponse.json({
+                client: {
+                  id: linkedClient.id,
+                  firstName: linkedClient.firstName,
+                  lastName: linkedClient.lastName,
+                  name:
+                    linkedClient.name ||
+                    `${linkedClient.firstName || ""} ${linkedClient.lastName || ""}`.trim() ||
+                    linkedClient.email ||
+                    "Unknown",
+                  email: linkedClient.email,
+                  phone: linkedClient.phone,
+                },
+                source: "claim-link",
+              });
+            }
+          }
+
+          // Fall back to just the link info
+          return NextResponse.json({
+            client: {
+              id: link.clientUserId || "link",
+              firstName: link.clientName?.split(" ")[0] || null,
+              lastName: link.clientName?.split(" ").slice(1).join(" ") || null,
+              name: link.clientName || link.clientEmail,
+              email: link.clientEmail,
+              phone: null,
+            },
+            source: "claim-link",
+          });
+        }
+
         return NextResponse.json({ client: null, source: "none" });
       }
 
@@ -92,65 +150,7 @@ export const GET = withAuth(
         });
       }
 
-      // ── Try 3: Check ClaimClientLink (invite-based connections) ──
-      const link = await prisma.claimClientLink.findFirst({
-        where: { claimId, status: "CONNECTED" },
-        select: {
-          clientEmail: true,
-          clientName: true,
-          clientUserId: true,
-        },
-      });
-
-      if (link) {
-        // If we have a userId from the link, look up the Client record
-        if (link.clientUserId) {
-          const linkedClient = await prisma.client.findFirst({
-            where: { userId: link.clientUserId },
-            select: {
-              id: true,
-              name: true,
-              firstName: true,
-              lastName: true,
-              email: true,
-              phone: true,
-            },
-          });
-
-          if (linkedClient) {
-            return NextResponse.json({
-              client: {
-                id: linkedClient.id,
-                firstName: linkedClient.firstName,
-                lastName: linkedClient.lastName,
-                name:
-                  linkedClient.name ||
-                  `${linkedClient.firstName || ""} ${linkedClient.lastName || ""}`.trim() ||
-                  linkedClient.email ||
-                  "Unknown",
-                email: linkedClient.email,
-                phone: linkedClient.phone,
-              },
-              source: "claim-link",
-            });
-          }
-        }
-
-        // Fall back to just the link info
-        return NextResponse.json({
-          client: {
-            id: link.clientUserId || "link",
-            firstName: link.clientName?.split(" ")[0] || null,
-            lastName: link.clientName?.split(" ").slice(1).join(" ") || null,
-            name: link.clientName || link.clientEmail,
-            email: link.clientEmail,
-            phone: null,
-          },
-          source: "claim-link",
-        });
-      }
-
-      // Nothing found
+      // Nothing found (ClaimClientLink already checked in Try 0 above)
       return NextResponse.json({ client: null, source: "none" });
     } catch (error) {
       if (error instanceof OrgScopeError) {

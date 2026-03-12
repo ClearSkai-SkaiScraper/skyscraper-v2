@@ -187,9 +187,20 @@ export default async function ClientPortalPage() {
   try {
     const userEmail = user.emailAddresses?.[0]?.emailAddress;
     if (userEmail) {
+      // Build OR conditions for all access paths
+      const orConditions: any[] = [{ homeownerEmail: userEmail }];
+
+      // Also check clientId using the Client record (not just identity.clientProfileId)
+      if (client && "id" in client) {
+        orConditions.push({ clientId: (client as { id: string }).id });
+      }
+      if (identity?.clientProfileId) {
+        orConditions.push({ clientId: identity.clientProfileId });
+      }
+
       activeClaims = await prisma.claims.findMany({
         where: {
-          OR: [{ homeownerEmail: userEmail }, { clientId: identity?.clientProfileId || undefined }],
+          OR: orConditions,
         },
         orderBy: { updatedAt: "desc" },
         take: 5,

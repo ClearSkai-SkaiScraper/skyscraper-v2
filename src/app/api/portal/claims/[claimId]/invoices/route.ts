@@ -104,7 +104,7 @@ async function verifyClaimAccess(
     if (access) return true;
   }
 
-  // Check ClaimClientLink (userId-based)
+  // Check ClaimClientLink (userId-based) AND claims.clientId
   const client = await prisma.client.findFirst({
     where: { OR: [{ userId }, ...(email ? [{ email }] : [])] },
     select: { id: true },
@@ -119,6 +119,13 @@ async function verifyClaimAccess(
       },
     });
     if (link) return true;
+
+    // Path 3: claims.clientId match (from pro attach-contact)
+    const claimByClientId = await prisma.claims.findFirst({
+      where: { id: claimId, clientId: client.id },
+      select: { id: true },
+    });
+    if (claimByClientId) return true;
   }
 
   return false;

@@ -130,6 +130,33 @@ export const POST = withAuth(
         data: { clientId: contactInfo.id },
       });
 
+      // CRITICAL: Also create a client_access record so the client portal can
+      // verify access to this claim. Without this, the portal claims list,
+      // claim detail, messaging, invoices, and signatures all fail with 403.
+      if (contactInfo.email) {
+        try {
+          const existingAccess = await prisma.client_access.findFirst({
+            where: { claimId, email: contactInfo.email },
+          });
+          if (!existingAccess) {
+            await prisma.client_access.create({
+              data: {
+                id: crypto.randomUUID(),
+                claimId,
+                email: contactInfo.email,
+              },
+            });
+            logger.info("[attach-contact] Created client_access for portal", {
+              claimId,
+              email: contactInfo.email,
+            });
+          }
+        } catch (accessErr) {
+          // Non-critical — portal access may not work but claim attachment succeeded
+          logger.warn("[attach-contact] Failed to create client_access:", accessErr);
+        }
+      }
+
       return NextResponse.json({
         success: true,
         message: "Contact attached to claim",

@@ -79,6 +79,10 @@ function visitorId(userId: string): string {
 /**
  * Assert that a user has portal access to a claim
  * Throws 403 if access denied
+ * Checks THREE access paths:
+ *   1. client_access (email-based, legacy)
+ *   2. ClaimClientLink (userId-based, from pro invites)
+ *   3. claims.clientId (direct attachment by pro)
  * Also verifies org membership to prevent cross-tenant access
  */
 export async function assertPortalAccess({
@@ -88,23 +92,59 @@ export async function assertPortalAccess({
   userId: string;
   claimId: string;
 }): Promise<any> {
+  // Path 1: client_access by email
   const access = await getClaimAccessForUser({ userId, claimId });
 
-  if (!access) {
-    throw new Error("Access denied: No active portal access to this claim");
+  if (access) {
+    // Verify the claim exists and get its orgId for tenant isolation
+    const claim = await prisma.claims.findUnique({
+      where: { id: claimId },
+      select: { orgId: true },
+    });
+
+    if (!claim) {
+      throw new Error("Access denied: Claim not found");
+    }
+
+    return { ...access, orgId: claim.orgId };
   }
 
-  // Verify the claim exists and get its orgId for tenant isolation
-  const claim = await prisma.claims.findUnique({
-    where: { id: claimId },
-    select: { orgId: true },
+  // Path 2: ClaimClientLink by userId or email
+  const client = await prisma.client.findFirst({
+    where: { userId },
+    select: { id: true, email: true },
   });
 
-  if (!claim) {
-    throw new Error("Access denied: Claim not found");
+  if (client) {
+    const link = await prisma.claimClientLink.findFirst({
+      where: {
+        claimId,
+        OR: [{ clientUserId: client.id }, ...(client.email ? [{ clientEmail: client.email }] : [])],
+        status: "ACCEPTED",
+      },
+    });
+
+    if (link) {
+      const claim = await prisma.claims.findUnique({
+        where: { id: claimId },
+        select: { orgId: true },
+      });
+      if (!claim) throw new Error("Access denied: Claim not found");
+      return { claimId, email: client.email, orgId: claim.orgId };
+    }
+
+    // Path 3: claims.clientId matches this client's ID
+    const claimByClientId = await prisma.claims.findFirst({
+      where: { id: claimId, clientId: client.id },
+      select: { orgId: true },
+    });
+
+    if (claimByClientId) {
+      return { claimId, email: client.email, orgId: claimByClientId.orgId };
+    }
   }
 
-  return { ...access, orgId: claim.orgId };
+  throw new Error("Access denied: No active portal access to this claim");
 }
 
 /**

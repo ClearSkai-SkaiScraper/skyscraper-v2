@@ -27,9 +27,10 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ ok: true, claims: [] });
     }
 
-    // Find all claim accesses for this user via BOTH access systems
+    // Find all claim accesses for this user via ALL access systems
     let accesses: any[] = [];
     let linkedClaims: any[] = [];
+    let directClaimsList: any[] = [];
     try {
       // System 1: email-based client_access
       accesses = await prisma.client_access.findMany({
@@ -91,6 +92,34 @@ export async function GET(req: NextRequest) {
             invitedAt: "desc",
           },
         });
+
+        // System 3: Direct claims.clientId match (from pro attach-contact)
+        // This matches the portal dashboard query to ensure consistency
+        const directClaims = await prisma.claims.findMany({
+          where: { clientId: client.id },
+          select: {
+            id: true,
+            claimNumber: true,
+            title: true,
+            status: true,
+            updatedAt: true,
+            properties: {
+              select: {
+                street: true,
+                city: true,
+                state: true,
+              },
+            },
+          },
+          orderBy: { updatedAt: "desc" },
+        });
+
+        // Add direct claims to the map (these are the ones from attach-contact)
+        for (const claim of directClaims) {
+          if (!directClaimsList.some((c: any) => c.id === claim.id)) {
+            directClaimsList.push(claim);
+          }
+        }
       }
     } catch (dbError) {
       logger.error("[GET /api/portal/claims] DB Error:", dbError);
@@ -102,7 +131,7 @@ export async function GET(req: NextRequest) {
       });
     }
 
-    // Format and merge claims from both access systems (deduplicate by id)
+    // Format and merge claims from all access systems (deduplicate by id)
     const claimMap = new Map<string, any>();
 
     // Add claims from client_access (email-based)
@@ -135,6 +164,23 @@ export async function GET(req: NextRequest) {
             : null,
           role: "homeowner",
           accessGrantedAt: link.acceptedAt || link.invitedAt,
+        });
+      }
+    }
+
+    // Add claims from direct clientId attachment (System 3)
+    for (const claim of directClaimsList) {
+      if (!claimMap.has(claim.id)) {
+        claimMap.set(claim.id, {
+          id: claim.id,
+          claimNumber: claim.claimNumber,
+          title: claim.title,
+          status: claim.status || null,
+          address: claim.properties
+            ? `${claim.properties.street}, ${claim.properties.city}, ${claim.properties.state}`
+            : null,
+          role: "homeowner",
+          accessGrantedAt: claim.updatedAt,
         });
       }
     }

@@ -23,21 +23,31 @@ export const GET = withOrgScope(async (req, { orgId, userId }) => {
 
     const searchParams = new URL(req.url).searchParams;
     const query = searchParams.get("q") || "";
+    const tag = searchParams.get("tag") || "";
 
-    if (!query.trim()) {
+    if (!query.trim() && !tag) {
       return NextResponse.json({ contacts: [] });
     }
 
+    const where: any = { orgId };
+
+    // Filter by tag (e.g. "adjuster")
+    if (tag) {
+      where.tags = { has: tag };
+    }
+
+    // Search by name/email/phone
+    if (query.trim()) {
+      where.OR = [
+        { firstName: { contains: query, mode: "insensitive" } },
+        { lastName: { contains: query, mode: "insensitive" } },
+        { email: { contains: query, mode: "insensitive" } },
+        { phone: { contains: query } },
+      ];
+    }
+
     const contacts = await prisma.contacts.findMany({
-      where: {
-        orgId: orgId,
-        OR: [
-          { firstName: { contains: query, mode: "insensitive" } },
-          { lastName: { contains: query, mode: "insensitive" } },
-          { email: { contains: query, mode: "insensitive" } },
-          { phone: { contains: query } },
-        ],
-      },
+      where,
       select: {
         id: true,
         firstName: true,
@@ -59,9 +69,6 @@ export const GET = withOrgScope(async (req, { orgId, userId }) => {
     });
   } catch (error) {
     logger.error("[GET /api/contacts/search] Error:", error);
-    return NextResponse.json(
-      { error: "Failed to search contacts" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Failed to search contacts" }, { status: 500 });
   }
 });

@@ -21,6 +21,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 
+import { AdjusterCombobox } from "@/components/claims/AdjusterCombobox";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -55,32 +56,44 @@ export function ClaimsSidebar({ claimId, claim, onFieldUpdate }: ClaimsSidebarPr
 
   // Connected client for sidebar display
   const [connectedClient, setConnectedClient] = useState<{
+    id: string | null;
     name: string;
     email: string | null;
     phone: string | null;
+    source: string | null;
   } | null>(null);
 
   // Fetch connected client info
-  useEffect(() => {
-    const fetchClient = async () => {
-      try {
-        const res = await fetch(`/api/claims/${claimId}/connected-client`);
-        if (res.ok) {
-          const data = await res.json();
-          if (data.client) {
-            setConnectedClient({
-              name: data.client.name || "Unknown",
-              email: data.client.email,
-              phone: data.client.phone,
-            });
-          }
+  const fetchClient = useCallback(async () => {
+    try {
+      const res = await fetch(`/api/claims/${claimId}/connected-client`);
+      if (res.ok) {
+        const data = await res.json();
+        if (data.client) {
+          setConnectedClient({
+            id: data.client.id || null,
+            name: data.client.name || "Unknown",
+            email: data.client.email,
+            phone: data.client.phone,
+            source: data.source || null,
+          });
         }
-      } catch (err) {
-        logger.error("[ClaimsSidebar] Failed to fetch connected client:", err);
       }
-    };
-    fetchClient();
+    } catch (err) {
+      logger.error("[ClaimsSidebar] Failed to fetch connected client:", err);
+    }
   }, [claimId]);
+
+  useEffect(() => {
+    fetchClient();
+  }, [fetchClient]);
+
+  // Re-fetch client when the page regains focus (e.g. after connecting a client)
+  useEffect(() => {
+    const onFocus = () => fetchClient();
+    window.addEventListener("focus", onFocus);
+    return () => window.removeEventListener("focus", onFocus);
+  }, [fetchClient]);
 
   const formatCurrency = (val: number | null | undefined) =>
     val
@@ -89,6 +102,16 @@ export function ClaimsSidebar({ claimId, claim, onFieldUpdate }: ClaimsSidebarPr
 
   const formatDate = (date: string | null | undefined) => {
     if (!date) return "Not set";
+    // If date is YYYY-MM-DD, parse parts directly to avoid timezone shift
+    const dateOnly = date.split("T")[0];
+    const [y, m, d] = dateOnly.split("-").map(Number);
+    if (y && m && d) {
+      return new Date(y, m - 1, d).toLocaleDateString("en-US", {
+        month: "short",
+        day: "numeric",
+        year: "numeric",
+      });
+    }
     return new Date(date).toLocaleDateString("en-US", {
       month: "short",
       day: "numeric",
@@ -244,6 +267,32 @@ export function ClaimsSidebar({ claimId, claim, onFieldUpdate }: ClaimsSidebarPr
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-2 pt-4">
+          <AdjusterCombobox
+            currentName={claim.adjusterName || null}
+            currentEmail={claim.adjusterEmail || null}
+            currentPhone={claim.adjusterPhone || null}
+            onSelect={(adj) => {
+              // Use the update API to set all three adjuster fields at once
+              fetch(`/api/claims/${claimId}/update`, {
+                method: "PATCH",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  adjusterName: adj.name,
+                  adjusterPhone: adj.phone,
+                  adjusterEmail: adj.email,
+                }),
+              })
+                .then((res) => {
+                  if (!res.ok) throw new Error("Failed");
+                  toast.success("Adjuster recalled");
+                  onFieldUpdate?.("adjusterName", adj.name);
+                  onFieldUpdate?.("adjusterPhone", adj.phone);
+                  onFieldUpdate?.("adjusterEmail", adj.email);
+                  router.refresh();
+                })
+                .catch(() => toast.error("Failed to set adjuster"));
+            }}
+          />
           <EditableField field="adjusterName" label="Name" value={claim.adjusterName} icon={User} />
           <EditableField
             field="adjusterPhone"
@@ -273,7 +322,16 @@ export function ClaimsSidebar({ claimId, claim, onFieldUpdate }: ClaimsSidebarPr
             <>
               <div className="flex items-center gap-2 text-sm">
                 <User className="h-4 w-4 shrink-0 text-emerald-600" />
-                <span className="font-medium">{connectedClient.name}</span>
+                {connectedClient.id && connectedClient.source === "contacts" ? (
+                  <Link
+                    href={`/contacts/${connectedClient.id}`}
+                    className="font-medium text-blue-600 hover:underline dark:text-blue-400"
+                  >
+                    {connectedClient.name}
+                  </Link>
+                ) : (
+                  <span className="font-medium">{connectedClient.name}</span>
+                )}
               </div>
               {connectedClient.email && (
                 <div className="flex items-center gap-2 text-sm">
