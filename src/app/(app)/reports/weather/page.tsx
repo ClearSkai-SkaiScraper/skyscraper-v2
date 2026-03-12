@@ -8,8 +8,8 @@ import { toast } from "sonner";
 import { PageContainer } from "@/components/layout/PageContainer";
 import { PageHero } from "@/components/layout/PageHero";
 import { PageSectionCard } from "@/components/layout/PageSectionCard";
+import { SmartTemplateSelector } from "@/components/reports/SmartTemplateSelector";
 import { ClaimJobSelect, type ClaimJobSelection } from "@/components/selectors/ClaimJobSelect";
-import { PdfTemplateSelect } from "@/components/selectors/PdfTemplateSelect";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -195,11 +195,17 @@ export default function WeatherReportsPage() {
 
                   <div className="space-y-2">
                     <Label>PDF Template *</Label>
-                    <PdfTemplateSelect
-                      value={templateId}
-                      onValueChange={setTemplateId}
-                      reportType="weather"
-                      placeholder="Select weather template"
+                    <SmartTemplateSelector
+                      onSelect={(id) => setTemplateId(id)}
+                      selectedId={templateId}
+                      defaultStyle="Insurance"
+                      context={{
+                        intent: "claim_support",
+                        damageType:
+                          peril === "unspecified" || peril === "other" ? undefined : (peril as any),
+                      }}
+                      compact
+                      label="Weather Report Template"
                     />
                     <p className="text-xs text-muted-foreground">Required before generation.</p>
                   </div>

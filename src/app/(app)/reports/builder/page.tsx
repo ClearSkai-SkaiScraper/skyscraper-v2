@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import { PageContainer } from "@/components/layout/PageContainer";
 import { PageHero } from "@/components/layout/PageHero";
 import { PageSectionCard } from "@/components/layout/PageSectionCard";
+import { SmartTemplateSelector } from "@/components/reports/SmartTemplateSelector";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -85,6 +86,7 @@ export default function RetailProposalBuilderPage() {
   const [state, setState] = useState<ProposalState>(INITIAL_STATE);
   const [step, setStep] = useState(1); // 1-6
   const [generatingPDF, setGeneratingPDF] = useState(false);
+  const [selectedTemplateId, setSelectedTemplateId] = useState<string>("");
 
   // Auto-save to localStorage
   useEffect(() => {
@@ -117,18 +119,24 @@ export default function RetailProposalBuilderPage() {
   const handleGenerateProposal = async () => {
     setGeneratingPDF(true);
     try {
-      // Fetch proposal template
-      const templatesRes = await fetch("/api/templates/list?type=proposal");
-      const templates = await templatesRes.json();
-      const template = templates[0]; // Use first proposal template
+      // Use the AI-recommended template, or fall back to first proposal template
+      let templateId = selectedTemplateId;
 
-      if (!template) {
-        alert("No proposal templates found. Please add one from the marketplace.");
-        return;
+      if (!templateId) {
+        const templatesRes = await fetch("/api/templates/list?type=proposal");
+        const templates = await templatesRes.json();
+        const template = templates[0];
+        if (!template) {
+          alert(
+            "No proposal templates found. Please select a template or add one from the marketplace."
+          );
+          return;
+        }
+        templateId = template.id;
       }
 
       // Generate PDF with merged branding
-      const res = await fetch(`/api/templates/${template.id}/generate-pdf`, {
+      const res = await fetch(`/api/templates/${templateId}/generate-pdf`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ proposalData: state }),
@@ -634,6 +642,23 @@ export default function RetailProposalBuilderPage() {
             <h2 className="text-2xl font-bold text-slate-900 dark:text-white">
               Generate Professional Proposal
             </h2>
+
+            {/* AI Template Selection */}
+            <div className="rounded-lg border border-slate-200 p-4 dark:border-slate-700">
+              <SmartTemplateSelector
+                onSelect={(id) => setSelectedTemplateId(id)}
+                selectedId={selectedTemplateId}
+                defaultStyle="Retail"
+                context={
+                  {
+                    intent: "homeowner_estimate",
+                  } as any
+                }
+                compact
+                label="Proposal Template"
+              />
+            </div>
+
             <div className="rounded-lg border border-slate-200 bg-slate-50 p-6 dark:border-slate-700 dark:bg-slate-800">
               <h3 className="mb-4 font-semibold text-slate-900 dark:text-white">
                 Proposal Summary

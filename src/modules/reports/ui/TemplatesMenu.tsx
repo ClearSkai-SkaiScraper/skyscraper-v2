@@ -1,13 +1,14 @@
 "use client";
 
 // ============================================================================
-// TEMPLATES MENU - Phase 3
+// TEMPLATES MENU - Phase 3 + SmartTemplateSelector Integration
 // ============================================================================
-// Preset templates for Roofing, Mitigation, Full Restoration
+// Preset templates for Roofing, Mitigation, Full Restoration + AI recommendations
 
-import { BookOpen, Check } from "lucide-react";
+import { BookOpen, Check, Sparkles } from "lucide-react";
 import { useState } from "react";
 
+import { SmartTemplateSelector } from "@/components/reports/SmartTemplateSelector";
 import TemplateLibrary from "@/modules/templates/ui/TemplateLibrary";
 
 import type { SectionKey } from "../types";
@@ -97,6 +98,7 @@ export default function TemplatesMenu({
   currentSections = [],
 }: TemplatesMenuProps) {
   const [showLibrary, setShowLibrary] = useState(false);
+  const [showAI, setShowAI] = useState(false);
 
   const handleSelect = (template: Template) => {
     onSelectTemplate(template.sections);
@@ -108,11 +110,42 @@ export default function TemplatesMenu({
       <div className="mx-4 max-h-[80vh] w-full max-w-2xl overflow-auto rounded-lg bg-white shadow-xl">
         {/* Header */}
         <div className="border-b border-gray-200 px-6 py-4">
-          <h3 className="text-lg font-semibold text-gray-900">Choose Template</h3>
-          <p className="mt-1 text-sm text-gray-600">
-            Select a preset to quickly configure your report sections
-          </p>
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="text-lg font-semibold text-gray-900">Choose Template</h3>
+              <p className="mt-1 text-sm text-gray-600">
+                Select a preset to quickly configure your report sections
+              </p>
+            </div>
+            <button
+              onClick={() => setShowAI(!showAI)}
+              className={`flex items-center gap-2 rounded-lg px-3 py-1.5 text-sm font-medium transition-colors ${
+                showAI
+                  ? "bg-amber-100 text-amber-700"
+                  : "bg-gray-100 text-gray-600 hover:bg-amber-50 hover:text-amber-600"
+              }`}
+            >
+              <Sparkles className="h-4 w-4" />
+              AI Pick
+            </button>
+          </div>
         </div>
+
+        {/* AI Template Recommendation */}
+        {showAI && (
+          <div className="border-b border-gray-200 bg-amber-50/50 px-6 py-4">
+            <SmartTemplateSelector
+              onSelect={(id, slug) => {
+                // The SmartTemplateSelector picks full templates, not section presets.
+                // Close the AI panel and keep the modal open for the user to select a preset.
+                setShowAI(false);
+              }}
+              defaultStyle="Insurance"
+              compact
+              label="AI Recommended Templates"
+            />
+          </div>
+        )}
 
         {/* Templates Grid */}
         <div className="grid grid-cols-1 gap-4 p-6 md:grid-cols-2">

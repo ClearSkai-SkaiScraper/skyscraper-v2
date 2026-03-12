@@ -34,6 +34,7 @@ import { AIControlPanel } from "@/components/claims/AIControlPanel";
 import { QuickAIActions } from "@/components/claims/QuickAIActions";
 import { ArchiveJobButton } from "@/components/jobs/ArchiveJobButton";
 import { TransferJobDropdown } from "@/components/jobs/TransferJobDropdown";
+import { SmartTemplateSelector } from "@/components/reports/SmartTemplateSelector";
 import { Button } from "@/components/ui/button";
 import { logger } from "@/lib/logger";
 
@@ -1357,6 +1358,8 @@ function PhotosSection({ claimId }: { claimId: string }) {
   const [analyzingAll, setAnalyzingAll] = React.useState(false);
   const [analyzeProgress, setAnalyzeProgress] = React.useState(0);
   const [generatingReport, setGeneratingReport] = React.useState(false);
+  const [showTemplateSelect, setShowTemplateSelect] = React.useState(false);
+  const [selectedReportTemplateId, setSelectedReportTemplateId] = React.useState<string>("");
   const fileInputRef = React.useRef<HTMLInputElement>(null);
 
   // Stats
@@ -1563,7 +1566,11 @@ function PhotosSection({ claimId }: { claimId: string }) {
       const res = await fetch(`/api/claims/${claimId}/damage-report`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ includePhotos: true, includeAnnotations: true }),
+        body: JSON.stringify({
+          includePhotos: true,
+          includeAnnotations: true,
+          templateId: selectedReportTemplateId || undefined,
+        }),
       });
 
       if (res.ok) {
@@ -1698,16 +1705,44 @@ function PhotosSection({ claimId }: { claimId: string }) {
 
           {/* Generate Report button - only show if there are analyzed photos */}
           {analyzedCount > 0 && (
-            <Button
-              onClick={handleGenerateReport}
-              disabled={generatingReport || analyzingAll}
-              className="gap-2 bg-green-600 hover:bg-green-700"
-            >
-              <FileText className="h-4 w-4" />
-              {generatingReport ? "Generating..." : "Generate Damage Report"}
-            </Button>
+            <>
+              <Button
+                onClick={() => setShowTemplateSelect(!showTemplateSelect)}
+                variant="outline"
+                size="sm"
+                className="gap-2 border-emerald-300 text-emerald-700 dark:border-emerald-700 dark:text-emerald-300"
+              >
+                <Sparkles className="h-4 w-4" />
+                {selectedReportTemplateId ? "Template Selected ✓" : "Choose Template"}
+              </Button>
+              <Button
+                onClick={handleGenerateReport}
+                disabled={generatingReport || analyzingAll}
+                className="gap-2 bg-green-600 hover:bg-green-700"
+              >
+                <FileText className="h-4 w-4" />
+                {generatingReport ? "Generating..." : "Generate Damage Report"}
+              </Button>
+            </>
           )}
         </div>
+
+        {/* Smart Template Selector (inline collapsible) */}
+        {showTemplateSelect && analyzedCount > 0 && (
+          <div className="mb-4 rounded-lg border border-emerald-200 bg-emerald-50/50 p-3 dark:border-emerald-800 dark:bg-emerald-950/20">
+            <SmartTemplateSelector
+              onSelect={(id) => {
+                setSelectedReportTemplateId(id);
+                setShowTemplateSelect(false);
+              }}
+              selectedId={selectedReportTemplateId}
+              defaultStyle="Insurance"
+              context={{ intent: "claim_support" }}
+              compact
+              label="Damage Report Template"
+            />
+          </div>
+        )}
 
         {/* Analysis Stats - show when photos exist */}
         {photos.length > 0 && (

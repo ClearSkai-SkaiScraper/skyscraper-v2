@@ -18,6 +18,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 
 import type { RecommendationRequest, ScoredTemplate } from "@/lib/reports/recommendation-schema";
+import { trackRecommendationEvent } from "@/lib/reports/recommendation-analytics";
 
 // ─── Style Category Config ───────────────────────────────────
 
@@ -113,6 +114,19 @@ export function SmartTemplateSelector({
         if (!res.ok) throw new Error("Failed to fetch recommendations");
         const data = await res.json();
         setRecommendations(data.recommendations ?? []);
+        // Track recommendations shown
+        const recs = data.recommendations ?? [];
+        if (recs.length > 0) {
+          trackRecommendationEvent({
+            eventType: "recommendations_shown",
+            styleCategory: selectedStyle,
+            recommendedTemplateId: recs[0]?.templateId,
+            topConfidence: recs[0]?.score,
+            recommendationCount: recs.length,
+            missingFieldCount: recs[0]?.missingInputs?.length ?? 0,
+            context: context as any,
+          });
+        }
       } catch (err) {
         setError("Could not load recommendations");
         setRecommendations([]);
@@ -131,6 +145,11 @@ export function SmartTemplateSelector({
 
   const handleStyleSelect = (selected: (typeof STYLE_OPTIONS)[number]) => {
     setStyle(selected.key);
+    trackRecommendationEvent({
+      eventType: "style_selected",
+      styleCategory: selected.key,
+      context: context as any,
+    });
     if (!showRecommendation) {
       // If no recommendation panel, we're done — user needs to pick later
     }
@@ -138,6 +157,19 @@ export function SmartTemplateSelector({
 
   const handleTemplateSelect = (rec: ScoredTemplate) => {
     if (!disabled) {
+      const topRec = recommendations[0];
+      const isTopPick = topRec?.templateId === rec.templateId;
+      trackRecommendationEvent({
+        eventType: isTopPick ? "template_selected" : "template_override",
+        styleCategory: style ?? undefined,
+        recommendedTemplateId: topRec?.templateId,
+        selectedTemplateId: rec.templateId,
+        topConfidence: topRec?.score,
+        acceptedTopPick: isTopPick,
+        missingFieldCount: rec.missingInputs.length,
+        recommendationCount: recommendations.length,
+        context: context as any,
+      });
       onSelect(rec.templateId, rec.slug);
     }
   };

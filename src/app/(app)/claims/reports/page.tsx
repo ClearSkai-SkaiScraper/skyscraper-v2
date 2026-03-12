@@ -1,10 +1,10 @@
 import { PageHero } from "@/components/layout/PageHero";
 import { Button } from "@/components/ui/button";
 import { getTenant } from "@/lib/auth/tenant";
-import prisma from "@/lib/prisma";
 import { logger } from "@/lib/logger";
+import prisma from "@/lib/prisma";
 import { auth } from "@clerk/nextjs/server";
-import { Download, ExternalLink, FileText } from "lucide-react";
+import { Download, ExternalLink, FileText, Sparkles } from "lucide-react";
 import { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
@@ -191,26 +191,43 @@ export default async function ClaimsReportsPage() {
                       )}
                     </td>
                     <td className="p-4 text-right">
-                      <form
-                        action={`/api/reports/claims/${claim.id}/pdf`}
-                        method="POST"
-                        className="inline"
-                      >
-                        <Button
-                          type="submit"
-                          size="sm"
-                          variant="outline"
-                          disabled={claim.materialCount === 0}
-                          title={
-                            claim.materialCount === 0
-                              ? "Add materials to generate report"
-                              : "Generate PDF report"
-                          }
+                      <div className="flex items-center justify-end gap-2">
+                        <Link href={`/reports/templates/pdf-builder?claimId=${claim.id}`}>
+                          <Button
+                            size="sm"
+                            variant="default"
+                            disabled={claim.materialCount === 0}
+                            title={
+                              claim.materialCount === 0
+                                ? "Add materials to generate report"
+                                : "Generate report with AI template selection"
+                            }
+                          >
+                            <Sparkles className="mr-2 h-4 w-4" />
+                            Smart Report
+                          </Button>
+                        </Link>
+                        <form
+                          action={`/api/reports/claims/${claim.id}/pdf`}
+                          method="POST"
+                          className="inline"
                         >
-                          <Download className="mr-2 h-4 w-4" />
-                          Generate PDF
-                        </Button>
-                      </form>
+                          <Button
+                            type="submit"
+                            size="sm"
+                            variant="outline"
+                            disabled={claim.materialCount === 0}
+                            title={
+                              claim.materialCount === 0
+                                ? "Add materials to generate report"
+                                : "Quick PDF (default template)"
+                            }
+                          >
+                            <Download className="mr-2 h-4 w-4" />
+                            Quick PDF
+                          </Button>
+                        </form>
+                      </div>
                     </td>
                   </tr>
                 ))

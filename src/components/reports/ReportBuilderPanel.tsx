@@ -24,6 +24,7 @@ import {
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 
+import { SmartTemplateSelector } from "@/components/reports/SmartTemplateSelector";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -198,6 +199,7 @@ export function ReportBuilderPanel({
   defaultType = "INSURANCE_CLAIM",
 }: ReportBuilderPanelProps) {
   const [reportType, setReportType] = useState<ReportType>(defaultType);
+  const [selectedTemplateId, setSelectedTemplateId] = useState<string>("");
   const [enabledSections, setEnabledSections] = useState<Set<string>>(
     new Set(ALL_SECTIONS.filter((s) => s.defaultEnabled).map((s) => s.key))
   );
@@ -266,6 +268,7 @@ export function ReportBuilderPanel({
           orgId,
           reportType,
           sections: Array.from(enabledSections),
+          templateId: selectedTemplateId || undefined,
         }),
       });
 
@@ -367,6 +370,33 @@ export function ReportBuilderPanel({
               ))}
             </div>
           )}
+        </CardContent>
+      </Card>
+
+      {/* AI Template Selection */}
+      <Card>
+        <CardHeader className="pb-3">
+          <CardTitle className="flex items-center gap-2 text-base">
+            <Sparkles className="h-4 w-4 text-amber-500" />
+            Template Style
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <SmartTemplateSelector
+            onSelect={(id) => setSelectedTemplateId(id)}
+            selectedId={selectedTemplateId}
+            defaultStyle={reportType === "RETAIL_PROPOSAL" ? "Retail" : "Insurance"}
+            context={{
+              intent:
+                reportType === "RETAIL_PROPOSAL"
+                  ? "homeowner_estimate"
+                  : reportType === "SUPPLEMENT_PACKAGE"
+                    ? "supplement"
+                    : "claim_support",
+            }}
+            compact
+            label="Choose Report Template"
+          />
         </CardContent>
       </Card>
 

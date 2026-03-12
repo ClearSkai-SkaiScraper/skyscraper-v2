@@ -34,8 +34,8 @@ import {
 import { useSearchParams } from "next/navigation";
 import { useState } from "react";
 
+import { SmartTemplateSelector } from "@/components/reports/SmartTemplateSelector";
 import { ClaimJobSelect, type ClaimJobSelection } from "@/components/selectors/ClaimJobSelect";
-import { PdfTemplateSelect } from "@/components/selectors/PdfTemplateSelect";
 import { Button } from "@/components/ui/button";
 import EmptyState from "@/components/ui/EmptyState";
 import { Label } from "@/components/ui/label";
@@ -531,11 +531,15 @@ export default function Builder() {
           </div>
           <div className="space-y-2">
             <Label htmlFor="template-select">PDF Template</Label>
-            <PdfTemplateSelect
-              value={templateId}
-              onValueChange={setTemplateId}
-              reportType="contractor-packet"
-              placeholder="Select template (optional)..."
+            <SmartTemplateSelector
+              onSelect={(id) => setTemplateId(id)}
+              selectedId={templateId}
+              defaultStyle="Insurance"
+              context={{
+                intent: "claim_support",
+              }}
+              compact
+              label="Report Template"
             />
             {templateId && (
               <p className="text-xs text-green-600 dark:text-green-400">

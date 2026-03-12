@@ -223,37 +223,10 @@ export default function IntelligenceWizardPage({ params }: PageProps) {
       {/* Step 1: Report Type */}
       {step === 1 && (
         <section className="space-y-4">
-          <h2 className="text-lg font-semibold">Step 1: Select Report Type</h2>
-          <div className="grid gap-3 md:grid-cols-2">
-            {(["QUICK", "CLAIMS_READY", "RETAIL", "FORENSIC"] as ReportType[]).map((type) => (
-              <button
-                key={type}
-                onClick={() => handleReportTypeChange(type)}
-                className={`rounded-xl border p-4 text-left transition-colors ${
-                  reportType === type
-                    ? "border-primary bg-primary/5"
-                    : "border-border hover:border-primary/50"
-                }`}
-              >
-                <div className="mb-1 font-semibold">
-                  {type === "QUICK" && "⚡ Quick Report"}
-                  {type === "CLAIMS_READY" && "📋 Claims-Ready Adjuster Packet"}
-                  {type === "RETAIL" && "🏠 Retail Proposal"}
-                  {type === "FORENSIC" && "🔬 Forensic Report"}
-                </div>
-                <div className="text-xs text-muted-foreground">
-                  {type === "QUICK" && "Fast internal summary (300-500 words)"}
-                  {type === "CLAIMS_READY" &&
-                    "Insurance-focused, code-heavy documentation (2000-3000 words)"}
-                  {type === "RETAIL" && "Client-friendly proposal with pricing (1000-1500 words)"}
-                  {type === "FORENSIC" && "Deep technical analysis for disputes (4000-6000 words)"}
-                </div>
-              </button>
-            ))}
-          </div>
+          <h2 className="text-lg font-semibold">Step 1: Choose Template & Scope</h2>
 
-          {/* AI Template Recommendation */}
-          <div className="mt-4 rounded-xl border border-amber-200 bg-amber-50/50 p-4 dark:border-amber-800 dark:bg-amber-950/20">
+          {/* AI Template Selection — PRIMARY */}
+          <div className="rounded-xl border border-amber-200 bg-amber-50/50 p-4 dark:border-amber-800 dark:bg-amber-950/20">
             <SmartTemplateSelector
               onSelect={(templateId) => setSelectedTemplateId(templateId)}
               selectedId={selectedTemplateId ?? undefined}
@@ -268,9 +241,42 @@ export default function IntelligenceWizardPage({ params }: PageProps) {
               }}
               defaultStyle={reportType === "RETAIL" ? "Retail" : "Insurance"}
               showRecommendation={true}
-              compact={true}
-              label="Or let AI pick the best template"
+              compact={false}
+              label="AI-Recommended Template"
             />
+          </div>
+
+          {/* Report Scope Presets — SECONDARY */}
+          <div className="space-y-2">
+            <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+              Report Scope Preset
+            </p>
+            <div className="grid gap-2 md:grid-cols-4">
+              {(["QUICK", "CLAIMS_READY", "RETAIL", "FORENSIC"] as ReportType[]).map((type) => (
+                <button
+                  key={type}
+                  onClick={() => handleReportTypeChange(type)}
+                  className={`rounded-lg border p-3 text-left text-xs transition-colors ${
+                    reportType === type
+                      ? "border-primary bg-primary/5 ring-1 ring-primary/30"
+                      : "border-border hover:border-primary/50"
+                  }`}
+                >
+                  <div className="mb-0.5 text-sm font-semibold">
+                    {type === "QUICK" && "⚡ Quick"}
+                    {type === "CLAIMS_READY" && "📋 Claims-Ready"}
+                    {type === "RETAIL" && "🏠 Retail"}
+                    {type === "FORENSIC" && "🔬 Forensic"}
+                  </div>
+                  <div className="text-muted-foreground">
+                    {type === "QUICK" && "Fast summary"}
+                    {type === "CLAIMS_READY" && "Full adjuster packet"}
+                    {type === "RETAIL" && "Client proposal"}
+                    {type === "FORENSIC" && "Deep analysis"}
+                  </div>
+                </button>
+              ))}
+            </div>
           </div>
 
           <button
