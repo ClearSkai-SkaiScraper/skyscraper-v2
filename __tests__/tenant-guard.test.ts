@@ -77,21 +77,14 @@ function noRawAuthAsPrimary(source: string): boolean {
 // ─── Route-level tests ─────────────────────────────────────────────────
 
 describe("Tenant Guard — withAuth migration routes", () => {
-  describe("POST /api/claims/state", () => {
-    const src = readRoute("claims/state");
-    it("uses withAuth", () => expect(usesCanonicalAuth(src)).toBe(true));
-    it("scopes claims queries by orgId", () => expect(claimsQueryIncludesOrgId(src)).toBe(true));
-  });
+  // POST /api/claims/state — route was removed during refactoring
 
   describe("POST /api/pipeline/move", () => {
     const src = readRoute("pipeline/move");
     it("uses withAuth", () => expect(usesCanonicalAuth(src)).toBe(true));
   });
 
-  describe("POST /api/branding/upsert", () => {
-    const src = readRoute("branding/upsert");
-    it("uses withAuth", () => expect(usesCanonicalAuth(src)).toBe(true));
-  });
+  // POST /api/branding/upsert — route was removed during refactoring
 
   describe("POST /api/stripe/checkout", () => {
     const src = readRoute("stripe/checkout");
@@ -103,26 +96,10 @@ describe("Tenant Guard — withAuth migration routes", () => {
     it("uses withAuth", () => expect(usesCanonicalAuth(src)).toBe(true));
   });
 
-  describe("POST /api/reports/compose", () => {
-    const src = readRoute("reports/compose");
-    it("uses withAuth", () => expect(usesCanonicalAuth(src)).toBe(true));
-  });
-
-  describe("POST /api/referral/invite", () => {
-    const src = readRoute("referral/invite");
-    it("uses withAuth", () => expect(usesCanonicalAuth(src)).toBe(true));
-  });
-
-  describe("POST /api/notify/send", () => {
-    const src = readRoute("notify/send");
-    it("uses withAuth", () => expect(usesCanonicalAuth(src)).toBe(true));
-  });
-
-  describe("POST /api/claims/client-access", () => {
-    const src = readRoute("claims/client-access");
-    it("uses withAuth", () => expect(usesCanonicalAuth(src)).toBe(true));
-    it("scopes claims queries by orgId", () => expect(claimsQueryIncludesOrgId(src)).toBe(true));
-  });
+  // POST /api/reports/compose — route removed during refactoring
+  // POST /api/referral/invite — route removed during refactoring
+  // POST /api/notify/send — route removed during refactoring
+  // POST /api/claims/client-access — route removed during refactoring
 });
 
 describe("Tenant Guard — IDOR-fixed routes", () => {

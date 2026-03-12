@@ -7,6 +7,7 @@
 
 import "server-only";
 
+import { logger } from "@/lib/logger";
 import { auth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 
@@ -56,10 +57,8 @@ export async function GET() {
       .limit(1);
 
     if (error) {
-      return NextResponse.json(
-        { ok: false, reason: "QUERY_FAILED", detail: error.message },
-        { status: 200 }
-      );
+      logger.error("[CLAIMS_RESUME] Query failed", { error: error.message });
+      return NextResponse.json({ ok: false, reason: "QUERY_FAILED" }, { status: 500 });
     }
 
     if (!data || data.length === 0) {

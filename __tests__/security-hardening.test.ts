@@ -108,10 +108,7 @@ describe("billing IDOR prevention", () => {
     expect(src).not.toMatch(/searchParams\.get\(["']orgId["']\)/);
   });
 
-  it("billing/invoices does not read orgId from searchParams", () => {
-    const src = readSrc("app/api/billing/invoices/route.ts");
-    expect(src).not.toMatch(/searchParams\.get\(["']orgId["']\)/);
-  });
+  // billing/invoices route was removed — tests removed
 
   it("billing/portal verifies org membership", () => {
     const src = readSrc("app/api/billing/portal/route.ts");
@@ -123,10 +120,7 @@ describe("billing IDOR prevention", () => {
     expect(src).toMatch(/user_organizations|membership/i);
   });
 
-  it("billing/invoices verifies org membership", () => {
-    const src = readSrc("app/api/billing/invoices/route.ts");
-    expect(src).toMatch(/user_organizations|membership/i);
-  });
+  // billing/invoices removed — test removed
 });
 
 /* ------------------------------------------------------------------ */

@@ -36,6 +36,15 @@ vi.mock("@/lib/prisma", () => ({
   },
 }));
 
+// Disable beta bypass and admin bypass so tests hit the real Prisma logic
+vi.mock("@/lib/beta", () => ({
+  isBetaMode: () => false,
+}));
+
+vi.mock("@/lib/security/roles", () => ({
+  isPlatformAdmin: async () => false,
+}));
+
 /* ------------------------------------------------------------------ */
 /*  Import after mocks                                                 */
 /* ------------------------------------------------------------------ */

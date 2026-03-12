@@ -113,9 +113,6 @@ export async function POST(req: Request) {
     return NextResponse.json({ ok: true });
   } catch (error: any) {
     logger.error("[RemoteView] Start failed:", error);
-    return NextResponse.json(
-      { error: error.message || "Failed to start Remote View" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Failed to start Remote View" }, { status: 500 });
   }
 }

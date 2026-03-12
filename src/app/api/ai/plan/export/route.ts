@@ -1,10 +1,19 @@
 import { auth, currentUser } from "@clerk/nextjs/server";
 import { jsPDF } from "jspdf";
 import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
 
 import { logger } from "@/lib/logger";
 import { drawBrandedHeader, drawPageFooter, fetchBrandingData } from "@/lib/pdf/brandedHeader";
 import { checkRateLimit } from "@/lib/rate-limit";
+
+const planExportSchema = z.object({
+  plan: z.string().min(1),
+  title: z.string().optional(),
+  clientName: z.string().optional(),
+  clientAddress: z.string().optional(),
+  claimNumber: z.string().optional(),
+});
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -32,11 +41,14 @@ export async function POST(req: NextRequest) {
     const { orgId } = await auth();
 
     const body = await req.json();
-    const { plan, title, clientName, clientAddress, claimNumber } = body;
-
-    if (!plan) {
-      return NextResponse.json({ error: "Plan content is required" }, { status: 400 });
+    const parsed = planExportSchema.safeParse(body);
+    if (!parsed.success) {
+      return NextResponse.json(
+        { error: "Validation failed", details: parsed.error.flatten() },
+        { status: 400 }
+      );
     }
+    const { plan, title, clientName, clientAddress, claimNumber } = parsed.data;
 
     const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "letter" });
     const pageWidth = doc.internal.pageSize.getWidth();

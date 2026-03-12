@@ -12,7 +12,7 @@
  *   5. L3 fallback: org membership = pro
  *   6. New user with mode=pro → registered as pro → /dashboard
  *   7. New user with mode=client → registered as client → /portal
- *   8. New user with no mode → defaults to client → /portal
+ *   8. New user with no mode → defaults to pro → /dashboard
  *   9. Pending redirect honored
  *
  * REGRESSION GUARD for: "Client sign-in routes to Pro side" bug (fixed in a4f66c2)
@@ -457,14 +457,14 @@ describe("after-sign-in page routing", () => {
       expect(mockCookieStore["x-user-type"]).toBe("client");
     });
 
-    it("new user with NO mode → defaults to client → /portal", async () => {
+    it("new user with NO mode → defaults to pro → /dashboard", async () => {
       setupNewUser();
 
       const dest = await callAfterSignIn({});
 
-      // Default newType is "client" when mode is not "pro"
-      expect(dest).toBe("/portal");
-      expect(mockCookieStore["x-user-type"]).toBe("client");
+      // Default newType is "pro" when mode is not explicitly "client"
+      expect(dest).toBe("/dashboard");
+      expect(mockCookieStore["x-user-type"]).toBe("pro");
     });
 
     it("new user creates DB registry entry", async () => {

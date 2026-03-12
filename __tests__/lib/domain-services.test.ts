@@ -7,6 +7,19 @@
 
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
+// Mock server-only
+vi.mock("server-only", () => ({}));
+
+// Mock logger
+vi.mock("@/lib/logger", () => ({
+  logger: {
+    info: vi.fn(),
+    error: vi.fn(),
+    warn: vi.fn(),
+    debug: vi.fn(),
+  },
+}));
+
 // Mock Prisma before imports
 vi.mock("@/lib/prisma", () => ({
   default: {
@@ -23,6 +36,11 @@ vi.mock("@/lib/prisma", () => ({
     claim: {
       create: vi.fn(),
       findUnique: vi.fn(),
+      update: vi.fn(),
+    },
+    claims: {
+      findFirst: vi.fn(),
+      findMany: vi.fn(),
       update: vi.fn(),
     },
     claimNote: {

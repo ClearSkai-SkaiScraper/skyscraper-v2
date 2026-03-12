@@ -5,8 +5,8 @@
  * and prevent 500 errors from crashing the demo.
  */
 
-import { NextResponse } from "next/server";
 import { logger } from "@/lib/logger";
+import { NextResponse } from "next/server";
 
 export interface APIResponse<T = any> {
   ok: boolean;
@@ -33,7 +33,7 @@ export function apiSuccess<T>(data: T, status = 200): NextResponse<APIResponse<T
 /**
  * Return an error API response (always 200 to prevent demo crashes)
  */
-export function apiError(error: string, details?: string, status = 200): NextResponse<APIResponse> {
+export function apiError(error: string, details?: string, status = 500): NextResponse<APIResponse> {
   return NextResponse.json(
     {
       ok: false,
@@ -41,7 +41,7 @@ export function apiError(error: string, details?: string, status = 200): NextRes
       details: process.env.NODE_ENV === "development" ? details : undefined,
       timestamp: new Date().toISOString(),
     },
-    { status } // Default to 200 for demo stability
+    { status }
   );
 }
 
@@ -55,7 +55,7 @@ export function apiUnauthorized(message = "Unauthorized"): NextResponse<APIRespo
       error: message,
       timestamp: new Date().toISOString(),
     },
-    { status: 200 } // Return 200 to prevent crashes
+    { status: 401 }
   );
 }
 
@@ -73,7 +73,7 @@ export function apiValidationError(
       details: JSON.stringify(details),
       timestamp: new Date().toISOString(),
     },
-    { status: 200 }
+    { status: 400 }
   );
 }
 
@@ -87,7 +87,7 @@ export function apiNotFound(resource = "Resource"): NextResponse<APIResponse> {
       error: `${resource} not found`,
       timestamp: new Date().toISOString(),
     },
-    { status: 200 }
+    { status: 404 }
   );
 }
 

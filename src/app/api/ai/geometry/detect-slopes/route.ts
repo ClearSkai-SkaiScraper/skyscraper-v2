@@ -134,7 +134,6 @@ async function POST_INNER(req: NextRequest, ctx: AiBillingContext) {
     return NextResponse.json(
       {
         error: "Slope analysis failed",
-        message: error instanceof Error ? error.message : "Unknown error",
       },
       { status: 500 }
     );

@@ -358,10 +358,14 @@ export function withOrgScope<
       return await handler(req, { userId, orgId }, ...args);
     } catch (error: any) {
       logger.error("[ORG SCOPE ERROR]", error);
-      return NextResponse.json(
-        { ok: false, error: error.message ?? "Unauthorized" },
-        { status: 401 }
-      );
+      // Classify: auth errors → 401, everything else → 500
+      const isAuthError =
+        error.message?.includes("Unauthorized") ||
+        error.message?.includes("No active tenant") ||
+        error.message?.includes("No org membership");
+      const status = isAuthError ? 401 : 500;
+      const safeMessage = isAuthError ? "Unauthorized" : "Internal server error";
+      return NextResponse.json({ ok: false, error: safeMessage }, { status });
     }
   };
 }

@@ -1,9 +1,16 @@
 import { logger } from "@/lib/logger";
 import { auth } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
 
 import { getOpenAI } from "@/lib/ai/client";
 import { getRateLimitIdentifier, rateLimiters } from "@/lib/rate-limit";
+
+const claimAssistantSchema = z.object({
+  message: z.string().min(1),
+  claimId: z.string().optional(),
+  history: z.array(z.object({ role: z.string(), content: z.string() })).optional(),
+});
 
 // Force Node.js runtime for OpenAI SDK
 export const runtime = "nodejs";
@@ -25,9 +32,15 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const validated = { success: true, data: body };
+    const parsed = claimAssistantSchema.safeParse(body);
+    if (!parsed.success) {
+      return NextResponse.json(
+        { error: "Validation failed", details: parsed.error.flatten() },
+        { status: 400 }
+      );
+    }
 
-    const { message, claimId, history } = validated.data;
+    const { message, claimId, history } = parsed.data;
 
     // Initialize OpenAI client
     const openai = getOpenAI();

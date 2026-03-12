@@ -39,22 +39,24 @@ export async function GET() {
       orderBy: { jobValueSubmittedAt: "desc" },
     });
 
-    // Resolve submitter names
-    const claimsWithNames = await Promise.all(
-      claims.map(async (claim) => {
-        let submittedBy = "";
-        if (claim.jobValueSubmittedBy) {
-          const user = await prisma.users
-            .findFirst({
-              where: { clerkUserId: claim.jobValueSubmittedBy },
-              select: { name: true },
-            })
-            .catch(() => null);
-          submittedBy = user?.name || "";
-        }
-        return { ...claim, submittedBy };
-      })
-    );
+    // Batch resolve submitter names (N+1 → 2 queries)
+    const submitterIds = [
+      ...new Set(claims.map((c) => c.jobValueSubmittedBy).filter(Boolean) as string[]),
+    ];
+
+    const submitters = submitterIds.length
+      ? await prisma.users.findMany({
+          where: { clerkUserId: { in: submitterIds } },
+          select: { clerkUserId: true, name: true },
+        })
+      : [];
+
+    const submitterMap = new Map(submitters.map((u) => [u.clerkUserId, u.name]));
+
+    const claimsWithNames = claims.map((claim) => ({
+      ...claim,
+      submittedBy: submitterMap.get(claim.jobValueSubmittedBy ?? "") || "",
+    }));
 
     return NextResponse.json({ claims: claimsWithNames });
   } catch (error) {

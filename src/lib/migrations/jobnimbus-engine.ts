@@ -10,12 +10,7 @@ import "server-only";
 import prisma from "@/lib/prisma";
 import { BaseMigrationEngine, MigrationConfig } from "./base-engine";
 import { JobNimbusClient } from "./jobnimbus-client";
-// jobnimbus-mapper archived — stub mappers
-const mapContact = (d: any) => d;
-const mapJob = (d: any) => d;
-const mapTask = (d: any) => d;
-const mapFile = (d: any) => d;
-const mapActivity = (d: any) => d;
+import { mapActivity, mapContact, mapFile, mapJob, mapTask } from "./jobnimbus-mapper";
 
 // ============================================================================
 // JobNimbus Migration Engine
@@ -129,7 +124,7 @@ export class JobNimbusMigrationEngine extends BaseMigrationEngine {
               firstName: mapped.firstName,
               lastName: mapped.lastName,
               phone: mapped.phone,
-              addressStreet: mapped.addressStreet,
+              addressStreet: mapped.addressLine1,
               addressCity: mapped.addressCity,
               addressState: mapped.addressState,
               addressZip: mapped.addressZip,
@@ -145,7 +140,7 @@ export class JobNimbusMigrationEngine extends BaseMigrationEngine {
               lastName: mapped.lastName,
               email: mapped.email,
               phone: mapped.phone,
-              addressStreet: mapped.addressStreet,
+              addressStreet: mapped.addressLine1,
               addressCity: mapped.addressCity,
               addressState: mapped.addressState,
               addressZip: mapped.addressZip,
@@ -207,11 +202,11 @@ export class JobNimbusMigrationEngine extends BaseMigrationEngine {
             projectName: mapped.projectName,
             status: mapped.status,
             description: mapped.description,
-            addressStreet: mapped.addressStreet,
+            addressStreet: mapped.addressLine1,
             addressCity: mapped.addressCity,
             addressState: mapped.addressState,
             addressZip: mapped.addressZip,
-            dateOfLoss: mapped.dateOfLoss,
+            dateOfLoss: mapped.startDate,
           },
         });
 

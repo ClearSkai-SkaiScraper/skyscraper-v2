@@ -1,9 +1,21 @@
 import { currentUser } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
 
 import { ensureOpenAI } from "@/lib/ai/client";
 import { logger } from "@/lib/logger";
 import { getRateLimitIdentifier, rateLimiters } from "@/lib/rate-limit";
+
+const planGenerateSchema = z.object({
+  trade: z.string().min(1),
+  jobType: z.string().min(1),
+  projectSize: z.string().optional(),
+  timeline: z.string().optional(),
+  budget: z.string().optional(),
+  summary: z.string().optional(),
+  documents: z.array(z.string()).optional(),
+  finalNotes: z.string().optional(),
+});
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -25,11 +37,15 @@ export async function POST(req: NextRequest) {
     }
 
     const body = await req.json();
-    const { trade, jobType, projectSize, timeline, budget, summary, documents, finalNotes } = body;
-
-    if (!trade || !jobType) {
-      return NextResponse.json({ error: "Trade and job type are required" }, { status: 400 });
+    const parsed = planGenerateSchema.safeParse(body);
+    if (!parsed.success) {
+      return NextResponse.json(
+        { error: "Validation failed", details: parsed.error.flatten() },
+        { status: 400 }
+      );
     }
+    const { trade, jobType, projectSize, timeline, budget, summary, documents, finalNotes } =
+      parsed.data;
 
     const openai = ensureOpenAI();
 

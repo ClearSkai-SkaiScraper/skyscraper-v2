@@ -14,11 +14,12 @@ export const GET = withAuth(async (req: NextRequest, { orgId }) => {
       orderBy: { createdAt: "desc" },
     });
 
-    // Fetch the actual templates for each OrgTemplate
-    const templatesWithDetails = await Promise.all(
-      orgTemplates.map(async (orgTemplate) => {
-        const template = await prisma.template.findUnique({
-          where: { id: orgTemplate.templateId },
+    // Batch fetch templates (N+1 → 2 queries)
+    const templateIds = [...new Set(orgTemplates.map((ot) => ot.templateId))];
+
+    const templates = templateIds.length
+      ? await prisma.template.findMany({
+          where: { id: { in: templateIds } },
           select: {
             id: true,
             name: true,
@@ -28,16 +29,20 @@ export const GET = withAuth(async (req: NextRequest, { orgId }) => {
             thumbnailUrl: true,
             version: true,
           },
-        });
+        })
+      : [];
 
-        return {
-          ...orgTemplate,
-          template,
-          name: orgTemplate.customName || template?.name || "Untitled",
-          templateJson: template?.id,
-        };
-      })
-    );
+    const templateMap = new Map(templates.map((t) => [t.id, t]));
+
+    const templatesWithDetails = orgTemplates.map((orgTemplate) => {
+      const template = templateMap.get(orgTemplate.templateId) || null;
+      return {
+        ...orgTemplate,
+        template,
+        name: orgTemplate.customName || template?.name || "Untitled",
+        templateJson: template?.id,
+      };
+    });
 
     return NextResponse.json({
       ok: true,

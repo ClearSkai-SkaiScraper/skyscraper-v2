@@ -115,6 +115,6 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    return NextResponse.json({ ok: false, error: message }, { status: 500 });
+    return NextResponse.json({ ok: false, error: "Sync failed" }, { status: 500 });
   }
 }
