@@ -35,8 +35,8 @@ export const GET = withAuth(
     try {
       const { claimId } = await routeParams.params;
 
-      // Verify claim belongs to org
-      await getOrgClaimOrThrow(orgId, claimId);
+      // Verify claim belongs to org and get damageType for AI analysis
+      const claim = await getOrgClaimOrThrow(orgId, claimId);
 
       const photos = await prisma.file_assets.findMany({
         where: {
@@ -53,6 +53,7 @@ export const GET = withAuth(
 
       return NextResponse.json({
         success: true,
+        claimDamageType: claim.damageType || null,
         photos: photos.map((p) => {
           // Parse metadata for annotations
           const metadata = (p.metadata as Record<string, unknown>) || {};

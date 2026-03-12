@@ -90,6 +90,7 @@ export default function PhotosPage() {
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [selectMode, setSelectMode] = useState(false);
   const [batchDeleting, setBatchDeleting] = useState(false);
+  const [claimDamageType, setClaimDamageType] = useState<string | null>(null);
 
   const fetchPhotos = useCallback(async () => {
     if (!claimId) return;
@@ -107,6 +108,7 @@ export default function PhotosPage() {
       const data = await res.json();
       if (Array.isArray(data.photos)) {
         setPhotos(data.photos);
+        if (data.claimDamageType) setClaimDamageType(data.claimDamageType);
       } else {
         logger.error("Unexpected photos response shape", data);
         toast.error("Unexpected response format when loading photos");
@@ -280,7 +282,16 @@ export default function PhotosPage() {
       const category = photo.category?.toLowerCase() || "";
 
       let componentType = "roof"; // default
+      // Map claim damageType to AI claimType for specialized prompts
       let claimType = "general"; // default - let AI determine
+      if (claimDamageType) {
+        const dt = claimDamageType.toLowerCase();
+        if (dt.includes("hail")) claimType = "hail";
+        else if (dt.includes("wind")) claimType = "wind";
+        else if (dt.includes("fire")) claimType = "fire";
+        else if (dt.includes("water") || dt.includes("flood")) claimType = "water";
+        else if (dt.includes("storm")) claimType = "storm";
+      }
 
       // Smart detection based on filename or category
       if (

@@ -46,6 +46,8 @@ export const POST = withAuth(async (req: NextRequest, { userId, orgId }) => {
     }
 
     const body = await req.json();
+    // Ensure isInternal is explicitly set for discriminated union parsing
+    if (body.isInternal === undefined) body.isInternal = false;
     const parsed = createMessageSchema.safeParse(body);
     if (!parsed.success) {
       return NextResponse.json(
@@ -194,7 +196,9 @@ export const POST = withAuth(async (req: NextRequest, { userId, orgId }) => {
             { orgId: orgId },
             {
               ClientProConnection: {
-                some: { status: { in: ["accepted", "ACCEPTED"] } },
+                some: {
+                  status: { in: ["accepted", "ACCEPTED", "connected", "pending", "PENDING"] },
+                },
               },
             },
           ],

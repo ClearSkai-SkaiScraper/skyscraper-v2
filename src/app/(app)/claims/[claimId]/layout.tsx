@@ -34,7 +34,9 @@ export default async function ClaimLayout({ children, params }: ClaimLayoutProps
       // Since we're in layout, we don't have the full path, so just redirect to overview
       redirect(`/claims/${result.canonicalId}/overview`);
     }
-  } catch (error) {
+  } catch (error: any) {
+    // CRITICAL: Re-throw NEXT_REDIRECT — Next.js uses thrown errors for redirects
+    if (error?.digest?.startsWith("NEXT_REDIRECT")) throw error;
     logger.error("[ClaimLayout] Canonicalization failed", { error });
     // Continue to normal flow - getClaim will handle the NOT_FOUND
   }

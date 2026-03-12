@@ -36,28 +36,55 @@ export const POST = withAuth(
       await getOrgClaimOrThrow(orgId, claimId);
 
       // Verify contact exists and belongs to org
-      const contact = await prisma.contacts.findFirst({
+      // Check CRM Contacts table first, then Client table (from ClientProConnection)
+      let contactInfo: { id: string; name: string; email: string | null } | null = null;
+
+      const crmContact = await prisma.contacts.findFirst({
         where: { id: contactId, orgId },
       });
 
-      if (!contact) {
+      if (crmContact) {
+        contactInfo = {
+          id: crmContact.id,
+          name:
+            `${crmContact.firstName || ""} ${crmContact.lastName || ""}`.trim() ||
+            crmContact.email ||
+            "Unknown",
+          email: crmContact.email,
+        };
+      } else {
+        // Fallback: check Client table (connections from client portal / invites)
+        const client = await prisma.client.findFirst({
+          where: { id: contactId, orgId },
+        });
+
+        if (client) {
+          contactInfo = {
+            id: client.id,
+            name:
+              client.name ||
+              `${client.firstName || ""} ${client.lastName || ""}`.trim() ||
+              client.email ||
+              "Unknown",
+            email: client.email,
+          };
+        }
+      }
+
+      if (!contactInfo) {
         return NextResponse.json({ error: "Contact not found" }, { status: 404 });
       }
 
       // Update claim with contact
       await prisma.claims.update({
         where: { id: claimId },
-        data: { clientId: contactId },
+        data: { clientId: contactInfo.id },
       });
 
       return NextResponse.json({
         success: true,
         message: "Contact attached to claim",
-        contact: {
-          id: contact.id,
-          name: `${contact.firstName || ""} ${contact.lastName || ""}`.trim() || contact.email,
-          email: contact.email,
-        },
+        contact: contactInfo,
       });
     } catch (error) {
       if (error instanceof OrgScopeError) {

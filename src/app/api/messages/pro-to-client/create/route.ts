@@ -88,7 +88,7 @@ export async function POST(req: NextRequest) {
       where: {
         clientId: client.id,
         contractorId: companyId,
-        status: { in: ["accepted", "ACCEPTED", "pending", "PENDING"] },
+        status: { in: ["accepted", "ACCEPTED", "connected", "pending", "PENDING"] },
       },
     });
     if (connection) hasConnection = true;
@@ -238,9 +238,6 @@ export async function POST(req: NextRequest) {
     });
   } catch (error) {
     logger.error("[messages/pro-to-client/create] Error:", error);
-    return NextResponse.json(
-      { error: "Failed to create message" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Failed to create message" }, { status: 500 });
   }
 }
