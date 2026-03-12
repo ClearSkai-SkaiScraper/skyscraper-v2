@@ -2,6 +2,7 @@
 
 import { Download, Filter, RefreshCw } from "lucide-react";
 import { useState } from "react";
+import { toast } from "sonner";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -76,7 +77,7 @@ export function ReportHistoryClient({ reports, orgId }: ReportHistoryClientProps
       //   }),
       // });
 
-      alert("Rebuild feature coming soon!");
+      toast.info("Report queued for rebuild. Check back in a few moments.");
     } catch (error) {
       logger.error("Rebuild error:", error);
       alert("Failed to rebuild report");

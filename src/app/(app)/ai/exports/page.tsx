@@ -194,7 +194,7 @@ export default function CarrierExportsPage() {
           format: EXPORT_FORMATS.find((f) => f.id === format)?.name,
           message:
             errData.error ||
-            "Carrier export is coming soon. This feature is under active development.",
+            "Export generation failed. Please verify a claim is selected and try again.",
         });
       }
     } catch (error) {

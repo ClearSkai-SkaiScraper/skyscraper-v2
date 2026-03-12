@@ -51,19 +51,32 @@ export default function CarrierExportClient() {
     setResult(null);
 
     try {
-      // Carrier export API is under development
-      // Show pending state instead of fake success
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      const res = await fetch("/api/carrier/export", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ carrier, format, claimId: "latest" }),
+      });
 
-      const pendingResult = {
-        success: false,
-        carrier: CARRIERS.find((c) => c.id === carrier)?.name,
-        format: EXPORT_FORMATS.find((f) => f.id === format)?.name,
-        exportUrl: "#",
-        message: "Carrier export is coming soon. This feature is under active development.",
-      };
+      const data = await res.json();
 
-      setResult(pendingResult);
+      if (res.ok && data.success) {
+        setResult({
+          success: true,
+          carrier: CARRIERS.find((c) => c.id === carrier)?.name,
+          format: EXPORT_FORMATS.find((f) => f.id === format)?.name,
+          exportUrl: data.exportUrl || null,
+          message: data.message || "Export generated successfully",
+          exportData: data.exportData,
+        });
+      } else {
+        setResult({
+          success: false,
+          carrier: CARRIERS.find((c) => c.id === carrier)?.name,
+          format: EXPORT_FORMATS.find((f) => f.id === format)?.name,
+          exportUrl: "#",
+          message: data.error || "Export failed. Please try again.",
+        });
+      }
 
       // Call telemetry API to log carrier export
       try {
@@ -72,8 +85,8 @@ export default function CarrierExportClient() {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             exportId: `export-${Date.now()}`,
-            carrier: pendingResult.carrier,
-            format: pendingResult.format,
+            carrier: CARRIERS.find((c) => c.id === carrier)?.name,
+            format: EXPORT_FORMATS.find((f) => f.id === format)?.name,
             tokensUsed: 0,
           }),
         });
@@ -187,7 +200,7 @@ export default function CarrierExportClient() {
                 </div>
               </div>
 
-              {result.exportUrl && (
+              {result.exportUrl && result.exportUrl !== "#" && (
                 <Button asChild>
                   <a href={result.exportUrl} download>
                     <Download className="mr-2 h-4 w-4" />
@@ -196,13 +209,16 @@ export default function CarrierExportClient() {
                 </Button>
               )}
 
-              <div className="rounded-lg border border-yellow-200 bg-yellow-50 p-4">
-                <p className="text-sm text-yellow-800">
-                  <strong>Note:</strong> This is a demonstration page. Full carrier export
-                  functionality will be implemented based on your specific carrier integration
-                  requirements.
-                </p>
-              </div>
+              {result.exportData && (
+                <div className="rounded-lg border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-900">
+                  <p className="mb-2 text-xs font-medium text-slate-600 dark:text-slate-400">
+                    Export Data Preview
+                  </p>
+                  <pre className="text-xs text-slate-700 dark:text-slate-300">
+                    {JSON.stringify(result.exportData, null, 2)}
+                  </pre>
+                </div>
+              )}
             </div>
           )}
         </Card>

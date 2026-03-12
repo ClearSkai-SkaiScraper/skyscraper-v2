@@ -161,8 +161,29 @@ export default function CoverPageBuilderPage() {
   };
 
   const handleExportPDF = async () => {
-    toast.info("PDF export coming soon!");
-    // TODO: Implement PDF export
+    try {
+      toast.info("Generating PDF…");
+      const el = document.getElementById("cover-page-preview");
+      if (!el) {
+        toast.error("Preview not found");
+        return;
+      }
+      const html2canvas = (await import("html2canvas")).default;
+      const { jsPDF } = await import("jspdf");
+      const canvas = await html2canvas(el, { scale: 2, useCORS: true });
+      const imgData = canvas.toDataURL("image/png");
+      const pdf = new jsPDF({
+        orientation: "portrait",
+        unit: "px",
+        format: [canvas.width, canvas.height],
+      });
+      pdf.addImage(imgData, "PNG", 0, 0, canvas.width, canvas.height);
+      pdf.save("cover-page.pdf");
+      toast.success("PDF exported!");
+    } catch (e: any) {
+      logger.error("[CoverPage] PDF export error:", e);
+      toast.error("Failed to export PDF");
+    }
   };
 
   if (loading) {

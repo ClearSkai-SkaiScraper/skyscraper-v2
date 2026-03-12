@@ -103,10 +103,10 @@ export function SettingsForm({
         URL.revokeObjectURL(url);
         toast.success("Data exported successfully");
       } else {
-        toast.error("Export not yet available — coming soon");
+        toast.error("Export failed — please try again");
       }
     } catch {
-      toast.error("Export not yet available — coming soon");
+      toast.error("Export failed — please try again");
     } finally {
       setSaving(null);
     }

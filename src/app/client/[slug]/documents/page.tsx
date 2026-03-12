@@ -29,7 +29,8 @@ export default function ClientDocumentsPage({ params }: ClientDocumentsPageProps
               files, including internal documents visible to you.
             </p>
             <p className="mt-2 text-xs text-blue-600 dark:text-blue-400">
-              Currently redirecting to Shared for simplicity. Full document management coming soon.
+              Visit the <strong>Shared</strong> tab to view documents your contractor has shared
+              with you.
             </p>
           </div>
         </div>

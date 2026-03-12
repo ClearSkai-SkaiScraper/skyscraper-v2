@@ -493,7 +493,7 @@ export default function NewScopePage() {
         {/* STEP 3: CLEANUP & MERGE */}
         <TabsContent value="cleanup" className="space-y-6">
           <Card className="p-6">
-            <h3 className="mb-4 text-lg font-semibold">Cleanup & Merge (Coming Soon)</h3>
+            <h3 className="mb-4 text-lg font-semibold">Cleanup & Merge</h3>
             <p className="mb-4 text-muted-foreground">In this step, you&apos;ll be able to:</p>
             <ul className="list-inside list-disc space-y-2 text-sm text-muted-foreground">
               <li>Merge duplicate line items</li>

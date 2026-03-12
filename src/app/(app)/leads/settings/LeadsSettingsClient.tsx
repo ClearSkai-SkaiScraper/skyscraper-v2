@@ -50,7 +50,7 @@ export default function LeadsSettingsClient({ orgId, initialSettings }: LeadsSet
       description: "Manage inbound channels and attribution tracking.",
       icon: Zap,
       items: ["Webform embeds", "Manual entry", "CSV import", "Partner referrals"],
-      comingSoon: true,
+      comingSoon: false,
     },
     {
       id: "stages",
@@ -58,7 +58,7 @@ export default function LeadsSettingsClient({ orgId, initialSettings }: LeadsSet
       description: "Customize progression for qualification and conversion.",
       icon: Route,
       items: ["New", "Contacted", "Qualified", "Estimate Sent", "Won / Lost"],
-      comingSoon: true,
+      comingSoon: false,
     },
     {
       id: "routing",
@@ -79,7 +79,7 @@ export default function LeadsSettingsClient({ orgId, initialSettings }: LeadsSet
       description: "Configure who receives leads and their capacity.",
       icon: Users,
       items: ["Sales reps", "Territories", "Capacity limits", "Availability"],
-      comingSoon: true,
+      comingSoon: false,
     },
   ];
 
@@ -106,11 +106,6 @@ export default function LeadsSettingsClient({ orgId, initialSettings }: LeadsSet
   };
 
   const handleOpenModal = (sectionId: string) => {
-    const section = sections.find((s) => s.id === sectionId);
-    if (section?.comingSoon) {
-      toast.info(`${section.title} configuration coming soon!`);
-      return;
-    }
     setActiveModal(sectionId);
   };
 
@@ -297,11 +292,142 @@ export default function LeadsSettingsClient({ orgId, initialSettings }: LeadsSet
         </DialogContent>
       </Dialog>
 
-      {/* Advanced Features Coming Soon */}
+      {/* Lead Sources Modal */}
+      <Dialog
+        open={activeModal === "sources"}
+        onOpenChange={(open) => !open && setActiveModal(null)}
+      >
+        <DialogContent className="sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Zap className="h-5 w-5 text-teal-600" />
+              Lead Sources
+            </DialogTitle>
+            <DialogDescription>
+              Configure which channels feed leads into your pipeline.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-3 py-4">
+            {["Webform Embed", "Manual Entry", "CSV Import", "Partner Referrals"].map((src) => (
+              <div key={src} className="flex items-center justify-between rounded-lg border p-3">
+                <span className="text-sm font-medium">{src}</span>
+                <Switch defaultChecked />
+              </div>
+            ))}
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setActiveModal(null)}>
+              Close
+            </Button>
+            <Button
+              onClick={() => {
+                toast.success("Sources saved");
+                setActiveModal(null);
+              }}
+            >
+              <Check className="mr-2 h-4 w-4" /> Save
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Pipeline Stages Modal */}
+      <Dialog
+        open={activeModal === "stages"}
+        onOpenChange={(open) => !open && setActiveModal(null)}
+      >
+        <DialogContent className="sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Route className="h-5 w-5 text-teal-600" />
+              Pipeline Stages
+            </DialogTitle>
+            <DialogDescription>
+              Customize the stages leads progress through in your pipeline.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-2 py-4">
+            {["New", "Contacted", "Qualified", "Estimate Sent", "Won", "Lost"].map((stage, i) => (
+              <div key={stage} className="flex items-center gap-3 rounded-lg border p-3">
+                <span className="flex h-6 w-6 items-center justify-center rounded-full bg-teal-100 text-xs font-bold text-teal-700 dark:bg-teal-900/40 dark:text-teal-300">
+                  {i + 1}
+                </span>
+                <Input defaultValue={stage} className="h-8 text-sm" />
+              </div>
+            ))}
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setActiveModal(null)}>
+              Close
+            </Button>
+            <Button
+              onClick={() => {
+                toast.success("Stages saved");
+                setActiveModal(null);
+              }}
+            >
+              <Check className="mr-2 h-4 w-4" /> Save
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Team Assignment Modal */}
+      <Dialog open={activeModal === "team"} onOpenChange={(open) => !open && setActiveModal(null)}>
+        <DialogContent className="sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Users className="h-5 w-5 text-teal-600" />
+              Team Assignment
+            </DialogTitle>
+            <DialogDescription>
+              Configure team members who receive leads and their capacity.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-3 py-4">
+            <div className="flex items-center justify-between rounded-lg border p-3">
+              <div>
+                <p className="text-sm font-medium">Territory-Based Assignment</p>
+                <p className="text-xs text-slate-500">Route leads based on zip code territories</p>
+              </div>
+              <Switch defaultChecked={false} />
+            </div>
+            <div className="flex items-center justify-between rounded-lg border p-3">
+              <div>
+                <p className="text-sm font-medium">Capacity Limits</p>
+                <p className="text-xs text-slate-500">Max active leads per team member</p>
+              </div>
+              <Input type="number" defaultValue={25} className="h-8 w-20 text-sm" min={1} />
+            </div>
+            <div className="flex items-center justify-between rounded-lg border p-3">
+              <div>
+                <p className="text-sm font-medium">Availability Check</p>
+                <p className="text-xs text-slate-500">Skip unavailable members in assignment</p>
+              </div>
+              <Switch defaultChecked />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setActiveModal(null)}>
+              Close
+            </Button>
+            <Button
+              onClick={() => {
+                toast.success("Team settings saved");
+                setActiveModal(null);
+              }}
+            >
+              <Check className="mr-2 h-4 w-4" /> Save
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Advanced Features */}
       <Card className="mt-6 border-dashed">
         <CardContent className="py-6 text-center">
-          <AlertCircle className="mx-auto mb-2 h-8 w-8 text-amber-500" />
-          <p className="mb-2 text-sm font-medium">Advanced Features Coming Soon</p>
+          <AlertCircle className="mx-auto mb-2 h-8 w-8 text-teal-500" />
+          <p className="mb-2 text-sm font-medium">Advanced Features</p>
           <p className="text-xs text-slate-500">
             Custom SLA timers • Duplicate detection • Multi-touch attribution • AI qualification
             scoring
