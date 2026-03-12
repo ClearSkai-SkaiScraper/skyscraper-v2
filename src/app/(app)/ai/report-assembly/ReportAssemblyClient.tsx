@@ -10,10 +10,11 @@ import {
   Sparkles,
   Wand2,
 } from "lucide-react";
-import { useSearchParams } from "next/navigation";
 import { useTheme } from "next-themes";
+import { useSearchParams } from "next/navigation";
 import { useState } from "react";
 
+import { SmartTemplateSelector } from "@/components/reports/SmartTemplateSelector";
 import { getUiTheme } from "@/config/uiTheme";
 
 // Expanded module catalog (placeholder data integration stubs)
@@ -94,6 +95,7 @@ export default function ReportAssemblyClient() {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<any>(null);
   const [error, setError] = useState("");
+  const [smartTemplateId, setSmartTemplateId] = useState<string | null>(null);
   const { theme } = useTheme();
   const t = getUiTheme(theme === "dark" ? "dark" : "light");
 
@@ -238,6 +240,18 @@ export default function ReportAssemblyClient() {
             >
               Insurance Preset
             </button>
+          </div>
+
+          {/* AI Smart Template Picker */}
+          <div className="rounded-xl border border-amber-200 bg-amber-50/50 p-4 dark:border-amber-800 dark:bg-amber-950/20">
+            <SmartTemplateSelector
+              onSelect={(templateId) => setSmartTemplateId(templateId)}
+              selectedId={smartTemplateId ?? undefined}
+              context={{ claimId: claimId || undefined }}
+              showRecommendation={true}
+              compact={true}
+              label="Or let AI pick the best template"
+            />
           </div>
         </div>
         <div className="space-y-2">

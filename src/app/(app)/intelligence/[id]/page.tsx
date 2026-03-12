@@ -5,6 +5,7 @@ import { useUser } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
+import { SmartTemplateSelector } from "@/components/reports/SmartTemplateSelector";
 import { logger } from "@/lib/logger";
 
 type ReportType = "QUICK" | "CLAIMS_READY" | "RETAIL" | "FORENSIC";
@@ -135,6 +136,7 @@ export default function IntelligenceWizardPage({ params }: PageProps) {
   } as FeatureToggles);
   const [generating, setGenerating] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [selectedTemplateId, setSelectedTemplateId] = useState<string | null>(null);
 
   function handleReportTypeChange(type: ReportType) {
     setReportType(type);
@@ -249,6 +251,28 @@ export default function IntelligenceWizardPage({ params }: PageProps) {
               </button>
             ))}
           </div>
+
+          {/* AI Template Recommendation */}
+          <div className="mt-4 rounded-xl border border-amber-200 bg-amber-50/50 p-4 dark:border-amber-800 dark:bg-amber-950/20">
+            <SmartTemplateSelector
+              onSelect={(templateId) => setSelectedTemplateId(templateId)}
+              selectedId={selectedTemplateId ?? undefined}
+              context={{
+                claimId,
+                intent:
+                  reportType === "CLAIMS_READY" || reportType === "FORENSIC"
+                    ? "claim_support"
+                    : reportType === "RETAIL"
+                      ? "homeowner_estimate"
+                      : "inspection_summary",
+              }}
+              defaultStyle={reportType === "RETAIL" ? "Retail" : "Insurance"}
+              showRecommendation={true}
+              compact={true}
+              label="Or let AI pick the best template"
+            />
+          </div>
+
           <button
             onClick={() => setStep(2)}
             className="rounded-lg bg-primary px-4 py-2 text-primary-foreground transition-colors hover:bg-primary/90"

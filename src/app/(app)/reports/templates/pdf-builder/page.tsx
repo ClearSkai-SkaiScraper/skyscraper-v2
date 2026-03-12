@@ -26,6 +26,7 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 
+import { SmartTemplateSelector } from "@/components/reports/SmartTemplateSelector";
 import { logger } from "@/lib/logger";
 
 interface Claim {
@@ -292,43 +293,52 @@ export default function PdfBuilderPage() {
 
           <Card>
             <CardHeader>
-              <CardTitle>2. Select Template</CardTitle>
+              <CardTitle className="flex items-center gap-2">
+                <Sparkles className="h-4 w-4 text-amber-500" />
+                2. Select Template
+              </CardTitle>
             </CardHeader>
-            <CardContent>
-              <Select value={selectedTemplate} onValueChange={setSelectedTemplate}>
-                <SelectTrigger>
-                  <SelectValue
-                    placeholder={loadingTemplates ? "Loading templates..." : "Choose a template..."}
-                  />
-                </SelectTrigger>
-                <SelectContent>
-                  {loadingTemplates ? (
-                    <div className="px-2 py-3 text-center text-sm text-muted-foreground">
-                      Loading templates...
-                    </div>
-                  ) : templateError ? (
-                    <div className="px-2 py-3 text-center text-sm text-muted-foreground">
-                      {templateError}{" "}
-                      <a href="/reports/templates/marketplace" className="text-blue-600 underline">
-                        Browse Marketplace
-                      </a>
-                    </div>
-                  ) : templates.length === 0 ? (
-                    <div className="px-2 py-3 text-center text-sm text-muted-foreground">
-                      No templates found.{" "}
-                      <a href="/reports/templates/marketplace" className="text-blue-600 underline">
-                        Browse Marketplace
-                      </a>
-                    </div>
-                  ) : (
-                    templates.map((t) => (
-                      <SelectItem key={t.id} value={t.id}>
-                        {t.name || t.title || t.template?.name || "Untitled"}
-                      </SelectItem>
-                    ))
-                  )}
-                </SelectContent>
-              </Select>
+            <CardContent className="space-y-4">
+              {/* AI-Powered Smart Selector */}
+              <SmartTemplateSelector
+                onSelect={(templateId) => setSelectedTemplate(templateId)}
+                selectedId={selectedTemplate}
+                context={{ claimId: selectedClaim || undefined }}
+                showRecommendation={true}
+                compact={false}
+                label="AI Template Picker"
+              />
+
+              {/* Fallback: Org-saved templates */}
+              {templates.length > 0 && (
+                <div className="border-t pt-3">
+                  <p className="mb-2 text-xs font-medium text-slate-500 dark:text-slate-400">
+                    Or pick from your saved templates:
+                  </p>
+                  <Select value={selectedTemplate} onValueChange={setSelectedTemplate}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Saved org templates..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {templates.map((t) => (
+                        <SelectItem key={t.id} value={t.id}>
+                          {t.name || t.title || t.template?.name || "Untitled"}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
+
+              {!loadingTemplates && templates.length === 0 && !templateError && (
+                <p className="text-xs text-muted-foreground">
+                  No saved templates yet.{" "}
+                  <a href="/reports/templates/marketplace" className="text-blue-600 underline">
+                    Browse Marketplace
+                  </a>
+                </p>
+              )}
+              {templateError && <p className="text-xs text-red-500">{templateError}</p>}
             </CardContent>
           </Card>
         </div>

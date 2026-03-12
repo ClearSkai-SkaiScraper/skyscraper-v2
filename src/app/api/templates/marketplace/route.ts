@@ -1,5 +1,5 @@
-import { NextResponse } from "next/server";
 import { logger } from "@/lib/logger";
+import { NextResponse } from "next/server";
 
 import prisma from "@/lib/prisma";
 import { getPremiumRegistry } from "@/lib/templates/registry";
@@ -90,6 +90,10 @@ export async function GET() {
 
         return {
           ...base,
+          // Style fields from registry for 3-tab marketplace
+          styleCategory: reg.styleCategory ?? null,
+          audience: reg.audience ?? null,
+          bestFor: reg.bestFor ?? null,
           thumbnailUrl: `/api/templates/${reg.id}/thumbnail`,
           previewPdfUrl: `/api/templates/marketplace/${reg.slug}/preview-pdf`,
           placeholderCount: premium?.placeholdersRequired ?? 0,
@@ -120,6 +124,10 @@ export async function GET() {
       title: t.title,
       description: t.description,
       category: t.category,
+      // Style fields from registry for 3-tab marketplace
+      styleCategory: t.styleCategory ?? null,
+      audience: t.audience ?? null,
+      bestFor: t.bestFor ?? null,
       tags: t.tags,
       version: t.version,
       thumbnailUrl: `/api/templates/${t.id}/thumbnail`,
