@@ -79,14 +79,14 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
       shareExpiresAt: shareExpiresAt || existingShare.shareExpiresAt || null,
     };
 
-    // Update report with share metadata in attachments
+    // Update report with share metadata in attachments (org-scoped for defense-in-depth)
     const updatedAttachments = {
       ...existingAttachments,
       _shareMetadata: updatedShareMetadata,
     };
 
-    await prisma.ai_reports.update({
-      where: { id: reportId },
+    await prisma.ai_reports.updateMany({
+      where: { id: reportId, orgId: org.id },
       data: {
         attachments: updatedAttachments as object,
       },

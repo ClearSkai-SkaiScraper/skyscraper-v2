@@ -15,9 +15,8 @@ import { redirect } from "next/navigation";
 import { PageContainer } from "@/components/layout/PageContainer";
 import { PageHero } from "@/components/layout/PageHero";
 import { Button } from "@/components/ui/button";
-import prisma from "@/lib/prisma";
-import { PUBLIC_DEMO_ORG_ID } from "@/lib/demo/constants";
 import { getOrg } from "@/lib/org/getOrg";
+import prisma from "@/lib/prisma";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -116,48 +115,33 @@ export default async function AnalyticsDashboardPage() {
 
   const organizationId = orgResult.orgId;
 
-  // Check if demo mode is enabled
-  let demoModeEnabled = false;
-  try {
-    const orgSettings = await prisma.org.findUnique({
-      where: { id: organizationId },
-      select: { demoMode: true },
-    });
-    demoModeEnabled = orgSettings?.demoMode ?? false;
-  } catch {
-    // Ignore if column doesn't exist
-  }
-
-  // Build where clause for demo mode
-  const leadsWhere = demoModeEnabled
-    ? { OR: [{ orgId: organizationId }, { orgId: PUBLIC_DEMO_ORG_ID, isDemo: true }] }
-    : { orgId: organizationId };
-
-  const claimsWhere = demoModeEnabled
-    ? { OR: [{ orgId: organizationId }, { orgId: PUBLIC_DEMO_ORG_ID, isDemo: true }] }
-    : { orgId: organizationId };
-
   // Fetch all data in parallel - FAST!
   const [leads, claims, retailJobs, recentLeads, recentClaims] = await Promise.all([
     prisma.leads.findMany({
-      where: leadsWhere,
+      where: { orgId: organizationId },
       select: { id: true, stage: true, value: true, createdAt: true, jobCategory: true },
     }),
     prisma.claims.findMany({
-      where: claimsWhere,
+      where: { orgId: organizationId },
       select: { id: true, status: true, estimatedValue: true, createdAt: true },
     }),
     prisma.leads.findMany({
-      where: { ...leadsWhere, jobCategory: { in: ["out_of_pocket", "financed", "repair"] } },
+      where: {
+        orgId: organizationId,
+        jobCategory: { in: ["out_of_pocket", "financed", "repair"] },
+      },
       select: { id: true, value: true },
     }),
     prisma.leads.findMany({
-      where: { ...leadsWhere, createdAt: { gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) } },
+      where: {
+        orgId: organizationId,
+        createdAt: { gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) },
+      },
       select: { id: true },
     }),
     prisma.claims.findMany({
       where: {
-        ...claimsWhere,
+        orgId: organizationId,
         createdAt: { gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) },
       },
       select: { id: true },

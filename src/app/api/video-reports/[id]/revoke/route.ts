@@ -41,9 +41,9 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
       return NextResponse.json({ error: "Report not found" }, { status: 404 });
     }
 
-    // Revoke public access - set status to 'revoked'
-    await prisma.ai_reports.update({
-      where: { id: reportId },
+    // Revoke public access — org-scoped for defense-in-depth
+    await prisma.ai_reports.updateMany({
+      where: { id: reportId, orgId: Org.id },
       data: {
         status: "revoked",
       },

@@ -1,4 +1,5 @@
-export const runtime = "nodejs";\nexport const dynamic = "force-dynamic";
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
 
 import { logger } from "@/lib/logger";
 import { NextRequest, NextResponse } from "next/server";

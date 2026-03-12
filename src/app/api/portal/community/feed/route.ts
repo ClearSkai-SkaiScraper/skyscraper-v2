@@ -62,16 +62,16 @@ export async function GET(req: NextRequest) {
       },
     });
 
+    // Batch author lookup — avoid N+1 queries
+    const authorIds = [...new Set(communityPosts.map((p) => p.authorId))];
+    const authorClients = await prisma.client.findMany({
+      where: { userId: { in: authorIds } },
+      select: { userId: true, name: true },
+    });
+    const authorMap = new Map(authorClients.map((c) => [c.userId, c.name]));
+
     for (const post of communityPosts) {
-      // Look up author name from client or user registry
-      let authorName = "Community Member";
-      const authorClient = await prisma.client
-        .findFirst({
-          where: { userId: post.authorId },
-          select: { name: true },
-        })
-        .catch(() => null);
-      if (authorClient?.name) authorName = authorClient.name;
+      const authorName = authorMap.get(post.authorId) || "Community Member";
 
       feedItems.push({
         id: post.id,

@@ -1,4 +1,5 @@
 import { Calculator, FileText, Plus } from "lucide-react";
+import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
@@ -22,7 +23,7 @@ import { safeOrgContext } from "@/lib/safeOrgContext";
 
 export const dynamic = "force-dynamic";
 
-export const metadata = {
+export const metadata: Metadata = {
   title: "Estimates | SkaiScraper",
   description: "View and manage project estimates.",
 };

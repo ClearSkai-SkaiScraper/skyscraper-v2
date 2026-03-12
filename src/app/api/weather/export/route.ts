@@ -37,9 +37,12 @@ export const POST = withAuth(async (req: NextRequest, { orgId }) => {
       );
     }
 
-    // Pull weather report from database
-    const report = await prisma.weather_reports.findUnique({
-      where: { id: reportId },
+    // Pull weather report from database — scope through claim relation for tenant isolation
+    const report = await prisma.weather_reports.findFirst({
+      where: {
+        id: reportId,
+        claims: { orgId },
+      },
       include: {
         claims: {
           include: {
@@ -51,14 +54,6 @@ export const POST = withAuth(async (req: NextRequest, { orgId }) => {
 
     if (!report) {
       return NextResponse.json({ error: "Weather report not found" }, { status: 404 });
-    }
-
-    // Verify org access — must belong to user's org (orgId is DB-backed UUID from withAuth)
-    if (report.claimId) {
-      const claim = report.claims;
-      if (claim && claim.orgId !== orgId) {
-        return new NextResponse("Forbidden", { status: 403 });
-      }
     }
 
     // Build the packet using the weather intelligence engine

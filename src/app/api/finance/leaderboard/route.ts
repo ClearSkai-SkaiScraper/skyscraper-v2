@@ -277,6 +277,7 @@ export async function GET(req: Request) {
         createdAt: true,
         assignedTo: true,
       },
+      take: 5000, // Safety limit — bounded by period + org
     });
 
     // Also count pending claims separately for context
@@ -305,6 +306,7 @@ export async function GET(req: Request) {
         createdAt: true,
         assignedTo: true,
       },
+      take: 5000, // Safety limit — bounded by period + org
     });
 
     // Collect all unique lead sources for the filter dropdown

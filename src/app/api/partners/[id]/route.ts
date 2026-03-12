@@ -32,30 +32,28 @@ export const PATCH = withOrgScope(
     try {
       const { id } = await context.params;
 
-      // Verify ownership
-      const existing = await prisma.partner.findFirst({
-        where: { id, orgId },
-      });
-
-      if (!existing) {
-        return NextResponse.json({ error: "Partner not found" }, { status: 404 });
-      }
-
       const body = await req.json();
       const { name, trade, email, phone, website, address, notes } = body;
 
-      const partner = await prisma.partner.update({
-        where: { id },
-        data: {
-          ...(name && { name }),
-          ...(trade && { trade }),
-          email: email ?? existing.email,
-          phone: phone ?? existing.phone,
-          website: website ?? existing.website,
-          address: address ?? existing.address,
-          notes: notes ?? existing.notes,
-        },
+      const partner = await prisma.$transaction(async (tx) => {
+        const check = await tx.partner.findFirst({ where: { id, orgId } });
+        if (!check) return null;
+        return tx.partner.update({
+          where: { id },
+          data: {
+            ...(name && { name }),
+            ...(trade && { trade }),
+            email: email ?? check.email,
+            phone: phone ?? check.phone,
+            website: website ?? check.website,
+            address: address ?? check.address,
+            notes: notes ?? check.notes,
+          },
+        });
       });
+      if (!partner) {
+        return NextResponse.json({ error: "Partner not found" }, { status: 404 });
+      }
 
       return NextResponse.json(partner);
     } catch (error) {
@@ -70,18 +68,10 @@ export const DELETE = withOrgScope(
     try {
       const { id } = await context.params;
 
-      // Verify ownership
-      const existing = await prisma.partner.findFirst({
-        where: { id, orgId },
-      });
-
-      if (!existing) {
+      const result = await prisma.partner.deleteMany({ where: { id, orgId } });
+      if (result.count === 0) {
         return NextResponse.json({ error: "Partner not found" }, { status: 404 });
       }
-
-      await prisma.partner.delete({
-        where: { id },
-      });
 
       return NextResponse.json({ success: true });
     } catch (error) {

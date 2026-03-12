@@ -33,18 +33,13 @@ export const POST = withAuth(async (req: NextRequest, { orgId: userOrgId, userId
 
     // Handle claim moves
     if (claimId) {
-      const claim = await prisma.claims.findUnique({
-        where: { id: claimId },
-        select: { id: true, orgId: true, status: true },
+      const claim = await prisma.claims.findFirst({
+        where: { id: claimId, orgId: userOrgId },
+        select: { id: true, status: true },
       });
 
       if (!claim) {
         return NextResponse.json({ error: "Claim not found" }, { status: 404 });
-      }
-
-      // Tenant isolation: verify claim belongs to user's org
-      if (claim.orgId !== userOrgId) {
-        return NextResponse.json({ error: "Access denied" }, { status: 403 });
       }
 
       // Map pipeline stage to claim status
@@ -77,7 +72,7 @@ export const POST = withAuth(async (req: NextRequest, { orgId: userOrgId, userId
       const newLifecycle = stageToLifecycle[stage] || null;
 
       const updated = await prisma.claims.update({
-        where: { id: claimId },
+        where: { id: claimId, orgId: userOrgId },
         data: {
           status: newStatus,
           ...(newLifecycle ? { lifecycle_stage: newLifecycle as any } : {}),
@@ -97,19 +92,16 @@ export const POST = withAuth(async (req: NextRequest, { orgId: userOrgId, userId
     // Handle lead moves
     if (leadId) {
       // Tenant isolation: verify lead belongs to user's org
-      const lead = await prisma.leads.findUnique({
-        where: { id: leadId },
-        select: { id: true, orgId: true },
+      const lead = await prisma.leads.findFirst({
+        where: { id: leadId, orgId: userOrgId },
+        select: { id: true },
       });
       if (!lead) {
         return NextResponse.json({ error: "Lead not found" }, { status: 404 });
       }
-      if (lead.orgId !== userOrgId) {
-        return NextResponse.json({ error: "Access denied" }, { status: 403 });
-      }
 
       const updated = await prisma.leads.update({
-        where: { id: leadId },
+        where: { id: leadId, orgId: userOrgId },
         data: { stage, updatedAt: new Date() },
         select: { id: true, stage: true, updatedAt: true },
       });

@@ -26,12 +26,12 @@ import {
   Users,
 } from "lucide-react";
 import type { Metadata } from "next";
+import { isRedirectError } from "next/dist/client/components/redirect";
 import Image from "next/image";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
 import { ClientPortalWrapper } from "@/components/onboarding/ClientPortalWrapper";
-import DemoModeToggle from "@/components/portal/DemoModeToggle";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { getUserIdentity } from "@/lib/identity";
 import { logger } from "@/lib/logger";
@@ -88,6 +88,8 @@ export default async function ClientPortalPage() {
       redirect("/dashboard");
     }
   } catch (orgError) {
+    // Re-throw Next.js redirect errors — they're not real errors!
+    if (isRedirectError(orgError)) throw orgError;
     logger.error("[PORTAL] Error checking org membership:", orgError);
     // Continue - non-fatal, will fall through to other checks
   }
@@ -379,10 +381,6 @@ export default async function ClientPortalPage() {
               Find a Pro
             </Link>
           </div>
-        </div>
-
-        <div className="mb-6 max-w-xl">
-          <DemoModeToggle />
         </div>
 
         {/* ── Stats Grid ── */}

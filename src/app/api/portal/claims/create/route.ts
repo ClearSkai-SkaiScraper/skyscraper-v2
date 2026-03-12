@@ -45,7 +45,33 @@ export async function POST(request: NextRequest) {
       select: { id: true, orgId: true },
     });
 
-    const orgId = client?.orgId || "portal";
+    // Resolve orgId: client.orgId → connected pro's org → "portal" fallback
+    let orgId = client?.orgId || null;
+
+    // If no orgId on client record, check for a connected pro's org
+    if (!orgId || orgId === "self-service-clients") {
+      const proConnection = await prisma.clientProConnection.findFirst({
+        where: {
+          clientId: client?.id ?? "",
+          status: { in: ["connected", "accepted"] },
+        },
+        include: {
+          tradesCompany: {
+            select: { orgId: true },
+          },
+        },
+        orderBy: { connectedAt: "desc" },
+      });
+
+      if (proConnection?.tradesCompany?.orgId) {
+        orgId = proConnection.tradesCompany.orgId;
+      }
+    }
+
+    // Final fallback — claim is visible only to the client until connected
+    if (!orgId) {
+      orgId = "portal";
+    }
 
     // Generate a claim number
     const claimNumber = `CLM-${Date.now().toString(36).toUpperCase()}`;
@@ -57,11 +83,15 @@ export async function POST(request: NextRequest) {
       const property = await prisma.properties.create({
         data: {
           id: crypto.randomUUID(),
+          contactId: "portal-" + userId,
+          name: data.propertyAddress,
+          propertyType: "Residential",
           street: parts[0] || data.propertyAddress,
-          city: parts[1] || null,
-          state: parts[2] || null,
-          zipCode: parts[3] || null,
+          city: parts[1] || "",
+          state: parts[2] || "",
+          zipCode: parts[3] || "",
           orgId,
+          updatedAt: new Date(),
         },
       });
       propertyId = property.id;
@@ -76,25 +106,45 @@ export async function POST(request: NextRequest) {
         orgId,
         insured_name: insuredName,
         homeowner_email: data.homeownerEmail || null,
-        damageType: data.lossType || null,
-        dateOfLoss: data.dateOfLoss ? new Date(data.dateOfLoss) : null,
+        damageType: data.lossType || "",
+        dateOfLoss: data.dateOfLoss ? new Date(data.dateOfLoss) : new Date(),
         status: "NEW",
-        lifecycle_stage: "INTAKE",
-        propertyId: propertyId,
-        source: "portal",
-        notes: data.description || null,
-        submittedBy: userId,
+        lifecycle_stage: "FILED",
+        propertyId: propertyId || "",
+        description: data.description || null,
+        updatedAt: new Date(),
       },
     });
 
-    // Create client access so the client can view this claim
+    // Create client access so the client can view this claim (email-based)
+    const clientEmail = data.homeownerEmail || `${userId}@portal.local`;
     await prisma.client_access.create({
       data: {
         id: crypto.randomUUID(),
         claimId: claim.id,
-        email: data.homeownerEmail || `${userId}@portal.local`,
+        email: clientEmail,
       },
     });
+
+    // Also create ClaimClientLink (userId-based) for unified access
+    if (client) {
+      await prisma.claimClientLink
+        .create({
+          data: {
+            id: crypto.randomUUID(),
+            claimId: claim.id,
+            clientEmail: clientEmail,
+            clientName: insuredName,
+            clientUserId: client.id,
+            status: "ACCEPTED",
+            invitedBy: userId,
+            acceptedAt: new Date(),
+          },
+        })
+        .catch(() => {
+          // Ignore duplicate — may already exist
+        });
+    }
 
     logger.info("[PORTAL_CLAIM_CREATE]", {
       userId,

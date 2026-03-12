@@ -17,6 +17,7 @@ import {
   Sparkles,
   Zap,
 } from "lucide-react";
+import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
@@ -27,7 +28,7 @@ import { safeOrgContext } from "@/lib/safeOrgContext";
 
 export const dynamic = "force-dynamic";
 
-export const metadata = {
+export const metadata: Metadata = {
   title: "AI Tools | SkaiScraper Pro",
   description:
     "AI-powered tools for insurance claims — supplement builder, rebuttal generator, depreciation calculator, and more.",

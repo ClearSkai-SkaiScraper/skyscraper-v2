@@ -30,6 +30,12 @@ jobs:
       - name: Install deps
         run: pnpm install --frozen-lockfile
 
+      - name: Generate Prisma Client
+        run: npx prisma generate
+
+      - name: TypeScript Gate
+        run: pnpm typecheck
+
       # Deploy preview from source (no prebuilt)
       - name: Vercel Deploy (Preview, from source)
         id: deploy

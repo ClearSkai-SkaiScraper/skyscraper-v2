@@ -32,7 +32,7 @@
   },
   "regions": ["iad1"],
   "installCommand": "pnpm install --frozen-lockfile --prod=false",
-  "buildCommand": "rm -rf node_modules/.prisma .eslintcache && npx prisma generate && NODE_OPTIONS='--max-old-space-size=8192' ESLINT_USE_FLAT_CONFIG=false pnpm build",
+  "buildCommand": "rm -rf node_modules/.prisma .eslintcache && npx prisma generate && bash scripts/typecheck-guard.sh && NODE_OPTIONS='--max-old-space-size=8192' ESLINT_USE_FLAT_CONFIG=false pnpm build",
   "crons": [
     {
       "path": "/api/wallet/reset-monthly",

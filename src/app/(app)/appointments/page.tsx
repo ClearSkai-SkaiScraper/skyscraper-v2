@@ -1,5 +1,6 @@
 import { Calendar } from "lucide-react";
 import { Metadata } from "next";
+import { isRedirectError } from "next/dist/client/components/redirect";
 
 import { PageContainer } from "@/components/layout/PageContainer";
 import { PageHero } from "@/components/layout/PageHero";
@@ -24,7 +25,7 @@ export default async function AppointmentsPage() {
     orgId = ctx.ok ? (ctx.orgId ?? "") : "";
   } catch (error: unknown) {
     // Re-throw redirect errors (Next.js uses these for navigation)
-    if (error instanceof Error && error.message === "NEXT_REDIRECT") throw error;
+    if (isRedirectError(error)) throw error;
     // Swallow org-resolution failures — page renders with empty state
   }
 

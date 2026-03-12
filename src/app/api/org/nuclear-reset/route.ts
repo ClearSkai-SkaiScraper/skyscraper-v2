@@ -14,19 +14,38 @@
  */
 
 import { logger } from "@/lib/logger";
+import { checkRateLimit } from "@/lib/rate-limit";
 import { auth, currentUser } from "@clerk/nextjs/server";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
 import prisma from "@/lib/prisma";
 
 export const dynamic = "force-dynamic";
 
-export async function POST(): Promise<NextResponse> {
+export async function POST(req: NextRequest): Promise<NextResponse> {
   try {
     const { userId, orgId: clerkOrgId } = await auth();
 
     if (!userId) {
       return NextResponse.json({ ok: false, error: "Unauthorized" }, { status: 401 });
+    }
+
+    // Rate limit: max 2 resets per hour per user
+    const rl = await checkRateLimit(`nuclear-reset:${userId}`, "AI");
+    if (!rl.success) {
+      return NextResponse.json(
+        { ok: false, error: "Rate limit exceeded. Try again later." },
+        { status: 429 }
+      );
+    }
+
+    // Require explicit confirmation in body
+    const body = await req.json().catch(() => ({}));
+    if (body?.confirm !== "RESET_MY_ORG") {
+      return NextResponse.json(
+        { ok: false, error: 'Must send { "confirm": "RESET_MY_ORG" } to proceed' },
+        { status: 400 }
+      );
     }
 
     // Verify user has ADMIN/OWNER role before allowing destructive reset

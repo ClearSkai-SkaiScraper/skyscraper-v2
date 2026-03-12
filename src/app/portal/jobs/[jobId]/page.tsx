@@ -26,16 +26,9 @@ import {
   WorkspaceSignedDoc,
   WorkspaceTimelineEvent,
 } from "@/components/portal/ClientWorkspace";
-import { getDemoJobWorkspace, type DemoWorkspaceData } from "@/lib/demo/DemoService";
 
-// Demo workspace data is now loaded from DemoService
-const getDemoData = (jobId?: string): DemoWorkspaceData => getDemoJobWorkspace(jobId);
-
-// Legacy constant kept for backwards compatibility with explicit demo-job-1 route
-const DEMO_JOB_PROJECT: WorkspaceProject = getDemoData().project;
-
-// Deprecated - keeping for reference during migration
-const _LEGACY_DEMO_JOB_PROJECT: WorkspaceProject = {
+// Demo workspace data for client portal demo experience
+const DEMO_JOB_PROJECT: WorkspaceProject = {
   id: "demo-job-1",
   type: "job",
   title: "Security Cameras & Driveway Lighting",

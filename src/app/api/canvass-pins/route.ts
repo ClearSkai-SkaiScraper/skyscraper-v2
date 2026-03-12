@@ -163,21 +163,21 @@ export async function PATCH(req: NextRequest) {
 
     const { id, ...updates } = parsed.data;
 
-    // Verify ownership
-    const existing = await prisma.canvass_pins.findFirst({
-      where: { id, orgId: ctx.orgId },
+    // Atomic find+update in transaction to prevent TOCTOU race
+    const pin = await prisma.$transaction(async (tx) => {
+      const check = await tx.canvass_pins.findFirst({ where: { id, orgId: ctx.orgId } });
+      if (!check) return null;
+      return tx.canvass_pins.update({
+        where: { id },
+        data: {
+          ...updates,
+          followUpDate: updates.followUpDate ? new Date(updates.followUpDate) : undefined,
+        },
+      });
     });
-    if (!existing) {
+    if (!pin) {
       return NextResponse.json({ error: "Pin not found" }, { status: 404 });
     }
-
-    const pin = await prisma.canvass_pins.update({
-      where: { id },
-      data: {
-        ...updates,
-        followUpDate: updates.followUpDate ? new Date(updates.followUpDate) : undefined,
-      },
-    });
 
     return NextResponse.json({
       success: true,
@@ -206,15 +206,11 @@ export async function DELETE(req: NextRequest) {
       return NextResponse.json({ error: "Missing pin id" }, { status: 400 });
     }
 
-    // Verify ownership
-    const existing = await prisma.canvass_pins.findFirst({
-      where: { id, orgId: ctx.orgId },
-    });
-    if (!existing) {
+    // Atomic org-scoped delete
+    const result = await prisma.canvass_pins.deleteMany({ where: { id, orgId: ctx.orgId } });
+    if (result.count === 0) {
       return NextResponse.json({ error: "Pin not found" }, { status: 404 });
     }
-
-    await prisma.canvass_pins.delete({ where: { id } });
 
     return NextResponse.json({ success: true });
   } catch (err) {

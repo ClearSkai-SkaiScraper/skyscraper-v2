@@ -2,7 +2,7 @@
 
 import { logger } from "@/lib/logger";
 import { format, isValid } from "date-fns";
-import { ArrowRight, CheckCircle, Clock, FileText, MapPin, Shield, Sparkles } from "lucide-react";
+import { ArrowRight, CheckCircle, Clock, FileText, MapPin, Shield } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
@@ -26,21 +26,9 @@ interface Claim {
   updatedAt: string;
 }
 
-// Demo claim to show flow when user has no real claims
-const DEMO_CLAIM: Claim = {
-  id: "demo-claim-1",
-  claimNumber: "DEMO-2026-001234",
-  address: "123 Main Street, Phoenix, AZ 85001",
-  status: "In Progress",
-  dateOfLoss: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(), // 30 days ago
-  createdAt: new Date(Date.now() - 25 * 24 * 60 * 60 * 1000).toISOString(),
-  updatedAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
-};
-
 export default function ClaimsListPage() {
   const [claims, setClaims] = useState<Claim[]>([]);
   const [loading, setLoading] = useState(true);
-  const [showDemoMode, setShowDemoMode] = useState(false);
 
   useEffect(() => {
     fetchClaims();
@@ -51,25 +39,14 @@ export default function ClaimsListPage() {
       const res = await fetch("/api/portal/claims");
       if (res.ok) {
         const data = await res.json();
-        const realClaims = data.claims || [];
-        setClaims(realClaims);
-        // Show demo mode if no real claims
-        if (realClaims.length === 0) {
-          setShowDemoMode(true);
-        }
-      } else {
-        setShowDemoMode(true);
+        setClaims(data.claims || []);
       }
     } catch (error) {
       logger.error("Failed to fetch claims:", error);
-      setShowDemoMode(true);
     } finally {
       setLoading(false);
     }
   }
-
-  // Use demo claim if in demo mode
-  const displayClaims = showDemoMode ? [DEMO_CLAIM] : claims;
 
   const formatDate = (dateStr?: string) => {
     if (!dateStr) return "N/A";
@@ -95,10 +72,10 @@ export default function ClaimsListPage() {
     }
   };
 
-  const activeClaims = displayClaims.filter((c) =>
+  const activeClaims = claims.filter((c) =>
     ["open", "active", "in_progress", "in progress"].includes(c.status.toLowerCase())
   );
-  const completedClaims = displayClaims.filter((c) =>
+  const completedClaims = claims.filter((c) =>
     ["completed", "closed"].includes(c.status.toLowerCase())
   );
 
@@ -123,31 +100,13 @@ export default function ClaimsListPage() {
         badge="Insurance Claims"
         gradient="amber"
         stats={[
-          { label: "Total Claims", value: displayClaims.length },
+          { label: "Total Claims", value: claims.length },
           { label: "Active", value: activeClaims.length },
           { label: "Completed", value: completedClaims.length },
         ]}
       />
 
-      {/* Demo Mode Banner */}
-      {showDemoMode && (
-        <div className="rounded-xl border border-amber-200 bg-gradient-to-r from-amber-50 to-orange-50 p-4 dark:border-amber-800 dark:from-amber-900/20 dark:to-orange-900/20">
-          <div className="flex items-center gap-3">
-            <div className="rounded-full bg-amber-100 p-2 dark:bg-amber-900/30">
-              <Sparkles className="h-5 w-5 text-amber-600" />
-            </div>
-            <div>
-              <p className="font-medium text-amber-900 dark:text-amber-100">Preview Mode</p>
-              <p className="text-sm text-amber-700 dark:text-amber-300">
-                This is sample claim data. Real claims will appear when your contractor shares them
-                with you.
-              </p>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {displayClaims.length === 0 ? (
+      {claims.length === 0 ? (
         <Card className="border-2 border-dashed bg-gradient-to-br from-slate-50 to-white dark:from-slate-800/50 dark:to-slate-900">
           <CardContent className="flex flex-col items-center justify-center py-16 text-center">
             <div className="mb-4 flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-br from-amber-500 to-orange-600 shadow-lg shadow-amber-500/30">
@@ -162,11 +121,8 @@ export default function ClaimsListPage() {
         </Card>
       ) : (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {displayClaims.map((claim) => (
-            <Card
-              key={claim.id}
-              className={`transition-shadow hover:shadow-md ${claim.id.startsWith("demo-") ? "border-amber-200 dark:border-amber-800" : ""}`}
-            >
+          {claims.map((claim) => (
+            <Card key={claim.id} className="transition-shadow hover:shadow-md">
               <CardHeader className="pb-2">
                 <div className="flex items-start justify-between">
                   <div>
@@ -193,13 +149,7 @@ export default function ClaimsListPage() {
                   </div>
                 </div>
 
-                <Link
-                  href={
-                    claim.id.startsWith("demo-")
-                      ? `/portal/claims/demo`
-                      : `/portal/claims/${claim.id}`
-                  }
-                >
+                <Link href={`/portal/claims/${claim.id}`}>
                   <Button variant="outline" size="sm" className="w-full">
                     View Details
                     <ArrowRight className="ml-2 h-4 w-4" />

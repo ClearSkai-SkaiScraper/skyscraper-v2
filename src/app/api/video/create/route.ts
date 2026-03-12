@@ -3,8 +3,9 @@ export const dynamic = "force-dynamic";
 // app/api/video/create/route.ts
 
 import { logger } from "@/lib/logger";
-import { auth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
+
+import { requireAuth } from "@/lib/auth/requireAuth";
 
 import { buildClaimVideoScript } from "@/lib/ai/video/buildClaimVideoScript";
 import { buildRetailVideoScript } from "@/lib/ai/video/buildRetailVideoScript";
@@ -21,10 +22,9 @@ import { uploadVideoToFirebase } from "@/lib/storage/uploadVideoToFirebase";
 
 export async function POST(req: Request) {
   try {
-    const { userId } = await auth();
-    if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    const authResult = await requireAuth();
+    if (authResult instanceof NextResponse) return authResult;
+    const { userId, orgId } = authResult;
 
     const { claimId, type } = await req.json();
 
@@ -32,8 +32,8 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Claim ID is required" }, { status: 400 });
     }
 
-    const claims = await prisma.claims.findUnique({
-      where: { id: claimId },
+    const claims = await prisma.claims.findFirst({
+      where: { id: claimId, orgId },
       select: { orgId: true },
     });
 

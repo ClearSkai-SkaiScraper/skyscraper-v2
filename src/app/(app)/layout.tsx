@@ -1,5 +1,6 @@
 import { currentUser } from "@clerk/nextjs/server";
 import type { Metadata } from "next";
+import { isRedirectError } from "next/dist/client/components/redirect";
 import React, { Suspense } from "react";
 
 // BetaModeBanner removed — plan info now in profile menu
@@ -180,8 +181,8 @@ export default async function AppLayout({ children }: { children: React.ReactNod
       </AppProviders>
     );
   } catch (layoutError) {
-    // Redirect passthrough
-    if (layoutError?.message === "NEXT_REDIRECT" || layoutError?.stack?.includes("NEXT_REDIRECT")) {
+    // Redirect passthrough — use Next.js official check
+    if (isRedirectError(layoutError)) {
       throw layoutError;
     }
     logger.error("🚨🚨🚨 CRITICAL: LAYOUT CRASHED 🚨🚨🚨", {

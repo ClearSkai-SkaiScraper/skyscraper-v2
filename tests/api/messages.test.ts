@@ -15,7 +15,7 @@ import {
   SECOND_ORG_ID,
   TEST_ORG_ID,
   TEST_USER_ID,
-} from "../../helpers";
+} from "../helpers";
 
 const prisma = createMockPrisma();
 vi.mock("@/lib/db", () => ({ prisma, default: prisma }));

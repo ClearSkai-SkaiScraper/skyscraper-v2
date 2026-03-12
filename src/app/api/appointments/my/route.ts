@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
 
-import { PUBLIC_DEMO_ORG_ID } from "@/lib/demo/constants";
 import prisma from "@/lib/prisma";
 import { safeOrgContext } from "@/lib/safeOrgContext";
 
@@ -16,21 +15,9 @@ export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
   const statusFilter = searchParams.get("status");
 
-  // Check if org has demo mode enabled
-  const orgSettings = await prisma.org.findUnique({
-    where: { id: ctx.orgId! },
-    select: { demoMode: true },
-  });
-  const demoModeEnabled = orgSettings?.demoMode ?? false;
-
-  // Build where clause - include demo data if demo mode enabled
-  const where: any = demoModeEnabled
-    ? { OR: [{ orgId: ctx.orgId ?? undefined }, { orgId: PUBLIC_DEMO_ORG_ID }] }
-    : { orgId: ctx.orgId ?? undefined };
-
   // Fetch appointments from the appointments table
   const appointments = await prisma.appointments.findMany({
-    where,
+    where: { orgId: ctx.orgId! },
     orderBy: { startTime: "asc" },
     select: {
       id: true,

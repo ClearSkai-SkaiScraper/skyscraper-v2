@@ -1,4 +1,5 @@
 import { Map } from "lucide-react";
+import type { Metadata } from "next";
 import nextDynamic from "next/dynamic";
 
 import { PageContainer } from "@/components/layout/PageContainer";
@@ -27,7 +28,7 @@ const MapViewClient = nextDynamic(() => import("./_components/MapViewClient"), {
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
-export const metadata = {
+export const metadata: Metadata = {
   title: "Map View | SkaiScraper",
   description: "Interactive map of all your jobs, claims, leads, and vendor locations",
 };

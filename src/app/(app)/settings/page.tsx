@@ -13,6 +13,7 @@ import {
   Users,
   Wrench,
 } from "lucide-react";
+import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
@@ -32,7 +33,7 @@ import { SettingsForm } from "./_components/SettingsForm";
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
-export const metadata = {
+export const metadata: Metadata = {
   title: "Settings | SkaiScraper",
   description: "Configure your workspace, profile, and notification preferences.",
 };

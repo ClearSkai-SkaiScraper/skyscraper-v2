@@ -4,8 +4,8 @@
  * PATCH: Update payout status, line items, or certifications
  */
 
-import { NextRequest, NextResponse } from "next/server";
 import { logger } from "@/lib/logger";
+import { NextRequest, NextResponse } from "next/server";
 
 import { requireAuth } from "@/lib/auth/requireAuth";
 import prisma from "@/lib/prisma";
@@ -209,7 +209,7 @@ export async function GET(request: NextRequest, { params }: { params: { claimId:
           fileName: p.file_name,
           createdAt: p.created_at?.toISOString() ?? null,
         }));
-      })()
+      })(),
       job: job
         ? {
             id: job.id,

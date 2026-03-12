@@ -15,7 +15,7 @@ import {
   mockAuthSignedOut,
   resetTestFactories,
   TEST_ORG_ID,
-} from "../../helpers";
+} from "../helpers";
 
 // ── Setup ───────────────────────────────────────────────────────────
 const prisma = createMockPrisma();

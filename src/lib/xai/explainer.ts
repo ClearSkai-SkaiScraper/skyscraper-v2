@@ -409,12 +409,3 @@ export async function analyzeBias(
 
   return { overallAccuracy, groupAccuracies, disparateImpact };
 }
-
-export {
-  CounterfactualExample,
-  ExplanationMethod,
-  FeatureImportance,
-  LIMEExplanation,
-  ModelExplanation,
-  SHAPValue,
-};

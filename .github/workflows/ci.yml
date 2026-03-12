@@ -73,13 +73,13 @@ jobs:
         run: pnpm build
 
       - name: DB Integrity Audit
-        if: ${{ secrets.DATABASE_URL != '' }}
+        if: secrets.DATABASE_URL != ''
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
         run: pnpm exec tsx scripts/audit/audit-connections.ts || echo "⚠️ DB audit warnings (non-blocking)"
 
       - name: Prisma DB Drift Check
-        if: ${{ secrets.DIRECT_DATABASE_URL != '' }}
+        if: secrets.DIRECT_DATABASE_URL != ''
         env:
           DIRECT_DATABASE_URL: ${{ secrets.DIRECT_DATABASE_URL }}
         run: |

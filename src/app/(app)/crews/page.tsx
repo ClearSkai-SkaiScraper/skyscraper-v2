@@ -1,4 +1,5 @@
 import { Calendar, Clock, HardHat, Users } from "lucide-react";
+import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
@@ -15,7 +16,7 @@ import { CrewScheduleForm } from "./CrewScheduleForm";
 
 export const dynamic = "force-dynamic";
 
-export const metadata = {
+export const metadata: Metadata = {
   title: "Crew Manager | SkaiScraper",
   description: "Manage crew assignments, schedules, and labor coordination.",
 };

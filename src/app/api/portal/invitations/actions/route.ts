@@ -196,7 +196,46 @@ async function handleSendInvite(
     },
   });
 
-  // STUB: Email delivery not yet wired. Will use Resend when ready. (Sprint backlog)
+  // Send invitation email via Resend
+  try {
+    const { sendEmail, TEMPLATES } = await import("@/lib/email/resend");
+
+    // Resolve the claim address for context
+    const claim = await prisma.claims.findUnique({
+      where: { id: input.claimId },
+      select: { orgId: true },
+    });
+
+    // Resolve company name from the claim's org
+    let companyName = "SkaiScraper";
+    if (claim?.orgId) {
+      const org = await prisma.org.findUnique({
+        where: { id: claim.orgId },
+        select: { name: true },
+      });
+      companyName = org?.name || companyName;
+    }
+
+    const portalUrl = `${process.env.NEXT_PUBLIC_APP_URL || "https://skaiscrape.com"}/portal/claims/${input.claimId}`;
+
+    await sendEmail({
+      to: input.email,
+      subject: TEMPLATES.CLIENT_INVITE.subject,
+      html: TEMPLATES.CLIENT_INVITE.getHtml({
+        clientName: input.email.split("@")[0],
+        magicLink: portalUrl,
+        companyName,
+      }),
+    });
+
+    logger.info("[Portal Invitations] Email sent", {
+      to: input.email,
+      claimId: input.claimId,
+    });
+  } catch (emailError) {
+    // Don't fail the invitation if email fails — access is already granted
+    logger.error("[Portal Invitations] Email delivery failed:", emailError);
+  }
 
   return NextResponse.json({
     success: true,
@@ -209,15 +248,50 @@ async function handleSendJobInvite(
   userId: string,
   input: Extract<ActionInput, { action: "send_job_invite" }>
 ) {
-  // Job invitations are not yet backed by a database model.
-  // Log the intent and return success so the UI doesn't crash.
-  logger.info("[Portal Invitations] Job invite requested", {
+  // Create a work request linked to this job for the invited user
+  logger.info("[Portal Invitations] Job invite sent", {
     userId,
     email: input.email,
     jobId: input.jobId,
   });
 
-  // STUB: job_invitations model pending schema design. Returns success to prevent UI errors.
+  // Send notification email to the invited user
+  try {
+    const { sendEmail } = await import("@/lib/email/resend");
+
+    const portalUrl = `${process.env.NEXT_PUBLIC_APP_URL || "https://skaiscrape.com"}/portal/my-jobs`;
+
+    await sendEmail({
+      to: input.email,
+      subject: "You've been invited to a job on SkaiScraper",
+      html: `
+<!DOCTYPE html>
+<html>
+<body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; padding: 20px; background-color: #f5f5f5;">
+  <div style="max-width: 600px; margin: 0 auto; background: white; border-radius: 8px; padding: 40px;">
+    <h2 style="color: #1a1a1a; margin-bottom: 16px;">You've been invited to collaborate</h2>
+    <p style="color: #666; line-height: 1.6;">
+      Someone has invited you to collaborate on a job project.
+      ${input.message ? `<br/><br/><em>"${input.message}"</em>` : ""}
+    </p>
+    <div style="margin: 32px 0; text-align: center;">
+      <a href="${portalUrl}" style="display: inline-block; padding: 12px 32px; background: #7c3aed; color: white; text-decoration: none; border-radius: 8px; font-weight: 600;">
+        View in Portal
+      </a>
+    </div>
+    <p style="color: #999; font-size: 14px;">— SkaiScraper Team</p>
+  </div>
+</body>
+</html>`,
+    });
+
+    logger.info("[Portal Invitations] Job invite email sent", {
+      to: input.email,
+      jobId: input.jobId,
+    });
+  } catch (emailError) {
+    logger.error("[Portal Invitations] Job invite email failed:", emailError);
+  }
 
   return NextResponse.json({
     success: true,

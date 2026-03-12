@@ -34,8 +34,8 @@
  * ```
  */
 
-import { auth } from "@clerk/nextjs/server";
 import { logger } from "@/lib/logger";
+import { auth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 
 import { getDelegate } from "@/lib/db/modelAliases";
@@ -411,17 +411,17 @@ export async function requirePermission(permission: Permission): Promise<{
  */
 export function createForbiddenResponse(
   message: string = "Access denied",
-  details?: {
+  _details?: {
     currentRole?: TeamRole | null;
     requiredRole?: TeamRole;
     requiredPermission?: Permission;
   }
 ): NextResponse {
+  // Never expose internal role details to the client — log them server-side instead
   return NextResponse.json(
     {
       error: message,
       code: "FORBIDDEN",
-      ...details,
     },
     { status: 403 }
   );

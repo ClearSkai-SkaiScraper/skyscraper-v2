@@ -55,7 +55,7 @@ export async function POST(request: NextRequest) {
     // Get or create client record
     let client = await prisma.client.findFirst({
       where: { userId },
-      select: { id: true },
+      select: { id: true, firstName: true, lastName: true, name: true, email: true, phone: true },
     });
 
     if (!client) {
@@ -67,7 +67,7 @@ export async function POST(request: NextRequest) {
           createdAt: new Date(),
           updatedAt: new Date(),
         },
-        select: { id: true },
+        select: { id: true, firstName: true, lastName: true, name: true, email: true, phone: true },
       });
     }
 
@@ -89,6 +89,75 @@ export async function POST(request: NextRequest) {
     });
 
     logger.info("[WORK_REQUEST_CREATE]", { userId, workRequestId: workRequest.id });
+
+    // ── Bridge to pro's leads table ──────────────────────────────
+    // If the client is connected to a pro, create a mirror lead
+    // so the work request appears in the pro's workspace automatically.
+    try {
+      const proConnection = await prisma.clientProConnection.findFirst({
+        where: {
+          clientId: client.id,
+          status: { in: ["connected", "accepted"] },
+        },
+        include: {
+          tradesCompany: { select: { orgId: true } },
+        },
+        orderBy: { connectedAt: "desc" },
+      });
+
+      const proOrgId = proConnection?.tradesCompany?.orgId;
+      if (proOrgId) {
+        // Ensure a contacts record exists in the pro's org
+        let contact = await prisma.contacts.findFirst({
+          where: { orgId: proOrgId, email: client.email ?? undefined },
+        });
+
+        if (!contact) {
+          contact = await prisma.contacts.create({
+            data: {
+              id: crypto.randomUUID(),
+              orgId: proOrgId,
+              firstName: client.firstName || client.name || "Client",
+              lastName: client.lastName || "",
+              email: client.email || null,
+              phone: client.phone || null,
+              source: "portal",
+              tags: ["portal-client"],
+              updatedAt: new Date(),
+            },
+          });
+        }
+
+        await prisma.leads.create({
+          data: {
+            id: crypto.randomUUID(),
+            orgId: proOrgId,
+            contactId: contact.id,
+            title: (title || "Work Request").trim(),
+            description: description?.trim() || null,
+            source: "client_portal",
+            stage: "new",
+            temperature: "hot",
+            jobCategory: "out_of_pocket",
+            jobType: category || serviceType || null,
+            urgency: urgency || "normal",
+            budget: budget ? parseInt(budget) : null,
+            clientId: client.id,
+            value: budget ? parseInt(budget) : null,
+            updatedAt: new Date(),
+          },
+        });
+
+        logger.info("[WORK_REQUEST_BRIDGE]", {
+          workRequestId: workRequest.id,
+          proOrgId,
+          clientId: client.id,
+        });
+      }
+    } catch (bridgeError) {
+      // Don't fail the work request creation if bridging fails
+      logger.error("[WORK_REQUEST_BRIDGE] Failed to bridge to pro leads:", bridgeError);
+    }
 
     return NextResponse.json(
       {

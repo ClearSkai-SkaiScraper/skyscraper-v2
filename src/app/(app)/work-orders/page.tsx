@@ -1,4 +1,5 @@
 import { AlertCircle, CheckCircle2, ClipboardList, Clock, HardHat, Loader2 } from "lucide-react";
+import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 
 import { PageContainer } from "@/components/layout/PageContainer";
@@ -11,7 +12,7 @@ import { WorkOrderForm } from "./WorkOrderForm";
 
 export const dynamic = "force-dynamic";
 
-export const metadata = {
+export const metadata: Metadata = {
   title: "Work Orders | SkaiScraper",
   description: "Create and manage work orders for crew assignments and job tracking.",
 };

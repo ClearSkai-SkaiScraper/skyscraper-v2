@@ -11,6 +11,7 @@ import {
   ShieldCheck,
   TrendingUp,
 } from "lucide-react";
+import type { Metadata } from "next";
 import Link from "next/link";
 
 import { PageContainer } from "@/components/layout/PageContainer";
@@ -19,7 +20,6 @@ import RecordActions from "@/components/RecordActions";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { PUBLIC_DEMO_ORG_ID } from "@/lib/demo/constants";
 import { logger } from "@/lib/logger";
 import { getOrg } from "@/lib/org/getOrg";
 import prisma from "@/lib/prisma";
@@ -28,7 +28,7 @@ export const dynamic = "force-dynamic";
 export const revalidate = 0;
 export const fetchCache = "force-no-store";
 
-export const metadata = {
+export const metadata: Metadata = {
   title: "Claims | SkaiScraper",
   description: "Manage insurance claims — track stages, supplements, and payouts.",
 };
@@ -114,59 +114,15 @@ export default async function ClaimsPage({ searchParams }: { searchParams: Claim
   let errorMessage = "";
 
   try {
-    // Check if org has demoMode enabled - if so, also include demo claims from PUBLIC_DEMO_ORG
-    let demoModeEnabled = false;
-    try {
-      const orgSettings = await prisma.org.findUnique({
-        where: { id: organizationId },
-        select: { demoMode: true },
-      });
-      demoModeEnabled = orgSettings?.demoMode ?? false;
-    } catch {
-      // Column may not exist yet - ignore
-    }
-
-    // Build where clause - include demo claims if demoMode enabled
-    const whereClause = demoModeEnabled
-      ? {
-          AND: [
-            {
-              OR: [
-                {
-                  orgId: organizationId,
-                  ...(searchParams.stage ? { status: searchParams.stage.toLowerCase() } : {}),
-                },
-                { orgId: PUBLIC_DEMO_ORG_ID, isDemo: true },
-              ],
-            },
-            ...(searchParams.search
-              ? [
-                  {
-                    OR: [
-                      {
-                        claimNumber: {
-                          contains: searchParams.search,
-                          mode: "insensitive" as const,
-                        },
-                      },
-                      { title: { contains: searchParams.search, mode: "insensitive" as const } },
-                    ],
-                  },
-                ]
-              : []),
-          ],
-        }
-      : where;
-
     const [fetchedClaims, fetchedTotal] = await Promise.all([
       prisma.claims.findMany({
-        where: whereClause,
+        where,
         include: { properties: true, activities: { orderBy: { createdAt: "desc" }, take: 1 } },
         orderBy: { createdAt: "desc" },
         skip: offset,
         take: limit,
       }),
-      prisma.claims.count({ where: whereClause }),
+      prisma.claims.count({ where }),
     ]);
     claims = fetchedClaims.map((claim: any) => ({
       ...claim,

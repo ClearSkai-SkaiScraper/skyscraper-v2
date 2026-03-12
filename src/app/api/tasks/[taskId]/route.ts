@@ -41,38 +41,34 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ task
     const body = await req.json();
     const input = UpdateTaskSchema.parse(body);
 
-    // Verify task exists and user has access
-    const existing = await prisma.tasks.findFirst({
-      where: {
-        id: taskId,
-        orgId,
-      },
-    });
-
-    if (!existing) {
-      return NextResponse.json({ error: "Task not found" }, { status: 404 });
-    }
-
-    // Update task
-    const task = await prisma.tasks.update({
-      where: { id: taskId },
-      data: {
-        ...(input.status && { status: input.status }),
-        ...(input.priority && { priority: input.priority }),
-        ...(input.assigneeId !== undefined && { assigneeId: input.assigneeId }),
-        ...(input.dueAt !== undefined && { dueAt: new Date(input.dueAt) }),
-        ...(input.completedAt !== undefined && { completedAt: new Date(input.completedAt) }),
-      },
-      include: {
-        users: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
+    // Update task (atomic find+update to prevent TOCTOU race)
+    const { task, existing } = await prisma.$transaction(async (tx) => {
+      const existing = await tx.tasks.findFirst({ where: { id: taskId, orgId } });
+      if (!existing) return { task: null, existing: null };
+      const task = await tx.tasks.update({
+        where: { id: taskId },
+        data: {
+          ...(input.status && { status: input.status }),
+          ...(input.priority && { priority: input.priority }),
+          ...(input.assigneeId !== undefined && { assigneeId: input.assigneeId }),
+          ...(input.dueAt !== undefined && { dueAt: new Date(input.dueAt) }),
+          ...(input.completedAt !== undefined && { completedAt: new Date(input.completedAt) }),
+        },
+        include: {
+          users: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+            },
           },
         },
-      },
+      });
+      return { task, existing };
     });
+    if (!task || !existing) {
+      return NextResponse.json({ error: "Task not found" }, { status: 404 });
+    }
 
     // Create timeline event if status changed to done
     if (input.status === "DONE" && existing.status !== "DONE" && existing.claimId) {
@@ -143,21 +139,13 @@ export async function DELETE(
 
     const { taskId } = await params;
 
-    // Verify task exists and user has access
-    const existing = await prisma.tasks.findFirst({
-      where: {
-        id: taskId,
-        orgId,
-      },
+    // Atomic org-scoped delete
+    const result = await prisma.tasks.deleteMany({
+      where: { id: taskId, orgId },
     });
-
-    if (!existing) {
+    if (result.count === 0) {
       return NextResponse.json({ error: "Task not found" }, { status: 404 });
     }
-
-    await prisma.tasks.delete({
-      where: { id: taskId },
-    });
 
     return NextResponse.json({ success: true });
   } catch (error) {

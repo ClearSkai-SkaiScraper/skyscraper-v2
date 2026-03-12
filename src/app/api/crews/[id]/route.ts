@@ -83,13 +83,6 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
       return apiError(400, "VALIDATION_ERROR", "Validation failed", parsed.error.errors);
     }
 
-    const existing = await prisma.crewSchedule.findFirst({
-      where: { id, orgId: ctx.orgId },
-    });
-    if (!existing) {
-      return apiError(404, "NOT_FOUND", "Crew schedule not found");
-    }
-
     const data = parsed.data;
     const update: Record<string, unknown> = { updatedAt: new Date() };
 
@@ -111,14 +104,19 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     if (data.accessInstructions !== undefined) update.accessInstructions = data.accessInstructions;
     if (data.weatherRisk !== undefined) update.weatherRisk = data.weatherRisk;
 
-    const updated = await prisma.crewSchedule.update({
-      where: { id },
-      data: update,
-      include: {
-        claims: { select: { id: true, claimNumber: true, title: true } },
-        users: { select: { id: true, name: true, email: true, headshot_url: true } },
-      },
+    const updated = await prisma.$transaction(async (tx) => {
+      const check = await tx.crewSchedule.findFirst({ where: { id, orgId: ctx.orgId } });
+      if (!check) return null;
+      return tx.crewSchedule.update({
+        where: { id },
+        data: update,
+        include: {
+          claims: { select: { id: true, claimNumber: true, title: true } },
+          users: { select: { id: true, name: true, email: true, headshot_url: true } },
+        },
+      });
     });
+    if (!updated) return apiError(404, "NOT_FOUND", "Crew schedule not found (race)");
 
     return apiOk({ schedule: updated });
   } catch (err) {
@@ -135,14 +133,10 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
       return apiError(401, "UNAUTHORIZED", "Authentication required");
     }
 
-    const existing = await prisma.crewSchedule.findFirst({
-      where: { id, orgId: ctx.orgId },
-    });
-    if (!existing) {
+    const result = await prisma.crewSchedule.deleteMany({ where: { id, orgId: ctx.orgId } });
+    if (result.count === 0) {
       return apiError(404, "NOT_FOUND", "Crew schedule not found");
     }
-
-    await prisma.crewSchedule.delete({ where: { id } });
     return apiOk({ deleted: true });
   } catch (err) {
     logger.error("[crews-delete]", err);

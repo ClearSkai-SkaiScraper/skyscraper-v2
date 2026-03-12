@@ -31,7 +31,8 @@ export async function safeHandler<T>(handler: () => Promise<T>, map?: (data: T) 
     if (error.name === "ZodError") {
       return apiError(400, "VALIDATION_ERROR", "Validation failed", error.errors);
     }
-    return apiError(500, "INTERNAL_ERROR", error.message || "Internal server error");
+    // Never leak internal error messages to the client
+    return apiError(500, "INTERNAL_ERROR", "Internal server error");
   }
 }
 

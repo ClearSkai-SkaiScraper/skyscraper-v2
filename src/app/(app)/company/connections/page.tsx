@@ -10,10 +10,11 @@
 
 import { currentUser } from "@clerk/nextjs/server";
 import { Building2, HardHat, Package, Plus, Search, UserCheck, Users } from "lucide-react";
+import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
-export const metadata = {
+export const metadata: Metadata = {
   title: "Company Connections | SkaiScraper",
   description: "Manage vendors, subcontractors, contractors, and client relationships.",
 };

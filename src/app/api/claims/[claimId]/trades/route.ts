@@ -7,7 +7,7 @@
  * POST   /api/claims/[claimId]/trades  — Assign a trade to this claim
  * DELETE /api/claims/[claimId]/trades  — Remove a trade assignment
  *
- * Uses raw SQL against the claim_trade_assignments table.
+ * Uses Prisma model claim_trade_assignments.
  *
  * ============================================================================
  */
@@ -21,22 +21,6 @@ import { NextRequest, NextResponse } from "next/server";
 import { getOrgClaimOrThrow, OrgScopeError } from "@/lib/auth/orgScope";
 import { withAuth } from "@/lib/auth/withAuth";
 import prisma from "@/lib/prisma";
-
-interface TradeRow {
-  id: string;
-  claim_id: string;
-  org_id: string;
-  trade_name: string;
-  trade_type: string;
-  contact_name: string | null;
-  phone: string | null;
-  email: string | null;
-  estimated_cost: number | null;
-  status: string;
-  notes: string | null;
-  created_at: Date;
-  updated_at: Date;
-}
 
 /**
  * GET /api/claims/[claimId]/trades
@@ -52,22 +36,10 @@ export const GET = withAuth(
       const { claimId } = await routeParams.params;
       await getOrgClaimOrThrow(orgId, claimId);
 
-      let trades: TradeRow[] = [];
-      try {
-        trades = await prisma.$queryRaw<TradeRow[]>`
-          SELECT * FROM claim_trade_assignments
-          WHERE claim_id = ${claimId}
-          ORDER BY created_at DESC
-        `;
-      } catch (dbErr: any) {
-        // Table may not exist yet — return empty
-        if (dbErr?.code === "42P01" || dbErr?.message?.includes("does not exist")) {
-          logger.warn("[Trades GET] claim_trade_assignments table not found, returning empty");
-          trades = [];
-        } else {
-          throw dbErr;
-        }
-      }
+      const trades = await prisma.claim_trade_assignments.findMany({
+        where: { claim_id: claimId, org_id: orgId },
+        orderBy: { created_at: "desc" },
+      });
 
       return NextResponse.json({
         success: true,
@@ -88,10 +60,7 @@ export const GET = withAuth(
         return NextResponse.json({ error: "Claim not found" }, { status: 404 });
       }
       logger.error("[Trades GET] Error:", error);
-      return NextResponse.json(
-        { error: "Failed to fetch trades" },
-        { status: 500 }
-      );
+      return NextResponse.json({ error: "Failed to fetch trades" }, { status: 500 });
     }
   }
 );
@@ -119,21 +88,37 @@ export const POST = withAuth(
 
       const costValue = estimatedCost ? Math.round(Number(estimatedCost)) : null;
 
-      await prisma.$executeRaw`
-        INSERT INTO claim_trade_assignments (claim_id, org_id, trade_name, trade_type, contact_name, phone, email, estimated_cost)
-        VALUES (${claimId}, ${orgId}, ${tradeName}, ${tradeType || "Other"}, ${contactName || null}, ${phone || null}, ${email || null}, ${costValue})
-      `;
+      const trade = await prisma.claim_trade_assignments.create({
+        data: {
+          claim_id: claimId,
+          org_id: orgId,
+          trade_name: tradeName.trim(),
+          trade_type: tradeType || "Other",
+          contact_name: contactName || null,
+          phone: phone || null,
+          email: email || null,
+          estimated_cost: costValue,
+        },
+      });
 
-      return NextResponse.json({ success: true, message: "Trade assigned" }, { status: 201 });
+      return NextResponse.json(
+        {
+          success: true,
+          message: "Trade assigned",
+          trade: {
+            id: trade.id,
+            tradeName: trade.trade_name,
+            tradeType: trade.trade_type,
+          },
+        },
+        { status: 201 }
+      );
     } catch (error) {
       if (error instanceof OrgScopeError) {
         return NextResponse.json({ error: "Claim not found" }, { status: 404 });
       }
       logger.error("[Trades POST] Error:", error);
-      return NextResponse.json(
-        { error: "Failed to add trade" },
-        { status: 500 }
-      );
+      return NextResponse.json({ error: "Failed to add trade" }, { status: 500 });
     }
   }
 );
@@ -159,10 +144,9 @@ export const DELETE = withAuth(
         return NextResponse.json({ error: "tradeId is required" }, { status: 400 });
       }
 
-      await prisma.$executeRaw`
-        DELETE FROM claim_trade_assignments
-        WHERE id = ${tradeId}::uuid AND claim_id = ${claimId}
-      `;
+      await prisma.claim_trade_assignments.deleteMany({
+        where: { id: tradeId, claim_id: claimId, org_id: orgId },
+      });
 
       return NextResponse.json({ success: true });
     } catch (error) {
@@ -170,10 +154,7 @@ export const DELETE = withAuth(
         return NextResponse.json({ error: "Claim not found" }, { status: 404 });
       }
       logger.error("[Trades DELETE] Error:", error);
-      return NextResponse.json(
-        { error: "Failed to delete trade" },
-        { status: 500 }
-      );
+      return NextResponse.json({ error: "Failed to delete trade" }, { status: 500 });
     }
   }
 );

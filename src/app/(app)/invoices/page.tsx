@@ -1,4 +1,5 @@
 import { DollarSign, FileText, Plus, Send } from "lucide-react";
+import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
@@ -23,7 +24,7 @@ import { safeOrgContext } from "@/lib/safeOrgContext";
 
 export const dynamic = "force-dynamic";
 
-export const metadata = {
+export const metadata: Metadata = {
   title: "Invoices | SkaiScraper",
   description: "Create, send, and track invoices for your jobs and claims.",
 };

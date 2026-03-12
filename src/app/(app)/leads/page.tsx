@@ -1,4 +1,5 @@
 import { Activity, Mail, PlusIcon, Target, TrendingUp, Users } from "lucide-react";
+import type { Metadata } from "next";
 import Link from "next/link";
 
 import { PageContainer } from "@/components/layout/PageContainer";
@@ -15,7 +16,7 @@ import prisma from "@/lib/prisma";
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
-export const metadata = {
+export const metadata: Metadata = {
   title: "Leads | SkaiScraper",
   description: "View and manage all sales leads, routing, and pipeline status.",
 };

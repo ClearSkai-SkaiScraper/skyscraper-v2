@@ -14,6 +14,7 @@ import ThemeToggle from "@/components/portal/ThemeToggle";
 import { getBrandingForOrg } from "@/lib/branding/fetchBranding";
 import { getPendingLegalForUser } from "@/lib/legal/getPendingLegal";
 import { logger } from "@/lib/logger";
+import prisma from "@/lib/prisma";
 
 export const dynamic = "force-dynamic";
 
@@ -52,8 +53,26 @@ export default async function PortalLayout({ children }: { children: React.React
     }
 
     // Fetch contractor branding for white-label experience
-    // TODO: Get orgId from client's linked contractor - for now use default branding
-    const orgId = user?.publicMetadata?.orgId as string | undefined;
+    // Resolve orgId from the client's linked contractor (ClientProConnection → tradesCompany)
+    let orgId: string | undefined;
+    if (userId) {
+      try {
+        const client = await prisma.client.findFirst({
+          where: { userId },
+          select: { id: true },
+        });
+        if (client) {
+          const connection = await prisma.clientProConnection.findFirst({
+            where: { clientId: client.id, status: "connected" },
+            orderBy: { connectedAt: "desc" },
+            select: { tradesCompany: { select: { orgId: true } } },
+          });
+          orgId = connection?.tradesCompany?.orgId ?? undefined;
+        }
+      } catch (orgError) {
+        logger.error("[Portal Layout] Failed to resolve orgId from connection:", orgError);
+      }
+    }
 
     try {
       branding = orgId ? await getBrandingForOrg(orgId) : null;

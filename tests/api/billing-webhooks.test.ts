@@ -16,7 +16,7 @@ import {
   MOCK_SUBSCRIPTION_ID,
   mockAuth,
   TEST_ORG_ID,
-} from "../../helpers";
+} from "../helpers";
 
 const prisma = createMockPrisma();
 const stripe = createMockStripe();

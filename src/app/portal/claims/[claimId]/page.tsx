@@ -12,7 +12,6 @@ import { Home, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
-import { toast } from "sonner";
 
 import {
   ClientWorkspace,
@@ -25,255 +24,6 @@ import {
   WorkspaceTimelineEvent,
 } from "@/components/portal/ClientWorkspace";
 import { Button } from "@/components/ui/button";
-
-// ============================================================================
-// Demo Data for Claims
-// ============================================================================
-
-const DEMO_CLAIM_PROJECT: WorkspaceProject = {
-  id: "demo-claim-1",
-  type: "claim",
-  title: "Storm Damage Restoration",
-  description:
-    "Roof and siding damage from the July 15th hailstorm. Premier Roofing Co. is handling the restoration work.",
-  status: "in_progress",
-  progress: 45,
-  createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 14).toISOString(),
-  updatedAt: new Date(Date.now() - 1000 * 60 * 60 * 6).toISOString(),
-  tradeType: "Roofing & Siding",
-  urgency: "high",
-  address: "123 Memory Ln, Phoenix, AZ 85001",
-  claimNumber: "CLM-2024-STORM",
-  dateOfLoss: new Date(Date.now() - 1000 * 60 * 60 * 24 * 21).toISOString(),
-  contractor: {
-    id: "demo-contractor-2",
-    name: "Sarah Williams",
-    companyName: "Premier Roofing Co.",
-    avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&h=150&fit=crop",
-    phone: "(602) 555-0456",
-    email: "sarah@premierroofing.com",
-  },
-};
-
-const DEMO_CLAIM_PHOTOS: WorkspacePhoto[] = [
-  {
-    id: "claim-photo-1",
-    url: "https://images.unsplash.com/photo-1632778149955-e80f8ceca2e8?w=800",
-    thumbnailUrl: "https://images.unsplash.com/photo-1632778149955-e80f8ceca2e8?w=400",
-    caption: "Initial damage - roof overview",
-    uploadedAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 12).toISOString(),
-    uploadedBy: "Sarah Williams",
-    category: "Damage Assessment",
-  },
-  {
-    id: "claim-photo-2",
-    url: "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=800",
-    thumbnailUrl: "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=400",
-    caption: "Hail damage on shingles",
-    uploadedAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 12).toISOString(),
-    uploadedBy: "Sarah Williams",
-    category: "Damage Assessment",
-  },
-  {
-    id: "claim-photo-3",
-    url: "https://images.unsplash.com/photo-1600566753086-00f18fb6b3ea?w=800",
-    thumbnailUrl: "https://images.unsplash.com/photo-1600566753086-00f18fb6b3ea?w=400",
-    caption: "Siding impact damage",
-    uploadedAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 11).toISOString(),
-    uploadedBy: "Sarah Williams",
-    category: "Damage Assessment",
-  },
-  {
-    id: "claim-photo-4",
-    url: "https://images.unsplash.com/photo-1600585154526-990dced4db0d?w=800",
-    thumbnailUrl: "https://images.unsplash.com/photo-1600585154526-990dced4db0d?w=400",
-    caption: "Roof tear-off in progress",
-    uploadedAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 3).toISOString(),
-    uploadedBy: "Sarah Williams",
-    category: "Work Progress",
-  },
-];
-
-const DEMO_CLAIM_DOCUMENTS: WorkspaceDocument[] = [
-  {
-    id: "claim-doc-1",
-    name: "Insurance Claim Estimate.pdf",
-    type: "application/pdf",
-    size: 3456789,
-    url: "#",
-    uploadedAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 10).toISOString(),
-    uploadedBy: "Sarah Williams",
-    category: "Insurance",
-  },
-  {
-    id: "claim-doc-2",
-    name: "Xactimate Scope of Work.pdf",
-    type: "application/pdf",
-    size: 2345678,
-    url: "#",
-    uploadedAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 10).toISOString(),
-    uploadedBy: "Sarah Williams",
-    category: "Scope",
-  },
-  {
-    id: "claim-doc-3",
-    name: "Material Specifications.pdf",
-    type: "application/pdf",
-    size: 1234567,
-    url: "#",
-    uploadedAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 8).toISOString(),
-    uploadedBy: "Sarah Williams",
-    category: "Specifications",
-  },
-];
-
-const DEMO_CLAIM_SIGNED_DOCS: WorkspaceSignedDoc[] = [
-  {
-    id: "claim-sig-1",
-    name: "Assignment of Benefits",
-    status: "signed",
-    signedAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 12).toISOString(),
-    url: "#",
-  },
-  {
-    id: "claim-sig-2",
-    name: "Restoration Agreement",
-    status: "signed",
-    signedAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 12).toISOString(),
-    url: "#",
-  },
-  {
-    id: "claim-sig-3",
-    name: "Change Order - Additional Repairs",
-    status: "pending",
-    expiresAt: new Date(Date.now() + 1000 * 60 * 60 * 24 * 5).toISOString(),
-    url: "#",
-    signUrl: "#sign-change-order",
-  },
-];
-
-const DEMO_CLAIM_INVOICES: WorkspaceInvoice[] = [
-  {
-    id: "claim-inv-1",
-    number: "PR-2024-0892-1",
-    amount: 4500.0,
-    status: "paid",
-    dueDate: new Date(Date.now() - 1000 * 60 * 60 * 24 * 7).toISOString(),
-    paidAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 5).toISOString(),
-    items: [
-      { description: "Insurance Deductible", quantity: 1, rate: 2500, amount: 2500 },
-      { description: "Emergency Tarp Installation", quantity: 1, rate: 2000, amount: 2000 },
-    ],
-  },
-  {
-    id: "claim-inv-2",
-    number: "PR-2024-0892-2",
-    amount: 18750.0,
-    status: "sent",
-    dueDate: new Date(Date.now() + 1000 * 60 * 60 * 24 * 21).toISOString(),
-    items: [
-      { description: "Architectural Shingles (30 sq)", quantity: 30, rate: 350, amount: 10500 },
-      { description: "Underlayment & Flashing", quantity: 1, rate: 2800, amount: 2800 },
-      { description: "Labor - Roof Installation", quantity: 1, rate: 4200, amount: 4200 },
-      { description: "Debris Removal & Disposal", quantity: 1, rate: 1250, amount: 1250 },
-    ],
-  },
-];
-
-const DEMO_CLAIM_TIMELINE: WorkspaceTimelineEvent[] = [
-  {
-    id: "claim-event-1",
-    type: "status_change",
-    title: "Claim Opened",
-    description: "Storm damage claim filed with insurance",
-    timestamp: new Date(Date.now() - 1000 * 60 * 60 * 24 * 14).toISOString(),
-    user: "System",
-  },
-  {
-    id: "claim-event-2",
-    type: "inspection",
-    title: "Initial Inspection Complete",
-    description: "Damage assessment photos and measurements documented",
-    timestamp: new Date(Date.now() - 1000 * 60 * 60 * 24 * 12).toISOString(),
-    user: "Sarah Williams",
-  },
-  {
-    id: "claim-event-3",
-    type: "document",
-    title: "Insurance Estimate Uploaded",
-    description: "Xactimate estimate approved by insurance adjuster",
-    timestamp: new Date(Date.now() - 1000 * 60 * 60 * 24 * 10).toISOString(),
-    user: "Sarah Williams",
-  },
-  {
-    id: "claim-event-4",
-    type: "payment",
-    title: "Deductible Received",
-    description: "Payment of $4,500.00 processed",
-    timestamp: new Date(Date.now() - 1000 * 60 * 60 * 24 * 5).toISOString(),
-    user: "System",
-  },
-  {
-    id: "claim-event-5",
-    type: "status_change",
-    title: "Work Started",
-    description: "Roof tear-off and material delivery",
-    timestamp: new Date(Date.now() - 1000 * 60 * 60 * 24 * 3).toISOString(),
-    user: "Sarah Williams",
-  },
-];
-
-const DEMO_CLAIM_MESSAGES: WorkspaceMessage[] = [
-  {
-    id: "claim-msg-1",
-    content:
-      "Good news! The insurance adjuster approved the estimate. We can start work as soon as materials arrive.",
-    senderId: "contractor-2",
-    senderName: "Sarah Williams",
-    senderAvatar:
-      "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&h=150&fit=crop",
-    isFromContractor: true,
-    timestamp: new Date(Date.now() - 1000 * 60 * 60 * 24 * 8).toISOString(),
-    read: true,
-  },
-  {
-    id: "claim-msg-2",
-    content: "That is great news! Will I need to be home when you start work?",
-    senderId: "client-1",
-    senderName: "You",
-    isFromContractor: false,
-    timestamp: new Date(Date.now() - 1000 * 60 * 60 * 24 * 8).toISOString(),
-    read: true,
-  },
-  {
-    id: "claim-msg-3",
-    content:
-      "Not necessary! As long as we have access to the property, we can work while you are away.",
-    senderId: "contractor-2",
-    senderName: "Sarah Williams",
-    senderAvatar:
-      "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&h=150&fit=crop",
-    isFromContractor: true,
-    timestamp: new Date(Date.now() - 1000 * 60 * 60 * 24 * 7).toISOString(),
-    read: true,
-  },
-  {
-    id: "claim-msg-4",
-    content:
-      "Update: Tear-off is complete. We found some additional deck damage that needs repair. I have uploaded a change order for your signature.",
-    senderId: "contractor-2",
-    senderName: "Sarah Williams",
-    senderAvatar:
-      "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&h=150&fit=crop",
-    isFromContractor: true,
-    timestamp: new Date(Date.now() - 1000 * 60 * 60 * 6).toISOString(),
-    read: false,
-  },
-];
-
-// ============================================================================
-// Main Component
-// ============================================================================
 
 export default function PortalClaimDetailPage() {
   const params = useParams();
@@ -289,7 +39,6 @@ export default function PortalClaimDetailPage() {
   const [invoices, setInvoices] = useState<WorkspaceInvoice[]>([]);
   const [timeline, setTimeline] = useState<WorkspaceTimelineEvent[]>([]);
   const [messages, setMessages] = useState<WorkspaceMessage[]>([]);
-  const [isDemo, setIsDemo] = useState(false);
   const [canUpload, setCanUpload] = useState(false);
 
   const loadClaimData = useCallback(async () => {
@@ -297,14 +46,7 @@ export default function PortalClaimDetailPage() {
       setLoading(true);
       setError("");
 
-      // Check if this is the legacy demo claim - redirect to claims list
-      if (claimId === "demo-claim-1") {
-        setError("Demo claims are no longer available. Please create or view real claims.");
-        setLoading(false);
-        return;
-      }
-
-      // Fetch real claim details
+      // Fetch claim details
       const claimRes = await fetch(`/api/portal/claims/${claimId}`);
       if (!claimRes.ok) {
         if (claimRes.status === 403) {
@@ -344,10 +86,12 @@ export default function PortalClaimDetailPage() {
       }
 
       // Load related data
-      const [photosRes, docsRes, eventsRes] = await Promise.all([
+      const [photosRes, docsRes, eventsRes, invoicesRes, signaturesRes] = await Promise.all([
         fetch(`/api/portal/claims/${claimId}/photos`),
         fetch(`/api/portal/claims/${claimId}/documents`),
         fetch(`/api/portal/claims/${claimId}/events`),
+        fetch(`/api/portal/claims/${claimId}/invoices`),
+        fetch(`/api/portal/claims/${claimId}/signatures`),
       ]);
 
       if (photosRes.ok) {
@@ -364,6 +108,50 @@ export default function PortalClaimDetailPage() {
         const data = await eventsRes.json();
         setTimeline(data.events || []);
       }
+
+      if (invoicesRes.ok) {
+        const data = await invoicesRes.json();
+        if (data.invoices?.length > 0) {
+          setInvoices(
+            data.invoices.map((inv: any) => ({
+              id: inv.id,
+              number: inv.invoiceNumber,
+              amount: inv.totals?.total || inv.totals?.grandTotal || 0,
+              status: inv.kind === "final" ? "paid" : "pending",
+              dueDate: inv.createdAt,
+              items: Array.isArray(inv.items)
+                ? inv.items.map((item: any) => ({
+                    description: item.description || item.name || "Line item",
+                    quantity: item.quantity || 1,
+                    unitPrice: item.unitPrice || item.price || 0,
+                    total: item.total || item.amount || 0,
+                  }))
+                : [],
+            }))
+          );
+        }
+      }
+
+      if (signaturesRes.ok) {
+        const data = await signaturesRes.json();
+        if (data.signatures?.length > 0) {
+          setSignedDocs(
+            data.signatures.map((sig: any) => ({
+              id: sig.id,
+              name: sig.name,
+              status:
+                sig.status === "signed"
+                  ? "signed"
+                  : sig.expiresAt && new Date(sig.expiresAt) < new Date()
+                    ? "expired"
+                    : "pending",
+              signedAt: sig.signedAt,
+              url: sig.signedDocumentUrl || sig.documentUrl || "#",
+              expiresAt: sig.expiresAt,
+            }))
+          );
+        }
+      }
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : "An error occurred";
       setError(errorMessage);
@@ -379,11 +167,6 @@ export default function PortalClaimDetailPage() {
   }, [userId, loadClaimData]);
 
   async function handleUploadPhoto(file: File) {
-    if (isDemo) {
-      toast.info("This is a demo claim - uploads are disabled");
-      return;
-    }
-
     const formData = new FormData();
     formData.append("file", file);
     formData.append("caption", file.name);
@@ -397,11 +180,6 @@ export default function PortalClaimDetailPage() {
   }
 
   async function handleUploadDocument(file: File) {
-    if (isDemo) {
-      toast.info("This is a demo claim - uploads are disabled");
-      return;
-    }
-
     const formData = new FormData();
     formData.append("file", file);
     formData.append("title", file.name);
@@ -415,11 +193,6 @@ export default function PortalClaimDetailPage() {
   }
 
   async function handleSendMessage(message: string) {
-    if (isDemo) {
-      toast.info("This is a demo claim - messaging is disabled");
-      return;
-    }
-
     const res = await fetch(`/api/portal/claims/${claimId}/messages`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -472,23 +245,6 @@ export default function PortalClaimDetailPage() {
 
   return (
     <div>
-      {/* Demo Mode Banner */}
-      {isDemo && (
-        <div className="mb-6 rounded-xl border-2 border-dashed border-amber-300 bg-amber-50 p-4 dark:border-amber-700 dark:bg-amber-900/20">
-          <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-amber-100 dark:bg-amber-800">
-              <span className="text-xl">🏠</span>
-            </div>
-            <div>
-              <p className="font-semibold text-amber-800 dark:text-amber-200">Demo Claim</p>
-              <p className="text-sm text-amber-700 dark:text-amber-300">
-                This is a demo showing how your insurance claim workspace will look.
-              </p>
-            </div>
-          </div>
-        </div>
-      )}
-
       <ClientWorkspace
         project={project}
         photos={photos}
@@ -497,7 +253,7 @@ export default function PortalClaimDetailPage() {
         invoices={invoices}
         timeline={timeline}
         messages={messages}
-        canUpload={!isDemo && canUpload}
+        canUpload={canUpload}
         canMessage={true}
         backLink="/portal/claims"
         backLabel="Back to My Claims"

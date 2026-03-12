@@ -20,6 +20,7 @@ import {
   Wrench,
   Zap,
 } from "lucide-react";
+import type { Metadata } from "next";
 import Link from "next/link";
 
 import { PageContainer } from "@/components/layout/PageContainer";
@@ -27,7 +28,7 @@ import { PageHero } from "@/components/layout/PageHero";
 import { Button } from "@/components/ui/button";
 import { safeOrgContext } from "@/lib/safeOrgContext";
 
-export const metadata = {
+export const metadata: Metadata = {
   title: "Reports Hub | SkaiScraper",
   description: "Central hub for claim, retail, supplement, and AI reports.",
 };

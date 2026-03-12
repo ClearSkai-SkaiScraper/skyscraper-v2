@@ -27,6 +27,7 @@ import {
   TrendingUp,
   Wrench,
 } from "lucide-react";
+import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
 
@@ -42,7 +43,7 @@ import { JobsCategoryBoard } from "./JobsCategoryBoard";
 
 export const dynamic = "force-dynamic";
 
-export const metadata = {
+export const metadata: Metadata = {
   title: "Job Pipeline | SkaiScraper",
   description: "Central hub for all active jobs — claims, repair, out-of-pocket, and financed.",
 };

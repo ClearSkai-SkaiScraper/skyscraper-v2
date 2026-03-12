@@ -48,7 +48,9 @@ describe("csvExporter", () => {
     });
 
     it("supports custom formatters", () => {
-      const csv = toCsv(sampleData, [{ key: "amount", header: "Amount", format: (v) => `$${v}` }]);
+      const csv = toCsv(sampleData, [
+        { key: "amount", header: "Amount", format: (v: unknown) => `$${v}` },
+      ]);
       expect(csv).toContain("$5000");
     });
 

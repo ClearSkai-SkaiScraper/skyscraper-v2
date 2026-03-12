@@ -97,7 +97,7 @@ export function createMockPrisma() {
   prisma.$queryRaw = vi.fn().mockResolvedValue([]);
   prisma.$executeRaw = vi.fn().mockResolvedValue(0);
 
-  return prisma as ReturnType<typeof createMockPrisma>;
+  return prisma as Record<string, any>;
 }
 
 /**

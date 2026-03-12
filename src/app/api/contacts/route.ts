@@ -1,5 +1,5 @@
-import { currentUser } from "@clerk/nextjs/server";
 import { logger } from "@/lib/logger";
+import { currentUser } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 
 import prisma from "@/lib/prisma";
@@ -21,6 +21,7 @@ export async function GET() {
     const contacts = await prisma.contacts.findMany({
       where: { orgId: orgId },
       orderBy: [{ firstName: "asc" }, { lastName: "asc" }],
+      take: 500,
       select: {
         id: true,
         firstName: true,

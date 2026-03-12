@@ -1022,7 +1022,7 @@ Currently disabled
 
 Before declaring launch-ready:
 
-### Critical (Must Have)
+## Critical (Must Have)
 
 - [ ] All 🔴 P0 items resolved
 - [ ] All 🟡 P1 items resolved

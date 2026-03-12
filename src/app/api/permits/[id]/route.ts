@@ -65,13 +65,6 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
       return apiError(400, "VALIDATION_ERROR", "Validation failed", parsed.error.errors);
     }
 
-    const existing = await prisma.permits.findFirst({
-      where: { id, orgId: ctx.orgId },
-    });
-    if (!existing) {
-      return apiError(404, "NOT_FOUND", "Permit not found");
-    }
-
     const update: any = { updatedAt: new Date() };
     const data = parsed.data;
 
@@ -89,10 +82,12 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     if (data.notes !== undefined) update.notes = data.notes;
     if (data.documentUrl !== undefined) update.documentUrl = data.documentUrl;
 
-    const updated = await prisma.permits.update({
-      where: { id },
-      data: update,
+    const updated = await prisma.$transaction(async (tx) => {
+      const check = await tx.permits.findFirst({ where: { id, orgId: ctx.orgId } });
+      if (!check) return null;
+      return tx.permits.update({ where: { id }, data: update });
     });
+    if (!updated) return apiError(404, "NOT_FOUND", "Permit not found (race)");
 
     return apiOk({ permit: updated });
   } catch (err: any) {
@@ -108,14 +103,10 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
       return apiError(401, "UNAUTHORIZED", "Authentication required");
     }
 
-    const existing = await prisma.permits.findFirst({
-      where: { id, orgId: ctx.orgId },
-    });
-    if (!existing) {
+    const result = await prisma.permits.deleteMany({ where: { id, orgId: ctx.orgId } });
+    if (result.count === 0) {
       return apiError(404, "NOT_FOUND", "Permit not found");
     }
-
-    await prisma.permits.delete({ where: { id } });
     return apiOk({ deleted: true });
   } catch (err) {
     return apiError(500, "INTERNAL_ERROR", err.message);

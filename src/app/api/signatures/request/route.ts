@@ -32,10 +32,11 @@ export const POST = withAuth(async (req: NextRequest, { userId, orgId }) => {
     // Verify claim belongs to user's org
     await getOrgClaimOrThrow(orgId, claimId);
 
-    // Verify document exists
+    // Verify document exists and belongs to the user's org
     const document = await prisma.documents.findFirst({
       where: {
         id: documentId,
+        orgId,
       },
     });
 
@@ -99,9 +100,6 @@ export const POST = withAuth(async (req: NextRequest, { userId, orgId }) => {
     });
   } catch (error) {
     logger.error("Error creating signature request:", error);
-    return NextResponse.json(
-      { error: "Failed to create signature request" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Failed to create signature request" }, { status: 500 });
   }
 });

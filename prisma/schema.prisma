@@ -6893,3 +6893,23 @@ model portal_settings {
   @@unique([userId, key])
   @@index([userId])
 }
+
+/// Inline trade assignments on claims (name/type/contact — not linked to trades_companies)
+model claim_trade_assignments {
+  id             String   @id @default(dbgenerated("gen_random_uuid()"))
+  claim_id       String
+  org_id         String
+  trade_name     String
+  trade_type     String   @default("Other")
+  contact_name   String?
+  phone          String?
+  email          String?
+  estimated_cost Int?
+  status         String   @default("assigned")
+  notes          String?
+  created_at     DateTime @default(now())
+  updated_at     DateTime @default(now())
+
+  @@index([claim_id])
+  @@index([org_id])
+}

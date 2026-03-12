@@ -20,6 +20,7 @@ const baseGET = async (req: Request) => {
   const clients = await prisma.client.findMany({
     where: { orgId },
     orderBy: { name: "asc" },
+    take: 500, // Safety limit — UI can't usefully render 500+ clients
   });
 
   return NextResponse.json(clients);

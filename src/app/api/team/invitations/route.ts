@@ -35,13 +35,12 @@ export const POST = withManager(async (req: NextRequest, { userId, orgId }) => {
     try {
       await requirePermission("team:invite");
     } catch (error) {
-      return createForbiddenResponse(
-        error.message || "You don't have permission to invite team members",
-        {
-          currentRole: error.currentRole,
-          requiredPermission: "team:invite",
-        }
-      );
+      logger.warn("[TEAM_INVITATIONS] Permission denied", {
+        userId,
+        orgId,
+        requiredPermission: "team:invite",
+      });
+      return createForbiddenResponse("You don't have permission to invite team members");
     }
 
     const body = await req.json();

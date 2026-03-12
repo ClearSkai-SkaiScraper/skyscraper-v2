@@ -3,9 +3,10 @@
  * Sprint 5 — Onboarding Consolidation
  */
 
+import type { Metadata } from "next";
 import { type ReactNode } from "react";
 
-export const metadata = {
+export const metadata: Metadata = {
   title: "Getting Started | SkaiScrape",
   description: "Complete your setup to unlock all platform features.",
 };

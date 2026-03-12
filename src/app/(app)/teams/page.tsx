@@ -1,4 +1,5 @@
 import { Lock, Users2 } from "lucide-react";
+import type { Metadata } from "next";
 import Link from "next/link";
 
 import { PageContainer } from "@/components/layout/PageContainer";
@@ -12,7 +13,7 @@ import CompanySeatsClient from "./CompanySeatsClient";
 
 export const dynamic = "force-dynamic";
 
-export const metadata = {
+export const metadata: Metadata = {
   title: "Company Seats | SkaiScraper",
   description: "Manage your team members and seat-based subscription.",
 };

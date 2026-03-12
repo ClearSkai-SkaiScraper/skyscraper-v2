@@ -3,6 +3,7 @@ import "./globals.css";
 
 import { ClerkProvider } from "@clerk/nextjs";
 import { dark } from "@clerk/themes";
+import type { Metadata } from "next";
 import type { ReactNode } from "react";
 
 import { PHProvider } from "@/lib/analytics.tsx";
@@ -13,7 +14,7 @@ import { logger } from "@/lib/logger";
 // Note: Clerk validation moved to runtime API health checks
 // Build-time validation causes Vercel builds to fail
 
-export const metadata = {
+export const metadata: Metadata = {
   title: "SkaiScraper",
   description:
     "AI-powered operations hub for trades professionals. Take your company to new heights.",

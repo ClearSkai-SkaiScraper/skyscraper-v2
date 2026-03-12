@@ -8,6 +8,7 @@
  */
 
 import { Briefcase, Plus, TrendingUp } from "lucide-react";
+import type { Metadata } from "next";
 import Link from "next/link";
 
 import { PageContainer } from "@/components/layout/PageContainer";
@@ -21,7 +22,7 @@ import RetailJobsClient from "./RetailJobsClient";
 
 export const dynamic = "force-dynamic";
 
-export const metadata = {
+export const metadata: Metadata = {
   title: "Retail Jobs | SkaiScraper",
   description: "Manage out-of-pocket, financed, and repair jobs.",
 };

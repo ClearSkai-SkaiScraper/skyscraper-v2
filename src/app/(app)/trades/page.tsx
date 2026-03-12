@@ -1,4 +1,5 @@
 import { Lock, Users } from "lucide-react";
+import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
@@ -14,7 +15,7 @@ import TradesNetworkDashboard from "./_components/TradesNetworkDashboard";
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
-export const metadata = {
+export const metadata: Metadata = {
   title: "Trades Network | SkaiScraper",
   description:
     "Your trades network hub — connect with contractors, post jobs, and grow your business.",

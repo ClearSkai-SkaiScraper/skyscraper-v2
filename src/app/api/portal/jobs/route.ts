@@ -295,6 +295,89 @@ export async function POST(req: NextRequest) {
 
       logger.debug(`[api/portal/jobs POST] Created ClientJob: ${job.id} for client: ${client.id}`);
 
+      // ── Bridge to pro's leads table ──────────────────────────────
+      // If the client is connected to a pro, create a mirror lead
+      // so the job appears in the pro's Retail Workspace automatically.
+      try {
+        const proConnection = await prisma.clientProConnection.findFirst({
+          where: {
+            clientId: client.id,
+            status: { in: ["connected", "accepted"] },
+          },
+          include: {
+            tradesCompany: { select: { orgId: true } },
+          },
+          orderBy: { connectedAt: "desc" },
+        });
+
+        const proOrgId = proConnection?.tradesCompany?.orgId;
+        if (proOrgId) {
+          // Ensure a contacts record exists in the pro's org
+          let contact = await prisma.contacts.findFirst({
+            where: { orgId: proOrgId, email: client.email ?? undefined },
+          });
+
+          if (!contact) {
+            contact = await prisma.contacts.create({
+              data: {
+                id: crypto.randomUUID(),
+                orgId: proOrgId,
+                firstName: client.firstName || client.name || "Client",
+                lastName: client.lastName || "",
+                email: client.email || null,
+                phone: client.phone || null,
+                source: "portal",
+                tags: ["portal-client"],
+                updatedAt: new Date(),
+              },
+            });
+          }
+
+          // Map urgency → jobCategory for retail workspace
+          const jobCat =
+            body.type === "CLAIM"
+              ? "insurance"
+              : body.tradeType?.toLowerCase().includes("repair")
+                ? "repair"
+                : "out_of_pocket";
+
+          await prisma.leads.create({
+            data: {
+              id: crypto.randomUUID(),
+              orgId: proOrgId,
+              contactId: contact.id,
+              title: body.title.trim(),
+              description: body.description?.trim() || null,
+              source: "client_portal",
+              stage: "new",
+              temperature: "hot",
+              jobCategory: jobCat,
+              jobType: body.tradeType || null,
+              urgency: body.urgency || "normal",
+              budget: body.budget ? parseInt(body.budget) : null,
+              clientId: client.id,
+              value: body.budget ? parseInt(body.budget) : null,
+              updatedAt: new Date(),
+            },
+          });
+
+          // Update ClientJob with the pro company link
+          await prisma.clientJob.update({
+            where: { id: job.id },
+            data: { proCompanyId: proConnection.contractorId },
+          });
+
+          logger.info("[PORTAL_JOB_BRIDGE]", {
+            clientJobId: job.id,
+            proOrgId,
+            contactId: contact.id,
+          });
+        }
+      } catch (bridgeErr) {
+        // Non-critical — job was still created, just not bridged yet
+        logger.warn("[PORTAL_JOB_BRIDGE] Failed to bridge to pro:", bridgeErr);
+      }
+
       return NextResponse.json(
         {
           job: {

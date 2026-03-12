@@ -67,12 +67,12 @@ export const POST = withAuth(async (req: NextRequest, { userId, orgId }) => {
         case "update_status":
           if (targetType === "claim" && rec.newStatus) {
             await prisma.claims.update({
-              where: { id: targetId },
+              where: { id: targetId, orgId },
               data: { status: rec.newStatus, updatedAt: new Date() },
             });
           } else if (targetType === "job" && rec.newStatus) {
             await prisma.jobs.update({
-              where: { id: targetId },
+              where: { id: targetId, orgId },
               data: { status: rec.newStatus, updatedAt: new Date() },
             });
           }
@@ -98,7 +98,7 @@ export const POST = withAuth(async (req: NextRequest, { userId, orgId }) => {
         case "assign_user":
           if (targetType === "claim" && rec.assigneeId) {
             await prisma.claims.update({
-              where: { id: targetId },
+              where: { id: targetId, orgId },
               data: { assignedTo: rec.assigneeId, updatedAt: new Date() },
             });
           }

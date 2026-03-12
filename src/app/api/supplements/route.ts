@@ -142,6 +142,7 @@ export async function GET(req: NextRequest) {
     const claims = await prisma.claims.findMany({
       where: { orgId },
       select: { id: true },
+      take: 5000, // Safety limit for ID-only query
     });
 
     const claimIds = claims.map((c) => c.id);

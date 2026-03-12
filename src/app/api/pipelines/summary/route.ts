@@ -62,6 +62,8 @@ export async function GET(request: NextRequest) {
           take: 1,
         },
       },
+      orderBy: { createdAt: "desc" },
+      take: 2000, // Safety limit — orgs with 2000+ leads need pagination
     });
 
     const totalLeads = leads.length;

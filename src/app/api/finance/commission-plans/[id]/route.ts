@@ -17,12 +17,7 @@ export const PUT = withAuth(
       const id = url.pathname.split("/").filter(Boolean).pop()!;
       const body = await req.json();
 
-      const existing = await prisma.commission_plans.findFirst({
-        where: { id, org_id: orgId },
-      });
-      if (!existing) return NextResponse.json({ error: "Plan not found" }, { status: 404 });
-
-      // If setting as default, unset others
+      // If setting as default, unset others (org-scoped)
       if (body.isDefault) {
         await prisma.commission_plans.updateMany({
           where: { org_id: orgId, is_default: true, id: { not: id } },
@@ -30,8 +25,8 @@ export const PUT = withAuth(
         });
       }
 
-      await prisma.commission_plans.update({
-        where: { id },
+      const result = await prisma.commission_plans.updateMany({
+        where: { id, org_id: orgId },
         data: {
           ...(body.name !== undefined && { name: body.name }),
           ...(body.description !== undefined && { description: body.description }),
@@ -43,6 +38,8 @@ export const PUT = withAuth(
           ...(body.userIds !== undefined && { user_ids: body.userIds }),
         },
       });
+      if (result.count === 0)
+        return NextResponse.json({ error: "Plan not found" }, { status: 404 });
 
       return NextResponse.json({ success: true });
     } catch (err) {
@@ -62,12 +59,9 @@ export const DELETE = withAuth(
       const url = new URL(req.url);
       const id = url.pathname.split("/").filter(Boolean).pop()!;
 
-      const existing = await prisma.commission_plans.findFirst({
-        where: { id, org_id: orgId },
-      });
-      if (!existing) return NextResponse.json({ error: "Plan not found" }, { status: 404 });
-
-      await prisma.commission_plans.delete({ where: { id } });
+      const existing = await prisma.commission_plans.deleteMany({ where: { id, org_id: orgId } });
+      if (existing.count === 0)
+        return NextResponse.json({ error: "Plan not found" }, { status: 404 });
 
       return NextResponse.json({ success: true });
     } catch (err) {

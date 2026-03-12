@@ -107,7 +107,7 @@ type StripeEventType =
 export function createWebhookEvent(type: StripeEventType, data: Record<string, unknown> = {}) {
   return {
     id: `evt_test_${Date.now()}`,
-    object: "event",
+    object: "event" as const,
     type,
     created: Math.floor(Date.now() / 1000),
     data: {
@@ -115,7 +115,7 @@ export function createWebhookEvent(type: StripeEventType, data: Record<string, u
         id: `obj_${Date.now()}`,
         customer: MOCK_CUSTOMER_ID,
         ...data,
-      },
+      } as Record<string, unknown>,
     },
     livemode: false,
     api_version: "2024-06-20",

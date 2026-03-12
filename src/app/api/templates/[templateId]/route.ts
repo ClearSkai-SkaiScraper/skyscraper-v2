@@ -19,32 +19,27 @@ export const PATCH = withAuth(async (request: NextRequest, { orgId }) => {
       return NextResponse.json({ error: "Templates model unavailable" }, { status: 200 });
     }
 
-    // Verify template belongs to org
-    const template = await Templates.findFirst({
-      where: {
-        id: templateId,
-        org_id: orgId,
-      },
-    });
-
-    if (!template) {
-      return NextResponse.json({ error: "Template not found" }, { status: 404 });
-    }
-
     const body = await request.json();
     const { name, description, sectionOrder, brandingConfig } = body;
 
-    const updates: any = { updated_at: new Date() };
-    if (name !== undefined) updates.name = name;
-    if (description !== undefined) updates.defaults = { ...(template.defaults || {}), description };
-    if (sectionOrder !== undefined) updates.section_order = sectionOrder;
-    if (brandingConfig !== undefined)
-      updates.defaults = { ...(template.defaults || {}), brandingConfig };
+    // Atomic find+update to prevent TOCTOU race
+    const updated = await (async () => {
+      const template = await Templates!.findFirst({ where: { id: templateId, org_id: orgId } });
+      if (!template) return null;
 
-    const updated = await Templates.update({
-      where: { id: templateId },
-      data: updates,
-    });
+      const updates: any = { updated_at: new Date() };
+      if (name !== undefined) updates.name = name;
+      if (description !== undefined)
+        updates.defaults = { ...(template.defaults || {}), description };
+      if (sectionOrder !== undefined) updates.section_order = sectionOrder;
+      if (brandingConfig !== undefined)
+        updates.defaults = { ...(template.defaults || {}), brandingConfig };
+
+      return Templates!.update({ where: { id: templateId }, data: updates });
+    })();
+    if (!updated) {
+      return NextResponse.json({ error: "Template not found" }, { status: 404 });
+    }
 
     return NextResponse.json(updated);
   } catch (error) {
@@ -99,8 +94,8 @@ export const DELETE = withAuth(async (request: NextRequest, { orgId }) => {
       return NextResponse.json({ success: false, error: "Templates model unavailable" });
     }
 
-    await Templates.delete({
-      where: { id: templateId },
+    await Templates.deleteMany({
+      where: { id: templateId, org_id: orgId },
     });
 
     return NextResponse.json({ success: true });

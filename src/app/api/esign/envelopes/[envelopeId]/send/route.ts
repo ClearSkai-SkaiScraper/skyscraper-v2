@@ -117,14 +117,19 @@ export async function POST(
     }
 
     // Org isolation: verify linked claim belongs to this org
-    if (envelope.claimId) {
-      const claim = await prisma.claims.findFirst({
-        where: { id: envelope.claimId, orgId },
-        select: { id: true },
-      });
-      if (!claim) {
-        return NextResponse.json({ ok: false, message: "Envelope not found" }, { status: 404 });
-      }
+    // If no claimId, we cannot verify tenant — block access
+    if (!envelope.claimId) {
+      return NextResponse.json(
+        { ok: false, message: "Envelope has no linked claim" },
+        { status: 400 }
+      );
+    }
+    const claim = await prisma.claims.findFirst({
+      where: { id: envelope.claimId, orgId },
+      select: { id: true },
+    });
+    if (!claim) {
+      return NextResponse.json({ ok: false, message: "Envelope not found" }, { status: 404 });
     }
 
     // Check if envelope has signer info

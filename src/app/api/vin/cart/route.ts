@@ -6,10 +6,9 @@
  * DELETE /api/vin/cart — Remove cart item
  */
 
-import { NextRequest, NextResponse } from "next/server";
 import { logger } from "@/lib/logger";
+import { NextRequest, NextResponse } from "next/server";
 
-import { requireAuth } from "@/lib/auth/requireAuth";
 import { getActiveOrgContext } from "@/lib/org/getActiveOrgContext";
 import prisma from "@/lib/prisma";
 
@@ -133,6 +132,14 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: "cartId and productName required" }, { status: 400 });
       }
 
+      // Verify cart belongs to caller's org
+      const ownerCart = await prisma.material_carts.findFirst({
+        where: { id: cartId, orgId: ctx.orgId },
+      });
+      if (!ownerCart) {
+        return NextResponse.json({ error: "Cart not found" }, { status: 404 });
+      }
+
       const lineTotal = quantity && unitPrice ? quantity * unitPrice : null;
 
       const item = await prisma.material_cart_items.create({
@@ -167,12 +174,17 @@ export async function POST(request: NextRequest) {
     if (action === "submit_cart") {
       const { cartId } = body;
 
-      const cart = await prisma.material_carts.findUnique({
-        where: { id: cartId },
+      // Verify cart belongs to caller's org
+      const cart = await prisma.material_carts.findFirst({
+        where: { id: cartId, orgId: ctx.orgId },
         include: { material_cart_items: true },
       });
 
-      if (!cart || cart.material_cart_items.length === 0) {
+      if (!cart) {
+        return NextResponse.json({ error: "Cart not found" }, { status: 404 });
+      }
+
+      if (cart.material_cart_items.length === 0) {
         return NextResponse.json({ error: "Cart is empty" }, { status: 400 });
       }
 
@@ -272,6 +284,21 @@ export async function PUT(request: NextRequest) {
     const body = await request.json();
     const { itemId, quantity, unitPrice, notes } = body;
 
+    if (!itemId) {
+      return NextResponse.json({ error: "itemId required" }, { status: 400 });
+    }
+
+    // Verify item belongs to a cart owned by caller's org
+    const existingItem = await prisma.material_cart_items.findFirst({
+      where: {
+        id: itemId,
+        material_carts: { orgId: ctx.orgId },
+      },
+    });
+    if (!existingItem) {
+      return NextResponse.json({ error: "Item not found" }, { status: 404 });
+    }
+
     const lineTotal = quantity && unitPrice ? quantity * unitPrice : undefined;
 
     const item = await prisma.material_cart_items.update({
@@ -293,20 +320,38 @@ export async function PUT(request: NextRequest) {
 
 export async function DELETE(request: NextRequest) {
   try {
-    const auth = await requireAuth();
-    if (auth instanceof NextResponse) return auth;
-    const { orgId, userId } = auth;
+    const ctx = await getActiveOrgContext();
+    if (!ctx.ok) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
 
     const { searchParams } = new URL(request.url);
     const itemId = searchParams.get("itemId");
     const cartId = searchParams.get("cartId");
 
     if (cartId) {
+      // Verify cart belongs to caller's org before deleting
+      const existing = await prisma.material_carts.findFirst({
+        where: { id: cartId, orgId: ctx.orgId },
+      });
+      if (!existing) {
+        return NextResponse.json({ error: "Cart not found" }, { status: 404 });
+      }
       await prisma.material_carts.delete({ where: { id: cartId } });
       return NextResponse.json({ success: true, deleted: "cart" });
     }
 
     if (itemId) {
+      // Verify item belongs to a cart owned by caller's org
+      const existingItem = await prisma.material_cart_items.findFirst({
+        where: {
+          id: itemId,
+          material_carts: { orgId: ctx.orgId },
+        },
+      });
+      if (!existingItem) {
+        return NextResponse.json({ error: "Item not found" }, { status: 404 });
+      }
       await prisma.material_cart_items.delete({ where: { id: itemId } });
       return NextResponse.json({ success: true, deleted: "item" });
     }

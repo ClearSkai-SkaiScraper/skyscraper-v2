@@ -1,5 +1,6 @@
 import { currentUser } from "@clerk/nextjs/server";
 import { CheckCircle2, ChevronDown, Clock, Package, XCircle } from "lucide-react";
+import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
@@ -7,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { getToolHistory } from "@/lib/activity";
 
-export const metadata = {
+export const metadata: Metadata = {
   title: "Carrier Export History • SkaiScraper",
 };
 

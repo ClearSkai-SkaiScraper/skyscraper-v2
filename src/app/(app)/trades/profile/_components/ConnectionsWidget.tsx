@@ -411,10 +411,10 @@ function PendingRequestsList({
 // Connect Button Component (for use on other profiles)
 export function ConnectButton({
   targetUserId,
-  onConnectionChange,
+  onConnectionChangeAction,
 }: {
   targetUserId: string;
-  onConnectionChange?: () => void;
+  onConnectionChangeAction?: () => void;
 }) {
   const [status, setStatus] = useState<"none" | "pending" | "connected" | "loading">("loading");
   const [connectionId, setConnectionId] = useState<string | null>(null);
@@ -473,7 +473,7 @@ export function ConnectButton({
       if (res.ok) {
         toast.success("Connection request sent!");
         setStatus("pending");
-        onConnectionChange?.();
+        onConnectionChangeAction?.();
       } else {
         const data = await res.json();
         toast.error(data.error || "Failed to send request");
@@ -497,7 +497,7 @@ export function ConnectButton({
         toast.success("Connection removed");
         setStatus("none");
         setConnectionId(null);
-        onConnectionChange?.();
+        onConnectionChangeAction?.();
       } else {
         toast.error("Failed to remove connection");
         setStatus("connected");

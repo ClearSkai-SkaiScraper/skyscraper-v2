@@ -1,4 +1,5 @@
 import { LayoutGrid, ShoppingBag } from "lucide-react";
+import type { Metadata } from "next";
 import Link from "next/link";
 
 import { PageContainer } from "@/components/layout/PageContainer";
@@ -10,7 +11,7 @@ import { ALL_TEMPLATES } from "@/lib/templates/templateRegistry";
 
 import { TemplateList } from "./_components/TemplateList";
 
-export const metadata = {
+export const metadata: Metadata = {
   title: "Report Templates | SkaiScraper",
   description: "Browse and manage your report templates for claims and inspections.",
 };

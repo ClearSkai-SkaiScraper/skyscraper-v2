@@ -50,18 +50,12 @@ export const DELETE = withOrgScope(
     try {
       const { id } = await context.params;
 
-      // Verify ownership
-      const existing = await getDelegate("damageAssessment").findFirst({
+      const result = await getDelegate("damageAssessment").deleteMany({
         where: { id, orgId },
       });
-
-      if (!existing) {
+      if (result.count === 0) {
         return NextResponse.json({ error: "Damage assessment not found" }, { status: 404 });
       }
-
-      await getDelegate("damageAssessment").delete({
-        where: { id },
-      });
 
       return NextResponse.json({
         success: true,

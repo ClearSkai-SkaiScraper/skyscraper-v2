@@ -13,23 +13,18 @@ export const DELETE = withAuth(async (req: NextRequest, { orgId }) => {
     const id = url.pathname.split("/").filter(Boolean).pop() || "";
 
     // Verify template belongs to Org
-    const template = await prisma.report_templates.findUnique({
-      where: { id },
-      select: { org_id: true },
+    const template = await prisma.report_templates.findFirst({
+      where: { id, org_id: orgId },
     });
 
     if (!template) {
       return NextResponse.json({ error: "Template not found" }, { status: 404 });
     }
 
-    if (template.org_id !== orgId) {
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-    }
-
     // Delete template
     await prisma.report_templates
-      .delete({
-        where: { id },
+      .deleteMany({
+        where: { id, org_id: orgId },
       })
       .catch(() => {});
 

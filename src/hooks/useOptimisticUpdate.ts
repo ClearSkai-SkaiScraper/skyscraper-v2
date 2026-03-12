@@ -99,19 +99,21 @@ export function useOptimisticUpdate<T>(opts: { initialValue: T }) {
  * Simpler than useOptimistic — just wraps an API call with loading state
  * and error handling with retry action in the toast.
  */
+interface MutationOptions<TInput, TResult> {
+  mutationFn: (input: TInput) => Promise<TResult>;
+  onSuccess?: (data: TResult) => void;
+  onError?: (error: Error) => void;
+  successMessage?: string;
+  errorMessage?: string;
+}
+
 export function useMutation<TInput = void, TResult = unknown>({
   mutationFn,
   onSuccess,
   onError,
   successMessage,
   errorMessage = "Something went wrong",
-}: {
-  mutationFn: (input: TInput) => Promise<TResult>;
-  onSuccess?: (data: TResult) => void;
-  onError?: (error: Error) => void;
-  successMessage?: string;
-  errorMessage?: string;
-}) {
+}: MutationOptions<TInput, TResult>) {
   const [isPending, setIsPending] = useState(false);
   const [error, setError] = useState<Error | null>(null);
   const lastInput = useRef<TInput | null>(null);

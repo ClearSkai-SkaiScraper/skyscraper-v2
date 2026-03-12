@@ -15,6 +15,7 @@ import {
   TrendingUp,
   Video,
 } from "lucide-react";
+import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
@@ -27,7 +28,7 @@ import { safeOrgContext } from "@/lib/safeOrgContext";
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
-export const metadata = {
+export const metadata: Metadata = {
   title: "Report Analytics | SkaiScraper",
   description: "Track report generation metrics, types, and usage analytics.",
 };

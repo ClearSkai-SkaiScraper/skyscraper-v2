@@ -180,7 +180,7 @@ Test these FIRST. These verify the two fixes from QA Sprint 22 failures.
 | 15.1 | Invalid claim ID       | Navigate to `/claims/aaaa-bbbb-cccc-invalid`                                        | "Claim not found" — no data leaked     |
 | 15.2 | API error sanitization | Check error messages on any API failure                                             | Generic error, no stack traces exposed |
 | 15.3 | Middleware redirect    | Navigate to `/` while authenticated                                                 | Redirects to `/dashboard`              |
-| 15.4 | Tracker error boundary | If tracker page errors, should show "Claims Tracker Unavailable" with retry buttons |
+| 15.4 | Tracker error boundary | If tracker page errors, should show "Claims Tracker Unavailable" with retry buttons | Error boundary UI renders correctly    |
 
 ## Section 16 — Extended Route Coverage (12 tests)
 

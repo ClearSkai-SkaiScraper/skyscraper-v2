@@ -20,17 +20,15 @@ export async function DELETE(req: NextRequest, context: RouteContext) {
 
     const { id } = await context.params;
 
-    // Verify ownership
-    const existing = await prisma.notification.findUnique({
-      where: { id },
+    // Verify ownership — use findFirst with userId guard to prevent IDOR
+    const existing = await prisma.notification.findFirst({
+      where: { id, userId },
+      select: { id: true },
     });
 
     if (!existing) {
+      // Uniform 404 — prevents notification ID enumeration
       return NextResponse.json({ error: "Notification not found" }, { status: 404 });
-    }
-
-    if (existing.userId !== userId) {
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
     await prisma.notification.delete({

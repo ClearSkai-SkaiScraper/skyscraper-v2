@@ -19,6 +19,7 @@
     "worker": "node --import tsx src/worker/index.ts",
     "worker:dev": "NODE_ENV=development node --import tsx --watch src/worker/index.ts",
     "vercel-build": "node scripts/env-preflight.js && node scripts/build-ci.js",
+    "prebuild": "bash scripts/typecheck-guard.sh",
     "build": "NODE_OPTIONS='--max-old-space-size=8192' BUILD_PHASE=1 next build",
     "regression:check": "node scripts/regression-guards.cjs",
     "prisma:generate": "prisma generate",
@@ -94,7 +95,8 @@
     "audit:storage": "tsx scripts/prod-audit/audit_storage.ts",
     "audit:all": "pnpm audit:routes && pnpm audit:env && pnpm audit:storage",
     "templates:generate-previews": "tsx scripts/generate-missing-template-previews.ts",
-    "gen:premium-previews": "tsx scripts/generate-premium-previews.ts"
+    "gen:premium-previews": "tsx scripts/generate-premium-previews.ts",
+    "prepare": "husky"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"
@@ -298,6 +300,7 @@
     "eslint-plugin-tailwindcss": "^3.18.2",
     "glob": "^11.0.3",
     "globals": "^15.15.0",
+    "husky": "^9.1.7",
     "lovable-tagger": "^1.1.11",
     "pino-pretty": "^13.1.2",
     "playwright": "1.56.1",

@@ -34,10 +34,7 @@ export const GET = withAuth(async (req: NextRequest, { orgId }, routeParams) => 
     return NextResponse.json({ report, events });
   } catch (error) {
     logger.error("Report detail error:", error);
-    return NextResponse.json(
-      { error: "Failed to fetch report" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Failed to fetch report" }, { status: 500 });
   }
 });
 
@@ -45,25 +42,17 @@ export const DELETE = withAuth(async (req: NextRequest, { orgId }, routeParams) 
   try {
     const { reportId } = await routeParams.params;
 
-    // Verify report belongs to org
-    const report = await prisma.ai_reports.findFirst({
+    // Atomic org-scoped delete
+    const result = await prisma.ai_reports.deleteMany({
       where: { id: reportId, orgId },
     });
-
-    if (!report) {
+    if (result.count === 0) {
       return NextResponse.json({ error: "Report not found" }, { status: 404 });
     }
-
-    await prisma.ai_reports.delete({
-      where: { id: reportId },
-    });
 
     return NextResponse.json({ success: true });
   } catch (error) {
     logger.error("Report delete error:", error);
-    return NextResponse.json(
-      { error: "Failed to delete report" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Failed to delete report" }, { status: 500 });
   }
 });

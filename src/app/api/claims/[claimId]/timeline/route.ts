@@ -142,17 +142,17 @@ export const DELETE = withAuth(
       if (isValidationError(body)) return body;
       const { eventId } = body;
 
-      // Verify event belongs to this claim
+      // Verify event belongs to this claim and org
       const event = await prisma.claim_timeline_events.findFirst({
-        where: { id: eventId, claim_id: claimId },
+        where: { id: eventId, claim_id: claimId, org_id: orgId },
       });
 
       if (!event) {
         return NextResponse.json({ error: "Event not found" }, { status: 404 });
       }
 
-      await prisma.claim_timeline_events.delete({
-        where: { id: eventId },
+      await prisma.claim_timeline_events.deleteMany({
+        where: { id: eventId, claim_id: claimId, org_id: orgId },
       });
 
       return NextResponse.json({ success: true });

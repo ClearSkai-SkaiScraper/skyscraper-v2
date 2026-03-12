@@ -24,6 +24,7 @@
  * ```
  */
 
+import { isRedirectError } from "next/dist/client/components/redirect";
 import { NextRequest, NextResponse } from "next/server";
 
 import { logger } from "@/lib/logger";
@@ -31,10 +32,8 @@ import { logger } from "@/lib/logger";
 // ── Error Classification ──────────────────────────────────────────
 
 function isNextRedirect(err: unknown): boolean {
-  return (
-    err instanceof Error &&
-    (err.message === "NEXT_REDIRECT" || (err as any).digest?.startsWith?.("NEXT_REDIRECT"))
-  );
+  // Use Next.js official check (digest-based) with fallback
+  return isRedirectError(err) || (err as any)?.digest?.startsWith?.("NEXT_REDIRECT");
 }
 
 function isZodError(err: unknown): err is { name: "ZodError"; errors: any[] } {

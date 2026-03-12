@@ -9,7 +9,7 @@ import { safeOrgContext } from "@/lib/safeOrgContext";
 export async function DELETE(req: Request, { params }: { params: { id: string } }) {
   const ctx = await safeOrgContext();
 
-  if (ctx.status !== "ok") {
+  if (ctx.status !== "ok" || !ctx.orgId) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
@@ -20,7 +20,7 @@ export async function DELETE(req: Request, { params }: { params: { id: string } 
     const existing = await prisma.appointments.findFirst({
       where: {
         id,
-        orgId: ctx.orgId ?? undefined,
+        orgId: ctx.orgId,
       },
     });
 
