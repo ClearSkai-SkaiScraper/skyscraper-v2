@@ -94,39 +94,56 @@ export default function NewMessageModal({
         fetch("/api/clients/connections"), // Connected clients via ClientProConnection
       ]);
 
+      // Build contacts list from CRM contacts + connected clients independently
+      let allContacts: any[] = [];
+
       if (contactsRes.ok) {
         const contactsData = await contactsRes.json();
-        // Merge with connected clients for complete contact list
-        let allContacts = contactsData.contacts || [];
-
-        // Add connected clients from ClientProConnection
-        if (clientConnectionsRes.ok) {
-          const clientData = await clientConnectionsRes.json();
-          const connectedClients = (clientData.clients || [])
-            .filter(
-              (c: any) =>
-                c.connection?.status === "connected" || c.connection?.status === "ACCEPTED"
-            )
-            .map((c: any) => ({
-              id: c.id,
-              firstName: c.name?.split(" ")[0] || c.name,
-              lastName: c.name?.split(" ").slice(1).join(" ") || "",
-              email: c.email,
-              phone: c.phone,
-              isClientConnection: true,
-            }));
-
-          // Dedupe by ID
-          const existingIds = new Set(allContacts.map((c: any) => c.id));
-          connectedClients.forEach((client: any) => {
-            if (!existingIds.has(client.id)) {
-              allContacts.push(client);
-            }
-          });
-        }
-
-        setContacts(allContacts);
+        allContacts = contactsData.contacts || [];
+      } else {
+        logger.warn("[NewMessageModal] Contacts API returned", contactsRes.status);
       }
+
+      // Add connected clients from ClientProConnection (independent of contacts API)
+      if (clientConnectionsRes.ok) {
+        const clientData = await clientConnectionsRes.json();
+        const connectedClients = (clientData.clients || [])
+          .filter(
+            (c: any) =>
+              c.connection?.status === "connected" ||
+              c.connection?.status === "ACCEPTED" ||
+              c.connection?.status === "accepted"
+          )
+          .map((c: any) => ({
+            id: c.id,
+            firstName: c.firstName || c.name?.split(" ")[0] || c.name || "Client",
+            lastName: c.lastName || c.name?.split(" ").slice(1).join(" ") || "",
+            email: c.email,
+            phone: c.phone,
+            isClientConnection: true,
+          }));
+
+        // Dedupe by ID and email
+        const existingIds = new Set(allContacts.map((c: any) => c.id));
+        const existingEmails = new Set(
+          allContacts.map((c: any) => c.email?.toLowerCase()).filter(Boolean)
+        );
+        connectedClients.forEach((client: any) => {
+          if (
+            !existingIds.has(client.id) &&
+            !(client.email && existingEmails.has(client.email.toLowerCase()))
+          ) {
+            allContacts.push(client);
+          }
+        });
+      } else {
+        logger.warn(
+          "[NewMessageModal] Client connections API returned",
+          clientConnectionsRes.status
+        );
+      }
+
+      setContacts(allContacts);
 
       if (claimsRes.ok) {
         const claimsData = await claimsRes.json();
@@ -360,8 +377,7 @@ export default function NewMessageModal({
                     ) : (
                       contacts.map((contact) => (
                         <SelectItem key={contact.id} value={contact.id}>
-                          {contact.firstName || contact.firstName}{" "}
-                          {contact.lastName || contact.lastName}
+                          {contact.firstName || "Client"} {contact.lastName || ""}
                           {contact.email && ` (${contact.email})`}
                         </SelectItem>
                       ))

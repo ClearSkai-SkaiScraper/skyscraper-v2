@@ -152,7 +152,14 @@ export default function MessageHub({
       const res = await fetch(`/api/messages/${selectedThread.id}`);
       if (!res.ok) throw new Error("Failed to fetch messages");
       const data = await res.json();
-      setMessages(data.messages ?? data ?? []);
+      // Normalize field names: API returns senderUserId/body, component expects senderId/content
+      const rawMessages = data.messages ?? data.Message ?? data ?? [];
+      const normalized = (Array.isArray(rawMessages) ? rawMessages : []).map((m: any) => ({
+        ...m,
+        senderId: m.senderId || m.senderUserId || "",
+        content: m.content || m.body || "",
+      }));
+      setMessages(normalized);
     } catch (err) {
       logger.error("MessageHub: fetch messages failed", err);
     }

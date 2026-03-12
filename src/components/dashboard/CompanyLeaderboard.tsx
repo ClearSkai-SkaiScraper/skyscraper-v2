@@ -38,6 +38,7 @@ interface LeaderboardSummary {
   totalClaims: number;
   totalDoors: number;
   pendingClaimsCount?: number;
+  signedClaimsCount?: number;
   repCount: number;
   avgCloseRate: number;
   allSources?: string[];
@@ -231,9 +232,12 @@ export function CompanyLeaderboard() {
             bg: "bg-green-50 dark:bg-green-950/30",
           },
           {
-            label: effectiveSummary.pendingClaimsCount
-              ? `Claims Signed · ${effectiveSummary.pendingClaimsCount} pending`
-              : "Claims Signed",
+            label:
+              effectiveSummary.signedClaimsCount !== undefined
+                ? `Total Claims · ${effectiveSummary.signedClaimsCount} signed`
+                : effectiveSummary.pendingClaimsCount
+                  ? `Total Claims · ${effectiveSummary.pendingClaimsCount} pending`
+                  : "Total Claims",
             value: effectiveSummary.totalClaims.toString(),
             icon: Target,
             color: "text-blue-600 dark:text-blue-400",

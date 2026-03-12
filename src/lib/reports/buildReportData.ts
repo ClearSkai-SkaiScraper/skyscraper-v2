@@ -29,12 +29,16 @@ export async function buildReportData(config: ReportConfig): Promise<ReportData>
   const orgBranding = {
     name: orgName,
     logoUrl: brandingRow?.logoUrl ?? orgRow.brandLogoUrl ?? undefined,
+    teamPhotoUrl: brandingRow?.teamPhotoUrl ?? undefined,
+    agentPhotoUrl: brandingRow?.teamPhotoUrl ?? undefined, // Alias for agent/team photo
     primaryColor: brandingRow?.colorPrimary ?? undefined,
     accentColor: brandingRow?.colorAccent ?? undefined,
     website: brandingRow?.website ?? undefined,
     phone: brandingRow?.phone ?? undefined,
     email: brandingRow?.email ?? undefined,
-    fullAddress: undefined,
+    slogan: brandingRow?.companyAddress ?? undefined, // Can be used as slogan/tagline
+    motto: undefined,
+    fullAddress: brandingRow?.companyAddress ?? undefined,
   };
 
   // 2. Load Claim + Lead/Client

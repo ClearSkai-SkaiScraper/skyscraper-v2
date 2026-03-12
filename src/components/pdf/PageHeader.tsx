@@ -1,6 +1,6 @@
 // components/pdf/PageHeader.tsx
 
-import { Image, StyleSheet,Text, View } from "@react-pdf/renderer";
+import { Image, StyleSheet, Text, View } from "@react-pdf/renderer";
 
 import { ReportData } from "@/lib/reports/types";
 
@@ -14,16 +14,18 @@ interface PageHeaderProps {
 export function PageHeader({ data, titleOverride }: PageHeaderProps) {
   const colors = getThemeColors(data);
 
+  // User-requested layout: Logo LEFT | Company Info CENTER | Team Photo RIGHT
   return (
     <View style={[styles.container, { borderBottomColor: colors.primary }]}>
-      <View style={styles.left}>
+      {/* LEFT: Company Logo */}
+      <View style={styles.leftSection}>
         {data.org.logoUrl && <Image src={data.org.logoUrl} style={styles.logo} />}
-        <View style={styles.orgText}>
-          <Text style={[styles.orgName, { color: colors.primary }]}>{data.org.name}</Text>
-          {data.org.slogan && <Text style={styles.orgSlogan}>{data.org.slogan}</Text>}
-        </View>
       </View>
-      <View style={styles.right}>
+
+      {/* CENTER: Company Name + Details + Page Title */}
+      <View style={styles.centerSection}>
+        <Text style={[styles.orgName, { color: colors.primary }]}>{data.org.name}</Text>
+        {data.org.slogan && <Text style={styles.orgSlogan}>{data.org.slogan}</Text>}
         <Text style={[styles.title, { color: colors.primary }]}>
           {titleOverride || data.cover?.title || "Report"}
         </Text>
@@ -32,6 +34,15 @@ export function PageHeader({ data, titleOverride }: PageHeaderProps) {
           {data.claim.dateOfLoss ? new Date(data.claim.dateOfLoss).toLocaleDateString() : "N/A"}
         </Text>
       </View>
+
+      {/* RIGHT: Team Photo / Agent Headshot */}
+      <View style={styles.rightSection}>
+        {(data.org as any).teamPhotoUrl ? (
+          <Image src={(data.org as any).teamPhotoUrl} style={styles.teamPhoto} />
+        ) : (data.org as any).agentPhotoUrl ? (
+          <Image src={(data.org as any).agentPhotoUrl} style={styles.teamPhoto} />
+        ) : null}
+      </View>
     </View>
   );
 }
@@ -39,39 +50,59 @@ export function PageHeader({ data, titleOverride }: PageHeaderProps) {
 const styles = StyleSheet.create({
   container: {
     marginBottom: 12,
-    paddingBottom: 6,
-    borderBottomWidth: 1,
+    paddingBottom: 8,
+    borderBottomWidth: 2,
     flexDirection: "row",
     justifyContent: "space-between",
+    alignItems: "center",
   },
-  left: {
+  leftSection: {
+    width: 60,
     flexDirection: "row",
     alignItems: "center",
   },
   logo: {
-    width: 40,
-    height: 40,
-    marginRight: 8,
+    width: 50,
+    height: 50,
+    objectFit: "contain",
   },
-  orgText: {
+  centerSection: {
+    flex: 1,
     flexDirection: "column",
+    alignItems: "center",
+    paddingHorizontal: 8,
   },
   orgName: {
-    fontSize: 10,
+    fontSize: 12,
     fontWeight: "bold",
+    textAlign: "center",
   },
   orgSlogan: {
     fontSize: 8,
-  },
-  right: {
-    flexDirection: "column",
-    alignItems: "flex-end",
+    color: "#64748b",
+    textAlign: "center",
+    marginBottom: 4,
   },
   title: {
     fontSize: 11,
     fontWeight: "bold",
+    textAlign: "center",
   },
   meta: {
     fontSize: 8,
+    color: "#64748b",
+    textAlign: "center",
+  },
+  rightSection: {
+    width: 60,
+    flexDirection: "row",
+    justifyContent: "flex-end",
+    alignItems: "center",
+  },
+  teamPhoto: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    objectFit: "cover",
   },
 });

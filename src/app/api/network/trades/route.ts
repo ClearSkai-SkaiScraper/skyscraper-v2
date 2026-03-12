@@ -1,7 +1,7 @@
 export const dynamic = "force-dynamic";
 
-import { auth } from "@clerk/nextjs/server";
 import { logger } from "@/lib/logger";
+import { auth } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
 
 import prisma from "@/lib/prisma";
@@ -12,9 +12,31 @@ import prisma from "@/lib/prisma";
  */
 export async function GET(req: NextRequest) {
   const authData = await auth();
-  const { userId, orgId } = authData;
-  if (!userId || !orgId) {
+  const { userId } = authData;
+  let orgId = authData.orgId as string | null;
+
+  if (!userId) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  // DB-first org resolution fallback (trades-network-only users may not have Clerk orgId)
+  if (!orgId) {
+    const user = await prisma.users.findFirst({
+      where: { clerkUserId: userId },
+      select: { orgId: true },
+    });
+    orgId = user?.orgId || null;
+  }
+  if (!orgId) {
+    const membership = await prisma.tradesCompanyMember.findUnique({
+      where: { userId },
+      select: { companyId: true, orgId: true },
+    });
+    orgId = membership?.orgId || membership?.companyId || null;
+  }
+
+  if (!orgId) {
+    return NextResponse.json({ trades: [] });
   }
 
   try {

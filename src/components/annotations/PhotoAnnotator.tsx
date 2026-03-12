@@ -140,6 +140,14 @@ export function PhotoAnnotator({
   const imageRef = useRef<HTMLImageElement | null>(null);
 
   const [annotations, setAnnotations] = useState<Annotation[]>(initialAnnotations);
+
+  // Sync when parent passes new annotations (e.g. after AI analysis)
+  useEffect(() => {
+    if (initialAnnotations && initialAnnotations.length > 0) {
+      setAnnotations(initialAnnotations);
+    }
+  }, [initialAnnotations]);
+
   const [selectedTool, setSelectedTool] = useState<
     "select" | "circle" | "rectangle" | "freehand" | "text" | "pan"
   >("select");
@@ -153,12 +161,22 @@ export function PhotoAnnotator({
   const [zoom, setZoom] = useState(1);
   const [pan, setPan] = useState({ x: 0, y: 0 });
   const [imageLoaded, setImageLoaded] = useState(false);
+  const [imageError, setImageError] = useState<string | null>(null);
   const [canvasSize, setCanvasSize] = useState({ width: 800, height: 600 });
 
   // Load image and set canvas size to match aspect ratio
   useEffect(() => {
+    if (!imageUrl) {
+      setImageError("No image URL provided");
+      return;
+    }
+
+    setImageLoaded(false);
+    setImageError(null);
+
     const img = new Image();
     img.crossOrigin = "anonymous";
+
     img.onload = () => {
       imageRef.current = img;
       // Scale to fit within 800px max width while preserving aspect ratio
@@ -178,8 +196,13 @@ export function PhotoAnnotator({
 
       setCanvasSize({ width: Math.round(width), height: Math.round(height) });
       setImageLoaded(true);
-      drawCanvas();
     };
+
+    img.onerror = () => {
+      console.error("[PhotoAnnotator] Failed to load image:", imageUrl);
+      setImageError("Failed to load image. The image may be unavailable or blocked by CORS.");
+    };
+
     img.src = imageUrl;
   }, [imageUrl]);
 
@@ -285,13 +308,22 @@ export function PhotoAnnotator({
     }
 
     ctx.restore();
-  }, [annotations, selectedAnnotation, isDrawing, currentPath, selectedColor, zoom, pan]);
+  }, [
+    annotations,
+    selectedAnnotation,
+    isDrawing,
+    currentPath,
+    selectedColor,
+    zoom,
+    pan,
+    canvasSize,
+  ]);
 
   useEffect(() => {
     if (imageLoaded) {
       drawCanvas();
     }
-  }, [imageLoaded, drawCanvas]);
+  }, [imageLoaded, drawCanvas, canvasSize]);
 
   // Get canvas coordinates from mouse event
   const getCanvasCoords = (e: React.MouseEvent<HTMLCanvasElement>) => {
@@ -646,7 +678,7 @@ export function PhotoAnnotator({
       <div
         ref={containerRef}
         className="relative overflow-hidden rounded-lg border bg-slate-100 dark:bg-slate-800"
-        style={{ height: `${canvasSize.height + 20}px` }}
+        style={{ minHeight: "400px", height: `${Math.max(canvasSize.height + 20, 400)}px` }}
       >
         <canvas
           ref={canvasRef}
@@ -665,9 +697,27 @@ export function PhotoAnnotator({
         />
 
         {/* Loading overlay */}
-        {!imageLoaded && (
+        {!imageLoaded && !imageError && (
           <div className="absolute inset-0 flex items-center justify-center bg-slate-200/80 dark:bg-slate-700/80">
-            <div className="text-slate-500">Loading image...</div>
+            <div className="flex flex-col items-center gap-2">
+              <div className="h-6 w-6 animate-spin rounded-full border-2 border-slate-400 border-t-transparent" />
+              <div className="text-slate-500">Loading image...</div>
+            </div>
+          </div>
+        )}
+
+        {/* Error overlay */}
+        {imageError && (
+          <div className="absolute inset-0 flex items-center justify-center bg-red-100/80 dark:bg-red-900/30">
+            <div className="flex flex-col items-center gap-2 p-4 text-center">
+              <div className="text-lg font-semibold text-red-600 dark:text-red-400">
+                ⚠️ Image Load Error
+              </div>
+              <div className="max-w-md text-sm text-red-500 dark:text-red-300">{imageError}</div>
+              <div className="mt-2 max-w-md break-all text-xs text-slate-500">
+                URL: {imageUrl?.slice(0, 100)}...
+              </div>
+            </div>
           </div>
         )}
       </div>

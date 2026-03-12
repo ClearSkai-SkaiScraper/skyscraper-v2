@@ -3,17 +3,31 @@
 import { SignUp, useClerk } from "@clerk/nextjs";
 import Image from "next/image";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
+import { Suspense, useEffect, useState } from "react";
 
-export default function ClientSignUpPage() {
+function ClientSignUpForm() {
   const { loaded } = useClerk();
   const [isReady, setIsReady] = useState(false);
+  const searchParams = useSearchParams();
 
   useEffect(() => {
     if (loaded) {
       setIsReady(true);
     }
   }, [loaded]);
+
+  // Preserve redirect_url through sign-up flow (e.g. invite tokens)
+  const pendingRedirect = searchParams?.get("redirect_url");
+  const afterParams = new URLSearchParams();
+  afterParams.set("mode", "client");
+  if (pendingRedirect) afterParams.set("redirect_url", pendingRedirect);
+  const redirectUrl = `/after-sign-in?${afterParams.toString()}`;
+
+  // Propagate redirect_url to sign-in page
+  const signInUrl = pendingRedirect
+    ? `/client/sign-in?redirect_url=${encodeURIComponent(pendingRedirect)}`
+    : "/client/sign-in";
 
   return (
     <main className="flex min-h-screen items-center justify-center bg-slate-50">
@@ -47,9 +61,9 @@ export default function ClientSignUpPage() {
             }}
             routing="path"
             path="/client/sign-up"
-            signInUrl="/client/sign-in"
-            forceRedirectUrl="/after-sign-in?mode=client"
-            fallbackRedirectUrl="/after-sign-in?mode=client"
+            signInUrl={signInUrl}
+            forceRedirectUrl={redirectUrl}
+            fallbackRedirectUrl={redirectUrl}
           />
         )}
 
@@ -74,5 +88,22 @@ export default function ClientSignUpPage() {
         </div>
       </div>
     </main>
+  );
+}
+
+export default function ClientSignUpPage() {
+  return (
+    <Suspense
+      fallback={
+        <main className="flex min-h-screen items-center justify-center bg-slate-50">
+          <div className="flex flex-col items-center justify-center space-y-4 rounded-lg border border-slate-200 bg-white p-8 shadow-xl">
+            <div className="h-8 w-8 animate-spin rounded-full border-2 border-slate-300 border-t-blue-500" />
+            <p className="text-sm text-slate-500">Loading...</p>
+          </div>
+        </main>
+      }
+    >
+      <ClientSignUpForm />
+    </Suspense>
   );
 }

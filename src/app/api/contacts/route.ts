@@ -1,21 +1,43 @@
 import { logger } from "@/lib/logger";
-import { currentUser } from "@clerk/nextjs/server";
+import { auth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 
 import prisma from "@/lib/prisma";
 
 export const dynamic = "force-dynamic";
 
-export async function GET() {
+export async function GET(req: Request) {
   try {
-    const user = await currentUser();
-    if (!user) {
+    const { userId } = await auth();
+    if (!userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const orgId = user.publicMetadata?.orgId as string | undefined;
+    // DB-first org resolution (matches platform pattern)
+    const { searchParams } = new URL(req.url);
+    const orgIdParam = searchParams.get("orgId");
+
+    let orgId = orgIdParam || null;
+
     if (!orgId) {
-      return NextResponse.json({ error: "Organization not found" }, { status: 403 });
+      const user = await prisma.users.findFirst({
+        where: { clerkUserId: userId },
+        select: { orgId: true },
+      });
+      orgId = user?.orgId || null;
+    }
+
+    // Fallback: resolve from tradesCompanyMember
+    if (!orgId) {
+      const membership = await prisma.tradesCompanyMember.findUnique({
+        where: { userId },
+        select: { companyId: true, orgId: true },
+      });
+      orgId = membership?.orgId || membership?.companyId || null;
+    }
+
+    if (!orgId) {
+      return NextResponse.json({ contacts: [] });
     }
 
     const contacts = await prisma.contacts.findMany({

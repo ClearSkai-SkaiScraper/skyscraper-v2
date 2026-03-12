@@ -113,6 +113,8 @@ export async function GET(req: Request) {
     const claimId = searchParams.get("claimId");
     const orgIdParam = searchParams.get("orgId");
     const role = searchParams.get("role"); // "client" forces client path for dual-role users
+    const typeFilter = searchParams.get("type"); // "team", "clients", "trades" for MessageHub tabs
+    const archivedFilter = searchParams.get("archived"); // "true" for archived threads
 
     // Determine user role and org — check both users table AND tradesCompanyMember
     // because some pros only exist in tradesCompanyMember (new trades-network-only users)
@@ -309,6 +311,24 @@ export async function GET(req: Request) {
         });
       } else {
         threads = [];
+      }
+    }
+
+    // ── Apply type/archived filters for MessageHub tabs ──────────────
+    if (threads && threads.length > 0) {
+      if (archivedFilter === "true") {
+        threads = threads.filter((t: any) => !!t.archivedAt);
+      } else {
+        // Exclude archived threads by default
+        threads = threads.filter((t: any) => !t.archivedAt);
+      }
+
+      if (typeFilter === "clients") {
+        threads = threads.filter((t: any) => !!t.clientId || t.isClientThread);
+      } else if (typeFilter === "trades") {
+        threads = threads.filter((t: any) => !!t.tradePartnerId && !t.clientId);
+      } else if (typeFilter === "team") {
+        threads = threads.filter((t: any) => !t.clientId && !t.tradePartnerId && !t.isPortalThread);
       }
     }
 

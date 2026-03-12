@@ -38,6 +38,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { ClaimPhotoUploadWithAnalysis } from "@/components/uploads/ClaimPhotoUploadWithAnalysis";
 import { logger } from "@/lib/logger";
+import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 
 import SectionCard from "../_components/SectionCard";
@@ -1039,31 +1040,38 @@ export default function PhotosPage() {
                 )}
               </div>
 
-              {/* Analyze button for non-analyzed photos */}
-              {!photo.analyzed && (
-                <div className="absolute inset-0 flex items-center justify-center bg-black/50 opacity-0 transition-opacity group-hover:opacity-100">
-                  <Button
-                    size="sm"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleAnalyze(photo.id);
-                    }}
-                    disabled={analyzing === photo.id}
-                  >
-                    {analyzing === photo.id ? (
-                      <>
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        Analyzing...
-                      </>
-                    ) : (
-                      <>
-                        <Sparkles className="mr-2 h-4 w-4" />
-                        Analyze
-                      </>
-                    )}
-                  </Button>
-                </div>
-              )}
+              {/* Analyze / Reanalyze button for all photos on hover */}
+              <div className="absolute inset-0 flex items-center justify-center bg-black/50 opacity-0 transition-opacity group-hover:opacity-100">
+                <Button
+                  size="sm"
+                  variant={photo.analyzed ? "outline" : "default"}
+                  className={
+                    photo.analyzed ? "border-white/60 bg-white/20 text-white hover:bg-white/30" : ""
+                  }
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleAnalyze(photo.id);
+                  }}
+                  disabled={analyzing === photo.id}
+                >
+                  {analyzing === photo.id ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Analyzing...
+                    </>
+                  ) : photo.analyzed ? (
+                    <>
+                      <Sparkles className="mr-2 h-4 w-4" />
+                      Reanalyze
+                    </>
+                  ) : (
+                    <>
+                      <Sparkles className="mr-2 h-4 w-4" />
+                      Analyze
+                    </>
+                  )}
+                </Button>
+              </div>
             </div>
           ))}
         </div>
@@ -1117,23 +1125,26 @@ export default function PhotosPage() {
                       </div>
                     )}
                   </div>
-                  {!photo.analyzed && (
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => handleAnalyze(photo.id)}
-                      disabled={analyzing === photo.id}
-                    >
-                      {analyzing === photo.id ? (
-                        <Loader2 className="h-4 w-4 animate-spin" />
-                      ) : (
-                        <>
-                          <Sparkles className="mr-2 h-4 w-4" />
-                          Analyze
-                        </>
-                      )}
-                    </Button>
-                  )}
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => handleAnalyze(photo.id)}
+                    disabled={analyzing === photo.id}
+                  >
+                    {analyzing === photo.id ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : photo.analyzed ? (
+                      <>
+                        <Sparkles className="mr-2 h-4 w-4" />
+                        Reanalyze
+                      </>
+                    ) : (
+                      <>
+                        <Sparkles className="mr-2 h-4 w-4" />
+                        Analyze
+                      </>
+                    )}
+                  </Button>
                 </div>
 
                 {/* AI Caption */}
@@ -1257,14 +1268,16 @@ export default function PhotosPage() {
                 </TabsContent>
 
                 {/* Annotate Tab */}
-                <TabsContent value="annotate" className="mt-4">
-                  <PhotoAnnotator
-                    imageUrl={selectedPhoto.publicUrl}
-                    initialAnnotations={selectedPhoto.annotations || []}
-                    onSave={(annotations) => handleSaveAnnotations(selectedPhoto.id, annotations)}
-                    onAnalyze={() => handleAnalyze(selectedPhoto.id)}
-                    isAnalyzing={analyzing === selectedPhoto.id}
-                  />
+                <TabsContent value="annotate" className="mt-4" forceMount>
+                  <div className={cn(modalTab !== "annotate" && "hidden")}>
+                    <PhotoAnnotator
+                      imageUrl={selectedPhoto.publicUrl}
+                      initialAnnotations={selectedPhoto.annotations || []}
+                      onSave={(annotations) => handleSaveAnnotations(selectedPhoto.id, annotations)}
+                      onAnalyze={() => handleAnalyze(selectedPhoto.id)}
+                      isAnalyzing={analyzing === selectedPhoto.id}
+                    />
+                  </div>
                 </TabsContent>
 
                 {/* Details Tab */}
@@ -1473,24 +1486,28 @@ export default function PhotosPage() {
                   </Button>
                 </div>
                 <div className="flex gap-2">
-                  {!selectedPhoto.analyzed && (
-                    <Button
-                      onClick={() => handleAnalyze(selectedPhoto.id)}
-                      disabled={analyzing === selectedPhoto.id}
-                    >
-                      {analyzing === selectedPhoto.id ? (
-                        <>
-                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                          Analyzing...
-                        </>
-                      ) : (
-                        <>
-                          <Sparkles className="mr-2 h-4 w-4" />
-                          Run AI Analysis
-                        </>
-                      )}
-                    </Button>
-                  )}
+                  <Button
+                    onClick={() => handleAnalyze(selectedPhoto.id)}
+                    disabled={analyzing === selectedPhoto.id}
+                    variant={selectedPhoto.analyzed ? "outline" : "default"}
+                  >
+                    {analyzing === selectedPhoto.id ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Analyzing...
+                      </>
+                    ) : selectedPhoto.analyzed ? (
+                      <>
+                        <Sparkles className="mr-2 h-4 w-4" />
+                        Reanalyze
+                      </>
+                    ) : (
+                      <>
+                        <Sparkles className="mr-2 h-4 w-4" />
+                        Run AI Analysis
+                      </>
+                    )}
+                  </Button>
                   <Button variant="outline" onClick={() => setSelectedPhoto(null)}>
                     Close
                   </Button>

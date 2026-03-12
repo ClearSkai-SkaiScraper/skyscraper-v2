@@ -259,14 +259,13 @@ export async function GET(req: Request) {
     }
     const allUsers = [...users, ...syntheticUsers];
 
-    // Get claims per user (claims signed in period) — exclude demo claims
-    // Only count claims with signingStatus = "signed" for leaderboard
-    const claims = await prisma.claims.findMany({
+    // Get ALL claims per user in period — exclude demo claims
+    // Count all claims regardless of signingStatus for accurate leaderboard
+    const allClaims = await prisma.claims.findMany({
       where: {
         orgId: ctx.orgId,
         createdAt: { gte: periodStart },
         isDemo: false,
-        signingStatus: "signed",
       },
       select: {
         id: true,
@@ -274,21 +273,19 @@ export async function GET(req: Request) {
         estimatedJobValue: true,
         jobValueStatus: true,
         status: true,
+        signingStatus: true,
         createdAt: true,
         assignedTo: true,
       },
       take: 5000, // Safety limit — bounded by period + org
     });
 
-    // Also count pending claims separately for context
-    const pendingClaimsCount = await prisma.claims.count({
-      where: {
-        orgId: ctx.orgId,
-        createdAt: { gte: periodStart },
-        isDemo: false,
-        OR: [{ signingStatus: "pending" }, { signingStatus: null }],
-      },
-    });
+    // Separate signed claims from all claims for metrics
+    const claims = allClaims; // Use all claims for leaderboard attribution
+    const signedClaims = allClaims.filter((c) => c.signingStatus === "signed");
+    const pendingClaimsCount = allClaims.filter(
+      (c) => c.signingStatus === "pending" || c.signingStatus === null
+    ).length;
 
     // Get leads per user (leads created in period), optionally filtered by source
     const leads = await prisma.leads.findMany({
@@ -393,6 +390,7 @@ export async function GET(req: Request) {
     const totalRevenue = cleanLeaderboard.reduce((s, r) => s + r.revenue, 0);
     const totalClaims = cleanLeaderboard.reduce((s, r) => s + r.claimsSigned, 0);
     const totalDoors = cleanLeaderboard.reduce((s, r) => s + r.doorsKnocked, 0);
+    const signedClaimsCount = signedClaims.length;
 
     return NextResponse.json({
       success: true,
@@ -403,6 +401,7 @@ export async function GET(req: Request) {
           totalClaims,
           totalDoors,
           pendingClaimsCount,
+          signedClaimsCount,
           repCount: cleanLeaderboard.length,
           avgCloseRate:
             cleanLeaderboard.length > 0

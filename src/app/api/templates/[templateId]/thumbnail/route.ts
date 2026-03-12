@@ -186,31 +186,58 @@ export async function GET(req: NextRequest, { params }: { params: { templateId: 
     const templateTitle =
       (registryTemplate as any)?.title || (dbTemplate as any)?.title || templateSlug || templateId;
 
-    // 3) Uniform thumbnail first (keeps thumbnails consistent even when DB has per-template urls)
-    const uniformKey = getUniformCategoryThumbKey(templateCategory);
+    // Build candidate keys for template-specific thumbnails FIRST
+    const candidateKeys = buildThumbnailCandidateKeys({
+      templateId,
+      templateSlug,
+      registryThumbnailKey: registryTemplate?.thumbnailKey ?? null,
+    });
+
+    // 3) Try template-specific R2 thumbnails first
     if (isR2Configured()) {
-      const stream = await getR2Object(uniformKey);
-      if (stream) {
-        return new NextResponse(stream, {
+      for (const key of candidateKeys) {
+        const stream = await getR2Object(key);
+        if (stream) {
+          const contentType = getContentType(key);
+          return new NextResponse(stream, {
+            headers: {
+              "Content-Type": contentType,
+              ...imageCacheHeaders(),
+            },
+          });
+        }
+      }
+    }
+
+    // 4) Try template-specific local thumbnails
+    for (const key of candidateKeys) {
+      const fileBuffer = await tryReadLocalPublicFile(key);
+      if (fileBuffer) {
+        const contentType = getContentType(key);
+        return new NextResponse(Uint8Array.from(fileBuffer), {
           headers: {
-            "Content-Type": getContentType(uniformKey),
+            "Content-Type": contentType,
             ...imageCacheHeaders(),
           },
         });
       }
     }
 
-    const uniformBuffer = await tryReadLocalPublicFile(uniformKey);
-    if (uniformBuffer) {
-      return new NextResponse(Uint8Array.from(uniformBuffer), {
-        headers: {
-          "Content-Type": getContentType(uniformKey),
-          ...imageCacheHeaders(),
-        },
-      });
+    // 5) Try slug-based thumbnail in public/template-thumbs/
+    if (templateSlug) {
+      const slugThumbKey = `template-thumbs/${templateSlug}.svg`;
+      const slugBuffer = await tryReadLocalPublicFile(slugThumbKey);
+      if (slugBuffer) {
+        return new NextResponse(Uint8Array.from(slugBuffer), {
+          headers: {
+            "Content-Type": "image/svg+xml",
+            ...imageCacheHeaders(),
+          },
+        });
+      }
     }
 
-    // 4) If DB provides a thumbnailUrl, prefer it (http(s) or public-relative)
+    // 6) If DB provides a thumbnailUrl, use it
     if (dbTemplate?.thumbnailUrl) {
       const url = dbTemplate.thumbnailUrl;
 
@@ -249,45 +276,9 @@ export async function GET(req: NextRequest, { params }: { params: { templateId: 
       }
     }
 
-    const candidateKeys = buildThumbnailCandidateKeys({
-      templateId,
-      templateSlug,
-      registryThumbnailKey: registryTemplate?.thumbnailKey ?? null,
-    });
-
-    // 5. Try R2 first if configured (try png/svg variants)
-    if (isR2Configured()) {
-      for (const key of candidateKeys) {
-        const stream = await getR2Object(key);
-        if (stream) {
-          const contentType = getContentType(key);
-          return new NextResponse(stream, {
-            headers: {
-              "Content-Type": contentType,
-              ...imageCacheHeaders(),
-            },
-          });
-        }
-      }
-    }
-
-    // 6. Fall back to local public files (try png/svg variants)
-    for (const key of candidateKeys) {
-      const fileBuffer = await tryReadLocalPublicFile(key);
-      if (fileBuffer) {
-        const contentType = getContentType(key);
-        return new NextResponse(Uint8Array.from(fileBuffer), {
-          headers: {
-            "Content-Type": contentType,
-            ...imageCacheHeaders(),
-          },
-        });
-      }
-    }
-
-    // 7. Category icon fallback (no text-based placeholders)
-    const fallbackKey = getCategoryFallbackThumbKey(templateCategory);
-    const fallbackBuffer = await tryReadLocalPublicFile(fallbackKey);
+    // 7. Category icon fallback
+    const uniformKey = getUniformCategoryThumbKey(templateCategory);
+    const fallbackBuffer = await tryReadLocalPublicFile(uniformKey);
 
     if (fallbackBuffer) {
       return new NextResponse(Uint8Array.from(fallbackBuffer), {
