@@ -1503,25 +1503,20 @@ export default function PhotosPage() {
                     variant={selectedPhoto.visibleToClient ? "default" : "outline"}
                     size="sm"
                     className={
-                      selectedPhoto.visibleToClient
-                        ? "bg-emerald-600 hover:bg-emerald-700"
-                        : ""
+                      selectedPhoto.visibleToClient ? "bg-emerald-600 hover:bg-emerald-700" : ""
                     }
                     onClick={async () => {
                       const newValue = !selectedPhoto.visibleToClient;
                       try {
-                        const res = await fetch(
-                          `/api/claims/documents/sharing`,
-                          {
-                            method: "POST",
-                            headers: { "Content-Type": "application/json" },
-                            body: JSON.stringify({
-                              documentId: selectedPhoto.id,
-                              claimId,
-                              shared: newValue,
-                            }),
-                          }
-                        );
+                        const res = await fetch(`/api/claims/documents/sharing`, {
+                          method: "POST",
+                          headers: { "Content-Type": "application/json" },
+                          body: JSON.stringify({
+                            documentId: selectedPhoto.id,
+                            claimId,
+                            shared: newValue,
+                          }),
+                        });
                         if (!res.ok) throw new Error("Failed to update sharing");
                         setSelectedPhoto({
                           ...selectedPhoto,
@@ -1529,15 +1524,11 @@ export default function PhotosPage() {
                         });
                         setPhotos((prev) =>
                           prev.map((p) =>
-                            p.id === selectedPhoto.id
-                              ? { ...p, visibleToClient: newValue }
-                              : p
+                            p.id === selectedPhoto.id ? { ...p, visibleToClient: newValue } : p
                           )
                         );
                         toast.success(
-                          newValue
-                            ? "Photo shared with client"
-                            : "Photo hidden from client"
+                          newValue ? "Photo shared with client" : "Photo hidden from client"
                         );
                       } catch {
                         toast.error("Failed to update sharing status");
