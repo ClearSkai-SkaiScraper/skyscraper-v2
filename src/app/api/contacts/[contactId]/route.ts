@@ -185,8 +185,8 @@ export const DELETE = withOrgScope(
 
       // Unlink from any claims that reference this contact
       await prisma.claims.updateMany({
-        where: { contactId: params.contactId, orgId },
-        data: { contactId: null },
+        where: { clientId: params.contactId, orgId },
+        data: { clientId: null },
       });
 
       // Delete the contact

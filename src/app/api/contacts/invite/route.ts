@@ -1,5 +1,6 @@
 export const dynamic = "force-dynamic";
 
+import { createId } from "@paralleldrive/cuid2";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 
@@ -46,7 +47,7 @@ export const POST = withAuth(async (req: NextRequest, { userId, orgId }) => {
     logger.info("[CONTACTS_INVITE]", { orgId, userId, email, claimId });
 
     // Check if they already have a portal account
-    const existingPortalUser = await prisma.clientPortalUser.findFirst({
+    const existingPortalUser = await prisma.client.findFirst({
       where: { email: email.toLowerCase() },
     });
 
@@ -77,14 +78,15 @@ export const POST = withAuth(async (req: NextRequest, { userId, orgId }) => {
     // If there's a claimId, create or update a ClaimClientLink
     if (claimId) {
       const existingLink = await prisma.claimClientLink.findFirst({
-        where: { claimId, email: email.toLowerCase() },
+        where: { claimId, clientEmail: email.toLowerCase() },
       });
 
       if (!existingLink) {
         await prisma.claimClientLink.create({
           data: {
+            id: createId(),
             claimId,
-            email: email.toLowerCase(),
+            clientEmail: email.toLowerCase(),
             status: "PENDING",
             invitedBy: userId,
           },
@@ -106,6 +108,7 @@ export const POST = withAuth(async (req: NextRequest, { userId, orgId }) => {
         if (!existingConn) {
           await prisma.clientProConnection.create({
             data: {
+              id: createId(),
               contractorId: membership.companyId,
               clientId: existingPortalUser.id,
               status: "pending",
