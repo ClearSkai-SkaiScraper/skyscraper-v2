@@ -77,17 +77,15 @@ export function ClientConnectSection({ claimId, currentClientId }: ClientConnect
     fetchConnections();
   }, []);
 
-  // Fetch current attached client
+  // Fetch current attached client using unified endpoint
   useEffect(() => {
-    if (currentClientId) {
-      fetchAttachedClient(currentClientId);
-    }
-  }, [currentClientId]);
+    fetchAttachedClient();
+  }, [claimId, currentClientId]);
 
   const fetchConnections = async () => {
     setLoadingConnections(true);
     try {
-      // Fetch from company connections endpoint
+      // Fetch from company connections endpoint — only returns Client Network connections
       const res = await fetch("/api/company/connections?limit=100");
       if (res.ok) {
         const data = await res.json();
@@ -108,12 +106,21 @@ export function ClientConnectSection({ claimId, currentClientId }: ClientConnect
     }
   };
 
-  const fetchAttachedClient = async (clientId: string) => {
+  const fetchAttachedClient = async () => {
+    // Use the unified connected-client endpoint that checks both Client and CRM tables
     try {
-      const res = await fetch(`/api/contacts/${clientId}`);
+      const res = await fetch(`/api/claims/${claimId}/connected-client`);
       if (res.ok) {
         const data = await res.json();
-        setAttachedClient(data.contact);
+        if (data.client) {
+          setAttachedClient({
+            id: data.client.id,
+            firstName: data.client.firstName,
+            lastName: data.client.lastName,
+            email: data.client.email,
+            phone: data.client.phone,
+          });
+        }
       }
     } catch (error) {
       logger.error("Failed to fetch attached client:", error);
@@ -156,6 +163,8 @@ export function ClientConnectSection({ claimId, currentClientId }: ClientConnect
       });
       setSelectedConnectionId("");
       toast.success("Client attached successfully!");
+      // Refresh attached client from API to get authoritative data
+      fetchAttachedClient();
     } catch (error: any) {
       logger.error("Attach from connection failed:", error);
       toast.error(error.message || "Failed to attach client");

@@ -115,6 +115,7 @@ export const GET = withAuth(
             confidence: p.ai_confidence ? Number(p.ai_confidence) : null,
             analyzed: !!p.analyzed_at || hasAnnotations,
             analyzedAt: p.analyzed_at,
+            visibleToClient: p.visibleToClient ?? false,
           };
         }),
       });

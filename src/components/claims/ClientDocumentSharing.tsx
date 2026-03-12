@@ -49,18 +49,65 @@ interface ClientDocumentSharingProps {
 
 export default function ClientDocumentSharing({
   claimId,
-  clients = [],
+  clients: clientsProp,
   onClientAdded,
 }: ClientDocumentSharingProps) {
   const router = useRouter();
   const [documents, setDocuments] = useState<Document[]>([]);
+  const [clients, setClients] = useState<Client[]>(clientsProp || []);
   const [selectedClientId, setSelectedClientId] = useState<string>("");
   const [loading, setLoading] = useState(true);
+  const [loadingClients, setLoadingClients] = useState(!clientsProp?.length);
+
+  // Auto-fetch connected client if none passed via prop
+  useEffect(() => {
+    if (!clientsProp?.length) {
+      fetchConnectedClient();
+    }
+  }, [claimId]);
+
+  // Sync prop changes
+  useEffect(() => {
+    if (clientsProp?.length) {
+      setClients(clientsProp);
+      setLoadingClients(false);
+    }
+  }, [clientsProp]);
+
+  const fetchConnectedClient = async () => {
+    setLoadingClients(true);
+    try {
+      const res = await fetch(`/api/claims/${claimId}/connected-client`);
+      if (res.ok) {
+        const data = await res.json();
+        if (data.client) {
+          const client: Client = {
+            id: data.client.id,
+            name: data.client.name || "Unknown Client",
+            email: data.client.email || "",
+          };
+          setClients([client]);
+          // Auto-select the only client
+          setSelectedClientId(client.id);
+        } else {
+          setClients([]);
+        }
+      }
+    } catch (error) {
+      logger.error("Failed to fetch connected client:", error);
+    } finally {
+      setLoadingClients(false);
+    }
+  };
 
   // Load documents and their sharing status
   useEffect(() => {
+    // Auto-select the only client if available
+    if (clients.length === 1 && !selectedClientId) {
+      setSelectedClientId(clients[0].id);
+    }
     loadDocuments();
-  }, [claimId, selectedClientId]);
+  }, [claimId, selectedClientId, clients]);
 
   const loadDocuments = async () => {
     try {
@@ -147,6 +194,25 @@ export default function ClientDocumentSharing({
         return "bg-gray-100 text-gray-800";
     }
   };
+
+  if (loadingClients) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Share className="h-5 w-5" />
+            Document Sharing
+          </CardTitle>
+          <CardDescription>Loading connected client...</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-center justify-center py-6">
+            <div className="h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
 
   if (clients.length === 0) {
     return (

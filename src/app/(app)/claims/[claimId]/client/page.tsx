@@ -3,6 +3,7 @@
 
 import { useParams } from "next/navigation";
 
+import ClientDocumentSharing from "@/components/claims/ClientDocumentSharing";
 import { ClientConnectSection } from "../_components/ClientConnectSection";
 
 export default function ClaimClientPage() {
@@ -20,6 +21,11 @@ export default function ClaimClientPage() {
       </div>
 
       <ClientConnectSection claimId={claimId} />
+
+      {/* Document Sharing — toggle which docs/photos/reports the client can see */}
+      <div className="mt-8">
+        <ClientDocumentSharing claimId={claimId} />
+      </div>
     </div>
   );
 }

@@ -8,6 +8,8 @@ import {
   CheckSquare,
   Download,
   Edit3,
+  Eye,
+  EyeOff,
   FileText,
   Image as ImageIcon,
   Loader2,
@@ -68,6 +70,7 @@ interface Photo {
   severity?: "none" | "minor" | "moderate" | "severe";
   confidence?: number;
   analyzed?: boolean;
+  visibleToClient?: boolean;
 }
 
 export default function PhotosPage() {
@@ -1494,6 +1497,64 @@ export default function PhotosPage() {
                   >
                     <Download className="mr-2 h-4 w-4" />
                     Download
+                  </Button>
+                  {/* Share with Client Toggle */}
+                  <Button
+                    variant={selectedPhoto.visibleToClient ? "default" : "outline"}
+                    size="sm"
+                    className={
+                      selectedPhoto.visibleToClient
+                        ? "bg-emerald-600 hover:bg-emerald-700"
+                        : ""
+                    }
+                    onClick={async () => {
+                      const newValue = !selectedPhoto.visibleToClient;
+                      try {
+                        const res = await fetch(
+                          `/api/claims/documents/sharing`,
+                          {
+                            method: "POST",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({
+                              documentId: selectedPhoto.id,
+                              claimId,
+                              shared: newValue,
+                            }),
+                          }
+                        );
+                        if (!res.ok) throw new Error("Failed to update sharing");
+                        setSelectedPhoto({
+                          ...selectedPhoto,
+                          visibleToClient: newValue,
+                        });
+                        setPhotos((prev) =>
+                          prev.map((p) =>
+                            p.id === selectedPhoto.id
+                              ? { ...p, visibleToClient: newValue }
+                              : p
+                          )
+                        );
+                        toast.success(
+                          newValue
+                            ? "Photo shared with client"
+                            : "Photo hidden from client"
+                        );
+                      } catch {
+                        toast.error("Failed to update sharing status");
+                      }
+                    }}
+                  >
+                    {selectedPhoto.visibleToClient ? (
+                      <>
+                        <Eye className="mr-2 h-4 w-4" />
+                        Shared
+                      </>
+                    ) : (
+                      <>
+                        <EyeOff className="mr-2 h-4 w-4" />
+                        Share with Client
+                      </>
+                    )}
                   </Button>
                 </div>
                 <div className="flex gap-2">

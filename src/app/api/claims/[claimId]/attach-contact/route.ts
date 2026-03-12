@@ -54,6 +54,8 @@ export const POST = withAuth(
         };
       } else {
         // Fallback: check Client table (connections from client portal / invites)
+        // Client records may not have orgId set (portal clients are org-independent),
+        // so first try by id+orgId, then by id alone with ClientProConnection verification.
         const client = await prisma.client.findFirst({
           where: { id: contactId, orgId },
         });
@@ -68,6 +70,53 @@ export const POST = withAuth(
               "Unknown",
             email: client.email,
           };
+        } else {
+          // Client may not have orgId — look up by id and verify through ClientProConnection
+          const clientNoOrg = await prisma.client.findUnique({
+            where: { id: contactId },
+            select: {
+              id: true,
+              name: true,
+              firstName: true,
+              lastName: true,
+              email: true,
+              ClientProConnection: {
+                select: { contractorId: true },
+              },
+            },
+          });
+
+          if (clientNoOrg) {
+            // Verify this client is connected to the pro's company
+            const membership = await prisma.tradesCompanyMember.findFirst({
+              where: { orgId },
+              select: { companyId: true },
+            });
+
+            const isConnected =
+              !membership?.companyId ||
+              clientNoOrg.ClientProConnection.some((c) => c.contractorId === membership.companyId);
+
+            if (isConnected) {
+              contactInfo = {
+                id: clientNoOrg.id,
+                name:
+                  clientNoOrg.name ||
+                  `${clientNoOrg.firstName || ""} ${clientNoOrg.lastName || ""}`.trim() ||
+                  clientNoOrg.email ||
+                  "Unknown",
+                email: clientNoOrg.email,
+              };
+
+              // Also set orgId on the Client record so future lookups work
+              await prisma.client
+                .update({
+                  where: { id: contactId },
+                  data: { orgId },
+                })
+                .catch(() => {}); // non-critical
+            }
+          }
         }
       }
 

@@ -104,79 +104,9 @@ export async function GET(req: Request) {
       }
     }
 
-    // ── Source 2: Legacy Client records linked to this org ──
-    const orgClients = await prisma.client.findMany({
-      where: { orgId },
-      select: {
-        id: true,
-        name: true,
-        email: true,
-        phone: true,
-        firstName: true,
-        lastName: true,
-      },
-      orderBy: { createdAt: "desc" },
-      take: limit,
-    });
-
-    for (const client of orgClients) {
-      // Deduplicate by ID and email
-      if (seenIds.has(client.id)) continue;
-      if (client.email && seenEmails.has(client.email.toLowerCase())) continue;
-
-      seenIds.add(client.id);
-      if (client.email) seenEmails.add(client.email.toLowerCase());
-
-      const clientName =
-        client.name ||
-        `${client.firstName || ""} ${client.lastName || ""}`.trim() ||
-        "Unknown Client";
-
-      connections.push({
-        id: client.id,
-        name: clientName,
-        firstName: client.firstName,
-        lastName: client.lastName,
-        email: client.email,
-        phone: client.phone,
-        contactId: client.id,
-      });
-    }
-
-    // ── Source 3: CRM Contacts (Contacts table) ──
-    const contacts = await prisma.contacts.findMany({
-      where: { orgId },
-      select: {
-        id: true,
-        firstName: true,
-        lastName: true,
-        email: true,
-        phone: true,
-      },
-      orderBy: { createdAt: "desc" },
-      take: limit,
-    });
-
-    for (const contact of contacts) {
-      if (seenIds.has(contact.id)) continue;
-      if (contact.email && seenEmails.has(contact.email.toLowerCase())) continue;
-
-      seenIds.add(contact.id);
-      if (contact.email) seenEmails.add(contact.email.toLowerCase());
-
-      const contactName =
-        `${contact.firstName || ""} ${contact.lastName || ""}`.trim() || "Unknown Contact";
-
-      connections.push({
-        id: contact.id,
-        name: contactName,
-        firstName: contact.firstName,
-        lastName: contact.lastName,
-        email: contact.email,
-        phone: contact.phone,
-        contactId: contact.id,
-      });
-    }
+    // Only return Client Network connections (ClientProConnection).
+    // Legacy Client records and CRM Contacts are NOT included — the user
+    // wants to see only clients they've explicitly connected with.
 
     logger.info("[GET /api/company/connections]", {
       userId,

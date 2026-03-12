@@ -4,6 +4,7 @@
 import {
   Calendar,
   Camera,
+  CheckCircle2,
   Cloud,
   DollarSign,
   Edit,
@@ -14,15 +15,17 @@ import {
   Shield,
   Sparkles,
   User,
+  UserCheck,
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { retryQueue } from "@/lib/client/retryQueue";
+import { logger } from "@/lib/logger";
 import { toast } from "sonner";
 
 interface ClaimsSidebarProps {
@@ -49,6 +52,35 @@ export function ClaimsSidebar({ claimId, claim, onFieldUpdate }: ClaimsSidebarPr
   const router = useRouter();
   const [editing, setEditing] = useState<string | null>(null);
   const [editValue, setEditValue] = useState("");
+
+  // Connected client for sidebar display
+  const [connectedClient, setConnectedClient] = useState<{
+    name: string;
+    email: string | null;
+    phone: string | null;
+  } | null>(null);
+
+  // Fetch connected client info
+  useEffect(() => {
+    const fetchClient = async () => {
+      try {
+        const res = await fetch(`/api/claims/${claimId}/connected-client`);
+        if (res.ok) {
+          const data = await res.json();
+          if (data.client) {
+            setConnectedClient({
+              name: data.client.name || "Unknown",
+              email: data.client.email,
+              phone: data.client.phone,
+            });
+          }
+        }
+      } catch (err) {
+        logger.error("[ClaimsSidebar] Failed to fetch connected client:", err);
+      }
+    };
+    fetchClient();
+  }, [claimId]);
 
   const formatCurrency = (val: number | null | undefined) =>
     val
@@ -225,6 +257,62 @@ export function ClaimsSidebar({ claimId, claim, onFieldUpdate }: ClaimsSidebarPr
             value={claim.adjusterEmail}
             icon={Mail}
           />
+        </CardContent>
+      </Card>
+
+      {/* Client Contact Card */}
+      <Card className="border-0 shadow-lg">
+        <CardHeader className="bg-gradient-to-r from-emerald-50 to-teal-50 pb-3 dark:from-emerald-950/30 dark:to-teal-950/30">
+          <CardTitle className="flex items-center gap-2 text-base">
+            <UserCheck className="h-5 w-5 text-emerald-600" />
+            Client Contact
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-2 pt-4">
+          {connectedClient ? (
+            <>
+              <div className="flex items-center gap-2 text-sm">
+                <User className="h-4 w-4 shrink-0 text-emerald-600" />
+                <span className="font-medium">{connectedClient.name}</span>
+              </div>
+              {connectedClient.email && (
+                <div className="flex items-center gap-2 text-sm">
+                  <Mail className="h-4 w-4 shrink-0 text-emerald-600" />
+                  <a
+                    href={`mailto:${connectedClient.email}`}
+                    className="truncate text-blue-600 hover:underline dark:text-blue-400"
+                  >
+                    {connectedClient.email}
+                  </a>
+                </div>
+              )}
+              {connectedClient.phone && (
+                <div className="flex items-center gap-2 text-sm">
+                  <Phone className="h-4 w-4 shrink-0 text-emerald-600" />
+                  <a
+                    href={`tel:${connectedClient.phone}`}
+                    className="text-blue-600 hover:underline dark:text-blue-400"
+                  >
+                    {connectedClient.phone}
+                  </a>
+                </div>
+              )}
+              <div className="mt-2 flex items-center gap-1 text-xs text-emerald-600">
+                <CheckCircle2 className="h-3 w-3" />
+                <span>Connected</span>
+              </div>
+            </>
+          ) : (
+            <div className="text-sm">
+              <p className="text-muted-foreground">No client connected</p>
+              <Button variant="outline" size="sm" className="mt-2 w-full" asChild>
+                <Link href={`/claims/${claimId}/client`}>
+                  <UserCheck className="mr-2 h-4 w-4" />
+                  Connect Client
+                </Link>
+              </Button>
+            </div>
+          )}
         </CardContent>
       </Card>
 
