@@ -4,6 +4,7 @@ import { Check, Home, Mail, Pencil, Phone, User, X } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 
+import { UniversalContactCard } from "@/components/contacts/UniversalContactCard";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -272,6 +273,21 @@ export function EditableInfoCardsWrapper({
 
   return (
     <div className="space-y-6">
+      {/* Quick contact actions — Call / Text / Email / Message */}
+      {contact && (contact.phone || contact.email) && (
+        <UniversalContactCard
+          contact={{
+            id: contactId || `retail-${Date.now()}`,
+            firstName: contact.firstName,
+            lastName: contact.lastName,
+            email: contact.email,
+            phone: contact.phone,
+            contactType: "client",
+            href: contactId ? `/contacts/${contactId}` : undefined,
+          }}
+          compact
+        />
+      )}
       <EditablePropertyCard
         contact={contact}
         jobSource={jobSource}

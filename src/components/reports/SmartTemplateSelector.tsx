@@ -17,8 +17,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 
-import type { RecommendationRequest, ScoredTemplate } from "@/lib/reports/recommendation-schema";
 import { trackRecommendationEvent } from "@/lib/reports/recommendation-analytics";
+import type { RecommendationRequest, ScoredTemplate } from "@/lib/reports/recommendation-schema";
 
 // ─── Style Category Config ───────────────────────────────────
 

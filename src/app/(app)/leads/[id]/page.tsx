@@ -4,10 +4,7 @@ import {
   CalendarIcon,
   DollarSignIcon,
   EditIcon,
-  Mail,
   MapPin,
-  MapPinIcon,
-  Phone,
   Sparkles,
   Target,
   TrendingUp,
@@ -23,6 +20,7 @@ import { LeadAssignmentDropdown } from "./_components/LeadAssignmentDropdown";
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
+import { UniversalContactCard } from "@/components/contacts/UniversalContactCard";
 import { ArchiveJobButton } from "@/components/jobs/ArchiveJobButton";
 import { TransferJobDropdown } from "@/components/jobs/TransferJobDropdown";
 import { Badge } from "@/components/ui/badge";
@@ -309,40 +307,19 @@ export default async function LeadDetailPage({ params }: { params: Promise<{ id:
                   Contact
                 </CardTitle>
               </CardHeader>
-              <CardContent className="space-y-3 pt-4">
-                <div className="rounded-lg bg-slate-50 p-3 dark:bg-slate-800">
-                  <div className="text-sm font-semibold">{contactName}</div>
-                  <div className="text-xs text-muted-foreground">Primary Contact</div>
-                </div>
-                {contact?.email && (
-                  <div className="flex items-center gap-2 text-sm">
-                    <Mail className="h-4 w-4 text-emerald-600" />
-                    <a
-                      href={`mailto:${contact.email}`}
-                      className="text-emerald-600 hover:underline"
-                    >
-                      {contact.email}
-                    </a>
-                  </div>
-                )}
-                {contact?.phone && (
-                  <div className="flex items-center gap-2 text-sm">
-                    <Phone className="h-4 w-4 text-emerald-600" />
-                    <a href={`tel:${contact.phone}`} className="text-emerald-600 hover:underline">
-                      {contact.phone}
-                    </a>
-                  </div>
-                )}
-                {(contact?.street || contact?.city || contact?.state || contact?.zipCode) && (
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <MapPinIcon className="h-4 w-4" />
-                    <span>
-                      {[contact?.street, contact?.city, contact?.state, contact?.zipCode]
-                        .filter(Boolean)
-                        .join(", ")}
-                    </span>
-                  </div>
-                )}
+              <CardContent className="pt-4">
+                <UniversalContactCard
+                  contact={{
+                    id: contact?.id || `lead-${lead.id}`,
+                    name: contactName,
+                    firstName: contact?.firstName,
+                    lastName: contact?.lastName,
+                    email: contact?.email,
+                    phone: contact?.phone,
+                    contactType: "lead",
+                    href: contact?.id ? `/contacts/${contact.id}` : undefined,
+                  }}
+                />
               </CardContent>
             </Card>
 

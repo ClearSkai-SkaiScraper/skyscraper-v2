@@ -55,10 +55,7 @@ export const GET = withOrgScope(
       });
     } catch (error) {
       logger.error("[GET /api/contacts/:id] Error:", error);
-      return NextResponse.json(
-        { error: "Failed to fetch contact" },
-        { status: 500 }
-      );
+      return NextResponse.json({ error: "Failed to fetch contact" }, { status: 500 });
     }
   }
 );
@@ -149,10 +146,60 @@ export const PATCH = withOrgScope(
       });
     } catch (error) {
       logger.error("[PATCH /api/contacts/:id] Error:", error);
-      return NextResponse.json(
-        { error: "Failed to update contact" },
-        { status: 500 }
-      );
+      return NextResponse.json({ error: "Failed to update contact" }, { status: 500 });
+    }
+  }
+);
+
+/**
+ * PUT /api/contacts/[contactId] - Update contact (alias for PATCH)
+ * The edit page may use PUT — support both methods
+ */
+export const PUT = PATCH;
+
+/**
+ * DELETE /api/contacts/[contactId] - Delete a contact
+ */
+export const DELETE = withOrgScope(
+  async (req, { orgId, userId }, { params }: { params: { contactId: string } }) => {
+    try {
+      const rl = await checkRateLimit(userId, "API");
+      if (!rl.success) {
+        return NextResponse.json(
+          { error: "rate_limit_exceeded", message: "Too many requests" },
+          { status: 429 }
+        );
+      }
+
+      // Verify contact belongs to org before deleting
+      const existing = await prisma.contacts.findFirst({
+        where: {
+          id: params.contactId,
+          orgId: orgId,
+        },
+      });
+
+      if (!existing) {
+        return NextResponse.json({ error: "Contact not found" }, { status: 404 });
+      }
+
+      // Unlink from any claims that reference this contact
+      await prisma.claims.updateMany({
+        where: { contactId: params.contactId, orgId },
+        data: { contactId: null },
+      });
+
+      // Delete the contact
+      await prisma.contacts.delete({
+        where: { id: params.contactId },
+      });
+
+      logger.info("[DELETE /api/contacts/:id]", { contactId: params.contactId, orgId, userId });
+
+      return NextResponse.json({ success: true, message: "Contact deleted" });
+    } catch (error) {
+      logger.error("[DELETE /api/contacts/:id] Error:", error);
+      return NextResponse.json({ error: "Failed to delete contact" }, { status: 500 });
     }
   }
 );

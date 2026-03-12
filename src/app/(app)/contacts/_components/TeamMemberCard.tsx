@@ -1,9 +1,10 @@
 "use client";
 
-import { Crown, Mail, Phone, Shield, User } from "lucide-react";
+import { Crown, Mail, MessageCircle, Phone, Shield, User } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 
 interface TeamMemberCardProps {
   member: {
@@ -112,6 +113,48 @@ export function TeamMemberCard({ member }: TeamMemberCardProps) {
             </div>
           )}
         </div>
+
+        {/* Action buttons — Call / Text / Email */}
+        {(member.phone || member.email) && (
+          <div className="pointer-events-auto mt-4 flex items-center gap-2">
+            {member.phone && (
+              <a
+                href={`tel:${member.phone}`}
+                className="flex-1"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <Button variant="outline" size="sm" className="w-full gap-2">
+                  <Phone className="h-4 w-4" />
+                  Call
+                </Button>
+              </a>
+            )}
+            {member.phone && (
+              <a
+                href={`sms:${member.phone}`}
+                className="flex-1"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <Button variant="outline" size="sm" className="w-full gap-2">
+                  <MessageCircle className="h-4 w-4" />
+                  Text
+                </Button>
+              </a>
+            )}
+            {member.email && (
+              <a
+                href={`mailto:${member.email}`}
+                className="flex-1"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <Button variant="outline" size="sm" className="w-full gap-2">
+                  <Mail className="h-4 w-4" />
+                  Email
+                </Button>
+              </a>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );

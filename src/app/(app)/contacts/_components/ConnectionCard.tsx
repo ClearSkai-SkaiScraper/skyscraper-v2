@@ -1,6 +1,6 @@
 "use client";
 
-import { Building2, Mail, Phone, UserCheck } from "lucide-react";
+import { Building2, Mail, MessageCircle, Phone, UserCheck } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 import { Badge } from "@/components/ui/badge";
@@ -104,6 +104,14 @@ export function ConnectionCard({ conn }: ConnectionCardProps) {
                 <Button variant="outline" size="sm" className="w-full gap-2">
                   <Phone className="h-4 w-4" />
                   Call
+                </Button>
+              </a>
+            )}
+            {conn.phone && (
+              <a href={`sms:${conn.phone}`} className="flex-1" onClick={(e) => e.stopPropagation()}>
+                <Button variant="outline" size="sm" className="w-full gap-2">
+                  <MessageCircle className="h-4 w-4" />
+                  Text
                 </Button>
               </a>
             )}

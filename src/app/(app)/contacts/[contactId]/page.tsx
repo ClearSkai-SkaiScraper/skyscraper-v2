@@ -201,6 +201,12 @@ export default async function ContactDetailPage({ params }: Props) {
     return <ErrorCard message="Organization context unavailable." />;
   }
 
+  // Handle synthetic claim-prefixed IDs — redirect to the claim page
+  if (contactId.startsWith("claim-")) {
+    const claimId = contactId.replace("claim-", "");
+    redirect(`/claims/${claimId}`);
+  }
+
   let contact: any = null;
   let queryFailed = false;
   try {

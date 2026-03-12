@@ -14,8 +14,9 @@ import prisma from "@/lib/prisma";
 import { safeOrgContext } from "@/lib/safeOrgContext";
 import { isTestMode } from "@/lib/testMode";
 
+import { UniversalContactCard } from "@/components/contacts/UniversalContactCard";
+
 import { ConnectionCard } from "./_components/ConnectionCard";
-import { ContactCard } from "./_components/ContactCard";
 import { TeamMemberCard } from "./_components/TeamMemberCard";
 
 export const metadata: Metadata = {
@@ -342,6 +343,7 @@ async function renderContactsPage() {
           contacts.push({
             id: `claim-${cl.id}`,
             type: "client",
+            contactType: "homeowner",
             name,
             firstName: nameParts[0] || "",
             lastName: nameParts.slice(1).join(" ") || "",
@@ -349,6 +351,9 @@ async function renderContactsPage() {
             phone: null,
             tags: ["claim", cl.claimNumber || ""].filter(Boolean),
             createdAt: cl.createdAt ? String(cl.createdAt) : null,
+            // Navigate to claim, not broken /contacts/claim-xxx
+            href: `/claims/${cl.id}`,
+            claimId: cl.id,
           });
         }
       } catch (claimErr) {
@@ -540,8 +545,24 @@ async function renderContactsPage() {
   const clientCount = contacts.length;
   const teamCount = teamMembers.length;
 
-  // Helper to render contact card - Uses client component for onClick handlers
-  const renderContactCard = (contact: any) => <ContactCard key={contact.id} contact={contact} />;
+  // Helper to render contact card - Uses UniversalContactCard for all contact types
+  const renderContactCard = (contact: any) => (
+    <UniversalContactCard
+      key={contact.id}
+      contact={{
+        id: contact.id,
+        name: contact.name,
+        firstName: contact.firstName,
+        lastName: contact.lastName,
+        email: contact.email,
+        phone: contact.phone,
+        tags: contact.tags,
+        contactType: contact.contactType || contact.type || "client",
+        href: contact.href,
+        claimId: contact.claimId,
+      }}
+    />
+  );
 
   // Helper to render connection card - Uses client component for onClick handlers
   const renderConnectionCard = (conn: any) => <ConnectionCard key={conn.id} conn={conn} />;

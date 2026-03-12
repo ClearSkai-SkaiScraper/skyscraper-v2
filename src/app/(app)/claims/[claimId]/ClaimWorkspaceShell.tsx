@@ -17,8 +17,6 @@ import {
   Home,
   Images,
   Loader2,
-  Mail,
-  Phone,
   Save,
   Share2,
   Sparkles,
@@ -32,6 +30,7 @@ import { useEffect, useState } from "react";
 
 import { AIControlPanel } from "@/components/claims/AIControlPanel";
 import { QuickAIActions } from "@/components/claims/QuickAIActions";
+import { UniversalContactCard } from "@/components/contacts/UniversalContactCard";
 import { ArchiveJobButton } from "@/components/jobs/ArchiveJobButton";
 import { TransferJobDropdown } from "@/components/jobs/TransferJobDropdown";
 import { SmartTemplateSelector } from "@/components/reports/SmartTemplateSelector";
@@ -873,113 +872,68 @@ function ContactsSection({
   return (
     <div className="space-y-4">
       <div className="grid gap-4 md:grid-cols-2">
-        <Card title="Insured / Homeowner">
-          <div className="space-y-3">
-            <div className="flex items-center gap-2">
-              <User className="h-4 w-4 text-slate-400" />
-              <span className="font-medium text-slate-900 dark:text-slate-100">
-                {claim.insured_name || "Not provided"}
-              </span>
-            </div>
-            <div className="flex items-start gap-2 text-xs">
-              <Home className="h-4 w-4 flex-shrink-0 text-slate-400" />
-              <span className="text-slate-600 dark:text-slate-400">
-                {[
-                  claim.addressLine1,
-                  claim.addressLine2,
-                  [claim.city, claim.state].filter(Boolean).join(", "),
-                  claim.postalCode,
-                ]
-                  .filter(Boolean)
-                  .join(", ") || "Address not provided"}
-              </span>
-            </div>
-          </div>
-        </Card>
+        {/* Insured / Homeowner — as UniversalContactCard */}
+        {claim.insured_name ? (
+          <UniversalContactCard
+            contact={{
+              id: `claim-insured-${claim.id}`,
+              name: claim.insured_name,
+              email: (claim as any).homeownerEmail || (claim as any).homeowner_email || null,
+              phone: null,
+              contactType: "homeowner",
+              claimId: claim.id,
+              tags: [claim.claimNumber || ""].filter(Boolean),
+            }}
+          />
+        ) : (
+          <Card title="Insured / Homeowner">
+            <p className="text-xs text-muted-foreground">No insured information provided</p>
+          </Card>
+        )}
 
-        {/* ✅ PHASE R: Linked Contact from contacts table */}
-        <Card title="Linked Contact">
-          {contact ? (
-            <div className="space-y-3 text-xs">
-              <div className="flex items-center gap-2">
-                <User className="h-4 w-4 text-slate-400" />
-                <span className="font-medium text-slate-900 dark:text-slate-100">
-                  {[contact.firstName, contact.lastName].filter(Boolean).join(" ") ||
-                    "Unnamed contact"}
-                </span>
-              </div>
-              {contact.company && (
-                <div className="flex items-center gap-2 text-slate-600 dark:text-slate-400">
-                  <span>{contact.company}</span>
-                </div>
-              )}
-              {contact.email && (
-                <div className="flex items-center gap-2">
-                  <Mail className="h-4 w-4 text-slate-400" />
-                  <a
-                    href={`mailto:${contact.email}`}
-                    className="text-blue-600 hover:underline dark:text-blue-400"
-                  >
-                    {contact.email}
-                  </a>
-                </div>
-              )}
-              {contact.phone && (
-                <div className="flex items-center gap-2">
-                  <Phone className="h-4 w-4 text-slate-400" />
-                  <a
-                    href={`tel:${contact.phone}`}
-                    className="text-blue-600 hover:underline dark:text-blue-400"
-                  >
-                    {contact.phone}
-                  </a>
-                </div>
-              )}
-            </div>
-          ) : (
+        {/* Linked Contact from contacts table */}
+        {contact ? (
+          <UniversalContactCard
+            contact={{
+              id: contact.id || `claim-contact-${claim.id}`,
+              firstName: contact.firstName,
+              lastName: contact.lastName,
+              email: contact.email,
+              phone: contact.phone,
+              company: contact.company,
+              contactType: "client",
+              href: contact.id ? `/contacts/${contact.id}` : undefined,
+            }}
+          />
+        ) : (
+          <Card title="Linked Contact">
             <div className="rounded-xl bg-amber-50 px-3 py-2 text-xs text-amber-800 dark:bg-amber-900/20 dark:text-amber-200">
               No contact is currently assigned to this claim. You can attach one from the contacts
               list or add a new contact.
             </div>
-          )}
-        </Card>
+          </Card>
+        )}
       </div>
 
       <div className="grid gap-4 md:grid-cols-2">
-        <Card title="Adjuster Contact">
-          {claim.adjusterName ? (
-            <div className="space-y-3 text-xs">
-              <div className="flex items-center gap-2">
-                <User className="h-4 w-4 text-muted-foreground" />
-                <span className="font-medium">{claim.adjusterName}</span>
-              </div>
-              {claim.adjusterPhone && (
-                <div className="flex items-center gap-2">
-                  <Phone className="h-4 w-4 text-muted-foreground" />
-                  <a
-                    href={`tel:${claim.adjusterPhone}`}
-                    className="text-blue-600 hover:underline dark:text-blue-400"
-                  >
-                    {claim.adjusterPhone}
-                  </a>
-                </div>
-              )}
-              {claim.adjusterEmail && (
-                <div className="flex items-center gap-2">
-                  <Mail className="h-4 w-4 text-muted-foreground" />
-                  <a
-                    href={`mailto:${claim.adjusterEmail}`}
-                    className="text-blue-600 hover:underline dark:text-blue-400"
-                  >
-                    {claim.adjusterEmail}
-                  </a>
-                </div>
-              )}
-            </div>
-          ) : (
+        {/* Adjuster Contact — as UniversalContactCard */}
+        {claim.adjusterName ? (
+          <UniversalContactCard
+            contact={{
+              id: `claim-adjuster-${claim.id}`,
+              name: claim.adjusterName,
+              phone: claim.adjusterPhone,
+              email: claim.adjusterEmail,
+              contactType: "adjuster",
+              company: claim.carrier || undefined,
+              claimId: claim.id,
+            }}
+          />
+        ) : (
+          <Card title="Adjuster Contact">
             <p className="text-xs text-muted-foreground">No adjuster assigned yet</p>
-          )}
-        </Card>
+          </Card>
+        )}
       </div>
 
       <Card title="Property Details">
