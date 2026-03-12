@@ -87,6 +87,31 @@ export default async function InviteAcceptancePage({ params }: InvitePageProps) 
     redirect(`/client/sign-in?redirect_url=${encodeURIComponent(returnUrl)}`);
   }
 
+  // Verify signed-in user's email matches the invite's clientEmail
+  // This prevents a different authenticated user from hijacking an invite link
+  if (invite.clientEmail) {
+    const user = await currentUser();
+    const userEmails = user?.emailAddresses?.map((e) => e.emailAddress.toLowerCase()) ?? [];
+    if (!userEmails.includes(invite.clientEmail.toLowerCase())) {
+      return (
+        <div className="flex min-h-[60vh] items-center justify-center p-4">
+          <div className="max-w-md rounded-xl border border-slate-200 bg-white p-8 text-center shadow-lg dark:border-slate-700 dark:bg-slate-800">
+            <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-orange-100 dark:bg-orange-500/10">
+              <Clock className="h-8 w-8 text-orange-500" />
+            </div>
+            <h1 className="mb-2 text-2xl font-bold text-slate-900 dark:text-white">
+              Email Mismatch
+            </h1>
+            <p className="text-slate-500 dark:text-slate-400">
+              This invitation was sent to <strong>{invite.clientEmail}</strong>. Please sign in with
+              that email address to accept the invite.
+            </p>
+          </div>
+        </div>
+      );
+    }
+  }
+
   // Activate the invite - update status and link to user
   await prisma.claimClientLink.update({
     where: { id: invite.id },

@@ -26,10 +26,10 @@ export async function POST(req: Request) {
 
     // Gather basic security metrics from the DB
     const [memberCount, recentLogins] = await Promise.all([
-      prisma.membership.count({ where: { orgId: ctx.orgId } }),
+      prisma.user_organizations.count({ where: { organizationId: ctx.orgId } }),
       prisma.audit_logs
         .count({
-          where: { orgId: ctx.orgId, createdAt: { gte: since } },
+          where: { org_id: ctx.orgId, created_at: { gte: since } },
         })
         .catch(() => 0),
     ]);
