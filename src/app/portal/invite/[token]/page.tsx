@@ -1,5 +1,5 @@
 import { logger } from "@/lib/logger";
-import { auth } from "@clerk/nextjs/server";
+import { auth, currentUser } from "@clerk/nextjs/server";
 import { Clock } from "lucide-react";
 import { redirect } from "next/navigation";
 
@@ -27,6 +27,7 @@ export default async function InviteAcceptancePage({ params }: InvitePageProps) 
             id: true,
             claimNumber: true,
             title: true,
+            orgId: true,
           },
         },
       },
@@ -56,8 +57,8 @@ export default async function InviteAcceptancePage({ params }: InvitePageProps) 
 
   // Check if already accepted or revoked
   if (invite.status !== "PENDING") {
-    // Already accepted - redirect to claim portal
-    if (invite.status === "ACCEPTED" && invite.clientUserId) {
+    // Already accepted - redirect to claim portal (accept-invite API writes CONNECTED, page writes CONNECTED)
+    if ((invite.status === "ACCEPTED" || invite.status === "CONNECTED") && invite.clientUserId) {
       redirect(`/portal/claims/${invite.claimId}`);
     }
     return (
@@ -90,11 +91,22 @@ export default async function InviteAcceptancePage({ params }: InvitePageProps) 
   await prisma.claimClientLink.update({
     where: { id: invite.id },
     data: {
-      status: "ACCEPTED",
+      status: "CONNECTED",
       clientUserId: userId,
       acceptedAt: new Date(),
     },
   });
+
+  // Ensure client_access row exists so portal claim APIs work
+  const user = await currentUser();
+  const email = user?.emailAddresses?.[0]?.emailAddress || invite.clientEmail;
+  if (email) {
+    await prisma.client_access.upsert({
+      where: { claimId_email: { claimId: invite.claimId, email } },
+      create: { id: crypto.randomUUID(), claimId: invite.claimId, email },
+      update: {},
+    });
+  }
 
   // Redirect to the claim portal
   redirect(`/portal/claims/${invite.claimId}`);

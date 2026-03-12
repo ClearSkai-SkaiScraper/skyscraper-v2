@@ -6,6 +6,7 @@ export const dynamic = "force-dynamic";
  */
 
 import { logger } from "@/lib/logger";
+import { checkRateLimit } from "@/lib/rate-limit";
 import { auth, currentUser } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -19,6 +20,15 @@ export async function POST(req: NextRequest) {
 
     if (!userId || !user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    // Rate limit: 100 req/min per user
+    const rl = await checkRateLimit(userId, "API");
+    if (!rl.success) {
+      return NextResponse.json(
+        { error: "Too many requests. Please try again shortly." },
+        { status: 429 }
+      );
     }
 
     const body = await req.json();
@@ -209,10 +219,7 @@ export async function POST(req: NextRequest) {
     });
   } catch (error) {
     logger.error("[POST /api/portal/connect-pro] Error:", error);
-    return NextResponse.json(
-      { error: "Failed to create connection" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Failed to create connection" }, { status: 500 });
   }
 }
 
@@ -290,9 +297,6 @@ export async function GET(req: NextRequest) {
     });
   } catch (error) {
     logger.error("[GET /api/portal/connect-pro] Error:", error);
-    return NextResponse.json(
-      { error: "Failed to check connection" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Failed to check connection" }, { status: 500 });
   }
 }

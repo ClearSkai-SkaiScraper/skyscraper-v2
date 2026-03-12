@@ -51,6 +51,52 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "No file provided" }, { status: 400 });
     }
 
+    // MIME type allowlist — block executables, scripts, and XSS vectors
+    const ALLOWED_TYPES = [
+      "image/jpeg",
+      "image/jpg",
+      "image/png",
+      "image/webp",
+      "image/heic",
+      "image/gif",
+      "application/pdf",
+      "application/msword",
+      "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+      "application/vnd.ms-excel",
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      "text/plain",
+      "text/csv",
+      "application/zip",
+      "application/x-zip-compressed",
+    ];
+    const BLOCKED_EXTENSIONS = [
+      "exe",
+      "bat",
+      "cmd",
+      "sh",
+      "ps1",
+      "msi",
+      "dll",
+      "com",
+      "scr",
+      "js",
+      "jsx",
+      "ts",
+      "tsx",
+      "html",
+      "htm",
+      "svg",
+      "php",
+      "py",
+      "rb",
+      "pl",
+    ];
+    const fileExt = (file.name.split(".").pop() || "").toLowerCase();
+
+    if (!ALLOWED_TYPES.includes(file.type) || BLOCKED_EXTENSIONS.includes(fileExt)) {
+      return NextResponse.json({ error: `File type not allowed: ${file.type}` }, { status: 400 });
+    }
+
     // 50MB max for general uploads
     const maxSize = 50 * 1024 * 1024;
     if (file.size > maxSize) {

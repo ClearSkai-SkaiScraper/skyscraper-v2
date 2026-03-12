@@ -14,7 +14,7 @@ import { NextRequest, NextResponse } from "next/server";
 
 import prisma from "@/lib/prisma";
 
-export async function POST(req: NextRequest, { params }: { params: { claimId: string } }) {
+export async function POST(req: NextRequest, { params }: { params: Promise<{ claimId: string }> }) {
   try {
     const { userId } = await auth();
     if (!userId) {
@@ -29,7 +29,7 @@ export async function POST(req: NextRequest, { params }: { params: { claimId: st
       return NextResponse.json({ error: "No email found" }, { status: 400 });
     }
 
-    const { claimId } = params;
+    const { claimId } = await params;
 
     // Verify access through property → contact email
     const accessCheck = await prisma.$queryRaw<

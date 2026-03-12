@@ -16,8 +16,8 @@ const tabs = [
   { label: "Overview", href: "/overview" },
   { label: "Photos", href: "/photos" },
   { label: "Documents", href: "/documents" },
-  { label: "AI Assistant", href: "/ai" },
-  { label: "Supplement Builder", href: "/scope" },
+  { label: "AI", href: "/ai" },
+  { label: "Supplements", href: "/scope" },
   { label: "Measurements", href: "/measurements" },
   { label: "Messages", href: "/messages" },
   { label: "Timeline", href: "/timeline" },
@@ -26,7 +26,7 @@ const tabs = [
   { label: "Trades", href: "/trades" },
   { label: "Client", href: "/client" },
   { label: "Notes", href: "/notes" },
-  { label: "Final Payout", href: "/final-payout" },
+  { label: "Payout", href: "/final-payout" },
 ];
 
 export default function ClaimTabs({ claimId }: ClaimTabsProps) {
@@ -71,7 +71,10 @@ export default function ClaimTabs({ claimId }: ClaimTabsProps) {
         </button>
       )}
 
-      <div ref={scrollRef} className="scrollbar-none flex items-center gap-1 overflow-x-auto pb-0">
+      <div
+        ref={scrollRef}
+        className="scrollbar-none flex items-center gap-0.5 overflow-x-auto pb-0"
+      >
         {tabs.map((tab) => {
           const href = `/claims/${claimId}${tab.href}`;
           const isActive =
@@ -82,7 +85,7 @@ export default function ClaimTabs({ claimId }: ClaimTabsProps) {
               key={tab.href}
               href={href}
               className={cn(
-                "whitespace-nowrap border-b-2 px-3 py-2.5 text-sm font-medium transition-colors",
+                "whitespace-nowrap border-b-2 px-2.5 py-2.5 text-[13px] font-medium transition-colors",
                 isActive
                   ? "border-white text-white"
                   : "border-transparent text-white/60 hover:border-white/40 hover:text-white/90"

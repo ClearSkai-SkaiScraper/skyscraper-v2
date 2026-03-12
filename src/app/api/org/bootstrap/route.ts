@@ -89,6 +89,12 @@ export async function POST(req: Request) {
               id: newOrgId,
               clerkOrgId,
               name: customOrgName || `${userName}'s Organization`,
+              planKey: "SOLO",
+              videoEnabled: false,
+              aiModeDefault: "auto",
+              aiCacheEnabled: true,
+              aiDedupeEnabled: true,
+              demoMode: false,
               updatedAt: new Date(),
             },
             update: {}, // Already exists, no update needed
@@ -111,21 +117,46 @@ export async function POST(req: Request) {
           }
         }
 
+        // Also check for orgs created by ensureOrgForUser (org_${userId} pattern)
         if (!org) {
-          // Create new personal org
-          const newOrgId = crypto.randomUUID();
-          const newClerkOrgId = `personal_${userId.slice(-8)}_${Date.now()}`;
+          const autoCreatedOrg = await tx.org.findFirst({
+            where: {
+              clerkOrgId: {
+                in: [`org_${userId}`, `auto_${userId}`, userId],
+              },
+            },
+            select: { id: true, name: true, clerkOrgId: true },
+          });
+          if (autoCreatedOrg) {
+            org = autoCreatedOrg;
+            logger.debug("[bootstrap] Found auto-created org:", org.id);
+          }
+        }
 
-          org = await tx.org.create({
-            data: {
+        if (!org) {
+          // Create new personal org — DETERMINISTIC clerkOrgId to prevent duplicates
+          const newOrgId = crypto.randomUUID();
+          const newClerkOrgId = `org_${userId}`;
+
+          org = await tx.org.upsert({
+            where: { clerkOrgId: newClerkOrgId },
+            create: {
               id: newOrgId,
               clerkOrgId: newClerkOrgId,
               name: customOrgName || `${userName}'s Organization`,
+              planKey: "SOLO",
+              videoEnabled: false,
+              aiModeDefault: "auto",
+              aiCacheEnabled: true,
+              aiDedupeEnabled: true,
+              demoMode: false,
               updatedAt: new Date(),
             },
+            update: {},
+            select: { id: true, name: true, clerkOrgId: true },
           });
-          created = true;
-          logger.debug("[bootstrap] Created new personal org:", org.id);
+          created = org.id === newOrgId;
+          logger.debug(`[bootstrap] Upserted personal org: ${org.id} created: ${created}`);
         }
       }
 
@@ -138,18 +169,39 @@ export async function POST(req: Request) {
         update: {},
       });
 
-      // STEP 3: Ensure user record exists
-      await tx.users.upsert({
-        where: { clerkUserId: userId },
-        create: {
-          id: userId,
-          clerkUserId: userId,
-          email: userEmail,
-          name: userName,
-          orgId: org.id,
-        },
-        update: { orgId: org.id },
-      });
+      // STEP 3: Ensure user record exists (handle email uniqueness gracefully)
+      try {
+        await tx.users.upsert({
+          where: { clerkUserId: userId },
+          create: {
+            id: userId,
+            clerkUserId: userId,
+            email: userEmail,
+            name: userName,
+            orgId: org.id,
+          },
+          update: { orgId: org.id, name: userName },
+        });
+      } catch (userErr: any) {
+        // Handle email unique constraint conflict — another clerk user might have same email
+        if (userErr?.code === "P2002" && userErr?.meta?.target?.includes?.("email")) {
+          logger.warn(`[bootstrap] Email conflict for ${userEmail}, using fallback email`);
+          const fallbackEmail = `${userId}@skaiscrape.com`;
+          await tx.users.upsert({
+            where: { clerkUserId: userId },
+            create: {
+              id: userId,
+              clerkUserId: userId,
+              email: fallbackEmail,
+              name: userName,
+              orgId: org.id,
+            },
+            update: { orgId: org.id, name: userName },
+          });
+        } else {
+          throw userErr; // Re-throw non-email errors
+        }
+      }
 
       return { org, created };
     });
@@ -165,10 +217,21 @@ export async function POST(req: Request) {
       orgName: result.org.name,
       created: result.created,
     });
-  } catch (error) {
-    logger.error("[bootstrap] Error:", error);
+  } catch (error: any) {
+    const errorMessage = error?.message || "Unknown error";
+    const errorCode = error?.code || "UNKNOWN";
+    logger.error("[bootstrap] Error:", {
+      message: errorMessage,
+      code: errorCode,
+      stack: error?.stack,
+    });
     return NextResponse.json(
-      { ok: false, error: "Bootstrap failed" },
+      {
+        ok: false,
+        error: "Bootstrap failed",
+        detail: process.env.NODE_ENV === "development" ? errorMessage : undefined,
+        code: errorCode,
+      },
       { status: 500 }
     );
   }

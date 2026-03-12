@@ -275,17 +275,6 @@ export function ClaimIntakeWizard({ orgId }: Props) {
         if (res.ok) {
           const data = await res.json();
           uploadedUrls.push(data.url);
-
-          await fetch("/api/claims/files/upload", {
-            method: "POST",
-            body: (() => {
-              const fd = new FormData();
-              fd.append("files", photo.file);
-              fd.append("claimId", claimId);
-              fd.append("orgId", orgId);
-              return fd;
-            })(),
-          }).catch(() => {});
         }
 
         completed++;
@@ -309,6 +298,7 @@ export function ClaimIntakeWizard({ orgId }: Props) {
           orgId,
           dateOfLoss,
           lossType,
+          tradeType,
           status: "INTAKE",
           propertyAddress,
           structureType,
@@ -346,7 +336,7 @@ export function ClaimIntakeWizard({ orgId }: Props) {
       photos.forEach((p) => URL.revokeObjectURL(p.preview));
       router.push(`/claims/${claimId}`);
     } catch (err) {
-      setError(err.message ?? "Something went wrong.");
+      setError(err instanceof Error ? err.message : "Something went wrong.");
     } finally {
       setLoading(false);
       setIsUploading(false);

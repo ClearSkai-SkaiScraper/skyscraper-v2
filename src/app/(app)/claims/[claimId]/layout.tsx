@@ -374,8 +374,8 @@ export default async function ClaimLayout({ children, params }: ClaimLayoutProps
       </header>
 
       {/* MAIN CONTENT — full width, no sidebars */}
-      <main className="flex-1 overflow-y-auto">
-        <div className="mx-auto max-w-7xl p-4 md:p-6 lg:p-8">{children}</div>
+      <main className="flex-1 overflow-y-auto overflow-x-hidden">
+        <div className="mx-auto min-w-0 max-w-7xl p-4 md:p-6 lg:p-8">{children}</div>
       </main>
     </div>
   );

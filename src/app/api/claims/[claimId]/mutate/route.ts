@@ -483,11 +483,36 @@ async function handleAttachContact(
     return NextResponse.json({ error: "Contact not found" }, { status: 404 });
   }
 
-  // Update claim with contact
+  // Update claim with clientId (the contact's Client record)
+  // First check if there's a Client record for this contact
+  let clientId: string | null = null;
+  if (contact.email) {
+    const client = await prisma.client.findFirst({
+      where: { email: contact.email },
+      select: { id: true },
+    });
+    clientId = client?.id || null;
+  }
+
   await prisma.claims.update({
     where: { id: claimId },
-    data: { contactId: payload.contactId } as any,
+    data: { clientId: clientId || payload.contactId },
   });
+
+  // Create client_access record so the client can view this claim in the portal
+  if (contact.email) {
+    await prisma.client_access.upsert({
+      where: {
+        claimId_email: { claimId, email: contact.email },
+      },
+      create: {
+        id: crypto.randomUUID(),
+        claimId,
+        email: contact.email,
+      },
+      update: {},
+    });
+  }
 
   return NextResponse.json({
     success: true,

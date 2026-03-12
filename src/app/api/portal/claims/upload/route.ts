@@ -9,12 +9,14 @@
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-import { auth } from "@clerk/nextjs/server";
 import { createClient } from "@supabase/supabase-js";
 import { NextRequest, NextResponse } from "next/server";
 
+import { assertPortalAccess } from "@/lib/auth/portalAccess";
+import { isPortalAuthError, requirePortalAuth } from "@/lib/auth/requirePortalAuth";
 import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
+import { checkRateLimit } from "@/lib/rate-limit";
 
 const BUCKET = "portal-uploads";
 const MAX_SIZE = 25 * 1024 * 1024; // 25MB
@@ -29,9 +31,18 @@ function getSupabaseAdmin() {
 
 export async function POST(req: NextRequest) {
   try {
-    const { userId } = await auth();
-    if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    // Authenticate via portal auth (works for client users)
+    const authResult = await requirePortalAuth();
+    if (isPortalAuthError(authResult)) return authResult;
+    const { userId } = authResult;
+
+    // Rate limit: 20 uploads/min per user
+    const rl = await checkRateLimit(userId, "UPLOAD");
+    if (!rl.success) {
+      return NextResponse.json(
+        { error: "Too many uploads. Please try again shortly." },
+        { status: 429 }
+      );
     }
 
     const supabase = getSupabaseAdmin();
@@ -46,10 +57,18 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "claimId is required" }, { status: 400 });
     }
 
-    // Verify claim exists and get orgId
+    // Verify portal access to this specific claim (checks all 3 access paths)
+    try {
+      await assertPortalAccess({ userId, claimId });
+    } catch {
+      logger.warn("[PORTAL_CLAIM_UPLOAD] Unauthorized access attempt", { userId, claimId });
+      return NextResponse.json({ error: "Access denied to this claim" }, { status: 403 });
+    }
+
+    // Get claim details
     const claim = await prisma.claims.findUnique({
       where: { id: claimId },
-      select: { id: true, orgId: true },
+      select: { id: true, orgId: true, insured_name: true },
     });
 
     if (!claim) {

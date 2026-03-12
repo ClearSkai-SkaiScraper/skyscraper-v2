@@ -72,8 +72,15 @@ export interface WorkspaceProject {
     name: string;
     companyName?: string;
     avatar?: string;
+    logo?: string;
+    coverPhoto?: string;
     phone?: string;
     email?: string;
+    website?: string;
+    specialty?: string;
+    description?: string;
+    verified?: boolean;
+    profileSlug?: string;
   };
 }
 
@@ -482,30 +489,77 @@ export function ClientWorkspace({
               </CardContent>
             </Card>
 
-            {/* Contractor Info */}
+            {/* Contractor Trades Card */}
             {project.contractor && (
-              <Card>
-                <CardHeader>
-                  <CardTitle>Your Contractor</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="flex items-center gap-4">
-                    <Avatar className="h-14 w-14">
-                      <AvatarImage src={project.contractor.avatar} />
-                      <AvatarFallback className="bg-blue-100 text-blue-600">
+              <Card className="overflow-hidden">
+                {/* Cover photo / gradient banner */}
+                {project.contractor.coverPhoto ? (
+                  <div className="relative h-28 w-full">
+                    <Image
+                      src={project.contractor.coverPhoto}
+                      alt={`${project.contractor.companyName || project.contractor.name} cover`}
+                      fill
+                      className="object-cover"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
+                  </div>
+                ) : (
+                  <div className="h-20 w-full bg-gradient-to-r from-blue-600 to-indigo-700" />
+                )}
+
+                <CardContent
+                  className={
+                    project.contractor.coverPhoto ? "-mt-10 space-y-4 pt-0" : "-mt-8 space-y-4 pt-0"
+                  }
+                >
+                  {/* Avatar + Name */}
+                  <div className="flex items-end gap-4">
+                    <Avatar className="h-16 w-16 border-4 border-white shadow-md dark:border-slate-800">
+                      <AvatarImage src={project.contractor.logo || project.contractor.avatar} />
+                      <AvatarFallback className="bg-blue-100 text-lg font-bold text-blue-600">
                         {project.contractor.name
                           ?.split(" ")
                           .map((n) => n[0])
                           .join("") || "C"}
                       </AvatarFallback>
                     </Avatar>
-                    <div>
-                      <p className="font-semibold">{project.contractor.name}</p>
-                      {project.contractor.companyName && (
-                        <p className="text-sm text-slate-500">{project.contractor.companyName}</p>
-                      )}
+                    <div className="flex-1 pb-1">
+                      <div className="flex items-center gap-2">
+                        <p className="text-lg font-bold text-slate-900 dark:text-white">
+                          {project.contractor.name}
+                        </p>
+                        {project.contractor.verified && (
+                          <Badge className="bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400">
+                            <CheckCircle2 className="mr-1 h-3 w-3" />
+                            Verified
+                          </Badge>
+                        )}
+                      </div>
+                      {project.contractor.companyName &&
+                        project.contractor.companyName !== project.contractor.name && (
+                          <p className="text-sm text-slate-500">{project.contractor.companyName}</p>
+                        )}
                     </div>
                   </div>
+
+                  {/* Specialty / Trade */}
+                  {project.contractor.specialty && (
+                    <div className="flex items-center gap-2">
+                      <Wrench className="h-4 w-4 text-slate-400" />
+                      <span className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                        {project.contractor.specialty}
+                      </span>
+                    </div>
+                  )}
+
+                  {/* Description / About */}
+                  {project.contractor.description && (
+                    <p className="line-clamp-2 text-sm text-slate-500">
+                      {project.contractor.description}
+                    </p>
+                  )}
+
+                  {/* Contact Buttons */}
                   <div className="flex flex-wrap gap-2">
                     {project.contractor.phone && (
                       <Button variant="outline" size="sm" asChild>
@@ -523,10 +577,34 @@ export function ClientWorkspace({
                         </a>
                       </Button>
                     )}
+                    {project.contractor.website && (
+                      <Button variant="outline" size="sm" asChild>
+                        <a
+                          href={project.contractor.website}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          <ExternalLink className="mr-2 h-4 w-4" />
+                          Website
+                        </a>
+                      </Button>
+                    )}
                   </div>
-                  {/* View Full Profile Link */}
-                  <Button variant="ghost" size="sm" className="w-full" asChild>
-                    <Link href={`/portal/contractors/${project.contractor.id}`}>
+
+                  {/* View Full Profile */}
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="w-full border border-slate-200 dark:border-slate-700"
+                    asChild
+                  >
+                    <Link
+                      href={
+                        project.contractor.profileSlug
+                          ? `/portal/contractors/${project.contractor.profileSlug}`
+                          : `/portal/contractors/${project.contractor.id}`
+                      }
+                    >
                       View Full Profile
                       <ChevronRight className="ml-2 h-4 w-4" />
                     </Link>

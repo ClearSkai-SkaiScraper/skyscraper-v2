@@ -149,7 +149,7 @@ export default function ClaimDocumentsPage() {
   };
 
   return (
-    <div className="p-6">
+    <div className="min-w-0 max-w-full overflow-hidden p-6">
       {/* Header */}
       <PageHero
         title="Documents"
@@ -212,30 +212,30 @@ export default function ClaimDocumentsPage() {
           </Button>
         </div>
       ) : (
-        <div className="overflow-hidden rounded-lg border border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-800">
+        <div className="rounded-lg border border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-800">
           <div className="overflow-x-auto">
-            <table className="w-full">
+            <table className="w-full min-w-0 table-auto">
               <thead className="border-b border-gray-200 bg-gray-50 dark:border-gray-700 dark:bg-gray-900">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400 dark:text-gray-600">
+                  <th className="px-3 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">
                     Type
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400 dark:text-gray-600">
+                  <th className="px-3 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">
                     Title
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400 dark:text-gray-600">
+                  <th className="hidden px-3 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400 md:table-cell">
                     Size
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400 dark:text-gray-600">
+                  <th className="hidden px-3 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400 lg:table-cell">
                     Created
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400 dark:text-gray-600">
+                  <th className="hidden px-3 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400 xl:table-cell">
                     Created By
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400 dark:text-gray-600">
-                    Visible to Client
+                  <th className="px-3 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">
+                    Shared
                   </th>
-                  <th className="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400 dark:text-gray-600">
+                  <th className="px-3 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">
                     Actions
                   </th>
                 </tr>
@@ -246,7 +246,7 @@ export default function ClaimDocumentsPage() {
                     key={doc.id}
                     className="transition-colors hover:bg-gray-50 dark:hover:bg-gray-700/50"
                   >
-                    <td className="whitespace-nowrap px-6 py-4">
+                    <td className="whitespace-nowrap px-3 py-3">
                       <span
                         className={`rounded px-2 py-1 text-xs font-medium ${getDocTypeBadgeColor(
                           doc.type
@@ -255,35 +255,35 @@ export default function ClaimDocumentsPage() {
                         {getDocTypeLabel(doc.type)}
                       </span>
                     </td>
-                    <td className="px-6 py-4">
-                      <div className="font-medium text-gray-900 dark:text-gray-100">
+                    <td className="px-3 py-3">
+                      <div className="max-w-[200px] truncate font-medium text-gray-900 dark:text-gray-100 lg:max-w-xs">
                         {doc.title}
                       </div>
                       {doc.description && (
-                        <div className="max-w-md truncate text-sm text-gray-600 dark:text-gray-400 dark:text-gray-600">
+                        <div className="max-w-[200px] truncate text-sm text-gray-600 dark:text-gray-400 lg:max-w-xs">
                           {doc.description}
                         </div>
                       )}
                     </td>
-                    <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-600 dark:text-gray-400 dark:text-gray-600">
+                    <td className="hidden whitespace-nowrap px-3 py-3 text-sm text-gray-600 dark:text-gray-400 md:table-cell">
                       {formatFileSize(doc.fileSize)}
                     </td>
-                    <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-600 dark:text-gray-400 dark:text-gray-600">
+                    <td className="hidden whitespace-nowrap px-3 py-3 text-sm text-gray-600 dark:text-gray-400 lg:table-cell">
                       {new Date(doc.createdAt).toLocaleDateString("en-US", {
                         month: "short",
                         day: "numeric",
                         year: "numeric",
-                        hour: "numeric",
-                        minute: "2-digit",
                       })}
                     </td>
-                    <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-600 dark:text-gray-400 dark:text-gray-600">
-                      {doc.createdBy.name || doc.createdBy.email}
+                    <td className="hidden px-3 py-3 text-sm text-gray-600 dark:text-gray-400 xl:table-cell">
+                      <span className="block max-w-[120px] truncate">
+                        {doc.createdBy.name || doc.createdBy.email}
+                      </span>
                     </td>
-                    <td className="whitespace-nowrap px-6 py-4 text-sm">
+                    <td className="whitespace-nowrap px-3 py-3 text-sm">
                       <button
                         onClick={() => toggleClientVisibility(doc.id, doc.visibleToClient)}
-                        className={`rounded-full px-3 py-1 text-xs font-medium transition-colors ${
+                        className={`rounded-full px-2.5 py-1 text-xs font-medium transition-colors ${
                           doc.visibleToClient
                             ? "bg-green-100 text-green-700 hover:bg-green-200"
                             : "bg-gray-100 text-gray-600 hover:bg-gray-200"
@@ -292,7 +292,7 @@ export default function ClaimDocumentsPage() {
                         {doc.visibleToClient ? "Shared" : "Private"}
                       </button>
                     </td>
-                    <td className="whitespace-nowrap px-6 py-4 text-right text-sm">
+                    <td className="whitespace-nowrap px-3 py-3 text-right text-sm">
                       <div className="flex items-center justify-end gap-1">
                         <DocumentForwardButton
                           documentId={doc.id}

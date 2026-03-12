@@ -3,8 +3,8 @@ import { nanoid } from "nanoid";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 
+import { isPortalAuthError, requirePortalAuth } from "@/lib/auth/requirePortalAuth";
 import prisma from "@/lib/prisma";
-import { safeOrgContext } from "@/lib/safeOrgContext";
 
 export const dynamic = "force-dynamic";
 
@@ -33,23 +33,17 @@ const profileSchema = z.object({
 
 export async function GET(req: NextRequest) {
   try {
-    const ctx = await safeOrgContext();
-
-    if (ctx.status === "unauthenticated") {
-      return NextResponse.json({ error: "unauthenticated" }, { status: 401 });
-    }
-
-    if (!ctx.userId) {
-      return NextResponse.json({ error: "no-user-id" }, { status: 401 });
-    }
+    const authResult = await requirePortalAuth();
+    if (isPortalAuthError(authResult)) return authResult;
+    const { userId } = authResult;
 
     // Load client profile and user registry in parallel
     const [client, registry] = await Promise.all([
       prisma.client.findUnique({
-        where: { userId: ctx.userId },
+        where: { userId },
       }),
       prisma.user_registry.findUnique({
-        where: { clerkUserId: ctx.userId },
+        where: { clerkUserId: userId },
       }),
     ]);
 
@@ -67,7 +61,7 @@ export async function GET(req: NextRequest) {
     const profileData = client
       ? {
           id: client.id,
-          userId: ctx.userId,
+          userId,
           slug: client.slug,
           name: client.name,
           email: client.email || userEmail,
@@ -89,7 +83,7 @@ export async function GET(req: NextRequest) {
         }
       : {
           id: null,
-          userId: ctx.userId,
+          userId,
           slug: null,
           name: null,
           email: userEmail,
@@ -119,22 +113,16 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   try {
-    const ctx = await safeOrgContext();
-
-    if (ctx.status === "unauthenticated") {
-      return NextResponse.json({ error: "unauthenticated" }, { status: 401 });
-    }
-
-    if (!ctx.userId) {
-      return NextResponse.json({ error: "no-user-id" }, { status: 401 });
-    }
+    const authResult = await requirePortalAuth();
+    if (isPortalAuthError(authResult)) return authResult;
+    const { userId } = authResult;
 
     const body = await req.json();
     const validated = profileSchema.parse(body);
 
     // Get email from user_registry (universal table — works for both client & pro users)
     const registryRecord = await prisma.user_registry.findUnique({
-      where: { clerkUserId: ctx.userId },
+      where: { clerkUserId: userId },
       select: { primaryEmail: true, email: true },
     });
     const userEmail = registryRecord?.primaryEmail || registryRecord?.email || null;
@@ -144,11 +132,11 @@ export async function POST(req: NextRequest) {
 
     // Upsert client profile
     const client = await prisma.client.upsert({
-      where: { userId: ctx.userId },
+      where: { userId },
       create: {
         id: crypto.randomUUID(),
-        userId: ctx.userId,
-        orgId: ctx.orgId || null,
+        userId,
+        orgId: null,
         slug: nanoid(10),
         name: fullName,
         email: userEmail,
@@ -184,9 +172,9 @@ export async function POST(req: NextRequest) {
     // Mark onboarding as complete in user_registry when profile is saved
     // This ensures the onboarding wizard won't show again
     await prisma.user_registry.upsert({
-      where: { clerkUserId: ctx.userId },
+      where: { clerkUserId: userId },
       create: {
-        clerkUserId: ctx.userId,
+        clerkUserId: userId,
         userType: "client",
         onboardingComplete: true,
       },

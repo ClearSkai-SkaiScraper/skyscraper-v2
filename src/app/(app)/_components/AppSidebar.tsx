@@ -72,7 +72,6 @@ const navSections: NavSection[] = [
       { label: "Crew Manager", href: "/crews" },
       { label: "Map View", href: "/maps/map-view" },
       { label: "Door Knocking", href: "/maps/door-knocking" },
-      { label: "Permits", href: "/permits" },
     ],
   },
   {
@@ -86,17 +85,23 @@ const navSections: NavSection[] = [
     ],
   },
   {
-    label: "Reports & Documents",
+    label: "Reports",
     items: [
       { label: "Reports Hub", href: "/reports/hub" },
       { label: "Report History", href: "/reports/history" },
       { label: "Quick Reports", href: "/reports/templates/pdf-builder" },
       { label: "Templates & Marketplace", href: "/reports/templates" },
       { label: "Bid Package", href: "/reports/contractor-packet" },
+    ],
+  },
+  {
+    label: "Documents",
+    items: [
       { label: "Smart Documents", href: "/smart-docs" },
       { label: "Carrier Exports", href: "/ai/exports" },
       { label: "HOA Storm Notices", href: "/hoa/notices" },
       { label: "Company Documents", href: "/settings/company-documents" },
+      { label: "Permits", href: "/permits" },
     ],
   },
   {
@@ -107,6 +112,16 @@ const navSections: NavSection[] = [
       { label: "Commissions", href: "/commissions" },
       { label: "Mortgage Checks", href: "/mortgage-checks" },
       { label: "Messages Hub", href: "/messages" },
+    ],
+  },
+  {
+    label: "Network",
+    items: [
+      { label: "Trades Network Hub", href: "/trades" },
+      { label: "Connections & Contacts", href: "/company/connections" },
+      { label: "Job Board", href: "/trades/jobs" },
+      { label: "Vendor Intelligence", href: "/vendor-network" },
+      { label: "Invitations", href: "/invitations" },
     ],
   },
   {

@@ -26,6 +26,7 @@ import { z } from "zod";
 import { apiError } from "@/lib/apiError";
 import { requireAuth } from "@/lib/auth/requireAuth";
 import { logger } from "@/lib/logger";
+import { checkRateLimit } from "@/lib/rate-limit";
 
 // Lazy singleton for OpenAI
 let _openai: OpenAI | null = null;
@@ -430,6 +431,15 @@ export async function POST(request: NextRequest) {
   const auth = await requireAuth();
   if (auth instanceof NextResponse) return auth;
   const { orgId, userId } = auth;
+
+  // Rate limit AI endpoint
+  const rl = await checkRateLimit(userId, "AI");
+  if (!rl.success) {
+    return NextResponse.json(
+      { error: "Rate limit exceeded. Please try again shortly." },
+      { status: 429 }
+    );
+  }
 
   try {
     const body = await request.json();

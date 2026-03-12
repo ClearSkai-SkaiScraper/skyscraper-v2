@@ -69,7 +69,7 @@ export async function GET(req: NextRequest) {
         linkedClaims = await prisma.claimClientLink.findMany({
           where: {
             OR: [{ clientUserId: client.id }, { clientEmail: userEmail }],
-            status: "ACCEPTED",
+            status: { in: ["ACCEPTED", "CONNECTED", "PENDING"] },
           },
           include: {
             claims: {

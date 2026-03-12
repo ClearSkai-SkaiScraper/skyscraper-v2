@@ -131,6 +131,37 @@ export async function POST(req: NextRequest) {
       },
     });
 
+    // Auto-create appointment when follow-up date is set
+    if (parsed.data.followUpDate) {
+      try {
+        const followUp = new Date(parsed.data.followUpDate);
+        const endTime = new Date(followUp.getTime() + 60 * 60 * 1000); // 1 hour
+        await prisma.appointments.create({
+          data: {
+            title: `Door Knock Follow-Up: ${parsed.data.address || parsed.data.ownerName || "Pin"}`,
+            description: `Follow-up from door knocking${parsed.data.notes ? ` — ${parsed.data.notes}` : ""}`,
+            startTime: followUp,
+            endTime,
+            location:
+              [parsed.data.address, parsed.data.city, parsed.data.state, parsed.data.zipCode]
+                .filter(Boolean)
+                .join(", ") || null,
+            orgId: ctx.orgId,
+            assignedTo: ctx.userId || null,
+            status: "scheduled",
+            notes: parsed.data.notes || null,
+          },
+        });
+        logger.info("[CANVASS_PIN] Auto-created follow-up appointment", {
+          pinId: pin.id,
+          date: parsed.data.followUpDate,
+        });
+      } catch (apptErr) {
+        logger.error("[CANVASS_PIN] Failed to create follow-up appointment:", apptErr);
+        // Non-critical — pin was saved successfully
+      }
+    }
+
     return NextResponse.json({
       success: true,
       data: { ...pin, lat: Number(pin.lat), lng: Number(pin.lng) },
@@ -177,6 +208,36 @@ export async function PATCH(req: NextRequest) {
     });
     if (!pin) {
       return NextResponse.json({ error: "Pin not found" }, { status: 404 });
+    }
+
+    // Auto-create appointment when follow-up date is set or changed
+    if (updates.followUpDate) {
+      try {
+        const followUp = new Date(updates.followUpDate);
+        const endTime = new Date(followUp.getTime() + 60 * 60 * 1000);
+        const address = pin.address || updates.address || "";
+        const ownerName = pin.ownerName || updates.ownerName || "";
+        await prisma.appointments.create({
+          data: {
+            title: `Door Knock Follow-Up: ${address || ownerName || "Pin"}`,
+            description: `Follow-up from door knocking${pin.notes ? ` — ${pin.notes}` : ""}`,
+            startTime: followUp,
+            endTime,
+            location:
+              [pin.address, pin.city, pin.state, pin.zipCode].filter(Boolean).join(", ") || null,
+            orgId: ctx.orgId,
+            assignedTo: ctx.userId || null,
+            status: "scheduled",
+            notes: typeof pin.notes === "string" ? pin.notes : null,
+          },
+        });
+        logger.info("[CANVASS_PIN] Auto-created follow-up appointment on update", {
+          pinId: id,
+          date: updates.followUpDate,
+        });
+      } catch (apptErr) {
+        logger.error("[CANVASS_PIN] Failed to create follow-up appointment on update:", apptErr);
+      }
     }
 
     return NextResponse.json({

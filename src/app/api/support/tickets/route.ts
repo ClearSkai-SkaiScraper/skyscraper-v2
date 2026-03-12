@@ -1,6 +1,7 @@
 export const dynamic = "force-dynamic";
 
 import { logger } from "@/lib/logger";
+import { checkRateLimit } from "@/lib/rate-limit";
 import { NextResponse } from "next/server";
 
 import { requireApiAuth } from "@/lib/auth/apiAuth";
@@ -17,6 +18,12 @@ export async function POST(req: Request) {
   const { orgId, userId } = authResult;
   if (!orgId) {
     return NextResponse.json({ error: "Organization required." }, { status: 400 });
+  }
+
+  // Rate limit to prevent spam
+  const rl = await checkRateLimit(userId, "AI");
+  if (!rl.success) {
+    return NextResponse.json({ error: "Rate limit exceeded" }, { status: 429 });
   }
 
   try {

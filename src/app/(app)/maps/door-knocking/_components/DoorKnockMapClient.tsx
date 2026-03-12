@@ -494,8 +494,10 @@ export default function DoorKnockMapClient() {
   }, [pins, mapReady]);
 
   /* ───── form handlers ───── */
+  const [saveError, setSaveError] = useState<string | null>(null);
   const handleSave = async () => {
     setSaving(true);
+    setSaveError(null);
     try {
       const method = editingPin ? "PATCH" : "POST";
       const payload = editingPin ? { id: editingPin.id, ...formData } : formData;
@@ -510,12 +512,22 @@ export default function DoorKnockMapClient() {
         }),
       });
       const json = await res.json();
-      if (json.success) {
-        setShowForm(false);
-        setEditingPin(null);
-        await fetchPins();
+      if (!res.ok || !json.success) {
+        const errMsg =
+          json?.error || json?.details?.fieldErrors
+            ? `Validation error: ${JSON.stringify(json.details.fieldErrors)}`
+            : `Save failed (${res.status})`;
+        setSaveError(errMsg);
+        logger.error("Save pin API error:", { status: res.status, body: json });
+        return;
       }
-    } catch (e) {
+      setShowForm(false);
+      setEditingPin(null);
+      setSaveError(null);
+      await fetchPins();
+    } catch (e: any) {
+      const msg = e?.message || "Network error — check your connection";
+      setSaveError(msg);
       logger.error("Save pin error:", e);
     } finally {
       setSaving(false);
@@ -955,6 +967,13 @@ export default function DoorKnockMapClient() {
               <div className="rounded-md bg-muted/50 px-2 py-1 text-[10px] text-muted-foreground">
                 📌 {formData.lat.toFixed(5)}, {formData.lng.toFixed(5)}
               </div>
+
+              {/* Error display */}
+              {saveError && (
+                <div className="rounded-md bg-red-50 px-2 py-1.5 text-[11px] text-red-700 dark:bg-red-950/50 dark:text-red-400">
+                  ⚠️ {saveError}
+                </div>
+              )}
 
               {/* Actions */}
               <div className="flex gap-2">

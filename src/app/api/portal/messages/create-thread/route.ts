@@ -1,6 +1,7 @@
 export const dynamic = "force-dynamic";
 
 import { logger } from "@/lib/logger";
+import { checkRateLimit } from "@/lib/rate-limit";
 import { auth } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -11,6 +12,15 @@ export async function POST(request: NextRequest) {
     const { userId } = await auth();
     if (!userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    // Rate limit: 100 req/min per user
+    const rl = await checkRateLimit(userId, "API");
+    if (!rl.success) {
+      return NextResponse.json(
+        { error: "Too many requests. Please try again shortly." },
+        { status: 429 }
+      );
     }
 
     const body = await request.json();

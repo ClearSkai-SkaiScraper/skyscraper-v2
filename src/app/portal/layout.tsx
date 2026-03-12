@@ -41,8 +41,12 @@ export default async function PortalLayout({ children }: { children: React.React
     const authResult = await auth();
     userId = authResult.userId;
 
-    // For demo: allow unauthenticated access to show empty states
-    user = userId ? await currentUser() : null;
+    // Redirect unauthenticated users to client sign-in
+    if (!userId) {
+      redirect("/client/sign-in");
+    }
+
+    user = await currentUser();
     const role = user?.publicMetadata?.role as string | undefined;
 
     // If a pro user somehow hits this, send them back to dashboard

@@ -1,5 +1,5 @@
-import { auth } from "@clerk/nextjs/server";
 import { logger } from "@/lib/logger";
+import { auth } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
 
 import prisma from "@/lib/prisma";
@@ -11,7 +11,7 @@ export const dynamic = "force-dynamic";
  * Retrieves a message thread with all messages.
  * Works for BOTH client (portal) users and pro users.
  */
-export async function GET(req: NextRequest, { params }: { params: { threadId: string } }) {
+export async function GET(req: NextRequest, { params }: { params: Promise<{ threadId: string }> }) {
   try {
     const { userId } = await auth();
 
@@ -19,7 +19,7 @@ export async function GET(req: NextRequest, { params }: { params: { threadId: st
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const threadId = params.threadId;
+    const { threadId } = await params;
 
     // Get thread with messages
     const thread = await prisma.messageThread.findUnique({

@@ -3,10 +3,12 @@
  * Public Company API
  * GET /api/portal/company/[slug] — Company profile with team members
  * Returns company info and active team members for client portal viewing.
+ * NOTE: This is a public route — PII (email, phone) is only returned for authenticated + connected clients.
  */
 
-import { NextRequest, NextResponse } from "next/server";
 import { logger } from "@/lib/logger";
+import { auth } from "@clerk/nextjs/server";
+import { NextRequest, NextResponse } from "next/server";
 
 import prisma from "@/lib/prisma";
 
@@ -58,6 +60,30 @@ export async function GET(
       return NextResponse.json({ error: "Company not found" }, { status: 404 });
     }
 
+    // Check if the caller is authenticated and connected to this company
+    let isConnectedClient = false;
+    try {
+      const { userId } = await auth();
+      if (userId) {
+        const client = await prisma.client.findFirst({
+          where: { userId },
+          select: { id: true },
+        });
+        if (client) {
+          const connection = await prisma.clientProConnection.findFirst({
+            where: {
+              clientId: client.id,
+              contractorId: company.id,
+              status: { in: ["connected", "accepted"] },
+            },
+          });
+          isConnectedClient = !!connection;
+        }
+      }
+    } catch {
+      // Auth check failed — treat as unauthenticated (no PII)
+    }
+
     // Calculate company average rating from member reviews
     let avgRating = 0;
     let totalReviews = 0;
@@ -75,7 +101,7 @@ export async function GET(
       // Reviews table may not exist
     }
 
-    // Build team members (public-safe fields only)
+    // Build team members — PII (email, phone) only for connected clients
     const employees = company.members.map((m) => ({
       id: m.id,
       firstName: m.firstName,
@@ -94,6 +120,9 @@ export async function GET(
       yearsExperience: m.yearsExperience || null,
       city: m.city || null,
       state: m.state || null,
+      // PII: only for connected clients
+      email: isConnectedClient ? m.email : undefined,
+      phone: isConnectedClient ? m.phone : undefined,
     }));
 
     return NextResponse.json({
@@ -104,9 +133,9 @@ export async function GET(
         description: company.description,
         logo: company.logo,
         coverImage: company.coverimage,
-        email: company.email,
-        phone: company.phone,
-        website: company.website,
+        email: isConnectedClient ? company.email : undefined,
+        phone: isConnectedClient ? company.phone : undefined,
+        website: company.website, // website is public by nature
         address: company.address,
         city: company.city,
         state: company.state,

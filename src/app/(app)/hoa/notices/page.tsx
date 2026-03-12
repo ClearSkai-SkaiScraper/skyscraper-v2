@@ -5,6 +5,7 @@ import { Building2, FileText, Loader2, Plus, Search } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
+import { PageContainer } from "@/components/layout/PageContainer";
 import { PageHero } from "@/components/layout/PageHero";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -91,18 +92,21 @@ export default function HoaNoticesPage() {
   }
 
   return (
-    <div className="container mx-auto space-y-6 p-6">
-      <div className="flex items-center justify-between">
-        <PageHero
-          section="jobs"
-          title="HOA Notice Packs"
-          subtitle="Community-level storm intelligence packages"
-        />
-        <Button onClick={() => router.push("/hoa/notices/new")}>
+    <PageContainer maxWidth="7xl">
+      <PageHero
+        section="reports"
+        title="HOA Notice Packs"
+        subtitle="Community-level storm intelligence packages"
+        icon={<Building2 className="h-6 w-6" />}
+      >
+        <Button
+          onClick={() => router.push("/hoa/notices/new")}
+          className="bg-white text-blue-600 hover:bg-blue-50"
+        >
           <Plus className="mr-2 h-4 w-4" />
           Create Notice Pack
         </Button>
-      </div>
+      </PageHero>
 
       {/* Summary Cards */}
       <div className="grid grid-cols-3 gap-4">
@@ -238,6 +242,6 @@ export default function HoaNoticesPage() {
           )}
         </CardContent>
       </Card>
-    </div>
+    </PageContainer>
   );
 }

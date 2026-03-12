@@ -204,13 +204,17 @@ export default clerkMiddleware((auth, req) => {
     if (userId && userType && !pathname.startsWith("/after-sign-in")) {
       // Client trying to access Pro routes → redirect to /portal
       if (userType === "client" && isProRoute) {
-        console.log(`[MIDDLEWARE] Client user on Pro route, redirecting to /portal`);
+        if (process.env.NODE_ENV !== "production") {
+          console.log(`[MIDDLEWARE] Client user on Pro route, redirecting to /portal`);
+        }
         return NextResponse.redirect(new URL("/portal", req.url));
       }
 
       // Pro trying to access Client routes → redirect to /dashboard
       if (userType === "pro" && isClientRoute) {
-        console.log(`[MIDDLEWARE] Pro user on Client route, redirecting to /dashboard`);
+        if (process.env.NODE_ENV !== "production") {
+          console.log(`[MIDDLEWARE] Pro user on Client route, redirecting to /dashboard`);
+        }
         return NextResponse.redirect(new URL("/dashboard", req.url));
       }
     }
@@ -303,10 +307,33 @@ export default clerkMiddleware((auth, req) => {
     res.headers.set("x-auth-mode", "protected");
     return res;
   } catch (error) {
-    // SAFETY NET: If middleware throws, allow the request through rather than crash the entire app.
-    // Downstream auth checks (withOrgScope, auth()) will still enforce security.
+    // SAFETY NET: If middleware throws, fail closed for protected routes.
+    // Only allow through for public/static routes where auth is not needed.
+    const pathname = req.nextUrl.pathname;
     console.error("[MIDDLEWARE_ERROR]", error instanceof Error ? error.message : error);
-    return NextResponse.next();
+
+    // Allow static assets and known public paths through on error
+    if (
+      pathname.startsWith("/_next") ||
+      pathname.startsWith("/favicon.ico") ||
+      pathname.startsWith("/sign-in") ||
+      pathname.startsWith("/sign-up") ||
+      pathname.startsWith("/client/sign-in") ||
+      pathname.startsWith("/client/sign-up") ||
+      pathname === "/"
+    ) {
+      return NextResponse.next();
+    }
+
+    // API routes get a 500 JSON response
+    if (pathname.startsWith("/api")) {
+      return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    }
+
+    // Protected page routes redirect to sign-in
+    const isPortalRoute = pathname.startsWith("/portal");
+    const signInPath = isPortalRoute ? "/client/sign-in" : "/sign-in";
+    return NextResponse.redirect(new URL(signInPath, req.url));
   }
 });
 

@@ -47,10 +47,9 @@ export async function POST(request: NextRequest) {
     const photoAnalysis = {
       photoUrl: imageDataUrl,
       caption: damageReport.summary || "No damage detected in this photo.",
-      codeNotes: damageReport.items
-        .flatMap((f: any) => f.compliance_notes || [])
+      codeNotes: (damageReport.recommendations || [])
         .filter((note: string) => note && note.length > 0)
-        .slice(0, 5), // Top 5 compliance notes
+        .slice(0, 5),
       damageType:
         damageReport.items.length > 0
           ? damageReport.items[0].type || "Unknown Damage"
@@ -77,18 +76,23 @@ export async function POST(request: NextRequest) {
 
 /**
  * Determine overall severity from damage report
+ * Uses the schema's overall_severity field first, then falls back to per-item check.
  */
 function determineSeverity(report: any): "low" | "medium" | "high" {
-  if (!report.findings || report.findings.length === 0) return "low";
+  // Prefer the AI's own overall_severity rating
+  if (report.overall_severity) {
+    if (report.overall_severity === "severe") return "high";
+    if (report.overall_severity === "moderate") return "medium";
+    if (report.overall_severity === "minor" || report.overall_severity === "none") return "low";
+  }
 
-  // Check for high severity indicators
-  const hasSevere = report.findings.some(
-    (f: any) => f.severity === "severe" || f.severity === "critical"
-  );
+  // Fallback: check individual items (field is "items", severity is "estimated_severity")
+  if (!report.items || report.items.length === 0) return "low";
+
+  const hasSevere = report.items.some((f: any) => f.estimated_severity === "severe");
   if (hasSevere) return "high";
 
-  // Check for moderate severity
-  const hasModerate = report.findings.some((f: any) => f.severity === "moderate");
+  const hasModerate = report.items.some((f: any) => f.estimated_severity === "moderate");
   if (hasModerate) return "medium";
 
   return "low";

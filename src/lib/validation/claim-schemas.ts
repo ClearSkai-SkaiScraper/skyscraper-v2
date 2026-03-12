@@ -15,6 +15,7 @@ export const claimIntakeSchema = z.object({
   // Step 1: Loss Details
   dateOfLoss: z.string().min(1, "Date of loss is required"),
   lossType: z.string().max(100).optional(),
+  tradeType: z.string().max(100).optional(),
   status: z.string().max(50).optional(),
 
   // Step 2: Property

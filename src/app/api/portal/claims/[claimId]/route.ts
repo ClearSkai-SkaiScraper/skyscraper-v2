@@ -131,7 +131,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ clai
       },
     });
   } catch (error) {
-    const errorMessage = "Unknown error";
+    const errorMessage = error instanceof Error ? error.message : "Unknown error";
     logger.error("[GET /api/portal/claims/[claimId]] Error:", error);
 
     if (errorMessage.includes("Access denied")) {

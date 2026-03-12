@@ -31,6 +31,7 @@ export async function POST(req: Request) {
     const {
       dateOfLoss,
       lossType,
+      tradeType,
       status,
       propertyAddress,
       structureType,
@@ -50,14 +51,16 @@ export async function POST(req: Request) {
 
     // 4. AUTO-CREATE CONTACT if needed (contactId is required FK on properties)
     let finalContactId = contactId;
-    // Guard against orphaned contactId — verify it exists before using
+    // Guard against orphaned contactId — verify it exists AND belongs to this org
     if (finalContactId) {
-      const existingContact = await prisma.contacts.findUnique({
-        where: { id: finalContactId },
+      const existingContact = await prisma.contacts.findFirst({
+        where: { id: finalContactId, orgId },
         select: { id: true },
       });
       if (!existingContact) {
-        logger.warn(`[Intake] Provided contactId ${finalContactId} not found, will auto-create`);
+        logger.warn(
+          `[Intake] Provided contactId ${finalContactId} not found in org ${orgId}, will auto-create`
+        );
         finalContactId = null;
       }
     }
@@ -113,7 +116,7 @@ export async function POST(req: Request) {
         claimNumber,
 
         // Required fields
-        title: `${lossType || "Unknown"} Loss - ${propertyAddress}`,
+        title: `${lossType || "Unknown"} Loss${tradeType ? ` (${tradeType})` : ""} - ${propertyAddress}`,
         description: `Claim created via intake wizard on ${new Date().toLocaleDateString()}`,
         damageType: lossType || "UNKNOWN",
         dateOfLoss: new Date(dateOfLoss),
@@ -152,8 +155,10 @@ export async function POST(req: Request) {
           metadata: {
             method: "intake_wizard",
             lossType,
+            tradeType,
             structureType,
             roofType,
+            agentName,
           },
           createdAt: new Date(),
           updatedAt: new Date(),

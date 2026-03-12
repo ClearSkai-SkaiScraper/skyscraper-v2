@@ -1,5 +1,28 @@
 import prisma from "@/lib/prisma";
 
+/** Resolved portal access result with tenant context */
+export interface PortalAccessResult {
+  claimId?: string;
+  email?: string | null;
+  orgId: string;
+  id?: string;
+  [key: string]: unknown;
+}
+
+interface ClaimSummary {
+  id: string;
+  claimNumber: string | null;
+  title: string | null;
+  orgId: string;
+}
+
+interface ClientAccessRecord {
+  id: string;
+  claimId: string;
+  email: string;
+  claims: ClaimSummary;
+}
+
 /**
  * Get client access for a claim by email
  * Uses the client_access model to check portal access
@@ -7,7 +30,7 @@ import prisma from "@/lib/prisma";
 export async function getClaimAccessByEmail(
   email: string,
   claimId: string
-): Promise<{ access: any; claim: any } | null> {
+): Promise<{ access: ClientAccessRecord; claim: ClaimSummary } | null> {
   const access = await prisma.client_access.findFirst({
     where: {
       claimId,
@@ -40,25 +63,25 @@ export async function getClaimAccessForUser({
 }: {
   userId: string;
   claimId: string;
-}): Promise<any | null> {
-  // Look up user email from user_registry or users table
+}): Promise<{ id: string; claimId: string; email: string } | null> {
+  // Look up user email from users table by Clerk userId
   const user = await prisma.users.findUnique({
-    where: { id: userId },
+    where: { clerkUserId: userId },
     select: { email: true },
   });
 
   if (!user?.email) {
-    // Fallback: try user_registry
-    const registryUser = await prisma.user_registry.findUnique({
-      where: { id: visitorId(userId) },
+    // Fallback: check Client table by Clerk userId
+    const client = await prisma.client.findFirst({
+      where: { userId },
       select: { email: true },
     });
-    if (!registryUser?.email) return null;
+    if (!client?.email) return null;
 
     return await prisma.client_access.findFirst({
       where: {
         claimId,
-        email: registryUser.email,
+        email: client.email,
       },
     });
   }
@@ -69,11 +92,6 @@ export async function getClaimAccessForUser({
       email: user.email,
     },
   });
-}
-
-// Helper to extract visitor ID from Clerk userId if needed
-function visitorId(userId: string): string {
-  return userId;
 }
 
 /**
@@ -91,7 +109,7 @@ export async function assertPortalAccess({
 }: {
   userId: string;
   claimId: string;
-}): Promise<any> {
+}): Promise<PortalAccessResult> {
   // Path 1: client_access by email
   const access = await getClaimAccessForUser({ userId, claimId });
 
@@ -120,7 +138,7 @@ export async function assertPortalAccess({
       where: {
         claimId,
         OR: [{ clientUserId: client.id }, ...(client.email ? [{ clientEmail: client.email }] : [])],
-        status: "ACCEPTED",
+        status: { in: ["ACCEPTED", "CONNECTED", "PENDING"] },
       },
     });
 
@@ -157,7 +175,7 @@ export async function createClientAccess({
 }: {
   claimId: string;
   email: string;
-}): Promise<any> {
+}): Promise<{ id: string; claimId: string; email: string }> {
   // Check if access already exists
   const existing = await prisma.client_access.findFirst({
     where: { claimId, email },

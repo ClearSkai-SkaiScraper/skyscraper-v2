@@ -225,45 +225,46 @@ export async function POST(req: Request) {
             planKey = sub.items.data[0].price.metadata.planKey;
           }
 
-          await prisma.org.update({
-            where: { id: Org.id },
-            data: {
-              stripeSubscriptionId: sub.id,
-              subscriptionStatus,
-              planKey,
-            },
-          });
-
-          // ── SEAT-BILLING: Sync subscription record ──
+          // ── Atomically update org + subscription in a transaction ──
           const quantity = sub.items.data[0]?.quantity || 1;
           const subItemId = sub.items.data[0]?.id;
 
-          await prisma.subscription.upsert({
-            where: { orgId: Org.id },
-            create: {
-              id: sub.id,
-              orgId: Org.id,
-              stripeCustomerId: customerId,
-              stripeSubId: sub.id,
-              stripeSubscriptionItemId: subItemId,
-              seatCount: quantity,
-              pricePerSeat: 8000,
-              status: sub.status,
-              currentPeriodEnd: sub.current_period_end
-                ? new Date(sub.current_period_end * 1000)
-                : null,
-              updatedAt: new Date(),
-            },
-            update: {
-              status: sub.status,
-              seatCount: quantity,
-              stripeSubscriptionItemId: subItemId,
-              currentPeriodEnd: sub.current_period_end
-                ? new Date(sub.current_period_end * 1000)
-                : null,
-              updatedAt: new Date(),
-            },
-          });
+          await prisma.$transaction([
+            prisma.org.update({
+              where: { id: Org.id },
+              data: {
+                stripeSubscriptionId: sub.id,
+                subscriptionStatus,
+                planKey,
+              },
+            }),
+            prisma.subscription.upsert({
+              where: { orgId: Org.id },
+              create: {
+                id: sub.id,
+                orgId: Org.id,
+                stripeCustomerId: customerId,
+                stripeSubId: sub.id,
+                stripeSubscriptionItemId: subItemId,
+                seatCount: quantity,
+                pricePerSeat: 8000,
+                status: sub.status,
+                currentPeriodEnd: sub.current_period_end
+                  ? new Date(sub.current_period_end * 1000)
+                  : null,
+                updatedAt: new Date(),
+              },
+              update: {
+                status: sub.status,
+                seatCount: quantity,
+                stripeSubscriptionItemId: subItemId,
+                currentPeriodEnd: sub.current_period_end
+                  ? new Date(sub.current_period_end * 1000)
+                  : null,
+                updatedAt: new Date(),
+              },
+            }),
+          ]);
 
           logger.debug(
             `[SUBSCRIPTION:${event.type}] Updated Org ${Org.id}: status=${subscriptionStatus}, sub=${sub.id}, seats=${quantity}`
@@ -281,7 +282,7 @@ export async function POST(req: Request) {
               });
 
               if (referral && referral.status !== "subscribed") {
-                // Mark referral as completed
+                // Atomically update referral status + look up referrer org
                 await prisma.referrals.update({
                   where: { id: referral.id },
                   data: {
@@ -367,21 +368,22 @@ export async function POST(req: Request) {
         });
 
         if (Org) {
-          await prisma.org.update({
-            where: { id: Org.id },
-            data: {
-              subscriptionStatus: "canceled",
-            },
-          });
-
-          // Cancel seat-billing subscription record
-          await prisma.subscription.updateMany({
-            where: { orgId: Org.id },
-            data: {
-              status: "canceled",
-              updatedAt: new Date(),
-            },
-          });
+          // Atomically cancel org status + subscription record
+          await prisma.$transaction([
+            prisma.org.update({
+              where: { id: Org.id },
+              data: {
+                subscriptionStatus: "canceled",
+              },
+            }),
+            prisma.subscription.updateMany({
+              where: { orgId: Org.id },
+              data: {
+                status: "canceled",
+                updatedAt: new Date(),
+              },
+            }),
+          ]);
 
           logger.debug(`[SUBSCRIPTION:DELETED] Canceled Org ${Org.id} subscription`);
         }

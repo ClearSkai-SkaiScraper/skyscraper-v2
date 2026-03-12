@@ -83,7 +83,7 @@ async function verifyClaimAccess(
       where: {
         claimId,
         OR: [{ clientUserId: client.id }, ...(email ? [{ clientEmail: email }] : [])],
-        status: "ACCEPTED",
+        status: { in: ["ACCEPTED", "CONNECTED", "PENDING"] },
       },
     });
     if (link) return true;

@@ -1,6 +1,7 @@
 export const dynamic = "force-dynamic";
 
 import { logger } from "@/lib/observability/logger";
+import { checkRateLimit } from "@/lib/rate-limit";
 import { getStorageClient } from "@/lib/storage/client";
 import { auth } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
@@ -10,6 +11,15 @@ export async function POST(request: NextRequest) {
     const { userId } = await auth();
     if (!userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    // Rate limit: 20 uploads/min per user
+    const rl = await checkRateLimit(userId, "UPLOAD");
+    if (!rl.success) {
+      return NextResponse.json(
+        { error: "Too many uploads. Please try again shortly." },
+        { status: 429 }
+      );
     }
 
     const formData = await request.formData();
