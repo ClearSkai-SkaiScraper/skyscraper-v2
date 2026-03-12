@@ -86,12 +86,35 @@ function EmptyState() {
 
 export default async function ClaimsPage({ searchParams }: { searchParams: ClaimsSearchParams }) {
   // Use getOrg with mode: "required" - redirects to /sign-in or /onboarding if no org
-  const orgResult = await getOrg({ mode: "required" });
+  let orgResult;
+  try {
+    orgResult = await getOrg({ mode: "required" });
+  } catch (error: unknown) {
+    // CRITICAL: Re-throw NEXT_REDIRECT — Next.js uses thrown errors for redirects
+    if (
+      error instanceof Error &&
+      "digest" in error &&
+      String((error as any).digest).startsWith("NEXT_REDIRECT")
+    ) {
+      throw error;
+    }
+    logger.error("[ClaimsPage] getOrg failed", {
+      error: error instanceof Error ? error.message : String(error),
+    });
+    return (
+      <ErrorCard message="Session loading error — please refresh the page or sign in again." />
+    );
+  }
 
   // If we get here, org is guaranteed (otherwise would have redirected)
   if (!orgResult.ok) {
-    // TypeScript guard - should never happen with mode: "required"
-    throw new Error("Unexpected: getOrg(required) returned not ok without redirecting");
+    // Resilient: show user-friendly error instead of throwing
+    logger.error("[ClaimsPage] getOrg returned not-ok without redirecting", {
+      reason: orgResult.reason,
+    });
+    return (
+      <ErrorCard message="Unable to resolve your organization. Please sign out and sign back in, or contact support." />
+    );
   }
 
   const userId = orgResult.userId;

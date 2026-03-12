@@ -42,7 +42,28 @@ export default async function ClaimLayout({ children, params }: ClaimLayoutProps
   }
 
   // Safe data loading - NEVER throws
-  const result = await getClaim(claimId);
+  let result: Awaited<ReturnType<typeof getClaim>>;
+  try {
+    result = await getClaim(claimId);
+  } catch (error: unknown) {
+    // CRITICAL: Re-throw NEXT_REDIRECT — Next.js uses thrown errors for redirects
+    if (
+      error instanceof Error &&
+      "digest" in error &&
+      String((error as any).digest).startsWith("NEXT_REDIRECT")
+    ) {
+      throw error;
+    }
+    logger.error("[ClaimLayout] getClaim threw unexpectedly", {
+      claimId,
+      error: error instanceof Error ? error.message : String(error),
+    });
+    result = {
+      ok: false,
+      reason: "DB_ERROR",
+      detail: error instanceof Error ? error.message : "Unknown error",
+    };
+  }
 
   // Handle no org case
   if (!result.ok && result.reason === "NO_ORG") {
