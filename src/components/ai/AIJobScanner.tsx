@@ -191,6 +191,12 @@ export function AIJobScanner() {
                 )}
               </div>
             )}
+            <Link href="/ai/smart-actions">
+              <Button variant="outline" size="sm" className="h-7 gap-1 text-xs">
+                View All
+                <ArrowRight className="h-3 w-3" />
+              </Button>
+            </Link>
             <Button variant="ghost" size="icon" className="h-7 w-7" onClick={fetchRecommendations}>
               <RefreshCw className="h-3.5 w-3.5" />
             </Button>
@@ -255,13 +261,24 @@ export function AIJobScanner() {
         </ScrollArea>
 
         {/* Footer Stats */}
-        {summary && summary.total > visibleRecommendations.length && (
-          <div className="mt-3 border-t border-indigo-200 pt-3 dark:border-indigo-700">
-            <p className="text-center text-xs text-slate-500">
-              Showing {visibleRecommendations.length} of {summary.total} recommendations
-            </p>
+        <div className="mt-3 border-t border-indigo-200 pt-3 dark:border-indigo-700">
+          <div className="flex items-center justify-between">
+            {summary && summary.total > visibleRecommendations.length ? (
+              <p className="text-xs text-slate-500">
+                Showing {visibleRecommendations.length} of {summary.total} recommendations
+              </p>
+            ) : (
+              <p className="text-xs text-slate-500">
+                {visibleRecommendations.length} recommendations
+              </p>
+            )}
+            <Link href="/ai/smart-actions">
+              <Button variant="link" size="sm" className="h-auto p-0 text-xs text-indigo-600 hover:text-indigo-700">
+                Open Smart Actions Engine →
+              </Button>
+            </Link>
           </div>
-        )}
+        </div>
       </CardContent>
     </Card>
   );

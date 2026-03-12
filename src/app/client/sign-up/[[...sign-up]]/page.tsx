@@ -62,6 +62,8 @@ function ClientSignUpForm() {
             routing="path"
             path="/client/sign-up"
             signInUrl={signInUrl}
+            signInForceRedirectUrl={redirectUrl}
+            signInFallbackRedirectUrl={redirectUrl}
             forceRedirectUrl={redirectUrl}
             fallbackRedirectUrl={redirectUrl}
           />

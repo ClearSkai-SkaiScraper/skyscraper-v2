@@ -95,11 +95,23 @@ async function getUserTypeDirectSQL(clerkUserId: string): Promise<"pro" | "clien
 export default async function AfterSignInPage({
   searchParams,
 }: {
-  searchParams: Promise<{ mode?: string; redirect_url?: string }>;
+  searchParams: Promise<{ mode?: string; redirect_url?: string; __clerk_status?: string }>;
 }) {
   const params = await searchParams;
-  const mode = params?.mode; // "pro" from /sign-up, "client" from /client/sign-in
+  // CRITICAL: Detect mode from multiple sources
+  // 1. Explicit mode param (most reliable)
+  // 2. redirect_url containing /portal or /client (signals client portal origin)
+  // 3. __clerk_status=sign_up combined with no org membership = likely new client
+  let mode = params?.mode;
   const pendingRedirect = params?.redirect_url;
+  
+  // If no explicit mode but redirect_url points to client portal, infer client mode
+  if (!mode && pendingRedirect) {
+    if (pendingRedirect.startsWith("/portal") || pendingRedirect.startsWith("/client")) {
+      mode = "client";
+      logger.info("[AFTER-SIGN-IN] Inferred client mode from redirect_url", { pendingRedirect });
+    }
+  }
 
   let user;
   try {
@@ -212,13 +224,26 @@ export default async function AfterSignInPage({
 
   // -- New user: determine from mode param --
   // IMPORTANT: If mode is explicitly "client", register as client.
-  // Otherwise default to "pro" — the ClerkProvider afterSignInUrl includes
-  // mode=pro by default, and /client/sign-in passes mode=client explicitly.
-  // Defaulting unknown users to "pro" is safer because pro users have org
-  // membership checks that will catch misclassification, while a client
-  // wrongly classified as pro gets permanently stuck on the wrong surface.
-  const newType: "pro" | "client" = mode === "client" ? "client" : "pro";
-  logger.info("[AFTER-SIGN-IN] NEW USER", { mode, newType });
+  // CRITICAL FIX: If user has NO org memberships and no explicit mode,
+  // they're likely a CLIENT signing up (pros always have orgs).
+  // Defaulting to "client" for org-less users prevents clients from getting
+  // stuck on the pro dashboard with "no organization" errors.
+  const hasOrgMembership = (user.organizationMemberships?.length ?? 0) > 0;
+  let newType: "pro" | "client";
+  
+  if (mode === "client") {
+    newType = "client";
+  } else if (mode === "pro") {
+    newType = "pro";
+  } else if (hasOrgMembership) {
+    // User has org membership = definitely pro
+    newType = "pro";
+  } else {
+    // No org, no explicit mode = likely a client (safer default for new users)
+    newType = "client";
+    logger.info("[AFTER-SIGN-IN] Defaulting org-less new user to client");
+  }
+  logger.info("[AFTER-SIGN-IN] NEW USER", { mode, hasOrgMembership, newType });
 
   try {
     const { default: prisma } = await import("@/lib/prisma");
