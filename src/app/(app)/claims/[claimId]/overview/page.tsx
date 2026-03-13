@@ -220,6 +220,32 @@ export default function OverviewPage() {
     [claimId]
   );
 
+  // Flush any pending saves on unmount (e.g. navigating away before 2s timer)
+  useEffect(() => {
+    return () => {
+      if (saveTimerRef.current) {
+        clearTimeout(saveTimerRef.current);
+      }
+      const pending = { ...saveQueueRef.current };
+      if (Object.keys(pending).length > 0) {
+        saveQueueRef.current = {};
+        // Fire-and-forget — navigator.sendBeacon for reliability
+        const url = `/api/claims/${claimId}/update`;
+        const blob = new Blob([JSON.stringify(pending)], { type: "application/json" });
+        if (navigator.sendBeacon) {
+          navigator.sendBeacon(url, blob);
+        } else {
+          fetch(url, {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(pending),
+            keepalive: true,
+          });
+        }
+      }
+    };
+  }, [claimId]);
+
   // Field update handler with optimistic updates
   const handleFieldUpdate = useCallback(
     async (field: keyof ClaimData, value: string) => {

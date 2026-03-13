@@ -361,15 +361,8 @@ export default async function StormCenterPage() {
 
         {/* Weather Alerts + Quick Actions */}
         <div className="space-y-6">
-          {/* Weather Alerts Panel */}
-          <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900">
-            <h2 className="mb-4 text-lg font-bold text-slate-900 dark:text-white">
-              ⛈️ Weather Alerts
-            </h2>
-            <p className="text-sm text-slate-500 dark:text-slate-400">
-              No active weather alerts in your service area
-            </p>
-          </div>
+          {/* Weather Alerts Panel — live NWS data */}
+          <WeatherAlertsPanel />
 
           {/* Quick Actions */}
           <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900">

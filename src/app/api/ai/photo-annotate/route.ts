@@ -653,13 +653,21 @@ Paint peeling on walls = water damage that must be documented.`;
     return `You are a HAAG Engineering certified siding and exterior wall damage assessor for insurance claims.
 You analyze photos to identify damage on ALL exterior surfaces including siding, stucco, garage doors, trim, and fascia.
 
+DAMAGE TYPE CLASSIFICATION (CRITICAL — FOLLOW EXACTLY):
+- "hail_impact" = Physical damage to ANY solid material: chips in stucco, cracks in trim, dents in siding, divots, fractures
+- "hail_spatter" = ONLY for tiny paint-only marks on smooth PAINTED METAL (gutters, downspouts, AC cabinets)
+- If stucco is chipped/divoted → "hail_impact" (NEVER "spatter")
+- If trim is cracked/chipped → "hail_impact" or "trim_damage" (NEVER "spatter")
+- If siding is fractured/dented → "hail_impact" or "siding_crack" (NEVER "spatter")
+
 CRITICAL BOUNDING BOX ACCURACY:
 - Coordinates are 0-100 percentages where 0,0 is TOP-LEFT
 - y=0 is the TOP of the image, y=100 is the BOTTOM
 - Place boxes EXACTLY where you see damage, not at the bottom by default
 - If paint chips are in the MIDDLE of the photo, use y values around 40-60
 - If damage is near the TOP, use y values around 10-30
-- Each bounding box should TIGHTLY wrap the specific damage
+- MINIMUM box size: 3% width AND 3% height — do NOT draw tiny invisible boxes
+- Each bounding box should encompass the FULL extent of the damage
 - Mark EACH individual hit separately — do not group into one big box
 
 IDENTIFY MATERIAL TYPE:
@@ -1056,6 +1064,18 @@ HAIL DAMAGE vs. PRE-EXISTING DAMAGE (CRITICAL DISTINCTION):
   - Blistering (raised bubbles) = MANUFACTURING DEFECT
   - Algae/moss staining = BIOLOGICAL GROWTH (not damage)
   - Curling at edges = AGE DETERIORATION
+
+DAMAGE TYPE CLASSIFICATION RULES (VERY IMPORTANT):
+- "hail_impact" = Physical damage to ANY material: chips, cracks, dents, divots, fractures in stucco, trim, siding, wood, composite
+- "hail_spatter" = ONLY tiny paint-only marks on smooth PAINTED METAL surfaces (gutters, downspouts, AC cabinets)
+- If you see MATERIAL damage (stucco divots, trim chips, wood cracks) → ALWAYS use "hail_impact"
+- If you see only paint displacement on METAL → use "hail_spatter"
+- NEVER classify stucco chips, trim cracking, or siding fractures as "spatter"
+
+BOUNDING BOX SIZE MINIMUMS:
+- Each bounding box must be at least 3% width AND 3% height
+- Boxes should encompass the FULL visible extent of each damage point
+- Do NOT draw tiny 1-2% boxes — they are invisible to the user
 
 CRITICAL BOUNDING BOX ACCURACY REQUIREMENTS:
 - Use percentage coordinates (0-100) where 0,0 is TOP-LEFT corner
@@ -1462,15 +1482,27 @@ Return JSON:
 
 function buildSidingPrompt(claimType: string): string {
   const hailSpecific =
-    claimType === "hail"
+    claimType === "hail" || claimType === "storm"
       ? `
-HAIL DAMAGE SIGNATURES:
-- Vinyl: Cracks, holes, chips along exposure
-- Fiber cement: Corner chips, cracks, divots
-- Aluminum: Dents (check for hail pattern across runs)
-- Wood: Dents, gouges, split grain from impacts
-- Stucco: Chips, divots in pattern
-Look for "hail spatter" on painted surfaces showing impact points.`
+HAIL DAMAGE SIGNATURES (use correct damage types):
+- Vinyl: Cracks, holes, chips along exposure → "hail_impact"
+- Fiber cement: Corner chips, cracks, divots → "hail_impact"
+- Aluminum: Dents (check for hail pattern across runs) → "hail_impact"
+- Wood: Dents, gouges, split grain from impacts → "hail_impact"
+- Stucco/EIFS: Circular chips, divots, spalling in random pattern → "hail_impact" (NOT "spatter")
+- Window/door trim: Paint chipping in circular patterns from hail → "hail_impact" (NOT "spatter")
+
+CRITICAL DISTINCTION:
+- "hail_impact" = Physical damage to the MATERIAL itself (chips, cracks, dents, divots in stucco/trim/siding)
+- "hail_spatter" = ONLY for tiny paint-only marks on smooth painted metal surfaces (gutters, downspouts, AC units)
+- If you can see MATERIAL damage (not just paint), use "hail_impact"
+- NEVER call stucco chips/divots "spatter" — they are IMPACTS
+- NEVER call trim cracking/chipping "spatter" — they are IMPACTS
+
+BOUNDING BOX SIZE:
+- Each box should FULLY encompass the damaged area (not just a tiny dot)
+- Minimum width/height: 3% of image for visible damage points
+- For paint chips on trim, box the ENTIRE chip area, not just the center point`
       : "";
 
   return `Analyze this siding/exterior wall photo.
@@ -1703,10 +1735,19 @@ CRITICAL: Draw bounding boxes around ALL damage, no matter how small:
 
 PAINT CHIPPING IS DAMAGE - Always box it:
 - Peeling paint on frames
-- Chipped paint on trim/casing (CIRCULAR chips = HAIL use "hail_spatter")
+- Chipped paint on trim/casing (CIRCULAR chips from HAIL = use "hail_impact" NOT "hail_spatter")
+- Cracking/chipping of trim MATERIAL (wood, composite, PVC) = "hail_impact"
 - Flaking finish on sills
 - Exposed wood from paint failure
 - Each chip gets its OWN bounding box
+
+CRITICAL: "hail_spatter" is ONLY for tiny paint-only marks on smooth METAL surfaces.
+For ALL damage on trim, stucco, wood, composite — use "hail_impact" or "trim_damage".
+
+BOUNDING BOX SIZING:
+- Make boxes LARGE ENOUGH to clearly show the damage area
+- Minimum 3% width/height for individual hits
+- Box the FULL extent of each damage point, not just the center
 
 Return JSON:
 {
@@ -1797,7 +1838,7 @@ Return JSON:
 
 function buildGeneralPrompt(claimType: string): string {
   const claimContext = {
-    hail: "Focus on hail impact patterns: circular dents/bruises, paint spatter, soft metal dents (mailboxes, AC units, electrical boxes, gutters, downspouts), screen punctures. Use 'hail_impact' NOT 'crack' for circular marks. SOFT METAL DAMAGE IS THE #1 HAIL INDICATOR.",
+    hail: "Focus on hail impact patterns: circular dents/bruises, chips, divots. CRITICAL DAMAGE TYPE RULES: (1) 'hail_impact' = physical damage to material (chips in stucco, cracks in trim, dents in metal, divots in siding) — use for ALL solid material damage. (2) 'hail_spatter' = ONLY for tiny paint-only marks on smooth PAINTED METAL surfaces (gutters, AC units, downspouts). (3) NEVER use 'spatter' for stucco chips, trim cracking, siding damage, or anything that involves material damage beyond just paint. SOFT METAL DAMAGE IS THE #1 HAIL INDICATOR. Make bounding boxes large enough to clearly encompass each damage area (minimum 3% of image).",
     wind: "Focus on torn/lifted materials, displaced items, directional damage patterns, structural shifts, debris impacts",
     fire: "Focus on charring, smoke damage, heat warping, discoloration, fire suppression water damage",
     water:

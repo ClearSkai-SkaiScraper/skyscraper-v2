@@ -759,6 +759,13 @@ export function PhotoAnnotator({
       x: source.x + offset,
       y: source.y + offset,
       points: source.points?.map((p) => ({ x: p.x + 20, y: p.y + 20 })),
+      // Duplicates are BLANK — no inherited text/comments so user can type their own
+      caption: undefined,
+      damageType: undefined,
+      severity: undefined,
+      ircCode: undefined,
+      confidence: undefined,
+      type: source.type === "ai_detection" ? "rectangle" : source.type,
     };
     setAnnotations((prev) => [...prev, duplicate]);
     setSelectedAnnotation(duplicate.id);
@@ -1042,21 +1049,60 @@ export function PhotoAnnotator({
           <div className="grid grid-cols-2 gap-4 text-sm">
             <div>
               <span className="text-slate-500">Type:</span>{" "}
-              <span className="font-medium">{selectedAnn.damageType || "Not specified"}</span>
+              <input
+                type="text"
+                className="ml-1 w-36 rounded border border-slate-200 px-2 py-0.5 text-sm font-medium dark:border-slate-700 dark:bg-slate-800"
+                value={selectedAnn.damageType || ""}
+                placeholder="Enter damage type"
+                onChange={(e) => {
+                  const val = e.target.value;
+                  setAnnotations((prev) =>
+                    prev.map((a) => (a.id === selectedAnn.id ? { ...a, damageType: val } : a))
+                  );
+                }}
+              />
             </div>
             <div>
               <span className="text-slate-500">Severity:</span>{" "}
-              <span
+              <select
                 className={cn(
-                  "font-medium",
+                  "ml-1 rounded border border-slate-200 px-2 py-0.5 text-sm font-medium dark:border-slate-700 dark:bg-slate-800",
                   selectedAnn.severity === "Critical" && "text-red-600",
                   selectedAnn.severity === "High" && "text-orange-600",
                   selectedAnn.severity === "Medium" && "text-yellow-600",
                   selectedAnn.severity === "Low" && "text-green-600"
                 )}
+                value={selectedAnn.severity || ""}
+                onChange={(e) => {
+                  const val = e.target.value as Annotation["severity"];
+                  setAnnotations((prev) =>
+                    prev.map((a) =>
+                      a.id === selectedAnn.id ? { ...a, severity: val || undefined } : a
+                    )
+                  );
+                }}
               >
-                {selectedAnn.severity || "Not specified"}
-              </span>
+                <option value="">Not specified</option>
+                <option value="Low">Low</option>
+                <option value="Medium">Medium</option>
+                <option value="High">High</option>
+                <option value="Critical">Critical</option>
+              </select>
+            </div>
+            <div className="col-span-2">
+              <span className="text-slate-500">Caption:</span>{" "}
+              <input
+                type="text"
+                className="ml-1 w-full rounded border border-slate-200 px-2 py-0.5 text-sm dark:border-slate-700 dark:bg-slate-800"
+                value={selectedAnn.caption || ""}
+                placeholder="Type your note here..."
+                onChange={(e) => {
+                  const val = e.target.value;
+                  setAnnotations((prev) =>
+                    prev.map((a) => (a.id === selectedAnn.id ? { ...a, caption: val } : a))
+                  );
+                }}
+              />
             </div>
             {selectedAnn.ircCode && (
               <div className="col-span-2">
