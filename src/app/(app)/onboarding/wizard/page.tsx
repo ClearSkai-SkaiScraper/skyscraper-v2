@@ -640,12 +640,15 @@ function StepComplete() {
   const [countdown, setCountdown] = useState(5);
 
   useEffect(() => {
-    // Mark onboarding complete
+    // Mark onboarding complete — server-side DB update
     fetch("/api/onboarding/track-step", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ step: 5, complete: true }),
     }).catch(() => {});
+
+    // Set cookie so middleware knows onboarding is complete (prevents redirect loop)
+    document.cookie = "x-onboarding-complete=1;path=/;max-age=31536000;SameSite=Lax";
 
     const timer = setInterval(() => {
       setCountdown((prev) => {

@@ -135,40 +135,40 @@ export async function POST(req: Request) {
       userId: user.id,
     });
 
+    // Prepare branding data - convert empty strings to null for database
+    const brandingData = {
+      companyName: companyName || "Your Roofing Company LLC",
+      license: license || null,
+      phone: phone || null,
+      email: email || null,
+      website: website || null,
+      colorPrimary: colorPrimary || "#117CFF",
+      colorAccent: colorAccent || "#FFC838",
+      logoUrl: logoUrl || null,
+      teamPhotoUrl: teamPhotoUrl || null,
+      companyAddress: companyAddress || null,
+    };
+
+    logger.debug("[branding/save] 🔍 Prepared branding data:", brandingData);
+
     // Use Prisma upsert — avoids ON CONFLICT constraint mismatch
-    await prisma.org_branding.upsert({
+    const savedBranding = await prisma.org_branding.upsert({
       where: { orgId: resolvedOrgId },
       update: {
         ownerId: user.id,
-        companyName: companyName || undefined,
-        license: license ?? undefined,
-        phone: phone ?? undefined,
-        email: email ?? undefined,
-        website: website ?? undefined,
-        colorPrimary: colorPrimary || "#117CFF",
-        colorAccent: colorAccent || "#FFC838",
-        logoUrl: logoUrl ?? undefined,
-        teamPhotoUrl: teamPhotoUrl ?? undefined,
-        companyAddress: companyAddress ?? undefined,
+        ...brandingData,
         updatedAt: new Date(),
       },
       create: {
         id: resolvedOrgId,
         orgId: resolvedOrgId,
         ownerId: user.id,
-        companyName: companyName ?? "Your Roofing Company LLC",
-        license: license ?? null,
-        phone: phone ?? null,
-        email: email ?? null,
-        website: website ?? null,
-        colorPrimary: colorPrimary ?? "#117CFF",
-        colorAccent: colorAccent ?? "#FFC838",
-        logoUrl: logoUrl ?? null,
-        teamPhotoUrl: teamPhotoUrl ?? null,
-        companyAddress: companyAddress ?? null,
+        ...brandingData,
         updatedAt: new Date(),
       },
     });
+
+    logger.info(`[branding/save] ✅ Upsert completed, id=${savedBranding.id}`);
 
     // Note: brandingCompleted field doesn't exist in org schema
     // Branding completion is now derived from org_branding table fields
@@ -195,12 +195,26 @@ export async function POST(req: Request) {
 
     logger.debug(`[branding/save] ✅ Successfully saved branding for org ${resolvedOrgId}`);
     return NextResponse.json({ ok: true });
-  } catch (error) {
+  } catch (error: any) {
+    // Log the FULL error for debugging
     logger.error("[branding/save] ❌ Error saving branding:", {
-      message: "Internal server error",
-      code: error.code,
-      stack: error.stack?.split("\n")[0], // First line of stack for context
+      message: error?.message || "Unknown error",
+      code: error?.code,
+      meta: error?.meta, // Prisma error metadata
+      name: error?.name,
+      stack: error?.stack?.split("\n").slice(0, 3).join("\n"), // First 3 lines of stack
     });
-    return NextResponse.json({ ok: false, error: "Internal server error" }, { status: 500 });
+
+    // Return more specific error message for debugging
+    const errorMessage =
+      error?.code === "P2002"
+        ? "Duplicate branding record - please refresh and try again"
+        : error?.code === "P2025"
+          ? "Branding record not found"
+          : error?.message?.includes("column")
+            ? `Database schema issue: ${error.message}`
+            : "Internal server error";
+
+    return NextResponse.json({ ok: false, error: errorMessage }, { status: 500 });
   }
 }

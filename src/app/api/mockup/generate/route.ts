@@ -228,22 +228,38 @@ function buildAIPrompt(projectType: string, description: string): string {
 
   const typeContext: Record<string, string> = {
     Roofing:
-      "Show the completed roof with brand-new, pristine architectural shingles in perfect condition. Clean ridge caps, straight lines, no damage, no wear — a freshly installed roof that looks magazine-ready. ",
+      "Show the completed roof with brand-new, pristine architectural shingles in perfect condition. Clean ridge caps, straight lines, uniform color, visible granule texture, no damage, no wear. Fresh drip edge, clean gutters, flashing properly sealed. A freshly installed roof that looks magazine-ready. ",
     "Kitchen Remodel":
-      "Show the finished kitchen with brand-new installed cabinets, countertops, modern appliances, and pendant lighting. Everything looks pristine and freshly installed. ",
+      "Show the finished kitchen with brand-new installed cabinets, quartz countertops, modern stainless steel appliances, pendant lighting, and subway tile backsplash. Everything looks pristine and freshly installed with clean grout lines. ",
     "Bathroom Remodel":
-      "Show the completed bathroom with new fixtures, pristine tile work, modern vanity, and fresh finishes. Spotlessly clean and newly installed. ",
+      "Show the completed bathroom with new fixtures, pristine porcelain tile work, modern floating vanity with undermount sink, frameless glass shower enclosure, and fresh chrome/brushed nickel finishes. Spotlessly clean and newly installed. ",
     "Exterior Paint":
-      "Show the house with a fresh, perfect paint job — clean edges, uniform color, professional finish with no imperfections. ",
+      "Show the house with a fresh, perfect paint job — razor-sharp trim lines, uniform satin/semi-gloss finish, professional masking, no drips or brush marks. Fresh caulking around all windows and doors. ",
     Flooring:
-      "Show the room with brand-new flooring freshly installed, including perfect transitions and clean baseboards. ",
+      "Show the room with brand-new luxury vinyl plank or hardwood flooring freshly installed, including perfect transitions, quarter-round trim, and clean baseboards. Natural wood grain visible. ",
     "Solar Installation":
-      "Show the roof with new solar panels cleanly and professionally installed, perfectly aligned and integrated. ",
-    HVAC: "Show the completed HVAC installation with brand-new modern equipment, clean ductwork, and professional finish. ",
+      "Show the roof with new solar panels cleanly and professionally installed with micro-rail mounting, perfectly aligned rows, flush to roof surface with proper flashing. Conduit neatly routed. ",
+    HVAC: "Show the completed HVAC installation with brand-new modern Carrier/Trane equipment, clean ductwork connections, proper refrigerant lines with insulation, and neat electrical connections. ",
     "General Contractor":
-      "Show the completed renovation with all new finishes, pristine materials, and professional craftsmanship throughout. ",
+      "Show the completed renovation with all new finishes, pristine materials, professional craftsmanship throughout, clean lines, and attention to detail. ",
     Landscaping:
-      "Show the finished landscape with healthy plants, clean hardscape, and beautiful design elements. Lush and freshly installed. ",
+      "Show the finished landscape with healthy sod, mature plantings, clean hardscape borders, decorative mulch, irrigation heads visible, and beautiful curb appeal. ",
+    Siding:
+      "Show the completed siding installation with brand-new vinyl/fiber cement/LP SmartSide panels, perfectly aligned courses, clean J-channel around windows, fresh corner posts, and new fascia/soffit. No gaps, uniform color, factory-fresh appearance. ",
+    Windows:
+      "Show brand-new energy-efficient vinyl or fiberglass windows installed with clean interior/exterior trim, factory-fresh glass, operational hardware, and proper caulking. ",
+    Gutters:
+      "Show brand-new seamless aluminum gutters and downspouts, properly pitched, with fresh hangers, end caps, and splash blocks. Clean metallic finish. ",
+    Fencing:
+      "Show a brand-new fence installation — clean posts, level rails, uniform pickets/panels, no gaps, with fresh stain or paint and proper hardware. ",
+    Decking:
+      "Show a completed composite or wood deck with new boards, clean railing system, proper post connections, fresh stain or factory finish, and no visible fasteners. ",
+    Concrete:
+      "Show freshly poured and finished concrete — clean control joints, proper slope, broom finish texture, and clean edges. No cracks, stains, or imperfections. ",
+    Painting:
+      "Show perfectly painted interior walls with flawless roller texture, sharp-cut edges at ceiling and trim, uniform sheen, and clean baseboards. Professional quality. ",
+    Drywall:
+      "Show seamless Level 5 drywall finish — no visible seams, joints, or fastener dimples. Smooth, ready-for-paint surface with clean corners and edges. ",
   };
 
   const context = typeContext[projectType] || "";

@@ -30,6 +30,7 @@ type SupplementStatus =
 
 interface SupplementRow {
   id: string;
+  claimId: string | null;
   claimNumber: string;
   homeownerName: string;
   status: SupplementStatus;
@@ -123,6 +124,7 @@ export default async function SupplementsPage() {
         include: {
           claims: {
             select: {
+              id: true,
               claimNumber: true,
               insured_name: true,
               carrier: true,
@@ -133,6 +135,7 @@ export default async function SupplementsPage() {
 
       supplements = rows.map((r) => ({
         id: r.id,
+        claimId: r.claims?.id || r.claim_id || null,
         claimNumber: r.claims?.claimNumber || "—",
         homeownerName: r.claims?.insured_name || "Unknown",
         status: (r.status as SupplementStatus) || "DRAFT",
@@ -218,7 +221,7 @@ export default async function SupplementsPage() {
                   >
                     <td className="px-6 py-3">
                       <Link
-                        href={`/claims`}
+                        href={s.claimId ? `/claims/${s.claimId}` : `/claims`}
                         className="font-medium text-blue-600 hover:underline dark:text-blue-400"
                       >
                         {s.claimNumber}

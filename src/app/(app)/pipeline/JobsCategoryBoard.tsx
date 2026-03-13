@@ -23,6 +23,7 @@ import {
   FileCheck,
   GripVertical,
   MapPin,
+  Plus,
   Search,
   User,
   Wrench,
@@ -308,24 +309,32 @@ export function JobsCategoryBoard({ initialJobs }: JobsCategoryBoardProps) {
   return (
     <div>
       {jobs.length === 0 && (
-        <div className="mb-4 rounded-xl border border-dashed border-slate-300 bg-slate-50/50 px-4 py-3 text-center dark:border-slate-700 dark:bg-slate-800/30">
-          <p className="text-sm text-slate-500 dark:text-slate-400">
-            No active jobs yet — create a{" "}
+        <div className="mb-6 rounded-2xl border border-dashed border-slate-200 bg-gradient-to-br from-blue-50/50 via-white to-purple-50/50 p-10 text-center dark:border-slate-700 dark:from-slate-800/50 dark:via-slate-900 dark:to-slate-800/50">
+          <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-500 to-purple-600 shadow-lg">
+            <DollarSign className="h-8 w-8 text-white" />
+          </div>
+          <h3 className="text-lg font-bold text-slate-900 dark:text-white">
+            Your Pipeline is Ready
+          </h3>
+          <p className="mx-auto mt-2 max-w-md text-sm text-slate-500 dark:text-slate-400">
+            Create your first claim or lead to start tracking jobs through your pipeline. Drag cards
+            between stages to update progress.
+          </p>
+          <div className="mt-5 flex items-center justify-center gap-3">
             <Link
               href="/claims/new"
-              className="font-medium text-blue-600 hover:underline dark:text-blue-400"
+              className="inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-blue-600 to-blue-700 px-5 py-2.5 text-sm font-semibold text-white shadow-md transition-all hover:from-blue-700 hover:to-blue-800 hover:shadow-lg"
             >
-              claim
-            </Link>{" "}
-            or{" "}
+              <Plus className="h-4 w-4" />
+              New Claim
+            </Link>
             <Link
               href="/leads/new"
-              className="font-medium text-blue-600 hover:underline dark:text-blue-400"
+              className="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-5 py-2.5 text-sm font-semibold text-slate-700 shadow-sm transition-all hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700"
             >
-              lead
-            </Link>{" "}
-            to get started. Drag cards between stages to update progress.
-          </p>
+              New Lead
+            </Link>
+          </div>
         </div>
       )}
       <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">

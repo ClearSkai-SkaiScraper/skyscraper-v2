@@ -3,9 +3,15 @@
 /**
  * CLI: Seed Demo Data
  *
+ * Creates realistic demo data for product demos and testing.
+ * Includes: Contacts, Properties, Claims, Leads, Branding, Activities
+ *
  * Usage:
  *   node scripts/seed-demo-cli.ts --orgId <orgId> --userId <userId>
  *   node scripts/seed-demo-cli.ts --orgId <orgId> --clean
+ *
+ * Quick seed (uses env vars):
+ *   TEST_AUTH_ORG_ID=xxx TEST_AUTH_USER_ID=yyy node scripts/seed-demo-cli.ts --auto
  *
  * Requires: DATABASE_URL env var set (uses Prisma directly)
  */
@@ -134,6 +140,40 @@ async function seedDemo(orgId, userId) {
   console.log(`\n🌱 Seeding demo data for org: ${orgId}\n`);
   let created = 0;
 
+  // Step 1: Seed branding (if not exists)
+  console.log("📋 Step 1/2: Setting up demo branding...");
+  try {
+    const existingBranding = await prisma.org_branding.findUnique({
+      where: { orgId },
+    });
+
+    if (!existingBranding) {
+      await prisma.org_branding.create({
+        data: {
+          id: orgId,
+          orgId,
+          ownerId: userId,
+          companyName: "SkaiScraper Demo Roofing LLC",
+          license: "ROC-123456",
+          phone: "(602) 555-DEMO",
+          email: "demo@skaiscraper.com",
+          website: "https://skaiscraper.com",
+          colorPrimary: "#117CFF",
+          colorAccent: "#FFC838",
+          companyAddress: "123 Demo Street, Phoenix, AZ 85001",
+          updatedAt: new Date(),
+        },
+      });
+      console.log("  ✅ Branding created");
+    } else {
+      console.log("  ⏭️  Branding already exists");
+    }
+  } catch (err) {
+    console.log(`  ⚠️  Branding: ${err.message}`);
+  }
+
+  // Step 2: Seed claims pipeline data
+  console.log("\n📋 Step 2/2: Creating demo claims...");
   for (let i = 0; i < 12; i++) {
     const addr = AZ_ADDRESSES[i];
     const firstName = FIRST_NAMES[i];
@@ -249,16 +289,34 @@ async function cleanDemo(orgId) {
 
 async function main() {
   const args = process.argv.slice(2);
-  const orgId = args[args.indexOf("--orgId") + 1];
-  const userId = args.includes("--userId") ? args[args.indexOf("--userId") + 1] : null;
+
+  // Auto mode: use env vars
+  const isAuto = args.includes("--auto");
+  const orgId = isAuto ? process.env.TEST_AUTH_ORG_ID : args[args.indexOf("--orgId") + 1];
+  const userId = isAuto
+    ? process.env.TEST_AUTH_USER_ID
+    : args.includes("--userId")
+      ? args[args.indexOf("--userId") + 1]
+      : null;
   const isClean = args.includes("--clean");
 
   if (!orgId) {
-    console.error(
-      "Usage: node scripts/seed-demo-cli.ts --orgId <orgId> [--userId <userId> | --clean]"
-    );
+    console.error(`
+Usage: 
+  node scripts/seed-demo-cli.ts --orgId <orgId> --userId <userId>
+  node scripts/seed-demo-cli.ts --orgId <orgId> --clean
+  
+  Or use --auto with env vars:
+  TEST_AUTH_ORG_ID=xxx TEST_AUTH_USER_ID=yyy node scripts/seed-demo-cli.ts --auto
+`);
     process.exit(1);
   }
+
+  console.log(`
+╔════════════════════════════════════════════════════════════════╗
+║               SKAISCRAPER DEMO DATA SEEDER                    ║
+╚════════════════════════════════════════════════════════════════╝
+`);
 
   try {
     if (isClean) {
@@ -269,6 +327,21 @@ async function main() {
         process.exit(1);
       }
       await seedDemo(orgId, userId);
+
+      console.log(`
+📊 Demo data summary:
+   • 12 Contacts (homeowners across Phoenix metro)
+   • 12 Properties (residential & commercial)
+   • 12 Claims (various stages: new → completed)
+   • 12 Leads (door knocks, referrals, canvass)
+   • 1 Branding setup (company profile)
+
+🎯 Ready for your demo! Key scenarios:
+   1. Pipeline view: See claims at different stages
+   2. Map view: All properties plotted on map
+   3. Branding: Company name appears on reports
+   4. Reports: Generate damage assessment for any claim
+`);
     }
   } finally {
     await prisma.$disconnect();

@@ -40,17 +40,41 @@ export async function compressImage(
   const maxDim = options?.maxDimension ?? MAX_DIMENSION;
   const quality = options?.quality ?? JPEG_QUALITY;
 
-  // Skip if file is already small enough
-  if (file.size <= maxSize) {
+  // ALWAYS convert HEIC/HEIF files (browsers can't display them)
+  const isHeic = isHeicFile(file);
+
+  // Skip if file is already small enough AND not HEIC
+  if (file.size <= maxSize && !isHeic) {
     return file;
   }
 
   // Skip non-image files
-  if (!file.type.startsWith("image/") && !isHeicFile(file)) {
+  if (!file.type.startsWith("image/") && !isHeic) {
     return file;
   }
 
   try {
+    // For HEIC files, try heic2any library first (better browser support)
+    if (isHeic) {
+      try {
+        const heic2any = (await import("heic2any")).default;
+        const blob = await heic2any({ blob: file, toType: "image/jpeg", quality: quality });
+        const converted = Array.isArray(blob) ? blob[0] : blob;
+        const jpegFile = new File([converted], file.name.replace(/\.(heic|heif)$/i, ".jpg"), {
+          type: "image/jpeg",
+          lastModified: Date.now(),
+        });
+        console.log(`[ImageCompression] HEIC→JPEG: ${file.name} → ${formatBytes(jpegFile.size)}`);
+        return jpegFile;
+      } catch (heicErr) {
+        console.warn(
+          `[ImageCompression] heic2any failed for ${file.name}, trying Canvas fallback:`,
+          heicErr
+        );
+        // Fall through to Canvas-based conversion
+      }
+    }
+
     const bitmap = await loadImageBitmap(file);
     if (!bitmap) {
       console.warn(`[ImageCompression] Could not load image: ${file.name}`);

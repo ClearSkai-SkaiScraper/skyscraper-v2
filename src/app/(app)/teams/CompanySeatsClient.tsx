@@ -807,14 +807,22 @@ export default function CompanySeatsClient({ members, orgId }: CompanySeatsClien
         </div>
 
         {memberList.length === 0 ? (
-          <div className="rounded-2xl border border-dashed border-slate-300 bg-slate-50/50 p-12 text-center dark:border-slate-700 dark:bg-slate-800/30">
-            <Users className="mx-auto mb-3 h-10 w-10 text-slate-300 dark:text-slate-600" />
-            <h4 className="text-lg font-semibold text-slate-900 dark:text-white">
-              No team members yet
-            </h4>
-            <p className="mx-auto mt-1 max-w-md text-sm text-slate-500">
-              Invite your first team member below to start collaborating.
+          <div className="rounded-2xl border border-dashed border-slate-300 bg-gradient-to-br from-blue-50/50 via-white to-teal-50/50 p-12 text-center dark:border-slate-700 dark:from-slate-800/50 dark:via-slate-900 dark:to-slate-800/50">
+            <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-500 to-teal-600 shadow-lg">
+              <Users className="h-8 w-8 text-white" />
+            </div>
+            <h4 className="text-lg font-bold text-slate-900 dark:text-white">Build Your Team</h4>
+            <p className="mx-auto mt-2 max-w-md text-sm text-slate-500">
+              Invite team members to start collaborating on claims, manage assignments, and track
+              performance across your organization.
             </p>
+            <button
+              onClick={focusInvite}
+              className="mt-5 inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-blue-600 to-blue-700 px-5 py-2.5 text-sm font-semibold text-white shadow-md transition-all hover:from-blue-700 hover:to-blue-800 hover:shadow-lg"
+            >
+              <UserPlus className="h-4 w-4" />
+              Invite First Team Member
+            </button>
           </div>
         ) : (
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">

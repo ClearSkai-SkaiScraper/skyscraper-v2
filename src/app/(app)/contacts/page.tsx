@@ -190,6 +190,7 @@ async function renderContactsPage() {
   }
 
   // ── Demo / seed data filter patterns ──
+  // NOTE: Only filter obviously fake data, NOT real-sounding names
   const DEMO_EMAIL_PATTERNS = [
     "@example.com",
     "@test.com",
@@ -197,19 +198,14 @@ async function renderContactsPage() {
     "@fake.com",
     "@mailinator.com",
     "@tempmail.com",
-    "demo@",
-    "test@",
-    "seed@",
   ];
   const DEMO_NAME_PATTERNS = [
-    "demo",
+    "demo user",
     "test user",
-    "seed",
-    "sample",
-    "fake",
-    "john doe",
-    "jane doe",
-    "lorem",
+    "seed user",
+    "sample user",
+    "fake user",
+    "lorem ipsum",
     "placeholder",
   ];
 
@@ -665,6 +661,13 @@ async function renderContactsPage() {
             Test mode enabled
           </Badge>
         )}
+        <Link
+          href="/claims"
+          className="inline-flex items-center gap-2 rounded-xl border border-white/20 bg-white/10 px-4 py-2 text-sm font-medium text-white hover:bg-white/20"
+        >
+          <UserCheck className="h-4 w-4" />
+          Import from Claims
+        </Link>
       </PageHero>
 
       {totalCount === 0 ? (

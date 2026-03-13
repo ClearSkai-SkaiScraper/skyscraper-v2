@@ -24,9 +24,18 @@ export default function StatsCards() {
   useEffect(() => {
     (async () => {
       try {
-        const res = await fetch("/api/dashboard/stats");
+        const res = await fetch("/api/dashboard/stats", { credentials: "include" });
+        if (!res.ok) {
+          logger.error("Dashboard stats API returned", res.status);
+          setLoading(false);
+          return;
+        }
         const data = await res.json();
-        if (data.ok) setStats(data.stats);
+        if (data.ok) {
+          setStats(data.stats);
+        } else {
+          logger.error("Dashboard stats returned ok=false:", data.error);
+        }
       } catch (error) {
         logger.error("Failed to load stats:", error);
       } finally {

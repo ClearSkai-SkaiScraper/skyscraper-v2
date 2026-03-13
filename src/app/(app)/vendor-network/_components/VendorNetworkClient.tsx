@@ -435,14 +435,38 @@ export function VendorNetworkClient() {
         </div>
       ) : state.vendors.length === 0 ? (
         <Card className="p-12 text-center">
-          <Store className="mx-auto mb-4 h-12 w-12 text-muted-foreground/50" />
-          <h3 className="text-lg font-semibold">No vendors found</h3>
-          <p className="mt-2 text-sm text-muted-foreground">
-            Try adjusting your filters or search terms.
-          </p>
-          <Button variant="outline" className="mt-4" onClick={clearFilters}>
-            Clear Filters
-          </Button>
+          {filters.search ||
+          filters.trade ||
+          filters.vendorType ||
+          filters.featured ||
+          filters.rebates ? (
+            /* Filter/search produced no results */
+            <>
+              <Store className="mx-auto mb-4 h-12 w-12 text-muted-foreground/50" />
+              <h3 className="text-lg font-semibold">No vendors found</h3>
+              <p className="mt-2 text-sm text-muted-foreground">
+                Try adjusting your filters or search terms.
+              </p>
+              <Button variant="outline" className="mt-4" onClick={clearFilters}>
+                Clear Filters
+              </Button>
+            </>
+          ) : (
+            /* First visit — no vendors at all */
+            <>
+              <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 shadow-lg">
+                <Store className="h-8 w-8 text-white" />
+              </div>
+              <h3 className="text-lg font-bold">Welcome to the Vendor Network</h3>
+              <p className="mx-auto mt-2 max-w-md text-sm text-muted-foreground">
+                Browse manufacturer products, access rebate programs, and download brochures from
+                your trusted vendor partners.
+              </p>
+              <Button className="mt-5" onClick={() => window.location.reload()}>
+                Refresh Vendors
+              </Button>
+            </>
+          )}
         </Card>
       ) : (
         /* Vendor Grid */

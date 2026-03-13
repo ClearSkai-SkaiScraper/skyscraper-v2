@@ -199,7 +199,7 @@ const nextConfig = {
               "style-src 'self' 'unsafe-inline' https://clerk.skaiscrape.com https://*.clerk.com https://*.clerk.accounts.dev https://api.mapbox.com",
               "img-src 'self' data: https: blob: https://clerk.skaiscrape.com https://*.clerk.com https://*.clerk.accounts.dev https://*.mapbox.com",
               "font-src 'self' data: https://clerk.skaiscrape.com https://*.clerk.com https://*.clerk.accounts.dev",
-              "connect-src 'self' https://api.clerk.com https://*.clerk.accounts.dev https://clerk.skaiscrape.com https://*.clerk.com https://api.stripe.com https://api.mapbox.com https://*.tiles.mapbox.com https://events.mapbox.com",
+              "connect-src 'self' https://api.clerk.com https://*.clerk.accounts.dev https://clerk.skaiscrape.com https://*.clerk.com https://api.stripe.com https://api.mapbox.com https://*.tiles.mapbox.com https://events.mapbox.com https://*.ingest.sentry.io https://*.ingest.us.sentry.io https://cdn.vercel-insights.com https://www.google.com",
               "worker-src 'self' blob:",
               "child-src 'self' blob:",
               "frame-src 'self' https://challenges.cloudflare.com https://clerk.skaiscrape.com https://*.clerk.com https://*.clerk.accounts.dev",

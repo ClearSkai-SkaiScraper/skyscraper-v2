@@ -365,14 +365,24 @@ export default async function ClaimsPage({ searchParams }: { searchParams: Claim
                               {claim.claimNumber}
                             </span>
                           )}
-                          {claim.properties?.city && (
-                            <span className="flex items-center gap-1">
-                              <MapPin className="h-3 w-3" />
-                              {claim.properties.street
-                                ? `${claim.properties.street}, ${claim.properties.city}, ${claim.properties.state}`
-                                : `${claim.properties.city}, ${claim.properties.state}`}
+                          {claim.insured_name && (
+                            <span className="font-medium text-slate-700 dark:text-slate-300">
+                              {claim.insured_name}
                             </span>
                           )}
+                          {claim.properties?.street || claim.properties?.city ? (
+                            <span className="flex items-center gap-1">
+                              <MapPin className="h-3 w-3" />
+                              {[
+                                claim.properties.street,
+                                claim.properties.city,
+                                claim.properties.state,
+                                claim.properties.zipCode,
+                              ]
+                                .filter(Boolean)
+                                .join(", ")}
+                            </span>
+                          ) : null}
                           {claim.createdAt && (
                             <span>
                               {new Date(claim.createdAt).toLocaleDateString("en-US", {
