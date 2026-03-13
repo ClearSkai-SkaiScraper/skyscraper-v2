@@ -51,6 +51,12 @@ export default async function CompanyContactsPage() {
   try {
     return await renderContactsPage();
   } catch (error) {
+    // CRITICAL: Re-throw NEXT_REDIRECT — Next.js uses thrown errors for navigation
+    if (
+      error?.digest?.startsWith?.("NEXT_REDIRECT") ||
+      error?.digest?.startsWith?.("NEXT_NOT_FOUND")
+    )
+      throw error;
     logger.error("[CompanyContacts] FATAL PAGE ERROR:", {
       message: error?.message,
       stack: error?.stack,

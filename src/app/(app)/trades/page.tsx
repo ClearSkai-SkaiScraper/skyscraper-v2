@@ -68,7 +68,8 @@ export default async function TradesNetworkPage() {
       })
       .catch(() => null);
 
-    // Stats — include vendors for accurate total
+    // Stats — platform-wide counts for the trades network (intentionally cross-org)
+    // The trades network is a shared marketplace — these counts show network size
     const [totalMembers, verifiedCompanies, totalVendors] = await Promise.all([
       prisma.tradesCompanyMember.count().catch(() => 0),
       prisma.tradesCompany.count({ where: { isVerified: true } }).catch(() => 0),
@@ -97,6 +98,12 @@ export default async function TradesNetworkPage() {
       />
     );
   } catch (error) {
+    // CRITICAL: Re-throw NEXT_REDIRECT — Next.js uses thrown errors for navigation
+    if (
+      error?.digest?.startsWith?.("NEXT_REDIRECT") ||
+      error?.digest?.startsWith?.("NEXT_NOT_FOUND")
+    )
+      throw error;
     logger.error("Trades Network Hub Error:", error);
     return (
       <PageContainer>

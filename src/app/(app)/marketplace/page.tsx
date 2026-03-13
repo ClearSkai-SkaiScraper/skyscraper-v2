@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import prisma from "@/lib/prisma";
+import { safeOrgContext } from "@/lib/safeOrgContext";
 
 const WorkspaceShellClient = dynamic(() => import("@/components/layout/WorkspaceShell"), {
   ssr: false,
@@ -28,7 +29,11 @@ export default async function MarketplacePage({
 }: {
   searchParams: MarketplaceSearchParams;
 }) {
-  // Fetch contractor profiles - use correct field names from tradesCompanyMember model
+  // Auth check — marketplace is within (app) group, requires authentication
+  await safeOrgContext();
+
+  // Fetch contractor profiles — intentionally cross-org (public marketplace)
+  // Only exposes public-safe fields (name, specialty, rating)
   const contractors = await prisma.tradesCompanyMember.findMany({
     where: {
       isActive: true,

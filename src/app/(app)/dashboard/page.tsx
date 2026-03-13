@@ -202,6 +202,12 @@ export default async function DashboardPage() {
       </PageContainer>
     );
   } catch (error) {
+    // CRITICAL: Re-throw NEXT_REDIRECT — Next.js uses thrown errors for navigation
+    if (
+      error?.digest?.startsWith?.("NEXT_REDIRECT") ||
+      error?.digest?.startsWith?.("NEXT_NOT_FOUND")
+    )
+      throw error;
     logger.error("[DASHBOARD_FATAL]", {
       message: error?.message,
       name: error?.name,

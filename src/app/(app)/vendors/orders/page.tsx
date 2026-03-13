@@ -9,7 +9,7 @@ import { Metadata } from "next";
 
 import { PageContainer } from "@/components/layout/PageContainer";
 import { PageHero } from "@/components/layout/PageHero";
-import { getActiveOrgContext } from "@/lib/org/getActiveOrgContext";
+import { safeOrgContext } from "@/lib/safeOrgContext";
 
 import { MaterialOrdersClient } from "./_components/MaterialOrdersClient";
 
@@ -21,10 +21,15 @@ export const metadata: Metadata = {
 export const dynamic = "force-dynamic";
 
 export default async function MaterialOrdersPage() {
-  const ctx = await getActiveOrgContext({ required: true });
+  const { orgId, userId } = await safeOrgContext();
 
-  const userId = ctx.ok ? ctx.userId : "";
-  const orgId = ctx.ok ? ctx.orgId : "";
+  if (!orgId || !userId) {
+    return (
+      <PageContainer maxWidth="7xl">
+        <p className="p-8 text-center text-muted-foreground">Please select an organization to continue.</p>
+      </PageContainer>
+    );
+  }
 
   return (
     <PageContainer maxWidth="7xl">
