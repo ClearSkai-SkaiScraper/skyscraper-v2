@@ -28,7 +28,9 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
+import { AutopilotPanel } from "@/components/claimiq/AutopilotPanel";
 import { ClaimIQDashboard } from "@/components/claimiq/ClaimIQDashboard";
+import { PacketGenerationPanel } from "@/components/claimiq/PacketGenerationPanel";
 import ReadinessScore from "@/components/claims-folder/ReadinessScore";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -245,26 +247,11 @@ export default function ClaimFolderBuilderPage() {
     setGenerating(section);
 
     try {
-      // Call appropriate AI generator based on section
-      let endpoint = "";
-      switch (section) {
-        case "executive-summary":
-          endpoint = `/api/claims-folder/generate/cause-of-loss`;
-          break;
-        case "repair-justification":
-          endpoint = `/api/claims-folder/generate/repair-justification`;
-          break;
-        case "adjuster-cover-letter":
-          endpoint = `/api/claims-folder/generate/cover-letter`;
-          break;
-        default:
-          throw new Error("No generator available for this section");
-      }
-
-      const res = await fetch(endpoint, {
+      // Use unified ClaimIQ section generation API
+      const res = await fetch(`/api/claims-folder/generate/section`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ claimId }),
+        body: JSON.stringify({ claimId, sectionKey: section }),
       });
 
       if (!res.ok) throw new Error("Generation failed");
@@ -432,6 +419,10 @@ export default function ClaimFolderBuilderPage() {
           </TabsTrigger>
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="sections">All Sections</TabsTrigger>
+          <TabsTrigger value="autopilot" className="gap-1">
+            <Sparkles className="h-3.5 w-3.5" />
+            Autopilot
+          </TabsTrigger>
           <TabsTrigger value="ai-tools">AI Tools</TabsTrigger>
           <TabsTrigger value="preview">Preview</TabsTrigger>
         </TabsList>
@@ -439,6 +430,12 @@ export default function ClaimFolderBuilderPage() {
         {/* ClaimIQ Assembly Engine Tab */}
         <TabsContent value="claim-iq">
           <ClaimIQDashboard claimId={claimId as string} />
+        </TabsContent>
+
+        {/* Autopilot Tab */}
+        <TabsContent value="autopilot" className="space-y-6">
+          <AutopilotPanel claimId={claimId as string} />
+          <PacketGenerationPanel claimId={claimId as string} />
         </TabsContent>
 
         {/* Overview Tab */}
