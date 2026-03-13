@@ -293,7 +293,7 @@ export function OrgChartFullView({ initialMembers, companyName }: OrgChartFullVi
         <div className="flex items-start gap-2">
           {/* Expand/Collapse toggle */}
           <div className="flex w-6 flex-shrink-0 items-center justify-center pt-3">
-            {isManagerOrAdmin && hasReports ? (
+            {hasReports ? (
               <button
                 onClick={() => toggleNode(member.id)}
                 className="rounded-full p-0.5 text-purple-500 transition-colors hover:bg-purple-100 dark:hover:bg-purple-900/30"
@@ -560,6 +560,24 @@ export function OrgChartFullView({ initialMembers, companyName }: OrgChartFullVi
                     />
                   </OrgChartDropZone>
 
+                  {/* Expand/Collapse toggle for admin */}
+                  <button
+                    onClick={() => toggleNode(admin.id)}
+                    className="mt-2 flex items-center gap-1 rounded-full bg-purple-100 px-2.5 py-1 text-xs font-medium text-purple-600 transition-colors hover:bg-purple-200 dark:bg-purple-900/30 dark:text-purple-400 dark:hover:bg-purple-800/40"
+                  >
+                    {expandedNodes.has(admin.id) ? (
+                      <>
+                        <ChevronDown className="h-3 w-3" />
+                        Collapse
+                      </>
+                    ) : (
+                      <>
+                        <ChevronRight className="h-3 w-3" />
+                        Expand
+                      </>
+                    )}
+                  </button>
+
                   {/* Add Manager button */}
                   <button
                     onClick={() =>
@@ -581,56 +599,57 @@ export function OrgChartFullView({ initialMembers, companyName }: OrgChartFullVi
                 </div>
               )}
 
-              {/* ── Manager Branches ────────────────────────────── */}
-              {(() => {
-                // Managers who report to admin or have no manager
-                const topManagers = managers.filter(
-                  (m) => !m.managerId || m.managerId === admin?.id
-                );
-                // Direct reports of admin who aren't managers
-                const adminReports = admin
-                  ? getDirectReports(admin.id).filter((r) => !r.isManager && !r.isAdmin)
-                  : [];
+              {/* ── Manager Branches (gated by admin expand/collapse) ── */}
+              {(!admin || expandedNodes.has(admin?.id ?? "__none__")) &&
+                (() => {
+                  // Managers who report to admin or have no manager
+                  const topManagers = managers.filter(
+                    (m) => !m.managerId || m.managerId === admin?.id
+                  );
+                  // Direct reports of admin who aren't managers
+                  const adminReports = admin
+                    ? getDirectReports(admin.id).filter((r) => !r.isManager && !r.isAdmin)
+                    : [];
 
-                if (topManagers.length === 0 && adminReports.length === 0) {
+                  if (topManagers.length === 0 && adminReports.length === 0) {
+                    return (
+                      <div className="mx-auto max-w-md rounded-2xl border border-dashed border-purple-300 bg-purple-50/50 p-8 text-center dark:border-purple-800 dark:bg-purple-950/20">
+                        <GitBranch className="mx-auto mb-3 h-8 w-8 text-purple-300 dark:text-purple-700" />
+                        <p className="text-sm font-medium text-purple-800 dark:text-purple-200">
+                          No managers assigned yet
+                        </p>
+                        <p className="mt-1 text-xs text-purple-500">
+                          Drag team members from the roster or click &quot;Add Manager&quot; above
+                        </p>
+                      </div>
+                    );
+                  }
+
                   return (
-                    <div className="mx-auto max-w-md rounded-2xl border border-dashed border-purple-300 bg-purple-50/50 p-8 text-center dark:border-purple-800 dark:bg-purple-950/20">
-                      <GitBranch className="mx-auto mb-3 h-8 w-8 text-purple-300 dark:text-purple-700" />
-                      <p className="text-sm font-medium text-purple-800 dark:text-purple-200">
-                        No managers assigned yet
-                      </p>
-                      <p className="mt-1 text-xs text-purple-500">
-                        Drag team members from the roster or click &quot;Add Manager&quot; above
-                      </p>
+                    <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                      {topManagers.map((manager) => (
+                        <div
+                          key={manager.id}
+                          className="rounded-2xl border border-purple-200/60 bg-white/80 p-4 shadow-sm backdrop-blur-sm transition-shadow hover:shadow-md dark:border-purple-800/40 dark:bg-slate-900/60"
+                        >
+                          {renderBranch(manager, 0)}
+                        </div>
+                      ))}
+
+                      {/* Admin's direct non-manager reports */}
+                      {adminReports.length > 0 && (
+                        <div className="rounded-2xl border border-blue-200/60 bg-white/80 p-4 shadow-sm backdrop-blur-sm dark:border-blue-800/40 dark:bg-slate-900/60">
+                          <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-blue-500">
+                            Direct Reports to {admin?.name}
+                          </p>
+                          <div className="space-y-2">
+                            {adminReports.map((report) => renderBranch(report, 0))}
+                          </div>
+                        </div>
+                      )}
                     </div>
                   );
-                }
-
-                return (
-                  <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                    {topManagers.map((manager) => (
-                      <div
-                        key={manager.id}
-                        className="rounded-2xl border border-purple-200/60 bg-white/80 p-4 shadow-sm backdrop-blur-sm transition-shadow hover:shadow-md dark:border-purple-800/40 dark:bg-slate-900/60"
-                      >
-                        {renderBranch(manager, 0)}
-                      </div>
-                    ))}
-
-                    {/* Admin's direct non-manager reports */}
-                    {adminReports.length > 0 && (
-                      <div className="rounded-2xl border border-blue-200/60 bg-white/80 p-4 shadow-sm backdrop-blur-sm dark:border-blue-800/40 dark:bg-slate-900/60">
-                        <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-blue-500">
-                          Direct Reports to {admin?.name}
-                        </p>
-                        <div className="space-y-2">
-                          {adminReports.map((report) => renderBranch(report, 0))}
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                );
-              })()}
+                })()}
 
               {/* ── Unassigned Pool ──────────────────────────────── */}
               {unassignedMembers.length > 0 && (

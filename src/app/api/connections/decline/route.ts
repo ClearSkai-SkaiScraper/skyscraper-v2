@@ -36,7 +36,7 @@ export const POST = withAuth(async (req: NextRequest, { userId, orgId }) => {
     const { connectionId } = validation.data;
 
     // Verify the caller is a member of the contractor company
-    const member = await prisma.tradesCompanyMember.findUnique({
+    const member = await prisma.tradesCompanyMember.findFirst({
       where: { userId },
       select: { companyId: true },
     });

@@ -34,7 +34,7 @@ const COMPANY_PAGE_PLANS = [
 export const GET = withAuth(async (req: NextRequest, { orgId, userId }) => {
   try {
     // Find the user's company membership
-    let membership = await prisma.tradesCompanyMember.findUnique({
+    let membership = await prisma.tradesCompanyMember.findFirst({
       where: { userId },
       include: {
         company: {
@@ -255,7 +255,7 @@ export const GET = withAuth(async (req: NextRequest, { orgId, userId }) => {
 
           logger.info(`[trades/company] Auto-created member for user ${userId}`);
 
-          membership = await prisma.tradesCompanyMember.findUnique({
+          membership = await prisma.tradesCompanyMember.findFirst({
             where: { userId },
             include: memberInclude,
           });
@@ -458,7 +458,7 @@ export const GET = withAuth(async (req: NextRequest, { orgId, userId }) => {
     }
 
     // Also fetch the requesting member's extended fields (tagline, hours, etc.)
-    const memberExtended = await prisma.tradesCompanyMember.findUnique({
+    const memberExtended = await prisma.tradesCompanyMember.findFirst({
       where: { userId },
       select: {
         tagline: true,
@@ -563,7 +563,7 @@ export const PATCH = withAuth(async (req: NextRequest, { orgId, userId }) => {
     } = body;
 
     // Find the user's company membership
-    const membership = await prisma.tradesCompanyMember.findUnique({
+    const membership = await prisma.tradesCompanyMember.findFirst({
       where: { userId },
       include: { company: true },
     });

@@ -19,7 +19,7 @@ export async function getVisibleUserIds(
 ): Promise<string[] | null> {
   try {
     // 1. Look up the caller in tradesCompanyMember (has manager hierarchy)
-    const member = await prisma.tradesCompanyMember.findUnique({
+    const member = await prisma.tradesCompanyMember.findFirst({
       where: { userId: clerkUserId },
       select: {
         id: true,

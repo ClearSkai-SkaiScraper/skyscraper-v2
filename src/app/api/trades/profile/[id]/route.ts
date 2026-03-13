@@ -19,7 +19,7 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
     const contractorId = params.id;
 
     // Get the Contractor Profile (tradesCompanyMember IS the profile)
-    const contractor = await prisma.tradesCompanyMember.findUnique({
+    const contractor = await prisma.tradesCompanyMember.findFirst({
       where: { id: contractorId },
       include: {
         company: true,

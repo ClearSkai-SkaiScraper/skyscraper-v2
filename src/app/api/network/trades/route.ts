@@ -28,7 +28,7 @@ export async function GET(req: NextRequest) {
     orgId = user?.orgId || null;
   }
   if (!orgId) {
-    const membership = await prisma.tradesCompanyMember.findUnique({
+    const membership = await prisma.tradesCompanyMember.findFirst({
       where: { userId },
       select: { companyId: true, orgId: true },
     });

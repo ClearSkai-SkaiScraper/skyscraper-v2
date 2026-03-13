@@ -30,7 +30,7 @@ export default async function HierarchyPage() {
   let companyName = "Your Company";
 
   try {
-    const membership = await prisma.tradesCompanyMember.findUnique({
+    const membership = await prisma.tradesCompanyMember.findFirst({
       where: { userId: userId },
       select: { companyId: true },
     });

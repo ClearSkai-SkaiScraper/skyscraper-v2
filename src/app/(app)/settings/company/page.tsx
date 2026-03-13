@@ -26,7 +26,7 @@ export default async function CompanySettingsPage() {
   if (!org) redirect("/");
 
   // Get the user's trades profile by userId (which is unique)
-  const profile = await prisma.tradesCompanyMember.findUnique({
+  const profile = await prisma.tradesCompanyMember.findFirst({
     where: { userId },
   });
 

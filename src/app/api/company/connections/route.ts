@@ -29,7 +29,7 @@ export async function GET(req: Request) {
     const limit = parseInt(searchParams.get("limit") || "100", 10);
 
     // Resolve tradesCompanyMember for ClientProConnection queries
-    const membership = await prisma.tradesCompanyMember.findUnique({
+    const membership = await prisma.tradesCompanyMember.findFirst({
       where: { userId },
       select: { companyId: true, orgId: true },
     });

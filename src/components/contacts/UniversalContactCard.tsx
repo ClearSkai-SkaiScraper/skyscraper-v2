@@ -26,6 +26,8 @@ import {
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 
+import { ContactDetailModal } from "./ContactDetailModal";
+
 // ─── Types ───────────────────────────────────────────────────────────────────
 
 export type ContactType =
@@ -138,6 +140,7 @@ export function UniversalContactCard({
   onInvite,
 }: UniversalContactCardProps) {
   const router = useRouter();
+  const [modalOpen, setModalOpen] = useState(false);
   const [inviteOpen, setInviteOpen] = useState(false);
   const [inviteEmail, setInviteEmail] = useState(contact.email || "");
   const [inviteSending, setInviteSending] = useState(false);
@@ -164,15 +167,10 @@ export function UniversalContactCard({
   const badgeConfig = contact.contactType ? BADGE_CONFIG[contact.contactType] : BADGE_CONFIG.client;
 
   // ── Handlers ──
+  // Open the contact detail modal instead of navigating
   const handleCardClick = useCallback(() => {
-    if (contact.href) {
-      router.push(contact.href);
-    } else if (contact.claimId) {
-      router.push(`/claims/${contact.claimId}`);
-    } else if (!contact.id.startsWith("claim-") && !contact.id.startsWith("synthetic-")) {
-      router.push(`/contacts/${contact.id}`);
-    }
-  }, [contact, router]);
+    setModalOpen(true);
+  }, []);
 
   const handleSkaiMessage = useCallback(
     (e: React.MouseEvent) => {
@@ -520,6 +518,15 @@ export function UniversalContactCard({
           )}
         </DialogContent>
       </Dialog>
+
+      {/* Contact Detail Modal — iPhone-style full contact card */}
+      <ContactDetailModal
+        contact={contact}
+        open={modalOpen}
+        onOpenChange={setModalOpen}
+        onMessage={onMessage}
+        onInvite={onInvite}
+      />
     </>
   );
 }

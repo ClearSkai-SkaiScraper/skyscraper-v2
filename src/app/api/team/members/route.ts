@@ -64,7 +64,7 @@ export async function GET(request: NextRequest) {
     let companyMembers: any[] = [];
     try {
       const membership = ctx.userId
-        ? await prisma.tradesCompanyMember.findUnique({
+        ? await prisma.tradesCompanyMember.findFirst({
             where: { userId: ctx.userId },
             select: { companyId: true },
           })

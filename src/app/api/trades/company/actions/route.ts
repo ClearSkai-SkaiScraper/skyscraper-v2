@@ -155,7 +155,7 @@ async function handleAddEmployee(
 
   if (existingUser) {
     // User exists — check if they already have a member record
-    const existingMember = await prisma.tradesCompanyMember.findUnique({
+    const existingMember = await prisma.tradesCompanyMember.findFirst({
       where: { userId: existingUser.clerkUserId },
     });
 

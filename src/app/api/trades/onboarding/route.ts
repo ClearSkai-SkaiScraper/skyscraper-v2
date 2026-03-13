@@ -56,7 +56,7 @@ export async function POST(req: NextRequest) {
       const { avatar } = data;
 
       // First check if the member exists
-      const existingMember = await prisma.tradesCompanyMember.findUnique({
+      const existingMember = await prisma.tradesCompanyMember.findFirst({
         where: { userId },
       });
 
@@ -106,7 +106,7 @@ export async function POST(req: NextRequest) {
     if (step === "update_cover") {
       const { coverPhoto } = data;
 
-      const existingMember = await prisma.tradesCompanyMember.findUnique({
+      const existingMember = await prisma.tradesCompanyMember.findFirst({
         where: { userId },
       });
 
@@ -134,7 +134,7 @@ export async function POST(req: NextRequest) {
     if (step === "update_specialties") {
       const { specialties } = data;
 
-      const existingMember = await prisma.tradesCompanyMember.findUnique({
+      const existingMember = await prisma.tradesCompanyMember.findFirst({
         where: { userId },
       });
 
@@ -218,7 +218,7 @@ export async function POST(req: NextRequest) {
       }
 
       // Check if user already has a profile
-      const existing = await prisma.tradesCompanyMember.findUnique({
+      const existing = await prisma.tradesCompanyMember.findFirst({
         where: { userId },
       });
 
@@ -339,7 +339,7 @@ export async function POST(req: NextRequest) {
       const { companyName } = data;
 
       // Get employee profile
-      const employee = await prisma.tradesCompanyMember.findUnique({
+      const employee = await prisma.tradesCompanyMember.findFirst({
         where: { userId },
       });
 
@@ -380,7 +380,7 @@ export async function POST(req: NextRequest) {
       const { token } = data;
 
       // Get employee profile
-      const employee = await prisma.tradesCompanyMember.findUnique({
+      const employee = await prisma.tradesCompanyMember.findFirst({
         where: { userId },
       });
 
@@ -463,7 +463,7 @@ export async function POST(req: NextRequest) {
       }
 
       // Get employee profile
-      const employee = await prisma.tradesCompanyMember.findUnique({
+      const employee = await prisma.tradesCompanyMember.findFirst({
         where: { userId },
       });
 
@@ -574,7 +574,7 @@ export async function GET() {
     }
 
     // Get employee profile
-    const employee = await prisma.tradesCompanyMember.findUnique({
+    const employee = await prisma.tradesCompanyMember.findFirst({
       where: { userId },
       include: {
         company: true,

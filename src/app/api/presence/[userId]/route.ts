@@ -71,7 +71,7 @@ export async function GET(_req: Request, { params }: { params: Promise<{ userId:
 
   // Parallel lookup: pro member + client
   const [member, client] = await Promise.allSettled([
-    prisma.tradesCompanyMember.findUnique({
+    prisma.tradesCompanyMember.findFirst({
       where: { userId: targetUserId },
       select: {
         firstName: true,

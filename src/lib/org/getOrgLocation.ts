@@ -38,7 +38,7 @@ export async function getOrgLocation(orgId: string | null | undefined): Promise<
     return DEFAULT_LOCATION;
 
     /* FUTURE: When location fields are added to schema
-    const contractorProfile = await prisma.tradesCompanyMember.findUnique({
+    const contractorProfile = await prisma.tradesCompanyMember.findFirst({
       where: { orgId },
       include: {
         tradeProfile: true,

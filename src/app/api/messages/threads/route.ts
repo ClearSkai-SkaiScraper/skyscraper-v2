@@ -64,7 +64,7 @@ async function resolveClientRecord(userId: string) {
     // Check if this user is already a pro — if so, skip auto-create
     const [existingPro, existingMember] = await Promise.all([
       prisma.users.findFirst({ where: { clerkUserId: userId }, select: { id: true } }),
-      prisma.tradesCompanyMember.findUnique({ where: { userId }, select: { id: true } }),
+      prisma.tradesCompanyMember.findFirst({ where: { userId }, select: { id: true } }),
     ]);
     if (existingPro || existingMember) {
       log.info("[messages/threads] Skipping client auto-create — user is a pro", { userId });
@@ -123,7 +123,7 @@ export async function GET(req: Request) {
         where: { clerkUserId: userId },
         select: { id: true, orgId: true, role: true },
       }),
-      prisma.tradesCompanyMember.findUnique({
+      prisma.tradesCompanyMember.findFirst({
         where: { userId },
         select: { companyId: true, orgId: true },
       }),

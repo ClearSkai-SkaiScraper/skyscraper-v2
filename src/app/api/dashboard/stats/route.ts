@@ -25,7 +25,7 @@ export const GET = withAuth(async (req: NextRequest, { orgId, userId }) => {
     // companyId rather than orgId (e.g., client-portal threads, network posts)
     let companyId: string | null = null;
     try {
-      const membership = await prisma.tradesCompanyMember.findUnique({
+      const membership = await prisma.tradesCompanyMember.findFirst({
         where: { userId },
         select: { companyId: true },
       });

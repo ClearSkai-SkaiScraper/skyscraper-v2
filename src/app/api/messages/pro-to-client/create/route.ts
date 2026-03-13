@@ -37,7 +37,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Get the pro's company membership
-    const membership = await prisma.tradesCompanyMember.findUnique({
+    const membership = await prisma.tradesCompanyMember.findFirst({
       where: { userId },
       select: {
         id: true,

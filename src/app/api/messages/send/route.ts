@@ -81,7 +81,7 @@ export async function POST(req: Request) {
           where: { clerkUserId: userId },
           select: { id: true, orgId: true, role: true },
         }),
-        prisma.tradesCompanyMember.findUnique({
+        prisma.tradesCompanyMember.findFirst({
           where: { userId },
           select: { companyId: true },
         }),

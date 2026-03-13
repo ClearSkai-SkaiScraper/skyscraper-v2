@@ -37,7 +37,7 @@ export async function POST(req: NextRequest) {
     let companyId = proId;
 
     // Check if this is a member ID
-    const member = await prisma.tradesCompanyMember.findUnique({
+    const member = await prisma.tradesCompanyMember.findFirst({
       where: { id: proId },
       select: { id: true, userId: true, companyId: true, companyName: true },
     });

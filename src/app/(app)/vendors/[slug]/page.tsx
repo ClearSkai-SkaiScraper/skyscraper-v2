@@ -295,7 +295,12 @@ export default function VendorDetailPage() {
             <Card className="sticky top-4 p-6">
               {/* Logo - Top Left with Placeholder Fallback */}
               <div className="-mt-20 mb-4">
-                <VendorLogo logo={vendor.logo} name={vendor.name} size="xl" />
+                <VendorLogo
+                  logo={vendor.logo}
+                  name={vendor.name}
+                  website={vendor.website}
+                  size="xl"
+                />
               </div>
 
               {/* Name & Category */}

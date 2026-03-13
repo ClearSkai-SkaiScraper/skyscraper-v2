@@ -11,6 +11,7 @@ import { useState } from "react";
 interface Props {
   logo: string | null;
   name: string;
+  website?: string | null;
   size?: "sm" | "md" | "lg" | "xl";
   className?: string;
 }
@@ -33,8 +34,20 @@ const GRADIENT_COLORS = [
   "from-green-500 to-emerald-600",
 ];
 
-export function VendorLogo({ logo, name, size = "md", className = "" }: Props) {
+/** Extract domain from a URL or logo URL for favicon fallback */
+function extractDomain(url: string | null | undefined): string | null {
+  if (!url) return null;
+  try {
+    const u = new URL(url.startsWith("http") ? url : `https://${url}`);
+    return u.hostname.replace(/^www\./, "");
+  } catch {
+    return null;
+  }
+}
+
+export function VendorLogo({ logo, name, website, size = "md", className = "" }: Props) {
   const [imgError, setImgError] = useState(false);
+  const [faviconError, setFaviconError] = useState(false);
   const sizeClasses = SIZES[size];
 
   // Generate initials for fallback
@@ -49,13 +62,22 @@ export function VendorLogo({ logo, name, size = "md", className = "" }: Props) {
   const colorIndex = name.charCodeAt(0) % GRADIENT_COLORS.length;
   const gradientClass = GRADIENT_COLORS[colorIndex];
 
-  if (logo && !imgError) {
+  // Determine favicon URL for fallback
+  const domain = extractDomain(website) || extractDomain(logo);
+  const faviconUrl = domain ? `https://www.google.com/s2/favicons?domain=${domain}&sz=128` : null;
+
+  // Skip known-dead logo sources
+  const isDeadLogo = logo && (logo.includes("clearbit.com") || logo.includes("logo.clearbit"));
+  const effectiveLogo = isDeadLogo ? null : logo;
+
+  // Tier 1: Try the actual logo URL
+  if (effectiveLogo && !imgError) {
     return (
       <div
         className={`relative flex ${sizeClasses.container} flex-shrink-0 items-center justify-center overflow-hidden rounded-xl border bg-white ${className}`}
       >
         <img
-          src={logo}
+          src={effectiveLogo}
           alt={name}
           className="h-full w-full object-contain p-1.5"
           onError={() => setImgError(true)}
@@ -64,6 +86,23 @@ export function VendorLogo({ logo, name, size = "md", className = "" }: Props) {
     );
   }
 
+  // Tier 2: Try Google Favicons
+  if (faviconUrl && !faviconError) {
+    return (
+      <div
+        className={`relative flex ${sizeClasses.container} flex-shrink-0 items-center justify-center overflow-hidden rounded-xl border bg-white ${className}`}
+      >
+        <img
+          src={faviconUrl}
+          alt={name}
+          className="h-full w-full object-contain p-2"
+          onError={() => setFaviconError(true)}
+        />
+      </div>
+    );
+  }
+
+  // Tier 3: Gradient initials
   return (
     <div
       className={`flex ${sizeClasses.container} flex-shrink-0 items-center justify-center rounded-xl bg-gradient-to-br ${gradientClass} font-bold text-white shadow-sm ${sizeClasses.text} ${className}`}

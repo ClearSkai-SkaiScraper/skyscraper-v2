@@ -78,13 +78,27 @@ export function RemoteViewProvider({ children }: { children: React.ReactNode }) 
     loading: false,
   });
 
-  // Restore from cookie on mount
+  // Restore from cookie + localStorage on mount
   useEffect(() => {
-    const stored = getRemoteViewCookie();
-    if (stored) {
+    const cookieValue = getRemoteViewCookie();
+    if (cookieValue) {
+      // Cookie stores plain userId; full target is in localStorage
       try {
-        const target = JSON.parse(stored) as RemoteViewTarget;
-        setState({ active: true, target, loading: false });
+        const stored =
+          typeof window !== "undefined" ? localStorage.getItem("x-remote-view-target") : null;
+        if (stored) {
+          const target = JSON.parse(stored) as RemoteViewTarget;
+          if (target.userId === cookieValue) {
+            setState({ active: true, target, loading: false });
+            return;
+          }
+        }
+        // Fallback: cookie has userId but localStorage is missing/stale — still active but minimal target
+        setState({
+          active: true,
+          target: { userId: cookieValue, name: "Team Member", email: "", role: "" },
+          loading: false,
+        });
       } catch {
         clearRemoteViewCookie();
       }
@@ -105,8 +119,12 @@ export function RemoteViewProvider({ children }: { children: React.ReactNode }) 
         throw new Error(data.error || "Failed to start Remote View");
       }
 
-      // Store target in cookie for server-side reads
-      setRemoteViewCookie(JSON.stringify(target));
+      // Store target userId in cookie for server-side reads (must match server's plain userId format)
+      setRemoteViewCookie(target.userId);
+      // Also store full target in localStorage for client-side restoration
+      if (typeof window !== "undefined") {
+        localStorage.setItem("x-remote-view-target", JSON.stringify(target));
+      }
       setState({ active: true, target, loading: false });
 
       // Full page reload to re-fetch all data scoped to the viewed user
@@ -125,6 +143,9 @@ export function RemoteViewProvider({ children }: { children: React.ReactNode }) 
       // Best effort
     }
     clearRemoteViewCookie();
+    if (typeof window !== "undefined") {
+      localStorage.removeItem("x-remote-view-target");
+    }
     setState({ active: false, target: null, loading: false });
 
     // Full page reload to return to own data

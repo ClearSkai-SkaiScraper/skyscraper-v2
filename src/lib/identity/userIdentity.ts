@@ -185,7 +185,7 @@ export async function loadProContext(clerkUserId: string): Promise<ProContext> {
   }
 
   // Load full pro member data
-  const proMember = await prisma.tradesCompanyMember.findUnique({
+  const proMember = await prisma.tradesCompanyMember.findFirst({
     where: { id: identity.proProfileId },
     include: {
       company: {

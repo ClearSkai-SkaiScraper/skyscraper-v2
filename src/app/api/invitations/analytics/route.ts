@@ -32,7 +32,7 @@ export async function GET(request: NextRequest) {
     startDate.setDate(startDate.getDate() - days);
 
     // Find the user's company — this is the source of truth for team seat invites
-    const membership = await prisma.tradesCompanyMember.findUnique({
+    const membership = await prisma.tradesCompanyMember.findFirst({
       where: { userId },
       select: { companyId: true, isOwner: true, isAdmin: true },
     });

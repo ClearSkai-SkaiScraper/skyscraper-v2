@@ -65,7 +65,7 @@ export default async function VendorDetailPage({ params }: Props) {
       <Card className="overflow-hidden">
         <div className="flex flex-col gap-6 p-6 md:flex-row md:items-start">
           {/* Logo */}
-          <VendorLogo logo={vendor.logo} name={vendor.name} size="lg" />
+          <VendorLogo logo={vendor.logo} name={vendor.name} website={vendor.website} size="lg" />
 
           <div className="min-w-0 flex-1">
             <div className="flex items-start justify-between gap-3">

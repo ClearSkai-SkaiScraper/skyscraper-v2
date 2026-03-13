@@ -117,7 +117,7 @@ export async function POST(req: NextRequest) {
     // Get the user's company membership
     let member: any = null;
     try {
-      member = await prisma.tradesCompanyMember.findUnique({
+      member = await prisma.tradesCompanyMember.findFirst({
         where: { userId },
         select: {
           id: true,

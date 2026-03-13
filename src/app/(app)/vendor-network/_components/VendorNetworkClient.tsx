@@ -479,7 +479,7 @@ function VendorNetworkCard({ vendor }: { vendor: VendorListItem }) {
 
         {/* Header */}
         <div className="mb-3 flex items-start gap-3">
-          <VendorLogo logo={vendor.logo} name={vendor.name} size="sm" />
+          <VendorLogo logo={vendor.logo} name={vendor.name} website={vendor.website} size="sm" />
           <div className="min-w-0 flex-1">
             <h3 className="truncate text-base font-semibold">{vendor.name}</h3>
             <p className="text-xs text-muted-foreground">{vendor.category || "Vendor"}</p>

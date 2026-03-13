@@ -19,7 +19,7 @@ interface EmployeeProfilePageProps {
 }
 
 export default async function EmployeeProfilePage({ params }: EmployeeProfilePageProps) {
-  const employee = await prisma.tradesCompanyMember.findUnique({
+  const employee = await prisma.tradesCompanyMember.findFirst({
     where: { id: params.id },
     include: {
       company: {

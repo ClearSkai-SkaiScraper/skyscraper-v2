@@ -89,6 +89,7 @@ export function CompanySettingsClient({ org, profile }: CompanySettingsClientPro
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
+          orgId: org.id,
           ...data,
           serviceAreas,
           primaryServices,

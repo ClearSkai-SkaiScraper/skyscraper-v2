@@ -59,7 +59,7 @@ export async function generateMetadata({ params }: PublicProfilePageProps): Prom
   } | null = null;
   try {
     if (isUUID) {
-      member = await prisma.tradesCompanyMember.findUnique({
+      member = await prisma.tradesCompanyMember.findFirst({
         where: { id },
         select: {
           firstName: true,
@@ -144,7 +144,7 @@ export default async function PublicTradeProfilePage({ params }: PublicProfilePa
   try {
     // 1. Try as member UUID
     if (isUUID) {
-      member = await prisma.tradesCompanyMember.findUnique({
+      member = await prisma.tradesCompanyMember.findFirst({
         where: { id },
         include: { company: true },
       });

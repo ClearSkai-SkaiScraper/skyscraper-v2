@@ -59,7 +59,7 @@ export default async function CompanySeatsPage() {
   if (orgId) {
     try {
       const membership = userId
-        ? await prisma.tradesCompanyMember.findUnique({
+        ? await prisma.tradesCompanyMember.findFirst({
             where: { userId },
             select: { companyId: true },
           })

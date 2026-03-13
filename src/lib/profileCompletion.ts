@@ -29,7 +29,7 @@ const RECOMMENDED_FIELDS = ["phone", "bio", "yearsExperience", "avatar"] as cons
  * Check if a user's trades profile is complete
  */
 export async function checkProfileCompletion(userId: string): Promise<ProfileCompletion> {
-  const member = await prisma.tradesCompanyMember.findUnique({
+  const member = await prisma.tradesCompanyMember.findFirst({
     where: { userId },
     include: { company: true },
   });

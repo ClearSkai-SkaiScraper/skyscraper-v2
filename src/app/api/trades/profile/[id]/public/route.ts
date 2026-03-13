@@ -180,7 +180,7 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
     logger.info("[TRADES_PROFILE_PUBLIC]", { profileId });
 
     // ── Step 1: Try finding as tradesCompanyMember by ID ──
-    let member = await prisma.tradesCompanyMember.findUnique({
+    let member = await prisma.tradesCompanyMember.findFirst({
       where: { id: profileId },
       select: MEMBER_SELECT,
     });

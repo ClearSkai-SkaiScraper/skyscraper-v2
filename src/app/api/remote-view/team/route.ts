@@ -30,7 +30,7 @@ export async function GET() {
     }
 
     // Get caller's tradesCompanyMember record (for managerId hierarchy)
-    const callerMember = await prisma.tradesCompanyMember.findUnique({
+    const callerMember = await prisma.tradesCompanyMember.findFirst({
       where: { userId: user.userId },
       select: { id: true, companyId: true },
     });
@@ -61,12 +61,12 @@ export async function GET() {
           orderBy: [{ firstName: "asc" }, { lastName: "asc" }],
         });
       } else {
-        // Manager: only direct reports
+        // Manager: only direct reports (managerId stores member UUID, not Clerk userId)
         companyMembers = await prisma.tradesCompanyMember.findMany({
           where: {
             companyId: callerMember.companyId,
             isActive: true,
-            OR: [{ managerId: user.userId }, { managerId: callerMember.id }],
+            managerId: callerMember.id,
           },
           select: {
             userId: true,

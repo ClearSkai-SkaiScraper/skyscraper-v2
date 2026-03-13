@@ -1,4 +1,14 @@
-import { Building2, HardHat, Lock, Package, UserCheck, Users, UsersRound } from "lucide-react";
+import {
+  Briefcase,
+  Building2,
+  HardHat,
+  Lock,
+  Package,
+  Shield,
+  UserCheck,
+  Users,
+  UsersRound,
+} from "lucide-react";
 import { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
@@ -221,6 +231,7 @@ async function renderContactsPage() {
   let contacts: any[] = [];
   let connections: any[] = [];
   let teamMembers: any[] = [];
+  let adjusters: any[] = [];
   let vendorCount = 0;
   let subCount = 0;
   let contractorCount = 0;
@@ -520,6 +531,75 @@ async function renderContactsPage() {
         logger.error("[CompanyContacts] Team members query failed:", teamErr);
         teamMembers = [];
       }
+
+      // ══════════════════════════════════════════════════════════════════════════
+      // ADJUSTERS — Fetch unique adjusters from claims
+      // ══════════════════════════════════════════════════════════════════════════
+      try {
+        const claimsWithAdjusters = await prisma.claims.findMany({
+          where: {
+            orgId: organizationId,
+            adjusterName: { not: null },
+            isDemo: false,
+          },
+          orderBy: { updatedAt: "desc" },
+          select: {
+            id: true,
+            claimNumber: true,
+            adjusterName: true,
+            adjusterEmail: true,
+            adjusterPhone: true,
+            carrier: true,
+            createdAt: true,
+          },
+        });
+
+        // Deduplicate adjusters by name+email combo
+        const adjusterMap = new Map<string, any>();
+
+        for (const cl of claimsWithAdjusters) {
+          const name = cl.adjusterName?.trim();
+          if (!name) continue;
+          if (isDemoContact({ name, email: cl.adjusterEmail })) continue;
+
+          // Use name+email as unique key
+          const key = `${name.toLowerCase()}-${(cl.adjusterEmail || "").toLowerCase()}`;
+
+          if (!adjusterMap.has(key)) {
+            const nameParts = name.split(" ");
+            adjusterMap.set(key, {
+              id: `adjuster-${cl.id}`,
+              type: "adjuster",
+              contactType: "adjuster",
+              name,
+              firstName: nameParts[0] || "",
+              lastName: nameParts.slice(1).join(" ") || "",
+              email: cl.adjusterEmail || null,
+              phone: cl.adjusterPhone || null,
+              company: cl.carrier || null,
+              tags: [cl.carrier, cl.claimNumber].filter(Boolean),
+              createdAt: cl.createdAt ? String(cl.createdAt) : null,
+              href: `/claims/${cl.id}`,
+              claimId: cl.id,
+              claimIds: [cl.id],
+            });
+          } else {
+            // Add this claim to the existing adjuster's tags
+            const existing = adjusterMap.get(key);
+            if (cl.claimNumber && !existing.tags.includes(cl.claimNumber)) {
+              existing.tags.push(cl.claimNumber);
+            }
+            if (!existing.claimIds.includes(cl.id)) {
+              existing.claimIds.push(cl.id);
+            }
+          }
+        }
+
+        adjusters = Array.from(adjusterMap.values());
+      } catch (adjErr) {
+        logger.error("[CompanyContacts] Adjusters query failed:", adjErr);
+        adjusters = [];
+      }
     } catch (error) {
       logger.error("[CONTACTS_API_ERROR]", {
         error: error?.message,
@@ -540,10 +620,11 @@ async function renderContactsPage() {
   const contractors = connections.filter((c) => c.type === "contractor");
 
   // Combine all items
-  const allItems = [...contacts, ...connections, ...teamMembers];
+  const allItems = [...contacts, ...connections, ...teamMembers, ...adjusters];
   const totalCount = allItems.length;
   const clientCount = contacts.length;
   const teamCount = teamMembers.length;
+  const adjusterCount = adjusters.length;
 
   // Helper to render contact card - Uses UniversalContactCard for all contact types
   const renderContactCard = (contact: any) => (
@@ -605,7 +686,7 @@ async function renderContactsPage() {
         </CRMCard>
       ) : (
         <Tabs defaultValue="all" className="w-full">
-          <TabsList className="mb-6 grid w-full grid-cols-6 lg:inline-flex lg:w-auto">
+          <TabsList className="mb-6 grid w-full grid-cols-7 lg:inline-flex lg:w-auto">
             <TabsTrigger value="all" className="gap-2">
               <Users className="h-4 w-4" />
               All ({totalCount})
@@ -613,6 +694,10 @@ async function renderContactsPage() {
             <TabsTrigger value="clients" className="gap-2">
               <UserCheck className="h-4 w-4" />
               Clients ({clientCount})
+            </TabsTrigger>
+            <TabsTrigger value="adjusters" className="gap-2">
+              <Shield className="h-4 w-4" />
+              Adjusters ({adjusterCount})
             </TabsTrigger>
             <TabsTrigger value="team" className="gap-2">
               <UsersRound className="h-4 w-4" />
@@ -656,6 +741,17 @@ async function renderContactsPage() {
                 </div>
               </div>
             )}
+            {adjusters.length > 0 && (
+              <div>
+                <h3 className="mb-4 flex items-center gap-2 text-lg font-semibold text-foreground">
+                  <Shield className="h-5 w-5 text-orange-600" />
+                  Insurance Adjusters ({adjusterCount})
+                </h3>
+                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                  {adjusters.map(renderContactCard)}
+                </div>
+              </div>
+            )}
             {connections.length > 0 && (
               <div>
                 <h3 className="mb-4 flex items-center gap-2 text-lg font-semibold text-foreground">
@@ -682,6 +778,30 @@ async function renderContactsPage() {
             ) : (
               <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                 {contacts.map(renderContactCard)}
+              </div>
+            )}
+          </TabsContent>
+
+          {/* Adjusters Tab */}
+          <TabsContent value="adjusters">
+            {adjusters.length === 0 ? (
+              <CRMCard className="px-8 py-12 text-center">
+                <Shield className="mx-auto mb-4 h-12 w-12 text-orange-400" />
+                <h3 className="mb-2 text-lg font-semibold">No adjusters yet</h3>
+                <p className="mb-4 text-sm text-muted-foreground">
+                  Adjusters are automatically saved when you add their info to a claim.
+                </p>
+                <Link
+                  href="/claims"
+                  className="inline-flex items-center gap-2 rounded-xl bg-orange-600 px-4 py-2 text-sm font-medium text-white hover:bg-orange-700"
+                >
+                  <Briefcase className="h-4 w-4" />
+                  Go to Claims →
+                </Link>
+              </CRMCard>
+            ) : (
+              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                {adjusters.map(renderContactCard)}
               </div>
             )}
           </TabsContent>
@@ -764,8 +884,8 @@ async function renderContactsPage() {
 
       {totalCount > 0 && (
         <div className="mt-8 text-center text-sm text-slate-500 dark:text-slate-400">
-          Showing {totalCount} total ({clientCount} clients, {teamCount} team, {connections.length}{" "}
-          trade connections)
+          Showing {totalCount} total ({clientCount} clients, {adjusterCount} adjusters, {teamCount}{" "}
+          team, {connections.length} trade connections)
         </div>
       )}
     </PageContainer>

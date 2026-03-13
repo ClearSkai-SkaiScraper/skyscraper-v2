@@ -29,7 +29,7 @@ export async function GET(req: Request) {
 
     // Fallback: resolve from tradesCompanyMember
     if (!orgId) {
-      const membership = await prisma.tradesCompanyMember.findUnique({
+      const membership = await prisma.tradesCompanyMember.findFirst({
         where: { userId },
         select: { companyId: true, orgId: true },
       });

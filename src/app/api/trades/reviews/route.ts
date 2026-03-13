@@ -53,7 +53,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Get the contractor member and their company
-    const contractor = await prisma.tradesCompanyMember.findUnique({
+    const contractor = await prisma.tradesCompanyMember.findFirst({
       where: { id: data.proId },
       select: { id: true, companyId: true, tradeType: true },
     });

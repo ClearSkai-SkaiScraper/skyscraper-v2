@@ -14,7 +14,7 @@ export const dynamic = "force-dynamic";
 export const GET = withAuth(async (req: NextRequest, { userId, orgId }) => {
   try {
     // Find the user's company membership
-    const membership = await prisma.tradesCompanyMember.findUnique({
+    const membership = await prisma.tradesCompanyMember.findFirst({
       where: { userId },
       select: { companyId: true, isAdmin: true, isOwner: true },
     });
@@ -95,7 +95,7 @@ export const PATCH = withAuth(async (req: NextRequest, { userId }) => {
     }
 
     // Verify the current user is an admin of the same company
-    const currentMember = await prisma.tradesCompanyMember.findUnique({
+    const currentMember = await prisma.tradesCompanyMember.findFirst({
       where: { userId },
       select: { companyId: true, isAdmin: true, isOwner: true },
     });
@@ -105,7 +105,7 @@ export const PATCH = withAuth(async (req: NextRequest, { userId }) => {
     }
 
     // Verify the target employee belongs to the same company
-    const target = await prisma.tradesCompanyMember.findUnique({
+    const target = await prisma.tradesCompanyMember.findFirst({
       where: { id: employeeId },
       select: { companyId: true, isOwner: true },
     });
@@ -161,7 +161,7 @@ export const DELETE = withAuth(async (req: NextRequest, { userId }) => {
     }
 
     // Verify the current user is an admin of the same company
-    const currentMember = await prisma.tradesCompanyMember.findUnique({
+    const currentMember = await prisma.tradesCompanyMember.findFirst({
       where: { userId },
       select: { companyId: true, isAdmin: true, isOwner: true },
     });
@@ -171,7 +171,7 @@ export const DELETE = withAuth(async (req: NextRequest, { userId }) => {
     }
 
     // Verify the target employee belongs to the same company
-    const target = await prisma.tradesCompanyMember.findUnique({
+    const target = await prisma.tradesCompanyMember.findFirst({
       where: { id: employeeId },
       select: { companyId: true, isOwner: true, userId: true },
     });

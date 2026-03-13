@@ -24,7 +24,7 @@ export async function GET() {
     }
 
     // Find the user's trades company membership
-    const member = await prisma.tradesCompanyMember.findUnique({
+    const member = await prisma.tradesCompanyMember.findFirst({
       where: { userId },
       select: { companyId: true, id: true },
     });

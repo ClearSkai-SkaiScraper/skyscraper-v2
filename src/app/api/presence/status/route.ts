@@ -40,7 +40,7 @@ export async function GET() {
   if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const [member, client] = await Promise.allSettled([
-    prisma.tradesCompanyMember.findUnique({
+    prisma.tradesCompanyMember.findFirst({
       where: { userId },
       select: { customStatus: true, statusEmoji: true, lastSeenAt: true },
     }),

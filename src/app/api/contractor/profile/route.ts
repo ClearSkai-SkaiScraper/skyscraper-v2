@@ -102,7 +102,7 @@ export async function GET() {
     const { userId, user } = authResult;
 
     // Find the contractor profile for the current user
-    const profile = await prisma.tradesCompanyMember.findUnique({
+    const profile = await prisma.tradesCompanyMember.findFirst({
       where: { userId },
       include: {
         company: {
@@ -176,7 +176,7 @@ export async function PATCH(req: NextRequest) {
     }
 
     // Check if profile exists
-    const existingProfile = await prisma.tradesCompanyMember.findUnique({
+    const existingProfile = await prisma.tradesCompanyMember.findFirst({
       where: { userId },
     });
 

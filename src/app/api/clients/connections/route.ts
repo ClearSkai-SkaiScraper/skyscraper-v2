@@ -35,7 +35,7 @@ export async function GET() {
 
     // Fallback: resolve from tradesCompanyMember if users table has no orgId
     if (!orgId) {
-      const membershipFallback = await prisma.tradesCompanyMember.findUnique({
+      const membershipFallback = await prisma.tradesCompanyMember.findFirst({
         where: { userId },
         select: { companyId: true, orgId: true },
       });
@@ -113,7 +113,7 @@ export async function GET() {
 
     // ── Also fetch ClientProConnection data (client portal invites) ──
     // Find user's tradesCompany via their membership
-    const membership = await prisma.tradesCompanyMember.findUnique({
+    const membership = await prisma.tradesCompanyMember.findFirst({
       where: { userId },
       select: { companyId: true },
     });

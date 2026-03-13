@@ -34,7 +34,7 @@ export async function GET(req: NextRequest) {
       where.companyId = companyId;
     } else if (profileId) {
       // profileId could be a company member ID — find their company
-      const member = await prisma.tradesCompanyMember.findUnique({
+      const member = await prisma.tradesCompanyMember.findFirst({
         where: { id: profileId },
         select: { companyId: true, userId: true },
       });
@@ -47,7 +47,7 @@ export async function GET(req: NextRequest) {
       }
     } else {
       // Default: get posts by the current user's company
-      const member = await prisma.tradesCompanyMember.findUnique({
+      const member = await prisma.tradesCompanyMember.findFirst({
         where: { userId },
         select: { companyId: true },
       });
@@ -106,7 +106,7 @@ export async function POST(req: NextRequest) {
     let companyId: string | null = null;
 
     // Get the user's company
-    const member = await prisma.tradesCompanyMember.findUnique({
+    const member = await prisma.tradesCompanyMember.findFirst({
       where: { userId },
       select: { companyId: true, companyName: true },
     });

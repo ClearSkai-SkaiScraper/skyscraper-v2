@@ -31,7 +31,7 @@ export async function GET(req: NextRequest) {
     }
 
     // Get user's company (must be admin/owner)
-    const membership = await prisma.tradesCompanyMember.findUnique({
+    const membership = await prisma.tradesCompanyMember.findFirst({
       where: { userId },
       select: {
         companyId: true,
@@ -125,7 +125,7 @@ export async function POST(req: NextRequest) {
     const { companyId, jobTitle } = parsed.data;
 
     // Check if user already has an active company membership
-    const existingMembership = await prisma.tradesCompanyMember.findUnique({
+    const existingMembership = await prisma.tradesCompanyMember.findFirst({
       where: { userId },
       select: { id: true, companyId: true, status: true, pendingCompanyToken: true, title: true },
     });
@@ -236,7 +236,7 @@ export async function PATCH(req: NextRequest) {
     const { requestId, action } = parsed.data;
 
     // Get admin's company
-    const adminMembership = await prisma.tradesCompanyMember.findUnique({
+    const adminMembership = await prisma.tradesCompanyMember.findFirst({
       where: { userId },
       select: {
         companyId: true,

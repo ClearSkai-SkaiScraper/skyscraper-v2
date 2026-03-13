@@ -51,7 +51,7 @@ export async function POST(req: NextRequest) {
     } | null = null;
 
     // Check if this is a member ID
-    const member = await prisma.tradesCompanyMember.findUnique({
+    const member = await prisma.tradesCompanyMember.findFirst({
       where: { id: proId },
       select: {
         id: true,

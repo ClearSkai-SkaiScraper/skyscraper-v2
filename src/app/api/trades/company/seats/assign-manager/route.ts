@@ -25,7 +25,7 @@ async function wouldCreateCycle(
     if (visited.has(currentId)) return false; // already visited, no cycle to us
     visited.add(currentId);
 
-    const node = await prisma.tradesCompanyMember.findUnique({
+    const node = await prisma.tradesCompanyMember.findFirst({
       where: { id: currentId },
       select: { managerId: true, companyId: true },
     });
@@ -58,7 +58,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Get the current user's membership
-    const currentMember = await prisma.tradesCompanyMember.findUnique({
+    const currentMember = await prisma.tradesCompanyMember.findFirst({
       where: { userId: ctx.userId },
       select: { companyId: true, isAdmin: true, isOwner: true },
     });
@@ -73,7 +73,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Verify the target member belongs to the same company
-    const targetMember = await prisma.tradesCompanyMember.findUnique({
+    const targetMember = await prisma.tradesCompanyMember.findFirst({
       where: { id: memberId },
       select: { companyId: true, firstName: true, lastName: true },
     });
@@ -108,7 +108,7 @@ export async function POST(req: NextRequest) {
     if (managerId !== undefined) {
       // Validate manager exists and is a manager
       if (managerId) {
-        const manager = await prisma.tradesCompanyMember.findUnique({
+        const manager = await prisma.tradesCompanyMember.findFirst({
           where: { id: managerId },
           select: { companyId: true, isManager: true, firstName: true, lastName: true },
         });
@@ -184,7 +184,7 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const currentMember = await prisma.tradesCompanyMember.findUnique({
+    const currentMember = await prisma.tradesCompanyMember.findFirst({
       where: { userId: ctx.userId },
       select: { companyId: true },
     });

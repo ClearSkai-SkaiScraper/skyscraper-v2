@@ -87,7 +87,7 @@ export async function getEffectiveUserId(): Promise<{
 
     // If manager (not admin), verify direct report
     if (!hasMinRole(user.role, "admin")) {
-      const callerMember = await prisma.tradesCompanyMember.findUnique({
+      const callerMember = await prisma.tradesCompanyMember.findFirst({
         where: { userId: user.userId },
         select: { id: true },
       });

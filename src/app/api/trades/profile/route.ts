@@ -53,7 +53,7 @@ export async function GET(req: Request) {
 
     if (profileId) {
       // Get specific profile by ID
-      const profile = await prisma.tradesCompanyMember.findUnique({
+      const profile = await prisma.tradesCompanyMember.findFirst({
         where: { id: profileId },
         include: {
           company: true,
@@ -82,7 +82,7 @@ export async function GET(req: Request) {
     }
 
     // Primary lookup: tradesCompanyMember by userId
-    let profile = await prisma.tradesCompanyMember.findUnique({
+    let profile = await prisma.tradesCompanyMember.findFirst({
       where: { userId },
       include: {
         company: true,
@@ -182,7 +182,7 @@ export async function POST(req: Request) {
 
   try {
     // Check if profile already exists
-    const existing = await prisma.tradesCompanyMember.findUnique({
+    const existing = await prisma.tradesCompanyMember.findFirst({
       where: { userId },
     });
 
@@ -300,7 +300,7 @@ export async function PATCH(req: Request) {
   const body = parsed.data;
 
   try {
-    const existing = await prisma.tradesCompanyMember.findUnique({
+    const existing = await prisma.tradesCompanyMember.findFirst({
       where: { userId },
     });
 

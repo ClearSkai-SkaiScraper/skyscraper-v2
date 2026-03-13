@@ -99,7 +99,7 @@ export async function getTenant(): Promise<string | null> {
 
       // Fallback 2: check tradesCompanyMember for trades-only users
       const tradeMember = await retryWithBackoff(async () => {
-        return await prisma.tradesCompanyMember.findUnique({
+        return await prisma.tradesCompanyMember.findFirst({
           where: { userId },
           select: { orgId: true, companyId: true },
         });

@@ -61,31 +61,25 @@ export async function POST(req: Request) {
 
     // If manager (not admin/owner), verify the target is a direct report
     if (!hasMinRole(user.role, "admin")) {
-      const isDirectReport = await prisma.tradesCompanyMember.findFirst({
-        where: {
-          userId: targetUserId,
-          managerId: user.userId,
-        },
-        select: { id: true },
-      });
-
-      // Also check by tradesCompanyMember.id as managerId
-      const callerMember = await prisma.tradesCompanyMember.findUnique({
+      // managerId stores the tradesCompanyMember.id (UUID), not the Clerk userId string
+      const callerMember = await prisma.tradesCompanyMember.findFirst({
         where: { userId: user.userId },
         select: { id: true },
       });
 
-      const isDirectReportById = callerMember
-        ? await prisma.tradesCompanyMember.findFirst({
-            where: {
-              userId: targetUserId,
-              managerId: callerMember.id,
-            },
-            select: { id: true },
-          })
-        : null;
+      if (!callerMember) {
+        return NextResponse.json({ error: "Your company profile was not found" }, { status: 404 });
+      }
 
-      if (!isDirectReport && !isDirectReportById) {
+      const isDirectReport = await prisma.tradesCompanyMember.findFirst({
+        where: {
+          userId: targetUserId,
+          managerId: callerMember.id,
+        },
+        select: { id: true },
+      });
+
+      if (!isDirectReport) {
         return NextResponse.json(
           { error: "Managers can only view their direct reports" },
           { status: 403 }
