@@ -21,6 +21,7 @@ export const revalidate = 0;
 
 import { NextRequest, NextResponse } from "next/server";
 import OpenAI from "openai";
+import sharp from "sharp";
 import { z } from "zod";
 
 import { apiError } from "@/lib/apiError";
@@ -470,10 +471,26 @@ export async function POST(request: NextRequest) {
       throw new Error(`Failed to fetch image: ${imageResponse.status}`);
     }
     const imageBuffer = await imageResponse.arrayBuffer();
-    const base64Image = Buffer.from(imageBuffer).toString("base64");
+    let contentType = imageResponse.headers.get("content-type") || "image/jpeg";
+    let processedBuffer: Buffer = Buffer.from(imageBuffer);
 
-    // Determine content type
-    const contentType = imageResponse.headers.get("content-type") || "image/jpeg";
+    // OpenAI only supports JPEG, PNG, GIF, WEBP — NOT HEIC
+    // Convert unsupported formats (HEIC, TIFF, BMP) to JPEG
+    const unsupportedFormats = ["image/heic", "image/heif", "image/tiff", "image/bmp"];
+    if (
+      unsupportedFormats.includes(contentType.toLowerCase()) ||
+      validated.imageUrl.toLowerCase().includes(".heic") ||
+      validated.imageUrl.toLowerCase().includes(".heif")
+    ) {
+      logger.info("[PHOTO_ANNOTATE] Converting unsupported format to JPEG", {
+        originalType: contentType,
+        photoId: validated.photoId,
+      });
+      processedBuffer = await sharp(processedBuffer).jpeg({ quality: 90 }).toBuffer();
+      contentType = "image/jpeg";
+    }
+
+    const base64Image = processedBuffer.toString("base64");
     const dataUrl = `data:${contentType};base64,${base64Image}`;
 
     // Build jurisdiction context for prompts
