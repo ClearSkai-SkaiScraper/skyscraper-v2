@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 
 import { getOrgClaimOrThrow, OrgScopeError } from "@/lib/auth/orgScope";
 import { withAuth } from "@/lib/auth/withAuth";
+import { onDocumentUploaded } from "@/lib/claimiq/readiness-hooks";
 import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 
@@ -171,6 +172,9 @@ export const POST = withAuth(
           updatedAt: new Date(),
         },
       });
+
+      // Fire ClaimIQ readiness refresh (non-blocking)
+      onDocumentUploaded(claimId, orgId, userId, "document").catch(() => {});
 
       return NextResponse.json({
         success: true,

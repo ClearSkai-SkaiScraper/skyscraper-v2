@@ -30,8 +30,9 @@ export async function GET(_request: NextRequest, { params }: { params: { claimId
     }
 
     const readiness = await assessClaimReadiness(claimId, orgId);
+    const scoreImpacts = predictScoreImpacts(readiness);
 
-    return NextResponse.json(readiness);
+    return NextResponse.json({ ...readiness, scoreImpacts });
   } catch (error) {
     logger.error("[CLAIMIQ_READINESS] Error:", error);
     return NextResponse.json(

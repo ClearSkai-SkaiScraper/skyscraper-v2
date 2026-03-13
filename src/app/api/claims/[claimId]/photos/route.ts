@@ -15,6 +15,7 @@
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
+import { onPhotosUploaded } from "@/lib/claimiq/readiness-hooks";
 import { logger } from "@/lib/logger";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -245,6 +246,9 @@ export const POST = withAuth(
           updatedAt: new Date(),
         },
       });
+
+      // Fire ClaimIQ readiness refresh (non-blocking)
+      onPhotosUploaded(claimId, orgId, userId, 1).catch(() => {});
 
       return NextResponse.json({
         success: true,

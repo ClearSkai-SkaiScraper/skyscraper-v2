@@ -18,6 +18,7 @@ import { NextRequest, NextResponse } from "next/server";
 
 import { getOrgClaimOrThrow, OrgScopeError } from "@/lib/auth/orgScope";
 import { withAuth } from "@/lib/auth/withAuth";
+import { onClaimUpdated } from "@/lib/claimiq/readiness-hooks";
 import { logger } from "@/lib/logger";
 import { notifyManagersOfSubmission } from "@/lib/notifications/notifyManagers";
 import prisma from "@/lib/prisma";
@@ -203,6 +204,11 @@ export const PATCH = withAuth(
             claimId,
           });
         }
+      }
+
+      // Fire ClaimIQ readiness refresh (non-blocking)
+      if (Object.keys(updateData).length > 0) {
+        onClaimUpdated(claimId, orgId, userId, Object.keys(updateData)).catch(() => {});
       }
 
       return NextResponse.json({ success: true, claim: updated });

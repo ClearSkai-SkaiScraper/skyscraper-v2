@@ -12,6 +12,7 @@ import {
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
+import { AnalyticsDashboard } from "@/components/claimiq/AnalyticsDashboard";
 import { PageContainer } from "@/components/layout/PageContainer";
 import { PageHero } from "@/components/layout/PageHero";
 import { Button } from "@/components/ui/button";
@@ -328,6 +329,9 @@ export default async function AnalyticsDashboardPage() {
           </div>
         </div>
       </div>
+
+      {/* ClaimIQ Readiness Analytics */}
+      <AnalyticsDashboard className="mb-8" />
 
       {/* Quick Navigation */}
       <div>

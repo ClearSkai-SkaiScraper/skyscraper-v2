@@ -628,3 +628,84 @@ function buildSection(
 function compact<T>(arr: (T | false | null | undefined | 0 | "")[]): T[] {
   return arr.filter(Boolean) as T[];
 }
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Score-Impact Predictor
+// ─────────────────────────────────────────────────────────────────────────────
+
+export interface ScoreImpactItem {
+  /** The missing item text */
+  missingItem: string;
+  /** Which section this belongs to */
+  sectionKey: string;
+  sectionLabel: string;
+  /** Current section completeness */
+  currentCompleteness: number;
+  /** Estimated new section completeness if fixed */
+  estimatedCompleteness: number;
+  /** Estimated overall score boost (0-100 scale) */
+  scoreBoost: number;
+  /** Whether this can be auto-fixed by Autopilot */
+  canAutoFix: boolean;
+  /** Estimated time to fix (minutes) */
+  estimatedMinutes: number;
+}
+
+/**
+ * Predict the score impact of fixing each missing item.
+ * Returns items sorted by highest impact first.
+ */
+export function predictScoreImpacts(readiness: ClaimIQReadiness): ScoreImpactItem[] {
+  const totalSections = readiness.sections.length;
+  const impacts: ScoreImpactItem[] = [];
+
+  for (const section of readiness.sections) {
+    if (section.missingItems.length === 0) continue;
+
+    const totalItems = section.availableSources.length + section.missingItems.length;
+
+    for (const item of section.missingItems) {
+      // Estimate: fixing one item adds ~1/totalItems to section completeness
+      const itemContribution = totalItems > 0 ? (1 / totalItems) * 100 : 25;
+      const newCompleteness = Math.min(100, section.completeness + Math.round(itemContribution));
+      const completenessGain = newCompleteness - section.completeness;
+      // Impact on overall score: section contributes 1/totalSections of overall
+      const scoreBoost = Math.round(completenessGain / totalSections);
+
+      // Auto-fixable heuristic
+      const normalizedItem = item.toLowerCase();
+      const canAutoFix =
+        normalizedItem.includes("weather") ||
+        normalizedItem.includes("photo analysis") ||
+        normalizedItem.includes("damage report") ||
+        normalizedItem.includes("justification") ||
+        normalizedItem.includes("code compliance") ||
+        normalizedItem.includes("damage grids") ||
+        normalizedItem.includes("auto-");
+
+      // Time estimate based on item type
+      let estimatedMinutes = 5;
+      if (canAutoFix) estimatedMinutes = 1;
+      else if (normalizedItem.includes("upload")) estimatedMinutes = 3;
+      else if (normalizedItem.includes("signature")) estimatedMinutes = 10;
+      else if (normalizedItem.includes("homeowner")) estimatedMinutes = 15;
+      else if (normalizedItem.includes("scope") || normalizedItem.includes("estimate"))
+        estimatedMinutes = 20;
+
+      impacts.push({
+        missingItem: item,
+        sectionKey: section.key,
+        sectionLabel: section.label,
+        currentCompleteness: section.completeness,
+        estimatedCompleteness: newCompleteness,
+        scoreBoost: Math.max(1, scoreBoost),
+        canAutoFix,
+        estimatedMinutes,
+      });
+    }
+  }
+
+  return impacts.sort(
+    (a, b) => b.scoreBoost - a.scoreBoost || a.estimatedMinutes - b.estimatedMinutes
+  );
+}

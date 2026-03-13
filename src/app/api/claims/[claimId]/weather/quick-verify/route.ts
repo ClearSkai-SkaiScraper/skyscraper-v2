@@ -30,6 +30,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getOpenAI } from "@/lib/ai/client";
 import { getOrgClaimOrThrow, OrgScopeError } from "@/lib/auth/orgScope";
 import { withAuth } from "@/lib/auth/withAuth";
+import { onWeatherVerified } from "@/lib/claimiq/readiness-hooks";
 import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 import { htmlToPdfBuffer } from "@/lib/reports/pdf-utils";
@@ -278,6 +279,9 @@ Format your response as JSON:
         format: "Letter",
         margin: { top: "0.3in", right: "0.4in", bottom: "0.3in", left: "0.4in" },
       });
+
+      // Fire ClaimIQ readiness refresh (non-blocking)
+      onWeatherVerified(claimId, orgId, userId).catch(() => {});
 
       // Return PDF as download
       return new NextResponse(pdfBuffer as unknown as BodyInit, {
