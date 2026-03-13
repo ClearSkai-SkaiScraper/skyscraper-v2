@@ -19,9 +19,9 @@
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
+import heicConvert from "heic-convert";
 import { NextRequest, NextResponse } from "next/server";
 import OpenAI from "openai";
-import sharp from "sharp";
 import { z } from "zod";
 
 import { apiError } from "@/lib/apiError";
@@ -475,19 +475,30 @@ export async function POST(request: NextRequest) {
     let processedBuffer: Buffer = Buffer.from(imageBuffer);
 
     // OpenAI only supports JPEG, PNG, GIF, WEBP — NOT HEIC
-    // Convert unsupported formats (HEIC, TIFF, BMP) to JPEG
-    const unsupportedFormats = ["image/heic", "image/heif", "image/tiff", "image/bmp"];
-    if (
-      unsupportedFormats.includes(contentType.toLowerCase()) ||
+    // Use heic-convert (pure JS/WASM) for HEIC since sharp needs native libheif
+    const isHeic =
+      contentType.toLowerCase().includes("heic") ||
+      contentType.toLowerCase().includes("heif") ||
       validated.imageUrl.toLowerCase().includes(".heic") ||
-      validated.imageUrl.toLowerCase().includes(".heif")
-    ) {
-      logger.info("[PHOTO_ANNOTATE] Converting unsupported format to JPEG", {
+      validated.imageUrl.toLowerCase().includes(".heif");
+
+    if (isHeic) {
+      logger.info("[PHOTO_ANNOTATE] Converting HEIC to JPEG", {
         originalType: contentType,
         photoId: validated.photoId,
       });
-      processedBuffer = await sharp(processedBuffer).jpeg({ quality: 90 }).toBuffer();
-      contentType = "image/jpeg";
+      try {
+        const jpegBuffer = await heicConvert({
+          buffer: processedBuffer,
+          format: "JPEG",
+          quality: 0.9,
+        });
+        processedBuffer = Buffer.from(jpegBuffer);
+        contentType = "image/jpeg";
+      } catch (heicError) {
+        logger.error("[PHOTO_ANNOTATE] HEIC conversion failed", { error: heicError });
+        throw new Error("Failed to convert HEIC image. Please upload a JPEG or PNG version.");
+      }
     }
 
     const base64Image = processedBuffer.toString("base64");
