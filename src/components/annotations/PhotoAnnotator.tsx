@@ -167,7 +167,7 @@ export function PhotoAnnotator({
   >("select");
   const [selectedColor, setSelectedColor] = useState("#ef4444");
   const [selectedDamageType, setSelectedDamageType] = useState("Hail Impact");
-  const [selectedIRCCode, setSelectedIRCCode] = useState<IRCCodeKey | "">("");
+  const [selectedIRCCode, setSelectedIRCCode] = useState<IRCCodeKey | "_none">("_none");
   const [selectedAnnotation, setSelectedAnnotation] = useState<string | null>(null);
   const [isDrawing, setIsDrawing] = useState(false);
   const [currentPath, setCurrentPath] = useState<{ x: number; y: number }[]>([]);
@@ -696,7 +696,7 @@ export function PhotoAnnotator({
             points: currentPath,
             color: selectedColor,
             damageType: selectedDamageType,
-            ircCode: selectedIRCCode || undefined,
+            ircCode: selectedIRCCode === "_none" ? undefined : selectedIRCCode || undefined,
           },
         ]);
       } else if (selectedTool === "circle" && startPoint) {
@@ -712,7 +712,7 @@ export function PhotoAnnotator({
               radius: r,
               color: selectedColor,
               damageType: selectedDamageType,
-              ircCode: selectedIRCCode || undefined,
+              ircCode: selectedIRCCode === "_none" ? undefined : selectedIRCCode || undefined,
             },
           ]);
         }
@@ -731,7 +731,7 @@ export function PhotoAnnotator({
               height: Math.abs(height),
               color: selectedColor,
               damageType: selectedDamageType,
-              ircCode: selectedIRCCode || undefined,
+              ircCode: selectedIRCCode === "_none" ? undefined : selectedIRCCode || undefined,
             },
           ]);
         }
@@ -921,13 +921,13 @@ export function PhotoAnnotator({
 
           <Select
             value={selectedIRCCode}
-            onValueChange={(v) => setSelectedIRCCode(v as IRCCodeKey)}
+            onValueChange={(v) => setSelectedIRCCode(v as IRCCodeKey | "_none")}
           >
             <SelectTrigger className="w-[150px]">
               <SelectValue placeholder="IRC Code" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">No Code</SelectItem>
+              <SelectItem value="_none">No Code</SelectItem>
               {Object.entries(IRC_CODES).map(([key, value]) => (
                 <SelectItem key={key} value={key}>
                   {value.code}

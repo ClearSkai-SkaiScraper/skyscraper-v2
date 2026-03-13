@@ -1855,7 +1855,7 @@ function PhotosSection({ claimId }: { claimId: string }) {
 
                   {/* Analyze overlay for non-analyzed photos */}
                   {!photo.analyzed && (
-                    <div className="absolute inset-0 flex items-center justify-center bg-black/50 opacity-0 transition-opacity group-hover:opacity-100">
+                    <div className="pointer-events-none absolute inset-0 flex items-center justify-center bg-black/50 opacity-0 transition-opacity group-hover:opacity-100">
                       <Button
                         size="sm"
                         onClick={(e) => {
@@ -1863,7 +1863,7 @@ function PhotosSection({ claimId }: { claimId: string }) {
                           handleAnalyzePhoto(photo.id);
                         }}
                         disabled={analyzingPhotoId === photo.id}
-                        className="bg-purple-600 hover:bg-purple-700"
+                        className="pointer-events-auto bg-purple-600 hover:bg-purple-700"
                       >
                         {analyzingPhotoId === photo.id ? (
                           <>

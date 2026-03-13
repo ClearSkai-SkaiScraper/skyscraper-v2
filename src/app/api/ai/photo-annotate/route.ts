@@ -512,16 +512,28 @@ export async function POST(request: NextRequest) {
 
     const content = response.choices[0]?.message?.content || "{}";
 
+    // Log raw AI response for debugging
+    logger.info("[PHOTO_ANNOTATE] AI Response received", {
+      photoId: validated.photoId,
+      componentType: validated.componentType,
+      claimType: validated.claimType,
+      responseLength: content.length,
+      previewFirst500: content.substring(0, 500),
+    });
+
     // Parse JSON from response
     const jsonMatch = content.match(/\{[\s\S]*\}/);
     if (!jsonMatch) {
-      logger.warn("[PHOTO_ANNOTATE] No JSON in response", { content: content.substring(0, 200) });
+      logger.warn("[PHOTO_ANNOTATE] No JSON in response", {
+        content: content.substring(0, 500),
+        photoId: validated.photoId,
+      });
       return NextResponse.json({
         success: true,
         annotations: [],
         slopeData: null,
         materialAnalysis: null,
-        overallCaption: "No damage detected",
+        overallCaption: "AI could not parse damage from this image. Try a clearer photo.",
       });
     }
 
@@ -529,6 +541,15 @@ export async function POST(request: NextRequest) {
     const detections = parsed.detections || [];
     const slopeData = parsed.slopeAnalysis || null;
     const materialAnalysis = parsed.materialAnalysis || null;
+
+    // Log detection results
+    logger.info("[PHOTO_ANNOTATE] Detections parsed", {
+      photoId: validated.photoId,
+      detectionCount: detections.length,
+      componentType: validated.componentType,
+      claimType: validated.claimType,
+      materialIdentified: materialAnalysis?.primaryMaterial,
+    });
 
     // Convert detections to annotations format
     const annotations: AnnotationResponse[] = (detections as DamageDetection[]).map(
@@ -1484,6 +1505,16 @@ function buildSidingPrompt(claimType: string): string {
   const hailSpecific =
     claimType === "hail" || claimType === "storm"
       ? `
+⚠️ THIS IS A HAIL CLAIM — The homeowner reported hail damage. You MUST find evidence.
+
+STUCCO HAIL DAMAGE (MOST COMMONLY MISSED BY ADJUSTERS):
+- Circular divots/chips in random pattern = HAIL HITS (not settlement cracks)
+- Look for FRESH exposed aggregate or lighter colored substrate
+- Even TINY circular marks (1/4" diameter) are hail impacts — mark them ALL
+- Stucco absorbs impact energy — damage may be subtle texture changes
+- Check around windows, corners, and any horizontal surfaces
+- Use type "hail_impact" or "stucco_damage" — NEVER "spatter"
+
 HAIL DAMAGE SIGNATURES (use correct damage types):
 - Vinyl: Cracks, holes, chips along exposure → "hail_impact"
 - Fiber cement: Corner chips, cracks, divots → "hail_impact"
@@ -1499,20 +1530,26 @@ CRITICAL DISTINCTION:
 - NEVER call stucco chips/divots "spatter" — they are IMPACTS
 - NEVER call trim cracking/chipping "spatter" — they are IMPACTS
 
+AGGRESSIVENESS: Document EVERY potential damage point. When in doubt, mark it.
+Insurance adjusters will verify — your job is to find ALL possibilities.
+
 BOUNDING BOX SIZE:
 - Each box should FULLY encompass the damaged area (not just a tiny dot)
 - Minimum width/height: 3% of image for visible damage points
 - For paint chips on trim, box the ENTIRE chip area, not just the center point`
       : "";
 
-  return `Analyze this siding/exterior wall photo.
+  return `Analyze this siding/exterior wall photo for an ACTIVE INSURANCE CLAIM.
+
+⚠️ IMPORTANT: This photo was submitted as part of a damage claim. The homeowner believes damage exists.
+Your job is to FIND and DOCUMENT all damage, even subtle marks. Over-document rather than under-document.
 
 IDENTIFY SIDING TYPE:
 - Vinyl siding (lap, shake, board & batten)
 - Fiber cement (Hardie board, lap, shake, panel)
 - Wood siding (clapboard, shake, board & batten)
 - Aluminum siding
-- Stucco/EIFS
+- Stucco/EIFS — LOOK CAREFULLY for circular divots/chips
 - Brick veneer
 
 ${hailSpecific}
@@ -1526,6 +1563,9 @@ DAMAGE PATTERNS TO IDENTIFY:
 - Rot or deterioration (wood)
 - Delamination (fiber cement)
 - Mortar/pointing damage (brick)
+- Circular divots in stucco (HAIL!)
+- Paint chips on trim
+- Any texture irregularities
 
 Return JSON:
 {
@@ -1701,7 +1741,17 @@ function buildWindowPrompt(claimType: string): string {
   const hailSpecific =
     claimType === "hail"
       ? `
-HAIL DAMAGE SIGNATURES (CRITICAL — DOCUMENT EVERY HIT):
+⚠️ THIS IS A HAIL CLAIM — The homeowner reported hail damage to windows/trim. You MUST find evidence.
+
+WINDOW TRIM HAIL DAMAGE (FREQUENTLY MISSED):
+- Paint chips showing bare wood/substrate = HAIL IMPACT
+- Each chip is a SEPARATE detection — mark them ALL individually
+- Look for CIRCULAR impact patterns (not linear weathering)
+- Fresh chips have BRIGHT exposed substrate (white/tan wood)
+- Older chips may be grayed but are still hail damage
+- Check ALL horizontal surfaces: sills, brick mold, drip caps
+
+HAIL DAMAGE SIGNATURES (DOCUMENT EVERY HIT):
 - Impact cracks in glass (star, bulls-eye patterns)
 - Chips in glass edges or corners
 - Dents in aluminum frames
@@ -1712,10 +1762,15 @@ HAIL DAMAGE SIGNATURES (CRITICAL — DOCUMENT EVERY HIT):
 - Look for FRESH exposed substrate (bright white/light color = recent hail)
 - Casing/brick mold: circular chips, cracks radiating from impact point
 - Drip cap dents above window
-- Window sill: chips, dents, paint displacement from hail strikes`
+- Window sill: chips, dents, paint displacement from hail strikes
+
+AGGRESSIVENESS: If you see ANY paint chip on trim, DOCUMENT IT. Insurance will verify.`
       : "";
 
-  return `You are an expert property damage assessor. Analyze this WINDOW photo with extreme precision.
+  return `Analyze this WINDOW photo for an ACTIVE INSURANCE CLAIM.
+
+⚠️ IMPORTANT: This photo was submitted as part of a damage claim. The homeowner believes damage exists.
+Your job is to FIND and DOCUMENT all damage, especially on window TRIM. Over-document rather than under-document.
 
 IDENTIFY WINDOW TYPE:
 - Single-hung, Double-hung, Casement, Sliding, Fixed, Bay/Bow
@@ -1838,18 +1893,26 @@ Return JSON:
 
 function buildGeneralPrompt(claimType: string): string {
   const claimContext = {
-    hail: "Focus on hail impact patterns: circular dents/bruises, chips, divots. CRITICAL DAMAGE TYPE RULES: (1) 'hail_impact' = physical damage to material (chips in stucco, cracks in trim, dents in metal, divots in siding) — use for ALL solid material damage. (2) 'hail_spatter' = ONLY for tiny paint-only marks on smooth PAINTED METAL surfaces (gutters, AC units, downspouts). (3) NEVER use 'spatter' for stucco chips, trim cracking, siding damage, or anything that involves material damage beyond just paint. SOFT METAL DAMAGE IS THE #1 HAIL INDICATOR. Make bounding boxes large enough to clearly encompass each damage area (minimum 3% of image).",
+    hail: "CRITICAL: This is a HAIL CLAIM - the homeowner reported HAIL DAMAGE. You MUST find hail damage evidence. Look for: circular chips/divots in STUCCO (even tiny ones), paint chips on window TRIM showing wood substrate, dents in any soft metal, granule loss on shingles. DAMAGE TYPE RULES: (1) 'hail_impact' = ALL material damage (chips, cracks, dents, divots) on stucco, trim, siding, metal. (2) 'hail_spatter' = ONLY tiny paint-only marks on smooth PAINTED METAL. (3) NEVER use 'spatter' for stucco/trim/siding material damage. Draw boxes around EVERY impact mark - even small circular discolorations or subtle texture changes could be hail hits. MINIMUM 5 detections expected for any surface with hail exposure.",
     wind: "Focus on torn/lifted materials, displaced items, directional damage patterns, structural shifts, debris impacts",
     fire: "Focus on charring, smoke damage, heat warping, discoloration, fire suppression water damage",
     water:
       "Focus on staining, warping, mold, rot, water lines, paint bubbling/peeling, efflorescence, water intrusion behind awnings/overhangs",
     storm:
-      "Look for ALL damage: hail impacts on EVERY surface (including soft metals like mailboxes, AC units, electrical boxes), wind damage, water intrusion, debris damage, screen punctures, furniture damage",
+      "STORM CLAIM - Look for ALL damage: hail impacts on EVERY surface (stucco chips, trim paint chips, soft metal dents), wind damage, water intrusion. Be AGGRESSIVE - insurance adjusters want to see EVERY hit documented.",
     general:
-      "Identify all visible damage regardless of cause — be extremely thorough and aggressive. Check EVERY surface: soft metals, paint, trim, screens, furniture",
+      "Identify ALL visible damage - be EXTREMELY thorough. This photo is from an insurance claim - the homeowner believes there IS damage. Your job is to FIND and DOCUMENT it. Check EVERY surface: soft metals, paint, trim, stucco, screens. Even small marks matter for claims.",
   };
 
-  return `You are the WORLD'S BEST property damage analyzer — a HAAG Engineering certified assessor for insurance claims. You are more thorough than any human inspector.
+  return `You are the WORLD'S BEST property damage analyzer — a HAAG Engineering certified assessor for insurance claims.
+
+⚠️ CRITICAL INSTRUCTION: This photo is from an ACTIVE INSURANCE CLAIM. The property owner believes there IS damage.
+Your job is to find and document ALL damage, not to determine if damage exists. When in doubt, MARK IT.
+Insurance adjusters need EVERY potential damage point documented — they will verify in person.
+
+AGGRESSIVENESS LEVEL: MAXIMUM
+If you see ANY mark, discoloration, texture change, or irregularity — DOCUMENT IT with a bounding box.
+It's better to over-document than to miss damage that costs the homeowner money.
 
 CLAIM TYPE: ${claimType.toUpperCase()}
 ${claimContext[claimType as keyof typeof claimContext] || claimContext.general}
@@ -1857,7 +1920,9 @@ ${claimContext[claimType as keyof typeof claimContext] || claimContext.general}
 FIRST - Identify what you're looking at (be specific about material/type):
 - Roof (asphalt shingle, tile, metal standing seam/corrugated, TPO/EPDM, slate, wood shake)
 - Siding (vinyl, fiber cement/Hardie, wood, stucco, EIFS, aluminum, brick veneer)
+- Stucco / EIFS wall — VERY IMPORTANT: Look for circular divots, chips, impact marks in random pattern
 - Window (glass, frame type: vinyl/aluminum/wood, trim, casings, brick mold, sills)
+- Window TRIM — CRITICAL: Look for paint chips showing wood/substrate, cracks from impacts
 - Screen (window, door, porch/patio, solar)
 - Door / Garage Door (steel, aluminum, wood, composite, fiberglass)
 - Gutter / Downspout (aluminum, vinyl, steel, copper, half-round/K-style)

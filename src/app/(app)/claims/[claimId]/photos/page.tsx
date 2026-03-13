@@ -421,6 +421,7 @@ export default function PhotosPage() {
 
       // Determine severity from annotations
       const severity = determineSeverityFromAnnotations(data.annotations);
+      const detectionCount = data.annotations?.length || 0;
 
       setPhotos((prev) =>
         prev.map((p) =>
@@ -457,7 +458,15 @@ export default function PhotosPage() {
         )
       );
 
-      toast.success("AI analysis complete");
+      // Provide detailed feedback based on results
+      if (detectionCount > 0) {
+        toast.success(`AI found ${detectionCount} damage area${detectionCount > 1 ? "s" : ""}`);
+      } else {
+        toast.info(
+          "No damage detected. Try uploading a closer photo or check lighting conditions.",
+          { duration: 5000 }
+        );
+      }
     } catch (error) {
       logger.error("Analyze error:", error);
       toast.error("Failed to run AI analysis. Please try again.");
