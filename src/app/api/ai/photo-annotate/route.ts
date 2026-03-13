@@ -92,6 +92,10 @@ const RequestSchema = z.object({
   claimType: z.enum(["hail", "wind", "fire", "water", "storm", "general"]).default("general"),
   // NEW: Flag for thermal/infrared images
   isThermalImage: z.boolean().default(false),
+  // NEW: Claim property context for jurisdiction-aware codes
+  claimCity: z.string().optional(),
+  claimState: z.string().optional(),
+  propertyType: z.string().optional(),
 });
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -453,6 +457,9 @@ export async function POST(request: NextRequest) {
       componentType: validated.componentType,
       claimType: validated.claimType,
       isThermal: validated.isThermalImage,
+      city: validated.claimCity,
+      state: validated.claimState,
+      propertyType: validated.propertyType,
     });
 
     const openai = getOpenAI();
@@ -469,13 +476,21 @@ export async function POST(request: NextRequest) {
     const contentType = imageResponse.headers.get("content-type") || "image/jpeg";
     const dataUrl = `data:${contentType};base64,${base64Image}`;
 
+    // Build jurisdiction context for prompts
+    const jurisdictionContext = buildJurisdictionContext(
+      validated.claimCity,
+      validated.claimState,
+      validated.roofType
+    );
+
     // Build comprehensive prompt for damage detection
     const prompt = buildAnnotationPrompt(
       validated.roofType,
       validated.includeSlopes,
       validated.componentType,
       validated.claimType,
-      validated.isThermalImage
+      validated.isThermalImage,
+      jurisdictionContext
     );
 
     // Build specialized system prompt based on analysis type
@@ -1146,41 +1161,46 @@ function buildAnnotationPrompt(
   includeSlopes: boolean,
   componentType: string = "roof",
   claimType: string = "general",
-  isThermalImage: boolean = false
+  isThermalImage: boolean = false,
+  jurisdictionContext: string = ""
 ): string {
+  // Append jurisdiction context to any prompt
+  const addJurisdiction = (prompt: string) =>
+    jurisdictionContext ? `${prompt}\n\n${jurisdictionContext}` : prompt;
+
   // Thermal imaging analysis prompt
   if (isThermalImage) {
-    return buildThermalPrompt();
+    return addJurisdiction(buildThermalPrompt());
   }
 
   // Fire damage analysis prompt
   if (claimType === "fire") {
-    return buildFireDamagePrompt();
+    return addJurisdiction(buildFireDamagePrompt());
   }
 
   // Water damage analysis prompt
   if (claimType === "water") {
-    return buildWaterDamagePrompt();
+    return addJurisdiction(buildWaterDamagePrompt());
   }
 
   // Component-specific prompts
   if (componentType === "siding") {
-    return buildSidingPrompt(claimType);
+    return addJurisdiction(buildSidingPrompt(claimType));
   }
   if (componentType === "hvac") {
-    return buildHVACPrompt(claimType);
+    return addJurisdiction(buildHVACPrompt(claimType));
   }
   if (componentType === "gutter") {
-    return buildGutterPrompt(claimType);
+    return addJurisdiction(buildGutterPrompt(claimType));
   }
   if (componentType === "window") {
-    return buildWindowPrompt(claimType);
+    return addJurisdiction(buildWindowPrompt(claimType));
   }
   if (componentType === "screen") {
-    return buildScreenPrompt(claimType);
+    return addJurisdiction(buildScreenPrompt(claimType));
   }
   if (componentType === "general") {
-    return buildGeneralPrompt(claimType);
+    return addJurisdiction(buildGeneralPrompt(claimType));
   }
   // Route new component types to the general prompt (which handles everything)
   if (
@@ -1191,11 +1211,11 @@ function buildAnnotationPrompt(
     componentType === "garage_door" ||
     componentType === "downspout"
   ) {
-    return buildGeneralPrompt(claimType);
+    return addJurisdiction(buildGeneralPrompt(claimType));
   }
 
   // Default: Comprehensive roofing analysis prompt
-  return buildRoofingPrompt(roofType, includeSlopes, claimType);
+  return addJurisdiction(buildRoofingPrompt(roofType, includeSlopes, claimType));
 }
 
 function buildRoofingPrompt(roofType: string, includeSlopes: boolean, claimType: string): string {
@@ -2036,6 +2056,121 @@ Return JSON:
 // ═══════════════════════════════════════════════════════════════════════════════
 // HELPER FUNCTIONS
 // ═══════════════════════════════════════════════════════════════════════════════
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// JURISDICTION-SPECIFIC BUILDING CODE CONTEXT
+// Appended to prompts when city/state is known
+// ═══════════════════════════════════════════════════════════════════════════════
+function buildJurisdictionContext(city?: string, state?: string, roofType?: string): string {
+  if (!state) return "";
+
+  const parts: string[] = [];
+  parts.push(`\n═══ JURISDICTION CONTEXT ═══`);
+  parts.push(`Property Location: ${city ? `${city}, ` : ""}${state}`);
+
+  const st = state.toLowerCase();
+
+  if (st === "arizona" || st === "az") {
+    parts.push(
+      `\nARIZONA BUILDING CODES (Arizona Residential Code — based on 2018 IRC with local amendments):`
+    );
+    parts.push(
+      `• ARC R905 — Roof assemblies (Arizona adopts IRC Chapter 9 with amendments for desert climate)`
+    );
+    parts.push(
+      `• ARC R703.7 — Stucco/Portland Cement Plaster (VERY COMMON in AZ — inspect carefully for hail divots)`
+    );
+    parts.push(`• ARC R703.3-11 — Wall covering standards`);
+    parts.push(`• ARC R308 — Glazing/Window requirements`);
+    parts.push(`• A.R.S. §20-461 — Insurance bad faith statute (document ALL damage thoroughly)`);
+    parts.push(
+      `• AZ has NO licensing requirement for public adjusters — contractors must be ROC licensed`
+    );
+
+    // City-specific
+    if (city) {
+      const c = city.toLowerCase();
+      if (
+        c.includes("phoenix") ||
+        c.includes("mesa") ||
+        c.includes("tempe") ||
+        c.includes("scottsdale") ||
+        c.includes("chandler") ||
+        c.includes("gilbert") ||
+        c.includes("glendale")
+      ) {
+        parts.push(`\nMaricopa County Specifics:`);
+        parts.push(`• Maricopa County requires engineered plans for re-roofing over 500 sq ft`);
+        parts.push(`• City of ${city} building permit required for roof replacement`);
+        parts.push(
+          `• Monsoon season (June-Sept) = primary hail damage period — document thoroughly`
+        );
+        parts.push(
+          `• Stucco is the DOMINANT exterior material — hail chips/divots are the #1 claim item`
+        );
+        parts.push(`• Tile roofs extremely common — check for cracked/broken tiles from hail`);
+      } else if (
+        c.includes("tucson") ||
+        c.includes("oro valley") ||
+        c.includes("marana") ||
+        c.includes("vail") ||
+        c.includes("sahuarita")
+      ) {
+        parts.push(`\nPima County Specifics:`);
+        parts.push(`• Pima County adopts IRC 2018 with local amendments`);
+        parts.push(`• Building permit required for roof replacement`);
+        parts.push(`• High UV exposure — distinguish sun/age damage from storm damage`);
+        parts.push(`• Stucco dominant — look for hail divots in random circular pattern`);
+      } else if (
+        c.includes("flagstaff") ||
+        c.includes("prescott") ||
+        c.includes("sedona") ||
+        c.includes("cottonwood") ||
+        c.includes("payson")
+      ) {
+        parts.push(`\nNorthern AZ / High Country Specifics:`);
+        parts.push(`• Coconino/Yavapai County — heavier snow loads, ice dam requirements`);
+        parts.push(`• IRC R905.2.7.1 ice barrier requirements APPLY in this area`);
+        parts.push(`• More asphalt shingle roofs than Valley — inspect for granule loss`);
+        parts.push(`• Wood siding more common — check for hail impact dents/gouges`);
+      }
+    }
+
+    // Roof-type specific AZ notes
+    if (roofType) {
+      const rt = roofType.toLowerCase();
+      if (
+        rt.includes("tile") ||
+        rt.includes("clay") ||
+        rt.includes("concrete") ||
+        rt.includes("spanish")
+      ) {
+        parts.push(
+          `\nAZ Tile Roof Notes: Tile is extremely common in AZ. Check for cracked/broken tiles, displaced tiles, damaged underlayment beneath tiles. IRC R905.3 applies.`
+        );
+      } else if (
+        rt.includes("flat") ||
+        rt.includes("membrane") ||
+        rt.includes("tpo") ||
+        rt.includes("epdm") ||
+        rt.includes("modified") ||
+        rt.includes("built")
+      ) {
+        parts.push(
+          `\nAZ Flat/Low-Slope Roof Notes: Common on commercial and some residential. Check for membrane punctures, blistering, ponding water. IRC R905.9/R905.11-13 applies. NOT shingle — do NOT reference IRC R905.2.`
+        );
+      } else if (rt.includes("foam")) {
+        parts.push(
+          `\nAZ Spray Foam Roof Notes: Very common in AZ. Check for hail impact divots in foam surface, coating damage, granule loss on coated surfaces. Requires recoating every 5-7 years.`
+        );
+      }
+    }
+  }
+
+  // More states can be added here as needed
+
+  return parts.join("\n");
+}
 
 function determineCodeFromType(damageTypeKey: string): string {
   // Fallback code determination based on damage type patterns

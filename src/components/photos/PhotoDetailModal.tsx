@@ -3,7 +3,12 @@
 import { Download, Edit3, Loader2, Sparkles } from "lucide-react";
 import { useCallback, useState } from "react";
 
-import { PhotoAnnotator } from "@/components/annotations/PhotoAnnotator";
+import {
+  Annotation,
+  IRC_CODES,
+  IRCCodeKey,
+  PhotoAnnotator,
+} from "@/components/annotations/PhotoAnnotator";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -15,70 +20,6 @@ import {
 } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { logger } from "@/lib/logger";
-
-// IRC Building Codes for roofing damage
-const IRC_CODES = {
-  shingle_damage: {
-    code: "IRC R905.2.7",
-    title: "Asphalt Shingle Application",
-    text: "Asphalt shingles shall be applied per manufacturer installation instructions and ASTM D3462.",
-  },
-  underlayment: {
-    code: "IRC R905.1.1",
-    title: "Underlayment Requirements",
-    text: "Underlayment shall comply with ASTM D226, D4869, or D6757 for asphalt-saturated felt.",
-  },
-  flashing: {
-    code: "IRC R905.2.8",
-    title: "Flashing Requirements",
-    text: "Flashings shall be installed at wall and roof intersections, changes in roof slope, and around roof openings.",
-  },
-  drip_edge: {
-    code: "IRC R905.2.8.5",
-    title: "Drip Edge",
-    text: "A drip edge shall be provided at eaves and rakes of shingle roofs.",
-  },
-  ventilation: {
-    code: "IRC R806.1",
-    title: "Ventilation Required",
-    text: "Enclosed attics and rafter spaces shall have cross ventilation with a minimum net free ventilating area of 1/150.",
-  },
-  ice_barrier: {
-    code: "IRC R905.2.7.1",
-    title: "Ice Barrier",
-    text: "Ice barriers shall extend from the eave's edge to a point 24 inches inside the exterior wall line.",
-  },
-  nail_pattern: {
-    code: "IRC R905.2.6",
-    title: "Fastener Requirements",
-    text: "Shingle fasteners shall be corrosion-resistant, minimum 12 gauge shank, 3/8 inch head diameter.",
-  },
-  hail_damage: {
-    code: "IRC R903.2",
-    title: "Roof Covering Materials",
-    text: "Roof coverings shall be designed for weather protection and the specific application.",
-  },
-} as const;
-
-type IRCCodeKey = keyof typeof IRC_CODES;
-
-interface Annotation {
-  id: string;
-  type: "circle" | "rectangle" | "freehand" | "text" | "ai_detection";
-  x: number;
-  y: number;
-  width?: number;
-  height?: number;
-  radius?: number;
-  points?: { x: number; y: number }[];
-  text?: string;
-  color: string;
-  damageType?: string;
-  severity?: "Low" | "Medium" | "High" | "Critical";
-  ircCode?: IRCCodeKey;
-  caption?: string;
-  confidence?: number;
-}
 
 interface AICaption {
   materialType?: string;

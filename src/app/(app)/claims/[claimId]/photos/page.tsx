@@ -94,6 +94,13 @@ export default function PhotosPage() {
   const [selectMode, setSelectMode] = useState(false);
   const [batchDeleting, setBatchDeleting] = useState(false);
   const [claimDamageType, setClaimDamageType] = useState<string | null>(null);
+  const [claimContext, setClaimContext] = useState<{
+    roofType?: string | null;
+    propertyType?: string | null;
+    city?: string | null;
+    state?: string | null;
+    zipCode?: string | null;
+  }>({});
 
   const fetchPhotos = useCallback(async () => {
     if (!claimId) return;
@@ -112,6 +119,7 @@ export default function PhotosPage() {
       if (Array.isArray(data.photos)) {
         setPhotos(data.photos);
         if (data.claimDamageType) setClaimDamageType(data.claimDamageType);
+        if (data.claimContext) setClaimContext(data.claimContext);
       } else {
         logger.error("Unexpected photos response shape", data);
         toast.error("Unexpected response format when loading photos");
@@ -360,6 +368,32 @@ export default function PhotosPage() {
         componentType = "general";
       }
 
+      // Map property roofType to API enum value
+      const mapRoofType = (rt?: string | null) => {
+        if (!rt) return "unknown";
+        const lower = rt.toLowerCase();
+        if (lower.includes("flat") || lower.includes("membrane")) return "flat_membrane";
+        if (lower.includes("tpo")) return "tpo";
+        if (lower.includes("epdm")) return "epdm";
+        if (lower.includes("modified") || lower.includes("bitumen")) return "modified_bitumen";
+        if (lower.includes("built") || lower.includes("bur")) return "built_up";
+        if (lower.includes("metal") && lower.includes("standing")) return "metal_standing_seam";
+        if (lower.includes("metal") && lower.includes("corrugat")) return "metal_corrugated";
+        if (lower.includes("metal")) return "metal_standing_seam";
+        if (lower.includes("tile") && lower.includes("clay")) return "tile_clay";
+        if (lower.includes("tile") && lower.includes("concrete")) return "tile_concrete";
+        if (lower.includes("tile") && lower.includes("spanish")) return "tile_spanish";
+        if (lower.includes("tile")) return "tile_concrete";
+        if (lower.includes("slate")) return "slate";
+        if (lower.includes("shake") || lower.includes("wood")) return "wood_shake";
+        if (lower.includes("synthetic")) return "synthetic_shake";
+        if (lower.includes("composite")) return "composite";
+        if (lower.includes("shingle") || lower.includes("asphalt")) return "asphalt_shingle";
+        return "unknown";
+      };
+
+      const resolvedRoofType = mapRoofType(claimContext.roofType);
+
       // Use the new AI annotation endpoint with smart detection
       const res = await fetch("/api/ai/photo-annotate", {
         method: "POST",
@@ -368,9 +402,13 @@ export default function PhotosPage() {
           imageUrl: photo.publicUrl,
           photoId: photo.id,
           includeSlopes: componentType === "roof",
-          roofType: "asphalt_shingle",
+          roofType: resolvedRoofType,
           componentType: componentType,
           claimType: claimType,
+          // Pass claim context for jurisdiction-aware codes
+          claimCity: claimContext.city || undefined,
+          claimState: claimContext.state || undefined,
+          propertyType: claimContext.propertyType || undefined,
         }),
       });
 
@@ -386,7 +424,7 @@ export default function PhotosPage() {
       // Save annotations - convert from AI percentages (0-100) to pixel space (800×600)
       // The GET endpoint divides by 800/600 to normalize back to 0-1 fractions for display
       if (data.annotations && data.annotations.length > 0) {
-        const annotations = data.annotations.map(
+        const aiAnnotations = data.annotations.map(
           (
             ann: Annotation & {
               x: number;
@@ -412,16 +450,44 @@ export default function PhotosPage() {
           })
         );
 
+        // Merge: keep existing MANUAL annotations, replace only AI annotations
+        const existingManual = (photo.annotations || []).filter(
+          (a: Annotation) => a.type !== "ai_detection"
+        );
+        const mergedAnnotations = [...existingManual, ...aiAnnotations];
+
         await fetch(`/api/claims/photos/${photo.id}/annotations`, {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ annotations }),
+          body: JSON.stringify({ annotations: mergedAnnotations }),
         });
       }
 
       // Determine severity from annotations
       const severity = determineSeverityFromAnnotations(data.annotations);
       const detectionCount = data.annotations?.length || 0;
+
+      // Build merged annotations for state (keep manual + new AI)
+      const existingManualForState = (photo.annotations || []).filter(
+        (a: Annotation) => a.type !== "ai_detection"
+      );
+      const newAiForState = (data.annotations || []).map(
+        (ann: Annotation & { x: number; y: number; width: number; height: number }) => ({
+          id: ann.id,
+          type: "ai_detection",
+          x: (ann.x / 100) * 800,
+          y: (ann.y / 100) * 600,
+          width: (ann.width / 100) * 800,
+          height: (ann.height / 100) * 600,
+          color: getSeverityColorHex(ann.severity),
+          damageType: ann.damageType,
+          severity: ann.severity,
+          ircCode: ann.ircCode,
+          caption: ann.caption,
+          confidence: ann.confidence,
+        })
+      );
+      const stateAnnotations = [...existingManualForState, ...newAiForState];
 
       setPhotos((prev) =>
         prev.map((p) =>
@@ -435,8 +501,20 @@ export default function PhotosPage() {
                   summary: data.overallCaption,
                   damageType: data.annotations?.[0]?.damageType,
                   applicableCode: data.annotations?.[0]?.ircCode,
+                  // Auto-fill from AI materialAnalysis response
+                  materialType: data.materialAnalysis?.primaryMaterial
+                    ? `${data.materialAnalysis.primaryMaterial}${data.materialAnalysis.materialSubtype ? ` — ${data.materialAnalysis.materialSubtype}` : ""}`
+                    : undefined,
+                  // Auto-fill functional impact from overallAssessment
+                  functionalImpact:
+                    data.overallAssessment?.haagClassification ||
+                    data.overallAssessment?.recommendedAction ||
+                    (data.overallAssessment?.highestSeverity === "Critical" ||
+                    data.overallAssessment?.highestSeverity === "High"
+                      ? `Functional damage — ${data.overallAssessment?.primaryDamageType || "replacement"} recommended`
+                      : undefined),
                 },
-                annotations: data.annotations,
+                annotations: stateAnnotations,
                 damageBoxes: data.annotations?.map(
                   (ann: {
                     x: number;

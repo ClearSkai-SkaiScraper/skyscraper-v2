@@ -22,13 +22,16 @@ import { Button } from "@/components/ui/button";
 import {
   Select,
   SelectContent,
+  SelectGroup,
   SelectItem,
+  SelectLabel,
+  SelectSeparator,
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 
-// IRC Building Codes for roofing damage
+// IRC Building Codes for property damage
 const IRC_CODES = {
   shingle_damage: {
     code: "IRC R905.2.7",
@@ -70,9 +73,121 @@ const IRC_CODES = {
     title: "Roof Covering Materials",
     text: "Roof coverings shall be designed for weather protection and the specific application.",
   },
+  // ─── METAL ROOFING ──────────────────────────────────────────────────────────
+  metal_damage: {
+    code: "IRC R905.10",
+    title: "Metal Roof Shingles/Panels",
+    text: "Metal roof panels shall comply with ASTM E1514 or E1592 and withstand design loads.",
+  },
+  // ─── TILE ROOFING ───────────────────────────────────────────────────────────
+  tile_damage: {
+    code: "IRC R905.3",
+    title: "Clay & Concrete Tile",
+    text: "Clay and concrete tile shall comply with ASTM C1167 (clay) or C1492 (concrete).",
+  },
+  // ─── MEMBRANE/FLAT ROOFING ──────────────────────────────────────────────────
+  membrane_damage: {
+    code: "IRC R905.9-13",
+    title: "Membrane Roofing Systems",
+    text: "TPO, EPDM, PVC, and modified bitumen roofing shall comply with respective ASTM standards.",
+  },
+  // ─── WOOD ───────────────────────────────────────────────────────────────────
+  wood_damage: {
+    code: "IRC R905.7-8",
+    title: "Wood Shingles/Shakes",
+    text: "Wood shingles/shakes shall be of naturally durable wood or pressure-treated.",
+  },
+  // ─── SIDING & STUCCO ───────────────────────────────────────────────────────
+  siding_damage: {
+    code: "IRC R703.3-11",
+    title: "Wall Covering Standards",
+    text: "Exterior wall coverings shall provide weather protection per IRC Chapter 7.",
+  },
+  stucco_damage: {
+    code: "IRC R703.7",
+    title: "Stucco/Portland Cement Plaster",
+    text: "Stucco shall be a minimum of 7/8 inch thick, applied over corrosion-resistant lath. Common in AZ — inspect for hail divots.",
+  },
+  // ─── WINDOW & GLAZING ──────────────────────────────────────────────────────
+  window_damage: {
+    code: "IRC R308",
+    title: "Glazing Requirements",
+    text: "Safety glazing required in hazardous locations. Window damage affects building envelope integrity.",
+  },
+  // ─── GUTTERS ────────────────────────────────────────────────────────────────
+  gutter_damage: {
+    code: "IRC R903.4",
+    title: "Roof Drainage",
+    text: "Roof drainage shall be adequate to prevent damage to adjacent building elements and structures.",
+  },
+  // ─── HVAC ───────────────────────────────────────────────────────────────────
+  hvac_damage: {
+    code: "IRC M1401",
+    title: "HVAC General Requirements",
+    text: "HVAC equipment shall be installed per manufacturer instructions and applicable codes.",
+  },
+  // ─── SCREEN ─────────────────────────────────────────────────────────────────
+  screen_damage: {
+    code: "IRC R303.8",
+    title: "Required Window Openings",
+    text: "Screen damage affects insect protection for required operable openings.",
+  },
+  // ─── SOFT METALS ────────────────────────────────────────────────────────────
+  soft_metal_damage: {
+    code: "IRC R903.2",
+    title: "Soft Metal Damage (Hail Indicator)",
+    text: "Dents on gutters, downspouts, mailboxes, and AC units are primary hail indicators per HAAG standards.",
+  },
+  // ─── GARAGE DOOR ────────────────────────────────────────────────────────────
+  garage_door_damage: {
+    code: "IRC R309.1",
+    title: "Garage Door Protection",
+    text: "Garage doors shall be rated for wind zones per IRC requirements.",
+  },
+  // ─── EXTERIOR ───────────────────────────────────────────────────────────────
+  exterior_damage: {
+    code: "IRC R301.2",
+    title: "Exterior Property Damage",
+    text: "Exterior structures shall be designed for local climatic and environmental conditions.",
+  },
+  // ─── STRUCTURAL ─────────────────────────────────────────────────────────────
+  structural: {
+    code: "IRC R802.1",
+    title: "Roof Framing Requirements",
+    text: "Roof framing shall be designed per IRC Chapter 8 for applicable loads.",
+  },
+  // ─── WATER DAMAGE ───────────────────────────────────────────────────────────
+  water_damage: {
+    code: "IRC R703.1",
+    title: "Weather Protection",
+    text: "Exterior walls shall provide weather protection. Water intrusion indicates envelope failure.",
+  },
+  // ─── FIRE DAMAGE ────────────────────────────────────────────────────────────
+  fire_damage: {
+    code: "IBC Chapter 7",
+    title: "Fire and Smoke Protection",
+    text: "Fire damage assessment per IBC Chapter 7 fire-resistance requirements.",
+  },
+  // ─── ARIZONA SPECIFIC ───────────────────────────────────────────────────────
+  az_stucco: {
+    code: "ARC R703.7",
+    title: "AZ Stucco Requirements",
+    text: "Arizona Residential Code R703.7 — Stucco/Portland Cement Plaster per 2018 IRC with AZ amendments. Hail divots in stucco are the #1 claim item in Maricopa County.",
+  },
+  az_roofing: {
+    code: "ARC R905",
+    title: "AZ Roof Assemblies",
+    text: "Arizona adopts IRC Chapter 9 with amendments for desert climate. Tile roofs require engineered plans for re-roofing over 500 sq ft in Maricopa County.",
+  },
+  az_bad_faith: {
+    code: "A.R.S. §20-461",
+    title: "AZ Insurance Bad Faith",
+    text: "Arizona Revised Statutes §20-461 — Insurance companies must handle claims in good faith. Thorough damage documentation is critical.",
+  },
 } as const;
 
-type IRCCodeKey = keyof typeof IRC_CODES;
+export type IRCCodeKey = keyof typeof IRC_CODES;
+export { IRC_CODES };
 
 export interface Annotation {
   id: string;
@@ -923,16 +1038,104 @@ export function PhotoAnnotator({
             value={selectedIRCCode}
             onValueChange={(v) => setSelectedIRCCode(v as IRCCodeKey | "_none")}
           >
-            <SelectTrigger className="w-[150px]">
+            <SelectTrigger className="w-[180px]">
               <SelectValue placeholder="IRC Code" />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent className="max-h-[320px]">
               <SelectItem value="_none">No Code</SelectItem>
-              {Object.entries(IRC_CODES).map(([key, value]) => (
-                <SelectItem key={key} value={key}>
-                  {value.code}
-                </SelectItem>
-              ))}
+              <SelectSeparator />
+              <SelectGroup>
+                <SelectLabel className="text-xs text-muted-foreground">Roofing</SelectLabel>
+                {(
+                  [
+                    "shingle_damage",
+                    "underlayment",
+                    "flashing",
+                    "drip_edge",
+                    "ventilation",
+                    "ice_barrier",
+                    "nail_pattern",
+                    "hail_damage",
+                    "metal_damage",
+                    "tile_damage",
+                    "membrane_damage",
+                    "wood_damage",
+                  ] as IRCCodeKey[]
+                ).map((key) => (
+                  <SelectItem key={key} value={key} title={IRC_CODES[key].text}>
+                    <span className="flex flex-col">
+                      <span className="text-xs font-medium">{IRC_CODES[key].code}</span>
+                      <span className="text-[10px] text-muted-foreground">
+                        {IRC_CODES[key].title}
+                      </span>
+                    </span>
+                  </SelectItem>
+                ))}
+              </SelectGroup>
+              <SelectSeparator />
+              <SelectGroup>
+                <SelectLabel className="text-xs text-muted-foreground">Exterior</SelectLabel>
+                {(
+                  [
+                    "siding_damage",
+                    "stucco_damage",
+                    "window_damage",
+                    "gutter_damage",
+                    "garage_door_damage",
+                    "exterior_damage",
+                    "soft_metal_damage",
+                  ] as IRCCodeKey[]
+                ).map((key) => (
+                  <SelectItem key={key} value={key} title={IRC_CODES[key].text}>
+                    <span className="flex flex-col">
+                      <span className="text-xs font-medium">{IRC_CODES[key].code}</span>
+                      <span className="text-[10px] text-muted-foreground">
+                        {IRC_CODES[key].title}
+                      </span>
+                    </span>
+                  </SelectItem>
+                ))}
+              </SelectGroup>
+              <SelectSeparator />
+              <SelectGroup>
+                <SelectLabel className="text-xs text-muted-foreground">
+                  Systems & Structure
+                </SelectLabel>
+                {(
+                  [
+                    "hvac_damage",
+                    "screen_damage",
+                    "structural",
+                    "water_damage",
+                    "fire_damage",
+                  ] as IRCCodeKey[]
+                ).map((key) => (
+                  <SelectItem key={key} value={key} title={IRC_CODES[key].text}>
+                    <span className="flex flex-col">
+                      <span className="text-xs font-medium">{IRC_CODES[key].code}</span>
+                      <span className="text-[10px] text-muted-foreground">
+                        {IRC_CODES[key].title}
+                      </span>
+                    </span>
+                  </SelectItem>
+                ))}
+              </SelectGroup>
+              <SelectSeparator />
+              <SelectGroup>
+                <SelectLabel className="text-xs text-muted-foreground">
+                  Arizona Specific
+                </SelectLabel>
+                {(["az_stucco", "az_roofing", "az_bad_faith"] as IRCCodeKey[]).map((key) => (
+                  <SelectItem key={key} value={key} title={IRC_CODES[key].text}>
+                    <span className="flex flex-col">
+                      <span className="text-xs font-medium">{IRC_CODES[key].code}</span>
+                      <span className="text-[10px] text-muted-foreground">
+                        {IRC_CODES[key].title}
+                      </span>
+                    </span>
+                  </SelectItem>
+                ))}
+              </SelectGroup>
             </SelectContent>
           </Select>
         </div>

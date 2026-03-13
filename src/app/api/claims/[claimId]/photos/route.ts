@@ -35,8 +35,22 @@ export const GET = withAuth(
     try {
       const { claimId } = await routeParams.params;
 
-      // Verify claim belongs to org and get damageType for AI analysis
+      // Verify claim belongs to org and get damageType + property context for AI analysis
       const claim = await getOrgClaimOrThrow(orgId, claimId);
+
+      // Fetch property data for AI context (roofType, city, state)
+      const property = claim.propertyId
+        ? await prisma.properties.findFirst({
+            where: { id: claim.propertyId, orgId },
+            select: {
+              roofType: true,
+              propertyType: true,
+              city: true,
+              state: true,
+              zipCode: true,
+            },
+          })
+        : null;
 
       const photos = await prisma.file_assets.findMany({
         where: {
@@ -54,6 +68,13 @@ export const GET = withAuth(
       return NextResponse.json({
         success: true,
         claimDamageType: claim.damageType || null,
+        claimContext: {
+          roofType: property?.roofType || null,
+          propertyType: property?.propertyType || null,
+          city: property?.city || null,
+          state: property?.state || null,
+          zipCode: property?.zipCode || null,
+        },
         photos: photos.map((p) => {
           // Parse metadata for annotations
           const metadata = (p.metadata as Record<string, unknown>) || {};
