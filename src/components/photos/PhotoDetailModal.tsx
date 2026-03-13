@@ -167,8 +167,34 @@ export function PhotoDetailModal({
         });
 
         if (res.ok) {
+          // Build damageBoxes from annotations for display overlay
+          // Annotations are stored in pixel space (0-800, 0-600)
+          // DamageBoxes need to be 0-1 fractions for CSS positioning
+          const damageBoxes = annotations.map((ann) => {
+            // Handle circles (x,y is center, has radius)
+            if (ann.type === "circle" && ann.radius) {
+              const r = ann.radius;
+              return {
+                x: (ann.x - r) / 800,
+                y: (ann.y - r) / 600,
+                w: (r * 2) / 800,
+                h: (r * 2) / 600,
+                label: ann.caption || ann.damageType || "Damage",
+              };
+            }
+            // Handle rectangles/ai_detection (x,y is top-left, has width/height)
+            return {
+              x: ann.x / 800,
+              y: ann.y / 600,
+              w: (ann.width || 50) / 800,
+              h: (ann.height || 50) / 600,
+              label: ann.caption || ann.damageType || "Damage",
+            };
+          });
+
           onPhotoUpdate(photo.id, {
             annotations,
+            damageBoxes,
             analyzed: true,
           });
         }
