@@ -1055,13 +1055,14 @@ export default function PhotosPage() {
               </div>
 
               {/* Analyze / Reanalyze button for all photos on hover */}
-              <div className="absolute inset-0 flex items-center justify-center bg-black/50 opacity-0 transition-opacity group-hover:opacity-100">
+              <div className="pointer-events-none absolute inset-0 flex items-center justify-center bg-black/50 opacity-0 transition-opacity group-hover:opacity-100">
                 <Button
                   size="sm"
                   variant={photo.analyzed ? "outline" : "default"}
-                  className={
+                  className={cn(
+                    "pointer-events-auto",
                     photo.analyzed ? "border-white/60 bg-white/20 text-white hover:bg-white/30" : ""
-                  }
+                  )}
                   onClick={(e) => {
                     e.stopPropagation();
                     handleAnalyze(photo.id);
