@@ -694,11 +694,258 @@ export async function GET(
         };
         break;
       }
-      default:
-        // For sections without dedicated fetchers, return placeholder
+      case "executive-summary": {
+        // Auto-fill from claim + weather + photos
+        const claimRes = await fetchClaimData(claimId);
+        const weather = await fetchWeatherData(claimId);
+        const photos = await fetchPhotos(claimId);
         data = {
-          message: `Section "${section}" data will be populated from claim data`,
+          propertyAddress: claimRes.coverSheet?.propertyAddress || null,
+          dateOfLoss: claimRes.coverSheet?.dateOfLoss || null,
+          stormType: weather?.stormType || null,
+          damageOverview: weather?.narrativeSummary || null,
+          scopeSummary: null,
+          totalEstimate: null,
+          recommendation: null,
+          photoCount: photos.length,
+          _missingFields: [
+            ...(!claimRes.coverSheet?.propertyAddress ? ["Property address"] : []),
+            ...(!weather?.narrativeSummary ? ["Weather narrative — run weather verification"] : []),
+            ...(photos.length === 0 ? ["Inspection photos — upload photos"] : []),
+          ],
+          _canAutoGenerate: true,
+        };
+        break;
+      }
+      case "damage-grids": {
+        // Auto-fill from analyzed photos with YOLO detections
+        const analyzedPhotos = await prisma.file_assets.findMany({
+          where: {
+            claimId,
+            mimeType: { startsWith: "image/" },
+            metadata: { not: { equals: undefined } },
+          },
+          select: { id: true, note: true, metadata: true, publicUrl: true },
+        });
+
+        const grids = analyzedPhotos
+          .filter((p) => {
+            const meta = p.metadata as Record<string, unknown> | null;
+            return meta && (meta.damageBoxes || meta.yoloResults || meta.detections);
+          })
+          .map((p) => {
+            const meta = p.metadata as Record<string, unknown>;
+            return {
+              photoId: p.id,
+              photoUrl: p.publicUrl,
+              label: p.note || "Analyzed photo",
+              detections: meta.damageBoxes || meta.yoloResults || meta.detections || [],
+            };
+          });
+
+        data = {
+          grids,
+          totalAnalyzed: analyzedPhotos.length,
+          withDetections: grids.length,
+          _missingFields: [
+            ...(analyzedPhotos.length === 0 ? ["Analyzed photos — run AI photo analysis"] : []),
+            ...(grids.length === 0 && analyzedPhotos.length > 0
+              ? ["No damage detections found — re-run analysis"]
+              : []),
+          ],
+          _canAutoGenerate: false,
+        };
+        break;
+      }
+      case "repair-justification": {
+        // Auto-fill from justification reports in file_assets
+        const justDoc = await prisma.file_assets.findFirst({
+          where: { claimId, file_type: "JUSTIFICATION" },
+          orderBy: { createdAt: "desc" },
+          select: { id: true, note: true, publicUrl: true, createdAt: true, metadata: true },
+        });
+        const weather = await fetchWeatherData(claimId);
+        data = {
+          hasJustificationReport: !!justDoc,
+          reportId: justDoc?.id || null,
+          reportUrl: justDoc?.publicUrl || null,
+          reportTitle: justDoc?.note || null,
+          generatedAt: justDoc?.createdAt || null,
+          weatherVerified: !!weather,
+          _missingFields: [
+            ...(!justDoc ? ["Justification report — generate from Documents tab"] : []),
+            ...(!weather ? ["Weather verification — run weather check"] : []),
+          ],
+          _canAutoGenerate: true,
+        };
+        break;
+      }
+      case "contractor-summary": {
+        // Auto-fill from org profile
+        const orgProfile = await prisma.org.findFirst({
+          where: {
+            user_organizations: { some: { userId: authResult.userId } },
+          },
+          select: {
+            name: true,
+            brandLogoUrl: true,
+          },
+        });
+        data = {
+          contractorName: orgProfile?.name || null,
+          logoUrl: orgProfile?.brandLogoUrl || null,
+          licenseNumber: null,
+          insuranceInfo: null,
+          phone: null,
+          email: null,
+          _missingFields: [
+            ...(!orgProfile?.name ? ["Company name — update org profile"] : []),
+            "License number (manual entry)",
+            "Insurance info (manual entry)",
+          ],
+          _canAutoGenerate: false,
+        };
+        break;
+      }
+      case "homeowner-statement": {
+        // Auto-fill homeowner name from claim
+        const claimRes2 = await fetchClaimData(claimId);
+        data = {
+          homeownerName: claimRes2.coverSheet?.policyholderName || null,
+          statementText: null,
+          signedDate: null,
+          _missingFields: [
+            "Homeowner statement text (must be provided by homeowner)",
+            ...(!claimRes2.coverSheet?.policyholderName ? ["Homeowner name"] : []),
+          ],
+          _canAutoGenerate: false,
+        };
+        break;
+      }
+      case "adjuster-cover-letter": {
+        // Auto-fill from claim + org
+        const claimRes3 = await fetchClaimData(claimId);
+        const claim3 = await prisma.claims.findUnique({
+          where: { id: claimId },
+          select: { carrier: true, adjusterName: true, adjusterEmail: true },
+        });
+        data = {
+          carrier: claim3?.carrier || null,
+          adjusterName: claim3?.adjusterName || null,
+          adjusterEmail: claim3?.adjusterEmail || null,
+          propertyAddress: claimRes3.coverSheet?.propertyAddress || null,
+          claimNumber: claimRes3.coverSheet?.claimNumber || null,
+          _missingFields: [
+            ...(!claim3?.carrier ? ["Insurance carrier"] : []),
+            ...(!claim3?.adjusterName ? ["Adjuster name (add to claim)"] : []),
+          ],
+          _canAutoGenerate: true,
+        };
+        break;
+      }
+      case "attachments": {
+        // Auto-fill from all file_assets for this claim
+        const allDocs = await prisma.file_assets.findMany({
+          where: { claimId },
+          orderBy: { createdAt: "desc" },
+          select: {
+            id: true,
+            note: true,
+            file_type: true,
+            mimeType: true,
+            sizeBytes: true,
+            publicUrl: true,
+            source: true,
+            createdAt: true,
+          },
+        });
+        data = {
+          documents: allDocs.map((d) => ({
+            id: d.id,
+            name: d.note || d.file_type || "Untitled",
+            type: d.mimeType || "unknown",
+            fileType: d.file_type,
+            size: d.sizeBytes ? `${(d.sizeBytes / 1024).toFixed(0)} KB` : "Unknown",
+            url: d.publicUrl,
+            source: d.source,
+            createdAt: d.createdAt,
+          })),
+          totalSize: allDocs.reduce((sum, d) => sum + (d.sizeBytes || 0), 0),
+          totalCount: allDocs.length,
+          _missingFields: allDocs.length === 0 ? ["No documents uploaded yet"] : [],
+          _canAutoGenerate: false,
+        };
+        break;
+      }
+      case "table-of-contents": {
+        // Auto-generate from section completeness
+        const sectionKeys = [
+          "cover-sheet",
+          "table-of-contents",
+          "executive-summary",
+          "weather-cause-of-loss",
+          "inspection-overview",
+          "damage-grids",
+          "photo-evidence",
+          "code-compliance",
+          "scope-pricing",
+          "repair-justification",
+          "contractor-summary",
+          "timeline",
+          "homeowner-statement",
+          "adjuster-cover-letter",
+          "claim-checklist",
+          "digital-signatures",
+          "attachments",
+        ];
+        const tocSections = sectionKeys.map((key, idx) => ({
+          title: key
+            .split("-")
+            .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+            .join(" "),
+          page: idx + 1,
+          section: key,
+        }));
+        data = {
+          sections: tocSections,
+          totalSections: tocSections.length,
+          generatedAt: new Date().toISOString(),
+          _missingFields: [],
+          _canAutoGenerate: true,
+        };
+        break;
+      }
+      case "claim-checklist": {
+        // Auto-derive from existing data completeness
+        const claimCheck = await prisma.claims.findUnique({
+          where: { id: claimId },
+          select: { dateOfLoss: true, carrier: true, insured_name: true, policy_number: true },
+        });
+        const weatherCheck = await fetchWeatherData(claimId);
+        const photosCheck = await fetchPhotos(claimId);
+        const scopeCheck = await fetchScopeData(claimId);
+        data = {
+          items: [
+            { label: "Date of loss recorded", complete: !!claimCheck?.dateOfLoss },
+            { label: "Insurance carrier identified", complete: !!claimCheck?.carrier },
+            { label: "Insured name provided", complete: !!claimCheck?.insured_name },
+            { label: "Policy number on file", complete: !!claimCheck?.policy_number },
+            { label: "Weather verification run", complete: !!weatherCheck },
+            { label: "Photos uploaded", complete: photosCheck.length > 0 },
+            { label: "Scope / estimate created", complete: !!scopeCheck },
+          ],
+          _missingFields: [],
+          _canAutoGenerate: true,
+        };
+        break;
+      }
+      default:
+        // For truly unknown sections, return empty with guidance
+        data = {
+          message: `Section "${section}" has no data source configured`,
           claimId,
+          _missingFields: ["This section is not yet configured"],
+          _canAutoGenerate: false,
         };
     }
 

@@ -1,11 +1,12 @@
 "use client";
-import { FileCheck, FileText, Loader2 } from "lucide-react";
+import { FileCheck, FileText, Loader2, Shield, Sparkles } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 import ClientDocumentSharing from "@/components/claims/ClientDocumentSharing";
 import { DocActionsMenu } from "@/components/documents/DocActionsMenu";
 import { DocumentForwardButton } from "@/components/documents/DocumentForwardButton";
+import { DocumentOrganizer } from "@/components/documents/DocumentOrganizer";
 import { PageHero } from "@/components/layout/PageHero";
 import { Button } from "@/components/ui/button";
 import { DocumentUpload } from "@/components/uploads";
@@ -83,6 +84,7 @@ export default function ClaimDocumentsPage() {
   const getDocTypeLabel = (type: string) => {
     const labels: Record<string, string> = {
       DAMAGE_REPORT: "Damage Report",
+      JUSTIFICATION: "Justification Report",
       DEPRECIATION: "Depreciation Package",
       SUPPLEMENT: "Supplement Request",
       CERTIFICATE: "Completion Certificate",
@@ -97,6 +99,7 @@ export default function ClaimDocumentsPage() {
   const getDocTypeBadgeColor = (type: string) => {
     const colors: Record<string, string> = {
       DAMAGE_REPORT: "bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300",
+      JUSTIFICATION: "bg-violet-100 text-violet-700 dark:bg-violet-900 dark:text-violet-300",
       DEPRECIATION: "bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300",
       SUPPLEMENT: "bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300",
       CERTIFICATE: "bg-purple-100 text-purple-700 dark:bg-purple-900 dark:text-purple-300",
@@ -135,6 +138,35 @@ export default function ClaimDocumentsPage() {
     }
   };
 
+  // ── Justification Report Generator ──────────────────────────────────
+  const [generating, setGenerating] = useState(false);
+  const [genSuccess, setGenSuccess] = useState("");
+
+  async function handleGenerateJustification() {
+    if (!claimId || generating) return;
+    setGenerating(true);
+    setGenSuccess("");
+    try {
+      const res = await fetch(`/api/claims/${claimId}/justification`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+      });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.error || "Generation failed");
+      }
+      const data = await res.json();
+      setGenSuccess(data.documentTitle || "Justification Report generated!");
+      // Refresh document list to show the new doc
+      await fetchDocuments();
+    } catch (err) {
+      logger.error("[JUSTIFICATION] Generation error:", err);
+      alert(err instanceof Error ? err.message : "Failed to generate justification report");
+    } finally {
+      setGenerating(false);
+    }
+  }
+
   if (loading) {
     return (
       <div className="flex h-64 items-center justify-center">
@@ -156,12 +188,47 @@ export default function ClaimDocumentsPage() {
         subtitle="Generated PDFs, reports, and claim documents"
         icon={<FileText className="h-6 w-6" />}
         actions={
-          <Button onClick={() => router.push(`/claims/${claimId}/completion`)} className="gap-2">
-            <FileCheck className="h-5 w-5" />
-            Generate Documents
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button
+              onClick={handleGenerateJustification}
+              disabled={generating}
+              className="gap-2 bg-violet-600 hover:bg-violet-700"
+            >
+              {generating ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  Generating...
+                </>
+              ) : (
+                <>
+                  <Shield className="h-5 w-5" />
+                  Generate Justification Report
+                </>
+              )}
+            </Button>
+            <Button onClick={() => router.push(`/claims/${claimId}/completion`)} className="gap-2">
+              <FileCheck className="h-5 w-5" />
+              Generate Documents
+            </Button>
+          </div>
         }
       />
+
+      {/* Justification success banner */}
+      {genSuccess && (
+        <div className="mb-4 flex items-center gap-2 rounded-lg border border-violet-200 bg-violet-50 p-3 dark:border-violet-800 dark:bg-violet-950">
+          <Sparkles className="h-5 w-5 text-violet-600" />
+          <span className="text-sm font-medium text-violet-700 dark:text-violet-300">
+            {genSuccess} — saved to documents
+          </span>
+          <button
+            onClick={() => setGenSuccess("")}
+            className="ml-auto text-violet-500 hover:text-violet-700"
+          >
+            ✕
+          </button>
+        </div>
+      )}
 
       {/* Upload Component */}
       <div className="mb-8">
@@ -172,6 +239,18 @@ export default function ClaimDocumentsPage() {
       <div className="mb-8">
         <ClientDocumentSharing claimId={claimId!} onClientAdded={fetchDocuments} />
       </div>
+
+      {/* Document Organizer */}
+      {documents.length > 0 && (
+        <div className="mb-8">
+          <DocumentOrganizer
+            documents={documents}
+            onDocumentClick={(doc) => {
+              if (doc.publicUrl) window.open(doc.publicUrl, "_blank");
+            }}
+          />
+        </div>
+      )}
 
       {/* Error - show friendly message during deployment drift */}
       {error && error !== "TEMPORARY" && (

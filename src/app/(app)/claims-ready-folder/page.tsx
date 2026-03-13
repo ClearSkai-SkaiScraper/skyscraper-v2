@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * Claims-Ready Folder Page
+ * ClaimIQ Assembly Page
  * Carrier-compliant insurance packets—auto-assembled from inspection to submission
  */
 
@@ -344,8 +344,8 @@ export default function ClaimsReadyFolderPage() {
       {/* Hero Section */}
       <div className="mb-12">
         <PageHero
-          title="Claim Packet"
-          subtitle="Carrier-compliant insurance packets—auto-assembled from inspection to submission."
+          title="ClaimIQ Assembly"
+          subtitle="AI-powered claim packets—auto-assembled from inspection to carrier submission."
           icon={<FolderOpen className="h-5 w-5" />}
         />
 
@@ -384,8 +384,8 @@ export default function ClaimsReadyFolderPage() {
                 </>
               ) : (
                 <>
-                  <FolderOpen className="mr-2 h-5 w-5" />
-                  Generate Folder
+                  <Zap className="mr-2 h-5 w-5" />
+                  Build ClaimIQ Packet
                 </>
               )}
             </Button>
@@ -575,7 +575,7 @@ export default function ClaimsReadyFolderPage() {
       {/* Feature Highlights */}
       <div className="mt-12">
         <h2 className="mb-6 text-center text-2xl font-bold text-slate-900 dark:text-white">
-          Why Claims-Ready Folder?
+          Why ClaimIQ Assembly?
         </h2>
         <div className="grid gap-6 md:grid-cols-3">
           <Card className="border-none bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-950/30 dark:to-indigo-950/30">
@@ -629,9 +629,9 @@ export default function ClaimsReadyFolderPage() {
       <Dialog open={showSampleModal} onOpenChange={setShowSampleModal}>
         <DialogContent className="max-w-4xl">
           <DialogHeader>
-            <DialogTitle>Sample Claims-Ready Packet</DialogTitle>
+            <DialogTitle>Sample ClaimIQ Packet</DialogTitle>
             <DialogDescription>
-              Preview what a complete claims-ready folder looks like
+              Preview what a complete ClaimIQ assembly looks like
             </DialogDescription>
           </DialogHeader>
           <div className="max-h-[60vh] overflow-y-auto rounded-lg border border-slate-200 bg-slate-50 p-6 dark:border-slate-700 dark:bg-slate-900">

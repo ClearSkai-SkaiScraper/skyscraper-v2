@@ -11,6 +11,7 @@ import { safeClaimsSelect } from "@/lib/db/safeClaimsSelect";
 import { safeLeadsSelect } from "@/lib/db/safeLeadsSelect";
 import { getAllUserReports, UnifiedReport } from "@/lib/reports/getAllUserReports";
 import { CopyIdButton } from "./_components/CopyIdButton";
+import { ReportViewToggle } from "./_components/ReportViewToggle";
 
 function mapTypeLabel(t: UnifiedReport["type"]): { label: string; icon: React.ReactNode } {
   const base = <FileText className="h-4 w-4" />;
@@ -42,7 +43,7 @@ function mapTypeLabel(t: UnifiedReport["type"]): { label: string; icon: React.Re
     case "BAD_FAITH":
       return { label: "Bad Faith Analysis", icon: base };
     case "CLAIMS_PACKET":
-      return { label: "Claims Packet", icon: base };
+      return { label: "ClaimIQ Assembly", icon: base };
     default:
       return { label: "Report", icon: base };
   }
@@ -176,7 +177,7 @@ export default async function ReportHistoryPage({
                   <option value="CONTRACTOR_PACKET">Contractor Packet</option>
                   <option value="BID_PACKAGE">Bid Package</option>
                   <option value="MATERIALS_ESTIMATE">Materials Estimate</option>
-                  <option value="CLAIMS_PACKET">Claims Packet</option>
+                  <option value="CLAIMS_PACKET">ClaimIQ Assembly</option>
                 </optgroup>
                 <optgroup label="Other">
                   <option value="VIDEO_REPORT">Video Report</option>
@@ -236,128 +237,130 @@ export default async function ReportHistoryPage({
           <Button className="w-full md:w-auto">Apply Filters</Button>
         </form>
       </PageSectionCard>{" "}
-      {/* Report List */}
-      <PageSectionCard title={`Reports (${unified.length})`}>
-        {unified.length === 0 ? (
-          <div className="py-16 text-center">
-            <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-primary/10">
-              <FileText className="h-8 w-8 text-primary" />
+      {/* Report List — with Table/Folder view toggle */}
+      <ReportViewToggle reports={unified}>
+        <PageSectionCard title={`Reports (${unified.length})`}>
+          {unified.length === 0 ? (
+            <div className="py-16 text-center">
+              <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-primary/10">
+                <FileText className="h-8 w-8 text-primary" />
+              </div>
+              <h3 className="mb-2 text-xl font-semibold text-foreground">No reports found</h3>
+              <p className="mb-6 text-sm text-muted-foreground">
+                {q || typeFilter || claimFilter || leadFilter
+                  ? "Try adjusting your filters to see more results."
+                  : "Create your first report to get started."}
+              </p>
+              <Link href="/reports">
+                <Button className="gap-2">
+                  <FileText className="h-4 w-4" />
+                  Create Report
+                </Button>
+              </Link>
             </div>
-            <h3 className="mb-2 text-xl font-semibold text-foreground">No reports found</h3>
-            <p className="mb-6 text-sm text-muted-foreground">
-              {q || typeFilter || claimFilter || leadFilter
-                ? "Try adjusting your filters to see more results."
-                : "Create your first report to get started."}
-            </p>
-            <Link href="/reports">
-              <Button className="gap-2">
-                <FileText className="h-4 w-4" />
-                Create Report
-              </Button>
-            </Link>
-          </div>
-        ) : (
-          <div className="overflow-hidden rounded-xl border border-border">
-            <div className="sticky top-0 grid grid-cols-7 gap-4 bg-secondary px-4 py-3 text-xs font-semibold text-secondary-foreground">
-              <span className="col-span-2">Report</span>
-              <span>Claim / Lead</span>
-              <span>Created</span>
-              <span>Status</span>
-              <span>Source</span>
-              <span className="text-right">Actions</span>
-            </div>
-            {unified.map((r) => {
-              const { label, icon } = mapTypeLabel(r.type);
-              const status =
-                r.metadata?.status || (r.type === "AI_CLAIM_SCOPE" ? "Draft" : "Final");
-              const sourceLabel = r.source;
-              return (
-                <div
-                  key={r.id}
-                  className="grid grid-cols-7 gap-4 border-t border-[color:var(--border)] bg-[var(--surface-1)] px-4 py-3 text-xs hover:bg-[var(--surface-2)]"
-                >
-                  <div className="col-span-2 flex items-center gap-2">
-                    <div className="flex h-7 w-7 items-center justify-center rounded-md bg-indigo-500/10 text-indigo-600">
-                      {icon}
+          ) : (
+            <div className="overflow-hidden rounded-xl border border-border">
+              <div className="sticky top-0 grid grid-cols-7 gap-4 bg-secondary px-4 py-3 text-xs font-semibold text-secondary-foreground">
+                <span className="col-span-2">Report</span>
+                <span>Claim / Lead</span>
+                <span>Created</span>
+                <span>Status</span>
+                <span>Source</span>
+                <span className="text-right">Actions</span>
+              </div>
+              {unified.map((r) => {
+                const { label, icon } = mapTypeLabel(r.type);
+                const status =
+                  r.metadata?.status || (r.type === "AI_CLAIM_SCOPE" ? "Draft" : "Final");
+                const sourceLabel = r.source;
+                return (
+                  <div
+                    key={r.id}
+                    className="grid grid-cols-7 gap-4 border-t border-[color:var(--border)] bg-[var(--surface-1)] px-4 py-3 text-xs hover:bg-[var(--surface-2)]"
+                  >
+                    <div className="col-span-2 flex items-center gap-2">
+                      <div className="flex h-7 w-7 items-center justify-center rounded-md bg-indigo-500/10 text-indigo-600">
+                        {icon}
+                      </div>
+                      <div className="flex flex-col">
+                        <span className="font-medium">{r.title || label}</span>
+                        <span className="text-[10px] text-slate-700 dark:text-slate-300">
+                          {label}
+                        </span>
+                      </div>
                     </div>
-                    <div className="flex flex-col">
-                      <span className="font-medium">{r.title || label}</span>
+                    <div className="flex flex-col justify-center">
+                      {r.claimNumber ? (
+                        <span>#{r.claimNumber}</span>
+                      ) : r.claimId ? (
+                        <span>{r.claimId.slice(0, 8)}</span>
+                      ) : r.leadId ? (
+                        <span>{r.leadId.slice(0, 8)}</span>
+                      ) : (
+                        <span className="text-slate-700 dark:text-slate-300">—</span>
+                      )}
+                      {r.address && (
+                        <span className="max-w-[140px] truncate text-[10px] text-slate-700 dark:text-slate-300">
+                          {r.address}
+                        </span>
+                      )}
+                    </div>
+                    <div className="flex flex-col justify-center">
+                      <span>{new Date(r.createdAt).toLocaleDateString()}</span>
                       <span className="text-[10px] text-slate-700 dark:text-slate-300">
-                        {label}
+                        {new Date(r.createdAt).toLocaleTimeString()}
                       </span>
                     </div>
-                  </div>
-                  <div className="flex flex-col justify-center">
-                    {r.claimNumber ? (
-                      <span>#{r.claimNumber}</span>
-                    ) : r.claimId ? (
-                      <span>{r.claimId.slice(0, 8)}</span>
-                    ) : r.leadId ? (
-                      <span>{r.leadId.slice(0, 8)}</span>
-                    ) : (
-                      <span className="text-slate-700 dark:text-slate-300">—</span>
-                    )}
-                    {r.address && (
-                      <span className="max-w-[140px] truncate text-[10px] text-slate-700 dark:text-slate-300">
-                        {r.address}
+                    <div className="flex items-center">
+                      <span
+                        className={`rounded-full border px-2 py-1 text-[10px] ${status === "Final" ? "border-emerald-500/20 bg-emerald-500/10 text-emerald-600" : "border-yellow-500/20 bg-yellow-500/10 text-yellow-700"}`}
+                      >
+                        {status}
                       </span>
-                    )}
+                    </div>
+                    <div className="flex items-center">
+                      <span className="text-[10px] uppercase tracking-wide text-slate-700 dark:text-slate-300">
+                        {sourceLabel}
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-end gap-2">
+                      {r.url && (
+                        <a
+                          href={r.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex items-center gap-1 rounded-md bg-indigo-600 px-2 py-1 text-white"
+                        >
+                          <FileText className="h-3 w-3" /> View
+                        </a>
+                      )}
+                      {r.type === "AI_CLAIM_SCOPE" && r.claimId && (
+                        <Link
+                          href={`/reports/ai-claims-builder?claimId=${r.claimId}`}
+                          className="flex items-center gap-1 rounded-md border border-[color:var(--border)] px-2 py-1 text-slate-700 hover:border-indigo-500 hover:text-indigo-600 dark:text-slate-300"
+                          title="Re-open"
+                        >
+                          <ArrowUpRight className="h-3 w-3" /> Open
+                        </Link>
+                      )}
+                      {r.type === "RETAIL_PROPOSAL" && r.claimId && (
+                        <Link
+                          href={`/reports/retail?claimId=${r.claimId}`}
+                          className="flex items-center gap-1 rounded-md border border-[color:var(--border)] px-2 py-1 text-slate-700 hover:border-indigo-500 hover:text-indigo-600 dark:text-slate-300"
+                          title="Resume"
+                        >
+                          <ArrowUpRight className="h-3 w-3" /> Resume
+                        </Link>
+                      )}
+                      <CopyIdButton id={r.id} />
+                    </div>
                   </div>
-                  <div className="flex flex-col justify-center">
-                    <span>{new Date(r.createdAt).toLocaleDateString()}</span>
-                    <span className="text-[10px] text-slate-700 dark:text-slate-300">
-                      {new Date(r.createdAt).toLocaleTimeString()}
-                    </span>
-                  </div>
-                  <div className="flex items-center">
-                    <span
-                      className={`rounded-full border px-2 py-1 text-[10px] ${status === "Final" ? "border-emerald-500/20 bg-emerald-500/10 text-emerald-600" : "border-yellow-500/20 bg-yellow-500/10 text-yellow-700"}`}
-                    >
-                      {status}
-                    </span>
-                  </div>
-                  <div className="flex items-center">
-                    <span className="text-[10px] uppercase tracking-wide text-slate-700 dark:text-slate-300">
-                      {sourceLabel}
-                    </span>
-                  </div>
-                  <div className="flex items-center justify-end gap-2">
-                    {r.url && (
-                      <a
-                        href={r.url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="flex items-center gap-1 rounded-md bg-indigo-600 px-2 py-1 text-white"
-                      >
-                        <FileText className="h-3 w-3" /> View
-                      </a>
-                    )}
-                    {r.type === "AI_CLAIM_SCOPE" && r.claimId && (
-                      <Link
-                        href={`/reports/ai-claims-builder?claimId=${r.claimId}`}
-                        className="flex items-center gap-1 rounded-md border border-[color:var(--border)] px-2 py-1 text-slate-700 hover:border-indigo-500 hover:text-indigo-600 dark:text-slate-300"
-                        title="Re-open"
-                      >
-                        <ArrowUpRight className="h-3 w-3" /> Open
-                      </Link>
-                    )}
-                    {r.type === "RETAIL_PROPOSAL" && r.claimId && (
-                      <Link
-                        href={`/reports/retail?claimId=${r.claimId}`}
-                        className="flex items-center gap-1 rounded-md border border-[color:var(--border)] px-2 py-1 text-slate-700 hover:border-indigo-500 hover:text-indigo-600 dark:text-slate-300"
-                        title="Resume"
-                      >
-                        <ArrowUpRight className="h-3 w-3" /> Resume
-                      </Link>
-                    )}
-                    <CopyIdButton id={r.id} />
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        )}
-      </PageSectionCard>
+                );
+              })}
+            </div>
+          )}
+        </PageSectionCard>
+      </ReportViewToggle>
     </PageContainer>
   );
 }

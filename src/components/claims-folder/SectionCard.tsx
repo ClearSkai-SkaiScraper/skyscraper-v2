@@ -2,7 +2,7 @@
 
 /**
  * Section Card Component
- * Individual section in the Claims-Ready Folder grid
+ * Individual section in the ClaimIQ Assembly grid
  */
 
 import {

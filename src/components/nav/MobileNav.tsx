@@ -74,7 +74,7 @@ const navSections: NavSection[] = [
     items: [
       { label: "Active Claims", href: "/claims", icon: ClipboardList },
       { label: "Claims Timeline", href: "/analytics/claims-timeline", icon: Clock },
-      { label: "Claim Packet", href: "/claims-ready-folder", icon: FolderOpen },
+      { label: "ClaimIQ Assembly", href: "/claims-ready-folder", icon: FolderOpen },
       { label: "Supplement Builder", href: "/ai/tools/supplement", icon: Wrench },
       { label: "Supplement Tracker", href: "/supplements", icon: History },
       { label: "Depreciation Builder", href: "/ai/tools/depreciation", icon: Wrench },

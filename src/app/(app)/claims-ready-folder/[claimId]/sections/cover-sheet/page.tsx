@@ -267,7 +267,7 @@ export default function CoverSheetPage() {
         <CardContent>
           <div className="rounded-lg border border-slate-200 bg-white p-6 font-mono text-sm dark:border-slate-700 dark:bg-slate-900">
             <div className="mb-4 text-center text-lg font-bold uppercase tracking-wide">
-              Claims-Ready Folder Cover Sheet
+              Claims Documentation Packet — Cover Sheet
             </div>
             <hr className="my-4" />
             <div className="grid gap-2">

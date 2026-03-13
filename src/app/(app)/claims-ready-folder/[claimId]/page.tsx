@@ -28,6 +28,7 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
+import { ClaimIQDashboard } from "@/components/claimiq/ClaimIQDashboard";
 import ReadinessScore from "@/components/claims-folder/ReadinessScore";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -168,7 +169,7 @@ export default function ClaimFolderBuilderPage() {
       (Object.keys(SECTION_METADATA) as FolderSectionKey[]).filter((s) => ROUTED_SECTIONS.has(s))
     )
   );
-  const [activeTab, setActiveTab] = useState("overview");
+  const [activeTab, setActiveTab] = useState("claim-iq");
   const [exportDialogOpen, setExportDialogOpen] = useState(false);
   const [exporting, setExporting] = useState(false);
   const [generating, setGenerating] = useState<FolderSectionKey | null>(null);
@@ -323,7 +324,7 @@ export default function ClaimFolderBuilderPage() {
       <div className="flex min-h-[60vh] items-center justify-center">
         <div className="text-center">
           <Loader2 className="mx-auto mb-4 h-12 w-12 animate-spin text-blue-500" />
-          <p className="text-lg font-medium">Assembling Claims-Ready Folder...</p>
+          <p className="text-lg font-medium">Assembling ClaimIQ Packet...</p>
           <p className="text-sm text-slate-500">Gathering weather data, photos, codes & more</p>
         </div>
       </div>
@@ -364,7 +365,7 @@ export default function ClaimFolderBuilderPage() {
               </Button>
             </Link>
           </div>
-          <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Claims-Ready Folder</h1>
+          <h1 className="text-2xl font-bold text-slate-900 dark:text-white">ClaimIQ Assembly</h1>
           <p className="text-slate-500">
             Claim #{claimId} •{" "}
             {folder.coverSheet?.insured_name ||
@@ -425,11 +426,20 @@ export default function ClaimFolderBuilderPage() {
       {/* Main Content Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList>
+          <TabsTrigger value="claim-iq" className="gap-1">
+            <Zap className="h-3.5 w-3.5" />
+            ClaimIQ
+          </TabsTrigger>
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="sections">All Sections</TabsTrigger>
           <TabsTrigger value="ai-tools">AI Tools</TabsTrigger>
           <TabsTrigger value="preview">Preview</TabsTrigger>
         </TabsList>
+
+        {/* ClaimIQ Assembly Engine Tab */}
+        <TabsContent value="claim-iq">
+          <ClaimIQDashboard claimId={claimId as string} />
+        </TabsContent>
 
         {/* Overview Tab */}
         <TabsContent value="overview" className="space-y-6">

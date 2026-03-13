@@ -26,7 +26,7 @@ const comparisonData: ComparisonRow[] = [
     generic: "no",
   },
   {
-    feature: "Claims-Ready Folder (17 sections)",
+    feature: "ClaimIQ Assembly (17 sections)",
     skaiscraper: "yes",
     acculynx: "partial",
     jobnimbus: "partial",
