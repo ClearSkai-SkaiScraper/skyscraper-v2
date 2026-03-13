@@ -91,13 +91,35 @@ export async function GET(req: NextRequest, context: RouteContext) {
         mimeType: true,
         sizeBytes: true,
         category: true,
+        source: true,
         createdAt: true,
+        ownerId: true,
       },
       orderBy: { createdAt: "desc" },
     });
 
+    // Separate pro photos (source: "user") from client photos
+    const proPhotos = photos.filter((p) => p.source === "user" || !p.source);
+    const clientPhotos = photos.filter((p) => p.source && p.source !== "user");
+
     return NextResponse.json({
       photos: photos.map((p) => ({
+        id: p.id,
+        url: p.publicUrl,
+        filename: p.filename,
+        category: p.category,
+        source: p.source || "user",
+        uploadedBy: p.source === "user" || !p.source ? "contractor" : "client",
+        uploadedAt: p.createdAt,
+      })),
+      proPhotos: proPhotos.map((p) => ({
+        id: p.id,
+        url: p.publicUrl,
+        filename: p.filename,
+        category: p.category,
+        uploadedAt: p.createdAt,
+      })),
+      clientPhotos: clientPhotos.map((p) => ({
         id: p.id,
         url: p.publicUrl,
         filename: p.filename,

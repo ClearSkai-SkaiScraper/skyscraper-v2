@@ -12,6 +12,7 @@ import { redirect } from "next/navigation";
 
 import { PageContainer } from "@/components/layout/PageContainer";
 import { PageHero } from "@/components/layout/PageHero";
+import { WeatherAlertsPanel } from "@/components/weather/WeatherAlertsPanel";
 import prisma from "@/lib/prisma";
 import { safeOrgContext } from "@/lib/safeOrgContext";
 

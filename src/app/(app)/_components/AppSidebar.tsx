@@ -135,16 +135,6 @@ const navSections: NavSection[] = [
       { label: "Archive", href: "/archive" },
     ],
   },
-  {
-    label: "Network",
-    items: [
-      { label: "Trades Network Hub", href: "/trades" },
-      { label: "Connections & Contacts", href: "/company/connections" },
-      { label: "Job Board", href: "/trades/jobs" },
-      { label: "Vendor Intelligence", href: "/vendor-network" },
-      { label: "Invitations", href: "/invitations" },
-    ],
-  },
 ];
 
 export function AppSidebar() {

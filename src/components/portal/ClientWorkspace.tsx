@@ -92,6 +92,7 @@ export interface WorkspacePhoto {
   uploadedAt: string;
   uploadedBy: string;
   category?: string;
+  source?: string; // "user" = pro, "client_upload" = client
 }
 
 export interface WorkspaceDocument {
@@ -103,6 +104,8 @@ export interface WorkspaceDocument {
   uploadedAt: string;
   uploadedBy: string;
   category?: string;
+  sharedAt?: string; // When contractor shared with client
+  viewedAt?: string; // When client first viewed (null = NEW)
 }
 
 export interface WorkspaceSignedDoc {
@@ -645,7 +648,7 @@ export function ClientWorkspace({
         {/* ================================================================== */}
         {/* PHOTOS TAB */}
         {/* ================================================================== */}
-        <TabsContent value="photos" className="space-y-4">
+        <TabsContent value="photos" className="space-y-6">
           <div className="flex justify-end">
             {canUpload && onUploadPhoto && (
               <Button onClick={() => photoInputRef.current?.click()}>
@@ -664,37 +667,103 @@ export function ClientWorkspace({
               </CardContent>
             </Card>
           ) : (
-            <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-              {photos.map((photo) => (
-                <Card
-                  key={photo.id}
-                  className="group cursor-pointer overflow-hidden transition-shadow hover:shadow-lg"
-                  onClick={() => setSelectedPhoto(photo)}
-                >
-                  <div className="relative aspect-square bg-slate-100">
-                    <Image
-                      src={photo.thumbnailUrl || photo.url}
-                      alt={photo.caption || "Project photo"}
-                      fill
-                      className="object-cover transition-transform group-hover:scale-105"
-                    />
-                    <div className="absolute inset-0 bg-black/0 transition-colors group-hover:bg-black/20">
-                      <div className="absolute bottom-2 right-2 opacity-0 transition-opacity group-hover:opacity-100">
-                        <Button size="sm" variant="secondary">
-                          <Eye className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </div>
+            <>
+              {/* Pro/Contractor Photos Section */}
+              {photos.filter((p) => p.source === "user" || !p.source).length > 0 && (
+                <div className="space-y-3">
+                  <div className="flex items-center gap-2">
+                    <div className="h-2 w-2 rounded-full bg-blue-500" />
+                    <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-300">
+                      Pro Trade Photos
+                    </h3>
+                    <span className="rounded-full bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-700 dark:bg-blue-900/30 dark:text-blue-300">
+                      From your contractor
+                    </span>
                   </div>
-                  <CardContent className="p-3">
-                    {photo.caption && (
-                      <p className="mb-1 truncate text-sm font-medium">{photo.caption}</p>
-                    )}
-                    <p className="text-xs text-slate-400">{formatDate(photo.uploadedAt)}</p>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
+                  <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+                    {photos
+                      .filter((p) => p.source === "user" || !p.source)
+                      .map((photo) => (
+                        <Card
+                          key={photo.id}
+                          className="group cursor-pointer overflow-hidden transition-shadow hover:shadow-lg"
+                          onClick={() => setSelectedPhoto(photo)}
+                        >
+                          <div className="relative aspect-square bg-slate-100">
+                            <Image
+                              src={photo.thumbnailUrl || photo.url}
+                              alt={photo.caption || "Project photo"}
+                              fill
+                              className="object-cover transition-transform group-hover:scale-105"
+                            />
+                            <div className="absolute inset-0 bg-black/0 transition-colors group-hover:bg-black/20">
+                              <div className="absolute bottom-2 right-2 opacity-0 transition-opacity group-hover:opacity-100">
+                                <Button size="sm" variant="secondary">
+                                  <Eye className="h-4 w-4" />
+                                </Button>
+                              </div>
+                            </div>
+                          </div>
+                          <CardContent className="p-3">
+                            {photo.caption && (
+                              <p className="mb-1 truncate text-sm font-medium">{photo.caption}</p>
+                            )}
+                            <p className="text-xs text-slate-400">{formatDate(photo.uploadedAt)}</p>
+                          </CardContent>
+                        </Card>
+                      ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Client Uploaded Photos Section */}
+              {photos.filter((p) => p.source && p.source !== "user").length > 0 && (
+                <div className="space-y-3">
+                  <div className="flex items-center gap-2">
+                    <div className="h-2 w-2 rounded-full bg-green-500" />
+                    <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-300">
+                      Your Photos
+                    </h3>
+                    <span className="rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-700 dark:bg-green-900/30 dark:text-green-300">
+                      Uploaded by you
+                    </span>
+                  </div>
+                  <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+                    {photos
+                      .filter((p) => p.source && p.source !== "user")
+                      .map((photo) => (
+                        <Card
+                          key={photo.id}
+                          className="group cursor-pointer overflow-hidden transition-shadow hover:shadow-lg"
+                          onClick={() => setSelectedPhoto(photo)}
+                        >
+                          <div className="relative aspect-square bg-slate-100">
+                            <Image
+                              src={photo.thumbnailUrl || photo.url}
+                              alt={photo.caption || "Project photo"}
+                              fill
+                              className="object-cover transition-transform group-hover:scale-105"
+                            />
+                            <div className="absolute inset-0 bg-black/0 transition-colors group-hover:bg-black/20">
+                              <div className="absolute bottom-2 right-2 opacity-0 transition-opacity group-hover:opacity-100">
+                                <Button size="sm" variant="secondary">
+                                  <Eye className="h-4 w-4" />
+                                </Button>
+                              </div>
+                            </div>
+                          </div>
+                          <CardContent className="p-3">
+                            {photo.caption && (
+                              <p className="mb-1 truncate text-sm font-medium">{photo.caption}</p>
+                            )}
+                            <p className="text-xs text-slate-400">{formatDate(photo.uploadedAt)}</p>
+                          </CardContent>
+                        </Card>
+                      ))}
+                  </div>
+                </div>
+              )}
+            </>
           )}
         </TabsContent>
 
@@ -721,35 +790,61 @@ export function ClientWorkspace({
             </Card>
           ) : (
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {documents.map((doc) => (
-                <Card key={doc.id} className="group transition-shadow hover:shadow-md">
-                  <CardContent className="p-4">
-                    <div className="flex items-start gap-3">
-                      <div className="flex-shrink-0 rounded-lg bg-blue-100 p-2 dark:bg-blue-900/30">
-                        <FileText className="h-5 w-5 text-blue-600" />
+              {documents.map((doc) => {
+                // Show NEW badge if document was shared in last 48 hours and hasn't been viewed
+                const sharedTime = doc.sharedAt ? new Date(doc.sharedAt) : new Date(doc.uploadedAt);
+                const isNew =
+                  !doc.viewedAt && Date.now() - sharedTime.getTime() < 48 * 60 * 60 * 1000;
+
+                return (
+                  <Card key={doc.id} className="group relative transition-shadow hover:shadow-md">
+                    {isNew && (
+                      <span className="absolute -right-1 -top-1 z-10 rounded-full bg-gradient-to-r from-blue-600 to-indigo-600 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-white shadow-lg">
+                        NEW
+                      </span>
+                    )}
+                    <CardContent className="p-4">
+                      <div className="flex items-start gap-3">
+                        <div className="flex-shrink-0 rounded-lg bg-blue-100 p-2 dark:bg-blue-900/30">
+                          <FileText className="h-5 w-5 text-blue-600" />
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <p className="truncate text-sm font-medium">{doc.name}</p>
+                          <p className="text-xs text-slate-500">{formatFileSize(doc.size)}</p>
+                          <p className="text-xs text-slate-400">{formatDate(doc.uploadedAt)}</p>
+                        </div>
+                        <a
+                          href={doc.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="shrink-0"
+                          onClick={(e) => e.stopPropagation()}
+                          title={`View ${doc.name}`}
+                          aria-label={`View ${doc.name}`}
+                        >
+                          <Button size="sm" variant="default" className="gap-1">
+                            <Eye className="h-3.5 w-3.5" />
+                            View
+                          </Button>
+                        </a>
+                        <a
+                          href={doc.url}
+                          download
+                          className="shrink-0 opacity-0 transition-opacity group-hover:opacity-100"
+                          onClick={(e) => e.stopPropagation()}
+                          title={`Download ${doc.name}`}
+                          aria-label={`Download ${doc.name}`}
+                        >
+                          <Button size="sm" variant="ghost">
+                            <Download className="h-4 w-4" />
+                            <span className="sr-only">Download</span>
+                          </Button>
+                        </a>
                       </div>
-                      <div className="min-w-0 flex-1">
-                        <p className="truncate text-sm font-medium">{doc.name}</p>
-                        <p className="text-xs text-slate-500">{formatFileSize(doc.size)}</p>
-                        <p className="text-xs text-slate-400">{formatDate(doc.uploadedAt)}</p>
-                      </div>
-                      <a
-                        href={doc.url}
-                        download
-                        className="opacity-0 transition-opacity group-hover:opacity-100"
-                        onClick={(e) => e.stopPropagation()}
-                        title={`Download ${doc.name}`}
-                        aria-label={`Download ${doc.name}`}
-                      >
-                        <Button size="sm" variant="ghost">
-                          <Download className="h-4 w-4" />
-                          <span className="sr-only">Download</span>
-                        </Button>
-                      </a>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
+                    </CardContent>
+                  </Card>
+                );
+              })}
             </div>
           )}
         </TabsContent>

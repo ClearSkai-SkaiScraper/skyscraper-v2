@@ -16,17 +16,16 @@ const tabs = [
   { label: "Overview", href: "/overview" },
   { label: "Photos", href: "/photos" },
   { label: "Documents", href: "/documents" },
-  { label: "AI", href: "/ai" },
+  { label: "AI Assistant", href: "/ai" },
   { label: "Supplements", href: "/scope" },
   { label: "Measurements", href: "/measurements" },
   { label: "Messages", href: "/messages" },
   { label: "Timeline", href: "/timeline" },
-  { label: "Reports", href: "/reports" },
   { label: "Weather", href: "/weather" },
   { label: "Trades", href: "/trades" },
   { label: "Client", href: "/client" },
   { label: "Notes", href: "/notes" },
-  { label: "Payout", href: "/final-payout" },
+  { label: "Final Payout", href: "/final-payout" },
 ];
 
 export default function ClaimTabs({ claimId }: ClaimTabsProps) {
