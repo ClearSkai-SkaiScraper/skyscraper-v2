@@ -607,8 +607,25 @@ export async function POST(request: NextRequest) {
     if (error instanceof z.ZodError) {
       return apiError(400, "VALIDATION_ERROR", "Invalid request", { errors: error.errors });
     }
-    logger.error("[PHOTO_ANNOTATE] Error", { error });
-    return apiError(500, "ANALYSIS_ERROR", "Failed to analyze photo");
+
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    logger.error("[PHOTO_ANNOTATE] Error", {
+      error: errorMessage,
+      stack: error instanceof Error ? error.stack : undefined,
+    });
+
+    // Return specific error message for debugging
+    if (errorMessage.includes("Failed to fetch image")) {
+      return apiError(500, "IMAGE_FETCH_ERROR", `Could not fetch image: ${errorMessage}`);
+    }
+    if (errorMessage.includes("rate") || errorMessage.includes("429")) {
+      return apiError(429, "OPENAI_RATE_LIMIT", "OpenAI rate limit reached. Please wait a moment.");
+    }
+    if (errorMessage.includes("API key") || errorMessage.includes("authentication")) {
+      return apiError(500, "OPENAI_AUTH_ERROR", "AI service configuration error");
+    }
+
+    return apiError(500, "ANALYSIS_ERROR", `Failed to analyze photo: ${errorMessage}`);
   }
 }
 
