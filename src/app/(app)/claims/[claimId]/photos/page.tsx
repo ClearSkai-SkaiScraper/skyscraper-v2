@@ -25,6 +25,7 @@ import { useCallback, useEffect, useState } from "react";
 
 import { PhotoAnnotator, type Annotation } from "@/components/annotations/PhotoAnnotator";
 import ConfirmDeleteDialog from "@/components/ConfirmDeleteDialog";
+import { DamageBoxOverlay } from "@/components/photos/DamageBoxOverlay";
 import PhotoOverlay, { type DamageBox } from "@/components/photos/PhotoOverlay";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -1114,20 +1115,7 @@ export default function PhotosPage() {
                     alt={photo.filename}
                     className="h-full w-full object-cover"
                   />
-                  {/* Damage boxes overlay - inline styles required for dynamic positioning */}
-                  {photo.damageBoxes.map((box, i) => (
-                    <div
-                      key={i}
-                      className="absolute border-2 border-red-500 bg-red-500/10"
-                      // eslint-disable-next-line react/forbid-dom-props
-                      style={{
-                        left: `${box.x * 100}%`,
-                        top: `${box.y * 100}%`,
-                        width: `${box.w * 100}%`,
-                        height: `${box.h * 100}%`,
-                      }}
-                    />
-                  ))}
+                  <DamageBoxOverlay boxes={photo.damageBoxes} mode="compact" />
                 </div>
               ) : (
                 <img

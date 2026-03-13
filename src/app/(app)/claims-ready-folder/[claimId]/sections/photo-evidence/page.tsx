@@ -7,6 +7,7 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 
+import { DamageBoxOverlay } from "@/components/photos/DamageBoxOverlay";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -277,24 +278,10 @@ export default function PhotoEvidencePage() {
                   fill
                   className="object-contain"
                 />
-                {/* Damage Boxes Overlay - inline styles required for dynamic positioning */}
-                {selectedPhoto.damageBoxes?.map((box, i) => (
-                  // eslint-disable-next-line react/forbid-dom-props
-                  <div
-                    key={i}
-                    className="absolute border-2 border-red-500"
-                    style={{
-                      left: `${box.x * 100}%`,
-                      top: `${box.y * 100}%`,
-                      width: `${box.w * 100}%`,
-                      height: `${box.h * 100}%`,
-                    }}
-                  >
-                    <span className="absolute -top-6 left-0 rounded bg-red-500 px-1 text-xs text-white">
-                      {box.label}
-                    </span>
-                  </div>
-                ))}
+                {/* Damage Boxes Overlay */}
+                {selectedPhoto.damageBoxes && selectedPhoto.damageBoxes.length > 0 && (
+                  <DamageBoxOverlay boxes={selectedPhoto.damageBoxes} mode="full" />
+                )}
               </div>
             )}
           </div>

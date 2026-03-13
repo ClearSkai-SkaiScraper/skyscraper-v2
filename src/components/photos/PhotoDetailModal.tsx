@@ -9,6 +9,7 @@ import {
   IRCCodeKey,
   PhotoAnnotator,
 } from "@/components/annotations/PhotoAnnotator";
+import { DamageBoxOverlay } from "@/components/photos/DamageBoxOverlay";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -283,26 +284,7 @@ export function PhotoDetailModal({
 
               {/* Overlay existing damage boxes */}
               {photo.damageBoxes && photo.damageBoxes.length > 0 && (
-                <div className="pointer-events-none absolute inset-0">
-                  {photo.damageBoxes.map((box, i) => (
-                    <div
-                      key={i}
-                      className="absolute border-2 border-red-500 bg-red-500/10"
-                      style={{
-                        left: `${box.x * 100}%`,
-                        top: `${box.y * 100}%`,
-                        width: `${box.w * 100}%`,
-                        height: `${box.h * 100}%`,
-                      }}
-                    >
-                      {box.label && (
-                        <span className="absolute -top-6 left-0 rounded bg-red-500 px-1 text-xs text-white">
-                          {box.label}
-                        </span>
-                      )}
-                    </div>
-                  ))}
-                </div>
+                <DamageBoxOverlay boxes={photo.damageBoxes} mode="full" />
               )}
             </div>
 

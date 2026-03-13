@@ -33,6 +33,7 @@ import { QuickAIActions } from "@/components/claims/QuickAIActions";
 import { UniversalContactCard } from "@/components/contacts/UniversalContactCard";
 import { ArchiveJobButton } from "@/components/jobs/ArchiveJobButton";
 import { TransferJobDropdown } from "@/components/jobs/TransferJobDropdown";
+import { DamageBoxOverlay } from "@/components/photos/DamageBoxOverlay";
 import { SmartTemplateSelector } from "@/components/reports/SmartTemplateSelector";
 import { Button } from "@/components/ui/button";
 import { logger } from "@/lib/logger";
@@ -1794,23 +1795,7 @@ function PhotosSection({ claimId }: { claimId: string }) {
                         alt={photo.note || photo.filename}
                         className="h-full w-full object-cover transition-transform group-hover:scale-110"
                       />
-                      {photo.damageBoxes.map(
-                        (
-                          box: { x: number; y: number; w: number; h: number; label?: string },
-                          i: number
-                        ) => (
-                          <div
-                            key={i}
-                            className="absolute border-2 border-red-500 bg-red-500/10"
-                            style={{
-                              left: `${box.x * 100}%`,
-                              top: `${box.y * 100}%`,
-                              width: `${box.w * 100}%`,
-                              height: `${box.h * 100}%`,
-                            }}
-                          />
-                        )
-                      )}
+                      <DamageBoxOverlay boxes={photo.damageBoxes} mode="compact" />
                     </div>
                   ) : (
                     <img

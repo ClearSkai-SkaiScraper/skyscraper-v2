@@ -867,24 +867,63 @@ export async function detectDamageWithYOLO(
         requestBody.image = [{ type: "url", value: imageUrl }];
       }
 
-      response = await fetch(inferenceUrl, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(requestBody),
-      });
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        logger.error("[ROBOFLOW] Local inference error", {
-          status: response.status,
-          error: errorText,
+      try {
+        response = await fetch(inferenceUrl, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(requestBody),
         });
-        throw new Error(`Local inference error: ${response.status} - ${errorText}`);
-      }
 
-      // Local server returns array, take first result
-      const results = await response.json();
-      data = Array.isArray(results) ? results[0] : results;
+        if (!response.ok) {
+          const errorText = await response.text();
+          logger.warn("[ROBOFLOW] Local inference error, falling back to cloud API", {
+            status: response.status,
+            error: errorText,
+          });
+          throw new Error(`Local inference error: ${response.status} - ${errorText}`);
+        }
+
+        // Local server returns array, take first result
+        const results = await response.json();
+        data = Array.isArray(results) ? results[0] : results;
+      } catch (localError) {
+        // ═══ FALLBACK: Local Docker not running → use Roboflow cloud API ═══
+        logger.info("[ROBOFLOW] Local inference unavailable, falling back to cloud API", {
+          error: localError instanceof Error ? localError.message : String(localError),
+        });
+
+        if (!ROBOFLOW_API_KEY) {
+          throw new Error("No ROBOFLOW_API_KEY and local inference unavailable");
+        }
+
+        const cloudUrl = `https://detect.roboflow.com/${modelPath}`;
+        if (isBase64 && base64Data) {
+          response = await fetch(
+            `${cloudUrl}?api_key=${ROBOFLOW_API_KEY}&confidence=${confidenceThreshold}`,
+            {
+              method: "POST",
+              headers: { "Content-Type": "application/x-www-form-urlencoded" },
+              body: base64Data,
+            }
+          );
+        } else {
+          const encodedUrl = encodeURIComponent(imageUrl);
+          response = await fetch(
+            `${cloudUrl}?api_key=${ROBOFLOW_API_KEY}&image=${encodedUrl}&confidence=${confidenceThreshold}`
+          );
+        }
+
+        if (!response.ok) {
+          const errorText = await response.text();
+          logger.error("[ROBOFLOW] Cloud API fallback also failed", {
+            status: response.status,
+            error: errorText,
+          });
+          throw new Error(`Roboflow cloud API error: ${response.status} - ${errorText}`);
+        }
+
+        data = await response.json();
+      }
     } else {
       // CLOUD API (requires paid plan for private models)
       if (isBase64 && base64Data) {
@@ -913,41 +952,13 @@ export async function detectDamageWithYOLO(
     }
 
     logger.info("[ROBOFLOW] Detection complete", {
-      predictions: data.predictions.length,
+      predictions: data.predictions?.length || 0,
       imageSize: data.image,
       timeMs: data.time,
     });
 
-    // Normalize detections to percentages (0-100)
-    const normalized = data.predictions.map((pred) => {
-      // Roboflow returns center coordinates, convert to top-left
-      const topLeftX = pred.x - pred.width / 2;
-      const topLeftY = pred.y - pred.height / 2;
-
-      // Convert to percentages
-      const xPct = (topLeftX / data.image.width) * 100;
-      const yPct = (topLeftY / data.image.height) * 100;
-      const widthPct = (pred.width / data.image.width) * 100;
-      const heightPct = (pred.height / data.image.height) * 100;
-
-      // Map class name to our damage type
-      const mappedType = CLASS_MAPPING[pred.class.toLowerCase()] || pred.class;
-      const severity = SEVERITY_MAP[mappedType] || "Medium";
-
-      return {
-        x: Math.max(0, Math.min(100, xPct)),
-        y: Math.max(0, Math.min(100, yPct)),
-        width: Math.max(3, Math.min(100, widthPct)),
-        height: Math.max(3, Math.min(100, heightPct)),
-        type: mappedType,
-        originalClass: pred.class,
-        confidence: pred.confidence,
-        severity,
-      };
-    });
-
-    // Filter out low-confidence detections
-    return normalized.filter((d) => d.confidence >= confidenceThreshold);
+    // Use shared normalization helper
+    return normalizeDetections(data, confidenceThreshold);
   } catch (error) {
     // Log but don't throw - allow fallback to GPT-4V boxes
     logger.warn("[ROBOFLOW] Detection failed, falling back to GPT-4V", {
@@ -1068,18 +1079,62 @@ export async function detectWithMultipleModels(
 
 /**
  * Run a single model (internal helper)
+ * Tries local Docker inference first (if enabled), falls back to cloud API
  */
 async function runSingleModel(
   imageUrl: string,
   modelPath: string,
   confidenceThreshold: number
 ): Promise<NormalizedDetection[]> {
-  const apiUrl = `https://detect.roboflow.com/${modelPath}`;
-
   let response: Response;
 
-  if (imageUrl.startsWith("data:") || imageUrl.length > 1000) {
-    const base64Data = imageUrl.startsWith("data:") ? imageUrl.split(",")[1] : imageUrl;
+  const isBase64 = imageUrl.startsWith("data:") || imageUrl.length > 1000;
+  const base64Data = isBase64
+    ? imageUrl.startsWith("data:")
+      ? imageUrl.split(",")[1]
+      : imageUrl
+    : null;
+
+  // Try local Docker inference first if enabled
+  if (USE_LOCAL_INFERENCE) {
+    try {
+      const inferenceUrl = `${ROBOFLOW_INFERENCE_URL}/infer/object_detection`;
+      const requestBody: Record<string, unknown> = {
+        model_id: modelPath,
+        confidence: confidenceThreshold,
+      };
+      if (ROBOFLOW_API_KEY) requestBody.api_key = ROBOFLOW_API_KEY;
+      if (isBase64 && base64Data) {
+        requestBody.image = [{ type: "base64", value: base64Data }];
+      } else {
+        requestBody.image = [{ type: "url", value: imageUrl }];
+      }
+
+      response = await fetch(inferenceUrl, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(requestBody),
+        signal: AbortSignal.timeout(10000), // 10s timeout for local
+      });
+
+      if (response.ok) {
+        const results = await response.json();
+        const data: RoboflowResponse = Array.isArray(results) ? results[0] : results;
+        logger.info(`[ROBOFLOW] Local inference success: ${modelPath}`, {
+          predictions: data.predictions?.length || 0,
+        });
+        return normalizeDetections(data, confidenceThreshold);
+      }
+    } catch {
+      // Local not available — fall through to cloud
+      logger.debug(`[ROBOFLOW] Local inference unavailable for ${modelPath}, using cloud`);
+    }
+  }
+
+  // Cloud API fallback
+  const apiUrl = `https://detect.roboflow.com/${modelPath}`;
+
+  if (isBase64 && base64Data) {
     response = await fetch(
       `${apiUrl}?api_key=${ROBOFLOW_API_KEY}&confidence=${confidenceThreshold}`,
       {
@@ -1096,12 +1151,25 @@ async function runSingleModel(
   }
 
   if (!response.ok) {
-    throw new Error(`Model ${modelPath} returned ${response.status}`);
+    const errorText = await response.text().catch(() => "unknown");
+    logger.warn(`[ROBOFLOW] Model ${modelPath} returned ${response.status}: ${errorText}`);
+    throw new Error(`Model ${modelPath} returned ${response.status}: ${errorText}`);
   }
 
   const data: RoboflowResponse = await response.json();
 
-  // Normalize to percentages
+  return normalizeDetections(data, confidenceThreshold);
+}
+
+/**
+ * Normalize Roboflow predictions to 0-100 percentage coordinates
+ */
+function normalizeDetections(
+  data: RoboflowResponse,
+  confidenceThreshold: number
+): NormalizedDetection[] {
+  if (!data?.predictions || !data?.image) return [];
+
   return data.predictions
     .map((pred) => {
       const topLeftX = pred.x - pred.width / 2;

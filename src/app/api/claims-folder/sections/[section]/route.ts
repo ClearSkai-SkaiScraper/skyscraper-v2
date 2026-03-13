@@ -150,9 +150,7 @@ const DEMO_DATA: Record<string, unknown> = {
           applicableCode: "IRC R905.2.7",
         },
         damageBoxes: [
-          { x: 0.2, y: 0.3, w: 0.15, h: 0.15, label: "Hail Impact", severity: "severe" },
-          { x: 0.5, y: 0.4, w: 0.1, h: 0.1, label: "Granule Loss", severity: "moderate" },
-          { x: 0.7, y: 0.2, w: 0.12, h: 0.12, label: "Crease Pattern", severity: "severe" },
+          // damageBoxes intentionally empty — real boxes come from AI photo analysis, not hardcoded demo data
         ],
       },
       {
@@ -167,9 +165,7 @@ const DEMO_DATA: Record<string, unknown> = {
           functionalImpact: "Exposed fiberglass mat, water infiltration risk",
           applicableCode: "ASTM D3462",
         },
-        damageBoxes: [
-          { x: 0.4, y: 0.35, w: 0.2, h: 0.2, label: "Impact Center", severity: "severe" },
-        ],
+        damageBoxes: [],
       },
       {
         id: "3",
@@ -183,11 +179,7 @@ const DEMO_DATA: Record<string, unknown> = {
           functionalImpact: "Cosmetic damage, storm intensity indicator",
           applicableCode: "N/A - Collateral damage",
         },
-        damageBoxes: [
-          { x: 0.3, y: 0.3, w: 0.1, h: 0.1, label: "Dent #1", severity: "moderate" },
-          { x: 0.5, y: 0.25, w: 0.08, h: 0.08, label: "Dent #2", severity: "minor" },
-          { x: 0.45, y: 0.5, w: 0.12, h: 0.12, label: "Dent #3", severity: "moderate" },
-        ],
+        damageBoxes: [],
       },
       {
         id: "4",
@@ -214,10 +206,7 @@ const DEMO_DATA: Record<string, unknown> = {
           functionalImpact: "Potential water flow obstruction",
           applicableCode: "IRC R801.3",
         },
-        damageBoxes: [
-          { x: 0.2, y: 0.4, w: 0.15, h: 0.1, label: "Dent Cluster", severity: "moderate" },
-          { x: 0.6, y: 0.45, w: 0.2, h: 0.1, label: "Impact Pattern", severity: "moderate" },
-        ],
+        damageBoxes: [],
       },
       {
         id: "6",

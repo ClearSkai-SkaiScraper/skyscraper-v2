@@ -756,34 +756,85 @@ export async function POST(request: NextRequest) {
         };
       });
 
-    // Detect and filter AI hallucination patterns:
-    // Pattern 1: All boxes at nearly the same Y coordinate (horizontal row)
-    // Pattern 2: All boxes at nearly the same X coordinate (vertical column)
-    // Pattern 3: All boxes are the same size (cookie-cutter pattern)
+    // ═══ COMPREHENSIVE HALLUCINATION DETECTION ═══
+    // GPT-4o is a language model, NOT an object detector — it frequently
+    // fabricates evenly-spaced, grid-like, or formulaic bounding box coordinates.
+    // We detect multiple hallucination patterns and keep only the highest-confidence box(es).
     const yValues = rawAnnotations.map((a) => a.y);
     const xValues = rawAnnotations.map((a) => a.x);
-    const sameYRow =
-      rawAnnotations.length > 2 && yValues.every((y) => Math.abs(y - yValues[0]) < 8);
-    const sameXCol =
-      rawAnnotations.length > 2 && xValues.every((x) => Math.abs(x - xValues[0]) < 8);
+    const widths = rawAnnotations.map((a) => a.width);
+    const heights = rawAnnotations.map((a) => a.height);
+
+    let hallucinationDetected = false;
+    let hallucinationReason = "";
+
+    if (rawAnnotations.length > 2) {
+      // Pattern 1: All boxes at nearly the same Y (horizontal row)
+      const sameYRow = yValues.every((y) => Math.abs(y - yValues[0]) < 8);
+      // Pattern 2: All boxes at nearly the same X (vertical column)
+      const sameXCol = xValues.every((x) => Math.abs(x - xValues[0]) < 8);
+      // Pattern 3: Cookie-cutter — all boxes have nearly identical dimensions
+      const cookieCutter =
+        widths.every((w) => Math.abs(w - widths[0]) < 3) &&
+        heights.every((h) => Math.abs(h - heights[0]) < 3);
+      // Pattern 4: Uniform X spacing (staircase / evenly distributed)
+      const sortedX = [...xValues].sort((a, b) => a - b);
+      const xGaps = sortedX.slice(1).map((v, i) => v - sortedX[i]);
+      const avgXGap = xGaps.reduce((s, g) => s + g, 0) / xGaps.length;
+      const uniformXSpacing = xGaps.length >= 2 && xGaps.every((g) => Math.abs(g - avgXGap) < 4);
+      // Pattern 5: Uniform Y spacing
+      const sortedY = [...yValues].sort((a, b) => a - b);
+      const yGaps = sortedY.slice(1).map((v, i) => v - sortedY[i]);
+      const avgYGap = yGaps.reduce((s, g) => s + g, 0) / yGaps.length;
+      const uniformYSpacing = yGaps.length >= 2 && yGaps.every((g) => Math.abs(g - avgYGap) < 4);
+      // Pattern 6: Diagonal staircase (both X and Y increase uniformly)
+      const diagonalStaircase = uniformXSpacing && uniformYSpacing;
+      // Pattern 7: Grid layout (2+ rows × 2+ columns of evenly spaced boxes)
+      const gridLayout = uniformXSpacing && sameYRow;
+
+      if (sameYRow) {
+        hallucinationDetected = true;
+        hallucinationReason = "same-Y-row";
+      } else if (sameXCol) {
+        hallucinationDetected = true;
+        hallucinationReason = "same-X-column";
+      } else if (diagonalStaircase) {
+        hallucinationDetected = true;
+        hallucinationReason = "diagonal-staircase";
+      } else if (gridLayout) {
+        hallucinationDetected = true;
+        hallucinationReason = "grid-layout";
+      } else if (uniformXSpacing && cookieCutter) {
+        hallucinationDetected = true;
+        hallucinationReason = "uniform-spacing+cookie-cutter";
+      } else if (uniformYSpacing && cookieCutter) {
+        hallucinationDetected = true;
+        hallucinationReason = "uniform-y-spacing+cookie-cutter";
+      }
+      // Cookie-cutter alone with 4+ boxes is suspicious
+      else if (cookieCutter && rawAnnotations.length >= 4) {
+        hallucinationDetected = true;
+        hallucinationReason = "cookie-cutter-4+";
+      }
+    }
 
     let filteredAnnotations = rawAnnotations;
-    if (sameYRow || sameXCol) {
-      logger.warn(
-        "[PHOTO_ANNOTATE] Detected grid hallucination pattern - boxes likely inaccurate",
-        {
-          sameYRow,
-          sameXCol,
-          count: rawAnnotations.length,
-          yValues,
-          xValues,
-        }
-      );
-      // Keep only the highest confidence detection in hallucination cases
+    if (hallucinationDetected) {
+      logger.warn("[PHOTO_ANNOTATE] Detected hallucination pattern — boxes are likely fabricated", {
+        reason: hallucinationReason,
+        count: rawAnnotations.length,
+        yValues,
+        xValues,
+        widths,
+        heights,
+      });
+      // Keep only top 2 highest confidence detections (not just 1, to preserve some coverage)
       if (rawAnnotations.length > 0) {
         const sorted = [...rawAnnotations].sort((a, b) => b.confidence - a.confidence);
-        filteredAnnotations = [sorted[0]];
-        logger.info("[PHOTO_ANNOTATE] Keeping only highest confidence detection");
+        filteredAnnotations = sorted.slice(0, 2);
+        logger.info(
+          `[PHOTO_ANNOTATE] Keeping top ${filteredAnnotations.length} detections (${hallucinationReason})`
+        );
       }
     }
 
@@ -863,7 +914,11 @@ You analyze infrared/thermal images to identify:
 - Roof deck moisture under membrane roofing
 
 Always provide precise bounding box locations for each anomaly found.
-Temperature differential significance: >5°F difference often indicates a problem.`;
+Temperature differential significance: >5°F difference often indicates a problem.
+
+⚠️ BOUNDING BOX ACCURACY — coordinates are 0-100 percentages where 0,0 is TOP-LEFT.
+Place boxes EXACTLY where the anomaly is visible. NEVER generate evenly-spaced or grid-like coordinates.
+If uncertain, report fewer boxes with high confidence rather than guessing positions.`;
   }
 
   if (claimType === "fire") {
@@ -877,7 +932,11 @@ You analyze photos to identify and document:
 - Salvageable vs. total loss areas
 
 Understand fire spread patterns and document origin indicators when visible.
-Always be thorough but conservative - only identify damage you can clearly see.`;
+Always be thorough but conservative - only identify damage you can clearly see.
+
+⚠️ BOUNDING BOX ACCURACY — coordinates are 0-100 percentages where 0,0 is TOP-LEFT.
+Place boxes EXACTLY where the damage is visible in the photo. NEVER generate evenly-spaced or grid-like coordinates.
+NEVER make all boxes the same size. If uncertain, report fewer high-confidence boxes.`;
   }
 
   if (claimType === "water") {
@@ -941,6 +1000,9 @@ CRITICAL BOUNDING BOX ACCURACY:
 - MINIMUM box size: 3% width AND 3% height — do NOT draw tiny invisible boxes
 - Each bounding box should encompass the FULL extent of the damage
 - Mark EACH individual hit separately — do not group into one big box
+
+⚠️ ANTI-HALLUCINATION — NEVER generate evenly-spaced or grid-like coordinates.
+NEVER make all boxes the same size. Report FEWER high-confidence boxes rather than guessing positions.
 
 IDENTIFY MATERIAL TYPE:
 - Vinyl siding (lap, shake, board & batten, Dutch lap)
@@ -1010,7 +1072,11 @@ You analyze photos to identify damage on:
 
 Hail damage signature: Look for "spattering" patterns on painted surfaces and systematically bent/crushed fins.
 Bent condenser fins reduce efficiency - document percentage of fin damage when estimable.
-Always be thorough but conservative - only identify damage you can clearly see.`;
+Always be thorough but conservative - only identify damage you can clearly see.
+
+⚠️ BOUNDING BOX ACCURACY — coordinates are 0-100 percentages where 0,0 is TOP-LEFT.
+Place boxes EXACTLY on each dent, fin damage area, or impact mark you can see.
+NEVER generate evenly-spaced or grid-like coordinates. NEVER make all boxes the same size.`;
   }
 
   if (componentType === "gutter") {
@@ -1024,7 +1090,10 @@ You analyze photos to identify damage on:
 
 Hail signature: Multiple small dents in a pattern across the gutter run.
 Document slope issues affecting drainage.
-Always be thorough but conservative - only identify damage you can clearly see.`;
+Always be thorough but conservative - only identify damage you can clearly see.
+
+⚠️ BOUNDING BOX ACCURACY — coordinates are 0-100 percentages where 0,0 is TOP-LEFT.
+Place boxes EXACTLY on each dent, puncture, or separation you can see. NEVER generate evenly-spaced coordinates.`;
   }
 
   if (componentType === "window") {
@@ -1045,6 +1114,10 @@ CRITICAL BOUNDING BOX ACCURACY:
 - If damage is in the MIDDLE, use y values 40-60
 - Boxes should TIGHTLY wrap each damaged spot
 - Mark EACH individual hit/chip separately — do NOT group into one large box
+
+⚠️ ANTI-HALLUCINATION — NEVER generate evenly-spaced or grid-like coordinates.
+NEVER produce boxes in a row, column, staircase, or diagonal pattern.
+NEVER make all boxes the same size. Report FEWER high-confidence boxes rather than guessing.
 
 HAIL DAMAGE ON WINDOWS/TRIM (CRITICAL — OFTEN MISSED):
 - Paint chipping on wood trim in CIRCULAR pattern = HAIL IMPACT (use "hail_spatter")
@@ -1097,6 +1170,9 @@ CRITICAL BOUNDING BOX ACCURACY:
 - If damage is near the TOP, use y values around 10-30
 - Each box should TIGHTLY wrap the specific damage
 
+⚠️ ANTI-HALLUCINATION — NEVER generate evenly-spaced or grid-like coordinates.
+NEVER make all boxes the same size. Report FEWER high-confidence boxes rather than guessing.
+
 HAIL DAMAGE INDICATORS - BE VERY THOROUGH:
 - Small holes punched through mesh (look carefully, they can be tiny)
 - Stretched/bulging mesh from impacts (fabric pulling away from frame)
@@ -1133,6 +1209,13 @@ CRITICAL BOUNDING BOX ACCURACY:
 - Each box should TIGHTLY wrap the specific damage — small and precise
 - Mark EACH individual hit/damage spot separately — NEVER group into one big box
 - A 2-inch paint chip gets a 2-3% wide box, NOT a 20% wide box
+
+⚠️ ANTI-HALLUCINATION — COORDINATE ACCURACY IS PARAMOUNT:
+- NEVER generate evenly-spaced coordinates (e.g., x=15,35,55,75)
+- NEVER produce boxes that form a row, column, grid, staircase, or diagonal
+- NEVER make all boxes the same size — real damage varies in extent
+- If uncertain, report FEWER boxes at high confidence rather than guessing positions
+- A wrong coordinate is WORSE than no coordinate
 
 FIRST: Identify what component/material is shown in this photo:
 - Roofing (shingles, tile, metal, flat/TPO/EPDM, slate, wood shake)
@@ -1360,6 +1443,23 @@ CRITICAL BOUNDING BOX ACCURACY REQUIREMENTS:
 - SCAN the entire image systematically: top-left → top-right → center-left → center → center-right → bottom-left → bottom-right
 - Mark EVERY individual hail hit, not just clusters
 
+⚠️ ANTI-HALLUCINATION — COORDINATE ACCURACY IS PARAMOUNT:
+- You MUST look at the ACTUAL PIXELS where damage appears and report THOSE coordinates
+- NEVER generate evenly-spaced coordinates (e.g., x=15,35,55,75 or y=20,40,60)
+- NEVER produce boxes that form a row, column, grid, staircase, or diagonal line
+- NEVER make all boxes the same size — real damage varies in extent
+- If you are uncertain where damage is, report FEWER boxes with high confidence
+  rather than guessing with many boxes at fabricated coordinates
+- Think of the image as a 10×10 grid. For each damage you report, mentally confirm
+  WHICH specific grid cell it falls in by examining the actual image content there
+- A wrong coordinate is WORSE than no coordinate — adjusters will lose trust
+
+CLOSE-UP vs WIDE-ANGLE PHOTOS:
+- Close-up photos (1-3 shingles visible): use LARGER boxes (20-60% of image) since damage fills the frame
+- Medium shots: use medium boxes (8-20%)
+- Wide-angle shots: use small precise boxes (3-8%) for each individual hit
+- Always match box size to how large the damage APPEARS in this specific photo
+
 SEVERITY SCALE (per HAAG/insurance standards):
 - Low: Cosmetic only, no functional impairment (surface granule loss, minor dents on non-critical surfaces)
 - Medium: Functional damage requiring repair (fractured shingle mat, seal strip compromise, moderate soft metal dents)
@@ -1547,13 +1647,41 @@ Look for and identify:
 - Material age estimate based on condition/style
 - Color description
 
-BOUNDING BOX PRECISION RULES:
-- Coordinates are 0-100 percentages. 0,0 = TOP-LEFT of image.
-- y=0 is TOP, y=100 is BOTTOM
-- Scan the ENTIRE image: top-left, top-center, top-right, middle-left, center, middle-right, bottom-left, bottom-center, bottom-right
-- Place a TIGHT box around EACH individual damage mark
-- DO NOT cluster multiple hits into one large box — each hit gets its own box
-- DO NOT default all boxes to the bottom of the image
+BOUNDING BOX PRECISION RULES (CRITICAL — READ CAREFULLY):
+- Coordinates are 0-100 percentages. (0,0) = TOP-LEFT corner of image.
+- x increases left→right. y increases top→bottom.
+- Think of the image as a 10×10 grid. Each cell is 10%×10%.
+- STEP 1: Mentally divide the image into a 5×5 grid (each cell = 20%×20%).
+- STEP 2: For EACH damage mark, identify which grid cell it falls in.
+- STEP 3: Place the box center at the damage location, NOT at a grid intersection.
+- VARY the x and y coordinates — real damage is scattered randomly, not in neat rows or columns.
+- DO NOT place all boxes at similar y values (horizontal row pattern = hallucination).
+- DO NOT place all boxes at similar x values (vertical column pattern = hallucination).
+- DO NOT use evenly spaced coordinates (e.g., x=20,40,60 or y=25,40,55 = hallucination).
+- Each box should have DIFFERENT dimensions based on the actual damage size.
+- Hail impacts on shingles: typically 3-8% wide/tall (small individual marks).
+- Large damaged areas (missing shingle, tear): 10-25% wide/tall.
+- Dents on soft metal: 2-5% wide/tall.
+- Box should be TIGHT around the specific damage, not a large region.
+- Think about WHERE in the actual photograph the damage appears — top, bottom, left, right, center.
+- If damage is clustered in one area of the photo, boxes should be clustered there too.
+- If damage is spread across the photo, boxes should reflect that spread.
+
+IMPORTANT: The bounding box coordinates MUST correspond to where you actually SEE the damage in the image. 
+Do NOT default to placing boxes in the center or bottom. Look at the image carefully and place each box exactly where the damage is visible.
+
+CLOSE-UP vs WIDE-ANGLE PHOTO HANDLING (CRITICAL):
+- CLOSE-UP PHOTOS (showing 1-3 shingles or a single damage area filling most of the frame):
+  → Use LARGER bounding boxes (20-60% width/height) since the damage fills more of the frame
+  → A single hail impact in a close-up may occupy 30-50% of the image
+  → Place 1-3 large boxes encompassing the visible damage
+- MEDIUM SHOTS (showing a section of roof, ~10-20 shingles visible):
+  → Use MEDIUM boxes (8-20% width/height) for each damage mark
+  → Typically 3-8 damage areas visible
+- WIDE-ANGLE SHOTS (full roof slope, entire elevation):
+  → Use SMALLER boxes (3-8% width/height) tightly around each individual mark
+  → May have 5-15+ damage areas scattered across the image
+- ALWAYS match box size to how large the damage APPEARS in this specific photo
 
 For each damage area found:
 1. Identify the specific damage type using insurance-standard terminology:
