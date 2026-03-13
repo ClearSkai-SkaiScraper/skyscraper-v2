@@ -594,19 +594,53 @@ export async function POST(request: NextRequest) {
       materialIdentified: materialAnalysis?.primaryMaterial,
     });
 
-    // Convert detections to annotations format
-    const annotations: AnnotationResponse[] = (detections as DamageDetection[]).map(
-      (detection, index) => {
+    // Convert detections to annotations format with validation
+    const rawAnnotations: AnnotationResponse[] = (detections as DamageDetection[])
+      .filter((detection) => {
+        // Validate bounding box has reasonable coordinates
+        const { x, y, width, height } = detection.boundingBox || {};
+        if (
+          typeof x !== "number" ||
+          typeof y !== "number" ||
+          typeof width !== "number" ||
+          typeof height !== "number"
+        ) {
+          logger.warn("[PHOTO_ANNOTATE] Invalid bounding box - missing coordinates", { detection });
+          return false;
+        }
+        // Filter out boxes that are clearly invalid (AI hallucination patterns)
+        // - All boxes at same Y coordinate (row pattern)
+        // - Boxes with 0 or negative dimensions
+        // - Boxes outside image bounds
+        if (width < 1 || height < 1) {
+          logger.warn("[PHOTO_ANNOTATE] Box too small", { x, y, width, height });
+          return false;
+        }
+        if (x < 0 || y < 0 || x > 100 || y > 100) {
+          logger.warn("[PHOTO_ANNOTATE] Box outside bounds", { x, y, width, height });
+          return false;
+        }
+        return true;
+      })
+      .map((detection, index) => {
         const damageTypeKey = detection.type.toLowerCase().replace(/[^a-z_]/g, "_");
         const ircCodeKey = IRC_CODE_MAP[damageTypeKey] || determineCodeFromType(damageTypeKey);
+
+        // Ensure minimum box size of 3% for visibility
+        let { x, y, width, height } = detection.boundingBox;
+        width = Math.max(width, 3);
+        height = Math.max(height, 3);
+        // Clamp to image bounds
+        x = Math.min(Math.max(x, 0), 100 - width);
+        y = Math.min(Math.max(y, 0), 100 - height);
 
         return {
           id: `ai-${validated.photoId || "photo"}-${Date.now()}-${index}`,
           type: "ai_detection" as const,
-          x: detection.boundingBox.x,
-          y: detection.boundingBox.y,
-          width: detection.boundingBox.width,
-          height: detection.boundingBox.height,
+          x,
+          y,
+          width,
+          height,
           damageType: formatDamageType(detection.type),
           severity: detection.severity,
           ircCode: ircCodeKey,
@@ -614,8 +648,28 @@ export async function POST(request: NextRequest) {
           confidence: detection.confidence,
           materialIdentified: detection.materialIdentified,
         };
+      });
+
+    // Deduplicate boxes that are at nearly the same position (within 5% tolerance)
+    // This prevents the "5-in-a-row" pattern from AI hallucinations
+    const annotations: AnnotationResponse[] = [];
+    for (const ann of rawAnnotations) {
+      const isDuplicate = annotations.some(
+        (existing) =>
+          Math.abs(existing.x - ann.x) < 5 &&
+          Math.abs(existing.y - ann.y) < 5 &&
+          existing.damageType === ann.damageType
+      );
+      if (!isDuplicate) {
+        annotations.push(ann);
+      } else {
+        logger.info("[PHOTO_ANNOTATE] Filtered duplicate box", {
+          x: ann.x,
+          y: ann.y,
+          type: ann.damageType,
+        });
       }
-    );
+    }
 
     // Generate overall caption
     const overallCaption = generateOverallCaption(annotations, materialAnalysis);
