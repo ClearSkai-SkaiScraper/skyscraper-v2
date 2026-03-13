@@ -4,8 +4,6 @@
 -- Run: psql "$DATABASE_URL" -f ./db/migrations/20260313_seed_vin_real_data.sql
 -- ============================================================================
 
-SET search_path TO app;
-
 BEGIN;
 
 -- ────────────────────────────────────────────────────────────────────────────
@@ -18,7 +16,7 @@ DELETE FROM vendor_products_v2 WHERE "brochureUrl" LIKE '/vendor-resources/%' OR
 -- GAF — Products (10)
 -- ════════════════════════════════════════════════════════════════════════════
 INSERT INTO vendor_products_v2 (id, "vendorId", "tradeType", sku, name, category, manufacturer, description, "brochureUrl", "priceRangeLow", "priceRangeHigh", unit, "inStock", features, tags, "isActive")
-SELECT gen_random_uuid(), v.id, 'roofing', p.sku, p.name, p.category, 'GAF', p.description, p.brochure, p.price_low, p.price_high, p.unit, true, p.features, p.tags, true
+SELECT gen_random_uuid()::text, v.id, 'roofing', p.sku, p.name, p.category, 'GAF', p.description, p.brochure, p.price_low, p.price_high, p.unit, true, p.features, p.tags, true
 FROM "Vendor" v,
 (VALUES
   ('GAF-THZ-01', 'Timberline HDZ Shingles', 'Laminated Shingles', 'Americas #1 selling shingle with LayerLock technology and StrikeZone nailing area.', 'https://www.gaf.com/en-us/roofing-materials/residential-roofing-products/timberline-shingles/timberline-hdz-shingles', 95.00, 115.00, 'bundle', ARRAY['LayerLock','WindProven','StainGuard Plus'], ARRAY['shingles','architectural','premium']),
@@ -39,7 +37,7 @@ ON CONFLICT DO NOTHING;
 -- OWENS CORNING — Products (6)
 -- ════════════════════════════════════════════════════════════════════════════
 INSERT INTO vendor_products_v2 (id, "vendorId", "tradeType", sku, name, category, manufacturer, description, "brochureUrl", "priceRangeLow", "priceRangeHigh", unit, "inStock", features, tags, "isActive")
-SELECT gen_random_uuid(), v.id, 'roofing', p.sku, p.name, p.category, 'Owens Corning', p.description, p.brochure, p.price_low, p.price_high, p.unit, true, p.features, p.tags, true
+SELECT gen_random_uuid()::text, v.id, 'roofing', p.sku, p.name, p.category, 'Owens Corning', p.description, p.brochure, p.price_low, p.price_high, p.unit, true, p.features, p.tags, true
 FROM "Vendor" v,
 (VALUES
   ('OC-TD-01', 'TruDefinition Duration Shingles', 'Laminated Shingles', 'Architectural shingles with patented SureNail Technology for 130 MPH wind resistance.', 'https://www.owenscorning.com/en-us/roofing/shingles/trudefinition-duration', 90.00, 110.00, 'bundle', ARRAY['SureNail','130 MPH wind','Total Protection'], ARRAY['shingles','architectural']),
@@ -56,7 +54,7 @@ ON CONFLICT DO NOTHING;
 -- CERTAINTEED — Products (5)
 -- ════════════════════════════════════════════════════════════════════════════
 INSERT INTO vendor_products_v2 (id, "vendorId", "tradeType", sku, name, category, manufacturer, description, "brochureUrl", "priceRangeLow", "priceRangeHigh", unit, "inStock", features, tags, "isActive")
-SELECT gen_random_uuid(), v.id, 'roofing', p.sku, p.name, p.category, 'CertainTeed', p.description, p.brochure, p.price_low, p.price_high, p.unit, true, p.features, p.tags, true
+SELECT gen_random_uuid()::text, v.id, 'roofing', p.sku, p.name, p.category, 'CertainTeed', p.description, p.brochure, p.price_low, p.price_high, p.unit, true, p.features, p.tags, true
 FROM "Vendor" v,
 (VALUES
   ('CT-LM-01', 'Landmark Shingles', 'Laminated Shingles', 'Architectural shingles with dual-tone color blends and Max Def colors.', 'https://www.certainteed.com/residential-roofing/products/landmark/', 80.00, 100.00, 'bundle', ARRAY['Max Def colors','Dual-tone','StreakFighter'], ARRAY['shingles','architectural']),
@@ -72,7 +70,7 @@ ON CONFLICT DO NOTHING;
 -- TAMKO — Products (4)
 -- ════════════════════════════════════════════════════════════════════════════
 INSERT INTO vendor_products_v2 (id, "vendorId", "tradeType", sku, name, category, manufacturer, description, "brochureUrl", "priceRangeLow", "priceRangeHigh", unit, "inStock", features, tags, "isActive")
-SELECT gen_random_uuid(), v.id, 'roofing', p.sku, p.name, p.category, 'TAMKO', p.description, p.brochure, p.price_low, p.price_high, p.unit, true, p.features, p.tags, true
+SELECT gen_random_uuid()::text, v.id, 'roofing', p.sku, p.name, p.category, 'TAMKO', p.description, p.brochure, p.price_low, p.price_high, p.unit, true, p.features, p.tags, true
 FROM "Vendor" v,
 (VALUES
   ('TAM-HER-01', 'Heritage Laminated Shingles', 'Laminated Shingles', 'Architectural shingles with rich multi-toned color blends.', 'https://www.tamko.com/residential/roofing/heritage/', 75.00, 95.00, 'bundle', ARRAY['Algae resistant','Multi-tone'], ARRAY['shingles','architectural']),
@@ -87,7 +85,7 @@ ON CONFLICT DO NOTHING;
 -- ABC SUPPLY — Products (4, distributor carries multiple brands)
 -- ════════════════════════════════════════════════════════════════════════════
 INSERT INTO vendor_products_v2 (id, "vendorId", "tradeType", sku, name, category, manufacturer, description, "brochureUrl", "priceRangeLow", "priceRangeHigh", unit, "inStock", features, tags, "isActive")
-SELECT gen_random_uuid(), v.id, 'roofing', p.sku, p.name, p.category, p.manufacturer, p.description, p.brochure, p.price_low, p.price_high, p.unit, true, p.features, p.tags, true
+SELECT gen_random_uuid()::text, v.id, 'roofing', p.sku, p.name, p.category, p.manufacturer, p.description, p.brochure, p.price_low, p.price_high, p.unit, true, p.features, p.tags, true
 FROM "Vendor" v,
 (VALUES
   ('ABC-NAIL-01', 'Coil Roofing Nails 1-1/4"', 'Fasteners', 'GAF', 'Galvanized coil roofing nails for pneumatic nailers. 7200/box.', 'https://www.abcsupply.com/products/roofing/', 45.00, 55.00, 'box', ARRAY['Galvanized','Pneumatic coil'], ARRAY['fasteners','nails']),
@@ -102,7 +100,7 @@ ON CONFLICT DO NOTHING;
 -- SRS DISTRIBUTION — Products (3)
 -- ════════════════════════════════════════════════════════════════════════════
 INSERT INTO vendor_products_v2 (id, "vendorId", "tradeType", sku, name, category, manufacturer, description, "brochureUrl", "priceRangeLow", "priceRangeHigh", unit, "inStock", features, tags, "isActive")
-SELECT gen_random_uuid(), v.id, 'roofing', p.sku, p.name, p.category, p.manufacturer, p.description, p.brochure, p.price_low, p.price_high, p.unit, true, p.features, p.tags, true
+SELECT gen_random_uuid()::text, v.id, 'roofing', p.sku, p.name, p.category, p.manufacturer, p.description, p.brochure, p.price_low, p.price_high, p.unit, true, p.features, p.tags, true
 FROM "Vendor" v,
 (VALUES
   ('SRS-PIPE-01', 'Pipe Boot 1-3"', 'Flashing', 'Various', 'EPDM rubber pipe boot flashing for plumbing vent penetrations.', 'https://www.srsdistribution.com/products/', 12.00, 18.00, 'piece', ARRAY['EPDM rubber','UV resistant'], ARRAY['flashing','pipe-boot']),
@@ -118,21 +116,21 @@ ON CONFLICT DO NOTHING;
 
 -- GAF Programs (5)
 INSERT INTO vendor_programs (id, "vendorId", "programType", name, description, eligibility, amount, "percentOff", "applicationUrl", "isActive")
-SELECT gen_random_uuid(), v.id, p.ptype, p.name, p.description, p.eligibility, p.amount, p.pct, p.url, true
+SELECT gen_random_uuid()::text, v.id, p.ptype, p.name, p.description, p.eligibility, p.amount, p.pct, p.url, true
 FROM "Vendor" v,
 (VALUES
-  ('rebate', 'GAF Master Elite Contractor Rebate', 'Earn rebates on qualifying GAF product purchases through the Factory-Certified program.', 'GAF Master Elite or Certified contractors', 500.00, NULL, 'https://www.gaf.com/en-us/for-professionals'),
-  ('rebate', 'GAF Timberline HDZ Contractor Rebate', '$2/bundle rebate on Timberline HDZ purchases through qualifying distributor.', 'Certified GAF contractors', 200.00, NULL, 'https://www.gaf.com/en-us/for-professionals'),
-  ('financing', 'GAF Smart Choice Financing', 'Offer homeowners financing options for GAF roofing systems at competitive rates.', 'GAF Factory-Certified contractors', NULL, NULL, 'https://www.gaf.com/en-us/for-professionals/tools/financing'),
-  ('training', 'GAF CARE Training Program', 'Free training courses for contractors covering installation, sales, and safety.', 'All contractors', NULL, NULL, 'https://www.gaf.com/en-us/for-professionals/training'),
-  ('warranty', 'Golden Pledge Limited Warranty', 'Premium warranty with 50-year non-prorated coverage and workmanship guarantee.', 'GAF Master Elite contractors only', NULL, NULL, 'https://www.gaf.com/en-us/for-homeowners/warranties')
+  ('rebate', 'GAF Master Elite Contractor Rebate', 'Earn rebates on qualifying GAF product purchases through the Factory-Certified program.', 'GAF Master Elite or Certified contractors', 500.00::numeric, NULL::numeric, 'https://www.gaf.com/en-us/for-professionals'),
+  ('rebate', 'GAF Timberline HDZ Contractor Rebate', '$2/bundle rebate on Timberline HDZ purchases through qualifying distributor.', 'Certified GAF contractors', 200.00::numeric, NULL::numeric, 'https://www.gaf.com/en-us/for-professionals'),
+  ('financing', 'GAF Smart Choice Financing', 'Offer homeowners financing options for GAF roofing systems at competitive rates.', 'GAF Factory-Certified contractors', NULL::numeric, NULL::numeric, 'https://www.gaf.com/en-us/for-professionals/tools/financing'),
+  ('training', 'GAF CARE Training Program', 'Free training courses for contractors covering installation, sales, and safety.', 'All contractors', NULL::numeric, NULL::numeric, 'https://www.gaf.com/en-us/for-professionals/training'),
+  ('warranty', 'Golden Pledge Limited Warranty', 'Premium warranty with 50-year non-prorated coverage and workmanship guarantee.', 'GAF Master Elite contractors only', NULL::numeric, NULL::numeric, 'https://www.gaf.com/en-us/for-homeowners/warranties')
 ) AS p(ptype, name, description, eligibility, amount, pct, url)
 WHERE v.slug = 'gaf'
 ON CONFLICT DO NOTHING;
 
 -- Owens Corning Programs (3)
 INSERT INTO vendor_programs (id, "vendorId", "programType", name, description, eligibility, "applicationUrl", "isActive")
-SELECT gen_random_uuid(), v.id, p.ptype, p.name, p.description, p.eligibility, p.url, true
+SELECT gen_random_uuid()::text, v.id, p.ptype, p.name, p.description, p.eligibility, p.url, true
 FROM "Vendor" v,
 (VALUES
   ('rebate', 'OC Preferred Contractor Rewards', 'Earn points on qualifying Owens Corning purchases redeemable for merchandise, trips, and business tools.', 'Owens Corning Preferred Contractors', 'https://www.owenscorning.com/en-us/roofing/contractors'),
@@ -144,7 +142,7 @@ ON CONFLICT DO NOTHING;
 
 -- CertainTeed Programs (2)
 INSERT INTO vendor_programs (id, "vendorId", "programType", name, description, eligibility, "applicationUrl", "isActive")
-SELECT gen_random_uuid(), v.id, p.ptype, p.name, p.description, p.eligibility, p.url, true
+SELECT gen_random_uuid()::text, v.id, p.ptype, p.name, p.description, p.eligibility, p.url, true
 FROM "Vendor" v,
 (VALUES
   ('rebate', 'CertainTeed SELECT ShingleMaster Rewards', 'Annual rebate program for qualifying roofing product purchases.', 'SELECT ShingleMaster certified contractors', 'https://www.certainteed.com/credentials/'),
@@ -155,7 +153,7 @@ ON CONFLICT DO NOTHING;
 
 -- ABC Supply Programs (2)
 INSERT INTO vendor_programs (id, "vendorId", "programType", name, description, eligibility, "applicationUrl", "isActive")
-SELECT gen_random_uuid(), v.id, p.ptype, p.name, p.description, p.eligibility, p.url, true
+SELECT gen_random_uuid()::text, v.id, p.ptype, p.name, p.description, p.eligibility, p.url, true
 FROM "Vendor" v,
 (VALUES
   ('rebate', 'ABC Supply Contractor Rewards', 'Earn points on every purchase redeemable for tools, trips, and business services.', 'All registered contractors', 'https://www.abcsupply.com/contractor-rewards/'),
@@ -171,7 +169,7 @@ ON CONFLICT DO NOTHING;
 
 -- GAF Brochures (6)
 INSERT INTO vendor_assets (id, "vendorId", type, title, description, "jobUseCase", "pdfUrl", "tradeType", "isActive")
-SELECT gen_random_uuid(), v.id, a.asset_type, a.title, a.description, a.use_case, a.pdf_url, 'roofing', true
+SELECT gen_random_uuid()::text, v.id, a.asset_type, a.title, a.description, a.use_case, a.pdf_url, 'roofing', true
 FROM "Vendor" v,
 (VALUES
   ('brochure', 'Timberline HDZ Product Brochure', 'Complete product guide for Americas #1 selling shingle with LayerLock technology.', 'Client presentation, proposal attachment', 'https://www.gaf.com/en-us/roofing-materials/residential-roofing-products/timberline-shingles/timberline-hdz-shingles'),
@@ -186,7 +184,7 @@ ON CONFLICT DO NOTHING;
 
 -- Owens Corning Brochures (5)
 INSERT INTO vendor_assets (id, "vendorId", type, title, description, "jobUseCase", "pdfUrl", "tradeType", "isActive")
-SELECT gen_random_uuid(), v.id, a.asset_type, a.title, a.description, a.use_case, a.pdf_url, 'roofing', true
+SELECT gen_random_uuid()::text, v.id, a.asset_type, a.title, a.description, a.use_case, a.pdf_url, 'roofing', true
 FROM "Vendor" v,
 (VALUES
   ('brochure', 'OC TruDefinition Duration Brochure', 'Complete product brochure for Duration line with SureNail technology details.', 'Client presentation, sales tool', 'https://www.owenscorning.com/en-us/roofing/shingles/trudefinition-duration'),
@@ -200,7 +198,7 @@ ON CONFLICT DO NOTHING;
 
 -- CertainTeed Brochures (4)
 INSERT INTO vendor_assets (id, "vendorId", type, title, description, "jobUseCase", "pdfUrl", "tradeType", "isActive")
-SELECT gen_random_uuid(), v.id, a.asset_type, a.title, a.description, a.use_case, a.pdf_url, 'roofing', true
+SELECT gen_random_uuid()::text, v.id, a.asset_type, a.title, a.description, a.use_case, a.pdf_url, 'roofing', true
 FROM "Vendor" v,
 (VALUES
   ('brochure', 'CertainTeed Landmark Shingles Brochure', 'Complete product guide for Landmark series shingles with Max Def colors.', 'Client presentation', 'https://www.certainteed.com/residential-roofing/products/landmark/'),
@@ -213,7 +211,7 @@ ON CONFLICT DO NOTHING;
 
 -- TAMKO Brochures (3)
 INSERT INTO vendor_assets (id, "vendorId", type, title, description, "jobUseCase", "pdfUrl", "tradeType", "isActive")
-SELECT gen_random_uuid(), v.id, a.asset_type, a.title, a.description, a.use_case, a.pdf_url, 'roofing', true
+SELECT gen_random_uuid()::text, v.id, a.asset_type, a.title, a.description, a.use_case, a.pdf_url, 'roofing', true
 FROM "Vendor" v,
 (VALUES
   ('brochure', 'TAMKO Heritage Shingles Brochure', 'Product information for Heritage laminated shingles with color options.', 'Client presentation', 'https://www.tamko.com/residential/roofing/heritage/'),
@@ -225,7 +223,7 @@ ON CONFLICT DO NOTHING;
 
 -- ABC Supply Brochures (3)
 INSERT INTO vendor_assets (id, "vendorId", type, title, description, "jobUseCase", "pdfUrl", "tradeType", "isActive")
-SELECT gen_random_uuid(), v.id, a.asset_type, a.title, a.description, a.use_case, a.pdf_url, 'roofing', true
+SELECT gen_random_uuid()::text, v.id, a.asset_type, a.title, a.description, a.use_case, a.pdf_url, 'roofing', true
 FROM "Vendor" v,
 (VALUES
   ('catalog', 'ABC Supply Product Catalog', 'Full product catalog covering roofing, siding, windows, and accessories.', 'Product ordering, spec lookup', 'https://www.abcsupply.com/products/roofing/'),
@@ -237,7 +235,7 @@ ON CONFLICT DO NOTHING;
 
 -- SRS Distribution Brochures (2)
 INSERT INTO vendor_assets (id, "vendorId", type, title, description, "jobUseCase", "pdfUrl", "tradeType", "isActive")
-SELECT gen_random_uuid(), v.id, a.asset_type, a.title, a.description, a.use_case, a.pdf_url, 'roofing', true
+SELECT gen_random_uuid()::text, v.id, a.asset_type, a.title, a.description, a.use_case, a.pdf_url, 'roofing', true
 FROM "Vendor" v,
 (VALUES
   ('catalog', 'SRS Residential Roofing Catalog', 'Complete residential product catalog with all brands carried by SRS.', 'Product selection, ordering', 'https://www.srsdistribution.com/products/'),
@@ -248,7 +246,7 @@ ON CONFLICT DO NOTHING;
 
 -- Westlake Royal Brochures (2)
 INSERT INTO vendor_assets (id, "vendorId", type, title, description, "jobUseCase", "pdfUrl", "tradeType", "isActive")
-SELECT gen_random_uuid(), v.id, a.asset_type, a.title, a.description, a.use_case, a.pdf_url, 'roofing', true
+SELECT gen_random_uuid()::text, v.id, a.asset_type, a.title, a.description, a.use_case, a.pdf_url, 'roofing', true
 FROM "Vendor" v,
 (VALUES
   ('catalog', 'Westlake Product Catalog', 'Full product line covering stone-coated steel, concrete tile, and polymer products.', 'Product selection', 'https://www.westlakeroyalbuildingproducts.com/products/'),
@@ -259,7 +257,7 @@ ON CONFLICT DO NOTHING;
 
 -- Elite Roofing Supply Brochures (2)
 INSERT INTO vendor_assets (id, "vendorId", type, title, description, "jobUseCase", "pdfUrl", "tradeType", "isActive")
-SELECT gen_random_uuid(), v.id, a.asset_type, a.title, a.description, a.use_case, a.pdf_url, 'roofing', true
+SELECT gen_random_uuid()::text, v.id, a.asset_type, a.title, a.description, a.use_case, a.pdf_url, 'roofing', true
 FROM "Vendor" v,
 (VALUES
   ('catalog', 'Elite Roofing Supply Product Line Card', 'Quick reference product line card with all available materials.', 'Quick ordering reference', 'https://www.eliteroofingsupply.com/'),
