@@ -31,7 +31,8 @@ import { TeamMemberCard } from "./_components/TeamMemberCard";
 
 export const metadata: Metadata = {
   title: "Company Contacts | SkaiScraper",
-  description: "Manage your company contacts, vendors, subcontractors, and relationships",
+  description:
+    "Manage your CRM — clients, adjusters, team members, vendors, and business relationships",
 };
 
 export const dynamic = "force-dynamic";

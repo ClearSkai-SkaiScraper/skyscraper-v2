@@ -47,6 +47,7 @@ const AI_GENERATABLE_SECTIONS = [
 const SECTION_GENERATOR_MAP: Record<string, string> = {
   "executive-summary": "/api/claims-folder/generate/executive-summary",
   "weather-cause": "/api/claims-folder/generate/cause-of-loss",
+  "weather-cause-of-loss": "/api/claims-folder/generate/cause-of-loss",
   "repair-justification": "/api/claims-folder/generate/repair-justification",
   "adjuster-cover-letter": "/api/claims-folder/generate/cover-letter",
 };

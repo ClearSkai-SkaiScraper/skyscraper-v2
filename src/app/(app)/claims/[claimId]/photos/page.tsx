@@ -16,6 +16,7 @@ import {
   Sparkles,
   Square,
   Trash2,
+  Upload,
   X,
   ZoomIn,
 } from "lucide-react";
@@ -63,6 +64,8 @@ interface Photo {
   mimeType: string;
   createdAt: string;
   note?: string;
+  // Source: "client_upload" for client photos, "user" or null for pro photos
+  source?: string;
   // AI Analysis fields
   aiCaption?: AICaption;
   category?: string;
@@ -139,6 +142,10 @@ export default function PhotosPage() {
   }, [claimId]);
 
   if (!claimId) return null;
+
+  // ── Separate pro photos from client-uploaded photos ──
+  const proPhotos = photos.filter((p) => !p.source || p.source === "user");
+  const clientPhotos = photos.filter((p) => p.source === "client_upload");
 
   // ── Computed damage summary values ──
   const analyzedCount = photos.filter((p) => p.analyzed).length;
@@ -1072,125 +1079,213 @@ export default function PhotosPage() {
         </div>
       ) : viewMode === "grid" ? (
         /* Grid View */
-        <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4">
-          {photos.map((photo) => (
-            <div
-              key={photo.id}
-              className={`group relative aspect-square cursor-pointer overflow-hidden rounded-lg border transition-all hover:shadow-lg ${
-                selectedIds.has(photo.id)
-                  ? "border-blue-500 ring-2 ring-blue-500 dark:border-blue-400 dark:ring-blue-400"
-                  : "border-slate-200 dark:border-slate-700"
-              }`}
-              onClick={() => {
-                if (selectMode) {
-                  toggleSelect(photo.id);
-                } else {
-                  setSelectedPhoto(photo);
-                  setPhotoNote(photo.note || "");
-                }
-              }}
-            >
-              {/* Selection Checkbox */}
-              {selectMode && (
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
+        <div className="space-y-6">
+          {/* Pro Photos Grid */}
+          <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4">
+            {proPhotos.map((photo) => (
+              <div
+                key={photo.id}
+                className={`group relative aspect-square cursor-pointer overflow-hidden rounded-lg border transition-all hover:shadow-lg ${
+                  selectedIds.has(photo.id)
+                    ? "border-blue-500 ring-2 ring-blue-500 dark:border-blue-400 dark:ring-blue-400"
+                    : "border-slate-200 dark:border-slate-700"
+                }`}
+                onClick={() => {
+                  if (selectMode) {
                     toggleSelect(photo.id);
-                  }}
-                  className="absolute left-2 top-2 z-50 flex h-6 w-6 items-center justify-center rounded border-2 border-white bg-white/80 shadow-sm transition-colors dark:border-slate-300 dark:bg-slate-800/80"
-                  aria-label={selectedIds.has(photo.id) ? "Deselect photo" : "Select photo"}
-                >
-                  {selectedIds.has(photo.id) ? (
-                    <Check className="h-4 w-4 text-blue-600" />
-                  ) : (
-                    <Square className="h-4 w-4 text-slate-400" />
-                  )}
-                </button>
-              )}
-              {/* Photo with overlay if analyzed */}
-              {photo.analyzed && photo.damageBoxes && photo.damageBoxes.length > 0 ? (
-                <div className="relative h-full w-full">
+                  } else {
+                    setSelectedPhoto(photo);
+                    setPhotoNote(photo.note || "");
+                  }
+                }}
+              >
+                {/* Selection Checkbox */}
+                {selectMode && (
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      toggleSelect(photo.id);
+                    }}
+                    className="absolute left-2 top-2 z-50 flex h-6 w-6 items-center justify-center rounded border-2 border-white bg-white/80 shadow-sm transition-colors dark:border-slate-300 dark:bg-slate-800/80"
+                    aria-label={selectedIds.has(photo.id) ? "Deselect photo" : "Select photo"}
+                  >
+                    {selectedIds.has(photo.id) ? (
+                      <Check className="h-4 w-4 text-blue-600" />
+                    ) : (
+                      <Square className="h-4 w-4 text-slate-400" />
+                    )}
+                  </button>
+                )}
+                {/* Photo with overlay if analyzed */}
+                {/* Note: Grid uses object-cover which crops to square aspect ratio.
+                  Annotation boxes may appear in slightly different positions than
+                  the full view (which shows the complete uncropped image).
+                  This is intentional for visual consistency in the grid. */}
+                {photo.analyzed && photo.damageBoxes && photo.damageBoxes.length > 0 ? (
+                  <div className="relative h-full w-full">
+                    <img
+                      src={photo.publicUrl}
+                      alt={photo.filename}
+                      className="h-full w-full object-cover"
+                    />
+                    <DamageBoxOverlay boxes={photo.damageBoxes} mode="compact" />
+                  </div>
+                ) : (
                   <img
                     src={photo.publicUrl}
                     alt={photo.filename}
                     className="h-full w-full object-cover"
                   />
-                  <DamageBoxOverlay boxes={photo.damageBoxes} mode="compact" />
-                </div>
-              ) : (
-                <img
-                  src={photo.publicUrl}
-                  alt={photo.filename}
-                  className="h-full w-full object-cover"
-                />
-              )}
-
-              {/* Delete button — z-50 ensures it's above the analyze overlay */}
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleDelete(photo.id);
-                }}
-                className="absolute right-2 top-2 z-50 rounded-full bg-red-500/80 p-1.5 text-white opacity-0 transition-opacity hover:bg-red-600 group-hover:opacity-100"
-                aria-label="Delete photo"
-                title="Delete photo"
-              >
-                <X className="h-4 w-4" />
-              </button>
-
-              {/* AI Badge */}
-              {photo.analyzed && photo.severity && (
-                <div className={selectMode ? "absolute left-10 top-2" : "absolute left-2 top-2"}>
-                  <Badge className={getSeverityColor(photo.severity)}>
-                    <Sparkles className="mr-1 h-3 w-3" />
-                    {photo.severity}
-                  </Badge>
-                </div>
-              )}
-
-              {/* Bottom info bar */}
-              <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-2">
-                <p className="truncate text-xs text-white">{photo.filename}</p>
-                {photo.aiCaption?.damageType && (
-                  <p className="truncate text-xs text-blue-300">{photo.aiCaption.damageType}</p>
                 )}
-              </div>
 
-              {/* Analyze / Reanalyze button for all photos on hover */}
-              <div className="pointer-events-none absolute inset-0 flex items-center justify-center bg-black/50 opacity-0 transition-opacity group-hover:opacity-100">
-                <Button
-                  size="sm"
-                  variant={photo.analyzed ? "outline" : "default"}
-                  className={cn(
-                    "pointer-events-auto",
-                    photo.analyzed ? "border-white/60 bg-white/20 text-white hover:bg-white/30" : ""
-                  )}
+                {/* Delete button — z-50 ensures it's above the analyze overlay */}
+                <button
                   onClick={(e) => {
                     e.stopPropagation();
-                    handleAnalyze(photo.id);
+                    handleDelete(photo.id);
                   }}
-                  disabled={analyzing === photo.id}
+                  className="absolute right-2 top-2 z-50 rounded-full bg-red-500/80 p-1.5 text-white opacity-0 transition-opacity hover:bg-red-600 group-hover:opacity-100"
+                  aria-label="Delete photo"
+                  title="Delete photo"
                 >
-                  {analyzing === photo.id ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Analyzing...
-                    </>
-                  ) : photo.analyzed ? (
-                    <>
-                      <Sparkles className="mr-2 h-4 w-4" />
-                      Reanalyze
-                    </>
-                  ) : (
-                    <>
-                      <Sparkles className="mr-2 h-4 w-4" />
-                      Analyze
-                    </>
+                  <X className="h-4 w-4" />
+                </button>
+
+                {/* AI Badge */}
+                {photo.analyzed && photo.severity && (
+                  <div className={selectMode ? "absolute left-10 top-2" : "absolute left-2 top-2"}>
+                    <Badge className={getSeverityColor(photo.severity)}>
+                      <Sparkles className="mr-1 h-3 w-3" />
+                      {photo.severity}
+                    </Badge>
+                  </div>
+                )}
+
+                {/* Bottom info bar */}
+                <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-2">
+                  <p className="truncate text-xs text-white">{photo.filename}</p>
+                  {photo.aiCaption?.damageType && (
+                    <p className="truncate text-xs text-blue-300">{photo.aiCaption.damageType}</p>
                   )}
-                </Button>
+                </div>
+
+                {/* Analyze / Reanalyze button for all photos on hover */}
+                <div className="pointer-events-none absolute inset-0 flex items-center justify-center bg-black/50 opacity-0 transition-opacity group-hover:opacity-100">
+                  <Button
+                    size="sm"
+                    variant={photo.analyzed ? "outline" : "default"}
+                    className={cn(
+                      "pointer-events-auto",
+                      photo.analyzed
+                        ? "border-white/60 bg-white/20 text-white hover:bg-white/30"
+                        : ""
+                    )}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleAnalyze(photo.id);
+                    }}
+                    disabled={analyzing === photo.id}
+                  >
+                    {analyzing === photo.id ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Analyzing...
+                      </>
+                    ) : photo.analyzed ? (
+                      <>
+                        <Sparkles className="mr-2 h-4 w-4" />
+                        Reanalyze
+                      </>
+                    ) : (
+                      <>
+                        <Sparkles className="mr-2 h-4 w-4" />
+                        Analyze
+                      </>
+                    )}
+                  </Button>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* ═══ Client-Uploaded Photos Section ═══ */}
+          {clientPhotos.length > 0 && (
+            <div className="mt-8 rounded-xl border border-blue-200 bg-blue-50/50 p-4 dark:border-blue-800 dark:bg-blue-900/20">
+              <h3 className="mb-4 flex items-center gap-2 text-base font-semibold text-blue-900 dark:text-blue-100">
+                <Upload className="h-5 w-5 text-blue-600" />
+                Shared by Client ({clientPhotos.length})
+                <Badge variant="outline" className="ml-2 text-xs">
+                  Uploaded via Portal
+                </Badge>
+              </h3>
+              <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4">
+                {clientPhotos.map((photo) => (
+                  <div
+                    key={photo.id}
+                    className={`group relative aspect-square cursor-pointer overflow-hidden rounded-lg border border-blue-200 transition-all hover:shadow-lg dark:border-blue-700 ${
+                      selectedIds.has(photo.id) ? "ring-2 ring-blue-500 dark:ring-blue-400" : ""
+                    }`}
+                    onClick={() => {
+                      if (selectMode) {
+                        toggleSelect(photo.id);
+                      } else {
+                        setSelectedPhoto(photo);
+                        setPhotoNote(photo.note || "");
+                      }
+                    }}
+                  >
+                    {/* Selection Checkbox */}
+                    {selectMode && (
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          toggleSelect(photo.id);
+                        }}
+                        className="absolute left-2 top-2 z-50 flex h-6 w-6 items-center justify-center rounded border-2 border-white bg-white/80 shadow-sm"
+                        aria-label={selectedIds.has(photo.id) ? "Deselect" : "Select"}
+                      >
+                        {selectedIds.has(photo.id) ? (
+                          <Check className="h-4 w-4 text-blue-600" />
+                        ) : (
+                          <Square className="h-4 w-4 text-slate-400" />
+                        )}
+                      </button>
+                    )}
+
+                    <img
+                      src={photo.publicUrl}
+                      alt={photo.filename}
+                      className="h-full w-full object-cover"
+                    />
+
+                    {/* Delete button */}
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDelete(photo.id);
+                      }}
+                      className="absolute right-2 top-2 z-50 rounded-full bg-red-500/80 p-1.5 text-white opacity-0 transition-opacity hover:bg-red-600 group-hover:opacity-100"
+                      aria-label="Delete photo"
+                      title="Delete photo"
+                    >
+                      <X className="h-4 w-4" />
+                    </button>
+
+                    {/* Client badge */}
+                    <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-2">
+                      <p className="truncate text-xs text-white">{photo.filename}</p>
+                      <p className="text-xs text-blue-300">Client upload</p>
+                    </div>
+
+                    {/* Zoom icon on hover */}
+                    <div className="pointer-events-none absolute inset-0 flex items-center justify-center bg-black/30 opacity-0 transition-opacity group-hover:opacity-100">
+                      <ZoomIn className="h-6 w-6 text-white" />
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
-          ))}
+          )}
         </div>
       ) : (
         /* Analysis View - Detailed cards */

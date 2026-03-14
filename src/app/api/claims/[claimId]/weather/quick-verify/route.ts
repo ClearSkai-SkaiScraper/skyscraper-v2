@@ -662,11 +662,11 @@ function buildJustification(maxHailInches: number, maxWindMph: number, damageTyp
   // Hail justification
   if (maxHailInches >= 2.0) {
     parts.push(
-      `Significant hail measuring ${maxHailInches.toFixed(2)}" was reported in the vicinity of this property. Hail of this size (≥2") is classified as "destructive" by the National Weather Service and is capable of causing severe damage to roofing materials, siding, gutters, HVAC condensers, and vehicle exteriors. Industry data shows hailstones ≥1.5" diameter exceed the impact threshold for standard architectural shingles per ASTM D3462.`
+      `Significant hail measuring ${maxHailInches.toFixed(2)}" was reported in the vicinity of this property. Hail of this size (2" or larger) is classified as "destructive" by the National Weather Service and is capable of causing severe damage to roofing materials, siding, gutters, HVAC condensers, and vehicle exteriors. Industry data shows hailstones 1.5" diameter or larger exceed the impact threshold for standard architectural shingles per ASTM D3462.`
     );
   } else if (maxHailInches >= 1.0) {
     parts.push(
-      `Hail measuring ${maxHailInches.toFixed(2)}" was documented near this property. Hail at or above 1" (quarter-sized) is the industry-standard threshold for roof damage assessment and commonly results in granule loss, bruising, and fractures in asphalt roofing systems. Per IBHS research, hail ≥1" can compromise the protective granule layer, accelerating material deterioration and reducing service life by 5-10 years.`
+      `Hail measuring ${maxHailInches.toFixed(2)}" was documented near this property. Hail at or above 1" (quarter-sized) is the industry-standard threshold for roof damage assessment and commonly results in granule loss, bruising, and fractures in asphalt roofing systems. Per IBHS research, hail 1" or larger can compromise the protective granule layer, accelerating material deterioration and reducing service life by 5-10 years.`
     );
   } else if (maxHailInches > 0) {
     parts.push(
@@ -677,11 +677,11 @@ function buildJustification(maxHailInches: number, maxWindMph: number, damageTyp
   // Wind justification
   if (maxWindMph >= 90) {
     parts.push(
-      `Extreme winds reaching ${maxWindMph.toFixed(0)} mph were recorded nearby. Wind speeds of this magnitude meet or exceed the design capacity of most residential roofing systems (IRC 2018 §R905 specifies 90 mph as the baseline wind design speed). These winds can cause shingle uplift, tab detachment, flashing failure, and ridge cap displacement — consistent with the damage type reported.`
+      `Extreme winds reaching ${maxWindMph.toFixed(0)} mph were recorded nearby. Wind speeds of this magnitude meet or exceed the design capacity of most residential roofing systems (IRC 2018 S R905 specifies 90 mph as the baseline wind design speed). These winds can cause shingle uplift, tab detachment, flashing failure, and ridge cap displacement — consistent with the damage type reported.`
     );
   } else if (maxWindMph >= 58) {
     parts.push(
-      `Severe winds of ${maxWindMph.toFixed(0)} mph (≥58 mph = NWS "severe" threshold) were recorded in proximity to this property. Winds at this level generate sufficient uplift force to compromise sealed shingle tabs, damage drip edge and fascia, and cause progressive loosening of roofing components — creating vulnerability to water intrusion in subsequent weather events.`
+      `Severe winds of ${maxWindMph.toFixed(0)} mph (58 mph or greater = NWS "severe" threshold) were recorded in proximity to this property. Winds at this level generate sufficient uplift force to compromise sealed shingle tabs, damage drip edge and fascia, and cause progressive loosening of roofing components — creating vulnerability to water intrusion in subsequent weather events.`
     );
   } else if (maxWindMph > 40) {
     parts.push(

@@ -260,6 +260,12 @@ export const CORE_NAV: NavItem[] = [
         match: /^\/trades\/profile(\/.*)?$/,
       },
       {
+        href: "/company/connections",
+        label: "My Connections",
+        icon: "Users",
+        match: /^\/company\/connections(\/.*)?$/,
+      },
+      {
         href: "/trades/companies",
         label: "Network Companies",
         icon: "Building2",

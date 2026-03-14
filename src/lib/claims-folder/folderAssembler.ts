@@ -3,8 +3,8 @@
  * Orchestrates data fetching from all SkaiScraper modules to build a complete claim folder
  */
 
-import prisma from "@/lib/prisma";
 import { logger } from "@/lib/logger";
+import prisma from "@/lib/prisma";
 
 import type {
   AnnotatedPhoto,
@@ -25,13 +25,21 @@ import type {
 // ============================================================================
 
 /**
- * Fetch weather data for a claim by property
+ * Fetch weather data for a claim — resolves propertyId from the claim
  */
-export async function fetchWeatherData(propertyId: string): Promise<WeatherCauseOfLossData | null> {
+export async function fetchWeatherData(claimId: string): Promise<WeatherCauseOfLossData | null> {
   try {
+    // Resolve the propertyId from the claim first
+    const claim = await prisma.claims.findUnique({
+      where: { id: claimId },
+      select: { propertyId: true },
+    });
+
+    if (!claim?.propertyId) return null;
+
     // Get weather documents for this property
     const weatherDocs = await prisma.weather_documents.findMany({
-      where: { propertyId },
+      where: { propertyId: claim.propertyId },
       orderBy: { createdAt: "desc" },
       take: 1,
     });
@@ -538,25 +546,27 @@ export async function assembleClaimFolder(
     partialFolder.readinessScore = readinessScore.overall;
     partialFolder.missingItems = warnings;
 
-    // Build section status map
+    // Build section status map using FolderSectionKey (kebab-case) values
     partialFolder.sectionStatus = {
-      coverSheet: coverSheet ? "complete" : "missing",
-      weatherCauseOfLoss: weatherData ? "complete" : "missing",
-      annotatedPhotos: photos.length > 0 ? "complete" : "missing",
-      codeCompliance: codeData ? "complete" : "missing",
-      scopePricing: scopeData ? "complete" : "missing",
-      repairJustification: "missing",
-      causeOfLossNarrative: "missing",
+      "cover-sheet": coverSheet ? "complete" : "missing",
+      "table-of-contents": coverSheet ? "complete" : "missing",
+      "executive-summary": "missing",
+      "weather-cause-of-loss": weatherData ? "complete" : "missing",
+      "inspection-overview": inspection ? "complete" : "missing",
+      "damage-grids": photos.length > 0 ? "partial" : "missing",
+      "photo-evidence": photos.length > 0 ? "complete" : "missing",
+      "test-cuts": "missing",
+      "code-compliance": codeData ? "complete" : "missing",
+      "scope-pricing": scopeData ? "complete" : "missing",
+      "supplements-variances": "missing",
+      "repair-justification": "missing",
+      "contractor-summary": "missing",
       timeline: timeline.length > 0 ? "complete" : "missing",
-      homeownerStatement: "missing",
-      priorCondition: inspection ? "complete" : "missing",
-      vendorNetwork: "missing",
-      supplementHistory: "missing",
-      communicationLog: "missing",
-      carrierCoverLetter: "missing",
-      legalProtection: "missing",
-      badFaithIndicators: "missing",
-      auditTrail: "missing",
+      "homeowner-statement": "missing",
+      "adjuster-cover-letter": "missing",
+      "claim-checklist": coverSheet ? "partial" : "missing",
+      "digital-signatures": "missing",
+      attachments: "missing",
     };
 
     return {

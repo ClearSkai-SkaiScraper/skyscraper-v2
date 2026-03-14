@@ -138,7 +138,7 @@ function FullView({
             <div>
               <div className="mb-1 flex items-center gap-2">
                 <Zap className="h-5 w-5 text-yellow-400" />
-                <h2 className="text-lg font-bold">ClaimIQ™ Assembly Engine</h2>
+                <h2 className="text-lg font-bold">Claims Assembly Engine</h2>
               </div>
               <p className="text-sm text-slate-300">
                 Packet readiness assessment — auto-fill status for all 17 sections
@@ -275,7 +275,7 @@ function CompactView({
         <div className="mb-3 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Zap className="h-4 w-4 text-yellow-500" />
-            <span className="text-sm font-semibold">ClaimIQ™</span>
+            <span className="text-sm font-semibold">Claims Assembly</span>
           </div>
           <div className="flex items-center gap-2">
             <span className="text-lg font-bold">{readiness.overallScore}%</span>
@@ -314,7 +314,7 @@ function CompactView({
 
         <Link href={`/claims-ready-folder/${claimId}`}>
           <Button variant="outline" size="sm" className="mt-3 w-full gap-1 text-xs">
-            Open ClaimIQ Assembly <ArrowRight className="h-3 w-3" />
+            Open Claims Assembly <ArrowRight className="h-3 w-3" />
           </Button>
         </Link>
       </CardContent>

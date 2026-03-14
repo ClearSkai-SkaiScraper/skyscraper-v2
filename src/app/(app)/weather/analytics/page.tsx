@@ -608,7 +608,7 @@ export default function WeatherAnalyticsPage() {
             <Shield className="h-5 w-5 text-violet-600" />
           </div>
           <div>
-            <p className="font-semibold text-slate-800">ClaimIQ Assembly</p>
+            <p className="font-semibold text-slate-800">Claims Assembly</p>
             <p className="text-xs text-slate-500">Assemble carrier-compliant packets</p>
           </div>
         </Link>

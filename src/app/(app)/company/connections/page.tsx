@@ -15,8 +15,9 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 
 export const metadata: Metadata = {
-  title: "Company Connections | SkaiScraper",
-  description: "Manage vendors, subcontractors, contractors, and client relationships.",
+  title: "My Connections | Trades Network | SkaiScraper",
+  description:
+    "Your network of vendors, subcontractors, and contractor connections in the Trades Network.",
 };
 
 import { PageContainer } from "@/components/layout/PageContainer";
@@ -140,8 +141,8 @@ export default async function CompanyConnectionsPage() {
     <PageContainer maxWidth="6xl">
       <PageHero
         section="network"
-        title="Connections & Contacts"
-        subtitle="Manage your network of vendors, subcontractors, contractors, and clients"
+        title="My Connections"
+        subtitle="Your professional network — vendors, subcontractors, and contractors you're connected with"
       >
         <div className="flex gap-2">
           <Button asChild variant="outline">

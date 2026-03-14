@@ -86,6 +86,37 @@ function damageColorToRgb(c: DamageColor) {
   return rgb(c.r, c.g, c.b);
 }
 
+/**
+ * Sanitize text for WinAnsi PDF encoding.
+ * Replaces characters that WinAnsi cannot encode with ASCII equivalents.
+ */
+function sanitizeForPDF(text: string): string {
+  return text
+    .replace(/≥/g, ">=") // greater-than-or-equal
+    .replace(/≤/g, "<=") // less-than-or-equal
+    .replace(/°/g, " degrees") // degree symbol
+    .replace(/±/g, "+/-") // plus-minus
+    .replace(/×/g, "x") // multiplication
+    .replace(/÷/g, "/") // division
+    .replace(/≈/g, "~") // approximately
+    .replace(/≠/g, "!=") // not equal
+    .replace(/∞/g, "infinity") // infinity
+    .replace(/•/g, "-") // bullet
+    .replace(/–/g, "-") // en-dash
+    .replace(/—/g, "-") // em-dash
+    .replace(/'/g, "'") // smart single quote left
+    .replace(/'/g, "'") // smart single quote right
+    .replace(/"/g, '"') // smart double quote left
+    .replace(/"/g, '"') // smart double quote right
+    .replace(/…/g, "...") // ellipsis
+    .replace(/§/g, "S ") // section symbol
+    .replace(/©/g, "(c)") // copyright
+    .replace(/®/g, "(R)") // registered
+    .replace(/™/g, "(TM)") // trademark
+    .replace(/μ/g, "u") // micro
+    .replace(/Ω/g, "Ohm"); // ohm
+}
+
 // Print-safe mode helpers (darker grays, larger min font, no edge-bleed)
 const PRINT_SAFE_MIN_FONT = 8;
 function printSafeSize(size: number, printSafe: boolean): number {
@@ -900,7 +931,10 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
         }
         // Use AZ-specific code when applicable
         const displayCode = isAZ ? getAZCode(codeKey, propertyState) || codeInfo : codeInfo;
-        page.drawText(`${displayCode.code}  -  ${displayCode.title}`, {
+        // Sanitize text for WinAnsi PDF encoding
+        const safeCodeTitle = sanitizeForPDF(`${displayCode.code}  -  ${displayCode.title}`);
+        const safeCodeText = sanitizeForPDF(displayCode.text);
+        page.drawText(safeCodeTitle, {
           x: MARGIN,
           y,
           size: 10,
@@ -910,7 +944,7 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
         y -= 14;
         y = drawWrappedText(
           page,
-          displayCode.text,
+          safeCodeText,
           MARGIN + 10,
           y,
           CONTENT_W - 10,

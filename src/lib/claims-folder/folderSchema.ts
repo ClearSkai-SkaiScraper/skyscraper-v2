@@ -267,7 +267,7 @@ export interface ClaimFolder {
   missingItems: string[];
 
   // Section completion tracking
-  sectionStatus?: Record<FolderSection, SectionStatus>;
+  sectionStatus?: Record<string, SectionStatus>;
 
   // Export files
   exportFiles?: Array<{

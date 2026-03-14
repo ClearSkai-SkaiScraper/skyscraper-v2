@@ -129,7 +129,7 @@ export const POST = withAuth(async (req: NextRequest, { orgId }) => {
         code: "IRC R905.2.6 (High Wind)",
         title: "High Wind Fastener Requirements",
         requirement:
-          "In high-wind regions (≥110 mph), shingles shall be secured with six fasteners per strip shingle. Enhanced starter strips required.",
+          "In high-wind regions (110 mph or greater), shingles shall be secured with six fasteners per strip shingle. Enhanced starter strips required.",
         category: "fasteners",
         source: "irc" as const,
         appliesTo: "High wind zones",
@@ -177,9 +177,6 @@ export const POST = withAuth(async (req: NextRequest, { orgId }) => {
     return NextResponse.json(result);
   } catch (error) {
     logger.error("[POST /api/codes/analyze] Error:", error);
-    return NextResponse.json(
-      { error: "Code analysis failed" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Code analysis failed" }, { status: 500 });
   }
 });

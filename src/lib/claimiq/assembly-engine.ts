@@ -508,21 +508,33 @@ export async function assessClaimReadiness(
     }
   });
 
-  // ── Scoring ────────────────────────────────────────────────────────────
-  const requiredSections = sections.filter((s) => s.required);
-  const overallScore = Math.round(
-    sections.reduce((sum, s) => sum + s.completeness, 0) / sections.length
-  );
+  // ── Scoring (weighted categories — matches calculateReadinessScore) ──
+  // Uses the same 7-category weights as folderAssembler so both surfaces
+  // show an identical percentage.  Max = 100 (15+20+15+20+15+10+5).
+  const catWeather = hasWeatherNarrative ? 15 : hasWeather ? 8 : 0;
+  const catPhotos = photos >= 10 ? 20 : photos >= 5 ? 12 : photos >= 1 ? 5 : 0;
+  const catCodes = codeItems >= 5 ? 15 : codeItems > 0 ? 8 : 0;
+  const catScope = scopeItems > 0 ? (hasAnalyzedPhotos ? 20 : 10) : 0;
+  const catNarratives =
+    hasJustification && hasDamageReport ? 15 : hasJustification || hasDamageReport ? 8 : 0;
+  const catSignatures = signatures >= 2 ? 10 : signatures > 0 ? 5 : 0;
+  const catTimeline = activities >= 3 ? 5 : activities > 0 ? 3 : 0;
+  const overallScore =
+    catWeather + catPhotos + catCodes + catScope + catNarratives + catSignatures + catTimeline;
+
+  // Grade thresholds aligned with calculateReadinessScore
   const overallGrade: ClaimIQReadiness["overallGrade"] =
     overallScore >= 90
       ? "A"
-      : overallScore >= 75
+      : overallScore >= 80
         ? "B"
-        : overallScore >= 60
+        : overallScore >= 70
           ? "C"
-          : overallScore >= 40
+          : overallScore >= 60
             ? "D"
             : "F";
+
+  const requiredSections = sections.filter((s) => s.required);
 
   const readySections = sections.filter((s) => s.status === "ready").length;
   const partialSections = sections.filter((s) => s.status === "partial").length;

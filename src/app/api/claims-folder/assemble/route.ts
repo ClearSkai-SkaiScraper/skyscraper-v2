@@ -6,12 +6,12 @@ export const dynamic = "force-dynamic";
  * Assembles a complete claims-ready folder from a claim ID
  */
 
-import { auth } from "@clerk/nextjs/server";
 import { logger } from "@/lib/logger";
+import { auth } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
 
 import { assembleClaimFolder } from "@/lib/claims-folder/folderAssembler";
-import type { FolderSection, SectionStatus } from "@/lib/claims-folder/folderSchema";
+import type { SectionStatus } from "@/lib/claims-folder/folderSchema";
 import { AssembleFolderRequestSchema } from "@/lib/claims-folder/folderSchema";
 
 // Demo folder for testing - uses `any` to allow flexible demo structure
@@ -357,24 +357,26 @@ function buildDemoFolder(claimId: string): Record<string, unknown> {
     readinessScore: 95,
     missingItems: [],
     sectionStatus: {
-      coverSheet: "complete",
-      weatherCauseOfLoss: "complete",
-      annotatedPhotos: "complete",
-      codeCompliance: "complete",
-      scopePricing: "complete",
-      repairJustification: "complete",
-      causeOfLossNarrative: "complete",
+      "cover-sheet": "complete",
+      "table-of-contents": "complete",
+      "executive-summary": "complete",
+      "weather-cause-of-loss": "complete",
+      "inspection-overview": "complete",
+      "damage-grids": "complete",
+      "photo-evidence": "complete",
+      "test-cuts": "partial",
+      "code-compliance": "complete",
+      "scope-pricing": "complete",
+      "supplements-variances": "missing",
+      "repair-justification": "complete",
+      "contractor-summary": "complete",
       timeline: "complete",
-      homeownerStatement: "partial",
-      priorCondition: "complete",
-      vendorNetwork: "complete",
-      supplementHistory: "partial",
-      communicationLog: "complete",
-      carrierCoverLetter: "complete",
-      legalProtection: "complete",
-      badFaithIndicators: "complete",
-      auditTrail: "complete",
-    } as Record<FolderSection, SectionStatus>,
+      "homeowner-statement": "partial",
+      "adjuster-cover-letter": "complete",
+      "claim-checklist": "complete",
+      "digital-signatures": "partial",
+      attachments: "partial",
+    } as Record<string, SectionStatus>,
   };
 }
 

@@ -43,7 +43,7 @@ function mapTypeLabel(t: UnifiedReport["type"]): { label: string; icon: React.Re
     case "BAD_FAITH":
       return { label: "Bad Faith Analysis", icon: base };
     case "CLAIMS_PACKET":
-      return { label: "ClaimIQ Assembly", icon: base };
+      return { label: "Claims Assembly", icon: base };
     default:
       return { label: "Report", icon: base };
   }
@@ -177,7 +177,7 @@ export default async function ReportHistoryPage({
                   <option value="CONTRACTOR_PACKET">Contractor Packet</option>
                   <option value="BID_PACKAGE">Bid Package</option>
                   <option value="MATERIALS_ESTIMATE">Materials Estimate</option>
-                  <option value="CLAIMS_PACKET">ClaimIQ Assembly</option>
+                  <option value="CLAIMS_PACKET">Claims Assembly</option>
                 </optgroup>
                 <optgroup label="Other">
                   <option value="VIDEO_REPORT">Video Report</option>

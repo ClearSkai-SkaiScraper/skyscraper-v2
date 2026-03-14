@@ -31,7 +31,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { AutopilotPanel } from "@/components/claimiq/AutopilotPanel";
 import { ClaimIQDashboard } from "@/components/claimiq/ClaimIQDashboard";
 import { PacketGenerationPanel } from "@/components/claimiq/PacketGenerationPanel";
-import ReadinessScore from "@/components/claims-folder/ReadinessScore";
+import { ReadinessScore } from "@/components/claims-folder/ReadinessScore";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -311,7 +311,7 @@ export default function ClaimFolderBuilderPage() {
       <div className="flex min-h-[60vh] items-center justify-center">
         <div className="text-center">
           <Loader2 className="mx-auto mb-4 h-12 w-12 animate-spin text-blue-500" />
-          <p className="text-lg font-medium">Assembling ClaimIQ Packet...</p>
+          <p className="text-lg font-medium">Assembling Claims Packet...</p>
           <p className="text-sm text-slate-500">Gathering weather data, photos, codes & more</p>
         </div>
       </div>
@@ -352,7 +352,7 @@ export default function ClaimFolderBuilderPage() {
               </Button>
             </Link>
           </div>
-          <h1 className="text-2xl font-bold text-slate-900 dark:text-white">ClaimIQ Assembly</h1>
+          <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Claims Assembly</h1>
           <p className="text-slate-500">
             Claim #{claimId} •{" "}
             {folder.coverSheet?.insured_name ||
@@ -415,7 +415,7 @@ export default function ClaimFolderBuilderPage() {
         <TabsList>
           <TabsTrigger value="claim-iq" className="gap-1">
             <Zap className="h-3.5 w-3.5" />
-            ClaimIQ
+            Assembly
           </TabsTrigger>
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="sections">All Sections</TabsTrigger>
@@ -427,7 +427,7 @@ export default function ClaimFolderBuilderPage() {
           <TabsTrigger value="preview">Preview</TabsTrigger>
         </TabsList>
 
-        {/* ClaimIQ Assembly Engine Tab */}
+        {/* Claims Assembly Engine Tab */}
         <TabsContent value="claim-iq">
           <ClaimIQDashboard claimId={claimId as string} />
         </TabsContent>
@@ -715,41 +715,166 @@ export default function ClaimFolderBuilderPage() {
 
         {/* Preview Tab */}
         <TabsContent value="preview" className="space-y-4">
-          <div className="rounded-lg border border-slate-200 bg-white p-6 dark:border-slate-700 dark:bg-slate-900">
-            <h2 className="mb-4 text-lg font-semibold">Package Preview</h2>
-            <p className="mb-6 text-slate-500">
-              Preview how your claims package will appear when exported. Selected sections will be
-              included in the final document.
-            </p>
+          <div className="rounded-lg border border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-900">
+            {/* Preview Header */}
+            <div className="flex items-center justify-between border-b border-slate-200 p-6 dark:border-slate-700">
+              <div>
+                <h2 className="text-lg font-semibold">Document Preview</h2>
+                <p className="text-sm text-slate-500">
+                  Review your claims package before exporting. {selectedSections.size} of{" "}
+                  {allSections.length} sections selected.
+                </p>
+              </div>
+              <div className="flex items-center gap-2">
+                <Badge variant="outline" className="text-sm">
+                  {completeCount} complete
+                </Badge>
+                <Badge
+                  variant="outline"
+                  className="border-amber-300 text-sm text-amber-600 dark:border-amber-700 dark:text-amber-400"
+                >
+                  {partialCount} partial
+                </Badge>
+                <Badge
+                  variant="outline"
+                  className="border-red-300 text-sm text-red-600 dark:border-red-700 dark:text-red-400"
+                >
+                  {missingCount} missing
+                </Badge>
+              </div>
+            </div>
 
-            <div className="space-y-4">
-              {Array.from(selectedSections).map((section) => {
+            {/* Document-style preview */}
+            <div className="mx-auto max-w-3xl space-y-6 p-6 md:p-10">
+              {/* Title page */}
+              <div className="rounded-lg border border-slate-200 bg-gradient-to-b from-slate-50 to-white p-8 text-center dark:border-slate-700 dark:from-slate-800 dark:to-slate-900">
+                <h1 className="mb-2 text-2xl font-bold text-slate-900 dark:text-white">
+                  Claims Assembly Package
+                </h1>
+                <p className="text-lg text-slate-600 dark:text-slate-400">
+                  {folder.coverSheet?.insured_name ||
+                    folder.coverSheet?.policyholderName ||
+                    "Policyholder"}
+                </p>
+                <div className="mt-4 space-y-1 text-sm text-slate-500">
+                  {folder.coverSheet?.propertyAddress && <p>{folder.coverSheet.propertyAddress}</p>}
+                  {folder.coverSheet?.carrier && <p>Carrier: {folder.coverSheet.carrier}</p>}
+                  {folder.coverSheet?.policyNumber && (
+                    <p>Policy #: {folder.coverSheet.policyNumber}</p>
+                  )}
+                  {folder.coverSheet?.dateOfLoss && (
+                    <p>
+                      Date of Loss: {new Date(folder.coverSheet.dateOfLoss).toLocaleDateString()}
+                    </p>
+                  )}
+                </div>
+                <div className="mt-4 text-xs text-slate-400">
+                  Generated {new Date().toLocaleDateString()} by SkaiScraper
+                </div>
+              </div>
+
+              {/* Section previews */}
+              {Array.from(selectedSections).map((section, idx) => {
                 const meta = SECTION_METADATA[section];
                 const status = sectionStatus[section] || "missing";
+                const data = folder[section as keyof ClaimFolder];
 
                 return (
                   <div
                     key={section}
-                    className="flex items-center justify-between rounded border border-slate-200 p-3 dark:border-slate-700"
+                    className="rounded-lg border border-slate-200 dark:border-slate-700"
                   >
-                    <div className="flex items-center gap-3">
-                      {SECTION_ICONS[section]}
-                      <span>{meta.title}</span>
+                    {/* Section header */}
+                    <div
+                      className={`flex items-center justify-between border-b px-6 py-3 ${
+                        status === "complete"
+                          ? "border-green-200 bg-green-50 dark:border-green-900 dark:bg-green-950"
+                          : status === "partial"
+                            ? "border-amber-200 bg-amber-50 dark:border-amber-900 dark:bg-amber-950"
+                            : "border-red-200 bg-red-50 dark:border-red-900 dark:bg-red-950"
+                      }`}
+                    >
+                      <div className="flex items-center gap-3">
+                        <span className="text-sm font-bold text-slate-400">§{idx + 1}</span>
+                        {SECTION_ICONS[section]}
+                        <span className="font-semibold">{meta.title}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        {getStatusIcon(status)}
+                        <Link href={`/claims-ready-folder/${claimId}/sections/${section}`}>
+                          <Button variant="ghost" size="sm" className="h-7 text-xs">
+                            <Eye className="mr-1 h-3 w-3" />
+                            Edit
+                          </Button>
+                        </Link>
+                      </div>
                     </div>
-                    <div className="flex items-center gap-2">
-                      {getStatusIcon(status)}
-                      <span className="text-sm capitalize text-slate-500">{status}</span>
+
+                    {/* Section content preview */}
+                    <div className="p-6">
+                      {status === "missing" ? (
+                        <div className="flex items-center justify-center py-8 text-center">
+                          <div>
+                            <AlertCircle className="mx-auto mb-2 h-8 w-8 text-red-300 dark:text-red-700" />
+                            <p className="text-sm text-slate-500">
+                              No data available for this section
+                            </p>
+                            {meta.title.includes("Summary") ||
+                            meta.title.includes("Justification") ||
+                            meta.title.includes("Cover Letter") ? (
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                className="mt-3"
+                                onClick={() => handleGenerateSection(section)}
+                                disabled={generating === section}
+                              >
+                                {generating === section ? (
+                                  <>
+                                    <Loader2 className="mr-1 h-3 w-3 animate-spin" />
+                                    Generating...
+                                  </>
+                                ) : (
+                                  <>
+                                    <Sparkles className="mr-1 h-3 w-3" />
+                                    Generate with AI
+                                  </>
+                                )}
+                              </Button>
+                            ) : null}
+                          </div>
+                        </div>
+                      ) : data && typeof data === "object" ? (
+                        <SectionPreview data={data} />
+                      ) : data ? (
+                        <p className="text-sm text-slate-700 dark:text-slate-300">{String(data)}</p>
+                      ) : (
+                        <p className="text-sm italic text-slate-400">
+                          Section marked as {status} — view details for full data.
+                        </p>
+                      )}
                     </div>
                   </div>
                 );
               })}
             </div>
 
-            <div className="mt-6">
-              <Button onClick={() => setExportDialogOpen(true)} className="w-full">
-                <Download className="mr-2 h-4 w-4" />
-                Export Selected ({selectedSections.size} sections)
-              </Button>
+            {/* Export footer */}
+            <div className="border-t border-slate-200 p-6 dark:border-slate-700">
+              <div className="flex items-center justify-between">
+                <p className="text-sm text-slate-500">
+                  {selectedSections.size} sections selected •{" "}
+                  {
+                    Array.from(selectedSections).filter((s) => sectionStatus[s] === "complete")
+                      .length
+                  }{" "}
+                  complete
+                </p>
+                <Button onClick={() => setExportDialogOpen(true)}>
+                  <Download className="mr-2 h-4 w-4" />
+                  Export Package
+                </Button>
+              </div>
             </div>
           </div>
         </TabsContent>

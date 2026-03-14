@@ -21,12 +21,12 @@ export const AZ_CODE_AMENDMENTS: Record<string, IRCCodeEntry> = {
   shingle_damage: {
     code: "AZ IRC R905.2.7 (2018 w/ amendments)",
     title: "Asphalt Shingle Application — Arizona",
-    text: "Per Arizona-adopted 2018 IRC R905.2.7, asphalt shingles shall be applied per manufacturer installation instructions. In regions with design wind speeds ≥130 mph (Coconino County high-wind zones), enhanced fastening per ASTM D7158 Class H is required. All shingle replacement in Arizona must comply with current adopted code at time of repair, not original installation code.",
+    text: "Per Arizona-adopted 2018 IRC R905.2.7, asphalt shingles shall be applied per manufacturer installation instructions. In regions with design wind speeds of 130 mph or greater (Coconino County high-wind zones), enhanced fastening per ASTM D7158 Class H is required. All shingle replacement in Arizona must comply with current adopted code at time of repair, not original installation code.",
   },
   tile_damage: {
     code: "AZ IRC R905.3 (2018 w/ amendments)",
     title: "Clay & Concrete Tile — Arizona",
-    text: "Arizona's desert climate subjects tile roofing to extreme thermal cycling (>100°F diurnal range). Tile cracking from hail or thermal stress must be evaluated for both individual tile replacement and underlayment integrity per AZ-adopted IRC R905.3. Arizona requires mechanical attachment of all tiles in wind zones ≥110 mph.",
+    text: "Arizona's desert climate subjects tile roofing to extreme thermal cycling (>100F diurnal range). Tile cracking from hail or thermal stress must be evaluated for both individual tile replacement and underlayment integrity per AZ-adopted IRC R905.3. Arizona requires mechanical attachment of all tiles in wind zones of 110 mph or greater.",
   },
   ventilation: {
     code: "AZ IRC R806.1 (2018)",

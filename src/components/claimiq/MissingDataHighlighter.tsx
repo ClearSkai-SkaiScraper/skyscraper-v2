@@ -297,7 +297,7 @@ export function MissingDataHighlighter({
               All Data Complete
             </p>
             <p className="text-xs text-emerald-600/80 dark:text-emerald-400/80">
-              Every section in the ClaimIQ packet has the data it needs.
+              Every section in the claims assembly packet has the data it needs.
             </p>
           </div>
         </CardContent>

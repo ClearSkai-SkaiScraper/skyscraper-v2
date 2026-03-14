@@ -6,6 +6,7 @@
  * - Confidence percentage badges
  * - Source-model indicator (YOLO ● vs GPT-4)
  * - Compact mode for thumbnails, full mode for lightboxes
+ * - Smart label hiding: small boxes (<12%) show only severity dot to reduce clutter
  *
  * Coordinate system: 0–1 normalised fractions  (or 0-100 percentages from Roboflow)
  */
@@ -88,6 +89,9 @@ export function DamageBoxOverlay({
 }: DamageBoxOverlayProps) {
   if (!boxes || boxes.length === 0) return null;
 
+  // Minimum box size (percentage) to show labels - prevents cluttering small boxes
+  const MIN_SIZE_FOR_LABELS = 12; // 12% of image width/height
+
   return (
     <div className={cn("pointer-events-none absolute inset-0", className)}>
       {boxes.map((box, i) => {
@@ -102,6 +106,9 @@ export function DamageBoxOverlay({
         const pctY = box.y * scale * 100;
         const pctW = box.w * scale * 100;
         const pctH = box.h * scale * 100;
+
+        // Determine if box is large enough to show labels
+        const isLargeEnough = pctW >= MIN_SIZE_FOR_LABELS || pctH >= MIN_SIZE_FOR_LABELS;
 
         const sev = normaliseSeverity(box.severity);
         const style = SEVERITY_STYLES[sev] || DEFAULT_STYLE;
@@ -118,8 +125,8 @@ export function DamageBoxOverlay({
               height: `${pctH}%`,
             }}
           >
-            {/* ── Full mode: label pill + confidence ─────────────────── */}
-            {mode === "full" && (box.label || box.score != null) && (
+            {/* ── Full mode: label pill + confidence (only on large-enough boxes) ─────────────────── */}
+            {mode === "full" && isLargeEnough && (box.label || box.score != null) && (
               <span
                 className={cn(
                   "absolute -top-6 left-0 flex items-center gap-1 whitespace-nowrap rounded px-1.5 py-0.5 text-[10px] font-semibold leading-none shadow-sm",
@@ -140,6 +147,17 @@ export function DamageBoxOverlay({
                   <span className="opacity-80">{Math.round(box.score * 100)}%</span>
                 )}
               </span>
+            )}
+
+            {/* ── Full mode: small box indicator (tiny dot for boxes too small for labels) ─────────────────── */}
+            {mode === "full" && !isLargeEnough && (
+              <span
+                className={cn(
+                  "absolute -right-1 -top-1 h-2 w-2 rounded-full border border-white shadow",
+                  style.badge
+                )}
+                title={box.label || "Damage detected"}
+              />
             )}
 
             {/* ── Compact mode: tiny corner dot showing severity colour ── */}

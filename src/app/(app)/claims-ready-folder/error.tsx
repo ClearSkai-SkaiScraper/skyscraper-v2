@@ -24,11 +24,11 @@ export default function ClaimsReadyFolderError({
           <AlertTriangle className="h-8 w-8 text-red-600 dark:text-red-400" />
         </div>
         <h2 className="mb-2 text-xl font-bold text-gray-900 dark:text-gray-100">
-          Claim Packet Error
+          Claims Assembly Error
         </h2>
         <p className="mb-6 text-sm text-gray-600 dark:text-gray-400">
-          Something went wrong loading the Claim Packet. This is usually caused by large claim data.
-          Try refreshing — if the issue persists, contact support.
+          Something went wrong loading the Claims Assembly. Try refreshing — if the issue persists,
+          contact support.
         </p>
         <div className="flex items-center justify-center gap-3">
           <Button onClick={reset} className="gap-2">

@@ -123,6 +123,8 @@ export const GET = withAuth(
             mimeType: p.mimeType,
             sizeBytes: p.sizeBytes,
             createdAt: p.createdAt,
+            // Source: "client_upload" for client photos, "user" or null for pro photos
+            source: p.source || "user",
             // AI analysis fields from saved data
             aiCaption: p.ai_caption
               ? {
