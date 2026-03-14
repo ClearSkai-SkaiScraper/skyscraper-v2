@@ -20,8 +20,10 @@ import { TabErrorBoundary } from "@/components/errors/TabErrorBoundary";
 import { JobValueBox } from "@/components/jobs/JobValueBox";
 import { ClaimWorkspaceSkeleton } from "@/components/loading/LoadingStates";
 
+import { RequestCloseoutButton } from "@/components/jobs/RequestCloseoutButton";
 import { retryQueue } from "@/lib/client/retryQueue";
 import { logger } from "@/lib/logger";
+import { WORKFLOW_STATUSES, getWorkflowStatusInfo, mapToWorkflowStatus } from "@/lib/statusMapping";
 import { CarrierExportButton } from "../_components/CarrierExportButton";
 import { ClaimsSidebar } from "../_components/ClaimsSidebar";
 import { ClientConnectSection } from "../_components/ClientConnectSection";
@@ -632,12 +634,33 @@ export default function OverviewPage() {
                 onSave={async (value) => handleFieldUpdate("title", value)}
                 placeholder="Enter claim title"
               />
-              <EditableField
-                label="Status"
-                value={claim.status}
-                onSave={async (value) => handleFieldUpdate("status", value)}
-                placeholder="new"
-              />
+              <div>
+                <label className="text-xs font-medium text-muted-foreground">Workflow Status</label>
+                {(() => {
+                  const mapped = mapToWorkflowStatus(claim.status);
+                  const info = getWorkflowStatusInfo(mapped);
+                  return (
+                    <select
+                      value={mapped}
+                      onChange={async (e) => {
+                        const newStatus = e.target.value;
+                        setClaim((prev) => (prev ? { ...prev, status: newStatus } : null));
+                        queueSave("status", newStatus);
+                      }}
+                      className="mt-1 block w-full rounded-lg border border-slate-300 bg-background px-3 py-2 text-sm font-medium text-foreground shadow-sm transition-colors focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200 dark:border-slate-600"
+                    >
+                      {WORKFLOW_STATUSES.map((ws) => (
+                        <option key={ws.value} value={ws.value}>
+                          {ws.emoji} {ws.label}
+                        </option>
+                      ))}
+                    </select>
+                  );
+                })()}
+                <p className="mt-1 text-xs text-muted-foreground">
+                  {getWorkflowStatusInfo(mapToWorkflowStatus(claim.status)).description}
+                </p>
+              </div>
             </div>
 
             <div className="grid grid-cols-2 gap-4">
@@ -760,6 +783,20 @@ export default function OverviewPage() {
                   Bid Package
                 </Link>
               </div>
+            </div>
+
+            {/* Closeout */}
+            <div className="border-t border-slate-200 pt-4 dark:border-slate-700">
+              <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                Lifecycle
+              </p>
+              <RequestCloseoutButton
+                entityId={claimId}
+                entityType="claim"
+                entityTitle={claim.title}
+                currentStatus={claim.status}
+                onCloseoutRequested={fetchData}
+              />
             </div>
           </div>
         </SectionCard>

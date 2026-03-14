@@ -11,6 +11,7 @@ import {
 } from "@/lib/billing/requireActiveSubscription";
 import prisma from "@/lib/prisma";
 import { checkRateLimit } from "@/lib/rate-limit";
+import { safeOrgContext } from "@/lib/safeOrgContext";
 
 export async function POST(request: NextRequest) {
   try {
@@ -19,7 +20,14 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const orgId = (user.publicMetadata?.orgId as string) || user.id;
+    // Use safeOrgContext for proper tenant isolation, fallback to publicMetadata
+    let orgId: string;
+    try {
+      const ctx = await safeOrgContext();
+      orgId = ctx.orgId || (user.publicMetadata?.orgId as string) || user.id;
+    } catch {
+      orgId = (user.publicMetadata?.orgId as string) || user.id;
+    }
 
     // ── Billing guard ──
     try {

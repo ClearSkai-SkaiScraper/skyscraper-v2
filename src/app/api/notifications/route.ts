@@ -58,6 +58,34 @@ export async function GET() {
     link: row.link,
   }));
 
+  // ── Fetch ProjectNotifications for claims in this org ──
+  if (orgId) {
+    try {
+      const projectNotifs = await prisma.projectNotification.findMany({
+        where: { orgId, read: false },
+        orderBy: { createdAt: "desc" },
+        take: 20,
+      });
+
+      for (const pn of projectNotifs) {
+        notifications.push({
+          id: `pn-${pn.id}`,
+          type: pn.notificationType === "alert" ? "warning" : "info",
+          title: pn.title || "Claim Update",
+          message: pn.message || "",
+          createdAt: pn.createdAt.toISOString(),
+          read: pn.read,
+          link: `/claims/${pn.claimId}`,
+        });
+      }
+    } catch (pnError) {
+      // ProjectNotification table may not exist in all environments
+      if ((pnError as any)?.code !== "P2021") {
+        logger.error("[notifications] ProjectNotification error:", pnError);
+      }
+    }
+  }
+
   // ── Parallel fetch: trade notifications + message threads ──
   const recipientIds: string[] = [user.id];
   if (orgId) recipientIds.push(orgId);
@@ -168,6 +196,20 @@ export async function POST(req: NextRequest) {
       await prisma.tradeNotification.update({
         where: { id: tnId },
         data: { isRead: true, readAt: new Date() },
+      });
+    } catch {
+      // Ignore if not found
+    }
+    return Response.json({ ok: true });
+  }
+
+  // Handle ProjectNotification marks (prefixed with pn-)
+  if (notificationId?.startsWith("pn-")) {
+    const pnId = notificationId.replace("pn-", "");
+    try {
+      await prisma.projectNotification.update({
+        where: { id: pnId },
+        data: { read: true, readAt: new Date() },
       });
     } catch {
       // Ignore if not found

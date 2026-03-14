@@ -334,12 +334,12 @@ function estimatePhotoSectionHeight(
   photoLoaded: boolean,
   avgCaptionLines = 3
 ): number {
-  let height = 40; // header + filename + spacing
+  let height = 36; // header + filename + spacing
   if (photoLoaded)
-    height += MAX_PHOTO_H + 14; // photo + margin
+    height += MAX_PHOTO_H + 8; // photo + margin (tightened)
   else height += 80; // placeholder
-  // Each finding: ~70px (number + severity + code + caption + separator)
-  height += clusterCount * (30 + avgCaptionLines * 14 + 20);
+  // Each finding: ~55px (number + severity + code + caption + separator — tightened)
+  height += clusterCount * (26 + avgCaptionLines * 13 + 14);
   return height;
 }
 
@@ -372,7 +372,7 @@ function drawSectionHeader(
     font,
     color: primaryColor,
   });
-  return y - 35;
+  return y - 28;
 }
 
 // ============================================================================
@@ -1153,7 +1153,7 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
               });
             }
           }
-          y -= dims.height + 14;
+          y -= dims.height + 8;
         } else {
           // Photo placeholder
           page.drawRectangle({
@@ -1240,7 +1240,7 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
             font: helveticaBold,
             color: rgb(0.15, 0.15, 0.15),
           });
-          y -= 16;
+          y -= 13;
 
           // Severity + Confidence
           const sevColor = ["critical", "severe", "high"].includes(cluster.severity.toLowerCase())
@@ -1276,7 +1276,7 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
               color: rgb(0.6, 0.6, 0.6),
             });
           }
-          y -= 16;
+          y -= 13;
 
           // IRC code reference
           if (cluster.ircCode) {
@@ -1287,7 +1287,7 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
               font: helveticaBold,
               color: rgb(0.15, 0.35, 0.65),
             });
-            y -= 14;
+            y -= 12;
           }
 
           // Professional caption
@@ -1304,17 +1304,31 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
               13
             );
           }
-          y -= 8;
+          y -= 4;
 
           // Separator
           if (ci < clusters.length - 1) {
+            // Add finding description/details if available
+            if (cluster.memberCount > 1) {
+              page.drawText(
+                `Based on ${cluster.memberCount} AI detections grouped by damage type and proximity.`,
+                {
+                  x: MARGIN + 12,
+                  y,
+                  size: 8,
+                  font: helvetica,
+                  color: rgb(0.5, 0.5, 0.5),
+                }
+              );
+              y -= 10;
+            }
             page.drawLine({
               start: { x: MARGIN + 12, y: y + 4 },
               end: { x: MARGIN + CONTENT_W / 2, y: y + 4 },
               thickness: 0.5,
               color: rgb(0.85, 0.85, 0.85),
             });
-            y -= 6;
+            y -= 4;
           }
           findingsOnPage++;
         }

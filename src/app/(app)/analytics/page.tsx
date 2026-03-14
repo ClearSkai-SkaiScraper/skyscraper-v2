@@ -67,7 +67,7 @@ const EXECUTIVE: AnalyticsPage[] = [
   {
     title: "Executive Intelligence",
     description: "C-suite KPI dashboard — revenue, churn risk, NPS, and growth metrics.",
-    href: "/dashboard/kpis",
+    href: "/analytics/dashboard",
     icon: Gauge,
   },
   {

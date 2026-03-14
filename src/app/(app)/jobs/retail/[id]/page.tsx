@@ -1,5 +1,6 @@
 import { currentUser } from "@clerk/nextjs/server";
 import {
+  Archive,
   ArrowLeft,
   Calendar,
   Camera,
@@ -21,6 +22,7 @@ import RetailAssistant from "@/components/ai/RetailAssistant";
 import { DocActionsMenu } from "@/components/documents/DocActionsMenu";
 import { ArchiveJobButton } from "@/components/jobs/ArchiveJobButton";
 import { ClientShareWidget } from "@/components/jobs/ClientShareWidget";
+import { RequestCloseoutButton } from "@/components/jobs/RequestCloseoutButton";
 import { TransferJobDropdown } from "@/components/jobs/TransferJobDropdown";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -30,6 +32,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { getResolvedOrgResult } from "@/lib/auth/getResolvedOrgId";
 import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
+import { getWorkflowStatusInfo, mapToWorkflowStatus } from "@/lib/statusMapping";
 
 import { EditableInfoCardsWrapper } from "./EditableInfoCards";
 import { RetailJobClient } from "./RetailJobClient";
@@ -343,7 +346,10 @@ export default async function RetailJobWorkspacePage({
               <div>
                 <div className="flex items-center gap-2">
                   <h1 className="text-xl font-bold">{job.title || "Retail Job"}</h1>
-                  <Badge className="border-white/20 bg-white/20 text-white">{job.stage}</Badge>
+                  <Badge className="border-white/20 bg-white/20 text-white">
+                    {getWorkflowStatusInfo(mapToWorkflowStatus(job.stage)).emoji}{" "}
+                    {getWorkflowStatusInfo(mapToWorkflowStatus(job.stage)).label}
+                  </Badge>
                   {job.urgency && (
                     <Badge className="border-amber-200/30 bg-amber-200/20 text-white">
                       {job.urgency}
@@ -463,6 +469,24 @@ export default async function RetailJobWorkspacePage({
                   jobSource={job.source}
                   followUpDate={job.followUpDate}
                 />
+
+                {/* Closeout Lifecycle */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Archive className="h-5 w-5" />
+                      Lifecycle
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <RequestCloseoutButton
+                      entityId={job.id}
+                      entityType="lead"
+                      entityTitle={job.title}
+                      currentStatus={job.stage}
+                    />
+                  </CardContent>
+                </Card>
               </TabsContent>
 
               {/* Scope Tab */}
@@ -821,7 +845,12 @@ export default async function RetailJobWorkspacePage({
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
                     <span className="text-sm text-slate-500 dark:text-slate-400">Stage</span>
-                    <Badge className={getStageColor(job.stage)}>{job.stage}</Badge>
+                    <Badge
+                      className={getWorkflowStatusInfo(mapToWorkflowStatus(job.stage)).badgeColor}
+                    >
+                      {getWorkflowStatusInfo(mapToWorkflowStatus(job.stage)).emoji}{" "}
+                      {getWorkflowStatusInfo(mapToWorkflowStatus(job.stage)).label}
+                    </Badge>
                   </div>
                   <Separator />
                   <div className="flex items-center justify-between">

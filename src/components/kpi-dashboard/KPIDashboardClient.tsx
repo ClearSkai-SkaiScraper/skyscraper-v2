@@ -68,7 +68,7 @@ const defaultKPIData: KPIData = {
   ],
 };
 
-export default function KPIDashboardClient() {
+export default function KPIDashboardClient({ embedded = false }: { embedded?: boolean }) {
   const [kpiData, setKpiData] = useState<KPIData | null>(null);
   const [loading, setLoading] = useState(true);
   const [timeRange, setTimeRange] = useState<"7d" | "30d" | "90d" | "all">("30d");
@@ -106,16 +106,15 @@ export default function KPIDashboardClient() {
   }
 
   if (loading) {
-    return (
-      <PageContainer maxWidth="7xl">
-        <div className="flex min-h-[300px] items-center justify-center">
-          <div className="text-center">
-            <div className="mx-auto mb-4 h-10 w-10 animate-spin rounded-full border-4 border-[#117CFF] border-t-transparent" />
-            <p className="text-sm text-slate-500 dark:text-slate-400">Loading performance data…</p>
-          </div>
+    const loader = (
+      <div className="flex min-h-[300px] items-center justify-center">
+        <div className="text-center">
+          <div className="mx-auto mb-4 h-10 w-10 animate-spin rounded-full border-4 border-[#117CFF] border-t-transparent" />
+          <p className="text-sm text-slate-500 dark:text-slate-400">Loading performance data…</p>
         </div>
-      </PageContainer>
+      </div>
     );
+    return embedded ? loader : <PageContainer maxWidth="7xl">{loader}</PageContainer>;
   }
 
   const data = kpiData || defaultKPIData;
@@ -123,15 +122,8 @@ export default function KPIDashboardClient() {
   const totalRisk = data.aiRiskLevels.low + data.aiRiskLevels.medium + data.aiRiskLevels.high;
   const highPriorityFlags = data.redFlags.filter((f) => f.severity === "high");
 
-  return (
-    <PageContainer maxWidth="7xl">
-      <PageHero
-        title="Performance Dashboard"
-        subtitle="See how your business is doing at a glance"
-        icon={<BarChart3 className="h-5 w-5" />}
-        section="command"
-      />
-
+  const content = (
+    <>
       {/* Time Range Selector */}
       <Tabs value={timeRange} onValueChange={(v) => setTimeRange(v as any)} className="w-full">
         <TabsList>
@@ -396,6 +388,20 @@ export default function KPIDashboardClient() {
           )}
         </TabsContent>
       </Tabs>
+    </>
+  );
+
+  if (embedded) return content;
+
+  return (
+    <PageContainer maxWidth="7xl">
+      <PageHero
+        title="Performance Dashboard"
+        subtitle="See how your business is doing at a glance"
+        icon={<BarChart3 className="h-5 w-5" />}
+        section="command"
+      />
+      {content}
     </PageContainer>
   );
 }

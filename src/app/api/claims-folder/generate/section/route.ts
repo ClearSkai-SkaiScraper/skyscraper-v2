@@ -32,6 +32,7 @@ const RequestSchema = z.object({
 const AI_GENERATABLE_SECTIONS = [
   "executive-summary",
   "weather-cause",
+  "weather-cause-of-loss",
   "repair-justification",
   "adjuster-cover-letter",
   "inspection-overview",
@@ -41,6 +42,9 @@ const AI_GENERATABLE_SECTIONS = [
   "contractor-summary",
   "claim-checklist",
   "table-of-contents",
+  "timeline-of-events",
+  "attachments-index",
+  "photo-evidence",
 ] as const;
 
 /** Map section keys to their generator endpoints */
@@ -282,6 +286,230 @@ Write 2-3 paragraphs covering: inspection scope, methodology, and initial findin
                   (s: number, d) => s + (d.ai_confidence ? Number(d.ai_confidence) : 0),
                   0
                 ) / Math.max(dets.length, 1),
+            })),
+          },
+        });
+      }
+
+      case "code-compliance": {
+        // Generate building code compliance from detections + property state
+        const codeDetections = await prisma.file_assets.findMany({
+          where: { claimId, orgId, category: "detection" },
+          take: 50,
+        });
+
+        const allCodes = codeDetections.flatMap((d) => d.ai_tags || []).filter(Boolean);
+        const uniqueCodes = [...new Set(allCodes)];
+
+        const openai = getOpenAI();
+        const codeRes = await openai.chat.completions.create({
+          model: "gpt-4o-mini",
+          messages: [
+            {
+              role: "system",
+              content:
+                "You are a building code compliance expert. Generate a code compliance summary for a storm damage insurance claim.",
+            },
+            {
+              role: "user",
+              content: `Generate a building code compliance section for:
+- Property: ${claim.properties?.street || "Unknown"}, ${claim.properties?.city || ""} ${claim.properties?.state || ""}
+- Damage types found: ${uniqueCodes.join(", ") || "Pending analysis"}
+- Detection count: ${codeDetections.length}
+- State: ${claim.properties?.state || "Unknown"}
+
+Include applicable IRC/IBC codes for the detected damage types. Professional insurance tone. 2-3 paragraphs.`,
+            },
+          ],
+          temperature: 0.3,
+          max_tokens: 800,
+        });
+
+        return NextResponse.json({
+          success: true,
+          sectionKey,
+          generated: true,
+          data: {
+            narrative: codeRes.choices[0]?.message?.content || "",
+            applicableCodes: uniqueCodes,
+            detectionCount: codeDetections.length,
+          },
+        });
+      }
+
+      case "scope-pricing": {
+        // Generate Xactimate-ready scope from detections
+        const scopeDetections = await prisma.file_assets.findMany({
+          where: { claimId, orgId, category: "detection" },
+          take: 100,
+        });
+
+        const damageTypes = scopeDetections.flatMap((d) => d.ai_damage || []).filter(Boolean);
+        const uniqueDamageForScope = [...new Set(damageTypes)];
+
+        const openai = getOpenAI();
+        const scopeRes = await openai.chat.completions.create({
+          model: "gpt-4o-mini",
+          messages: [
+            {
+              role: "system",
+              content:
+                "You are an Xactimate estimator. Generate a scope-of-work pricing outline for storm damage repairs.",
+            },
+            {
+              role: "user",
+              content: `Generate an Xactimate-ready scope outline for:
+- Property: ${claim.properties?.street || "Unknown"}, ${claim.properties?.city || ""} ${claim.properties?.state || ""}
+- Damage types: ${uniqueDamageForScope.join(", ") || "Pending analysis"}
+- Total detections: ${scopeDetections.length}
+
+Include line item categories, recommended Xactimate codes where applicable, and general scope notes. Professional insurance tone.`,
+            },
+          ],
+          temperature: 0.3,
+          max_tokens: 1000,
+        });
+
+        return NextResponse.json({
+          success: true,
+          sectionKey,
+          generated: true,
+          data: {
+            narrative: scopeRes.choices[0]?.message?.content || "",
+            lineItemCount: uniqueDamageForScope.length,
+            totalDetections: scopeDetections.length,
+          },
+        });
+      }
+
+      case "timeline-of-events": {
+        // Generate timeline from claim data
+        const timeline: Array<{ date: string; event: string }> = [];
+
+        if (claim.dateOfLoss) {
+          timeline.push({
+            date: claim.dateOfLoss.toISOString().split("T")[0],
+            event: "Date of Loss — weather event occurred",
+          });
+        }
+        if (claim.createdAt) {
+          timeline.push({
+            date: claim.createdAt.toISOString().split("T")[0],
+            event: "Claim created in system",
+          });
+        }
+
+        // Add inspection/photo dates
+        const timelinePhotos = await prisma.file_assets.findMany({
+          where: { claimId, orgId, mimeType: { startsWith: "image/" } },
+          orderBy: { createdAt: "asc" },
+          select: { createdAt: true },
+          take: 1,
+        });
+        if (timelinePhotos.length > 0 && timelinePhotos[0].createdAt) {
+          timeline.push({
+            date: timelinePhotos[0].createdAt.toISOString().split("T")[0],
+            event: "First inspection photos uploaded",
+          });
+        }
+
+        // Weather reports
+        if (claim.weather_reports?.length > 0) {
+          const wr = claim.weather_reports[0];
+          timeline.push({
+            date: wr.createdAt.toISOString().split("T")[0],
+            event: "Weather verification report generated",
+          });
+        }
+
+        // Sort by date
+        timeline.sort((a, b) => a.date.localeCompare(b.date));
+
+        return NextResponse.json({
+          success: true,
+          sectionKey,
+          generated: true,
+          data: { timeline },
+        });
+      }
+
+      case "photo-evidence": {
+        // Photo evidence is data-driven, not AI-generated
+        const evidencePhotos = await prisma.file_assets.findMany({
+          where: { claimId, orgId, mimeType: { startsWith: "image/" } },
+          orderBy: { createdAt: "desc" },
+          take: 100,
+          select: {
+            id: true,
+            filename: true,
+            ai_caption: true,
+            ai_severity: true,
+            ai_confidence: true,
+            ai_damage: true,
+            createdAt: true,
+          },
+        });
+
+        const analyzedPhotos = evidencePhotos.filter(
+          (p) => p.ai_caption || p.ai_severity || (p.ai_damage && p.ai_damage.length > 0)
+        );
+
+        return NextResponse.json({
+          success: true,
+          sectionKey,
+          generated: true,
+          data: {
+            totalPhotos: evidencePhotos.length,
+            analyzedPhotos: analyzedPhotos.length,
+            photos: analyzedPhotos.map((p) => ({
+              id: p.id,
+              filename: p.filename,
+              severity: p.ai_severity,
+              caption: p.ai_caption,
+              damageTypes: p.ai_damage || [],
+            })),
+          },
+        });
+      }
+
+      case "attachments-index": {
+        // Build index of all file assets for this claim
+        const allAssets = await prisma.file_assets.findMany({
+          where: { claimId, orgId },
+          orderBy: { createdAt: "desc" },
+          select: {
+            id: true,
+            filename: true,
+            mimeType: true,
+            category: true,
+            sizeBytes: true,
+            createdAt: true,
+          },
+        });
+
+        const categoryCounts = allAssets.reduce(
+          (acc: Record<string, number>, a) => {
+            const cat = a.category || a.mimeType?.split("/")[0] || "other";
+            acc[cat] = (acc[cat] || 0) + 1;
+            return acc;
+          },
+          {} as Record<string, number>
+        );
+
+        return NextResponse.json({
+          success: true,
+          sectionKey,
+          generated: true,
+          data: {
+            totalAttachments: allAssets.length,
+            categoryCounts,
+            attachments: allAssets.map((a) => ({
+              id: a.id,
+              filename: a.filename,
+              type: a.mimeType,
+              category: a.category || "uncategorized",
+              size: a.sizeBytes,
+              date: a.createdAt?.toISOString().split("T")[0],
             })),
           },
         });

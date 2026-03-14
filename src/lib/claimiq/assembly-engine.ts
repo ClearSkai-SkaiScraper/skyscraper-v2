@@ -92,7 +92,7 @@ const SECTION_DEFS: Array<{
     canAutoGenerate: true,
   },
   {
-    key: "weather-cause",
+    key: "weather-cause-of-loss",
     label: "Weather & Cause of Loss",
     number: 4,
     required: true,
@@ -335,7 +335,7 @@ export async function assessClaimReadiness(
           hasContent: hasWeather && hasAnalyzedPhotos,
         });
 
-      case "weather-cause":
+      case "weather-cause-of-loss":
         return buildSection(def, {
           sources: compact([
             hasWeather && "Weather report fetched",

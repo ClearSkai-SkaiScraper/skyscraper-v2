@@ -187,6 +187,21 @@ export async function POST(req: NextRequest) {
       data: { updatedAt: new Date() },
     });
 
+    // Create a ClientNotification so the client's bell shows the new message
+    try {
+      await prisma.clientNotification.create({
+        data: {
+          clientId: client.id,
+          type: "new_message",
+          title: `Message from ${companyName}`,
+          message: messageBody.length > 100 ? messageBody.slice(0, 100) + "…" : messageBody,
+          actionUrl: `/portal/messages`,
+        },
+      });
+    } catch (notifErr) {
+      logger.error("[pro-to-client/create] ClientNotification creation error:", notifErr);
+    }
+
     // ── Auto-create a Contact card if one doesn't exist ──
     try {
       const proUser = await prisma.users.findFirst({

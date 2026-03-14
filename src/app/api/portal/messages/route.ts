@@ -184,11 +184,49 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    // Update thread timestamp
+    // Update thread timestamp and add sender to participants
     await prisma.messageThread.update({
       where: { id: thread.id },
-      data: { updatedAt: new Date() },
+      data: {
+        updatedAt: new Date(),
+        participants: { push: userId },
+      },
     });
+
+    // Deduplicate participants
+    try {
+      const updatedThread = await prisma.messageThread.findUnique({
+        where: { id: thread.id },
+        select: { participants: true },
+      });
+      if (updatedThread) {
+        const unique = [...new Set(updatedThread.participants)];
+        await prisma.messageThread.update({
+          where: { id: thread.id },
+          data: { participants: { set: unique } },
+        });
+      }
+    } catch {
+      /* dedup non-critical */
+    }
+    try {
+      await prisma.projectNotification.create({
+        data: {
+          id: crypto.randomUUID(),
+          orgId: claimOrgId,
+          claimId,
+          notificationType: "client_message",
+          title: "New Client Message",
+          message:
+            message.trim().length > 100 ? message.trim().slice(0, 100) + "…" : message.trim(),
+          sentVia: ["in_app"],
+          delivered: true,
+          deliveredAt: new Date(),
+        },
+      });
+    } catch (notifErr) {
+      logger.error("[portal/messages] Notification creation error:", notifErr);
+    }
 
     return NextResponse.json({
       ok: true,

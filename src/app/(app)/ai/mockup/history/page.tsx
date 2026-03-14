@@ -1,10 +1,11 @@
 import { currentUser } from "@clerk/nextjs/server";
-import { ArrowLeft, CheckCircle, XCircle, Zap } from "lucide-react";
+import { ArrowLeft, CheckCircle, Download } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
 import { Button } from "@/components/ui/button";
-import { getToolHistory } from "@/lib/activity";
+import prisma from "@/lib/prisma";
 
 export default async function MockupHistoryPage() {
   const user = await currentUser();
@@ -12,7 +13,14 @@ export default async function MockupHistoryPage() {
     redirect("/sign-in");
   }
 
-  const history = await getToolHistory(user.id, "mockup", 50);
+  const orgId = (user.publicMetadata?.orgId as string) || user.id;
+
+  // Query GeneratedArtifact for mockup history (the actual table the API writes to)
+  const history = await prisma.generatedArtifact.findMany({
+    where: { orgId, type: "mockup" },
+    orderBy: { createdAt: "desc" },
+    take: 50,
+  });
 
   return (
     <main className="mx-auto max-w-5xl px-6 py-10">
@@ -29,11 +37,11 @@ export default async function MockupHistoryPage() {
       <div className="mb-6">
         <h1 className="text-3xl font-bold text-[color:var(--text)]">AI Mockup History</h1>
         <p className="mt-2 text-slate-700 dark:text-slate-300">
-          View all your AI Mockup generations and token usage
+          View all your AI Mockup generations
         </p>
       </div>
 
-      <div className="space-y-3">
+      <div className="space-y-4">
         {history.length === 0 ? (
           <div className="rounded-lg border border-[color:var(--border)] bg-[var(--surface-1)] p-12 text-center">
             <div className="mb-4 text-4xl">📸</div>
@@ -46,61 +54,72 @@ export default async function MockupHistoryPage() {
             </Button>
           </div>
         ) : (
-          history.map((run: any) => (
-            <div
-              key={run.id}
-              className="rounded-lg border border-[color:var(--border)] bg-[var(--surface-1)] p-4 shadow-sm transition-shadow hover:shadow"
-            >
-              <div className="flex items-start justify-between">
-                <div className="flex-1">
-                  <div className="flex items-center gap-2">
-                    {run.status === "success" ? (
-                      <CheckCircle className="h-5 w-5 text-green-600" />
-                    ) : (
-                      <XCircle className="h-5 w-5 text-red-600" />
-                    )}
-                    <span className="text-sm font-medium text-[color:var(--text)]">
-                      Run {run.id.slice(0, 8)}
-                    </span>
-                    <span
-                      className={`rounded-full px-2 py-0.5 text-xs font-medium ${
-                        run.status === "success"
-                          ? "bg-green-100 text-green-700"
-                          : "bg-red-100 text-red-700"
-                      }`}
-                    >
-                      {run.status}
-                    </span>
-                  </div>
-
-                  <div className="mt-2 flex items-center gap-4 text-xs text-slate-700 dark:text-slate-300">
-                    <span className="flex items-center gap-1">
-                      <Zap className="h-3 w-3" />
-                      {run.tokens_used || 0} tokens
-                    </span>
-                    <span>{new Date(run.created_at).toLocaleString()}</span>
-                  </div>
-
-                  {run.input && Object.keys(run.input).length > 0 && (
-                    <details className="mt-3">
-                      <summary className="cursor-pointer text-xs text-slate-700 hover:text-[color:var(--text)] dark:text-slate-300">
-                        View input data
-                      </summary>
-                      <pre className="mt-2 overflow-auto rounded bg-[var(--surface-2)] p-2 text-xs">
-                        {JSON.stringify(run.input, null, 2)}
-                      </pre>
-                    </details>
+          history.map((artifact) => {
+            const meta = (artifact.metadata as any) || {};
+            return (
+              <div
+                key={artifact.id}
+                className="overflow-hidden rounded-xl border border-[color:var(--border)] bg-[var(--surface-1)] shadow-sm transition-shadow hover:shadow"
+              >
+                <div className="flex flex-col gap-4 p-4 sm:flex-row">
+                  {/* Thumbnail */}
+                  {artifact.fileUrl && (
+                    <div className="relative h-32 w-full shrink-0 overflow-hidden rounded-lg sm:w-48">
+                      <Image
+                        src={artifact.fileUrl}
+                        alt={artifact.title}
+                        fill
+                        className="object-cover"
+                        sizes="192px"
+                      />
+                    </div>
                   )}
+
+                  {/* Details */}
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2">
+                      <CheckCircle className="h-4 w-4 text-green-600" />
+                      <span className="font-medium text-[color:var(--text)]">{artifact.title}</span>
+                    </div>
+
+                    <div className="mt-2 flex flex-wrap items-center gap-3 text-xs text-slate-600 dark:text-slate-400">
+                      {meta.projectType && (
+                        <span className="rounded-full bg-blue-100 px-2 py-0.5 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400">
+                          {meta.projectType}
+                        </span>
+                      )}
+                      <span>{new Date(artifact.createdAt).toLocaleString()}</span>
+                      {artifact.model && <span>Model: {artifact.model}</span>}
+                    </div>
+
+                    {meta.projectDescription && (
+                      <p className="mt-2 line-clamp-2 text-sm text-slate-600 dark:text-slate-400">
+                        {meta.projectDescription}
+                      </p>
+                    )}
+
+                    {artifact.fileUrl && (
+                      <a
+                        href={artifact.fileUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="mt-3 inline-flex items-center gap-1.5 rounded-lg bg-slate-100 px-3 py-1.5 text-xs font-medium text-slate-700 transition-colors hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700"
+                      >
+                        <Download className="h-3.5 w-3.5" />
+                        Download Image
+                      </a>
+                    )}
+                  </div>
                 </div>
               </div>
-            </div>
-          ))
+            );
+          })
         )}
       </div>
 
       {history.length > 0 && (
         <div className="mt-6 text-center text-sm text-slate-700 dark:text-slate-300">
-          Showing {history.length} most recent runs
+          Showing {history.length} most recent mockups
         </div>
       )}
     </main>

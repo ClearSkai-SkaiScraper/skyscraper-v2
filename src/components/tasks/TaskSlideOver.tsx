@@ -132,13 +132,14 @@ export function TaskSlideOver() {
   }
 
   async function handleQuickStatusChange(taskId: string, newStatus: string) {
+    const upperStatus = newStatus.toUpperCase();
     try {
       await fetch(`/api/tasks/${taskId}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          status: newStatus,
-          completedAt: newStatus === "done" ? new Date().toISOString() : null,
+          status: upperStatus,
+          completedAt: upperStatus === "DONE" ? new Date().toISOString() : null,
         }),
       });
       setRecentTasks((prev) =>

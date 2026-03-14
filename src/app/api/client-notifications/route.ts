@@ -55,7 +55,34 @@ export async function GET(req: NextRequest) {
       }
     }
 
-    // 2. Unread messages — check for messages sent TO this user
+    // 2. ClientNotification table (document forwards, report ready, etc.)
+    try {
+      if (client) {
+        const clientNotifs = await prisma.clientNotification.findMany({
+          where: { clientId: client.id },
+          orderBy: { createdAt: "desc" },
+          take: 30,
+        });
+
+        for (const n of clientNotifs) {
+          allNotifications.push({
+            id: `cn-${n.id}`,
+            title: n.title || "Notification",
+            body: n.message || "",
+            type: n.type || "info",
+            read: n.isRead ?? false,
+            createdAt: n.createdAt?.toISOString() || new Date().toISOString(),
+            url: n.actionUrl || "/portal",
+          });
+        }
+      }
+    } catch (cnError) {
+      if ((cnError as any)?.code !== "P2021") {
+        logger.error("Error fetching ClientNotification:", cnError);
+      }
+    }
+
+    // 3. Unread messages — check for messages sent TO this user
     try {
       if (userId) {
         // Find threads where this user is a participant

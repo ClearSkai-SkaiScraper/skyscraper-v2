@@ -35,7 +35,7 @@ export function ArchiveJobButton({ jobId, jobTitle, type = "lead" }: ArchiveJobB
       const res = await fetch("/api/archive", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id: jobId, type }),
+        body: JSON.stringify({ itemId: jobId, itemType: type }),
       });
 
       if (!res.ok) {

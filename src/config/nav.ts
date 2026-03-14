@@ -333,7 +333,7 @@ export const CONTEXT_NAV: Record<string, NavItem[]> = {
   "/dashboard": [
     { href: "/dashboard", label: "Overview" },
     { href: "/dashboard/activity", label: "Activity" },
-    { href: "/dashboard/kpis", label: "KPIs" },
+    { href: "/analytics/dashboard", label: "KPIs" },
   ],
   "/leads": [
     { href: "/leads/new", label: "New Lead" },

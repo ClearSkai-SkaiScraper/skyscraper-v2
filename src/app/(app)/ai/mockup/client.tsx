@@ -1,6 +1,6 @@
 "use client";
 
-import { Info, Upload, Wand2 } from "lucide-react";
+import { Download, Info, Upload, Wand2 } from "lucide-react";
 import Image from "next/image";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -256,6 +256,18 @@ export default function MockupClient() {
                 </div>
               )}
             </div>
+            {afterImage && (
+              <a
+                href={afterImage}
+                download={`mockup-${projectType.toLowerCase().replace(/\s+/g, "-")}-${Date.now()}.png`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex w-full items-center justify-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700"
+              >
+                <Download className="h-4 w-4" />
+                Download Image
+              </a>
+            )}
           </div>
         </div>
       </div>

@@ -5,8 +5,8 @@ export const dynamic = "force-dynamic";
  * GET /api/archive - Get archived items with cold storage billing check
  */
 
-import { NextRequest, NextResponse } from "next/server";
 import { logger } from "@/lib/logger";
+import { NextRequest, NextResponse } from "next/server";
 
 import prisma from "@/lib/prisma";
 import { safeOrgContext } from "@/lib/safeOrgContext";
@@ -18,7 +18,10 @@ export async function POST(req: NextRequest) {
     if (ctx.status !== "ok" || !ctx.userId) {
       return NextResponse.json({ error: ctx.reason || "Unauthorized" }, { status: 401 });
     }
-    const { userId } = ctx;
+    const { userId, orgId } = ctx;
+    if (!orgId) {
+      return NextResponse.json({ error: "Organization required" }, { status: 403 });
+    }
 
     const body = await req.json();
     const { itemId, itemType } = body;
@@ -33,7 +36,7 @@ export async function POST(req: NextRequest) {
 
     if (itemType === "lead") {
       await prisma.leads.update({
-        where: { id: itemId },
+        where: { id: itemId, orgId },
         data: {
           archivedAt: now,
           updatedAt: now,
@@ -41,7 +44,7 @@ export async function POST(req: NextRequest) {
       });
     } else if (itemType === "claim") {
       await prisma.claims.update({
-        where: { id: itemId },
+        where: { id: itemId, orgId },
         data: {
           archivedAt: now,
           updatedAt: now,
@@ -49,7 +52,7 @@ export async function POST(req: NextRequest) {
       });
     } else if (itemType === "project") {
       await prisma.projects.update({
-        where: { id: itemId },
+        where: { id: itemId, orgId },
         data: {
           archivedAt: now,
           updatedAt: now,
@@ -218,9 +221,10 @@ export async function GET(req: NextRequest) {
 export async function DELETE(req: NextRequest) {
   try {
     const ctx = await safeOrgContext();
-    if (ctx.status !== "ok" || !ctx.userId) {
+    if (ctx.status !== "ok" || !ctx.userId || !ctx.orgId) {
       return NextResponse.json({ error: ctx.reason || "Unauthorized" }, { status: 401 });
     }
+    const { orgId } = ctx;
 
     const searchParams = req.nextUrl.searchParams;
     const itemId = searchParams.get("itemId");
@@ -234,7 +238,7 @@ export async function DELETE(req: NextRequest) {
 
     if (itemType === "lead") {
       await prisma.leads.update({
-        where: { id: itemId },
+        where: { id: itemId, orgId },
         data: {
           archivedAt: null,
           updatedAt: new Date(),
@@ -242,7 +246,7 @@ export async function DELETE(req: NextRequest) {
       });
     } else if (itemType === "claim") {
       await prisma.claims.update({
-        where: { id: itemId },
+        where: { id: itemId, orgId },
         data: {
           archivedAt: null,
           updatedAt: new Date(),
@@ -250,7 +254,7 @@ export async function DELETE(req: NextRequest) {
       });
     } else if (itemType === "project") {
       await prisma.projects.update({
-        where: { id: itemId },
+        where: { id: itemId, orgId },
         data: {
           archivedAt: null,
           updatedAt: new Date(),

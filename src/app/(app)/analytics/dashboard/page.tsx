@@ -13,11 +13,13 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 
 import { AnalyticsDashboard } from "@/components/claimiq/AnalyticsDashboard";
+import KPIDashboardClient from "@/components/kpi-dashboard/KPIDashboardClient";
 import { PageContainer } from "@/components/layout/PageContainer";
 import { PageHero } from "@/components/layout/PageHero";
 import { Button } from "@/components/ui/button";
 import { getOrg } from "@/lib/org/getOrg";
 import prisma from "@/lib/prisma";
+import { groupByWorkflowStatus, WORKFLOW_STATUSES } from "@/lib/statusMapping";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -161,14 +163,15 @@ export default async function AnalyticsDashboardPage() {
   const newLeadsLast30Days = recentLeads.length;
   const newClaimsLast30Days = recentClaims.length;
 
-  // Claims by status
-  const claimsByStatus = claims.reduce(
+  // Claims by status — mapped to canonical 4-bucket system
+  const rawClaimsByStatus = claims.reduce(
     (acc, c) => {
       acc[c.status] = (acc[c.status] || 0) + 1;
       return acc;
     },
     {} as Record<string, number>
   );
+  const claimsByWorkflow = groupByWorkflowStatus(rawClaimsByStatus);
 
   return (
     <PageContainer maxWidth="7xl">
@@ -276,22 +279,20 @@ export default async function AnalyticsDashboardPage() {
               <span className="font-medium text-slate-700 dark:text-slate-300">Claims Status</span>
             </div>
             <div className="space-y-2">
-              {Object.entries(claimsByStatus).length > 0 ? (
-                Object.entries(claimsByStatus)
-                  .slice(0, 4)
-                  .map(([status, count]) => (
-                    <div key={status} className="flex items-center justify-between">
-                      <span className="text-sm capitalize text-slate-600 dark:text-slate-400">
-                        {status.replace("_", " ")}
-                      </span>
-                      <span className="rounded-full bg-slate-100 px-2.5 py-0.5 text-sm font-semibold text-slate-700 dark:bg-slate-700 dark:text-slate-300">
-                        {count}
-                      </span>
-                    </div>
-                  ))
-              ) : (
-                <p className="text-sm text-slate-500">No claims yet</p>
-              )}
+              {WORKFLOW_STATUSES.map((ws) => {
+                const count = claimsByWorkflow[ws.value] || 0;
+                return (
+                  <div key={ws.value} className="flex items-center justify-between">
+                    <span className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400">
+                      <span className={`inline-block h-2 w-2 rounded-full ${ws.dotColor}`} />
+                      {ws.emoji} {ws.label}
+                    </span>
+                    <span className="rounded-full bg-slate-100 px-2.5 py-0.5 text-sm font-semibold text-slate-700 dark:bg-slate-700 dark:text-slate-300">
+                      {count}
+                    </span>
+                  </div>
+                );
+              })}
             </div>
           </div>
 
@@ -332,6 +333,17 @@ export default async function AnalyticsDashboardPage() {
 
       {/* ClaimIQ Readiness Analytics */}
       <AnalyticsDashboard className="mb-8" />
+
+      {/* Performance KPIs — Time-Filtered */}
+      <div className="mb-8">
+        <h2 className="mb-4 flex items-center gap-2 text-lg font-semibold text-slate-900 dark:text-white">
+          <BarChart3 className="h-5 w-5 text-indigo-600" />
+          Performance KPIs
+        </h2>
+        <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-700 dark:bg-slate-800/50">
+          <KPIDashboardClient embedded />
+        </div>
+      </div>
 
       {/* Quick Navigation */}
       <div>

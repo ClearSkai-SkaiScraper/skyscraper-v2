@@ -41,7 +41,7 @@ const navSections: NavSection[] = [
     label: "Storm Command Center",
     items: [
       { label: "Dashboard", href: "/dashboard" },
-      { label: "KPI Dashboard", href: "/dashboard/kpis" },
+      { label: "Performance KPIs", href: "/analytics/dashboard" },
       { label: "Storm Center", href: "/storm-center" },
       { label: "Job Pipeline", href: "/pipeline" },
       { label: "Analytics Hub", href: "/analytics" },

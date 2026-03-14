@@ -45,6 +45,7 @@ import { logger } from "@/lib/logger";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 
+import { DamageReportPreview } from "@/components/damage-report/DamageReportPreview";
 import SectionCard from "../_components/SectionCard";
 
 interface AICaption {
@@ -98,6 +99,7 @@ export default function PhotosPage() {
   const [selectMode, setSelectMode] = useState(false);
   const [batchDeleting, setBatchDeleting] = useState(false);
   const [claimDamageType, setClaimDamageType] = useState<string | null>(null);
+  const [previewOpen, setPreviewOpen] = useState(false);
   const [claimContext, setClaimContext] = useState<{
     roofType?: string | null;
     propertyType?: string | null;
@@ -856,6 +858,18 @@ export default function PhotosPage() {
                 )}
               </Button>
             )}
+
+            {/* Preview / Edit Damage Report */}
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setPreviewOpen(true)}
+              disabled={analyzedCount === 0}
+              className="border-purple-300 text-purple-700 hover:bg-purple-50 dark:border-purple-700 dark:text-purple-300 dark:hover:bg-purple-900/20"
+            >
+              <Eye className="mr-2 h-4 w-4" />
+              Preview / Edit
+            </Button>
 
             {/* Generate Damage Report */}
             <Button
@@ -1788,6 +1802,15 @@ export default function PhotosPage() {
         description="This photo will be permanently removed."
         showArchive={false}
         onConfirmDelete={confirmDeletePhoto}
+      />
+
+      {/* Damage Report Preview/Edit Modal */}
+      <DamageReportPreview
+        claimId={claimId || ""}
+        open={previewOpen}
+        onOpenChange={setPreviewOpen}
+        photos={photos}
+        onGenerate={handleGenerateReport}
       />
     </SectionCard>
   );

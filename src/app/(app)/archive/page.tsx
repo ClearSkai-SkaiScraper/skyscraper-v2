@@ -1,8 +1,8 @@
 "use client";
 
 import { useOrganization } from "@clerk/nextjs";
-import { Archive, Lock, RefreshCw, RotateCcw, Trash2, Unlock } from "lucide-react";
-import { useEffect, useState } from "react";
+import { Archive, Calendar, Lock, RefreshCw, RotateCcw, Trash2, Unlock } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 
 import { PageContainer } from "@/components/layout/PageContainer";
@@ -24,9 +24,12 @@ interface ArchivedItem {
 
 interface ArchiveResponse {
   items: ArchivedItem[];
-  coldStorageEnabled: boolean;
-  itemsInColdStorage: number;
-  coldStorageAccessFee: number;
+  meta: {
+    total: number;
+    coldStorageCount: number;
+    hasColdStorageAccess: boolean;
+    coldStoragePrice: number;
+  };
 }
 
 export default function ArchivePage() {
@@ -43,10 +46,18 @@ export default function ArchivePage() {
   const fetchArchivedItems = async () => {
     try {
       setLoading(true);
-      const res = await fetch("/api/archive");
+      const res = await fetch("/api/archive?includeColdStorage=true");
       if (!res.ok) throw new Error("Failed to fetch archive");
       const json = await res.json();
-      setData(json);
+      // Compute daysSinceArchive client-side
+      const now = Date.now();
+      const items = (json.items || []).map((item: any) => ({
+        ...item,
+        daysSinceArchive: item.archivedAt
+          ? Math.floor((now - new Date(item.archivedAt).getTime()) / (1000 * 60 * 60 * 24))
+          : 0,
+      }));
+      setData({ items, meta: json.meta });
     } catch (err) {
       logger.error("Archive fetch error:", err);
       toast.error("Failed to load archived items");
@@ -56,14 +67,14 @@ export default function ArchivePage() {
   };
 
   const handleRestore = async (item: ArchivedItem) => {
-    if (item.isColdStorage && !data?.coldStorageEnabled) {
+    if (item.isColdStorage && !data?.meta?.hasColdStorageAccess) {
       toast.error("Cold storage access required. Subscribe to access items older than 30 days.");
       return;
     }
 
     try {
       setRestoring(item.id);
-      const res = await fetch(`/api/archive?id=${item.id}&type=${item.type}`, {
+      const res = await fetch(`/api/archive?itemId=${item.id}&itemType=${item.type}`, {
         method: "DELETE",
       });
       if (!res.ok) {
@@ -87,6 +98,33 @@ export default function ArchivePage() {
 
   const recentItems = data?.items.filter((i) => !i.isColdStorage) || [];
   const coldItems = data?.items.filter((i) => i.isColdStorage) || [];
+
+  // Group items by year for year-grouped views
+  const itemsByYear = useMemo(() => {
+    if (!data?.items) return {};
+    const groups: Record<string, ArchivedItem[]> = {};
+    for (const item of data.items) {
+      const year = item.archivedAt ? new Date(item.archivedAt).getFullYear().toString() : "Unknown";
+      if (!groups[year]) groups[year] = [];
+      groups[year].push(item);
+    }
+    // Sort years descending
+    return Object.fromEntries(Object.entries(groups).sort(([a], [b]) => Number(b) - Number(a)));
+  }, [data?.items]);
+
+  // Group by type within year
+  const getTypeLabel = (type: string) => {
+    switch (type) {
+      case "claim":
+        return "Client Claims";
+      case "lead":
+        return "Retail Jobs";
+      case "project":
+        return "Projects";
+      default:
+        return "Other";
+    }
+  };
 
   const getTypeColor = (type: string) => {
     switch (type) {
@@ -176,7 +214,7 @@ export default function ArchivePage() {
       </div>
 
       {/* Cold Storage Banner */}
-      {coldItems.length > 0 && !data?.coldStorageEnabled && (
+      {coldItems.length > 0 && !data?.meta?.hasColdStorageAccess && (
         <Card className="border-amber-200 bg-amber-50 dark:border-amber-800 dark:bg-amber-950">
           <CardContent className="flex items-center justify-between py-4">
             <div className="flex items-center gap-3">
@@ -199,12 +237,82 @@ export default function ArchivePage() {
       )}
 
       {/* Archive Tabs */}
-      <Tabs defaultValue="recent" className="w-full">
-        <TabsList className="mb-4 grid w-full grid-cols-3">
+      <Tabs defaultValue="by-year" className="w-full">
+        <TabsList className="mb-4 grid w-full grid-cols-4">
+          <TabsTrigger value="by-year">By Year</TabsTrigger>
           <TabsTrigger value="recent">Recent ({recentItems.length})</TabsTrigger>
           <TabsTrigger value="cold">Cold Storage ({coldItems.length})</TabsTrigger>
-          <TabsTrigger value="all">All Items ({data?.items.length || 0})</TabsTrigger>
+          <TabsTrigger value="all">All ({data?.items.length || 0})</TabsTrigger>
         </TabsList>
+
+        {/* Year-Grouped View (DEFAULT) */}
+        <TabsContent value="by-year">
+          {Object.keys(itemsByYear).length === 0 ? (
+            <Card>
+              <CardContent className="py-12">
+                <div className="flex flex-col items-center justify-center">
+                  <Archive className="mb-4 h-12 w-12 text-muted-foreground/50" />
+                  <h3 className="mb-2 text-lg font-medium">Nothing Archived</h3>
+                  <p className="max-w-md text-center text-muted-foreground">
+                    When you archive claims, leads, or projects, they&apos;ll appear here grouped by
+                    year.
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+          ) : (
+            <div className="space-y-6">
+              {Object.entries(itemsByYear).map(([year, yearItems]) => {
+                // Group by type within this year
+                const byType: Record<string, ArchivedItem[]> = {};
+                for (const item of yearItems) {
+                  const label = getTypeLabel(item.type);
+                  if (!byType[label]) byType[label] = [];
+                  byType[label].push(item);
+                }
+
+                return (
+                  <div
+                    key={year}
+                    className="rounded-2xl border border-slate-200 bg-gradient-to-b from-slate-50/60 to-transparent p-6 dark:border-slate-700 dark:from-slate-900/30"
+                  >
+                    <div className="mb-4 flex items-center gap-3">
+                      <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-100 shadow-sm dark:bg-slate-800">
+                        <Calendar className="h-5 w-5 text-slate-600 dark:text-slate-400" />
+                      </div>
+                      <div>
+                        <h2 className="text-lg font-bold text-slate-900 dark:text-white">{year}</h2>
+                        <p className="text-sm text-slate-500">
+                          {yearItems.length} archived {yearItems.length === 1 ? "item" : "items"}
+                        </p>
+                      </div>
+                    </div>
+
+                    {Object.entries(byType).map(([typeLabel, typeItems]) => (
+                      <div key={typeLabel} className="mb-4 last:mb-0">
+                        <h3 className="mb-2 text-sm font-semibold text-slate-600 dark:text-slate-400">
+                          Finished {typeLabel} {year} ({typeItems.length})
+                        </h3>
+                        <div className="space-y-2">
+                          {typeItems.map((item) => (
+                            <ArchiveItemRow
+                              key={`${item.type}-${item.id}`}
+                              item={item}
+                              onRestore={handleRestore}
+                              restoring={restoring}
+                              getTypeColor={getTypeColor}
+                              locked={item.isColdStorage && !data?.meta?.hasColdStorageAccess}
+                            />
+                          ))}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </TabsContent>
 
         <TabsContent value="recent">
           <Card>
@@ -250,7 +358,7 @@ export default function ArchivePage() {
               </CardTitle>
               <CardDescription>
                 Items older than 30 days
-                {!data?.coldStorageEnabled && " - requires $7.99/mo subscription"}
+                {!data?.meta?.hasColdStorageAccess && " - requires $7.99/mo subscription"}
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -268,7 +376,7 @@ export default function ArchivePage() {
                       onRestore={handleRestore}
                       restoring={restoring}
                       getTypeColor={getTypeColor}
-                      locked={!data?.coldStorageEnabled}
+                      locked={!data?.meta?.hasColdStorageAccess}
                     />
                   ))}
                 </div>
@@ -305,7 +413,7 @@ export default function ArchivePage() {
                       onRestore={handleRestore}
                       restoring={restoring}
                       getTypeColor={getTypeColor}
-                      locked={item.isColdStorage && !data?.coldStorageEnabled}
+                      locked={item.isColdStorage && !data?.meta?.hasColdStorageAccess}
                     />
                   ))}
                 </div>

@@ -273,9 +273,9 @@ export default async function ActivityPage() {
             variant="outline"
             className="border-white/20 bg-white/10 text-white hover:bg-white/20"
           >
-            <Link href="/dashboard/kpis">
+            <Link href="/analytics/dashboard">
               <FileBarChart className="mr-2 h-4 w-4" />
-              KPI Dashboard
+              Performance KPIs
             </Link>
           </Button>
         </div>

@@ -4,10 +4,10 @@ import { Check, Pencil, X } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { WORKFLOW_STATUSES, getWorkflowStatusInfo, mapToWorkflowStatus } from "@/lib/statusMapping";
 
 interface EditableFieldProps {
   label: string;
@@ -180,8 +180,36 @@ export function RetailJobClient({ jobId, initialJob }: RetailJobClientProps) {
           onUpdate={handleUpdate}
         />
         <div className="rounded-lg bg-slate-50 p-3 dark:bg-slate-800">
-          <p className="text-xs font-medium text-slate-500 dark:text-slate-400">Stage</p>
-          <Badge className="mt-1">{job.stage}</Badge>
+          <p className="text-xs font-medium text-slate-500 dark:text-slate-400">Workflow Status</p>
+          {(() => {
+            const mapped = mapToWorkflowStatus(job.stage);
+            const info = getWorkflowStatusInfo(mapped);
+            return (
+              <>
+                <select
+                  value={mapped}
+                  onChange={async (e) => {
+                    const newStage = e.target.value;
+                    try {
+                      await handleUpdate("stage", newStage);
+                      setJob((prev) => ({ ...prev, stage: newStage }));
+                      toast.success("Status updated");
+                    } catch {
+                      toast.error("Failed to update status");
+                    }
+                  }}
+                  className="mt-1 block w-full rounded-lg border border-slate-300 bg-background px-2 py-1.5 text-sm font-medium text-foreground shadow-sm transition-colors focus:border-amber-500 focus:outline-none focus:ring-2 focus:ring-amber-200 dark:border-slate-600"
+                >
+                  {WORKFLOW_STATUSES.map((ws) => (
+                    <option key={ws.value} value={ws.value}>
+                      {ws.emoji} {ws.label}
+                    </option>
+                  ))}
+                </select>
+                <p className="mt-1 text-[10px] text-slate-400">{info.description}</p>
+              </>
+            );
+          })()}
         </div>
       </div>
 
