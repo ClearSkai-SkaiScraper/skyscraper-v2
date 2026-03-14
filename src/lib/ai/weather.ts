@@ -137,19 +137,26 @@ export async function runWeatherReport(input: WeatherReportInput): Promise<Weath
                   intensity: { type: "string" },
                   notes: { type: "string" },
                 },
-                required: ["type", "date"],
+                required: ["type", "date", "time", "intensity", "notes"],
                 additionalProperties: false,
               },
             },
             carrierTalkingPoints: { type: "string" },
           },
-          required: ["dol", "peril", "summary", "events"],
+          required: ["dol", "peril", "summary", "events", "carrierTalkingPoints"],
           additionalProperties: false,
         } as const,
       },
     },
   });
 
-  const json = JSON.parse(completion.choices[0]?.message?.content || "{}") as WeatherReportResult;
+  const raw = completion.choices[0]?.message?.content || "{}";
+  const json = JSON.parse(raw) as WeatherReportResult;
+
+  // Ensure carrierTalkingPoints always has a value
+  if (!json.carrierTalkingPoints) {
+    json.carrierTalkingPoints = json.summary || "Weather report analysis complete.";
+  }
+
   return json;
 }

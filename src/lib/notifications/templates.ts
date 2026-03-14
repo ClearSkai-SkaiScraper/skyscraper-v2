@@ -53,6 +53,21 @@ export const NOTIFICATION_TEMPLATES = {
     body: "You've been invited to join {{companyName}}",
     channels: ["in_app", "email"] as const,
   },
+  CLOSEOUT_REQUESTED: {
+    title: "Closeout Requested",
+    body: '{{entityType}} "{{entityTitle}}" has been submitted for closeout. Reason: {{reason}}',
+    channels: ["in_app", "email"] as const,
+  },
+  CLOSEOUT_APPROVED: {
+    title: "Closeout Approved",
+    body: '{{entityType}} "{{entityTitle}}" has been approved and archived.',
+    channels: ["in_app"] as const,
+  },
+  READINESS_THRESHOLD: {
+    title: "Packet Ready for Generation",
+    body: "Claim {{claimNumber}} has reached {{readiness}}% readiness. Ready to generate packet!",
+    channels: ["in_app"] as const,
+  },
 };
 
 export type NotificationTemplateName = keyof typeof NOTIFICATION_TEMPLATES;

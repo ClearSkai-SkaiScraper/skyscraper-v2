@@ -7,11 +7,16 @@
  * - Source-model indicator (YOLO ● vs GPT-4)
  * - Compact mode for thumbnails, full mode for lightboxes
  * - Smart label hiding: small boxes (<12%) show only severity dot to reduce clutter
+ * - Anti-overlap label placement: labels auto-arrange to avoid stacking
+ * - Dismissable labels: click X to hide individual annotation labels
  *
  * Coordinate system: 0–1 normalised fractions  (or 0-100 percentages from Roboflow)
  */
 
 "use client";
+
+import { X } from "lucide-react";
+import { useMemo, useState } from "react";
 
 import { cn } from "@/lib/utils";
 
@@ -46,6 +51,8 @@ export interface DamageBoxOverlayProps {
   coordScale?: "percent" | "fraction";
   /** Additional className on the wrapper */
   className?: string;
+  /** Allow dismissing labels with X button */
+  dismissable?: boolean;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -78,6 +85,110 @@ const SEVERITY_STYLES: Record<string, { border: string; bg: string; badge: strin
 const DEFAULT_STYLE = SEVERITY_STYLES.High; // fallback if no severity provided
 
 // ─────────────────────────────────────────────────────────────────────────────
+// Anti-overlap label placement
+// ─────────────────────────────────────────────────────────────────────────────
+
+const LABEL_HEIGHT_PCT = 2.5; // approx height of a label pill in % of container
+const LABEL_GAP_PCT = 0.5; // gap between stacked labels
+
+interface LabelPlacement {
+  /** Offset from default position in percentage units */
+  offsetY: number;
+  /** Which side to place the label: "top" (above box) or "bottom" (below box) */
+  side: "top" | "bottom";
+}
+
+/**
+ * Compute non-overlapping label placements for all boxes.
+ * Uses a greedy sweep: sort by box top-Y, place each label,
+ * and bump down/flip to bottom if it collides with a previously placed label.
+ */
+function computeLabelPlacements(
+  boxes: Array<{ pctX: number; pctY: number; pctW: number; pctH: number; showLabel: boolean }>
+): LabelPlacement[] {
+  const placements: LabelPlacement[] = boxes.map(() => ({ offsetY: 0, side: "top" }));
+
+  // Collect occupied label rects (in % space)
+  const occupied: Array<{ left: number; right: number; top: number; bottom: number }> = [];
+
+  // Process boxes sorted by Y position (top to bottom)
+  const indices = boxes.map((_, i) => i);
+  indices.sort((a, b) => boxes[a].pctY - boxes[b].pctY);
+
+  for (const i of indices) {
+    const box = boxes[i];
+    if (!box.showLabel) continue;
+
+    // Estimate label width as ~20% of container (labels are whitespace-nowrap, ~120px on 600px container)
+    const labelW = Math.max(box.pctW, 15);
+    const labelH = LABEL_HEIGHT_PCT;
+
+    // Default: place above box
+    let labelTop = box.pctY - labelH - LABEL_GAP_PCT;
+    let labelLeft = box.pctX;
+    let side: "top" | "bottom" = "top";
+
+    // Check collisions with already-placed labels
+    let attempts = 0;
+    while (attempts < 6) {
+      const candidate = {
+        left: labelLeft,
+        right: labelLeft + labelW,
+        top: labelTop,
+        bottom: labelTop + labelH,
+      };
+
+      const collision = occupied.some(
+        (o) =>
+          candidate.left < o.right &&
+          candidate.right > o.left &&
+          candidate.top < o.bottom &&
+          candidate.bottom > o.top
+      );
+
+      if (!collision) break;
+
+      attempts++;
+      if (attempts <= 3) {
+        // Try stacking further up
+        labelTop -= labelH + LABEL_GAP_PCT;
+      } else if (attempts === 4) {
+        // Try below the box instead
+        side = "bottom";
+        labelTop = box.pctY + box.pctH + LABEL_GAP_PCT;
+      } else {
+        // Stack further below
+        labelTop += labelH + LABEL_GAP_PCT;
+      }
+    }
+
+    // Clamp to container bounds (0-100%)
+    if (labelTop < 0) {
+      side = "bottom";
+      labelTop = box.pctY + box.pctH + LABEL_GAP_PCT;
+    }
+    if (labelTop + labelH > 100) {
+      labelTop = 100 - labelH;
+    }
+
+    const offsetY =
+      side === "top"
+        ? labelTop - (box.pctY - labelH - LABEL_GAP_PCT)
+        : labelTop - (box.pctY + box.pctH + LABEL_GAP_PCT);
+
+    placements[i] = { offsetY, side };
+    occupied.push({
+      left: labelLeft,
+      right: labelLeft + labelW,
+      top: labelTop,
+      bottom: labelTop + labelH,
+    });
+  }
+
+  return placements;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 // Component
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -86,33 +197,70 @@ export function DamageBoxOverlay({
   mode = "full",
   coordScale,
   className,
+  dismissable = true,
 }: DamageBoxOverlayProps) {
+  // Track which labels have been dismissed
+  const [hiddenLabels, setHiddenLabels] = useState<Set<number>>(new Set());
+
+  const dismissLabel = (index: number) => {
+    setHiddenLabels((prev) => {
+      const next = new Set(prev);
+      next.add(index);
+      return next;
+    });
+  };
+
   if (!boxes || boxes.length === 0) return null;
 
   // Minimum box size (percentage) to show labels - prevents cluttering small boxes
   const MIN_SIZE_FOR_LABELS = 12; // 12% of image width/height
 
+  // Pre-compute box positions for overlap detection
+  const boxPositions = boxes.map((box) => {
+    const scale =
+      coordScale === "percent" ||
+      (!coordScale && (box.x > 1 || box.y > 1 || box.w > 1 || box.h > 1))
+        ? 0.01
+        : 1;
+    const pctX = box.x * scale * 100;
+    const pctY = box.y * scale * 100;
+    const pctW = box.w * scale * 100;
+    const pctH = box.h * scale * 100;
+    const isLargeEnough = pctW >= MIN_SIZE_FOR_LABELS || pctH >= MIN_SIZE_FOR_LABELS;
+    return {
+      pctX,
+      pctY,
+      pctW,
+      pctH,
+      showLabel: mode === "full" && isLargeEnough && !hiddenLabels.has(boxes.indexOf(box)),
+    };
+  });
+
+  // Compute anti-overlap placements
+  // eslint-disable-next-line react-hooks/rules-of-hooks
+  const placements = useMemo(
+    () => computeLabelPlacements(boxPositions),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [JSON.stringify(boxPositions)]
+  );
+
   return (
     <div className={cn("pointer-events-none absolute inset-0", className)}>
       {boxes.map((box, i) => {
-        // Auto-detect coordinate scale: if any value > 1, treat as 0-100
-        const scale =
-          coordScale === "percent" ||
-          (!coordScale && (box.x > 1 || box.y > 1 || box.w > 1 || box.h > 1))
-            ? 0.01
-            : 1;
-
-        const pctX = box.x * scale * 100;
-        const pctY = box.y * scale * 100;
-        const pctW = box.w * scale * 100;
-        const pctH = box.h * scale * 100;
-
-        // Determine if box is large enough to show labels
+        const { pctX, pctY, pctW, pctH, showLabel } = boxPositions[i];
         const isLargeEnough = pctW >= MIN_SIZE_FOR_LABELS || pctH >= MIN_SIZE_FOR_LABELS;
+        const isLabelHidden = hiddenLabels.has(i);
 
         const sev = normaliseSeverity(box.severity);
         const style = SEVERITY_STYLES[sev] || DEFAULT_STYLE;
         const isYolo = box.sourceModel === "roboflow_yolo";
+        const placement = placements[i];
+
+        // Compute label position style
+        const labelStyle: React.CSSProperties =
+          placement.side === "bottom"
+            ? { top: "100%", left: 0, marginTop: `${(placement.offsetY || 0) + 2}px` }
+            : { bottom: "100%", left: 0, marginBottom: `${2 - (placement.offsetY || 0)}px` };
 
         return (
           <div
@@ -126,28 +274,46 @@ export function DamageBoxOverlay({
             }}
           >
             {/* ── Full mode: label pill + confidence (only on large-enough boxes) ─────────────────── */}
-            {mode === "full" && isLargeEnough && (box.label || box.score != null) && (
-              <span
-                className={cn(
-                  "absolute -top-6 left-0 flex items-center gap-1 whitespace-nowrap rounded px-1.5 py-0.5 text-[10px] font-semibold leading-none shadow-sm",
-                  style.badge
-                )}
-              >
-                {/* YOLO dot indicator */}
-                {isYolo && (
-                  <span
-                    className="inline-block h-1.5 w-1.5 rounded-full bg-green-300"
-                    title="YOLO detection"
-                  />
-                )}
+            {mode === "full" &&
+              isLargeEnough &&
+              !isLabelHidden &&
+              (box.label || box.score != null) && (
+                <span
+                  className={cn(
+                    "pointer-events-auto absolute z-10 flex items-center gap-1 whitespace-nowrap rounded px-1.5 py-0.5 text-[10px] font-semibold leading-none shadow-sm",
+                    style.badge
+                  )}
+                  style={labelStyle}
+                >
+                  {/* YOLO dot indicator */}
+                  {isYolo && (
+                    <span
+                      className="inline-block h-1.5 w-1.5 rounded-full bg-green-300"
+                      title="YOLO detection"
+                    />
+                  )}
 
-                {box.label && <span>{box.label}</span>}
+                  {box.label && <span>{box.label}</span>}
 
-                {box.score != null && (
-                  <span className="opacity-80">{Math.round(box.score * 100)}%</span>
-                )}
-              </span>
-            )}
+                  {box.score != null && (
+                    <span className="opacity-80">{Math.round(box.score * 100)}%</span>
+                  )}
+
+                  {/* Dismiss button */}
+                  {dismissable && (
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        dismissLabel(i);
+                      }}
+                      className="ml-0.5 rounded p-0.5 opacity-70 transition-opacity hover:opacity-100"
+                      title="Hide this label"
+                    >
+                      <X className="h-2.5 w-2.5" />
+                    </button>
+                  )}
+                </span>
+              )}
 
             {/* ── Full mode: small box indicator (tiny dot for boxes too small for labels) ─────────────────── */}
             {mode === "full" && !isLargeEnough && (
@@ -177,6 +343,15 @@ export function DamageBoxOverlay({
       {mode === "full" && boxes.length >= 2 && (
         <div className="absolute bottom-2 right-2 flex items-center gap-2 rounded-md bg-black/60 px-2 py-1 text-[10px] text-white backdrop-blur-sm">
           <span className="font-medium">{boxes.length} detections</span>
+          {hiddenLabels.size > 0 && (
+            <button
+              className="pointer-events-auto underline opacity-80 hover:opacity-100"
+              onClick={() => setHiddenLabels(new Set())}
+              title="Show all hidden labels"
+            >
+              Show all
+            </button>
+          )}
           {boxes.some((b) => b.sourceModel === "roboflow_yolo") && (
             <span className="flex items-center gap-1">
               <span className="inline-block h-1.5 w-1.5 rounded-full bg-green-400" />

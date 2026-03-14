@@ -138,6 +138,19 @@ const RequestSchema = z.object({
   printSafe: z.boolean().default(false),
   includeRepairability: z.boolean().default(true),
   includeBuildingCodes: z.boolean().default(true),
+  // ── Preview Override Support ─────────────────────────────────────────
+  // When a user edits findings in the DamageReportPreview, these overrides
+  // are passed to the generator so the user's changes persist in the PDF.
+  overrides: z
+    .object({
+      excludedPhotoIds: z.array(z.string()).default([]),
+      captionOverrides: z.record(z.string(), z.record(z.string(), z.string())).default({}),
+      severityOverrides: z.record(z.string(), z.record(z.string(), z.string())).default({}),
+      evidenceTiers: z
+        .record(z.string(), z.record(z.string(), z.enum(["primary", "supporting", "reference"])))
+        .default({}),
+    })
+    .optional(),
 });
 
 interface RouteParams {
@@ -410,10 +423,42 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
         },
       }),
       prisma.org_branding.findFirst({ where: { orgId } }).catch(() => null),
-      prisma.users.findFirst({
-        where: { id: userId },
-        select: { name: true, email: true, headshot_url: true },
-      }),
+      // Fetch current user first, then check for org default inspector
+      prisma.users
+        .findFirst({
+          where: { clerkUserId: userId, orgId },
+          select: {
+            name: true,
+            email: true,
+            headshot_url: true,
+            title: true,
+            phone: true,
+            license_number: true,
+            license_state: true,
+            certifications: true,
+            is_default_inspector: true,
+          },
+        })
+        .then(async (u) => {
+          // If user found, return it
+          if (u?.name) return u;
+          // Fallback: try by id instead of clerkUserId
+          const fallback = await prisma.users.findFirst({
+            where: { id: userId },
+            select: {
+              name: true,
+              email: true,
+              headshot_url: true,
+              title: true,
+              phone: true,
+              license_number: true,
+              license_state: true,
+              certifications: true,
+              is_default_inspector: true,
+            },
+          });
+          return fallback;
+        }),
     ]);
 
     if (!claim) return apiError(404, "NOT_FOUND", "Claim not found");
@@ -445,7 +490,13 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
       orderBy: { createdAt: "asc" },
     })) as PhotoWithMetadata[];
 
-    if (photos.length === 0)
+    // Apply preview overrides — filter excluded photos
+    const overrides = options.overrides;
+    const filteredPhotos = overrides?.excludedPhotoIds?.length
+      ? photos.filter((p) => !overrides.excludedPhotoIds.includes(p.id))
+      : photos;
+
+    if (filteredPhotos.length === 0)
       return apiError(400, "NO_PHOTOS", "No analyzed photos found for this claim");
 
     // Evidence grouping for ALL photos
@@ -454,21 +505,33 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
     const captionStyleOpt = options.captionStyle as CaptionStyle;
     const reportTimer = createReportTimer();
 
-    for (const photo of photos) {
+    for (const photo of filteredPhotos) {
       const rawAnnotations = (photo.metadata?.annotations || []) as RawAnnotation[];
       const clusters = groupEvidence(rawAnnotations, 5, 0.15);
-      const captionedClusters = clusters.map((cluster, idx) => ({
-        ...cluster,
-        caption:
-          cluster.caption && cluster.caption.length > 30
-            ? cluster.caption
-            : generateCaption(cluster, {
-                eventType,
-                variationIndex: idx,
-                captionStyle: captionStyleOpt,
-                includeRepairability: options.includeRepairability,
-              }),
-      }));
+      const captionedClusters = clusters.map((cluster, idx) => {
+        const photoOverrides = overrides?.captionOverrides?.[photo.id];
+        const severityOvr = overrides?.severityOverrides?.[photo.id];
+        const tierOvr = overrides?.evidenceTiers?.[photo.id];
+        const overriddenCaption = photoOverrides?.[String(idx)];
+        const overriddenSeverity = severityOvr?.[String(idx)];
+        const evidenceTier = tierOvr?.[String(idx)] || "primary";
+
+        return {
+          ...cluster,
+          ...(overriddenSeverity ? { severity: overriddenSeverity } : {}),
+          evidenceTier,
+          caption:
+            overriddenCaption ||
+            (cluster.caption && cluster.caption.length > 30
+              ? cluster.caption
+              : generateCaption(cluster, {
+                  eventType,
+                  variationIndex: idx,
+                  captionStyle: captionStyleOpt,
+                  includeRepairability: options.includeRepairability,
+                })),
+        };
+      });
       photoClusterMap.set(photo.id, captionedClusters);
     }
 
@@ -480,7 +543,7 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
 
     // Sort photos by selected order
     if (options.photoOrder === "claim-value") {
-      photos.sort((a, b) => {
+      filteredPhotos.sort((a, b) => {
         const aClusters = photoClusterMap.get(a.id) || [];
         const bClusters = photoClusterMap.get(b.id) || [];
         const aMax = aClusters.length > 0 ? Math.max(...aClusters.map((c) => c.score)) : 0;
@@ -489,7 +552,7 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
       });
     } else if (options.photoOrder === "severity") {
       const sevOrder: Record<string, number> = { severe: 3, moderate: 2, minor: 1 };
-      photos.sort(
+      filteredPhotos.sort(
         (a, b) =>
           (sevOrder[b.ai_severity || "minor"] || 0) - (sevOrder[a.ai_severity || "minor"] || 0)
       );
@@ -503,9 +566,9 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
     const uniqueCodes = collectUniqueCodes(photoClusterMap);
 
     // Severity counts
-    const severeCnt = photos.filter((p) => p.ai_severity === "severe").length;
-    const moderateCnt = photos.filter((p) => p.ai_severity === "moderate").length;
-    const minorCnt = photos.filter((p) => p.ai_severity === "minor").length;
+    const severeCnt = filteredPhotos.filter((p) => p.ai_severity === "severe").length;
+    const moderateCnt = filteredPhotos.filter((p) => p.ai_severity === "moderate").length;
+    const minorCnt = filteredPhotos.filter((p) => p.ai_severity === "minor").length;
     const overallSeverity = severeCnt > 0 ? "SEVERE" : moderateCnt > 0 ? "MODERATE" : "MINOR";
 
     let totalFindings = 0;
@@ -696,7 +759,7 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
       "Report Date",
       new Date().toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" }),
     ]);
-    claimDetailRows.push(["Photos Analyzed", String(photos.length)]);
+    claimDetailRows.push(["Photos Analyzed", String(filteredPhotos.length)]);
     claimDetailRows.push(["Findings Documented", String(totalFindings)]);
     claimDetailRows.push(["Overall Severity", overallSeverity]);
 
@@ -746,7 +809,15 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
       color: primaryColor,
     });
     y -= 18;
-    page.drawText(user?.name || "Inspector", {
+    // Inspector name — use real profile data
+    const inspectorName = user?.name || "Inspector";
+    const inspectorTitle = (user as any)?.title || "Certified Roof Inspector";
+    const inspectorPhone = (user as any)?.phone || null;
+    const inspectorLicense = (user as any)?.license_number || branding?.license || null;
+    const inspectorLicenseState = (user as any)?.license_state || null;
+    const inspectorCerts = (user as any)?.certifications || [];
+
+    page.drawText(inspectorName, {
       x: inspectorTextX,
       y,
       size: 11,
@@ -754,6 +825,14 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
       color: valueColor,
     });
     y -= 15;
+    page.drawText(inspectorTitle, {
+      x: inspectorTextX,
+      y,
+      size: 9,
+      font: helvetica,
+      color: labelColor,
+    });
+    y -= 13;
     if (user?.email) {
       page.drawText(user.email, {
         x: inspectorTextX,
@@ -764,13 +843,39 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
       });
       y -= 13;
     }
-    if (branding?.license) {
-      page.drawText(`License: ${branding.license}`, {
+    if (inspectorPhone) {
+      page.drawText(inspectorPhone, {
         x: inspectorTextX,
         y,
         size: 9,
         font: helvetica,
         color: labelColor,
+      });
+      y -= 13;
+    }
+    if (inspectorLicense) {
+      const licenseText = inspectorLicenseState
+        ? `License: ${inspectorLicense} (${inspectorLicenseState})`
+        : `License: ${inspectorLicense}`;
+      page.drawText(licenseText, {
+        x: inspectorTextX,
+        y,
+        size: 9,
+        font: helvetica,
+        color: labelColor,
+      });
+      y -= 13;
+    }
+    // Show certifications if present
+    const certList = Array.isArray(inspectorCerts) ? inspectorCerts : [];
+    if (certList.length > 0) {
+      const certStr = certList.slice(0, 3).join(" | ");
+      page.drawText(certStr, {
+        x: inspectorTextX,
+        y,
+        size: 8,
+        font: helvetica,
+        color: rgb(0.45, 0.55, 0.45),
       });
     }
 
@@ -790,7 +895,7 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
 
     const summaryText = `This report documents the findings of a comprehensive property damage assessment conducted at ${
       propertyAddress || "the insured property"
-    } in accordance with HAAG Engineering inspection standards. A total of ${photos.length} photograph${photos.length > 1 ? "s were" : " was"} captured and analyzed using AI-powered damage detection technology calibrated to HAAG-certified damage identification criteria. After evidence grouping and deduplication, ${totalFindings} distinct damage finding${totalFindings !== 1 ? "s were" : " was"} identified across ${photoClusterMap.size} inspection area${photoClusterMap.size !== 1 ? "s" : ""}. The analysis identified ${
+    } in accordance with HAAG Engineering inspection standards. A total of ${filteredPhotos.length} photograph${photos.length > 1 ? "s were" : " was"} captured and analyzed using AI-powered damage detection technology calibrated to HAAG-certified damage identification criteria. After evidence grouping and deduplication, ${totalFindings} distinct damage finding${totalFindings !== 1 ? "s were" : " was"} identified across ${photoClusterMap.size} inspection area${photoClusterMap.size !== 1 ? "s" : ""}. The analysis identified ${
       severeCnt > 0
         ? `${severeCnt} area${severeCnt > 1 ? "s" : ""} of severe/functional damage`
         : moderateCnt > 0
@@ -836,11 +941,14 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
     if (severeCnt > 0) severityRows.push(["Severe", severeCnt, rgb(0.85, 0.15, 0.15)]);
     if (moderateCnt > 0) severityRows.push(["Moderate", moderateCnt, rgb(0.9, 0.55, 0.1)]);
     if (minorCnt > 0) severityRows.push(["Minor", minorCnt, rgb(0.2, 0.7, 0.3)]);
-    const noneCnt = photos.length - severeCnt - moderateCnt - minorCnt;
+    const noneCnt = filteredPhotos.length - severeCnt - moderateCnt - minorCnt;
     if (noneCnt > 0) severityRows.push(["Informational", noneCnt, rgb(0.55, 0.55, 0.55)]);
 
     for (const [label, count, color] of severityRows) {
-      const barWidth = Math.min((count / photos.length) * (CONTENT_W - 140), CONTENT_W - 140);
+      const barWidth = Math.min(
+        (count / filteredPhotos.length) * (CONTENT_W - 140),
+        CONTENT_W - 140
+      );
       page.drawRectangle({
         x: MARGIN + 120,
         y: y - 2,
@@ -960,8 +1068,8 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
     // =========================================================================
     //  PHOTO EVIDENCE PAGES
     // =========================================================================
-    for (let i = 0; i < photos.length; i++) {
-      const photo = photos[i];
+    for (let i = 0; i < filteredPhotos.length; i++) {
+      const photo = filteredPhotos[i];
       const clusters = photoClusterMap.get(photo.id) || [];
 
       page = newPage();
@@ -982,7 +1090,7 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
       });
 
       // Photo page header with severity badge
-      page.drawText(`PHOTO EVIDENCE  ${i + 1} / ${photos.length}`, {
+      page.drawText(`PHOTO EVIDENCE  ${i + 1} / ${filteredPhotos.length}`, {
         x: MARGIN,
         y,
         size: 12,
@@ -998,7 +1106,7 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
               : rgb(0.2, 0.7, 0.3);
         const sevLabel = photo.ai_severity.toUpperCase();
         const headerTextW = helveticaBold.widthOfTextAtSize(
-          `PHOTO EVIDENCE  ${i + 1} / ${photos.length}`,
+          `PHOTO EVIDENCE  ${i + 1} / ${filteredPhotos.length}`,
           12
         );
         const sevW = helveticaBold.widthOfTextAtSize(sevLabel, 9);
@@ -1401,7 +1509,10 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
 
     drawHR(page, y, rgb(0.3, 0.3, 0.3));
     y -= 14;
-    page.drawText(user?.name || "Inspector Signature", {
+    const certInspectorName = user?.name || "Inspector Signature";
+    const certInspectorTitle = (user as any)?.title || "";
+    const certLicense = (user as any)?.license_number || branding?.license || null;
+    page.drawText(certInspectorName, {
       x: MARGIN,
       y,
       size: 10,
@@ -1409,6 +1520,16 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
       color: rgb(0.15, 0.15, 0.15),
     });
     y -= 14;
+    if (certInspectorTitle) {
+      page.drawText(certInspectorTitle, {
+        x: MARGIN,
+        y,
+        size: 9,
+        font: helvetica,
+        color: rgb(0.35, 0.35, 0.35),
+      });
+      y -= 12;
+    }
     page.drawText(companyName, {
       x: MARGIN,
       y,
@@ -1417,6 +1538,16 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
       color: rgb(0.45, 0.45, 0.45),
     });
     y -= 12;
+    if (certLicense) {
+      page.drawText(`License #: ${certLicense}`, {
+        x: MARGIN,
+        y,
+        size: 9,
+        font: helvetica,
+        color: rgb(0.45, 0.45, 0.45),
+      });
+      y -= 12;
+    }
     page.drawText(
       `Date: ${new Date().toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" })}`,
       { x: MARGIN, y, size: 9, font: helvetica, color: rgb(0.45, 0.45, 0.45) }
@@ -1483,7 +1614,7 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
         category: "document",
         file_type: "damage_report",
         source: "ai_generated",
-        note: `Professional Damage Assessment Report - ${photos.length} photos, ${totalFindings} findings, ${overallSeverity} severity`,
+        note: `Professional Damage Assessment Report - ${filteredPhotos.length} photos, ${totalFindings} findings, ${overallSeverity} severity`,
         updatedAt: new Date(),
       },
     });
@@ -1549,7 +1680,7 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
         orgId,
         userId,
         type: "damage_report",
-        title: `Damage Assessment Report - ${photos.length} photos, ${totalFindings} findings`,
+        title: `Damage Assessment Report - ${filteredPhotos.length} photos, ${totalFindings} findings`,
         sourceId: claimId,
         fileUrl: publicUrl,
         metadata: {

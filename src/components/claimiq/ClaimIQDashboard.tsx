@@ -72,22 +72,28 @@ export function ClaimIQDashboard({ claimId, compact = false, className }: ClaimI
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  const fetchReadiness = useCallback(async () => {
-    try {
-      setLoading(true);
-      const res = await fetch(`/api/claims/${claimId}/claimiq/readiness`);
-      if (!res.ok) throw new Error("Failed to fetch readiness");
-      const data = await res.json();
-      setReadiness(data);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to load");
-    } finally {
-      setLoading(false);
-    }
-  }, [claimId]);
+  const fetchReadiness = useCallback(
+    async (isBackground = false) => {
+      try {
+        if (!isBackground) setLoading(true);
+        const res = await fetch(`/api/claims/${claimId}/claimiq/readiness`);
+        if (!res.ok) throw new Error("Failed to fetch readiness");
+        const data = await res.json();
+        setReadiness(data);
+      } catch (err) {
+        if (!isBackground) setError(err instanceof Error ? err.message : "Failed to load");
+      } finally {
+        if (!isBackground) setLoading(false);
+      }
+    },
+    [claimId]
+  );
 
+  // Initial fetch + auto-poll every 30s for live readiness updates
   useEffect(() => {
     fetchReadiness();
+    const interval = setInterval(() => fetchReadiness(true), 30_000);
+    return () => clearInterval(interval);
   }, [fetchReadiness]);
 
   if (loading) {

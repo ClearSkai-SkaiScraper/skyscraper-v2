@@ -164,7 +164,17 @@ export default function ClaimWeatherPage({ params }: Props) {
 
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
-        throw new Error(data.error || `Request failed with ${res.status}`);
+        const step = data.step as string | undefined;
+        const stepMessages: Record<string, string> = {
+          ai_generation:
+            "AI weather analysis failed — the model may be overloaded. Try again in a moment.",
+          db_save: "Weather report was generated but couldn't be saved to the database. Try again.",
+          rate_limit: "Too many requests — please wait a minute before trying again.",
+          billing: "Token balance issue — check your account billing settings.",
+        };
+        const friendlyMsg =
+          (step && stepMessages[step]) || data.error || `Request failed (${res.status})`;
+        throw new Error(friendlyMsg);
       }
 
       const data = (await res.json()) as WeatherReportApiResponse;
@@ -416,9 +426,29 @@ export default function ClaimWeatherPage({ params }: Props) {
             </p>
           )}
 
-          {error && isReportRunning && (
-            <Card className="border-red-200 bg-red-50 p-3 text-sm text-red-600 dark:border-red-800 dark:bg-red-900/20 dark:text-red-300">
-              {error}
+          {error && !reportResult && (
+            <Card className="border-red-200 bg-red-50 p-4 text-sm dark:border-red-800 dark:bg-red-900/20">
+              <div className="flex items-start gap-2">
+                <span className="mt-0.5 text-red-500">⚠️</span>
+                <div>
+                  <p className="font-medium text-red-700 dark:text-red-300">
+                    Report Generation Failed
+                  </p>
+                  <p className="mt-1 text-red-600 dark:text-red-400">{error}</p>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="mt-2 border-red-300 text-red-700 hover:bg-red-100 dark:border-red-700 dark:text-red-300 dark:hover:bg-red-900/40"
+                    onClick={() => {
+                      setError(null);
+                      runWeatherReport();
+                    }}
+                    disabled={isReportRunning}
+                  >
+                    Retry
+                  </Button>
+                </div>
+              </div>
             </Card>
           )}
 

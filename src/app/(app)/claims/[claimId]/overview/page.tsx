@@ -20,6 +20,7 @@ import { TabErrorBoundary } from "@/components/errors/TabErrorBoundary";
 import { JobValueBox } from "@/components/jobs/JobValueBox";
 import { ClaimWorkspaceSkeleton } from "@/components/loading/LoadingStates";
 
+import { CloseoutChecklist } from "@/components/jobs/CloseoutChecklist";
 import { RequestCloseoutButton } from "@/components/jobs/RequestCloseoutButton";
 import { retryQueue } from "@/lib/client/retryQueue";
 import { logger } from "@/lib/logger";
@@ -179,6 +180,16 @@ export default function OverviewPage() {
   const [error, setError] = useState<string | null>(null);
   const [pendingSaves, setPendingSaves] = useState<Set<string>>(new Set());
   const [generatingWeather, setGeneratingWeather] = useState(false);
+  const [teamMembers, setTeamMembers] = useState<
+    Array<{
+      id: string;
+      clerkUserId: string;
+      name: string | null;
+      title: string | null;
+      is_default_inspector: boolean;
+    }>
+  >([]);
+  const [selectedInspectorId, setSelectedInspectorId] = useState<string | null>(null);
   const saveQueueRef = useRef<{ [key: string]: any }>({});
   const saveTimerRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -299,6 +310,19 @@ export default function OverviewPage() {
 
   useEffect(() => {
     fetchData();
+    // Fetch team members for inspector dropdown
+    fetch("/api/team/members")
+      .then((r) => (r.ok ? r.json() : { members: [] }))
+      .then((data) => {
+        const members = data.members || data.users || [];
+        setTeamMembers(members);
+        // Auto-select default inspector if none is set
+        const defaultInsp = members.find((m: any) => m.is_default_inspector);
+        if (defaultInsp && !selectedInspectorId) {
+          setSelectedInspectorId(defaultInsp.clerkUserId || defaultInsp.id);
+        }
+      })
+      .catch(() => {});
   }, [claimId]);
 
   const fetchData = async () => {
@@ -594,6 +618,33 @@ export default function OverviewPage() {
               </div>
             </div>
             <div className="mt-4 border-t border-slate-200 pt-4 dark:border-slate-700">
+              <h4 className="mb-3 text-sm font-semibold text-foreground">Assigned Inspector</h4>
+              <div className="mb-4">
+                <label className="text-xs font-medium text-muted-foreground">Inspector</label>
+                <select
+                  value={selectedInspectorId || ""}
+                  onChange={(e) => {
+                    const inspId = e.target.value;
+                    setSelectedInspectorId(inspId || null);
+                    queueSave("inspectorId", inspId || null);
+                  }}
+                  className="mt-1 block w-full rounded-lg border border-slate-300 bg-background px-3 py-2 text-sm font-medium text-foreground shadow-sm transition-colors focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200 dark:border-slate-600"
+                >
+                  <option value="">Select inspector…</option>
+                  {teamMembers.map((m) => (
+                    <option key={m.id} value={m.clerkUserId || m.id}>
+                      {m.name || "Unnamed"}
+                      {m.title ? ` — ${m.title}` : ""}
+                      {m.is_default_inspector ? " ★" : ""}
+                    </option>
+                  ))}
+                </select>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  Inspector profile will be injected into damage reports and cover pages.
+                </p>
+              </div>
+            </div>
+            <div className="mt-4 border-t border-slate-200 pt-4 dark:border-slate-700">
               <h4 className="mb-3 text-sm font-semibold text-foreground">Adjuster Contact</h4>
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
                 <EditableField
@@ -797,6 +848,9 @@ export default function OverviewPage() {
                 currentStatus={claim.status}
                 onCloseoutRequested={fetchData}
               />
+              <div className="mt-4">
+                <CloseoutChecklist entityId={claimId} entityType="claim" />
+              </div>
             </div>
           </div>
         </SectionCard>

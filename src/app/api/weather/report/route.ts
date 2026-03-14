@@ -86,31 +86,57 @@ export const POST = withAuth(async (req: NextRequest, { userId, orgId }) => {
       return NextResponse.json({ error: "address and dol are required." }, { status: 400 });
     }
 
-    const aiReport = await runWeatherReport({
-      ...body,
-      // Accept either claimId or claim_id (UI uses claim_id)
-      claimId: (body.claimId ?? body.claim_id ?? null) as string | null,
-      orgId: orgId ?? null,
-    });
-
-    const report = await prisma.weather_reports.create({
-      data: {
-        id: randomUUID(),
-        claimId: body.claim_id ?? (body.claimId as string | undefined) ?? null,
-        createdById: userId,
-        updatedAt: new Date(),
-        mode: "full_report",
-        address: body.address,
-        dol: aiReport.dol ? new Date(aiReport.dol) : null,
-        primaryPeril: aiReport.peril ?? null,
-        globalSummary: {
-          overallAssessment: aiReport.summary,
-          contractorNarrative: aiReport.carrierTalkingPoints,
+    let aiReport;
+    try {
+      aiReport = await runWeatherReport({
+        ...body,
+        // Accept either claimId or claim_id (UI uses claim_id)
+        claimId: (body.claimId ?? body.claim_id ?? null) as string | null,
+        orgId: orgId ?? null,
+      });
+    } catch (aiErr) {
+      logger.error("[Weather API] AI report generation failed:", aiErr);
+      return NextResponse.json(
+        {
+          error: "Weather AI analysis failed. Please try again.",
+          step: "ai_generation",
+          details: process.env.NODE_ENV === "development" ? String(aiErr) : undefined,
         },
-        events: aiReport.events ?? [],
-        providerRaw: aiReport,
-      },
-    });
+        { status: 502 }
+      );
+    }
+
+    let report;
+    try {
+      report = await prisma.weather_reports.create({
+        data: {
+          id: randomUUID(),
+          claimId: body.claim_id ?? (body.claimId as string | undefined) ?? null,
+          createdById: userId,
+          updatedAt: new Date(),
+          mode: "full_report",
+          address: body.address,
+          dol: aiReport.dol ? new Date(aiReport.dol) : null,
+          primaryPeril: aiReport.peril ?? null,
+          globalSummary: {
+            overallAssessment: aiReport.summary ?? "No summary available.",
+            contractorNarrative: aiReport.carrierTalkingPoints ?? "",
+          },
+          events: aiReport.events ?? [],
+          providerRaw: aiReport,
+        },
+      });
+    } catch (dbErr) {
+      logger.error("[Weather API] DB save failed:", dbErr);
+      return NextResponse.json(
+        {
+          error: "Failed to save weather report to database.",
+          step: "db_save",
+          details: process.env.NODE_ENV === "development" ? String(dbErr) : undefined,
+        },
+        { status: 500 }
+      );
+    }
 
     // Generate PDF and save to storage (non-blocking)
     let pdfSaved = false;
@@ -195,21 +221,26 @@ export const POST = withAuth(async (req: NextRequest, { userId, orgId }) => {
     }
 
     // ── Save to report_history so it appears on Reports History page ──
-    await saveReportHistory({
-      orgId,
-      userId,
-      type: "weather_report",
-      title: `Weather Report — ${body.address}`,
-      sourceId: body.claim_id ?? (body.claimId as string | undefined) ?? null,
-      fileUrl: null,
-      metadata: {
-        address: body.address,
-        dol: body.dol,
-        peril: aiReport.peril,
-        pdfSaved,
-        reportId: report.id,
-      },
-    });
+    try {
+      await saveReportHistory({
+        orgId,
+        userId,
+        type: "weather_report",
+        title: `Weather Report — ${body.address}`,
+        sourceId: body.claim_id ?? (body.claimId as string | undefined) ?? null,
+        fileUrl: null,
+        metadata: {
+          address: body.address,
+          dol: body.dol,
+          peril: aiReport.peril,
+          pdfSaved,
+          reportId: report.id,
+        },
+      });
+    } catch (histErr) {
+      logger.error("[Weather API] Report history save failed (non-critical):", histErr);
+      // Continue - history save failure should not break the weather report
+    }
 
     return NextResponse.json({ report, pdfSaved }, { status: 200 });
   } catch (err) {

@@ -75,6 +75,8 @@ export interface ClaimIQStoreState {
   panelExpanded: boolean;
   /** Claim ID this state belongs to */
   activeClaimId: string | null;
+  /** Polling interval handle */
+  _pollingInterval: ReturnType<typeof setInterval> | null;
 }
 
 export interface ClaimIQStoreActions {
@@ -87,6 +89,10 @@ export interface ClaimIQStoreActions {
   clearReadiness: () => void;
   /** Refresh readiness after a data change (debounced) */
   refreshAfterChange: (claimId: string, changeType: string) => Promise<void>;
+  /** Start polling readiness every N seconds */
+  startPolling: (claimId: string, intervalMs?: number) => void;
+  /** Stop polling */
+  stopPolling: () => void;
 
   // ── Section Actions ──────────────────────────────────────────────────────
   /** Start generating a section */
@@ -178,6 +184,7 @@ export const useClaimIQStore = create<ClaimIQStore>()(
       activeTab: "claimiq",
       panelExpanded: false,
       activeClaimId: null,
+      _pollingInterval: null,
 
       // ── Readiness Actions ──────────────────────────────────────────────────
 
@@ -237,6 +244,37 @@ export const useClaimIQStore = create<ClaimIQStore>()(
         await new Promise((resolve) => setTimeout(resolve, 500));
         console.log(`[ClaimIQ] Refreshing after ${changeType}`);
         await get().fetchReadiness(claimId);
+      },
+
+      startPolling: (claimId: string, intervalMs = 30000) => {
+        // Clear any existing polling
+        const existing = get()._pollingInterval;
+        if (existing) clearInterval(existing);
+
+        // Fetch immediately
+        get().fetchReadiness(claimId);
+
+        // Set up polling interval (default 30s)
+        const interval = setInterval(() => {
+          // Only poll if we're still on the same claim
+          if (get().activeClaimId === claimId) {
+            get().fetchReadiness(claimId);
+          } else {
+            // Claim changed — stop polling
+            clearInterval(interval);
+            set({ _pollingInterval: null });
+          }
+        }, intervalMs);
+
+        set({ _pollingInterval: interval });
+      },
+
+      stopPolling: () => {
+        const interval = get()._pollingInterval;
+        if (interval) {
+          clearInterval(interval);
+          set({ _pollingInterval: null });
+        }
       },
 
       // ── Section Actions ────────────────────────────────────────────────────

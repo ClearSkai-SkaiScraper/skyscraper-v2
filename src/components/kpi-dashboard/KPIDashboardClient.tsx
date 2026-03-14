@@ -38,34 +38,19 @@ interface KPIData {
 }
 
 const defaultKPIData: KPIData = {
-  claimsPerStage: {
-    "Lead Intake": 24,
-    "Inspection Scheduled": 18,
-    "Inspection Completed": 12,
-    "Estimate Drafting": 8,
-    Submitted: 15,
-    "In Review": 10,
-    Supplementing: 7,
-    Approved: 22,
-    "In Production": 14,
-    Completed: 45,
-  },
-  avgCycleTime: 28.5,
-  approvalRatio: 0.87,
-  supplementCount: 42,
-  supplementRatio: 0.31,
-  avgRoofSize: 3250,
-  avgMaterialCost: 12500,
-  totalRevenue: 2847000,
+  claimsPerStage: {},
+  avgCycleTime: 0,
+  approvalRatio: 0,
+  supplementCount: 0,
+  supplementRatio: 0,
+  avgRoofSize: 0,
+  avgMaterialCost: 0,
+  totalRevenue: 0,
   revenueByOrg: {},
   jobsByZip: {},
-  aiRiskLevels: { low: 102, medium: 34, high: 12 },
-  aiPredictedApproval: 0.92,
-  redFlags: [
-    { type: "Delayed Adjuster Callback", count: 8, severity: "medium" },
-    { type: "Missing Documentation", count: 15, severity: "high" },
-    { type: "Incomplete Photos", count: 12, severity: "medium" },
-  ],
+  aiRiskLevels: { low: 0, medium: 0, high: 0 },
+  aiPredictedApproval: 0,
+  redFlags: [],
 };
 
 export default function KPIDashboardClient({ embedded = false }: { embedded?: boolean }) {
@@ -87,19 +72,19 @@ export default function KPIDashboardClient({ embedded = false }: { embedded?: bo
             ...defaultKPIData,
             ...data,
             aiRiskLevels: { ...defaultKPIData.aiRiskLevels, ...(data.aiRiskLevels || {}) },
-            redFlags:
-              Array.isArray(data.redFlags) && data.redFlags.length > 0
-                ? data.redFlags
-                : defaultKPIData.redFlags,
-            claimsPerStage:
-              data.claimsPerStage && Object.values(data.claimsPerStage).some((v: any) => v > 0)
-                ? data.claimsPerStage
-                : defaultKPIData.claimsPerStage,
+            redFlags: Array.isArray(data.redFlags) ? data.redFlags : [],
+            claimsPerStage: data.claimsPerStage || {},
           });
+        } else {
+          // API returned empty/error — show zeros, not fake data
+          setKpiData(defaultKPIData);
         }
+      } else {
+        setKpiData(defaultKPIData);
       }
     } catch (error) {
       logger.error("Failed to fetch KPIs:", error);
+      setKpiData(defaultKPIData);
     } finally {
       setLoading(false);
     }

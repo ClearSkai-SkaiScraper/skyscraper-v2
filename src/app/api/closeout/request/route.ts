@@ -14,6 +14,7 @@ import { NextRequest, NextResponse } from "next/server";
 
 import { getTenantContext } from "@/lib/auth/tenant";
 import { logger } from "@/lib/logger";
+import { sendTemplatedNotification } from "@/lib/notifications/templates";
 import prisma from "@/lib/prisma";
 
 export const dynamic = "force-dynamic";
@@ -144,6 +145,28 @@ export async function POST(req: NextRequest) {
     } catch (actErr) {
       // Non-critical — log and continue
       logger.warn("[CLOSEOUT] Activity log failed:", actErr);
+    }
+
+    // 4. Notify managers/admins about the closeout request
+    try {
+      const managers = await prisma.users.findMany({
+        where: {
+          orgId: ctx.orgId,
+          role: { in: ["ADMIN", "MANAGER"] },
+          clerkUserId: { not: userId },
+        },
+        select: { clerkUserId: true },
+      });
+
+      for (const mgr of managers) {
+        await sendTemplatedNotification("CLOSEOUT_REQUESTED", mgr.clerkUserId, {
+          entityType: entityType === "claim" ? "Claim" : "Retail Job",
+          entityTitle,
+          reason: reason || "No reason provided",
+        }).catch(() => {}); // non-blocking
+      }
+    } catch (notifyErr) {
+      logger.warn("[CLOSEOUT] Notification send failed:", notifyErr);
     }
 
     logger.info("[CLOSEOUT_REQUEST]", {

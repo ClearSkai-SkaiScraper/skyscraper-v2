@@ -26,6 +26,7 @@ interface PhotoFinding {
   confidence: number;
   ircCode?: string;
   caption?: string;
+  evidenceTier?: "primary" | "supporting" | "reference";
 }
 
 interface PreviewPhoto {
@@ -71,7 +72,13 @@ interface DamageReportPreviewProps {
       confidence?: number;
     }>;
   }>;
-  onGenerate: () => void;
+  /** Called with overrides so the parent can pass them to the generation API */
+  onGenerate: (overrides?: {
+    excludedPhotoIds: string[];
+    captionOverrides: Record<string, Record<string, string>>;
+    severityOverrides: Record<string, Record<string, string>>;
+    evidenceTiers: Record<string, Record<string, string>>;
+  }) => void;
 }
 
 export function DamageReportPreview({
@@ -96,6 +103,7 @@ export function DamageReportPreview({
         confidence: a.confidence || 0.5,
         ircCode: undefined,
         caption: a.caption || "",
+        evidenceTier: (a.confidence || 0.5) >= 0.7 ? ("primary" as const) : ("supporting" as const),
       }));
 
       // If no annotation findings, use AI caption as a finding
@@ -106,6 +114,8 @@ export function DamageReportPreview({
           confidence: p.confidence || 0.5,
           ircCode: p.aiCaption.applicableCode,
           caption: p.aiCaption.summary,
+          evidenceTier:
+            (p.confidence || 0.5) >= 0.7 ? ("primary" as const) : ("supporting" as const),
         });
       }
 
@@ -172,10 +182,80 @@ export function DamageReportPreview({
     });
   };
 
+  const updateFindingTier = (
+    photoId: string,
+    findingIdx: number,
+    evidenceTier: PhotoFinding["evidenceTier"]
+  ) => {
+    if (!previewData) return;
+    setPreviewData({
+      ...previewData,
+      photos: previewData.photos.map((p) =>
+        p.id === photoId
+          ? {
+              ...p,
+              findings: p.findings.map((f, i) => (i === findingIdx ? { ...f, evidenceTier } : f)),
+            }
+          : p
+      ),
+    });
+  };
+
   const handleGenerateFromPreview = async () => {
     setGenerating(true);
     try {
-      onGenerate();
+      // Build overrides from user edits
+      const excludedPhotoIds = previewData!.photos.filter((p) => !p.included).map((p) => p.id);
+
+      const captionOverrides: Record<string, Record<string, string>> = {};
+      const severityOverrides: Record<string, Record<string, string>> = {};
+
+      for (const photo of previewData!.photos) {
+        if (!photo.included) continue;
+        const originalPhoto = rawPhotos.find((rp) => rp.id === photo.id);
+        const originalAnnotations = originalPhoto?.annotations || [];
+
+        for (let fIdx = 0; fIdx < photo.findings.length; fIdx++) {
+          const finding = photo.findings[fIdx];
+          const originalAnno = originalAnnotations[fIdx];
+
+          // Check if caption was edited
+          if (finding.caption && finding.caption !== (originalAnno?.caption || "")) {
+            if (!captionOverrides[photo.id]) captionOverrides[photo.id] = {};
+            captionOverrides[photo.id][String(fIdx)] = finding.caption;
+          }
+
+          // Check if severity was changed
+          if (
+            finding.severity &&
+            finding.severity !== (originalAnno?.severity || originalPhoto?.severity || "moderate")
+          ) {
+            if (!severityOverrides[photo.id]) severityOverrides[photo.id] = {};
+            severityOverrides[photo.id][String(fIdx)] = finding.severity;
+          }
+        }
+      }
+
+      const overrides = {
+        excludedPhotoIds,
+        captionOverrides,
+        severityOverrides,
+        evidenceTiers: {} as Record<string, Record<string, string>>,
+      };
+
+      // Build evidence tier overrides
+      for (const photo of previewData!.photos) {
+        if (!photo.included) continue;
+        for (let fIdx = 0; fIdx < photo.findings.length; fIdx++) {
+          const finding = photo.findings[fIdx];
+          if (finding.evidenceTier) {
+            if (!overrides.evidenceTiers[photo.id]) overrides.evidenceTiers[photo.id] = {};
+            overrides.evidenceTiers[photo.id][String(fIdx)] = finding.evidenceTier;
+          }
+        }
+      }
+
+      onGenerate(overrides);
       toast.success("Generating damage report with your edits…");
       onOpenChange(false);
     } catch (err) {
@@ -327,6 +407,36 @@ export function DamageReportPreview({
                                     {finding.severity}
                                   </Badge>
                                 )}
+                                {editMode ? (
+                                  <select
+                                    className="rounded border bg-background px-2 py-0.5 text-xs"
+                                    value={finding.evidenceTier || "primary"}
+                                    onChange={(e) =>
+                                      updateFindingTier(
+                                        photo.id,
+                                        fIdx,
+                                        e.target.value as PhotoFinding["evidenceTier"]
+                                      )
+                                    }
+                                  >
+                                    <option value="primary">Primary</option>
+                                    <option value="supporting">Supporting</option>
+                                    <option value="reference">Reference</option>
+                                  </select>
+                                ) : finding.evidenceTier ? (
+                                  <Badge
+                                    variant="outline"
+                                    className={`text-xs ${
+                                      finding.evidenceTier === "primary"
+                                        ? "border-emerald-300 text-emerald-700 dark:border-emerald-700 dark:text-emerald-400"
+                                        : finding.evidenceTier === "supporting"
+                                          ? "border-blue-300 text-blue-700 dark:border-blue-700 dark:text-blue-400"
+                                          : "border-slate-300 text-slate-500"
+                                    }`}
+                                  >
+                                    {finding.evidenceTier}
+                                  </Badge>
+                                ) : null}
                               </div>
                               <span className="text-xs text-muted-foreground">
                                 {Math.round(finding.confidence * 100)}% confidence
