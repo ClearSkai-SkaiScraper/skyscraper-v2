@@ -15,6 +15,7 @@ import { checkRateLimit } from "@/lib/rate-limit";
 import { htmlToPdfBuffer } from "@/lib/reports/pdf-utils";
 import { saveAiPdfToStorage } from "@/lib/reports/saveAiPdfToStorage";
 import { saveReportHistory } from "@/lib/reports/saveReportHistory";
+import { getRadarForEvent } from "@/lib/weather/radarService";
 
 export const GET = withAuth(async (req: NextRequest, { userId, orgId }) => {
   try {
@@ -106,6 +107,39 @@ export const POST = withAuth(async (req: NextRequest, { userId, orgId }) => {
       );
     }
 
+    // ── Fetch NEXRAD radar imagery for the DOL ──
+    let radarImages: { url: string; label: string; stationId?: string }[] = [];
+    let radarStationId: string | null = null;
+    try {
+      // Geocode address via Open-Meteo (free, no key)
+      const geoRes = await fetch(
+        `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(body.address)}&count=1&language=en&format=json`
+      );
+      let lat = 0;
+      let lng = 0;
+      if (geoRes.ok) {
+        const geoData = await geoRes.json();
+        if (geoData.results?.[0]) {
+          lat = geoData.results[0].latitude;
+          lng = geoData.results[0].longitude;
+        }
+      }
+
+      if (lat && lng) {
+        const dolDate = aiReport.dol || body.dol;
+        const radarResult = await getRadarForEvent(lat, lng, dolDate);
+        radarImages = radarResult.images;
+        radarStationId = radarResult.stationId;
+        logger.info("[Weather API] Fetched radar images", {
+          stationId: radarStationId,
+          count: radarImages.length,
+        });
+      }
+    } catch (radarErr) {
+      logger.error("[Weather API] Radar fetch failed (non-critical):", radarErr);
+      // Continue — radar is supplementary, not critical
+    }
+
     let report;
     try {
       report = await prisma.weather_reports.create({
@@ -121,6 +155,8 @@ export const POST = withAuth(async (req: NextRequest, { userId, orgId }) => {
           globalSummary: {
             overallAssessment: aiReport.summary ?? "No summary available.",
             contractorNarrative: aiReport.carrierTalkingPoints ?? "",
+            radarStation: radarStationId,
+            radarImageCount: radarImages.length,
           },
           events: aiReport.events ?? [],
           providerRaw: aiReport,
@@ -154,6 +190,12 @@ export const POST = withAuth(async (req: NextRequest, { userId, orgId }) => {
               .meta { background: #f1f5f9; padding: 16px; border-radius: 8px; margin: 20px 0; }
               .event { background: #fef3c7; padding: 12px; margin: 10px 0; border-left: 4px solid #f59e0b; }
               .confidence { font-weight: bold; color: #059669; }
+              .radar-section { margin-top: 30px; }
+              .radar-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; margin-top: 12px; }
+              .radar-frame { background: #0f172a; border-radius: 8px; overflow: hidden; text-align: center; }
+              .radar-frame img { width: 100%; height: auto; display: block; }
+              .radar-frame .caption { color: #94a3b8; font-size: 11px; padding: 6px 8px; }
+              .radar-note { font-size: 11px; color: #64748b; margin-top: 8px; font-style: italic; }
             </style>
           </head>
           <body>
@@ -162,6 +204,7 @@ export const POST = withAuth(async (req: NextRequest, { userId, orgId }) => {
               <p><strong>Address:</strong> ${body.address}</p>
               <p><strong>Date of Loss:</strong> ${aiReport.dol || body.dol}</p>
               <p><strong>Primary Peril:</strong> ${aiReport.peril || "Unknown"}</p>
+              ${radarStationId ? `<p><strong>Nearest Radar Station:</strong> ${radarStationId}</p>` : ""}
               <p><strong>Generated:</strong> ${new Date().toLocaleString()}</p>
             </div>
             
@@ -193,6 +236,34 @@ export const POST = withAuth(async (req: NextRequest, { userId, orgId }) => {
               `
                 )
                 .join("")}
+            `
+                : ""
+            }
+
+            ${
+              radarImages.length > 0
+                ? `
+              <div class="radar-section">
+                <h2>NEXRAD Radar Imagery — ${aiReport.dol || body.dol}</h2>
+                <p>Radar composites from NEXRAD station <strong>${radarStationId || "N/A"}</strong> 
+                showing precipitation patterns on the date of loss.</p>
+                <div class="radar-grid">
+                  ${radarImages
+                    .filter((img) => img.url.includes("n0q_"))
+                    .slice(0, 6)
+                    .map(
+                      (img) => `
+                    <div class="radar-frame">
+                      <img src="${img.url}" alt="${img.label}" onerror="this.style.display='none'" />
+                      <div class="caption">${img.label}</div>
+                    </div>
+                  `
+                    )
+                    .join("")}
+                </div>
+                <p class="radar-note">Source: Iowa Environmental Mesonet NEXRAD Archive / NWS RIDGE. 
+                Images show base reflectivity (n0q) composites. Brighter colors indicate heavier precipitation.</p>
+              </div>
             `
                 : ""
             }
@@ -242,7 +313,16 @@ export const POST = withAuth(async (req: NextRequest, { userId, orgId }) => {
       // Continue - history save failure should not break the weather report
     }
 
-    return NextResponse.json({ report, pdfSaved }, { status: 200 });
+    return NextResponse.json(
+      {
+        report,
+        pdfSaved,
+        weatherReportId: report.id,
+        radarStation: radarStationId,
+        radarImageCount: radarImages.length,
+      },
+      { status: 200 }
+    );
   } catch (err) {
     logger.error("[API Error] /api/weather/report:", err);
     return NextResponse.json(

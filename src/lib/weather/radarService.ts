@@ -1,0 +1,145 @@
+/**
+ * Radar Image Service
+ *
+ * Fetches historical NEXRAD radar imagery from Iowa Environmental Mesonet (IEM)
+ * and current/recent radar from NWS RIDGE.
+ *
+ * Sources (all FREE, no API key needed):
+ * - IEM NEXRAD Archive: Historical radar composites by date
+ * - NWS RIDGE: Current/recent radar station imagery
+ * - RainViewer: Recent 2-hour radar tiles (free tier)
+ */
+import { logger } from "@/lib/logger";
+
+export interface RadarImage {
+  url: string;
+  timestamp: string;
+  source: "iem_nexrad" | "nws_ridge" | "rainviewer";
+  stationId?: string;
+  label: string;
+}
+
+/**
+ * Get the nearest NWS radar station for a lat/lng
+ */
+async function getNearestRadarStation(lat: number, lng: number): Promise<string> {
+  try {
+    const res = await fetch(`https://api.weather.gov/points/${lat},${lng}`, {
+      headers: { "User-Agent": "(SkaiScraper, support@skaiscrape.com)" },
+    });
+    if (!res.ok) throw new Error(`NWS points API: ${res.status}`);
+    const data = await res.json();
+    return data.properties?.radarStation || "KFWS";
+  } catch (err) {
+    logger.error("[RADAR] Failed to get nearest station:", err);
+    return "KFWS"; // Default fallback
+  }
+}
+
+/**
+ * Fetch historical NEXRAD radar composite images from IEM
+ *
+ * IEM provides archived NEXRAD composites at:
+ * https://mesonet.agron.iastate.edu/archive/data/YYYY/MM/DD/GIS/uscomp/
+ *
+ * These are national composite images. For station-specific:
+ * https://mesonet.agron.iastate.edu/archive/data/YYYY/MM/DD/GIS/ridge/STATION/
+ */
+export async function fetchHistoricalRadar(
+  lat: number,
+  lng: number,
+  date: string // YYYY-MM-DD
+): Promise<RadarImage[]> {
+  const images: RadarImage[] = [];
+  const stationId = await getNearestRadarStation(lat, lng);
+
+  try {
+    const d = new Date(date);
+    const yyyy = d.getUTCFullYear();
+    const mm = String(d.getUTCMonth() + 1).padStart(2, "0");
+    const dd = String(d.getUTCDate()).padStart(2, "0");
+
+    // IEM NEXRAD composites — available at various times throughout the day
+    // National composite (n0q = base reflectivity)
+    const timeSlots = ["0000", "0600", "1200", "1500", "1800", "2100", "2359"];
+
+    for (const time of timeSlots) {
+      const url = `https://mesonet.agron.iastate.edu/archive/data/${yyyy}/${mm}/${dd}/GIS/uscomp/n0q_${yyyy}${mm}${dd}${time}.png`;
+      const hour = parseInt(time.slice(0, 2));
+      const label = `${hour === 0 ? "12" : hour > 12 ? hour - 12 : hour}:${time.slice(2)} ${hour >= 12 ? "PM" : "AM"} UTC`;
+
+      images.push({
+        url,
+        timestamp: `${date}T${time.slice(0, 2)}:${time.slice(2)}:00Z`,
+        source: "iem_nexrad",
+        stationId,
+        label: `NEXRAD Composite — ${label}`,
+      });
+    }
+
+    // Station-specific RIDGE images
+    const ridgeUrl = `https://radar.weather.gov/ridge/standard/${stationId}_0.gif`;
+    images.push({
+      url: ridgeUrl,
+      timestamp: new Date().toISOString(),
+      source: "nws_ridge",
+      stationId,
+      label: `${stationId} Current RIDGE Radar`,
+    });
+
+    logger.info("[RADAR] Fetched radar image URLs", { date, stationId, count: images.length });
+  } catch (err) {
+    logger.error("[RADAR] Error building radar URLs:", err);
+  }
+
+  return images;
+}
+
+/**
+ * Fetch recent radar tiles from RainViewer (free, no key needed)
+ * Only works for last ~2 hours
+ */
+export async function fetchRecentRadar(): Promise<RadarImage[]> {
+  try {
+    const res = await fetch("https://api.rainviewer.com/public/weather-maps.json");
+    if (!res.ok) return [];
+    const data = await res.json();
+
+    const images: RadarImage[] = [];
+    const radarFrames = data.radar?.past || [];
+
+    for (const frame of radarFrames.slice(-4)) {
+      // Last 4 frames
+      const ts = new Date(frame.time * 1000);
+      images.push({
+        url: `https://tilecache.rainviewer.com${frame.path}/256/3/3/3/2/1_1.png`,
+        timestamp: ts.toISOString(),
+        source: "rainviewer",
+        label: `RainViewer — ${ts.toLocaleTimeString()}`,
+      });
+    }
+
+    return images;
+  } catch (err) {
+    logger.error("[RADAR] RainViewer fetch failed:", err);
+    return [];
+  }
+}
+
+/**
+ * Get radar images for a specific event date + location
+ * This is the main function used by the weather report generator
+ */
+export async function getRadarForEvent(
+  lat: number,
+  lng: number,
+  eventDate: string // YYYY-MM-DD
+): Promise<{ stationId: string; images: RadarImage[] }> {
+  const stationId = await getNearestRadarStation(lat, lng);
+  const historical = await fetchHistoricalRadar(lat, lng, eventDate);
+
+  return {
+    stationId,
+    images: historical,
+  };
+}

@@ -96,43 +96,52 @@ export async function POST(req: NextRequest) {
 
     const result = await runQuickDol(input);
 
+    const candidates = (result.candidates || []).map((c) => ({
+      date: c.date,
+      confidence: normalizeConfidence(c.score),
+      reasoning: c.reason || undefined,
+      perilType: c.perilType || body.lossType || "unknown",
+    }));
+
     const response = {
-      candidates: (result.candidates || []).map((c) => ({
-        date: c.date,
-        confidence: normalizeConfidence(c.score),
-        reasoning: c.reason || undefined,
-      })),
+      candidates,
       notes: result.bestGuess ? `Best guess: ${result.bestGuess}` : undefined,
+      scanId: null as string | null,
     };
 
-    // Save to ai_reports for demo visibility — derive orgId server-side
+    // Save scan to weather_reports for recall + history
     const resolvedOrgId = effectiveUserId !== "dev-weather-bypass" ? await getTenant() : null;
     if (resolvedOrgId && effectiveUserId !== "dev-weather-bypass") {
       try {
-        await prisma.ai_reports.create({
+        const scanId = crypto.randomUUID();
+        await prisma.weather_reports.create({
           data: {
-            id: crypto.randomUUID(),
-            orgId: resolvedOrgId,
-            userId: effectiveUserId,
-            userName: "system",
+            id: scanId,
             claimId: body.claimId || null,
-            type: "weather",
-            title: `Quick DOL - ${address}`,
-            prompt: JSON.stringify({
-              address,
-              lossType: body.lossType,
-              dateFrom: body.dateFrom,
-              dateTo: body.dateTo,
-            }),
-            content: JSON.stringify(response),
-            tokensUsed: 0,
-            status: "completed",
+            createdById: effectiveUserId,
             updatedAt: new Date(),
+            mode: "quick_dol",
+            address,
+            lossType: body.lossType || null,
+            dol: candidates[0]?.date ? new Date(candidates[0].date) : null,
+            periodFrom: startDate ? new Date(startDate) : null,
+            periodTo: endDate ? new Date(endDate) : null,
+            primaryPeril: body.lossType || null,
+            confidence: candidates[0]?.confidence ?? null,
+            candidateDates: candidates,
+            events: result.candidates || [],
+            globalSummary: {
+              notes: result.bestGuess || null,
+              scanType: "quick_dol",
+              perilCategory: body.lossType || "auto",
+            },
+            providerRaw: result,
           },
         });
+        response.scanId = scanId;
+        logger.info("[weather/quick-dol] Saved scan", { scanId, claimId: body.claimId });
       } catch (dbErr) {
-        logger.error("[weather/quick-dol] Failed to save to ai_reports:", dbErr);
-        // Continue even if save fails - don't break demo
+        logger.error("[weather/quick-dol] Failed to save scan:", dbErr);
       }
     }
 

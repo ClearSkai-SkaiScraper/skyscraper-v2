@@ -1,7 +1,21 @@
 "use client";
 
-import { CheckCircle, CloudLightning, CloudRain, Download, FileText, Loader2 } from "lucide-react";
-import { useState } from "react";
+import {
+  CalendarCheck,
+  CheckCircle,
+  CloudLightning,
+  CloudRain,
+  Download,
+  Eye,
+  FileText,
+  History,
+  Loader2,
+  MapPin,
+  RefreshCw,
+  Wind,
+  Zap,
+} from "lucide-react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
 import { Badge } from "@/components/ui/badge";
@@ -16,17 +30,47 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { logger } from "@/lib/logger";
+
+// ─── Types ─────────────────────────────────────────────────────────────────
 
 type QuickDolCandidate = {
   date: string;
   confidence: number;
   reasoning?: string;
+  perilType?: string;
 };
 
 type QuickDolResponse = {
   candidates: QuickDolCandidate[];
   notes?: string;
+  scanId?: string | null;
+};
+
+type SavedScan = {
+  id: string;
+  mode: string;
+  address: string;
+  dol: string | null;
+  lossType: string | null;
+  primaryPeril: string | null;
+  confidence: number | null;
+  candidateDates: QuickDolCandidate[] | null;
+  events: unknown[] | null;
+  globalSummary: { notes?: string; scanType?: string; perilCategory?: string } | null;
+  createdAt: string;
+  periodFrom: string | null;
+  periodTo: string | null;
+  users: { name: string | null } | null;
+};
+
+type RadarImage = {
+  url: string;
+  timestamp: string;
+  source: string;
+  stationId?: string;
+  label: string;
 };
 
 type WeatherReportApiResponse = {
@@ -42,26 +86,191 @@ type WeatherReportApiResponse = {
   pdfSaved?: boolean;
 };
 
+const PERIL_COLORS: Record<string, string> = {
+  hail: "bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300",
+  wind: "bg-amber-100 text-amber-700 dark:bg-amber-900 dark:text-amber-300",
+  water: "bg-cyan-100 text-cyan-700 dark:bg-cyan-900 dark:text-cyan-300",
+  tropical: "bg-purple-100 text-purple-700 dark:bg-purple-900 dark:text-purple-300",
+  other: "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300",
+};
+
+const PERIL_ICONS: Record<string, React.ReactNode> = {
+  hail: <CloudRain className="h-4 w-4 text-blue-500" />,
+  wind: <Wind className="h-4 w-4 text-amber-500" />,
+  water: <CloudRain className="h-4 w-4 text-cyan-500" />,
+  tropical: <CloudLightning className="h-4 w-4 text-purple-500" />,
+};
+
+// ─── Main Component ────────────────────────────────────────────────────────
+
 type Props = { params: { claimId: string } };
 
 export default function ClaimWeatherPage({ params }: Props) {
   const { claimId } = params;
 
+  // Form state
   const [address, setAddress] = useState("");
   const [lossType, setLossType] = useState<"none" | "hail" | "wind" | "water">("none");
   const [dateFrom, setDateFrom] = useState("");
   const [dateTo, setDateTo] = useState("");
 
+  // Quick DOL state
   const [quickDolResult, setQuickDolResult] = useState<QuickDolResponse | null>(null);
   const [selectedDol, setSelectedDol] = useState("");
-
   const [isQuickDolRunning, setIsQuickDolRunning] = useState(false);
-  const [isReportRunning, setIsReportRunning] = useState(false);
-  const [error, setError] = useState<string | null>(null);
 
+  // Saved scans state
+  const [savedScans, setSavedScans] = useState<SavedScan[]>([]);
+  const [currentDol, setCurrentDol] = useState<string | null>(null);
+  const [loadingScans, setLoadingScans] = useState(true);
+  const [settingDol, setSettingDol] = useState<string | null>(null);
+
+  // Radar state
+  const [radarImages, setRadarImages] = useState<RadarImage[]>([]);
+  const [radarStation, setRadarStation] = useState<string | null>(null);
+  const [loadingRadar, setLoadingRadar] = useState(false);
+  const [selectedRadarIdx, setSelectedRadarIdx] = useState(0);
+
+  // Full report state
+  const [isReportRunning, setIsReportRunning] = useState(false);
   const [reportResult, setReportResult] = useState<WeatherReportApiResponse | null>(null);
+  const [error, setError] = useState<string | null>(null);
   const [generatingPdf, setGeneratingPdf] = useState(false);
 
+  // ── Load saved scans on mount ──
+  useEffect(() => {
+    loadSavedScans();
+  }, [claimId]);
+
+  async function loadSavedScans() {
+    setLoadingScans(true);
+    try {
+      const res = await fetch(`/api/weather/scans?claimId=${claimId}`);
+      if (res.ok) {
+        const data = await res.json();
+        setSavedScans(data.scans || []);
+        setCurrentDol(data.currentDol || null);
+        if (data.claimAddress && !address) {
+          setAddress(data.claimAddress);
+        }
+      }
+    } catch (err) {
+      logger.error("Failed to load saved scans:", err);
+    } finally {
+      setLoadingScans(false);
+    }
+  }
+
+  // ── Quick DOL Scan ──
+  async function runQuickDol() {
+    setIsQuickDolRunning(true);
+    setError(null);
+    setQuickDolResult(null);
+
+    if (!address.trim()) {
+      setIsQuickDolRunning(false);
+      setError("Address is required.");
+      return;
+    }
+
+    try {
+      const res = await fetch("/api/weather/quick-dol", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          address,
+          lossType: lossType === "none" ? null : lossType,
+          dateFrom: dateFrom || null,
+          dateTo: dateTo || null,
+          claimId,
+        }),
+      });
+
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.error || `Request failed with ${res.status}`);
+      }
+
+      const data = (await res.json()) as QuickDolResponse;
+      setQuickDolResult(data);
+
+      if (data.candidates?.length) {
+        const sorted = [...data.candidates].sort(
+          (a, b) => (b.confidence || 0) - (a.confidence || 0)
+        );
+        setSelectedDol(sorted[0].date);
+      }
+
+      // Refresh saved scans to include the new one
+      await loadSavedScans();
+      toast.success("DOL scan complete and saved!");
+    } catch (err) {
+      logger.error("Quick DOL error:", err);
+      setError(err instanceof Error ? err.message : "Failed to run Quick DOL.");
+    } finally {
+      setIsQuickDolRunning(false);
+    }
+  }
+
+  // ── Set DOL on Claim ──
+  async function setDolOnClaim(dol: string, scanId?: string) {
+    setSettingDol(dol);
+    try {
+      const res = await fetch("/api/weather/set-dol", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ claimId, dol, scanId }),
+      });
+
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.error || "Failed to update DOL");
+      }
+
+      setCurrentDol(dol);
+      setSelectedDol(dol);
+      toast.success(`Date of Loss updated to ${new Date(dol).toLocaleDateString()}`);
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to set DOL");
+    } finally {
+      setSettingDol(null);
+    }
+  }
+
+  // ── Fetch Radar Images ──
+  async function fetchRadar(date: string) {
+    setLoadingRadar(true);
+    setRadarImages([]);
+    try {
+      // Geocode address via Open-Meteo (free)
+      const geoRes = await fetch(
+        `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(address)}&count=1&language=en&format=json`
+      );
+      let lat = 34.5;
+      let lng = -112.4;
+      if (geoRes.ok) {
+        const geoData = await geoRes.json();
+        if (geoData.results?.[0]) {
+          lat = geoData.results[0].latitude;
+          lng = geoData.results[0].longitude;
+        }
+      }
+
+      const res = await fetch(`/api/weather/radar?lat=${lat}&lng=${lng}&date=${date}`);
+      if (res.ok) {
+        const data = await res.json();
+        setRadarImages(data.images || []);
+        setRadarStation(data.stationId || null);
+        setSelectedRadarIdx(0);
+      }
+    } catch (err) {
+      logger.error("Radar fetch error:", err);
+    } finally {
+      setLoadingRadar(false);
+    }
+  }
+
+  // ── Download Verification PDF ──
   async function downloadVerificationPdf() {
     setGeneratingPdf(true);
     try {
@@ -92,52 +301,7 @@ export default function ClaimWeatherPage({ params }: Props) {
     }
   }
 
-  async function runQuickDol() {
-    setIsQuickDolRunning(true);
-    setError(null);
-    setQuickDolResult(null);
-
-    if (!address.trim()) {
-      setIsQuickDolRunning(false);
-      setError("Address is required.");
-      return;
-    }
-
-    try {
-      const res = await fetch("/api/weather/quick-dol", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          address,
-          lossType: lossType === "none" ? null : lossType,
-          dateFrom: dateFrom || null,
-          dateTo: dateTo || null,
-        }),
-      });
-
-      if (!res.ok) {
-        const data = await res.json().catch(() => ({}));
-        throw new Error(data.error || `Request failed with ${res.status}`);
-      }
-
-      const data = (await res.json()) as QuickDolResponse;
-      setQuickDolResult(data);
-
-      // Default to highest-confidence candidate
-      if (data.candidates?.length) {
-        const sorted = [...data.candidates].sort(
-          (a, b) => (b.confidence || 0) - (a.confidence || 0)
-        );
-        setSelectedDol(sorted[0].date);
-      }
-    } catch (err) {
-      logger.error("Quick DOL error:", err);
-      setError(err instanceof Error ? err.message : "Failed to run Quick DOL.");
-    } finally {
-      setIsQuickDolRunning(false);
-    }
-  }
-
+  // ── Generate Full Report ──
   async function runWeatherReport() {
     setIsReportRunning(true);
     setError(null);
@@ -166,19 +330,19 @@ export default function ClaimWeatherPage({ params }: Props) {
         const data = await res.json().catch(() => ({}));
         const step = data.step as string | undefined;
         const stepMessages: Record<string, string> = {
-          ai_generation:
-            "AI weather analysis failed — the model may be overloaded. Try again in a moment.",
-          db_save: "Weather report was generated but couldn't be saved to the database. Try again.",
-          rate_limit: "Too many requests — please wait a minute before trying again.",
-          billing: "Token balance issue — check your account billing settings.",
+          ai_generation: "AI weather analysis failed — try again in a moment.",
+          db_save: "Report generated but couldn't be saved. Try again.",
+          rate_limit: "Too many requests — please wait a minute.",
+          billing: "Token balance issue — check billing settings.",
         };
-        const friendlyMsg =
-          (step && stepMessages[step]) || data.error || `Request failed (${res.status})`;
-        throw new Error(friendlyMsg);
+        throw new Error(
+          (step && stepMessages[step]) || data.error || `Request failed (${res.status})`
+        );
       }
 
       const data = (await res.json()) as WeatherReportApiResponse;
       setReportResult(data);
+      await loadSavedScans();
       toast.success("Weather report generated and saved!");
     } catch (err) {
       logger.error("Weather report error:", err);
@@ -188,8 +352,51 @@ export default function ClaimWeatherPage({ params }: Props) {
     }
   }
 
+  // ── Categorize saved scans ──
+  function categorizeScan(scan: SavedScan): string {
+    const peril = (scan.primaryPeril || scan.lossType || "").toLowerCase();
+    if (peril.includes("hail") && peril.includes("wind")) return "hail_wind";
+    if (peril.includes("hail")) return "hail";
+    if (peril.includes("wind")) return "wind";
+    if (peril.includes("tropical") || peril.includes("hurricane")) return "tropical";
+    if (peril.includes("water") || peril.includes("flood") || peril.includes("rain"))
+      return "water";
+    return "other";
+  }
+
+  const scanCategories = [
+    { key: "hail", label: "Hail", emoji: "🧊" },
+    { key: "wind", label: "Wind", emoji: "💨" },
+    { key: "hail_wind", label: "Hail & Wind", emoji: "⚡" },
+    { key: "tropical", label: "Tropical Storm", emoji: "🌀" },
+    { key: "water", label: "Water / Flood", emoji: "🌊" },
+    { key: "other", label: "Other / Auto", emoji: "📊" },
+  ];
+
   return (
     <div className="mx-auto max-w-4xl space-y-6 py-6">
+      {/* ── Current DOL Banner ── */}
+      {currentDol && (
+        <Card className="border-emerald-200 bg-gradient-to-r from-emerald-50 to-green-50 p-4 dark:border-emerald-800 dark:from-emerald-950/30 dark:to-green-950/30">
+          <div className="flex items-center gap-3">
+            <CalendarCheck className="h-5 w-5 text-emerald-600" />
+            <div>
+              <p className="text-sm font-medium text-emerald-900 dark:text-emerald-100">
+                Current Date of Loss on Claim
+              </p>
+              <p className="text-lg font-bold text-emerald-700 dark:text-emerald-300">
+                {new Date(currentDol).toLocaleDateString("en-US", {
+                  weekday: "long",
+                  year: "numeric",
+                  month: "long",
+                  day: "numeric",
+                })}
+              </p>
+            </div>
+          </div>
+        </Card>
+      )}
+
       {/* ── Quick one-page Weather Verification PDF ── */}
       <Card className="border-emerald-200 bg-gradient-to-r from-emerald-50 to-sky-50 p-5 dark:border-emerald-800 dark:from-emerald-950/30 dark:to-sky-950/30">
         <div className="flex items-center justify-between gap-4">
@@ -202,8 +409,8 @@ export default function ClaimWeatherPage({ params }: Props) {
                 One-Page Weather Verification PDF
               </h3>
               <p className="text-xs text-emerald-700 dark:text-emerald-300">
-                Auto-scans 12 months of NOAA hail &amp; wind data near this property, scores
-                severity, and generates a branded justification document.
+                Auto-scans 12 months of NOAA hail &amp; wind data, scores severity, and generates a
+                branded justification document.
               </p>
             </div>
           </div>
@@ -230,9 +437,13 @@ export default function ClaimWeatherPage({ params }: Props) {
       {/* ── Quick DOL Scan ── */}
       <Card className="p-6">
         <div className="mb-4">
-          <h2 className="text-lg font-semibold">Quick DOL Scan</h2>
+          <h2 className="flex items-center gap-2 text-lg font-semibold">
+            <Zap className="h-5 w-5 text-amber-500" />
+            Quick DOL Scan
+          </h2>
           <p className="text-sm text-muted-foreground">
-            Find likely dates of loss based on address, peril type, and time window.
+            Find likely dates of loss based on address, peril type, and time window. Each scan is
+            automatically saved to this claim.
           </p>
         </div>
 
@@ -249,27 +460,25 @@ export default function ClaimWeatherPage({ params }: Props) {
 
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
             <div>
-              <Label htmlFor="loss-type">Loss Type (optional)</Label>
+              <Label htmlFor="loss-type">Loss Type</Label>
               <Select
                 value={lossType || "NONE"}
-                onValueChange={(value) =>
-                  setLossType(value === "NONE" ? "none" : (value as typeof lossType))
-                }
+                onValueChange={(v) => setLossType(v === "NONE" ? "none" : (v as typeof lossType))}
               >
                 <SelectTrigger id="loss-type">
                   <SelectValue placeholder="Not specified" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="NONE">Not specified</SelectItem>
-                  <SelectItem value="hail">Hail</SelectItem>
-                  <SelectItem value="wind">Wind</SelectItem>
-                  <SelectItem value="water">Water</SelectItem>
+                  <SelectItem value="NONE">Auto Detect</SelectItem>
+                  <SelectItem value="hail">🧊 Hail</SelectItem>
+                  <SelectItem value="wind">💨 Wind</SelectItem>
+                  <SelectItem value="water">🌊 Water</SelectItem>
                 </SelectContent>
               </Select>
             </div>
 
             <div>
-              <Label htmlFor="date-from">Date From (optional)</Label>
+              <Label htmlFor="date-from">Date From</Label>
               <Input
                 id="date-from"
                 type="date"
@@ -279,7 +488,7 @@ export default function ClaimWeatherPage({ params }: Props) {
             </div>
 
             <div>
-              <Label htmlFor="date-to">Date To (optional)</Label>
+              <Label htmlFor="date-to">Date To</Label>
               <Input
                 id="date-to"
                 type="date"
@@ -298,7 +507,7 @@ export default function ClaimWeatherPage({ params }: Props) {
             ) : (
               <>
                 <CloudRain className="mr-2 h-4 w-4" />
-                Run Quick DOL
+                Run Quick DOL Scan
               </>
             )}
           </Button>
@@ -309,7 +518,7 @@ export default function ClaimWeatherPage({ params }: Props) {
             </Card>
           )}
 
-          {/* DOL Candidates */}
+          {/* DOL Candidates from current scan */}
           {quickDolResult && (
             <Card className="border-blue-200 bg-blue-50/50 p-4 dark:border-blue-800 dark:bg-blue-900/20">
               <h3 className="mb-3 flex items-center gap-2 font-semibold text-blue-900 dark:text-blue-100">
@@ -318,12 +527,12 @@ export default function ClaimWeatherPage({ params }: Props) {
               </h3>
               <div className="space-y-2">
                 {quickDolResult.candidates.map((c) => (
-                  <label
+                  <div
                     key={c.date}
-                    className={`flex cursor-pointer items-start gap-3 rounded-lg border p-3 transition-colors hover:bg-blue-100/50 dark:hover:bg-blue-800/30 ${
+                    className={`flex items-start gap-3 rounded-lg border p-3 transition-colors ${
                       selectedDol === c.date
                         ? "border-blue-500 bg-blue-100 dark:border-blue-400 dark:bg-blue-800/40"
-                        : "border-transparent"
+                        : "border-transparent hover:bg-blue-100/50 dark:hover:bg-blue-800/30"
                     }`}
                   >
                     <input
@@ -335,17 +544,61 @@ export default function ClaimWeatherPage({ params }: Props) {
                       onChange={() => setSelectedDol(c.date)}
                     />
                     <div className="flex-1">
-                      <div className="flex items-center gap-2 font-medium">
-                        {c.date}
+                      <div className="flex flex-wrap items-center gap-2 font-medium">
+                        {new Date(c.date).toLocaleDateString("en-US", {
+                          weekday: "short",
+                          month: "short",
+                          day: "numeric",
+                          year: "numeric",
+                        })}
                         <Badge variant="secondary">
                           {Math.round((c.confidence ?? 0) * 100)}% confidence
                         </Badge>
+                        {c.perilType && (
+                          <Badge className={PERIL_COLORS[c.perilType] || PERIL_COLORS.other}>
+                            {c.perilType}
+                          </Badge>
+                        )}
                       </div>
                       {c.reasoning && (
                         <p className="mt-1 text-sm text-muted-foreground">{c.reasoning}</p>
                       )}
                     </div>
-                  </label>
+                    <div className="flex shrink-0 gap-2">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => fetchRadar(c.date)}
+                        disabled={loadingRadar}
+                        title="View radar imagery for this date"
+                      >
+                        <Eye className="mr-1 h-3.5 w-3.5" />
+                        Radar
+                      </Button>
+                      <Button
+                        size="sm"
+                        onClick={() => setDolOnClaim(c.date, quickDolResult.scanId || undefined)}
+                        disabled={settingDol === c.date || currentDol === c.date}
+                        className={
+                          currentDol === c.date ? "bg-emerald-600" : "bg-blue-600 hover:bg-blue-700"
+                        }
+                      >
+                        {settingDol === c.date ? (
+                          <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                        ) : currentDol === c.date ? (
+                          <>
+                            <CheckCircle className="mr-1 h-3.5 w-3.5" />
+                            Current DOL
+                          </>
+                        ) : (
+                          <>
+                            <CalendarCheck className="mr-1 h-3.5 w-3.5" />
+                            Set as DOL
+                          </>
+                        )}
+                      </Button>
+                    </div>
+                  </div>
                 ))}
               </div>
 
@@ -359,13 +612,152 @@ export default function ClaimWeatherPage({ params }: Props) {
         </div>
       </Card>
 
+      {/* ── Radar Preview ── */}
+      {radarImages.length > 0 && (
+        <Card className="overflow-hidden">
+          <div className="border-b bg-slate-50 px-5 py-3 dark:bg-slate-800/50">
+            <h3 className="flex items-center gap-2 font-semibold">
+              <MapPin className="h-4 w-4 text-red-500" />
+              NEXRAD Radar Imagery
+              {radarStation && (
+                <Badge variant="outline" className="ml-2">
+                  Station: {radarStation}
+                </Badge>
+              )}
+            </h3>
+          </div>
+          <div className="p-5">
+            <div className="mb-4 flex justify-center">
+              <div className="relative w-full max-w-lg overflow-hidden rounded-lg border bg-slate-900">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={radarImages[selectedRadarIdx]?.url}
+                  alt={radarImages[selectedRadarIdx]?.label || "Radar image"}
+                  className="h-auto w-full"
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).src =
+                      "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 300'%3E%3Crect fill='%231e293b' width='400' height='300'/%3E%3Ctext fill='%2394a3b8' x='200' y='150' text-anchor='middle' font-size='14'%3ERadar image not available for this time%3C/text%3E%3C/svg%3E";
+                  }}
+                />
+                <div className="absolute bottom-2 left-2 rounded bg-black/70 px-2 py-1 text-xs text-white">
+                  {radarImages[selectedRadarIdx]?.label}
+                </div>
+              </div>
+            </div>
+
+            {/* Time slider */}
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-muted-foreground">Time:</span>
+              <input
+                type="range"
+                min={0}
+                max={radarImages.length - 1}
+                value={selectedRadarIdx}
+                onChange={(e) => setSelectedRadarIdx(parseInt(e.target.value))}
+                className="flex-1"
+              />
+              <span className="min-w-[80px] text-right text-xs font-medium">
+                {radarImages[selectedRadarIdx]?.label.split("—")[1]?.trim() || ""}
+              </span>
+            </div>
+
+            <p className="mt-3 text-xs text-muted-foreground">
+              Source: Iowa Environmental Mesonet NEXRAD Archive / NWS RIDGE. Drag the slider to see
+              radar at different times of day.
+            </p>
+          </div>
+        </Card>
+      )}
+
+      {loadingRadar && (
+        <Card className="flex items-center justify-center p-8">
+          <Loader2 className="mr-2 h-5 w-5 animate-spin text-blue-500" />
+          <span className="text-sm text-muted-foreground">Loading radar imagery…</span>
+        </Card>
+      )}
+
+      {/* ── Saved Scans History ── */}
+      <Card className="p-6">
+        <div className="mb-4 flex items-center justify-between">
+          <div>
+            <h2 className="flex items-center gap-2 text-lg font-semibold">
+              <History className="h-5 w-5 text-violet-500" />
+              Saved Weather Scans
+            </h2>
+            <p className="text-sm text-muted-foreground">
+              All scans for this claim organized by peril type. Select any date to set it as the
+              DOL.
+            </p>
+          </div>
+          <Button variant="ghost" size="sm" onClick={loadSavedScans} disabled={loadingScans}>
+            <RefreshCw className={`mr-1 h-3.5 w-3.5 ${loadingScans ? "animate-spin" : ""}`} />
+            Refresh
+          </Button>
+        </div>
+
+        {loadingScans ? (
+          <div className="flex items-center justify-center py-8">
+            <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+          </div>
+        ) : savedScans.length === 0 ? (
+          <div className="rounded-lg border-2 border-dashed py-8 text-center text-muted-foreground">
+            <CloudRain className="mx-auto mb-2 h-8 w-8 opacity-40" />
+            <p className="font-medium">No saved scans yet</p>
+            <p className="text-sm">Run a Quick DOL scan above to get started</p>
+          </div>
+        ) : (
+          <Tabs defaultValue="all" className="w-full">
+            <TabsList className="mb-4 flex-wrap">
+              <TabsTrigger value="all">All ({savedScans.length})</TabsTrigger>
+              {scanCategories.map((cat) => {
+                const count = savedScans.filter((s) => categorizeScan(s) === cat.key).length;
+                if (count === 0) return null;
+                return (
+                  <TabsTrigger key={cat.key} value={cat.key}>
+                    {cat.emoji} {cat.label} ({count})
+                  </TabsTrigger>
+                );
+              })}
+            </TabsList>
+
+            {["all", ...scanCategories.map((c) => c.key)].map((tabKey) => {
+              const filtered =
+                tabKey === "all"
+                  ? savedScans
+                  : savedScans.filter((s) => categorizeScan(s) === tabKey);
+
+              return (
+                <TabsContent key={tabKey} value={tabKey} className="space-y-3">
+                  {filtered.map((scan) => (
+                    <SavedScanCard
+                      key={scan.id}
+                      scan={scan}
+                      currentDol={currentDol}
+                      settingDol={settingDol}
+                      onSetDol={(dol) => setDolOnClaim(dol, scan.id)}
+                      onSelectDol={(dol) => setSelectedDol(dol)}
+                      onViewRadar={(date) => fetchRadar(date)}
+                      loadingRadar={loadingRadar}
+                      categorizeScan={categorizeScan}
+                    />
+                  ))}
+                </TabsContent>
+              );
+            })}
+          </Tabs>
+        )}
+      </Card>
+
       {/* ── Full Weather & Loss Justification Report ── */}
       <Card className="p-6">
         <div className="mb-4">
-          <h2 className="text-lg font-semibold">Full Weather & Loss Justification Report</h2>
+          <h2 className="flex items-center gap-2 text-lg font-semibold">
+            <FileText className="h-5 w-5 text-emerald-500" />
+            Full Weather & Loss Justification Report
+          </h2>
           <p className="text-sm text-muted-foreground">
             Generate a comprehensive multi-page weather report with event data, radar evidence, and
-            carrier-ready justification using the selected DOL above.
+            carrier-ready justification using the selected DOL.
           </p>
         </div>
 
@@ -387,12 +779,19 @@ export default function ClaimWeatherPage({ params }: Props) {
                     : "italic text-muted-foreground"
                 }
               >
-                {selectedDol || "Run Quick DOL first ↑"}
+                {selectedDol
+                  ? new Date(selectedDol).toLocaleDateString("en-US", {
+                      weekday: "short",
+                      month: "short",
+                      day: "numeric",
+                      year: "numeric",
+                    })
+                  : "Run Quick DOL first ↑"}
               </span>
             </div>
             <div>
               <span className="font-medium text-muted-foreground">Loss Type:</span>{" "}
-              {lossType !== "none" ? lossType : "Not specified"}
+              {lossType !== "none" ? lossType : "Auto detect"}
             </div>
             <div>
               <span className="font-medium text-muted-foreground">Claim:</span> {claimId}
@@ -438,7 +837,7 @@ export default function ClaimWeatherPage({ params }: Props) {
                   <Button
                     variant="outline"
                     size="sm"
-                    className="mt-2 border-red-300 text-red-700 hover:bg-red-100 dark:border-red-700 dark:text-red-300 dark:hover:bg-red-900/40"
+                    className="mt-2"
                     onClick={() => {
                       setError(null);
                       runWeatherReport();
@@ -461,7 +860,6 @@ export default function ClaimWeatherPage({ params }: Props) {
                   Weather Report Generated & Saved
                 </h3>
               </div>
-
               <div className="space-y-2 text-sm">
                 <div>
                   <span className="font-medium">Report ID:</span>{" "}
@@ -484,15 +882,171 @@ export default function ClaimWeatherPage({ params }: Props) {
                   </div>
                 )}
               </div>
-
               <p className="mt-3 border-t border-green-200 pt-3 text-xs text-muted-foreground dark:border-green-700">
-                This report is now available in your Claim Files, Reports History, and can be
-                referenced in Estimate, Supplement, and Claims Assembly builders.
+                This report is available in Claim Files, Reports History, and can be referenced in
+                Estimate, Supplement, and Claims Assembly builders.
               </p>
             </Card>
           )}
         </div>
       </Card>
     </div>
+  );
+}
+
+// ─── Saved Scan Card Component ─────────────────────────────────────────────
+
+function SavedScanCard({
+  scan,
+  currentDol,
+  settingDol,
+  onSetDol,
+  onSelectDol,
+  onViewRadar,
+  loadingRadar,
+  categorizeScan,
+}: {
+  scan: SavedScan;
+  currentDol: string | null;
+  settingDol: string | null;
+  onSetDol: (dol: string) => void;
+  onSelectDol: (dol: string) => void;
+  onViewRadar: (date: string) => void;
+  loadingRadar: boolean;
+  categorizeScan: (scan: SavedScan) => string;
+}) {
+  const candidates = (scan.candidateDates || []) as QuickDolCandidate[];
+  const isCurrentDol =
+    scan.dol && currentDol && scan.dol.split("T")[0] === currentDol.split("T")[0];
+  const peril = scan.primaryPeril || scan.lossType || "auto";
+
+  return (
+    <Card
+      className={`overflow-hidden transition-all ${
+        isCurrentDol ? "border-emerald-300 ring-1 ring-emerald-200" : ""
+      }`}
+    >
+      <div className="flex items-center justify-between border-b bg-muted/30 px-4 py-2">
+        <div className="flex items-center gap-2">
+          {PERIL_ICONS[peril] || <CloudRain className="h-4 w-4 text-slate-400" />}
+          <span className="text-sm font-semibold">
+            {scan.mode === "quick_dol" ? "Quick DOL Scan" : "Full Weather Report"}
+          </span>
+          <Badge className={PERIL_COLORS[peril] || PERIL_COLORS.other}>{peril}</Badge>
+          {isCurrentDol && (
+            <Badge className="bg-emerald-100 text-emerald-700 dark:bg-emerald-900 dark:text-emerald-300">
+              ✓ Active DOL
+            </Badge>
+          )}
+        </div>
+        <span className="text-xs text-muted-foreground">
+          {new Date(scan.createdAt).toLocaleDateString()} at{" "}
+          {new Date(scan.createdAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+        </span>
+      </div>
+
+      <div className="px-4 py-3">
+        <div className="mb-2 text-xs text-muted-foreground">
+          📍 {scan.address}
+          {scan.periodFrom && scan.periodTo && (
+            <span className="ml-2">
+              | {new Date(scan.periodFrom).toLocaleDateString()} –{" "}
+              {new Date(scan.periodTo).toLocaleDateString()}
+            </span>
+          )}
+        </div>
+
+        {candidates.length > 0 ? (
+          <div className="space-y-1.5">
+            {candidates.map((c, i) => {
+              const isActive = currentDol && c.date === currentDol.split("T")[0];
+              return (
+                <div
+                  key={`${scan.id}-${i}`}
+                  className="flex items-center justify-between rounded-md border px-3 py-2 text-sm"
+                >
+                  <div className="flex items-center gap-2">
+                    <span className="font-medium">
+                      {new Date(c.date).toLocaleDateString("en-US", {
+                        weekday: "short",
+                        month: "short",
+                        day: "numeric",
+                        year: "numeric",
+                      })}
+                    </span>
+                    <Badge variant="secondary" className="text-xs">
+                      {Math.round((c.confidence ?? 0) * 100)}%
+                    </Badge>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      className="h-7 px-2 text-xs"
+                      onClick={() => onViewRadar(c.date)}
+                      disabled={loadingRadar}
+                    >
+                      <Eye className="mr-1 h-3 w-3" />
+                      Radar
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      className="h-7 px-2 text-xs"
+                      onClick={() => onSelectDol(c.date)}
+                    >
+                      Select
+                    </Button>
+                    <Button
+                      size="sm"
+                      className={`h-7 px-2 text-xs ${
+                        isActive
+                          ? "bg-emerald-600 hover:bg-emerald-600"
+                          : "bg-blue-600 hover:bg-blue-700"
+                      }`}
+                      onClick={() => onSetDol(c.date)}
+                      disabled={!!settingDol || !!isActive}
+                    >
+                      {settingDol === c.date ? (
+                        <Loader2 className="h-3 w-3 animate-spin" />
+                      ) : isActive ? (
+                        "✓ DOL"
+                      ) : (
+                        "Set as DOL"
+                      )}
+                    </Button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        ) : scan.dol ? (
+          <div className="flex items-center justify-between rounded-md border px-3 py-2 text-sm">
+            <span className="font-medium">
+              {new Date(scan.dol).toLocaleDateString("en-US", {
+                weekday: "short",
+                month: "short",
+                day: "numeric",
+                year: "numeric",
+              })}
+            </span>
+            <Button
+              size="sm"
+              className="h-7 bg-blue-600 px-2 text-xs hover:bg-blue-700"
+              onClick={() => onSetDol(scan.dol!.split("T")[0])}
+              disabled={!!settingDol}
+            >
+              Set as DOL
+            </Button>
+          </div>
+        ) : (
+          <p className="text-xs italic text-muted-foreground">No candidate dates in this scan</p>
+        )}
+
+        {scan.globalSummary?.notes && (
+          <p className="mt-2 text-xs text-muted-foreground">{scan.globalSummary.notes}</p>
+        )}
+      </div>
+    </Card>
   );
 }
