@@ -334,11 +334,11 @@ export default async function AnalyticsDashboardPage() {
       {/* ClaimIQ Readiness Analytics */}
       <AnalyticsDashboard className="mb-8" />
 
-      {/* Performance KPIs — Time-Filtered */}
+      {/* Detailed KPIs — Time-Filtered */}
       <div className="mb-8">
         <h2 className="mb-4 flex items-center gap-2 text-lg font-semibold text-slate-900 dark:text-white">
           <BarChart3 className="h-5 w-5 text-indigo-600" />
-          Performance KPIs
+          Detailed KPIs
         </h2>
         <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-700 dark:bg-slate-800/50">
           <KPIDashboardClient embedded />

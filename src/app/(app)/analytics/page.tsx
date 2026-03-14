@@ -56,8 +56,8 @@ const OPERATIONS: AnalyticsPage[] = [
     icon: FileText,
   },
   {
-    title: "KPI Overview",
-    description: "Top-level dashboard with real-time claim and activity summaries.",
+    title: "Analytics Dashboard",
+    description: "Unified performance dashboard — leads, claims, pipeline value, and KPIs.",
     href: "/analytics/dashboard",
     icon: BarChart3,
   },
@@ -66,8 +66,8 @@ const OPERATIONS: AnalyticsPage[] = [
 const EXECUTIVE: AnalyticsPage[] = [
   {
     title: "Executive Intelligence",
-    description: "C-suite KPI dashboard — revenue, churn risk, NPS, and growth metrics.",
-    href: "/analytics/dashboard",
+    description: "C-suite analytics — revenue trends, churn risk, NPS, and growth metrics.",
+    href: "/analytics/performance",
     icon: Gauge,
   },
   {
@@ -138,7 +138,7 @@ export default function AnalyticsHubPage() {
           <Button asChild className="bg-white text-blue-600 hover:bg-blue-50">
             <Link href="/analytics/dashboard">
               <FileBarChart className="mr-2 h-4 w-4" />
-              KPI Dashboard
+              Analytics Dashboard
             </Link>
           </Button>
           <Button

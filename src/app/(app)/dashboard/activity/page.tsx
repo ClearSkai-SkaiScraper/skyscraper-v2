@@ -275,7 +275,7 @@ export default async function ActivityPage() {
           >
             <Link href="/analytics/dashboard">
               <FileBarChart className="mr-2 h-4 w-4" />
-              Performance KPIs
+              Analytics Dashboard
             </Link>
           </Button>
         </div>
