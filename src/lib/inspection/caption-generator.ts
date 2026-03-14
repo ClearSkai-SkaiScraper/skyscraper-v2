@@ -1,9 +1,15 @@
 /**
  * ═══════════════════════════════════════════════════════════════════════════════
- * PROFESSIONAL CAPTION GENERATOR
+ * PROFESSIONAL CAPTION GENERATOR v2
  *
  * Generates inspector-quality captions for damage findings.
- * Format: Observation → Technical Explanation → Code Reference → Claim Implication
+ *
+ * v2 Format (5-section):
+ *  1. Observation — what was physically observed
+ *  2. Technical Explanation — why it matters structurally/functionally
+ *  3. Code/Spec Reference — which IRC/IBC code applies
+ *  4. Claim Implication — why this supports the claim
+ *  5. Repairability Concern — why spot repair is inadequate (when applicable)
  *
  * Styled after professional CompanyCam / DryTop inspection reports.
  * Works for ALL trades: roofing, siding, painting, HVAC, gutters, etc.
@@ -11,6 +17,10 @@
  */
 
 import type { EvidenceCluster } from "@/lib/inspection/evidence-grouping";
+
+// ─── Caption Style ───────────────────────────────────────────────────────────
+
+export type CaptionStyle = "full" | "concise" | "code-only";
 
 // ─── Caption Templates by Damage Category ────────────────────────────────────
 
@@ -264,8 +274,13 @@ function componentLabel(damageType: string): string {
 /**
  * Generate a professional inspector-style caption for an evidence cluster.
  *
- * Format:
- * [Observation] [Technical Explanation] Per {IRC Code} — {Code Title}. [Claim Impact]
+ * v2 Format (5-section when style=full):
+ *  [Observation] [Technical] Per {IRC Code} — {Title}. [Claim Implication] [Repairability]
+ *
+ * Supports 3 styles:
+ * - "full": All 5 sections (default)
+ * - "concise": Observation + Code Reference only
+ * - "code-only": Just the IRC code reference
  */
 export function generateCaption(
   cluster: EvidenceCluster,
@@ -274,23 +289,31 @@ export function generateCaption(
     eventType?: string;
     /** Index for variation */
     variationIndex?: number;
+    /** Caption detail level */
+    captionStyle?: CaptionStyle;
+    /** Include repairability concern? (auto-determined if not set) */
+    includeRepairability?: boolean;
   }
 ): string {
+  const style = options?.captionStyle || "full";
   const category = selectCategory(cluster.damageType);
   const templates = CAPTION_TEMPLATES[category] || CAPTION_TEMPLATES.general;
   const idx = (options?.variationIndex || 0) % templates.length;
   const template = templates[idx];
 
-  const component = componentLabel(cluster.damageType);
+  const component = cluster.component || componentLabel(cluster.damageType);
   const event = options?.eventType || "storm";
 
-  // Build observation
-  let observation = template.observation
-    .replace(/\{component\}/g, component)
-    .replace(/\{event\}/g, event);
+  // Code-only style
+  if (style === "code-only") {
+    if (cluster.ircCode) {
+      return `Per ${cluster.ircCode.code} — ${cluster.ircCode.title}.`;
+    }
+    return `Damage documented on ${component}.`;
+  }
 
-  // Build technical
-  let technical = template.technical
+  // Build observation
+  const observation = template.observation
     .replace(/\{component\}/g, component)
     .replace(/\{event\}/g, event);
 
@@ -300,15 +323,47 @@ export function generateCaption(
     codeRef = `Per ${cluster.ircCode.code} — ${cluster.ircCode.title}.`;
   }
 
-  // Build claim impact
-  let claimImpact = template.claimImpact
+  // Concise style: observation + code only
+  if (style === "concise") {
+    return codeRef ? `${observation} ${codeRef}` : observation;
+  }
+
+  // Full style: all 5 sections
+  const technical = template.technical
     .replace(/\{component\}/g, component)
     .replace(/\{event\}/g, event);
 
-  // Assemble full caption
+  // Section 4: Claim implication (from template library or inline)
+  let claimImpact: string;
+  try {
+    claimImpact = selectClaimImplication(cluster.damageType, component, {
+      eventType: event,
+      ircCode: cluster.ircCode?.code,
+      variationIndex: options?.variationIndex,
+    });
+  } catch {
+    // Fallback to inline template
+    claimImpact = template.claimImpact
+      .replace(/\{component\}/g, component)
+      .replace(/\{event\}/g, event);
+  }
+
+  // Section 5: Repairability concern (only for significant findings)
+  let repairability = "";
+  const shouldInclude =
+    options?.includeRepairability ?? shouldIncludeRepairability(cluster.score, cluster.severity);
+  if (shouldInclude) {
+    const repairText = selectRepairabilityConcern(cluster.damageType, component, cluster.severity, {
+      variationIndex: options?.variationIndex,
+    });
+    if (repairText) repairability = repairText;
+  }
+
+  // Assemble full 5-section caption
   const parts = [observation, technical];
   if (codeRef) parts.push(codeRef);
   parts.push(claimImpact);
+  if (repairability) parts.push(repairability);
 
   return parts.join(" ");
 }

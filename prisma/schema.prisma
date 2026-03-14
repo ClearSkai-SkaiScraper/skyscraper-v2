@@ -5696,6 +5696,16 @@ model users {
   createdAt                                     DateTime                    @default(now())
   lastSeenAt                                    DateTime                    @default(now())
   headshot_url                                  String?
+  title                                         String?
+  phone                                         String?
+  bio                                           String?
+  license_number                                String?
+  license_state                                 String?
+  certifications                                Json                        @default("[]")
+  signature_url                                 String?
+  years_experience                              Int?
+  specialties                                   Json                        @default("[]")
+  is_default_inspector                          Boolean                     @default(false)
   ClaimMessage                                  ClaimMessage[]
   CrewSchedule                                  CrewSchedule[]
   claim_activities                              claim_activities[]

@@ -1,6 +1,6 @@
 /**
  * ═══════════════════════════════════════════════════════════════════════════════
- * EVIDENCE GROUPING & CLAIM-WORTHINESS ENGINE
+ * EVIDENCE GROUPING & CLAIM-WORTHINESS ENGINE v2
  *
  * Solves two critical problems:
  * 1. DEDUPLICATION: When YOLO + GPT-4o detect the same hail dent 5 times,
@@ -8,7 +8,14 @@
  * 2. RANKING: Scores each finding by claim relevance so only high-value
  *    evidence appears in the report (max 5 per photo).
  *
- * Used by: damage-report/route.ts, photo-annotate/route.ts
+ * v2 Enhancements:
+ *  - Component-based weight multipliers (roof=1.0x, gutter=0.6x, etc.)
+ *  - Functional vs cosmetic damage classification (1.5x for functional)
+ *  - Photo-level context (overview photos get lower annotation worthiness)
+ *  - Shape type assignment per annotation
+ *  - Exported standalone claimWorthinessScore() for UI use
+ *
+ * Used by: damage-report/route.ts, photo-annotate/route.ts, annotation editor UI
  * ═══════════════════════════════════════════════════════════════════════════════
  */
 
@@ -18,6 +25,14 @@ import {
   type DamageColor,
   type IRCCodeEntry,
 } from "@/lib/constants/irc-codes";
+import {
+  classifyDamageCategory,
+  filterAnnotations,
+  getComponentWeight,
+  isOverviewAnnotation,
+  selectAnnotationShape,
+} from "@/lib/inspection/annotation-rules";
+import type { AnnotationShapeType, DamageCategory } from "@/types/annotations";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -78,6 +93,12 @@ export interface EvidenceCluster {
   label: string;
   /** Number of raw detections merged into this cluster */
   memberCount: number;
+  /** Shape type for PDF rendering (circle, rectangle, outline) */
+  shapeType: AnnotationShapeType;
+  /** Whether damage is functional or cosmetic */
+  damageCategory: DamageCategory;
+  /** Building component being annotated */
+  component: string;
 }
 
 // ─── Coordinate Normalization ────────────────────────────────────────────────
@@ -199,42 +220,72 @@ function highestSeverity(a: string, b: string): string {
   return severityScore(a) >= severityScore(b) ? a : b;
 }
 
-// ─── Claim Worthiness Score ──────────────────────────────────────────────────
+// ─── Claim Worthiness Score v2 ────────────────────────────────────────────────
 
 /**
  * Score how claim-relevant a finding cluster is (0-1).
  * Higher = more important for the insurance claim.
+ *
+ * v2 scoring breakdown:
+ * - Severity (0-0.30)
+ * - Confidence (0-0.15)
+ * - IRC code reference (0 or 0.12)
+ * - Multiple detections (0-0.10)
+ * - Damage type priority (0-0.10)
+ * - Component weight multiplier (0.5x-1.0x applied to subtotal)
+ * - Functional damage boost (1.5x for functional, 1.3x for structural/safety)
+ * - Overview photo penalty (0.6x when photo is overview/context shot)
+ *
+ * Exported for use in annotation editor UI.
  */
-function claimWorthinessScore(cluster: {
-  severity: string;
-  confidence: number;
-  ircCode: IRCCodeEntry | null;
-  damageType: string;
-  memberCount: number;
-}): number {
+export function claimWorthinessScore(
+  cluster: {
+    severity: string;
+    confidence: number;
+    ircCode: IRCCodeEntry | null;
+    damageType: string;
+    memberCount: number;
+    damageCategory?: DamageCategory;
+  },
+  options?: {
+    isOverviewPhoto?: boolean;
+  }
+): number {
   let score = 0;
 
-  // Severity weight (0-0.35)
-  score += (severityScore(cluster.severity) / 4) * 0.35;
+  // Severity weight (0-0.30)
+  score += (severityScore(cluster.severity) / 4) * 0.3;
 
-  // Confidence weight (0-0.20)
-  score += Math.min(cluster.confidence, 1) * 0.2;
+  // Confidence weight (0-0.15)
+  score += Math.min(cluster.confidence, 1) * 0.15;
 
-  // Has IRC code reference = more legitimate (0 or 0.15)
-  if (cluster.ircCode) score += 0.15;
+  // Has IRC code reference = more legitimate (0 or 0.12)
+  if (cluster.ircCode) score += 0.12;
 
-  // Multiple detections = stronger evidence (0-0.15)
-  score += Math.min(cluster.memberCount / 5, 1) * 0.15;
+  // Multiple detections = stronger evidence (0-0.10)
+  score += Math.min(cluster.memberCount / 5, 1) * 0.1;
 
-  // High-value damage types get bonus (0-0.15)
+  // High-value damage types get bonus (0-0.10)
   const dt = cluster.damageType.toLowerCase();
   if (dt.includes("structural") || dt.includes("water_intrusion") || dt.includes("fire")) {
-    score += 0.15;
-  } else if (dt.includes("hail") || dt.includes("wind") || dt.includes("roof")) {
     score += 0.1;
+  } else if (dt.includes("hail") || dt.includes("wind") || dt.includes("roof")) {
+    score += 0.08;
   } else if (dt.includes("gutter") || dt.includes("siding") || dt.includes("flashing")) {
-    score += 0.07;
+    score += 0.05;
   }
+
+  // Component weight multiplier (0.5x-1.0x)
+  const componentMult = getComponentWeight(cluster.damageType);
+  score *= componentMult;
+
+  // Functional damage boost (1.5x for functional, 1.3x for structural/safety)
+  const category = cluster.damageCategory || classifyDamageCategory(cluster.damageType);
+  if (category === "functional") score *= 1.5;
+  else if (category === "structural" || category === "safety") score *= 1.3;
+
+  // Overview photo penalty
+  if (options?.isOverviewPhoto) score *= 0.6;
 
   return Math.min(score, 1);
 }
@@ -245,19 +296,28 @@ function claimWorthinessScore(cluster: {
  * Group overlapping/similar annotations into evidence clusters.
  * Returns deduplicated, ranked findings ready for PDF rendering.
  *
+ * v2: Applies annotation suppression, assigns shape types, classifies
+ * functional vs cosmetic, and uses component-weighted scoring.
+ *
  * @param annotations Raw annotations from file_assets.metadata.annotations
  * @param maxPerPhoto Maximum clusters to return per photo (default 5)
  * @param minScore Minimum claim-worthiness score threshold (default 0.15)
+ * @param isOverviewPhoto Whether this is an overview/context photo (reduces scores)
  */
 export function groupEvidence(
   annotations: RawAnnotation[],
   maxPerPhoto = 5,
-  minScore = 0.15
+  minScore = 0.15,
+  isOverviewPhoto = false
 ): EvidenceCluster[] {
   if (!annotations || annotations.length === 0) return [];
 
+  // Step 0: Apply annotation suppression filters
+  const { kept } = filterAnnotations(annotations);
+  if (kept.length === 0) return [];
+
   // Step 1: Normalize all annotations to 0-1 coords
-  const normalized = annotations.map(normalizeAnnotation);
+  const normalized = kept.map(normalizeAnnotation);
 
   // Step 2: Union-Find clustering
   const parent = normalized.map((_, i) => i);
@@ -330,10 +390,16 @@ export function groupEvidence(
     const rawLabel = primaryDamageType.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
     const label = rawLabel.length > 24 ? rawLabel.slice(0, 21) + "..." : rawLabel;
 
+    // v2: Assign shape type, damage category, and component
+    const bbox = { x: minX, y: minY, w: maxX - minX, h: maxY - minY };
+    const shapeType = selectAnnotationShape(primaryDamageType, bbox);
+    const damageCategory = classifyDamageCategory(primaryDamageType);
+    const component = componentLabelFromDamageType(primaryDamageType);
+
     const cluster: EvidenceCluster = {
       id: `cluster-${clusterIdx}`,
       damageType: primaryDamageType,
-      bbox: { x: minX, y: minY, w: maxX - minX, h: maxY - minY },
+      bbox,
       severity: bestSeverity,
       confidence: avgConfidence,
       caption: bestCaption,
@@ -343,9 +409,12 @@ export function groupEvidence(
       score: 0, // calculated below
       label,
       memberCount: members.length,
+      shapeType,
+      damageCategory,
+      component,
     };
 
-    cluster.score = claimWorthinessScore(cluster);
+    cluster.score = claimWorthinessScore(cluster, { isOverviewPhoto });
     clusters.push(cluster);
   }
 
@@ -357,8 +426,45 @@ export function groupEvidence(
 }
 
 /**
+ * Map damage type to a human-readable component label.
+ */
+function componentLabelFromDamageType(damageType: string): string {
+  const dt = damageType.toLowerCase();
+  if (dt.includes("shingle")) return "asphalt shingle";
+  if (dt.includes("tile")) return "roof tile";
+  if (dt.includes("metal_roof") || dt.includes("metal_dent") || dt.includes("metal_puncture"))
+    return "metal roofing panel";
+  if (dt.includes("membrane")) return "membrane roofing";
+  if (dt.includes("shake")) return "wood shake";
+  if (dt.includes("slate")) return "slate tile";
+  if (dt.includes("flashing")) return "roof flashing";
+  if (dt.includes("drip_edge")) return "drip edge";
+  if (dt.includes("vent")) return "roof ventilation";
+  if (dt.includes("gutter")) return "gutter section";
+  if (dt.includes("downspout")) return "downspout";
+  if (dt.includes("siding")) return "exterior siding";
+  if (dt.includes("stucco")) return "stucco wall surface";
+  if (dt.includes("garage")) return "garage door panel";
+  if (dt.includes("screen")) return "window screen";
+  if (dt.includes("window")) return "window assembly";
+  if (dt.includes("hvac") || dt.includes("condenser")) return "HVAC condenser unit";
+  if (dt.includes("mailbox")) return "mailbox (soft metal indicator)";
+  if (dt.includes("electrical") || dt.includes("meter")) return "electrical/meter box";
+  if (dt.includes("fence")) return "fence section";
+  if (dt.includes("deck")) return "deck surface";
+  if (dt.includes("awning")) return "awning assembly";
+  if (dt.includes("chimney")) return "chimney";
+  if (dt.includes("skylight")) return "skylight";
+  if (dt.includes("ceiling")) return "ceiling surface";
+  if (dt.includes("wall")) return "interior wall";
+  if (dt.includes("floor")) return "flooring";
+  return "building component";
+}
+
+/**
  * Group evidence across ALL photos in a claim.
  * Returns a map of photoId → EvidenceCluster[].
+ * v2: Detects overview photos and applies penalty scoring.
  */
 export function groupEvidenceForClaim(
   photos: Array<{
@@ -372,7 +478,9 @@ export function groupEvidenceForClaim(
 
   for (const photo of photos) {
     const annotations = photo.metadata?.annotations || [];
-    const clusters = groupEvidence(annotations, maxPerPhoto, minScore);
+    // Detect overview photos by checking if any annotation covers >40% of image
+    const isOverview = annotations.some((a) => isOverviewAnnotation(a));
+    const clusters = groupEvidence(annotations, maxPerPhoto, minScore, isOverview);
     result.set(photo.id, clusters);
   }
 
