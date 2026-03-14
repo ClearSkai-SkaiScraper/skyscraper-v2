@@ -25,7 +25,11 @@ export const GET = withAuth(async (req: NextRequest, { userId, orgId }) => {
     // Verify claim belongs to org
     const claim = await prisma.claims.findFirst({
       where: { id: claimId, orgId },
-      select: { id: true, dateOfLoss: true, address: true },
+      select: {
+        id: true,
+        dateOfLoss: true,
+        properties: { select: { street: true, city: true, state: true, zipCode: true } },
+      },
     });
 
     if (!claim) {
@@ -99,7 +103,9 @@ export const GET = withAuth(async (req: NextRequest, { userId, orgId }) => {
       scans,
       categorized,
       currentDol: claim.dateOfLoss,
-      claimAddress: claim.address,
+      claimAddress: claim.properties
+        ? `${claim.properties.street}, ${claim.properties.city}, ${claim.properties.state} ${claim.properties.zipCode}`
+        : null,
       totalScans: scans.length,
     });
   } catch (err) {

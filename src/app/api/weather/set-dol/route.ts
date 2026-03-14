@@ -51,14 +51,16 @@ export const PATCH = withAuth(async (req: NextRequest, { userId, orgId }) => {
 
     // Log activity
     try {
-      await prisma.activity_logs.create({
+      await prisma.activities.create({
         data: {
           id: crypto.randomUUID(),
           orgId,
+          type: "dol_updated",
+          title: "Date of Loss updated",
+          description: scanId ? "DOL set from weather scan" : "DOL set manually",
           userId,
-          entityType: "claim",
-          entityId: claimId,
-          action: "dol_updated",
+          userName: userId,
+          claimId,
           metadata: {
             previousDol: previousDol?.toISOString() || null,
             newDol: dolDate.toISOString(),
@@ -66,6 +68,7 @@ export const PATCH = withAuth(async (req: NextRequest, { userId, orgId }) => {
             scanId: scanId || null,
           },
           createdAt: new Date(),
+          updatedAt: new Date(),
         },
       });
     } catch (logErr) {

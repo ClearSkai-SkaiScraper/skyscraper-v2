@@ -100,7 +100,7 @@ export async function POST(req: NextRequest) {
       date: c.date,
       confidence: normalizeConfidence(c.score),
       reasoning: c.reason || undefined,
-      perilType: c.perilType || body.lossType || "unknown",
+      perilType: body.lossType || "unknown",
     }));
 
     const response = {
