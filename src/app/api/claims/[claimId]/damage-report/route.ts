@@ -1475,9 +1475,10 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
           findingCount: totalFindings,
           uniqueCodeCount: uniqueCodes.size,
           clusterCount: allClusters.length,
-          avgClaimWorthiness: allClusters.length > 0
-            ? allClusters.reduce((s, c) => s + c.score, 0) / allClusters.length
-            : 0,
+          avgClaimWorthiness:
+            allClusters.length > 0
+              ? allClusters.reduce((s, c) => s + c.score, 0) / allClusters.length
+              : 0,
           hasBranding: !!branding,
           hasLogo: !!logoImage,
           hasHeadshot: !!headshotImage,
