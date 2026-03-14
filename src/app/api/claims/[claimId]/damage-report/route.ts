@@ -36,7 +36,11 @@ import {
 } from "@/lib/inspection/evidence-grouping";
 import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
-import { createReportTimer } from "@/lib/reports/report-metrics";
+import {
+  calculateQualityMetrics,
+  createReportTimer,
+  recordReportMetrics,
+} from "@/lib/reports/report-metrics";
 import { saveReportHistory } from "@/lib/reports/saveReportHistory";
 import { getSupabaseAdmin } from "@/lib/supabaseAdmin";
 
@@ -1167,7 +1171,8 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
           const clrRgb = damageColorToRgb(cluster.color);
 
           // Pre-measure finding height for widow/orphan protection
-          const estimatedHeight = estimatePhotoSectionHeight(cluster, timesRoman);
+          const captionLines = cluster.caption ? Math.ceil(cluster.caption.length / 80) : 3;
+          const estimatedHeight = estimatePhotoSectionHeight(1, false, captionLines);
 
           // Start new page if: not enough space OR exceeded max findings per page
           if (y < estimatedHeight + SAFE_CONTENT_Y_MIN || findingsOnPage >= MAX_FINDINGS_PER_PAGE) {
@@ -1447,22 +1452,41 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
 
     // Record report generation metrics
     try {
-      const qualityMetrics = calculateQualityMetrics(photos, allClusters);
+      const photoStats = photos.map((p) => {
+        const cls = photoClusterMap.get(p.id) || [];
+        return { hasClusters: cls.length > 0, clusterCount: cls.length };
+      });
+      const clusterStats = allClusters.map((c) => ({
+        severity: c.severity,
+        confidence: c.confidence,
+        ircCode: c.ircCode,
+        caption: c.caption || "",
+        score: c.score,
+      }));
+      const qualityMetrics = calculateQualityMetrics(photoStats, clusterStats);
       await recordReportMetrics(
         reportId,
         {
-          orgId,
-          claimId,
           generationTimeMs: reportTimer.elapsed(),
-          photoCount: photos.length,
-          findingCount: totalFindings,
           pageCount: pdfDoc.getPageCount(),
-          fileSizeBytes: pdfUint8.length,
-          captionStyle: captionStyleOpt,
-          photoOrder: options.photoOrder as string,
-          includeRepairability: options.includeRepairability,
-          includeBuildingCodes: options.includeBuildingCodes,
-          isArizona: isAZ,
+          photoCount: photos.length,
+          photosEmbedded: photos.length,
+          photosFailed: 0,
+          findingCount: totalFindings,
+          uniqueCodeCount: uniqueCodes.size,
+          clusterCount: allClusters.length,
+          avgClaimWorthiness: allClusters.length > 0
+            ? allClusters.reduce((s, c) => s + c.score, 0) / allClusters.length
+            : 0,
+          hasBranding: !!branding,
+          hasLogo: !!logoImage,
+          hasHeadshot: !!headshotImage,
+          reportVersion: "v2",
+          options: {
+            captionStyle: captionStyleOpt,
+            photoOrder: options.photoOrder as string,
+            includeRepairability: options.includeRepairability,
+          },
         },
         qualityMetrics
       );

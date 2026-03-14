@@ -16,6 +16,11 @@
  * ═══════════════════════════════════════════════════════════════════════════════
  */
 
+import { selectClaimImplication } from "@/lib/inspection/caption-templates/claim-implications";
+import {
+  selectRepairabilityConcern,
+  shouldIncludeRepairability,
+} from "@/lib/inspection/caption-templates/repairability";
 import type { EvidenceCluster } from "@/lib/inspection/evidence-grouping";
 
 // ─── Caption Style ───────────────────────────────────────────────────────────

@@ -19,6 +19,7 @@ import { requireAuth } from "@/lib/auth/requireAuth";
 import { recordAnnotationEdit } from "@/lib/inspection/annotation-feedback";
 import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
+import type { Prisma } from "@prisma/client";
 
 const AnnotationSchema = z.object({
   x: z.number().min(0).max(1),
@@ -119,7 +120,7 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
           annotations: updatedAnnotations,
           annotationsLastUpdated: new Date().toISOString(),
           annotationsUpdatedBy: userId,
-        },
+        } as unknown as Prisma.InputJsonValue,
         updatedAt: new Date(),
       },
     });
@@ -194,7 +195,7 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
           annotations,
           annotationsLastUpdated: new Date().toISOString(),
           annotationsUpdatedBy: userId,
-        },
+        } as unknown as Prisma.InputJsonValue,
         updatedAt: new Date(),
       },
     });
@@ -202,13 +203,14 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
     // Track annotation edit for model improvement
     try {
       await recordAnnotationEdit({
+        annotationId: `${photoId}_${index}`,
         photoId,
-        orgId,
-        userId,
-        annotationIndex: index,
-        editType: "adjust",
-        original: originalAnnotation as Record<string, unknown>,
-        updated: annotations[index],
+        claimId,
+        editType: "update",
+        before: originalAnnotation as Record<string, unknown>,
+        after: annotations[index] as Record<string, unknown>,
+        editedBy: userId,
+        editedAt: new Date().toISOString(),
         reason: editReason,
       });
     } catch (feedbackErr) {

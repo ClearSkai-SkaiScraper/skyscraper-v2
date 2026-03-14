@@ -62,7 +62,7 @@ export async function GET(_request: NextRequest, { params }: RouteParams) {
             street: true,
             city: true,
             state: true,
-            zip: true,
+            zipCode: true,
           },
         },
       },
@@ -78,7 +78,7 @@ export async function GET(_request: NextRequest, { params }: RouteParams) {
         orgId,
         claimId,
         category: "photo",
-        ai_processed: true,
+        analyzed_at: { not: null },
       },
       select: {
         id: true,
@@ -151,14 +151,18 @@ export async function GET(_request: NextRequest, { params }: RouteParams) {
       };
     });
 
-    // Collect unique codes
-    const allClusters: EvidenceCluster[] = [];
+    // Collect unique codes — build a Map grouped by photo
+    const clusterMap = new Map<string, EvidenceCluster[]>();
     for (const pf of photoFindings) {
+      const pfClusters: EvidenceCluster[] = [];
       for (const f of pf.findings) {
-        allClusters.push(f as unknown as EvidenceCluster);
+        pfClusters.push(f as unknown as EvidenceCluster);
+      }
+      if (pfClusters.length > 0) {
+        clusterMap.set(pf.photoId, pfClusters);
       }
     }
-    const uniqueCodes = collectUniqueCodes(allClusters);
+    const uniqueCodes = collectUniqueCodes(clusterMap);
     const buildingCodes = Array.from(uniqueCodes.entries()).map(([key, code]) => {
       const displayCode = isAZ ? getAZCode(key, propertyState) || code : code;
       return {
@@ -190,7 +194,7 @@ export async function GET(_request: NextRequest, { params }: RouteParams) {
           damageType: claim.damageType,
           status: claim.status,
           address: claim.properties
-            ? `${claim.properties.street || ""}, ${claim.properties.city || ""}, ${claim.properties.state || ""} ${claim.properties.zip || ""}`.trim()
+            ? `${claim.properties.street || ""}, ${claim.properties.city || ""}, ${claim.properties.state || ""} ${claim.properties.zipCode || ""}`.trim()
             : null,
           isArizona: isAZ,
         },
