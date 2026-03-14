@@ -55,6 +55,10 @@ interface ClaimData {
   propertyId: string | null;
   contactId: string | null;
   propertyAddress: string | null;
+  propertyStreet: string | null;
+  propertyCity: string | null;
+  propertyState: string | null;
+  propertyZip: string | null;
   // Signing status
   signingStatus: string;
   // Job value estimation
@@ -354,6 +358,10 @@ export default function OverviewPage() {
             propertyId: claimInfo.propertyId ?? null,
             contactId: claimInfo.contactId ?? null,
             propertyAddress: claimInfo.propertyAddress || null,
+            propertyStreet: claimInfo.propertyStreet || null,
+            propertyCity: claimInfo.propertyCity || null,
+            propertyState: claimInfo.propertyState || null,
+            propertyZip: claimInfo.propertyZip || null,
             // Signing status
             signingStatus: claimInfo.signingStatus || "pending",
             // Job value
@@ -554,12 +562,34 @@ export default function OverviewPage() {
                 placeholder="Enter policy number"
                 mono
               />
-              <EditableField
-                label="Property Address"
-                value={claim.propertyAddress}
-                onSave={async (value) => handleFieldUpdate("propertyAddress", value)}
-                placeholder="123 Main St, City, State"
-              />
+              <div className="col-span-2 space-y-3">
+                <EditableField
+                  label="Street Address"
+                  value={claim.propertyStreet}
+                  onSave={async (value) => handleFieldUpdate("propertyStreet", value)}
+                  placeholder="123 Main St"
+                />
+                <div className="grid grid-cols-3 gap-3">
+                  <EditableField
+                    label="City"
+                    value={claim.propertyCity}
+                    onSave={async (value) => handleFieldUpdate("propertyCity", value)}
+                    placeholder="City"
+                  />
+                  <EditableField
+                    label="State"
+                    value={claim.propertyState}
+                    onSave={async (value) => handleFieldUpdate("propertyState", value)}
+                    placeholder="AZ"
+                  />
+                  <EditableField
+                    label="Zip Code"
+                    value={claim.propertyZip}
+                    onSave={async (value) => handleFieldUpdate("propertyZip", value)}
+                    placeholder="85001"
+                  />
+                </div>
+              </div>
             </div>
             <div className="mt-4 border-t border-slate-200 pt-4 dark:border-slate-700">
               <h4 className="mb-3 text-sm font-semibold text-foreground">Adjuster Contact</h4>

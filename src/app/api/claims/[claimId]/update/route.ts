@@ -96,7 +96,12 @@ export const PATCH = withAuth(
       }
 
       // Track if we made any changes at all (including property address)
-      const hasPropertyAddressUpdate = body.propertyAddress !== undefined;
+      const hasPropertyAddressUpdate =
+        body.propertyAddress !== undefined ||
+        body.propertyStreet !== undefined ||
+        body.propertyCity !== undefined ||
+        body.propertyState !== undefined ||
+        body.propertyZip !== undefined;
 
       // ── Auto-save adjuster as a reusable contact (adjuster recall) ──
       const hasAdjusterUpdate = body.adjusterName || body.adjusterPhone || body.adjusterEmail;
@@ -187,19 +192,33 @@ export const PATCH = withAuth(
         });
       }
 
-      // Update property address if provided
-      if (body.propertyAddress !== undefined) {
+      // Update property address fields if provided
+      const hasPropertyUpdate =
+        body.propertyStreet !== undefined ||
+        body.propertyCity !== undefined ||
+        body.propertyState !== undefined ||
+        body.propertyZip !== undefined ||
+        body.propertyAddress !== undefined;
+
+      if (hasPropertyUpdate) {
         const propertyId = (updated as any)?.propertyId;
         if (propertyId) {
-          // Update existing property street
-          await prisma.properties.update({
-            where: { id: propertyId },
-            data: { street: body.propertyAddress },
-          });
+          const propertyUpdateData: Record<string, string> = {};
+          if (body.propertyStreet !== undefined) propertyUpdateData.street = body.propertyStreet;
+          if (body.propertyCity !== undefined) propertyUpdateData.city = body.propertyCity;
+          if (body.propertyState !== undefined) propertyUpdateData.state = body.propertyState;
+          if (body.propertyZip !== undefined) propertyUpdateData.zipCode = body.propertyZip;
+          // Legacy: if only propertyAddress is sent (full string), put it in street
+          if (body.propertyAddress !== undefined && Object.keys(propertyUpdateData).length === 0) {
+            propertyUpdateData.street = body.propertyAddress;
+          }
+          if (Object.keys(propertyUpdateData).length > 0) {
+            await prisma.properties.update({
+              where: { id: propertyId },
+              data: propertyUpdateData,
+            });
+          }
         } else {
-          // No linked property yet — cannot create one without required fields
-          // (contactId, name, propertyType, city, state, zipCode).
-          // Log and skip; user should create a full property via the property form.
           logger.warn("[PATCH /api/claims/update] No propertyId on claim; cannot update address", {
             claimId,
           });

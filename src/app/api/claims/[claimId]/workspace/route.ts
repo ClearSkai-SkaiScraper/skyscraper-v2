@@ -21,6 +21,10 @@ interface WorkspaceData {
     status: string;
     damageType: string | null;
     propertyAddress: string | null;
+    propertyStreet: string | null;
+    propertyCity: string | null;
+    propertyState: string | null;
+    propertyZip: string | null;
     lossDate: string | null;
     inspectionDate: string | null;
     carrier: string | null;
@@ -145,6 +149,10 @@ export async function GET(request: NextRequest, { params }: { params: { claimId:
           status: "active",
           damageType: "STORM",
           propertyAddress: "123 Demo St, Phoenix, AZ 85001",
+          propertyStreet: "123 Demo St",
+          propertyCity: "Phoenix",
+          propertyState: "AZ",
+          propertyZip: "85001",
           lossDate: "2025-12-01",
           inspectionDate: null,
           carrier: "Demo Carrier",
@@ -273,8 +281,18 @@ export async function GET(request: NextRequest, { params }: { params: { claimId:
         status: claim.status || "new",
         damageType: claim.damageType || null,
         propertyAddress: property
-          ? `${property.street}, ${property.city}, ${property.state} ${property.zipCode}`
+          ? [
+              property.street,
+              property.city,
+              [property.state, property.zipCode].filter(Boolean).join(" "),
+            ]
+              .filter(Boolean)
+              .join(", ")
           : null,
+        propertyStreet: property?.street || null,
+        propertyCity: property?.city || null,
+        propertyState: property?.state || null,
+        propertyZip: property?.zipCode || null,
         lossDate: claim.dateOfLoss?.toISOString().split("T")[0] || null,
         inspectionDate: claim.inspectionDate?.toISOString()?.split("T")[0] || null,
         carrier: claim.carrier || null,
