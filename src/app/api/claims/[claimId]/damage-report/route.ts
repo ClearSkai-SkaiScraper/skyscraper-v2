@@ -1,13 +1,19 @@
 /**
- * Damage Report Generator API — Professional Edition
+ * DAMAGE REPORT GENERATOR v2 — Professional Inspection Packet
  *
- * Generates a comprehensive, branded PDF damage report with:
- * - Company branding (logo, name, license, contact info)
- * - Employee/inspector info (name, headshot)
- * - Embedded photos with damage annotation overlays
- * - IRC building code references
- * - AI-generated damage summary & justification narrative
- * - Professional layout, margins, and typography
+ * Complete rewrite using:
+ *  - Shared IRC code database (no more duplicate definitions)
+ *  - Evidence grouping engine (deduplicated, ranked findings)
+ *  - Professional caption generator (inspector-style, per damage type)
+ *  - Damage color system (color-coded annotations by category)
+ *  - Fixed photo loading (HEIC handling, retry, compression)
+ *  - Annotation overflow prevention (max 5 per photo, short labels, clipping)
+ *  - Clean page layout: Photo -> Findings Table -> Code -> Significance
+ *
+ * Generates:
+ *  Cover Page -> Executive Summary -> Damage Color Legend -> Building Codes
+ *  -> Photo Evidence Pages (with grouped/colored annotations + captions)
+ *  -> Disclaimer & Certification
  */
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -19,19 +25,28 @@ import { z } from "zod";
 
 import { apiError } from "@/lib/apiError";
 import { requireAuth } from "@/lib/auth/requireAuth";
+import { DAMAGE_COLORS, type DamageColor } from "@/lib/constants/irc-codes";
+import {
+  groupEvidence,
+  collectUniqueCodes,
+  type RawAnnotation,
+  type EvidenceCluster,
+} from "@/lib/inspection/evidence-grouping";
+import { generateCaption } from "@/lib/inspection/caption-generator";
 import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 import { saveReportHistory } from "@/lib/reports/saveReportHistory";
 import { getSupabaseAdmin } from "@/lib/supabaseAdmin";
 
-// ── Layout constants ──
+// Layout constants
 const PAGE_W = 612;
 const PAGE_H = 792;
-const MARGIN = 60;
+const MARGIN = 56;
 const CONTENT_W = PAGE_W - MARGIN * 2;
-const FOOTER_Y = 40;
+const FOOTER_Y = 36;
+const MAX_PHOTO_H = 320;
 
-// ── Brand colours (fallbacks parsed from hex) ──
+// Brand colours
 function hexToRgb(hex: string) {
   const h = hex.replace("#", "");
   return rgb(
@@ -41,49 +56,9 @@ function hexToRgb(hex: string) {
   );
 }
 
-// IRC Building Codes reference
-const IRC_CODES: Record<string, { code: string; title: string; text: string }> = {
-  shingle_damage: {
-    code: "IRC R905.2.7",
-    title: "Asphalt Shingle Application",
-    text: "Asphalt shingles shall be applied per manufacturer installation instructions and ASTM D3462.",
-  },
-  underlayment: {
-    code: "IRC R905.1.1",
-    title: "Underlayment Requirements",
-    text: "Underlayment shall comply with ASTM D226, D4869, or D6757 for asphalt-saturated felt.",
-  },
-  flashing: {
-    code: "IRC R905.2.8",
-    title: "Flashing Requirements",
-    text: "Flashings shall be installed at wall and roof intersections, changes in roof slope, and around roof openings.",
-  },
-  drip_edge: {
-    code: "IRC R905.2.8.5",
-    title: "Drip Edge",
-    text: "A drip edge shall be provided at eaves and rakes of shingle roofs.",
-  },
-  ventilation: {
-    code: "IRC R806.1",
-    title: "Ventilation Required",
-    text: "Enclosed attics and rafter spaces shall have cross ventilation with a minimum net free ventilating area of 1/150.",
-  },
-  ice_barrier: {
-    code: "IRC R905.2.7.1",
-    title: "Ice Barrier",
-    text: "Ice barriers shall extend from the eave's edge to a point 24 inches inside the exterior wall line.",
-  },
-  nail_pattern: {
-    code: "IRC R905.2.6",
-    title: "Fastener Requirements",
-    text: "Shingle fasteners shall be corrosion-resistant, minimum 12 gauge shank, 3/8 inch head diameter.",
-  },
-  hail_damage: {
-    code: "IRC R903.2",
-    title: "Roof Covering Materials",
-    text: "Roof coverings shall be designed for weather protection and the specific application.",
-  },
-};
+function damageColorToRgb(c: DamageColor) {
+  return rgb(c.r, c.g, c.b);
+}
 
 const RequestSchema = z.object({
   includePhotos: z.boolean().default(true),
@@ -95,21 +70,6 @@ interface RouteParams {
   params: Promise<{ claimId: string }>;
 }
 
-interface AnnotationMeta {
-  id: string;
-  type: string;
-  x: number;
-  y: number;
-  width?: number;
-  height?: number;
-  color: string;
-  damageType?: string;
-  severity?: string;
-  ircCode?: string;
-  caption?: string;
-  confidence?: number;
-}
-
 interface PhotoWithMetadata {
   id: string;
   filename: string;
@@ -118,13 +78,16 @@ interface PhotoWithMetadata {
   ai_severity: string | null;
   ai_confidence: number | null;
   metadata: {
-    annotations?: AnnotationMeta[];
+    annotations?: RawAnnotation[];
     generatedCaption?: string;
     damageBoxes?: { x: number; y: number; w: number; h: number; label?: string }[];
   } | null;
 }
 
-// ── Helper: word-wrap text and draw lines ──
+// ============================================================================
+//  PDF HELPERS
+// ============================================================================
+
 function drawWrappedText(
   page: PDFPage,
   text: string,
@@ -157,7 +120,6 @@ function drawWrappedText(
   return y;
 }
 
-// ── Helper: draw a horizontal rule ──
 function drawHR(page: PDFPage, y: number, color = rgb(0.82, 0.82, 0.82)) {
   page.drawLine({
     start: { x: MARGIN, y },
@@ -167,18 +129,24 @@ function drawHR(page: PDFPage, y: number, color = rgb(0.82, 0.82, 0.82)) {
   });
 }
 
-// ── Helper: draw page footer ──
 function drawFooter(
   page: PDFPage,
   pageNum: number,
   totalPages: number,
   font: PDFFont,
-  companyName: string
+  companyName: string,
+  primaryColor: ReturnType<typeof rgb>
 ) {
-  drawHR(page, FOOTER_Y + 12, rgb(0.85, 0.85, 0.85));
+  page.drawLine({
+    start: { x: MARGIN, y: FOOTER_Y + 14 },
+    end: { x: PAGE_W - MARGIN, y: FOOTER_Y + 14 },
+    thickness: 0.5,
+    color: primaryColor,
+    opacity: 0.3,
+  });
   page.drawText(companyName, {
     x: MARGIN,
-    y: FOOTER_Y - 2,
+    y: FOOTER_Y,
     size: 7,
     font,
     color: rgb(0.55, 0.55, 0.55),
@@ -187,82 +155,108 @@ function drawFooter(
   const pw = font.widthOfTextAtSize(pageLabel, 7);
   page.drawText(pageLabel, {
     x: PAGE_W - MARGIN - pw,
-    y: FOOTER_Y - 2,
+    y: FOOTER_Y,
     size: 7,
     font,
     color: rgb(0.55, 0.55, 0.55),
   });
 }
 
-// ── Helper: safely fetch & embed image ──
+/** Safely fetch & embed image with HEIC detection and retry */
 async function embedImageSafe(pdfDoc: PDFDocument, url: string): Promise<PDFImage | null> {
-  try {
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 15000);
-    const res = await fetch(url, { signal: controller.signal });
-    clearTimeout(timeout);
-    if (!res.ok) {
-      logger.warn("[DAMAGE_REPORT] Image fetch failed", { url, status: res.status });
-      return null;
-    }
-    const buf = new Uint8Array(await res.arrayBuffer());
-    if (buf.length < 100) {
-      logger.warn("[DAMAGE_REPORT] Image too small", { url, size: buf.length });
-      return null;
-    }
+  if (!url) return null;
 
-    const contentType = res.headers.get("content-type") || "";
-    if (contentType.includes("png") || url.toLowerCase().endsWith(".png")) {
-      return await pdfDoc.embedPng(buf);
-    }
-    // Try jpg first, fallback to png if it fails
+  for (let attempt = 0; attempt < 2; attempt++) {
     try {
-      return await pdfDoc.embedJpg(buf);
-    } catch {
-      try {
-        return await pdfDoc.embedPng(buf);
-      } catch {
-        logger.warn("[DAMAGE_REPORT] Could not embed as JPG or PNG", { url });
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 20000);
+      const res = await fetch(url, { signal: controller.signal });
+      clearTimeout(timeout);
+
+      if (!res.ok) {
+        logger.warn("[DAMAGE_REPORT] Image fetch failed", { url, status: res.status, attempt });
+        continue;
+      }
+
+      const buf = new Uint8Array(await res.arrayBuffer());
+      if (buf.length < 100) {
+        logger.warn("[DAMAGE_REPORT] Image too small", { url, size: buf.length });
         return null;
       }
+
+      // Check for HEIC magic bytes
+      const header = String.fromCharCode(...buf.slice(4, 12));
+      if (header.includes("ftyp") && (header.includes("heic") || header.includes("heix") || header.includes("mif1"))) {
+        logger.warn("[DAMAGE_REPORT] HEIC image detected - not embeddable in PDF directly", { url });
+        return null;
+      }
+
+      const contentType = res.headers.get("content-type") || "";
+
+      if (contentType.includes("png") || url.toLowerCase().endsWith(".png")) {
+        try { return await pdfDoc.embedPng(buf); } catch { /* fall through */ }
+      }
+
+      try { return await pdfDoc.embedJpg(buf); } catch { /* fall through */ }
+      try { return await pdfDoc.embedPng(buf); } catch {
+        logger.warn("[DAMAGE_REPORT] Could not embed as JPG or PNG", { url, attempt });
+      }
+    } catch (e) {
+      logger.warn("[DAMAGE_REPORT] Image fetch error", { url, error: (e as Error).message, attempt });
     }
-  } catch (e) {
-    logger.warn("[DAMAGE_REPORT] Could not embed image", { url, error: (e as Error).message });
-    return null;
   }
+  return null;
 }
+
+// Section header with left accent bar
+function drawSectionHeader(
+  page: PDFPage,
+  y: number,
+  title: string,
+  font: PDFFont,
+  primaryColor: ReturnType<typeof rgb>
+): number {
+  page.drawRectangle({
+    x: MARGIN - 4, y: y - 5,
+    width: CONTENT_W + 8, height: 24,
+    color: rgb(0.95, 0.96, 0.97),
+  });
+  page.drawRectangle({
+    x: MARGIN - 4, y: y - 5,
+    width: 3, height: 24,
+    color: primaryColor,
+  });
+  page.drawText(title, {
+    x: MARGIN + 4, y: y + 1,
+    size: 12, font, color: primaryColor,
+  });
+  return y - 35;
+}
+
+// ============================================================================
+//  MAIN HANDLER
+// ============================================================================
 
 export async function POST(request: NextRequest, { params }: RouteParams) {
   const auth = await requireAuth();
   if (auth instanceof NextResponse) return auth;
   const { orgId, userId } = auth;
-
   const { claimId } = await params;
 
   try {
     const body = await request.json().catch(() => ({}));
     const options = RequestSchema.parse(body);
 
-    // ── Fetch claim, branding, user in parallel ──
+    // Fetch claim, branding, user in parallel
     const [claim, branding, user] = await Promise.all([
       prisma.claims.findFirst({
         where: { id: claimId, orgId },
         select: {
-          id: true,
-          claimNumber: true,
-          dateOfLoss: true,
-          carrier: true,
-          policy_number: true,
-          insured_name: true,
-          homeownerEmail: true,
-          homeowner_email: true,
-          adjusterName: true,
-          adjusterPhone: true,
-          adjusterEmail: true,
-          damageType: true,
-          properties: {
-            select: { street: true, city: true, state: true, zipCode: true },
-          },
+          id: true, claimNumber: true, dateOfLoss: true, carrier: true,
+          policy_number: true, insured_name: true, homeownerEmail: true,
+          homeowner_email: true, adjusterName: true, adjusterPhone: true,
+          adjusterEmail: true, damageType: true,
+          properties: { select: { street: true, city: true, state: true, zipCode: true } },
         },
       }),
       prisma.org_branding.findFirst({ where: { orgId } }).catch(() => null),
@@ -272,9 +266,7 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
       }),
     ]);
 
-    if (!claim) {
-      return apiError(404, "NOT_FOUND", "Claim not found");
-    }
+    if (!claim) return apiError(404, "NOT_FOUND", "Claim not found");
 
     const propertyAddress = claim.properties
       ? `${claim.properties.street}, ${claim.properties.city}, ${claim.properties.state} ${claim.properties.zipCode}`
@@ -282,56 +274,60 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
 
     const companyName = branding?.companyName || "Storm Restoration Report";
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const companyLocation: string | null =
-      (branding as any)?.companyAddress || branding?.business_state || null;
-    const primaryColor = branding?.colorPrimary
-      ? hexToRgb(branding.colorPrimary)
-      : rgb(0.067, 0.486, 1); // #117CFF
+    const companyLocation: string | null = (branding as any)?.companyAddress || branding?.business_state || null;
+    const primaryColor = branding?.colorPrimary ? hexToRgb(branding.colorPrimary) : rgb(0.067, 0.486, 1);
 
-    // Fetch all analyzed photos for this claim
-    const photos = await prisma.file_assets.findMany({
-      where: {
-        orgId,
-        claimId,
-        mimeType: { startsWith: "image/" },
-        analyzed_at: { not: null },
-      },
+    // Fetch analyzed photos
+    const photos = (await prisma.file_assets.findMany({
+      where: { orgId, claimId, mimeType: { startsWith: "image/" }, analyzed_at: { not: null } },
       select: {
-        id: true,
-        filename: true,
-        publicUrl: true,
-        ai_caption: true,
-        ai_severity: true,
-        ai_confidence: true,
-        metadata: true,
+        id: true, filename: true, publicUrl: true,
+        ai_caption: true, ai_severity: true, ai_confidence: true, metadata: true,
       },
       orderBy: { createdAt: "asc" },
-    });
+    })) as PhotoWithMetadata[];
 
-    if (photos.length === 0) {
-      return apiError(400, "NO_PHOTOS", "No analyzed photos found for this claim");
+    if (photos.length === 0) return apiError(400, "NO_PHOTOS", "No analyzed photos found for this claim");
+
+    // Evidence grouping for ALL photos
+    const photoClusterMap = new Map<string, EvidenceCluster[]>();
+    const eventType = claim.damageType?.replace(/_/g, " ") || "storm";
+
+    for (const photo of photos) {
+      const rawAnnotations = (photo.metadata?.annotations || []) as RawAnnotation[];
+      const clusters = groupEvidence(rawAnnotations, 5, 0.15);
+      const captionedClusters = clusters.map((cluster, idx) => ({
+        ...cluster,
+        caption: cluster.caption && cluster.caption.length > 30
+          ? cluster.caption
+          : generateCaption(cluster, { eventType, variationIndex: idx }),
+      }));
+      photoClusterMap.set(photo.id, captionedClusters);
     }
 
-    // ── Severity counts ──
-    const severeCnt = photos.filter((p) => p.ai_severity === "severe").length;
-    const moderateCnt = photos.filter((p) => p.ai_severity === "moderate").length;
-    const minorCnt = photos.filter((p) => p.ai_severity === "minor").length;
+    const uniqueCodes = collectUniqueCodes(photoClusterMap);
 
+    // Severity counts
+    const severeCnt = photos.filter(p => p.ai_severity === "severe").length;
+    const moderateCnt = photos.filter(p => p.ai_severity === "moderate").length;
+    const minorCnt = photos.filter(p => p.ai_severity === "minor").length;
     const overallSeverity = severeCnt > 0 ? "SEVERE" : moderateCnt > 0 ? "MODERATE" : "MINOR";
 
-    // ── Build PDF ──
+    let totalFindings = 0;
+    for (const clusters of photoClusterMap.values()) totalFindings += clusters.length;
+
+    // Build PDF
     const pdfDoc = await PDFDocument.create();
-    pdfDoc.setTitle(`Damage Assessment Report – ${claim.claimNumber || claimId}`);
+    pdfDoc.setTitle(`Damage Assessment Report - ${claim.claimNumber || claimId}`);
     pdfDoc.setAuthor(companyName);
-    pdfDoc.setSubject("Property Damage Assessment");
-    pdfDoc.setCreator("SkaiScraper Pro");
+    pdfDoc.setSubject("Professional Property Damage Assessment");
+    pdfDoc.setCreator("SkaiScraper Pro - AI Inspection Engine");
 
     const timesRoman = await pdfDoc.embedFont(StandardFonts.TimesRoman);
     const timesBold = await pdfDoc.embedFont(StandardFonts.TimesRomanBold);
     const helvetica = await pdfDoc.embedFont(StandardFonts.Helvetica);
     const helveticaBold = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
 
-    // Track pages for footer
     const pages: PDFPage[] = [];
     function newPage() {
       const p = pdfDoc.addPage([PAGE_W, PAGE_H]);
@@ -339,79 +335,49 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
       return p;
     }
 
-    // ── Try to embed logo & headshot ──
     let logoImage: PDFImage | null = null;
     let headshotImage: PDFImage | null = null;
-    if (branding?.logoUrl) {
-      logoImage = await embedImageSafe(pdfDoc, branding.logoUrl);
-    }
-    if (user?.headshot_url) {
-      headshotImage = await embedImageSafe(pdfDoc, user.headshot_url);
-    }
+    if (branding?.logoUrl) logoImage = await embedImageSafe(pdfDoc, branding.logoUrl);
+    if (user?.headshot_url) headshotImage = await embedImageSafe(pdfDoc, user.headshot_url);
 
-    // ═══════════════════════════════════════════════
-    //  PAGE 1 — COVER PAGE
-    // ═══════════════════════════════════════════════
+    // =========================================================================
+    //  PAGE 1 - COVER PAGE
+    // =========================================================================
     let page = newPage();
     let y = PAGE_H - MARGIN;
 
-    // ── Top accent bar ──
-    page.drawRectangle({
-      x: 0,
-      y: PAGE_H - 8,
-      width: PAGE_W,
-      height: 8,
-      color: primaryColor,
-    });
+    // Top accent bar
+    page.drawRectangle({ x: 0, y: PAGE_H - 8, width: PAGE_W, height: 8, color: primaryColor });
 
-    // ── Company logo + name header ──
+    // Company logo + name
     let headerY = y - 10;
-
     if (logoImage) {
       const logoDims = logoImage.scaleToFit(120, 60);
       page.drawImage(logoImage, {
-        x: MARGIN,
-        y: headerY - logoDims.height + 10,
-        width: logoDims.width,
-        height: logoDims.height,
+        x: MARGIN, y: headerY - logoDims.height + 10,
+        width: logoDims.width, height: logoDims.height,
       });
       const textX = MARGIN + logoDims.width + 16;
       page.drawText(companyName.toUpperCase(), {
-        x: textX,
-        y: headerY - 2,
-        size: 18,
-        font: helveticaBold,
-        color: primaryColor,
+        x: textX, y: headerY - 2, size: 18, font: helveticaBold, color: primaryColor,
       });
       if (companyLocation) {
         page.drawText(companyLocation, {
-          x: textX,
-          y: headerY - 18,
-          size: 9,
-          font: helvetica,
-          color: rgb(0.4, 0.4, 0.4),
+          x: textX, y: headerY - 18, size: 9, font: helvetica, color: rgb(0.4, 0.4, 0.4),
         });
       }
     } else {
       page.drawText(companyName.toUpperCase(), {
-        x: MARGIN,
-        y: headerY,
-        size: 22,
-        font: helveticaBold,
-        color: primaryColor,
+        x: MARGIN, y: headerY, size: 22, font: helveticaBold, color: primaryColor,
       });
       if (companyLocation) {
         page.drawText(companyLocation, {
-          x: MARGIN,
-          y: headerY - 20,
-          size: 9,
-          font: helvetica,
-          color: rgb(0.4, 0.4, 0.4),
+          x: MARGIN, y: headerY - 20, size: 9, font: helvetica, color: rgb(0.4, 0.4, 0.4),
         });
       }
     }
 
-    // Contact row under company name
+    // Contact row
     headerY -= companyLocation ? 85 : 75;
     const contactParts: string[] = [];
     if (branding?.phone) contactParts.push(branding.phone);
@@ -419,50 +385,27 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
     if (branding?.website) contactParts.push(branding.website);
     if (branding?.license) contactParts.push(`Lic# ${branding.license}`);
     if (contactParts.length > 0) {
-      page.drawText(contactParts.join("  •  "), {
-        x: MARGIN,
-        y: headerY,
-        size: 8,
-        font: helvetica,
-        color: rgb(0.45, 0.45, 0.45),
+      page.drawText(contactParts.join("  |  "), {
+        x: MARGIN, y: headerY, size: 8, font: helvetica, color: rgb(0.45, 0.45, 0.45),
       });
       headerY -= 14;
     }
-
     drawHR(page, headerY);
     y = headerY - 30;
 
-    // ── Report Title ──
+    // Report Title
     page.drawText("DAMAGE ASSESSMENT REPORT", {
-      x: MARGIN,
-      y,
-      size: 24,
-      font: timesBold,
-      color: rgb(0.1, 0.1, 0.15),
+      x: MARGIN, y, size: 24, font: timesBold, color: rgb(0.1, 0.1, 0.15),
     });
     y -= 35;
 
-    // ── Client Information & Claim Details ──
+    // Client Information
     const labelColor = rgb(0.45, 0.45, 0.45);
     const valueColor = rgb(0.1, 0.1, 0.1);
     const detailValX = MARGIN + 140;
 
-    // Client Information section header
-    page.drawRectangle({
-      x: MARGIN - 4,
-      y: y - 5,
-      width: CONTENT_W + 8,
-      height: 22,
-      color: rgb(0.95, 0.96, 0.97),
-    });
-    page.drawText("CLIENT INFORMATION", {
-      x: MARGIN,
-      y,
-      size: 11,
-      font: helveticaBold,
-      color: primaryColor,
-    });
-    y -= 28;
+    y = drawSectionHeader(page, y, "CLIENT INFORMATION", helveticaBold, primaryColor);
+    y += 10;
 
     const clientDetails: [string, string][] = [];
     if (claim.insured_name) clientDetails.push(["Insured Name", claim.insured_name]);
@@ -473,11 +416,7 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
     if (clientDetails.length > 0) {
       for (const [label, value] of clientDetails) {
         page.drawText(label + ":", {
-          x: MARGIN + 8,
-          y,
-          size: 10,
-          font: helveticaBold,
-          color: labelColor,
+          x: MARGIN + 8, y, size: 10, font: helveticaBold, color: labelColor,
         });
         const valWidth = CONTENT_W - 156;
         const textWidth = helvetica.widthOfTextAtSize(value, 10);
@@ -490,254 +429,122 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
       }
     } else {
       page.drawText("Client information not available", {
-        x: MARGIN + 8,
-        y,
-        size: 10,
-        font: helvetica,
-        color: labelColor,
+        x: MARGIN + 8, y, size: 10, font: helvetica, color: labelColor,
       });
       y -= 18;
     }
     y -= 12;
 
-    // Claim Details section header
-    page.drawRectangle({
-      x: MARGIN - 4,
-      y: y - 5,
-      width: CONTENT_W + 8,
-      height: 22,
-      color: rgb(0.95, 0.96, 0.97),
-    });
-    page.drawText("CLAIM DETAILS", {
-      x: MARGIN,
-      y,
-      size: 11,
-      font: helveticaBold,
-      color: primaryColor,
-    });
-    y -= 28;
+    // Claim Details
+    y = drawSectionHeader(page, y, "CLAIM DETAILS", helveticaBold, primaryColor);
+    y += 10;
 
     const claimDetailRows: [string, string][] = [["Claim Number", claim.claimNumber || claimId]];
     if (claim.dateOfLoss) {
-      claimDetailRows.push([
-        "Date of Loss",
-        new Date(claim.dateOfLoss).toLocaleDateString("en-US", {
-          year: "numeric",
-          month: "long",
-          day: "numeric",
-        }),
-      ]);
+      claimDetailRows.push(["Date of Loss", new Date(claim.dateOfLoss).toLocaleDateString("en-US", {
+        year: "numeric", month: "long", day: "numeric",
+      })]);
     }
     if (claim.carrier) claimDetailRows.push(["Insurance Carrier", claim.carrier]);
     if (claim.policy_number) claimDetailRows.push(["Policy Number", claim.policy_number]);
     if (claim.adjusterName) {
       let adjusterInfo = claim.adjusterName;
-      if (claim.adjusterPhone) adjusterInfo += `  •  ${claim.adjusterPhone}`;
+      if (claim.adjusterPhone) adjusterInfo += ` | ${claim.adjusterPhone}`;
       claimDetailRows.push(["Adjuster", adjusterInfo]);
     }
     if (claim.damageType) {
-      claimDetailRows.push([
-        "Damage Type",
+      claimDetailRows.push(["Damage Type",
         claim.damageType.replace(/_/g, " ").replace(/\b\w/g, (c: string) => c.toUpperCase()),
       ]);
     }
-    claimDetailRows.push([
-      "Report Date",
-      new Date().toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" }),
-    ]);
+    claimDetailRows.push(["Report Date", new Date().toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" })]);
     claimDetailRows.push(["Photos Analyzed", String(photos.length)]);
+    claimDetailRows.push(["Findings Documented", String(totalFindings)]);
     claimDetailRows.push(["Overall Severity", overallSeverity]);
 
     for (const [label, value] of claimDetailRows) {
       page.drawText(label + ":", {
-        x: MARGIN + 8,
-        y,
-        size: 10,
-        font: helveticaBold,
-        color: labelColor,
+        x: MARGIN + 8, y, size: 10, font: helveticaBold, color: labelColor,
       });
       page.drawText(value, { x: detailValX, y, size: 10, font: helvetica, color: valueColor });
       y -= 18;
     }
     y -= 10;
 
-    // ── Inspector / Prepared By ──
+    // Prepared By
     drawHR(page, y + 4);
     y -= 20;
-
-    page.drawRectangle({
-      x: MARGIN - 4,
-      y: y - 5,
-      width: CONTENT_W + 8,
-      height: 22,
-      color: rgb(0.95, 0.96, 0.97),
-    });
-    page.drawText("PREPARED BY", {
-      x: MARGIN,
-      y,
-      size: 11,
-      font: helveticaBold,
-      color: primaryColor,
-    });
-    y -= 30;
+    y = drawSectionHeader(page, y, "PREPARED BY", helveticaBold, primaryColor);
+    y += 10;
 
     const inspectorTextX = headshotImage ? MARGIN + 70 : MARGIN + 8;
     if (headshotImage) {
       const hdDims = headshotImage.scaleToFit(55, 55);
       page.drawRectangle({
-        x: MARGIN + 6,
-        y: y - hdDims.height - 2,
-        width: hdDims.width + 4,
-        height: hdDims.height + 4,
-        borderColor: rgb(0.82, 0.82, 0.82),
-        borderWidth: 1,
-        color: rgb(0.97, 0.97, 0.97),
+        x: MARGIN + 6, y: y - hdDims.height - 2,
+        width: hdDims.width + 4, height: hdDims.height + 4,
+        borderColor: rgb(0.82, 0.82, 0.82), borderWidth: 1, color: rgb(0.97, 0.97, 0.97),
       });
       page.drawImage(headshotImage, {
-        x: MARGIN + 8,
-        y: y - hdDims.height,
-        width: hdDims.width,
-        height: hdDims.height,
+        x: MARGIN + 8, y: y - hdDims.height,
+        width: hdDims.width, height: hdDims.height,
       });
     }
-
-    // Company name (prominent)
     page.drawText(companyName, {
-      x: inspectorTextX,
-      y,
-      size: 13,
-      font: helveticaBold,
-      color: primaryColor,
+      x: inspectorTextX, y, size: 13, font: helveticaBold, color: primaryColor,
     });
     y -= 18;
-
-    // Inspector name
     page.drawText(user?.name || "Inspector", {
-      x: inspectorTextX,
-      y,
-      size: 11,
-      font: helveticaBold,
-      color: valueColor,
+      x: inspectorTextX, y, size: 11, font: helveticaBold, color: valueColor,
     });
     y -= 15;
-
-    // Inspector contact
     if (user?.email) {
       page.drawText(user.email, {
-        x: inspectorTextX,
-        y,
-        size: 9,
-        font: helvetica,
-        color: labelColor,
+        x: inspectorTextX, y, size: 9, font: helvetica, color: labelColor,
       });
       y -= 13;
     }
-
-    // License info
     if (branding?.license) {
       page.drawText(`License: ${branding.license}`, {
-        x: inspectorTextX,
-        y,
-        size: 9,
-        font: helvetica,
-        color: labelColor,
+        x: inspectorTextX, y, size: 9, font: helvetica, color: labelColor,
       });
     }
 
-    // ═══════════════════════════════════════════════
-    //  PAGE 2 — EXECUTIVE SUMMARY & DAMAGE OVERVIEW
-    // ═══════════════════════════════════════════════
+    // =========================================================================
+    //  PAGE 2 - EXECUTIVE SUMMARY
+    // =========================================================================
     page = newPage();
     y = PAGE_H - MARGIN - 10;
+    page.drawRectangle({ x: 0, y: PAGE_H - 4, width: PAGE_W, height: 4, color: primaryColor });
 
-    // Section header helper
-    const sectionHeader = (pg: PDFPage, yPos: number, title: string) => {
-      pg.drawRectangle({
-        x: MARGIN - 4,
-        y: yPos - 5,
-        width: CONTENT_W + 8,
-        height: 24,
-        color: rgb(0.95, 0.96, 0.97),
-      });
-      pg.drawText(title, {
-        x: MARGIN,
-        y: yPos,
-        size: 13,
-        font: helveticaBold,
-        color: primaryColor,
-      });
-      return yPos - 35;
-    };
+    y = drawSectionHeader(page, y, "EXECUTIVE SUMMARY", helveticaBold, primaryColor);
 
-    y = sectionHeader(page, y, "EXECUTIVE SUMMARY");
-
-    // Build a narrative summary
     const damageTypes = new Set<string>();
-    for (const p of photos) {
-      const cap = p.ai_caption;
-      if (cap) {
-        // Extract damage keywords from captions
-        const kw = cap.match(
-          /\b(hail|wind|storm|shingle|flashing|gutter|siding|roof|water|moisture|dent|crack|missing|broken|torn|lifted|displaced|impact)\b/gi
-        );
-        if (kw) kw.forEach((w) => damageTypes.add(w.toLowerCase()));
-      }
+    for (const clusters of photoClusterMap.values()) {
+      for (const c of clusters) damageTypes.add(c.color.label.toLowerCase());
     }
 
     const summaryText = `This report documents the findings of a comprehensive property damage assessment conducted at ${
       propertyAddress || "the insured property"
-    } in accordance with HAAG Engineering inspection standards. A total of ${photos.length} photograph${photos.length > 1 ? "s were" : " was"} captured and analyzed using AI-powered damage detection technology calibrated to HAAG-certified damage identification criteria. The analysis identified ${
-      severeCnt > 0
-        ? `${severeCnt} area${severeCnt > 1 ? "s" : ""} of severe/functional damage`
-        : moderateCnt > 0
-          ? `${moderateCnt} area${moderateCnt > 1 ? "s" : ""} of moderate damage requiring repair`
+    } in accordance with HAAG Engineering inspection standards. A total of ${photos.length} photograph${photos.length > 1 ? "s were" : " was"} captured and analyzed using AI-powered damage detection technology calibrated to HAAG-certified damage identification criteria. After evidence grouping and deduplication, ${totalFindings} distinct damage finding${totalFindings !== 1 ? "s were" : " was"} identified across ${photoClusterMap.size} inspection area${photoClusterMap.size !== 1 ? "s" : ""}. The analysis identified ${
+      severeCnt > 0 ? `${severeCnt} area${severeCnt > 1 ? "s" : ""} of severe/functional damage`
+        : moderateCnt > 0 ? `${moderateCnt} area${moderateCnt > 1 ? "s" : ""} of moderate damage requiring repair`
           : `${minorCnt} area${minorCnt > 1 ? "s" : ""} of minor/cosmetic damage`
-    }${
-      damageTypes.size > 0
-        ? `, including documented evidence of ${[...damageTypes].slice(0, 5).join(", ")} damage`
-        : ""
-    }. ${
-      claim.dateOfLoss
-        ? `The reported date of loss was ${new Date(claim.dateOfLoss).toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" })}.`
-        : ""
+    }${damageTypes.size > 0 ? `, including documented evidence of ${[...damageTypes].slice(0, 4).join(", ")} damage` : ""}.${
+      claim.dateOfLoss ? ` The reported date of loss was ${new Date(claim.dateOfLoss).toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" })}.` : ""
     }`;
 
-    y = drawWrappedText(
-      page,
-      summaryText,
-      MARGIN,
-      y,
-      CONTENT_W,
-      timesRoman,
-      10.5,
-      rgb(0.15, 0.15, 0.15),
-      16
-    );
+    y = drawWrappedText(page, summaryText, MARGIN, y, CONTENT_W, timesRoman, 10.5, rgb(0.15, 0.15, 0.15), 16);
     y -= 10;
 
-    // Justification paragraph
-    const justificationText = `Based on the documented evidence and HAAG Engineering damage identification standards, the property has sustained functional damage that meets the threshold for insurance claim consideration per applicable IRC/IBC building codes. Each photograph has been individually analyzed for damage type, severity classification, and applicable building code compliance. Hail damage identification follows HAAG Certified Inspector criteria including impact pattern analysis, soft metal testing correlation, and granule displacement assessment. The findings in this report substantiate the need for professional restoration to return the property to its pre-loss condition in accordance with applicable building codes (IRC R905, R703, R903) and manufacturer installation specifications.`;
-    y = drawWrappedText(
-      page,
-      justificationText,
-      MARGIN,
-      y,
-      CONTENT_W,
-      timesRoman,
-      10.5,
-      rgb(0.15, 0.15, 0.15),
-      16
-    );
+    const justificationText = `Based on the documented evidence and HAAG Engineering damage identification standards, the property has sustained functional damage that meets the threshold for insurance claim consideration per applicable IRC/IBC building codes. Each photograph has been individually analyzed for damage type, severity classification, and applicable building code compliance. The findings in this report substantiate the need for professional restoration to return the property to its pre-loss condition in accordance with applicable building codes and manufacturer installation specifications.`;
+    y = drawWrappedText(page, justificationText, MARGIN, y, CONTENT_W, timesRoman, 10.5, rgb(0.15, 0.15, 0.15), 16);
     y -= 25;
 
-    // ── Severity Breakdown Box ──
-    y = sectionHeader(page, y, "DAMAGE SEVERITY BREAKDOWN");
+    // Severity Breakdown
+    y = drawSectionHeader(page, y, "DAMAGE SEVERITY BREAKDOWN", helveticaBold, primaryColor);
 
-    const severityRows: [
-      string,
-      number,
-      typeof rgb extends (...a: infer _) => infer R ? R : never,
-    ][] = [];
+    const severityRows: [string, number, ReturnType<typeof rgb>][] = [];
     if (severeCnt > 0) severityRows.push(["Severe", severeCnt, rgb(0.85, 0.15, 0.15)]);
     if (moderateCnt > 0) severityRows.push(["Moderate", moderateCnt, rgb(0.9, 0.55, 0.1)]);
     if (minorCnt > 0) severityRows.push(["Minor", minorCnt, rgb(0.2, 0.7, 0.3)]);
@@ -745,515 +552,305 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
     if (noneCnt > 0) severityRows.push(["Informational", noneCnt, rgb(0.55, 0.55, 0.55)]);
 
     for (const [label, count, color] of severityRows) {
-      // Severity bar
       const barWidth = Math.min((count / photos.length) * (CONTENT_W - 140), CONTENT_W - 140);
-      page.drawRectangle({
-        x: MARGIN + 120,
-        y: y - 2,
-        width: barWidth,
-        height: 14,
-        color,
-        opacity: 0.2,
-      });
-      page.drawRectangle({
-        x: MARGIN + 120,
-        y: y - 2,
-        width: barWidth,
-        height: 14,
-        borderColor: color,
-        borderWidth: 1,
-        color: rgb(1, 1, 1),
-        opacity: 0,
-      });
+      page.drawRectangle({ x: MARGIN + 120, y: y - 2, width: barWidth, height: 14, color, opacity: 0.15 });
+      page.drawRectangle({ x: MARGIN + 120, y: y - 2, width: barWidth, height: 14, borderColor: color, borderWidth: 1, color: rgb(1, 1, 1), opacity: 0 });
       page.drawText(label, { x: MARGIN, y, size: 10, font: helveticaBold, color });
       page.drawText(`${count} photo${count > 1 ? "s" : ""}`, {
-        x: MARGIN + 125,
-        y,
-        size: 10,
-        font: helvetica,
-        color: rgb(0.2, 0.2, 0.2),
+        x: MARGIN + 125, y, size: 10, font: helvetica, color: rgb(0.2, 0.2, 0.2),
       });
       y -= 24;
     }
 
-    // ── IRC Codes ──
-    const allIrcCodes = new Set<string>();
-    for (const photo of photos) {
-      const meta = photo.metadata as PhotoWithMetadata["metadata"];
-      if (meta?.annotations) {
-        for (const ann of meta.annotations) {
-          if (ann.ircCode) allIrcCodes.add(ann.ircCode);
-        }
-      }
+    // Damage Color Legend
+    y -= 10;
+    y = drawSectionHeader(page, y, "DAMAGE CATEGORY LEGEND", helveticaBold, primaryColor);
+
+    const usedColors = new Set<string>();
+    for (const clusters of photoClusterMap.values()) {
+      for (const c of clusters) usedColors.add(c.color.hex);
     }
+    const legendItems = Object.values(DAMAGE_COLORS).filter(c => usedColors.has(c.hex));
+    const colWidth = CONTENT_W / 2;
 
-    if (allIrcCodes.size > 0) {
+    for (let li = 0; li < legendItems.length; li++) {
+      const col = li % 2;
+      const legendX = MARGIN + col * colWidth;
+      if (col === 0 && li > 0) y -= 20;
+
+      page.drawRectangle({ x: legendX, y: y - 3, width: 14, height: 14, color: damageColorToRgb(legendItems[li]) });
+      page.drawText(legendItems[li].label, {
+        x: legendX + 20, y, size: 9, font: helvetica, color: rgb(0.2, 0.2, 0.2),
+      });
+    }
+    if (legendItems.length % 2 === 1) y -= 20; else y -= 20;
+
+    // Applicable Building Codes
+    if (uniqueCodes.size > 0) {
       y -= 10;
-      y = sectionHeader(page, y, "APPLICABLE BUILDING CODES");
+      if (y < 200) {
+        page = newPage();
+        y = PAGE_H - MARGIN - 10;
+        page.drawRectangle({ x: 0, y: PAGE_H - 4, width: PAGE_W, height: 4, color: primaryColor });
+      }
+      y = drawSectionHeader(page, y, "APPLICABLE BUILDING CODES", helveticaBold, primaryColor);
 
-      for (const code of allIrcCodes) {
-        const codeInfo = IRC_CODES[code];
-        if (!codeInfo) continue;
-        if (y < 120) {
+      for (const [, codeInfo] of uniqueCodes) {
+        if (y < 100) {
           page = newPage();
           y = PAGE_H - MARGIN - 10;
+          page.drawRectangle({ x: 0, y: PAGE_H - 4, width: PAGE_W, height: 4, color: primaryColor });
         }
-        page.drawText(`${codeInfo.code}  —  ${codeInfo.title}`, {
-          x: MARGIN,
-          y,
-          size: 10,
-          font: helveticaBold,
-          color: rgb(0.2, 0.2, 0.2),
+        page.drawText(`${codeInfo.code}  -  ${codeInfo.title}`, {
+          x: MARGIN, y, size: 10, font: helveticaBold, color: rgb(0.2, 0.2, 0.2),
         });
         y -= 14;
-        y = drawWrappedText(
-          page,
-          codeInfo.text,
-          MARGIN + 10,
-          y,
-          CONTENT_W - 10,
-          timesRoman,
-          9,
-          rgb(0.35, 0.35, 0.35),
-          13
-        );
+        y = drawWrappedText(page, codeInfo.text, MARGIN + 10, y, CONTENT_W - 10, timesRoman, 9, rgb(0.35, 0.35, 0.35), 13);
         y -= 8;
       }
     }
 
-    // ═══════════════════════════════════════════════
+    // =========================================================================
     //  PHOTO EVIDENCE PAGES
-    // ═══════════════════════════════════════════════
+    // =========================================================================
     for (let i = 0; i < photos.length; i++) {
-      const photo = photos[i] as PhotoWithMetadata;
+      const photo = photos[i];
+      const clusters = photoClusterMap.get(photo.id) || [];
+
       page = newPage();
       y = PAGE_H - MARGIN - 10;
+      page.drawRectangle({ x: 0, y: PAGE_H - 4, width: PAGE_W, height: 4, color: primaryColor });
 
-      // ── Photo page header ──
-      page.drawRectangle({
-        x: 0,
-        y: PAGE_H - 4,
-        width: PAGE_W,
-        height: 4,
-        color: primaryColor,
-      });
-
+      // Photo page header with severity badge
       page.drawText(`PHOTO EVIDENCE  ${i + 1} / ${photos.length}`, {
-        x: MARGIN,
-        y,
-        size: 12,
-        font: helveticaBold,
-        color: primaryColor,
+        x: MARGIN, y, size: 12, font: helveticaBold, color: primaryColor,
       });
+      if (photo.ai_severity) {
+        const sevColor = photo.ai_severity === "severe" ? rgb(0.85, 0.15, 0.15) :
+          photo.ai_severity === "moderate" ? rgb(0.9, 0.55, 0.1) : rgb(0.2, 0.7, 0.3);
+        const sevLabel = photo.ai_severity.toUpperCase();
+        const headerTextW = helveticaBold.widthOfTextAtSize(`PHOTO EVIDENCE  ${i + 1} / ${photos.length}`, 12);
+        const sevW = helveticaBold.widthOfTextAtSize(sevLabel, 9);
+        page.drawRectangle({ x: MARGIN + headerTextW + 16, y: y - 2, width: sevW + 12, height: 16, color: sevColor, opacity: 0.15 });
+        page.drawText(sevLabel, { x: MARGIN + headerTextW + 22, y: y + 1, size: 9, font: helveticaBold, color: sevColor });
+      }
       y -= 6;
       drawHR(page, y);
-      y -= 20;
+      y -= 16;
 
-      // ── Embed the actual photo ──
+      // Filename
+      page.drawText(photo.filename, { x: MARGIN, y, size: 7.5, font: helvetica, color: rgb(0.55, 0.55, 0.55) });
+      y -= 16;
+
+      // Embed photo
       if (options.includePhotos && photo.publicUrl) {
         const img = await embedImageSafe(pdfDoc, photo.publicUrl);
         if (img) {
-          const maxW = CONTENT_W;
-          const maxH = 340;
-          const dims = img.scaleToFit(maxW, maxH);
-
-          // Center the image
+          const dims = img.scaleToFit(CONTENT_W, MAX_PHOTO_H);
           const imgX = MARGIN + (CONTENT_W - dims.width) / 2;
 
-          // Photo border/shadow effect
+          // Photo border
           page.drawRectangle({
-            x: imgX - 2,
-            y: y - dims.height - 2,
-            width: dims.width + 4,
-            height: dims.height + 4,
-            borderColor: rgb(0.8, 0.8, 0.8),
-            borderWidth: 1,
-            color: rgb(0.97, 0.97, 0.97),
+            x: imgX - 2, y: y - dims.height - 2,
+            width: dims.width + 4, height: dims.height + 4,
+            borderColor: rgb(0.8, 0.8, 0.8), borderWidth: 1, color: rgb(0.97, 0.97, 0.97),
           });
+          page.drawImage(img, { x: imgX, y: y - dims.height, width: dims.width, height: dims.height });
 
-          page.drawImage(img, {
-            x: imgX,
-            y: y - dims.height,
-            width: dims.width,
-            height: dims.height,
-          });
+          // Draw color-coded annotation boxes with numbered callouts
+          if (options.includeAnnotations && clusters.length > 0) {
+            for (let ci = 0; ci < clusters.length; ci++) {
+              const cluster = clusters[ci];
+              const box = cluster.bbox;
+              const clrRgb = damageColorToRgb(cluster.color);
 
-          // Draw damage boxes on the photo
-          // Build damageBoxes from annotations (annotations are saved to metadata.annotations,
-          // NOT metadata.damageBoxes, so we must convert here)
-          const meta = photo.metadata;
-          const rawAnnotations = (meta?.annotations || []) as Array<{
-            x: number;
-            y: number;
-            width?: number;
-            height?: number;
-            caption?: string;
-            damageType?: string;
-            isPercentage?: boolean;
-          }>;
-          const damageBoxes = rawAnnotations.map((ann) => {
-            const isPct = ann.isPercentage === true;
-            return {
-              x: isPct ? (ann.x || 0) / 100 : (ann.x || 0) / 800,
-              y: isPct ? (ann.y || 0) / 100 : (ann.y || 0) / 600,
-              w: isPct ? (ann.width || 5) / 100 : (ann.width || 50) / 800,
-              h: isPct ? (ann.height || 5) / 100 : (ann.height || 50) / 600,
-              label: ann.caption || ann.damageType || "Damage",
-            };
-          });
-          for (const box of damageBoxes) {
-            const bx = imgX + box.x * dims.width;
-            const by = y - dims.height + (1 - box.y - box.h) * dims.height;
-            const bw = box.w * dims.width;
-            const bh = box.h * dims.height;
+              const bx = imgX + box.x * dims.width;
+              const by = y - dims.height + (1 - box.y - box.h) * dims.height;
+              const bw = Math.max(box.w * dims.width, 10);
+              const bh = Math.max(box.h * dims.height, 10);
 
-            page.drawRectangle({
-              x: bx,
-              y: by,
-              width: bw,
-              height: bh,
-              borderColor: rgb(1, 0.2, 0.2),
-              borderWidth: 2,
-              color: rgb(1, 0.2, 0.2),
-              opacity: 0.08,
-            });
+              // Clamp to image bounds
+              const clampedBx = Math.max(imgX, Math.min(imgX + dims.width - bw, bx));
+              const clampedBy = Math.max(y - dims.height, Math.min(y - bh, by));
 
-            if (box.label) {
-              const lblW = helvetica.widthOfTextAtSize(box.label, 7);
+              // Color-coded damage box
               page.drawRectangle({
-                x: bx,
-                y: by + bh - 10,
-                width: lblW + 6,
-                height: 10,
-                color: rgb(1, 0.2, 0.2),
+                x: clampedBx, y: clampedBy, width: bw, height: bh,
+                borderColor: clrRgb, borderWidth: 2, color: clrRgb, opacity: 0.08,
               });
-              page.drawText(box.label, {
-                x: bx + 3,
-                y: by + bh - 8,
-                size: 7,
-                font: helvetica,
-                color: rgb(1, 1, 1),
+
+              // Numbered callout circle at top-right of box
+              const calloutR = 8;
+              const calloutX = Math.min(clampedBx + bw + 2, imgX + dims.width - calloutR);
+              const calloutY = clampedBy + bh - calloutR;
+              page.drawCircle({
+                x: calloutX + calloutR, y: calloutY + calloutR, size: calloutR, color: clrRgb,
+              });
+              const numStr = String(ci + 1);
+              const numW = helveticaBold.widthOfTextAtSize(numStr, 8);
+              page.drawText(numStr, {
+                x: calloutX + calloutR - numW / 2, y: calloutY + calloutR - 3,
+                size: 8, font: helveticaBold, color: rgb(1, 1, 1),
               });
             }
           }
-
-          y -= dims.height + 20;
+          y -= dims.height + 14;
         } else {
-          // Placeholder if image fetch failed
+          // Photo placeholder
           page.drawRectangle({
-            x: MARGIN,
-            y: y - 80,
-            width: CONTENT_W,
-            height: 80,
-            color: rgb(0.95, 0.95, 0.95),
-            borderColor: rgb(0.8, 0.8, 0.8),
-            borderWidth: 1,
+            x: MARGIN, y: y - 60, width: CONTENT_W, height: 60,
+            color: rgb(0.95, 0.95, 0.95), borderColor: rgb(0.8, 0.8, 0.8), borderWidth: 1,
           });
-          page.drawText("[Photo could not be loaded]", {
-            x: MARGIN + CONTENT_W / 2 - 80,
-            y: y - 45,
-            size: 10,
-            font: helvetica,
-            color: rgb(0.6, 0.6, 0.6),
+          page.drawText("[Photo could not be loaded - may be HEIC format]", {
+            x: MARGIN + CONTENT_W / 2 - 120, y: y - 35,
+            size: 9, font: helvetica, color: rgb(0.6, 0.6, 0.6),
           });
-          y -= 100;
+          y -= 80;
         }
       }
 
-      // ── Severity badge ──
-      if (photo.ai_severity) {
-        const sevColor =
-          photo.ai_severity === "severe"
-            ? rgb(0.85, 0.15, 0.15)
-            : photo.ai_severity === "moderate"
-              ? rgb(0.9, 0.55, 0.1)
-              : rgb(0.2, 0.7, 0.3);
-
-        const sevLabel = `SEVERITY: ${photo.ai_severity.toUpperCase()}`;
-        const sevW = helveticaBold.widthOfTextAtSize(sevLabel, 10);
-        page.drawRectangle({
-          x: MARGIN - 2,
-          y: y - 4,
-          width: sevW + 16,
-          height: 18,
-          color: sevColor,
-          opacity: 0.12,
-        });
-        page.drawText(sevLabel, {
-          x: MARGIN + 6,
-          y,
-          size: 10,
-          font: helveticaBold,
-          color: sevColor,
-        });
-
-        if (photo.ai_confidence != null) {
-          page.drawText(`${Math.round(Number(photo.ai_confidence) * 100)}% confidence`, {
-            x: MARGIN + sevW + 24,
-            y,
-            size: 8,
-            font: helvetica,
-            color: rgb(0.5, 0.5, 0.5),
-          });
-        }
-        y -= 24;
-      }
-
-      // ── Filename ──
-      page.drawText(photo.filename, {
-        x: MARGIN,
-        y,
-        size: 8,
-        font: helvetica,
-        color: rgb(0.55, 0.55, 0.55),
-      });
-      y -= 18;
-
-      // ── AI Analysis Caption ──
-      if (photo.ai_caption) {
-        page.drawText("AI Analysis", {
-          x: MARGIN,
-          y,
-          size: 10,
-          font: helveticaBold,
-          color: rgb(0.2, 0.2, 0.2),
-        });
-        y -= 15;
-        y = drawWrappedText(
-          page,
-          photo.ai_caption,
-          MARGIN + 8,
-          y,
-          CONTENT_W - 8,
-          timesRoman,
-          9.5,
-          rgb(0.2, 0.2, 0.2),
-          14
-        );
-        y -= 8;
-      }
-
-      // ── Detailed Damage Summary for this photo ──
-      const annMeta = photo.metadata as PhotoWithMetadata["metadata"];
-      if (options.includeAnnotations && annMeta?.annotations && annMeta.annotations.length > 0) {
-        if (y < 120) {
+      // Findings Table
+      if (clusters.length > 0) {
+        if (y < 180) {
           page = newPage();
           y = PAGE_H - MARGIN - 10;
+          page.drawRectangle({ x: 0, y: PAGE_H - 4, width: PAGE_W, height: 4, color: primaryColor });
         }
 
-        // Summary header
-        page.drawRectangle({
-          x: MARGIN - 4,
-          y: y - 5,
-          width: CONTENT_W + 8,
-          height: 22,
-          color: rgb(0.95, 0.96, 0.97),
-        });
-        page.drawText(
-          `DETAILED DAMAGE FINDINGS — ${annMeta.annotations.length} Area${annMeta.annotations.length > 1 ? "s" : ""} Identified`,
-          {
-            x: MARGIN,
-            y,
-            size: 10,
-            font: helveticaBold,
-            color: primaryColor,
-          }
+        y = drawSectionHeader(page, y,
+          `FINDINGS - ${clusters.length} Damage Area${clusters.length > 1 ? "s" : ""} Identified`,
+          helveticaBold, primaryColor
         );
-        y -= 28;
 
-        for (let ai = 0; ai < annMeta.annotations.length; ai++) {
-          const ann = annMeta.annotations[ai];
+        for (let ci = 0; ci < clusters.length; ci++) {
+          const cluster = clusters[ci];
+          const clrRgb = damageColorToRgb(cluster.color);
+
           if (y < 100) {
             page = newPage();
             y = PAGE_H - MARGIN - 10;
+            page.drawRectangle({ x: 0, y: PAGE_H - 4, width: PAGE_W, height: 4, color: primaryColor });
           }
 
-          // Finding number + damage type
+          // Finding number with color swatch
+          page.drawRectangle({ x: MARGIN, y: y - 3, width: 12, height: 12, color: clrRgb });
+          page.drawText(`Finding #${ci + 1}  -  ${cluster.label}`, {
+            x: MARGIN + 18, y, size: 10, font: helveticaBold, color: rgb(0.15, 0.15, 0.15),
+          });
+          y -= 16;
+
+          // Severity + Confidence
           const sevColor =
-            ann.severity === "Critical" || ann.severity === "High"
-              ? rgb(0.85, 0.15, 0.15)
-              : ann.severity === "Medium"
-                ? rgb(0.9, 0.55, 0.1)
-                : rgb(0.2, 0.7, 0.3);
+            ["critical", "severe", "high"].includes(cluster.severity.toLowerCase()) ? rgb(0.85, 0.15, 0.15)
+            : ["moderate", "medium"].includes(cluster.severity.toLowerCase()) ? rgb(0.9, 0.55, 0.1)
+            : rgb(0.2, 0.7, 0.3);
 
-          page.drawText(`Finding #${ai + 1}`, {
-            x: MARGIN + 4,
-            y,
-            size: 9,
-            font: helveticaBold,
-            color: primaryColor,
+          page.drawText(`Severity: ${cluster.severity}`, {
+            x: MARGIN + 12, y, size: 9, font: helveticaBold, color: sevColor,
           });
-          y -= 14;
-
-          // Damage type + severity inline
-          const damageLabel = ann.damageType || "Damage";
-          page.drawText(`Type: ${damageLabel.replace(/_/g, " ")}`, {
-            x: MARGIN + 12,
-            y,
-            size: 9,
-            font: helveticaBold,
-            color: rgb(0.2, 0.2, 0.2),
-          });
-          if (ann.severity) {
-            const sevText = `  Severity: ${ann.severity}`;
-            const dmgW = helveticaBold.widthOfTextAtSize(
-              `Type: ${damageLabel.replace(/_/g, " ")}`,
-              9
-            );
-            page.drawText(sevText, {
-              x: MARGIN + 12 + dmgW + 8,
-              y,
-              size: 9,
-              font: helveticaBold,
-              color: sevColor,
+          if (cluster.confidence > 0) {
+            const sevTextW = helveticaBold.widthOfTextAtSize(`Severity: ${cluster.severity}`, 9);
+            page.drawText(`   |   Confidence: ${Math.round(cluster.confidence * 100)}%`, {
+              x: MARGIN + 12 + sevTextW, y, size: 9, font: helvetica, color: rgb(0.5, 0.5, 0.5),
             });
           }
-          y -= 14;
+          if (cluster.memberCount > 1) {
+            const groupedText = `${cluster.memberCount} detections grouped`;
+            page.drawText(groupedText, {
+              x: PAGE_W - MARGIN - helvetica.widthOfTextAtSize(groupedText, 8) - 4,
+              y, size: 8, font: helvetica, color: rgb(0.6, 0.6, 0.6),
+            });
+          }
+          y -= 16;
 
           // IRC code reference
-          if (ann.ircCode) {
-            const codeInfo = IRC_CODES[ann.ircCode];
-            if (codeInfo) {
-              page.drawText(`Code Reference: ${codeInfo.code} — ${codeInfo.title}`, {
-                x: MARGIN + 12,
-                y,
-                size: 8.5,
-                font: helvetica,
-                color: rgb(0.15, 0.35, 0.65),
-              });
-              y -= 12;
-            }
-          }
-
-          // Confidence score
-          if (ann.confidence) {
-            page.drawText(`Confidence: ${Math.round(ann.confidence * 100)}%`, {
-              x: MARGIN + 12,
-              y,
-              size: 8,
-              font: helvetica,
-              color: rgb(0.5, 0.5, 0.5),
+          if (cluster.ircCode) {
+            page.drawText(`${cluster.ircCode.code}  -  ${cluster.ircCode.title}`, {
+              x: MARGIN + 12, y, size: 9, font: helveticaBold, color: rgb(0.15, 0.35, 0.65),
             });
-            y -= 12;
+            y -= 14;
           }
 
-          // Caption / description
-          if (ann.caption) {
-            y = drawWrappedText(
-              page,
-              ann.caption,
-              MARGIN + 12,
-              y,
-              CONTENT_W - 16,
-              timesRoman,
-              9,
-              rgb(0.25, 0.25, 0.25),
-              13
-            );
+          // Professional caption
+          if (cluster.caption) {
+            y = drawWrappedText(page, cluster.caption, MARGIN + 12, y, CONTENT_W - 16, timesRoman, 9, rgb(0.22, 0.22, 0.22), 13);
           }
-          y -= 10;
+          y -= 8;
 
-          // Separator between findings
-          if (ai < annMeta.annotations.length - 1) {
+          // Separator
+          if (ci < clusters.length - 1) {
             page.drawLine({
               start: { x: MARGIN + 12, y: y + 4 },
               end: { x: MARGIN + CONTENT_W / 2, y: y + 4 },
-              thickness: 0.5,
-              color: rgb(0.85, 0.85, 0.85),
+              thickness: 0.5, color: rgb(0.85, 0.85, 0.85),
             });
             y -= 6;
           }
         }
+      } else if (photo.ai_caption) {
+        // No clusters but has AI caption
+        y -= 4;
+        page.drawText("Analysis Notes", {
+          x: MARGIN, y, size: 10, font: helveticaBold, color: rgb(0.2, 0.2, 0.2),
+        });
+        y -= 15;
+        y = drawWrappedText(page, photo.ai_caption, MARGIN + 8, y, CONTENT_W - 8, timesRoman, 9.5, rgb(0.2, 0.2, 0.2), 14);
       }
     }
 
-    // ═══════════════════════════════════════════════
-    //  FINAL PAGE — DISCLAIMER & SIGNATURE
-    // ═══════════════════════════════════════════════
+    // =========================================================================
+    //  FINAL PAGE - DISCLAIMER & CERTIFICATION
+    // =========================================================================
     page = newPage();
     y = PAGE_H - MARGIN - 10;
+    page.drawRectangle({ x: 0, y: PAGE_H - 4, width: PAGE_W, height: 4, color: primaryColor });
 
-    y = sectionHeader(page, y, "REPORT DISCLAIMER");
+    y = drawSectionHeader(page, y, "REPORT DISCLAIMER", helveticaBold, primaryColor);
 
     const disclaimer = `This damage assessment report was prepared using AI-assisted analysis technology and professional inspection methodology. While every effort has been made to ensure accuracy, the findings herein should be verified by a licensed professional prior to making repair decisions. Damage assessments are based on visual evidence available at the time of inspection. Hidden damage, pre-existing conditions, or subsequent events may alter the scope of required repairs. This report is provided for informational purposes and does not constitute a guarantee of insurance coverage or claim approval.`;
-    y = drawWrappedText(
-      page,
-      disclaimer,
-      MARGIN,
-      y,
-      CONTENT_W,
-      timesRoman,
-      9,
-      rgb(0.35, 0.35, 0.35),
-      14
-    );
+    y = drawWrappedText(page, disclaimer, MARGIN, y, CONTENT_W, timesRoman, 9, rgb(0.35, 0.35, 0.35), 14);
     y -= 30;
 
-    y = sectionHeader(page, y, "INSPECTOR CERTIFICATION");
+    y = drawSectionHeader(page, y, "INSPECTOR CERTIFICATION", helveticaBold, primaryColor);
 
     page.drawText("I certify that the information contained in this report accurately represents", {
-      x: MARGIN,
-      y,
-      size: 10,
-      font: timesRoman,
-      color: rgb(0.2, 0.2, 0.2),
+      x: MARGIN, y, size: 10, font: timesRoman, color: rgb(0.2, 0.2, 0.2),
     });
     y -= 14;
     page.drawText("the conditions observed during the property inspection.", {
-      x: MARGIN,
-      y,
-      size: 10,
-      font: timesRoman,
-      color: rgb(0.2, 0.2, 0.2),
+      x: MARGIN, y, size: 10, font: timesRoman, color: rgb(0.2, 0.2, 0.2),
     });
     y -= 40;
 
-    // Signature line
     drawHR(page, y, rgb(0.3, 0.3, 0.3));
     y -= 14;
     page.drawText(user?.name || "Inspector Signature", {
-      x: MARGIN,
-      y,
-      size: 10,
-      font: helveticaBold,
-      color: rgb(0.15, 0.15, 0.15),
+      x: MARGIN, y, size: 10, font: helveticaBold, color: rgb(0.15, 0.15, 0.15),
     });
     y -= 14;
     page.drawText(companyName, {
-      x: MARGIN,
-      y,
-      size: 9,
-      font: helvetica,
-      color: rgb(0.45, 0.45, 0.45),
+      x: MARGIN, y, size: 9, font: helvetica, color: rgb(0.45, 0.45, 0.45),
     });
     y -= 12;
     page.drawText(
       `Date: ${new Date().toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" })}`,
-      {
-        x: MARGIN,
-        y,
-        size: 9,
-        font: helvetica,
-        color: rgb(0.45, 0.45, 0.45),
-      }
+      { x: MARGIN, y, size: 9, font: helvetica, color: rgb(0.45, 0.45, 0.45) }
     );
 
-    // ── Draw footers on all pages ──
+    // Draw footers
     const totalPages = pages.length;
     for (let p = 0; p < totalPages; p++) {
-      drawFooter(pages[p], p + 1, totalPages, helvetica, companyName);
+      drawFooter(pages[p], p + 1, totalPages, helvetica, companyName, primaryColor);
     }
 
-    // ── Save PDF ──
+    // Save PDF
     logger.info("[DAMAGE_REPORT] Saving PDF...", { claimId, pageCount: pdfDoc.getPageCount() });
     const pdfBytes = await pdfDoc.save();
     const pdfUint8 = new Uint8Array(pdfBytes);
 
     // Upload to Supabase
     const supabase = getSupabaseAdmin();
-    if (!supabase) {
-      return apiError(500, "CONFIG_ERROR", "Storage not configured");
-    }
+    if (!supabase) return apiError(500, "CONFIG_ERROR", "Storage not configured");
 
     const reportId = createId();
     const filename = `damage-report-${claim.claimNumber || claimId}-${Date.now()}.pdf`;
@@ -1263,10 +860,7 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
     try {
       const { data: buckets } = await supabase.storage.listBuckets();
       if (!buckets?.some((b: { name: string }) => b.name === bucket)) {
-        await supabase.storage.createBucket(bucket, {
-          public: true,
-          fileSizeLimit: 50 * 1024 * 1024,
-        });
+        await supabase.storage.createBucket(bucket, { public: true, fileSizeLimit: 50 * 1024 * 1024 });
       }
     } catch (bucketErr) {
       logger.warn("[DAMAGE_REPORT] Bucket check/create error (non-fatal)", { bucketErr });
@@ -1274,82 +868,52 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
 
     const { error: uploadError } = await supabase.storage
       .from(bucket)
-      .upload(storagePath, pdfUint8, {
-        contentType: "application/pdf",
-        upsert: true,
-      });
+      .upload(storagePath, pdfUint8, { contentType: "application/pdf", upsert: true });
 
     if (uploadError) {
       logger.error("[DAMAGE_REPORT] Upload error", { uploadError });
       return apiError(500, "UPLOAD_ERROR", "Failed to upload report PDF to storage");
     }
 
-    const {
-      data: { publicUrl },
-    } = supabase.storage.from(bucket).getPublicUrl(storagePath);
+    const { data: { publicUrl } } = supabase.storage.from(bucket).getPublicUrl(storagePath);
 
-    // Save to file_assets as a document (NOT a photo)
+    // Save to file_assets
     await prisma.file_assets.create({
       data: {
-        id: reportId,
-        orgId,
-        ownerId: userId,
-        claimId,
-        filename,
-        mimeType: "application/pdf",
-        sizeBytes: pdfUint8.length,
-        storageKey: storagePath,
-        bucket,
-        publicUrl,
-        category: "document",
-        file_type: "damage_report",
-        source: "ai_generated",
-        note: `Professional Damage Assessment Report — ${photos.length} photos, ${overallSeverity} severity`,
+        id: reportId, orgId, ownerId: userId, claimId, filename,
+        mimeType: "application/pdf", sizeBytes: pdfUint8.length,
+        storageKey: storagePath, bucket, publicUrl,
+        category: "document", file_type: "damage_report", source: "ai_generated",
+        note: `Professional Damage Assessment Report - ${photos.length} photos, ${totalFindings} findings, ${overallSeverity} severity`,
         updatedAt: new Date(),
       },
     });
 
-    logger.info("[DAMAGE_REPORT] Generated professional report", {
-      claimId,
-      reportId,
-      photoCount: photos.length,
-      pageCount: pdfDoc.getPageCount(),
-      hasBranding: !!branding,
-      hasLogo: !!logoImage,
+    logger.info("[DAMAGE_REPORT] Generated professional report v2", {
+      claimId, reportId, photoCount: photos.length, findingCount: totalFindings,
+      pageCount: pdfDoc.getPageCount(), hasBranding: !!branding, hasLogo: !!logoImage,
     });
 
-    // Save to Report History (non-blocking)
+    // Save to Report History
     try {
       await saveReportHistory({
-        orgId,
-        userId,
-        type: "damage_report",
-        title: `Damage Assessment Report — ${photos.length} photos`,
-        sourceId: claimId,
-        fileUrl: publicUrl,
-        metadata: {
-          reportId,
-          photoCount: photos.length,
-          pageCount: pdfDoc.getPageCount(),
-        },
+        orgId, userId, type: "damage_report",
+        title: `Damage Assessment Report - ${photos.length} photos, ${totalFindings} findings`,
+        sourceId: claimId, fileUrl: publicUrl,
+        metadata: { reportId, photoCount: photos.length, findingCount: totalFindings, pageCount: pdfDoc.getPageCount() },
       });
     } catch (historyErr) {
       logger.warn("[DAMAGE_REPORT] Report history save failed (non-fatal)", { historyErr });
     }
 
     return NextResponse.json({
-      success: true,
-      reportId,
-      pdfUrl: publicUrl,
-      pageCount: pdfDoc.getPageCount(),
-      photoCount: photos.length,
-      timestamp: new Date().toISOString(),
+      success: true, reportId, pdfUrl: publicUrl,
+      pageCount: pdfDoc.getPageCount(), photoCount: photos.length,
+      findingCount: totalFindings, timestamp: new Date().toISOString(),
     });
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return apiError(400, "VALIDATION_ERROR", "Invalid request", {
-        errors: error.errors,
-      });
+      return apiError(400, "VALIDATION_ERROR", "Invalid request", { errors: error.errors });
     }
     const errMsg = error instanceof Error ? error.message : String(error);
     const errStack = error instanceof Error ? error.stack : undefined;
@@ -1358,37 +922,20 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
   }
 }
 
-// GET - List existing damage reports for a claim
+// GET - List existing damage reports
 export async function GET(request: NextRequest, { params }: RouteParams) {
   const auth = await requireAuth();
   if (auth instanceof NextResponse) return auth;
   const { orgId } = auth;
-
   const { claimId } = await params;
 
   try {
     const reports = await prisma.file_assets.findMany({
-      where: {
-        orgId,
-        claimId,
-        file_type: "damage_report",
-      },
-      select: {
-        id: true,
-        filename: true,
-        publicUrl: true,
-        sizeBytes: true,
-        createdAt: true,
-        note: true,
-      },
+      where: { orgId, claimId, file_type: "damage_report" },
+      select: { id: true, filename: true, publicUrl: true, sizeBytes: true, createdAt: true, note: true },
       orderBy: { createdAt: "desc" },
     });
-
-    return NextResponse.json({
-      success: true,
-      reports,
-      count: reports.length,
-    });
+    return NextResponse.json({ success: true, reports, count: reports.length });
   } catch (error) {
     logger.error("[DAMAGE_REPORT_LIST] Error", { error, claimId });
     return apiError(500, "INTERNAL_ERROR", "Failed to list damage reports");
