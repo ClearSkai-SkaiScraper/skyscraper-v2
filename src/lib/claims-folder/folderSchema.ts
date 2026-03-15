@@ -49,6 +49,18 @@ export interface WeatherCauseOfLossData {
     data: string;
     timestamp: Date;
   }>;
+  // Enhanced fields from storm_evidence
+  dolConfidence?: number; // 0-1 confidence in DOL
+  evidenceGrade?: string; // A/B/C/D/F
+  overallScore?: number; // 0-100
+  correlationScore?: number; // 0-1 photo correlation
+  photoCorrelations?: Array<{
+    photoId: string;
+    photoTimestamp?: string;
+    matchedEventType?: string;
+    timeDeltaMinutes?: number;
+    correlationStrength?: "strong" | "moderate" | "weak" | "none";
+  }>;
 }
 
 export interface InspectionOverviewData {
@@ -165,29 +177,42 @@ export interface ScopePricingData {
 }
 
 export interface RepairJustificationData {
-  narrative: string;
-  reasons: string[];
+  // AI-generated narrative
+  justificationNarrative?: string;
+  repairVsReplaceRationale?: string;
+  codeRequirements?: string[];
+  warrantyConsiderations?: string[];
+  industryStandards?: string[];
+  recommendation?: "full_replacement" | "partial_replacement" | "repair";
+  // Legacy fields (for backward compatibility)
+  narrative?: string;
+  reasons?: string[];
   brittleTestFailed?: boolean;
   patternDamageAcrossElevations?: boolean;
-  spotRepairInfeasible: boolean;
+  spotRepairInfeasible?: boolean;
   matchingConcerns?: string[];
   manufacturerDiscontinued?: boolean;
   localOrdinanceTriggers?: string[];
 }
 
 export interface ContractorSummaryData {
-  companyName: string;
-  contactName: string;
-  license: string;
-  phone: string;
-  email: string;
-  whyReplacementRequired: string;
-  scopeOverview: string;
-  complianceNeeds: string[];
-  safetyIssues?: string[];
-  matchingConcerns?: string[];
+  // AI-generated fields
+  summaryNarrative?: string;
+  keyFindings?: string[];
+  recommendedScope?: string;
   estimatedDuration?: string;
   warrantyOffered?: string;
+  // Legacy fields (for backward compatibility)
+  companyName?: string;
+  contactName?: string;
+  license?: string;
+  phone?: string;
+  email?: string;
+  whyReplacementRequired?: string;
+  scopeOverview?: string;
+  complianceNeeds?: string[];
+  safetyIssues?: string[];
+  matchingConcerns?: string[];
 }
 
 export interface TimelineEvent {

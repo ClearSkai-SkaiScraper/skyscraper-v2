@@ -68,6 +68,52 @@ export const NOTIFICATION_TEMPLATES = {
     body: "Claim {{claimNumber}} has reached {{readiness}}% readiness. Ready to generate packet!",
     channels: ["in_app"] as const,
   },
+  WEATHER_SCAN_COMPLETE: {
+    title: "Weather Scan Complete",
+    body: "Weather verification for claim {{claimNumber}} found {{candidateCount}} candidate DOL date(s). Primary peril: {{peril}}.",
+    channels: ["in_app"] as const,
+  },
+  DOL_UPDATED: {
+    title: "Date of Loss Updated",
+    body: "Date of Loss on claim {{claimNumber}} has been set to {{newDol}}. Source: {{source}}.",
+    channels: ["in_app", "email"] as const,
+  },
+  WEATHER_REPORT_GENERATED: {
+    title: "Weather Report Generated",
+    body: "Full weather & loss justification report generated for claim {{claimNumber}}. {{eventCount}} storm events documented.",
+    channels: ["in_app"] as const,
+  },
+  // Storm Detection Notifications
+  STORM_DETECTED: {
+    title: "⚠️ Storm Detected in Your Area",
+    body: "A {{stormType}} storm has been detected near {{city}}. {{propertyCount}} properties may be affected. Max hail: {{hailSize}}, Max wind: {{windSpeed}} mph.",
+    channels: ["in_app", "email"] as const,
+  },
+  STORM_IMPACT_ALERT: {
+    title: "🚨 High-Impact Storm Alert",
+    body: "Severe weather impacting {{zipCodes}}. {{highRiskCount}} properties at high risk. Recommended action: {{action}}.",
+    channels: ["in_app", "email"] as const,
+  },
+  STORM_ENDED: {
+    title: "Storm Event Concluded",
+    body: "The {{stormType}} storm near {{city}} has ended. Duration: {{duration}} minutes. Ready to assess {{propertyCount}} affected properties.",
+    channels: ["in_app"] as const,
+  },
+  DOL_VERIFICATION_NEEDED: {
+    title: "DOL Verification Required",
+    body: "Claim {{claimNumber}} has low DOL confidence ({{confidence}}%). Weather data suggests {{suggestedDOL}} as alternative date.",
+    channels: ["in_app"] as const,
+  },
+  PHOTO_WEATHER_MISMATCH: {
+    title: "Photo-Weather Correlation Issue",
+    body: "Photos on claim {{claimNumber}} don't align with storm timing. Correlation score: {{score}}%. Review recommended.",
+    channels: ["in_app"] as const,
+  },
+  WEATHER_EVIDENCE_READY: {
+    title: "Weather Evidence Package Ready",
+    body: "Storm evidence for claim {{claimNumber}} is ready. Grade: {{grade}}. {{eventCount}} supporting weather events documented.",
+    channels: ["in_app", "email"] as const,
+  },
 };
 
 export type NotificationTemplateName = keyof typeof NOTIFICATION_TEMPLATES;

@@ -43,6 +43,7 @@ import {
 } from "@/lib/reports/report-metrics";
 import { saveReportHistory } from "@/lib/reports/saveReportHistory";
 import { getSupabaseAdmin } from "@/lib/supabaseAdmin";
+import { getStormEvidence } from "@/lib/weather";
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // LAYOUT CONSTANTS — Print-safe page geometry
@@ -402,8 +403,8 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
     const body = await request.json().catch(() => ({}));
     const options = RequestSchema.parse(body);
 
-    // Fetch claim, branding, user in parallel
-    const [claim, branding, user] = await Promise.all([
+    // Fetch claim, branding, user, storm evidence in parallel
+    const [claim, branding, user, stormEvidence] = await Promise.all([
       prisma.claims.findFirst({
         where: { id: claimId, orgId },
         select: {
@@ -459,6 +460,8 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
           });
           return fallback;
         }),
+      // Fetch storm evidence (canonical weather intelligence layer)
+      getStormEvidence(claimId).catch(() => null),
     ]);
 
     if (!claim) return apiError(404, "NOT_FOUND", "Claim not found");
@@ -583,6 +586,7 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
 
     const timesRoman = await pdfDoc.embedFont(StandardFonts.TimesRoman);
     const timesBold = await pdfDoc.embedFont(StandardFonts.TimesRomanBold);
+    const timesItalic = await pdfDoc.embedFont(StandardFonts.TimesRomanItalic);
     const helvetica = await pdfDoc.embedFont(StandardFonts.Helvetica);
     const helveticaBold = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
 
@@ -933,6 +937,168 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
       16
     );
     y -= 25;
+
+    // =========================================================================
+    //  WEATHER & STORM VERIFICATION SECTION (using storm_evidence)
+    // =========================================================================
+    if (stormEvidence) {
+      const wxPeril = stormEvidence.primaryPeril || "Storm";
+      const topEvents = (stormEvidence.topEvents || []) as Array<{
+        type?: string;
+        magnitude?: number;
+        source?: string;
+        timeUtc?: string;
+      }>;
+      const photoCorrelation = stormEvidence.correlationScore ?? 0;
+      const dolConfidence = stormEvidence.dolConfidence ?? 0;
+
+      // Check if we need a new page
+      if (y < 250) {
+        page = newPage();
+        y = PAGE_H - MARGIN - 10;
+        page.drawRectangle({ x: 0, y: PAGE_H - 4, width: PAGE_W, height: 4, color: primaryColor });
+      }
+
+      y = drawSectionHeader(page, y, "WEATHER & STORM VERIFICATION", helveticaBold, primaryColor);
+
+      // Storm details box
+      const wxBoxY = y;
+      const wxBoxH = 70;
+      page.drawRectangle({
+        x: MARGIN,
+        y: wxBoxY - wxBoxH,
+        width: CONTENT_W,
+        height: wxBoxH,
+        color: rgb(0.94, 0.96, 0.98),
+        borderColor: rgb(0.8, 0.85, 0.9),
+        borderWidth: 0.5,
+      });
+
+      // DOL confidence label
+      const dolConfidenceLabel =
+        dolConfidence >= 0.8 ? "HIGH" : dolConfidence >= 0.5 ? "MEDIUM" : "LOW";
+
+      const wxDetails: [string, string][] = [
+        [
+          "Storm Date:",
+          stormEvidence.selectedDOL
+            ? new Date(stormEvidence.selectedDOL).toLocaleDateString("en-US", {
+                year: "numeric",
+                month: "long",
+                day: "numeric",
+              })
+            : "Under investigation",
+        ],
+        [
+          "Primary Peril:",
+          wxPeril.replace(/_/g, " ").replace(/\b\w/g, (c: string) => c.toUpperCase()),
+        ],
+        [
+          "Verification:",
+          topEvents.length > 0
+            ? `${topEvents.length} storm event${topEvents.length > 1 ? "s" : ""} confirmed`
+            : "AI weather analysis completed",
+        ],
+        ["DOL Confidence:", `${dolConfidenceLabel} (${Math.round(dolConfidence * 100)}%)`],
+      ];
+
+      // Add hail/wind from storm evidence
+      if (stormEvidence.hailSizeInches)
+        wxDetails.push(["Hail Size:", `${stormEvidence.hailSizeInches} inch diameter`]);
+      if (stormEvidence.windSpeedMph)
+        wxDetails.push(["Wind Speed:", `${stormEvidence.windSpeedMph} mph`]);
+
+      // Photo correlation score
+      if (photoCorrelation > 0)
+        wxDetails.push([
+          "Photo Correlation:",
+          `${Math.round(photoCorrelation * 100)}% of photos within storm window`,
+        ]);
+
+      let wxY = wxBoxY - 14;
+      const wxCol1X = MARGIN + 12;
+      const wxCol2X = MARGIN + 120;
+      const wxCol3X = MARGIN + CONTENT_W / 2 + 10;
+      const wxCol4X = MARGIN + CONTENT_W / 2 + 120;
+
+      for (let di = 0; di < wxDetails.length; di++) {
+        const col = di < 3 ? 0 : 1;
+        const row = di < 3 ? di : di - 3;
+        const labelX = col === 0 ? wxCol1X : wxCol3X;
+        const valueX = col === 0 ? wxCol2X : wxCol4X;
+        const rowY = wxY - row * 18;
+
+        page.drawText(wxDetails[di][0], {
+          x: labelX,
+          y: rowY,
+          size: 9,
+          font: helveticaBold,
+          color: rgb(0.3, 0.3, 0.3),
+        });
+        page.drawText(wxDetails[di][1], {
+          x: valueX,
+          y: rowY,
+          size: 9,
+          font: helvetica,
+          color: rgb(0.15, 0.15, 0.15),
+        });
+      }
+
+      y = wxBoxY - wxBoxH - 12;
+
+      // Weather narrative from AI-generated summary
+      const wxNarrative = stormEvidence.aiNarrative || null;
+      if (wxNarrative) {
+        y = drawWrappedText(
+          page,
+          String(wxNarrative).slice(0, 500),
+          MARGIN,
+          y,
+          CONTENT_W,
+          timesRoman,
+          10,
+          rgb(0.2, 0.2, 0.2),
+          15
+        );
+        y -= 8;
+      }
+
+      // Evidence grade badge
+      if (stormEvidence.evidenceGrade) {
+        const gradeColors: Record<string, ReturnType<typeof rgb>> = {
+          A: rgb(0.13, 0.55, 0.13),
+          B: rgb(0.2, 0.6, 0.2),
+          C: rgb(0.8, 0.6, 0.0),
+          D: rgb(0.85, 0.4, 0.1),
+          F: rgb(0.75, 0.15, 0.15),
+        };
+        const gradeColor = gradeColors[stormEvidence.evidenceGrade] || rgb(0.5, 0.5, 0.5);
+        page.drawText(
+          `Storm Evidence Grade: ${stormEvidence.evidenceGrade} (${stormEvidence.overallScore ?? 0}/100)`,
+          {
+            x: MARGIN,
+            y,
+            size: 9,
+            font: helveticaBold,
+            color: gradeColor,
+          }
+        );
+        y -= 16;
+      }
+
+      // Source attribution
+      page.drawText(
+        "Source: NOAA Storm Reports, NWS, Iowa State Mesonet, SkaiScraper Weather Intelligence",
+        {
+          x: MARGIN,
+          y,
+          size: 7.5,
+          font: timesItalic || timesRoman,
+          color: rgb(0.5, 0.5, 0.5),
+        }
+      );
+      y -= 25;
+    }
 
     // Severity Breakdown
     y = drawSectionHeader(page, y, "DAMAGE SEVERITY BREAKDOWN", helveticaBold, primaryColor);

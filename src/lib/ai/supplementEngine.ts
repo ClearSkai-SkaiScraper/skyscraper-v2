@@ -278,13 +278,39 @@ export async function detectCodeUpgrades(
 
 /**
  * Generate AI-powered supplement arguments
+ * Enhanced with simulation + storm graph intelligence
  */
 export async function generateSupplementArguments(
   comparison: ScopeComparison,
   codeUpgrades: CodeUpgrade[],
-  carrierName?: string
+  carrierName?: string,
+  intelligence?: {
+    approvalProbability?: number;
+    predictedOutcome?: string;
+    corroborationScore?: number;
+    claimsInCluster?: number;
+    verifiedDamage?: number;
+    negativeFactors?: string[];
+  }
 ): Promise<SupplementArgument[]> {
   const suppArgs: SupplementArgument[] = [];
+
+  // Build intelligence context string for AI prompts
+  const intelContext = intelligence
+    ? [
+        intelligence.approvalProbability != null
+          ? `Current claim simulation shows ${intelligence.approvalProbability}% approval probability (predicted: ${intelligence.predictedOutcome}).`
+          : "",
+        intelligence.corroborationScore != null
+          ? `Storm graph corroboration score: ${intelligence.corroborationScore}/100 with ${intelligence.claimsInCluster ?? 0} claims in the same damage cluster and ${intelligence.verifiedDamage ?? 0} verified nearby properties.`
+          : "",
+        intelligence.negativeFactors?.length
+          ? `Key gaps to address: ${intelligence.negativeFactors.join("; ")}.`
+          : "",
+      ]
+        .filter(Boolean)
+        .join(" ")
+    : "";
 
   // Generate arguments for missing items
   for (const item of comparison.missingItems) {
@@ -301,6 +327,7 @@ Write a professional, persuasive argument for why this line item should be inclu
 - Necessity for proper repair
 - Consequences of omission
 - Fair market value
+${intelContext ? `\nDATA-BACKED INTELLIGENCE:\n${intelContext}\nCite the corroboration data and simulation intelligence to strengthen your argument.` : ""}
 
 Be firm but professional. Cite specific code sections when applicable. Keep it concise (2-3 paragraphs).`,
         },
@@ -326,6 +353,11 @@ Be firm but professional. Cite specific code sections when applicable. Keep it c
         `Required for code-compliant roof system`,
         `Industry standard for ${item.description}`,
         `Fair market value: $${item.unitPrice}/${item.unit}`,
+        ...(intelligence?.corroborationScore != null
+          ? [
+              `${intelligence.verifiedDamage ?? 0} nearby properties with verified storm damage corroborate this claim (score: ${intelligence.corroborationScore}/100)`,
+            ]
+          : []),
       ],
       codeReferences: [],
       photoReferences: [],
@@ -391,11 +423,18 @@ Be firm but professional. Cite specific code sections when applicable. Keep it c
 
 /**
  * Generate negotiation script based on tone
+ * Enhanced with simulation + corroboration data
  */
 export async function generateNegotiationScript(
   suppArgs: SupplementArgument[],
   tone: "professional" | "firm" | "legal",
-  carrierName?: string
+  carrierName?: string,
+  intelligence?: {
+    approvalProbability?: number;
+    corroborationScore?: number;
+    claimsInCluster?: number;
+    verifiedDamage?: number;
+  }
 ): Promise<string> {
   const totalSupplement = suppArgs.reduce((sum, arg) => sum + arg.difference, 0);
 
@@ -422,6 +461,11 @@ The script should:
 - Present 2-3 strongest arguments
 - Address likely objections
 - Close with next steps
+${
+  intelligence?.corroborationScore != null
+    ? `\nIMPORTANT DATA TO REFERENCE:\n- Storm graph corroboration score: ${intelligence.corroborationScore}/100\n- ${intelligence.claimsInCluster ?? 0} claims in the same storm damage cluster\n- ${intelligence.verifiedDamage ?? 0} nearby properties with verified damage\n- Simulation approval probability: ${intelligence.approvalProbability ?? "N/A"}%\nUse these data points naturally in the negotiation script to demonstrate that this claim has strong third-party corroboration.`
+    : ""
+}
 
 Format as a conversational script with clear talking points.`,
       },

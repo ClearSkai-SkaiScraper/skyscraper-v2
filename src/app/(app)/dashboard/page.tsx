@@ -20,6 +20,7 @@ import { getDashboardWeather } from "@/lib/weather/weatherstack";
 import CompanyBrandingPreview from "./_components/CompanyBrandingPreview";
 import NetworkActivity from "./_components/NetworkActivity";
 import StatsCards from "./_components/StatsCards";
+import WeatherKPICards from "./_components/WeatherKPICards";
 import WorkOpportunityNotifications from "./_components/WorkOpportunityNotifications";
 // DashboardAssistantDock temporarily disabled
 // const DashboardAssistantDock = nextDynamic(() => import("./_components/DashboardAssistantDock"), {
@@ -192,6 +193,19 @@ export default async function DashboardPage() {
           <div className="rounded-2xl border border-slate-200/20 bg-white/60 p-8 shadow-[0_0_30px_-12px_rgba(0,0,0,0.25)] backdrop-blur-xl dark:bg-slate-900/50">
             <WeatherSummaryCard weather={weather} />
           </div>
+
+          {/* Weather Intelligence KPIs */}
+          <AsyncBoundary
+            fallback={
+              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+                {[...Array(4)].map((_, i) => (
+                  <div key={i} className="h-40 animate-pulse rounded-2xl bg-[var(--surface-2)]" />
+                ))}
+              </div>
+            }
+          >
+            <WeatherKPICards />
+          </AsyncBoundary>
 
           {/* AI Recommendations — background intelligence */}
           <AIJobScanner />

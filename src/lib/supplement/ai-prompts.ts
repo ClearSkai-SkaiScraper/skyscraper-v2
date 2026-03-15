@@ -148,6 +148,12 @@ LOGIC:
 - Identify all code-driven items (starter, IWS, UL, flashing).
 - Identify all storm-damaged items visible from photos (screens, gutters, fascia).
 - Identify all matching/continuity items (paint blend, siding match).
+- If weatherEvidence is provided, use it to strengthen supplement arguments:
+  - Reference verified hail size when justifying hail-related repairs (e.g., "1.5-inch hail verified by NOAA supports full replacement per manufacturer warranty guidelines").
+  - Reference verified wind speed when justifying wind damage items (e.g., "sustained winds of 70+ mph confirmed by NWS on DOL support emergency tarping and full re-nail").
+  - Cite the NOAA-verified storm date to establish causation ("Weather data confirms damaging storm activity on the date of loss").
+  - If weatherEvidence.noaaVerified is true, state "NOAA storm reports confirm damaging weather on the date of loss" in the summary.
+  - Use peril type (hail, wind, mixed) to tailor item justifications accordingly.
 
 Think like a restoration pro.
 Write like an Xactimate estimator.

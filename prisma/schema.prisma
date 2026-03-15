@@ -1029,6 +1029,13 @@ model Org {
   support_tickets           support_tickets[]
   canvass_pins              canvass_pins[]
   hoa_notice_packs          hoa_notice_packs[]
+  storm_evidence            storm_evidence[]
+  claim_outcomes            claim_outcomes[]
+  claim_detections          claim_detections[]
+  claim_simulations         claim_simulations[]
+  simulation_history        simulation_history[]
+  storm_clusters            storm_clusters[]
+  carrier_playbooks         carrier_playbooks[]
 
   @@index([stripeCustomerId])
   @@index([subscriptionStatus])
@@ -2469,6 +2476,11 @@ model claims {
   weather_reports            weather_reports[]
   permits                    permits[]
   mortgage_checks            mortgage_checks[]
+  storm_evidence             storm_evidence?
+  claim_outcomes             claim_outcomes?
+  claim_detections           claim_detections[]
+  claim_simulations          claim_simulations[]
+  simulation_history         simulation_history[]
 
   externalId     String?
   externalSource String?
@@ -5048,6 +5060,8 @@ model storm_events {
   claims                      claims[]
   property_impacts            property_impacts[]
   Org                         Org                 @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  storm_evidence              storm_evidence[]
+  storm_clusters              storm_clusters[]
 
   @@index([eventType])
   @@index([orgId, detectedAt])
@@ -6922,4 +6936,355 @@ model claim_trade_assignments {
 
   @@index([claim_id])
   @@index([org_id])
+}
+
+// ============================================================================
+// STORM EVIDENCE SYSTEM - Unified weather correlation for claims
+// ============================================================================
+
+/// Storm evidence record - canonical source of truth for weather correlation on a claim
+model storm_evidence {
+  id      String @id @default(dbgenerated("gen_random_uuid()::text"))
+  claimId String @unique
+  orgId   String
+
+  // DOL Selection
+  selectedDOL   DateTime
+  dolSource     String   @default("weather_analysis") // weather_analysis | manual | carrier_provided
+  dolConfidence Float    @default(0) // 0-1 confidence score
+
+  // Primary Peril Classification  
+  primaryPeril   String // hail | wind | tornado | flood | fire | other
+  secondaryPeril String? // Secondary damage type if applicable
+
+  // Weather Metrics
+  hailSizeInches Float? // Max hail size detected
+  windSpeedMph   Int? // Max wind speed detected
+  rainfallInches Float? // Total rainfall
+  tornadoRating  String? // EF0-EF5 if applicable
+
+  // Supporting Evidence
+  topEvents      Json @default("[]") // Array of top scored weather events
+  radarImageUrls Json @default("[]") // NEXRAD radar image URLs
+  satImageUrls   Json @default("[]") // Satellite imagery URLs
+  nwsCitations   Json @default("[]") // NWS/NOAA source citations
+
+  // Photo-Weather Correlation
+  photoCorrelations Json   @default("[]") // EXIF timestamp → weather event matches
+  correlationScore  Float? // Overall photo-weather correlation score
+
+  // Timeline
+  stormStartTime DateTime?
+  stormEndTime   DateTime?
+  stormDuration  Int? // Duration in minutes
+
+  // AI Summary
+  aiNarrative    String? // Claims-ready impact paragraph
+  carrierSummary String? // Summary formatted for carrier submission
+
+  // Scoring
+  overallScore  Int     @default(0) // 0-100 evidence strength score
+  evidenceGrade String? // A/B/C/D/F grade for quick reference
+
+  // Metadata
+  lastFetchedAt    DateTime @default(now())
+  weatherSourceIds Json     @default("[]") // Related weather_reports IDs
+  stormEventId     String? // Link to storm_events if from CAT event
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now())
+
+  // Relations
+  claim      claims        @relation(fields: [claimId], references: [id], onDelete: Cascade)
+  Org        Org           @relation(fields: [orgId], references: [id])
+  stormEvent storm_events? @relation(fields: [stormEventId], references: [id])
+
+  @@index([orgId])
+  @@index([primaryPeril])
+  @@index([selectedDOL])
+  @@index([overallScore])
+}
+
+// ============================================================================
+// CLAIM SIMULATION + STORM GRAPH ENGINE (Sprint 12 — AI Claim Infrastructure)
+// ============================================================================
+
+/// Phase 1.1 — Tracks claim outcomes for prediction training
+model claim_outcomes {
+  id      String @id
+  claimId String @unique
+  orgId   String
+
+  // Outcome
+  outcome         String @default("pending") // approved | partial | denied | withdrawn | pending
+  approvalPercent Float? // What % of estimated was approved (0-100)
+
+  // Financial
+  estimatedRCV    Int? // cents — what contractor estimated
+  approvedRCV     Int? // cents — what carrier approved
+  deniedAmount    Int? // cents — what was denied
+  supplementsWon  Int  @default(0)
+  supplementsLost Int  @default(0)
+
+  // Carrier Intel
+  carrier       String?
+  adjuster      String?
+  carrierReason String? // denial/reduction reason if any
+
+  // Timing
+  submittedAt     DateTime?
+  firstResponseAt DateTime?
+  resolvedAt      DateTime?
+  daysToResolve   Int?
+
+  // Snapshot at submission (for training the prediction model)
+  readinessScoreAtSubmission  Int?
+  evidenceGradeAtSubmission   String?
+  photoCountAtSubmission      Int?
+  detectionCountAtSubmission  Int?
+  weatherScoreAtSubmission    Int?
+  collateralCountAtSubmission Int?
+  simulationScoreAtSubmission Int?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now())
+
+  claims claims @relation(fields: [claimId], references: [id], onDelete: Cascade)
+  Org    Org    @relation(fields: [orgId], references: [id])
+
+  @@index([orgId, outcome])
+  @@index([carrier, outcome])
+  @@index([orgId, carrier])
+  @@index([resolvedAt])
+}
+
+/// Phase 1.2 — Structured detection results from YOLO/GPT-4V pipeline
+model claim_detections {
+  id      String  @id
+  claimId String
+  orgId   String
+  photoId String? // file_assets ID
+
+  // Detection
+  modelId    String // which YOLO model produced this
+  modelGroup String // roof, storm, hail, wind, soft_metals, collateral, etc.
+  className  String // what was detected: "hail_impact", "wind_crease", etc.
+  confidence Float // 0-1
+
+  // Location on image
+  bboxX      Float? // normalized 0-100
+  bboxY      Float?
+  bboxWidth  Float?
+  bboxHeight Float?
+
+  // Classification
+  severity      String? // low, moderate, severe, critical
+  perilType     String? // hail, wind, water, impact
+  componentType String? // shingle, ridge_vent, gutter, AC_fin, etc.
+
+  // Evidence strength flags
+  isCollateral    Boolean @default(false) // collateral evidence (non-roof)
+  isCodeViolation Boolean @default(false)
+  isReplacement   Boolean @default(false) // indicates full replacement needed
+  isSoftMetal     Boolean @default(false) // soft metal denting (proves hail)
+
+  createdAt DateTime @default(now())
+
+  claims claims @relation(fields: [claimId], references: [id], onDelete: Cascade)
+  Org    Org    @relation(fields: [orgId], references: [id])
+
+  @@index([claimId, modelGroup])
+  @@index([orgId, className])
+  @@index([claimId, perilType])
+  @@index([claimId, isCollateral])
+  @@index([claimId, isSoftMetal])
+  @@index([confidence])
+}
+
+/// R1 — Per-model calibration for detection quality
+model model_calibration {
+  id          String  @id
+  modelId     String  @unique // matches YOLO model key
+  modelGroup  String
+  displayName String?
+
+  // Thresholds
+  confidenceThreshold Float  @default(0.35) // override default 35%
+  falsePositiveRate   Float? // estimated FPR from validation
+  truePositiveRate    Float? // estimated TPR (recall)
+
+  // Quality
+  qualityScore     Int       @default(50) // 0-100 overall model quality
+  isFineTuned      Boolean   @default(false) // custom-trained vs generic
+  trainingDataSize Int? // number of labeled images
+  lastValidated    DateTime?
+
+  // Mapping
+  defaultSeverity      String? // default severity when detected
+  defaultPerilType     String? // default peril type
+  defaultComponentType String? // default component type
+  evidenceWeight       Float   @default(1.0) // multiplier for evidence scoring
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now())
+
+  @@index([modelGroup])
+}
+
+/// Phase 2 — Claim simulation results (cached per-claim)
+model claim_simulations {
+  id      String @id
+  claimId String
+  orgId   String
+
+  // Overall prediction
+  approvalProbability Int // 0-100
+  predictedOutcome    String // approved | partial | denied
+  confidenceLevel     String // high | medium | low
+
+  // Category scores (each 0-100)
+  stormEvidenceScore      Int @default(0)
+  damageEvidenceScore     Int @default(0)
+  collateralEvidenceScore Int @default(0)
+  repairabilityScore      Int @default(0)
+  documentationScore      Int @default(0)
+  codeComplianceScore     Int @default(0)
+  carrierHistoryScore     Int @default(0)
+
+  // Storm Graph bonus
+  stormGraphCorroboration Int? // 0-100 corroboration score
+  nearbyVerifiedClaims    Int     @default(0)
+  clusterConfidence       String? // high | medium | low | none
+
+  // Analysis results (JSON for flexibility)
+  positiveFactors   Json @default("[]")
+  negativeFactors   Json @default("[]")
+  recommendations   Json @default("[]")
+  categoryBreakdown Json @default("{}")
+
+  // Versioning
+  engineVersion String   @default("1.0.0")
+  computedAt    DateTime @default(now())
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now())
+
+  claims claims @relation(fields: [claimId], references: [id], onDelete: Cascade)
+  Org    Org    @relation(fields: [orgId], references: [id])
+
+  @@index([claimId])
+  @@index([orgId, approvalProbability])
+  @@index([orgId, predictedOutcome])
+  @@index([computedAt])
+}
+
+/// Phase 4.3 — Simulation score history for tracking improvement over time
+model simulation_history {
+  id      String @id
+  claimId String
+  orgId   String
+
+  approvalProbability Int // 0-100 at this point in time
+  triggerEvent        String // what caused recalc: "photos_uploaded", "weather_verified", etc.
+  triggerDescription  String?
+
+  // Snapshot of key scores
+  stormEvidenceScore      Int @default(0)
+  damageEvidenceScore     Int @default(0)
+  collateralEvidenceScore Int @default(0)
+  documentationScore      Int @default(0)
+
+  createdAt DateTime @default(now())
+
+  claims claims @relation(fields: [claimId], references: [id], onDelete: Cascade)
+  Org    Org    @relation(fields: [orgId], references: [id])
+
+  @@index([claimId, createdAt])
+  @@index([orgId, claimId])
+}
+
+/// Phase 3 — Storm graph cluster for cross-claim intelligence
+model storm_clusters {
+  id           String @id
+  stormEventId String
+  orgId        String
+
+  // Cluster geography
+  centerLat   Float
+  centerLng   Float
+  radiusMiles Float
+  boundingBox Json? // {neLat, neLng, swLat, swLng}
+
+  // Cluster metrics
+  totalProperties     Int @default(0)
+  inspectedProperties Int @default(0)
+  claimsInCluster     Int @default(0)
+  verifiedDamage      Int @default(0)
+
+  // Damage type distribution
+  hailDamageCount       Int @default(0)
+  windDamageCount       Int @default(0)
+  waterDamageCount      Int @default(0)
+  collateralDamageCount Int @default(0)
+
+  // Corroboration
+  corroborationScore     Int     @default(0) // 0-100
+  corroborationLevel     String  @default("none") // high | medium | low | none
+  corroborationNarrative String?
+
+  // Average metrics
+  avgHailSize       Float?
+  avgWindSpeed      Int?
+  avgDamageEvidence Int? // avg detection count across claims
+  avgClaimStrength  Int? // avg simulation score across claims
+
+  // Heatmap data
+  heatmapData Json @default("[]") // array of {lat, lng, intensity}
+
+  computedAt DateTime @default(now())
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @default(now())
+
+  storm_events storm_events @relation(fields: [stormEventId], references: [id], onDelete: Cascade)
+  Org          Org          @relation(fields: [orgId], references: [id])
+
+  @@index([stormEventId])
+  @@index([orgId, computedAt])
+  @@index([corroborationLevel])
+}
+
+/// R2 — Carrier playbook intelligence
+model carrier_playbooks {
+  id          String @id
+  orgId       String
+  carrierName String
+
+  // Aggregated stats
+  totalClaims         Int    @default(0)
+  approvedCount       Int    @default(0)
+  partialCount        Int    @default(0)
+  deniedCount         Int    @default(0)
+  approvalRate        Float? // 0-100
+  avgDaysToResolve    Int?
+  avgSupplementRounds Float?
+  supplementWinRate   Float?
+
+  // Intelligence
+  commonDenialReasons  Json    @default("[]")
+  keyEvidenceNeeded    Json    @default("[]")
+  carrierBehaviorNotes String?
+  preferredStrategy    String? // supplement-heavy | documentation-first | escalation
+  typicalResponse      String? // "Requests 2nd inspection", etc.
+
+  // Last computed
+  computedAt DateTime @default(now())
+  sampleSize Int      @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now())
+
+  Org Org @relation(fields: [orgId], references: [id])
+
+  @@unique([orgId, carrierName])
+  @@index([carrierName])
 }

@@ -8,6 +8,7 @@
 import {
   AlertCircle,
   BookOpen,
+  Calendar,
   Camera,
   ChevronDown,
   ChevronUp,
@@ -18,6 +19,7 @@ import {
   Eye,
   FileText,
   GripVertical,
+  Image,
   List,
   Paperclip,
   PenTool,
@@ -27,6 +29,7 @@ import {
   Scale,
   Scissors,
   ShoppingBag,
+  ShoppingCart,
   Table,
   X,
   Zap,
@@ -64,6 +67,9 @@ const SECTION_ICONS: Record<string, React.ElementType> = {
   Paperclip,
   Scissors,
   ShoppingBag,
+  ShoppingCart,
+  Calendar,
+  Image,
 };
 
 /** Descriptions & tips for each section shown in the side panel */
@@ -238,6 +244,62 @@ const SECTION_DETAILS: Record<
       "Claim Process",
     ],
   },
+  // ===== INTEGRATED MODULE SECTIONS =====
+  "material-estimate": {
+    description:
+      "Complete material estimate from roof measurements with ABC Supply pricing and order quantities.",
+    tips: [
+      "Auto-calculates waste factors based on roof complexity",
+      "Includes nearest ABC Supply branch inventory check",
+      "Shows good/better/best material options with pricing",
+    ],
+    dataFields: [
+      "Shingle Type",
+      "Shingle Quantity",
+      "Underlayment",
+      "Ice & Water Shield",
+      "Ridge Cap",
+      "Starter Strip",
+      "Drip Edge",
+      "Nails",
+      "Total Material Cost",
+      "ABC Supply Branch",
+    ],
+  },
+  "project-timeline": {
+    description:
+      "Professional project timeline with milestones, expected duration, and crew scheduling.",
+    tips: [
+      "Auto-generates from project scope and crew availability",
+      "Include weather contingency notes",
+      "Show customer notification points",
+    ],
+    dataFields: [
+      "Project Start",
+      "Permit Approval",
+      "Material Delivery",
+      "Tear-Off",
+      "Installation",
+      "Inspection",
+      "Final Walkthrough",
+      "Project Complete",
+    ],
+  },
+  "visual-mockups": {
+    description: "Visual renderings showing proposed material selections on the actual property.",
+    tips: [
+      "Auto-generates from property photo and selected materials",
+      "Show multiple color options side-by-side",
+      "Include manufacturer product images",
+    ],
+    dataFields: [
+      "Property Photo",
+      "Proposed Rendering",
+      "Material Color",
+      "Alternative Options",
+      "Manufacturer Info",
+    ],
+  },
 };
 
 export default function Builder() {
@@ -294,6 +356,33 @@ export default function Builder() {
     hailSize?: string;
     windSpeed?: string;
     eventDate?: string;
+  } | null>(null);
+
+  // Material estimate state
+  const [materialStatus, setMaterialStatus] = useState<"idle" | "loading" | "ready" | "error">(
+    "idle"
+  );
+  const [materialEstimate, setMaterialEstimate] = useState<{
+    totalMaterialCost?: number;
+    shingleType?: string;
+    shingleQty?: number;
+    branch?: string;
+  } | null>(null);
+
+  // Mockup state
+  const [mockupStatus, setMockupStatus] = useState<"idle" | "loading" | "ready" | "error">("idle");
+  const [mockupData, setMockupData] = useState<{
+    mockupUrl?: string;
+    productName?: string;
+  } | null>(null);
+
+  // Project timeline state
+  const [timelineStatus, setTimelineStatus] = useState<"idle" | "loading" | "ready" | "error">(
+    "idle"
+  );
+  const [timelineData, setTimelineData] = useState<{
+    projectDays?: number;
+    milestones?: Array<{ name: string; date: string }>;
   } | null>(null);
 
   // Editable field values for each section (keyed by sectionKey -> fieldName)
@@ -403,6 +492,118 @@ export default function Builder() {
     } catch (err: any) {
       setWeatherStatus("error");
       setError(err.message || "Failed to pull weather data.");
+    }
+  };
+
+  /** Pull Material Estimate — fetch material estimate from measurements */
+  const handleMaterialEstimate = async () => {
+    const claimId = selection.resolvedClaimId || selection.claimId;
+    const jobId = selection.jobId;
+    if (!claimId && !jobId) {
+      setError("Select a claim or job first to generate material estimate.");
+      return;
+    }
+    setMaterialStatus("loading");
+    setError(null);
+    try {
+      const endpoint = claimId
+        ? `/api/claims/${claimId}/material-estimate`
+        : `/api/jobs/${jobId}/material-estimate`;
+      const res = await fetch(endpoint);
+      if (res.ok) {
+        const data = await res.json();
+        setMaterialEstimate({
+          totalMaterialCost: data.totalCost || data.estimate?.totalMaterialCost,
+          shingleType: data.shingleSpec?.type || data.estimate?.shingleType,
+          shingleQty: data.materialList?.shingles?.quantity || data.estimate?.shingleQuantity,
+          branch: data.nearestBranch?.name || data.estimate?.abcBranch,
+        });
+        setMaterialStatus("ready");
+        // Auto-add material estimate section
+        if (!selectedSections.includes("material-estimate")) {
+          setSelectedSections((prev) => [...prev, "material-estimate"]);
+        }
+      } else {
+        setMaterialStatus("error");
+        setError("Material estimate generation failed. Ensure roof measurements are available.");
+      }
+    } catch (err: any) {
+      setMaterialStatus("error");
+      setError(err.message || "Failed to generate material estimate.");
+    }
+  };
+
+  /** Generate Visual Mockup — create property rendering with selected materials */
+  const handleGenerateMockup = async () => {
+    const claimId = selection.resolvedClaimId || selection.claimId;
+    const jobId = selection.jobId;
+    if (!claimId && !jobId) {
+      setError("Select a claim or job first to generate mockup.");
+      return;
+    }
+    setMockupStatus("loading");
+    setError(null);
+    try {
+      const endpoint = claimId ? `/api/claims/${claimId}/mockup` : `/api/jobs/${jobId}/mockup`;
+      const res = await fetch(endpoint, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ page: "cover" }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setMockupData({
+          mockupUrl: data.mockupUrl || data.url,
+          productName: data.productName || data.material?.name,
+        });
+        setMockupStatus("ready");
+        // Auto-add visual mockups section
+        if (!selectedSections.includes("visual-mockups")) {
+          setSelectedSections((prev) => [...prev, "visual-mockups"]);
+        }
+      } else {
+        setMockupStatus("error");
+        setError("Mockup generation failed. Ensure property photo is uploaded.");
+      }
+    } catch (err: any) {
+      setMockupStatus("error");
+      setError(err.message || "Failed to generate mockup.");
+    }
+  };
+
+  /** Generate Project Timeline — create project schedule from scope */
+  const handleGenerateTimeline = async () => {
+    const claimId = selection.resolvedClaimId || selection.claimId;
+    const jobId = selection.jobId;
+    if (!claimId && !jobId) {
+      setError("Select a claim or job first to generate timeline.");
+      return;
+    }
+    setTimelineStatus("loading");
+    setError(null);
+    try {
+      const endpoint = claimId
+        ? `/api/claims/${claimId}/project-timeline`
+        : `/api/jobs/${jobId}/project-timeline`;
+      const res = await fetch(endpoint);
+      if (res.ok) {
+        const data = await res.json();
+        setTimelineData({
+          projectDays: data.totalDays || data.timeline?.projectDays,
+          milestones: data.milestones || data.timeline?.milestones,
+        });
+        setTimelineStatus("ready");
+        // Auto-add project timeline section
+        if (!selectedSections.includes("project-timeline")) {
+          setSelectedSections((prev) => [...prev, "project-timeline"]);
+        }
+      } else {
+        setTimelineStatus("error");
+        setError("Timeline generation failed. Ensure scope is defined.");
+      }
+    } catch (err: any) {
+      setTimelineStatus("error");
+      setError(err.message || "Failed to generate timeline.");
     }
   };
 
@@ -692,6 +893,69 @@ export default function Builder() {
                       : "Quick DOL Pull"}
                 </Button>
 
+                {/* Material Estimate Button */}
+                <Button
+                  onClick={() => void handleMaterialEstimate()}
+                  disabled={
+                    materialStatus === "loading" || (!selection.resolvedClaimId && !selection.jobId)
+                  }
+                  className="gap-2 bg-amber-600 hover:bg-amber-700"
+                  title={
+                    !selection.resolvedClaimId && !selection.jobId
+                      ? "Select a claim or job first"
+                      : "Generate material estimate from measurements"
+                  }
+                >
+                  <ShoppingCart className="h-5 w-5" />
+                  {materialStatus === "loading"
+                    ? "Estimating..."
+                    : materialStatus === "ready"
+                      ? "✓ Materials Ready"
+                      : "Material Estimate"}
+                </Button>
+
+                {/* Generate Mockup Button */}
+                <Button
+                  onClick={() => void handleGenerateMockup()}
+                  disabled={
+                    mockupStatus === "loading" || (!selection.resolvedClaimId && !selection.jobId)
+                  }
+                  className="gap-2 bg-indigo-600 hover:bg-indigo-700"
+                  title={
+                    !selection.resolvedClaimId && !selection.jobId
+                      ? "Select a claim or job first"
+                      : "Generate visual mockup with selected materials"
+                  }
+                >
+                  <Image className="h-5 w-5" />
+                  {mockupStatus === "loading"
+                    ? "Generating..."
+                    : mockupStatus === "ready"
+                      ? "✓ Mockup Ready"
+                      : "Visual Mockup"}
+                </Button>
+
+                {/* Project Timeline Button */}
+                <Button
+                  onClick={() => void handleGenerateTimeline()}
+                  disabled={
+                    timelineStatus === "loading" || (!selection.resolvedClaimId && !selection.jobId)
+                  }
+                  className="gap-2 bg-emerald-600 hover:bg-emerald-700"
+                  title={
+                    !selection.resolvedClaimId && !selection.jobId
+                      ? "Select a claim or job first"
+                      : "Generate project timeline from scope"
+                  }
+                >
+                  <Calendar className="h-5 w-5" />
+                  {timelineStatus === "loading"
+                    ? "Building..."
+                    : timelineStatus === "ready"
+                      ? "✓ Timeline Ready"
+                      : "Project Timeline"}
+                </Button>
+
                 <div className="group relative">
                   <Button
                     disabled={runningAI}
@@ -756,6 +1020,81 @@ export default function Builder() {
                   {weatherData.eventDate && (
                     <span className="text-cyan-700 dark:text-cyan-300">
                       DOL: {weatherData.eventDate}
+                    </span>
+                  )}
+                </div>
+              )}
+
+              {/* Material Estimate Status */}
+              {materialStatus === "ready" && materialEstimate && (
+                <div className="flex items-center gap-4 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm dark:border-amber-800 dark:bg-amber-900/20">
+                  <ShoppingCart className="h-5 w-5 text-amber-600" />
+                  <span className="font-medium text-amber-800 dark:text-amber-200">
+                    Materials Estimated
+                  </span>
+                  {materialEstimate.shingleType && (
+                    <span className="text-amber-700 dark:text-amber-300">
+                      {materialEstimate.shingleType}
+                    </span>
+                  )}
+                  {materialEstimate.shingleQty && (
+                    <span className="text-amber-700 dark:text-amber-300">
+                      {materialEstimate.shingleQty} bundles
+                    </span>
+                  )}
+                  {materialEstimate.totalMaterialCost && (
+                    <span className="font-medium text-amber-700 dark:text-amber-300">
+                      ${materialEstimate.totalMaterialCost.toLocaleString()}
+                    </span>
+                  )}
+                  {materialEstimate.branch && (
+                    <span className="text-xs text-amber-600 dark:text-amber-400">
+                      @ {materialEstimate.branch}
+                    </span>
+                  )}
+                </div>
+              )}
+
+              {/* Mockup Status */}
+              {mockupStatus === "ready" && mockupData && (
+                <div className="flex items-center gap-4 rounded-lg border border-indigo-200 bg-indigo-50 px-4 py-3 text-sm dark:border-indigo-800 dark:bg-indigo-900/20">
+                  <Image className="h-5 w-5 text-indigo-600" />
+                  <span className="font-medium text-indigo-800 dark:text-indigo-200">
+                    Mockup Generated
+                  </span>
+                  {mockupData.productName && (
+                    <span className="text-indigo-700 dark:text-indigo-300">
+                      {mockupData.productName}
+                    </span>
+                  )}
+                  {mockupData.mockupUrl && (
+                    <a
+                      href={mockupData.mockupUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-indigo-600 underline hover:text-indigo-800 dark:text-indigo-400"
+                    >
+                      View Mockup →
+                    </a>
+                  )}
+                </div>
+              )}
+
+              {/* Timeline Status */}
+              {timelineStatus === "ready" && timelineData && (
+                <div className="flex items-center gap-4 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm dark:border-emerald-800 dark:bg-emerald-900/20">
+                  <Calendar className="h-5 w-5 text-emerald-600" />
+                  <span className="font-medium text-emerald-800 dark:text-emerald-200">
+                    Timeline Ready
+                  </span>
+                  {timelineData.projectDays && (
+                    <span className="text-emerald-700 dark:text-emerald-300">
+                      {timelineData.projectDays} day project
+                    </span>
+                  )}
+                  {timelineData.milestones && (
+                    <span className="text-emerald-700 dark:text-emerald-300">
+                      {timelineData.milestones.length} milestones
                     </span>
                   )}
                 </div>

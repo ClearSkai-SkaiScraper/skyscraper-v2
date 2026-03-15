@@ -20,7 +20,10 @@ export type SectionKey =
   | "customer-details"
   | "material-selections"
   | "payment-schedule"
-  | "warranty-terms";
+  | "warranty-terms"
+  | "material-estimate"
+  | "project-timeline"
+  | "visual-mockups";
 
 export type ExportFormat = "pdf" | "docx" | "zip";
 

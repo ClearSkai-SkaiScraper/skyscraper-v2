@@ -182,6 +182,35 @@ export const SECTION_REGISTRY: Record<SectionKey, Section> = {
     requiredDataKeys: [],
     renderFn: placeholderRender("Warranty Terms"),
   },
+
+  // ===== INTEGRATED MODULES (material estimator, mockups, project plan) =====
+  "material-estimate": {
+    key: "material-estimate",
+    title: "Material Estimate & Order",
+    icon: "ShoppingCart",
+    enabled: true,
+    order: 8,
+    requiredDataKeys: ["materialEstimate"],
+    renderFn: placeholderRender("Material Estimate"),
+  },
+  "project-timeline": {
+    key: "project-timeline",
+    title: "Project Timeline & Milestones",
+    icon: "Calendar",
+    enabled: true,
+    order: 9,
+    requiredDataKeys: ["projectTimeline"],
+    renderFn: placeholderRender("Project Timeline"),
+  },
+  "visual-mockups": {
+    key: "visual-mockups",
+    title: "Visual Mockups & Renderings",
+    icon: "Image",
+    enabled: true,
+    order: 10,
+    requiredDataKeys: ["mockups"],
+    renderFn: placeholderRender("Visual Mockups"),
+  },
 };
 
 /**

@@ -27,7 +27,7 @@ import { isValidationError, validateBody } from "@/lib/validation/middleware";
 
 /**
  * GET /api/claims/[claimId]/timeline
- * List all timeline events for a claim
+ * List all timeline events for a claim, enriched with weather data
  */
 export const GET = withAuth(
   async (
@@ -37,7 +37,31 @@ export const GET = withAuth(
   ) => {
     try {
       const { claimId } = await routeParams.params;
-      await getOrgClaimOrThrow(orgId, claimId);
+      const claim = await getOrgClaimOrThrow(orgId, claimId);
+
+      // Fetch claim with related data for enriched timeline
+      const claimData = await prisma.claims.findUnique({
+        where: { id: claimId },
+        include: {
+          storm_events: true,
+          weather_reports: {
+            orderBy: { createdAt: "desc" },
+            take: 1,
+          },
+          inspections: {
+            orderBy: { scheduledAt: "desc" },
+          },
+          reports: {
+            orderBy: { createdAt: "desc" },
+          },
+          supplements: {
+            orderBy: { created_at: "desc" },
+          },
+          claim_payments: {
+            orderBy: { paid_at: "desc" },
+          },
+        },
+      });
 
       const events = await prisma.claim_timeline_events.findMany({
         where: { claim_id: claimId },
@@ -49,17 +73,135 @@ export const GET = withAuth(
         },
       });
 
-      return NextResponse.json({
-        success: true,
-        events: events.map((e) => ({
+      // Build enriched timeline
+      const enrichedEvents: any[] = [];
+
+      // Add storm event if linked (single relation via catStormEventId)
+      if (claimData?.storm_events) {
+        const storm = claimData.storm_events;
+        enrichedEvents.push({
+          id: `storm-${storm.id}`,
+          type: "storm_event",
+          title: `${storm.eventType || "Storm"} Event Detected`,
+          description: storm.impactSummary || "Storm detected in area",
+          occurredAt: storm.stormStartTime || storm.createdAt,
+          metadata: {
+            weatherData: {
+              peril: storm.eventType,
+              hailSize: storm.hailSizeMax ? Number(storm.hailSizeMax) : null,
+              windSpeed: storm.windSpeedMax ? Number(storm.windSpeedMax) : null,
+              confidence: storm.aiConfidence ? Number(storm.aiConfidence) : null,
+            },
+          },
+          status: "completed",
+        });
+      }
+
+      // Add weather verification
+      if (claimData?.weather_reports?.[0]) {
+        const wr = claimData.weather_reports[0];
+        enrichedEvents.push({
+          id: `weather-${wr.id}`,
+          type: "weather_verified",
+          title: "Weather Verification Complete",
+          description: `Primary peril: ${wr.primaryPeril || "Unknown"}`,
+          occurredAt: wr.createdAt,
+          metadata: {
+            weatherData: {
+              peril: wr.primaryPeril,
+              confidence: wr.confidence,
+            },
+          },
+          status: "completed",
+        });
+      }
+
+      // Add claim creation
+      if (claimData) {
+        enrichedEvents.push({
+          id: `claim-created-${claimData.id}`,
+          type: "claim_created",
+          title: "Claim Created",
+          description: `Claim ${claimData.claimNumber} opened`,
+          occurredAt: claimData.createdAt,
+          status: "completed",
+        });
+      }
+
+      // Add inspections
+      for (const insp of claimData?.inspections || []) {
+        enrichedEvents.push({
+          id: `inspection-${insp.id}`,
+          type: "inspection",
+          title: "Inspection Completed",
+          description: insp.notes || "Property inspection",
+          occurredAt: insp.completedAt || insp.scheduledAt,
+          status: "completed",
+        });
+      }
+
+      // Add reports
+      for (const rep of claimData?.reports || []) {
+        enrichedEvents.push({
+          id: `report-${rep.id}`,
+          type: "report_generated",
+          title: `${rep.title || "Report"} Generated`,
+          occurredAt: rep.createdAt,
+          status: "completed",
+        });
+      }
+
+      // Add supplements
+      for (const sup of claimData?.supplements || []) {
+        enrichedEvents.push({
+          id: `supplement-${sup.id}`,
+          type: "supplement_submitted",
+          title: "Supplement Submitted",
+          description: sup.notes || "Additional scope",
+          occurredAt: sup.created_at,
+          metadata: { amount: sup.total },
+          status: sup.status === "approved" ? "completed" : "in_progress",
+        });
+      }
+
+      // Add payments
+      for (const pay of claimData?.claim_payments || []) {
+        enrichedEvents.push({
+          id: `payment-${pay.id}`,
+          type: "payment_received",
+          title: "Payment Received",
+          description: `$${((pay.amount_cents || 0) / 100).toLocaleString()}`,
+          occurredAt: pay.paid_at,
+          metadata: { amount: pay.amount_cents },
+          status: "completed",
+        });
+      }
+
+      // Add custom timeline events
+      for (const e of events) {
+        enrichedEvents.push({
           id: e.id,
-          title: e.type,
+          type: e.type,
+          title: e.type.replace(/_/g, " "),
           description: e.description,
-          eventType: e.type,
-          createdAt: e.occurred_at,
+          occurredAt: e.occurred_at,
           createdBy: e.users ? e.users.name || e.users.email : "System",
           visibleToClient: e.visible_to_client,
-        })),
+          metadata: e.metadata,
+          status: "completed",
+        });
+      }
+
+      // Sort by date ascending
+      enrichedEvents.sort(
+        (a, b) => new Date(a.occurredAt).getTime() - new Date(b.occurredAt).getTime()
+      );
+
+      return NextResponse.json({
+        success: true,
+        claimNumber: claimData?.claimNumber,
+        events: enrichedEvents,
+        total: enrichedEvents.length,
       });
     } catch (error) {
       if (error instanceof OrgScopeError) {

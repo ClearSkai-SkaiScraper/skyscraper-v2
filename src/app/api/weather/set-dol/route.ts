@@ -8,6 +8,7 @@ import { NextRequest, NextResponse } from "next/server";
 
 import { withAuth } from "@/lib/auth/withAuth";
 import { logger } from "@/lib/logger";
+import { sendTemplatedNotification } from "@/lib/notifications/templates";
 import prisma from "@/lib/prisma";
 
 export const dynamic = "force-dynamic";
@@ -73,6 +74,22 @@ export const PATCH = withAuth(async (req: NextRequest, { userId, orgId }) => {
       });
     } catch (logErr) {
       logger.error("[SET_DOL] Activity log failed:", logErr);
+    }
+
+    // Notify claim owner about DOL update
+    try {
+      const claimNumber = claim.id.slice(0, 8).toUpperCase();
+      await sendTemplatedNotification("DOL_UPDATED", userId, {
+        claimNumber,
+        newDol: dolDate.toLocaleDateString("en-US", {
+          year: "numeric",
+          month: "long",
+          day: "numeric",
+        }),
+        source: scanId ? "Weather Scan" : "Manual Entry",
+      });
+    } catch (notifErr) {
+      logger.error("[SET_DOL] Notification failed (non-critical):", notifErr);
     }
 
     logger.info("[SET_DOL] Updated DOL on claim", {

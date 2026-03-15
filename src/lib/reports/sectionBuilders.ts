@@ -20,9 +20,69 @@ export async function buildWeatherData(
   claimId: string,
   sections: ReportSectionId[]
 ): Promise<WeatherSummary> {
-  void claimId;
-  void sections;
-  return {};
+  try {
+    // Fetch the latest weather report for this claim
+    const weatherReport = await prisma.weather_reports.findFirst({
+      where: { claimId },
+      orderBy: { createdAt: "desc" },
+    });
+
+    if (!weatherReport) return {};
+
+    const globalSummary = weatherReport.globalSummary as Record<string, any> | null;
+    const events = (weatherReport.events as any[]) || [];
+    const candidates = (weatherReport.candidateDates as any[]) || [];
+
+    const result: WeatherSummary = {};
+
+    // Quick DOL section — from the most recent scan
+    if (
+      sections.includes("WEATHER_QUICK_DOL" as ReportSectionId) ||
+      sections.includes("WEATHER_FULL" as ReportSectionId) ||
+      weatherReport.mode === "quick_dol"
+    ) {
+      const topCandidate = candidates.sort(
+        (a: any, b: any) => (b.confidence || 0) - (a.confidence || 0)
+      )[0];
+
+      result.quickDol = {
+        eventDate:
+          topCandidate?.date || weatherReport.dol?.toISOString().split("T")[0] || undefined,
+        peril: weatherReport.primaryPeril || topCandidate?.perilType || undefined,
+        hailSizeInches: topCandidate?.hailSize || undefined,
+        windSpeedMph: topCandidate?.windSpeed || undefined,
+        provider: "SkaiScraper Weather Intelligence",
+        aiSummary:
+          globalSummary?.overallAssessment ||
+          globalSummary?.notes ||
+          topCandidate?.reasoning ||
+          undefined,
+      };
+    }
+
+    // Full report section — from weather events
+    if (
+      sections.includes("WEATHER_FULL" as ReportSectionId) ||
+      weatherReport.mode === "full_report"
+    ) {
+      result.fullReport = {
+        events: events.map((e: any) => ({
+          date: e.date || e.eventDate || "",
+          peril: e.type || e.peril || e.perilType || "unknown",
+          hailSizeInches: e.hailSize || e.hailSizeInches || undefined,
+          windSpeedMph: e.windSpeed || e.windSpeedMph || undefined,
+          distanceMiles: e.distance || e.distanceMiles || undefined,
+        })),
+        aiNarrative:
+          globalSummary?.overallAssessment || globalSummary?.contractorNarrative || undefined,
+      };
+    }
+
+    return result;
+  } catch (error) {
+    // Non-critical — return empty rather than crash report generation
+    return {};
+  }
 }
 
 export async function buildAiDamageSection(photos: any[], claims: any): Promise<DamageSectionData> {

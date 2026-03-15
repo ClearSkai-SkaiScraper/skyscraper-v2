@@ -5,6 +5,7 @@
 
 import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
+import { getStormEvidence } from "@/lib/weather";
 
 import type {
   AnnotatedPhoto,
@@ -13,54 +14,103 @@ import type {
   ClaimFolder,
   CodeComplianceData,
   CoverSheetData,
+  DamageGridData,
   InspectionOverviewData,
   ReadinessScoreBreakdown,
   ScopePricingData,
   TimelineEvent,
   WeatherCauseOfLossData,
 } from "./folderSchema";
+import {
+  generateAdjusterCoverLetter,
+  generateContractorSummary,
+  generateRepairJustification,
+} from "./generators";
 
 // ============================================================================
 // Data Fetchers
 // ============================================================================
 
 /**
- * Fetch weather data for a claim — resolves propertyId from the claim
+ * Fetch weather data for a claim — uses getStormEvidence (canonical source)
  */
 export async function fetchWeatherData(claimId: string): Promise<WeatherCauseOfLossData | null> {
   try {
-    // Resolve the propertyId from the claim first
-    const claim = await prisma.claims.findUnique({
-      where: { id: claimId },
-      select: { propertyId: true },
-    });
+    // Use canonical storm evidence adapter
+    const stormEvidence = await getStormEvidence(claimId);
 
-    if (!claim?.propertyId) return null;
+    if (!stormEvidence) return null;
 
-    // Get weather documents for this property
-    const weatherDocs = await prisma.weather_documents.findMany({
-      where: { propertyId: claim.propertyId },
-      orderBy: { createdAt: "desc" },
-      take: 1,
-    });
+    // Determine storm type from primaryPeril
+    const peril = (stormEvidence.primaryPeril || "").toLowerCase();
+    let stormType: "hail" | "wind" | "tornado" | "hurricane" | "other" = "other";
+    if (peril.includes("hail")) stormType = "hail";
+    else if (peril.includes("tornado")) stormType = "tornado";
+    else if (peril.includes("hurricane") || peril.includes("tropical")) stormType = "hurricane";
+    else if (peril.includes("wind")) stormType = "wind";
 
-    if (weatherDocs.length === 0) return null;
+    // Build weather sources from top events
+    const topEvents = (stormEvidence.topEvents || []) as Array<{
+      type?: string;
+      source?: string;
+      date?: string;
+      description?: string;
+      peril?: string;
+    }>;
+    const weatherSources = topEvents.slice(0, 5).map((e: any) => ({
+      source: e.source || "NOAA Storm Reports",
+      data: e.description || `${e.type || e.peril || "Event"} on ${e.date || "unknown date"}`,
+      timestamp: new Date(),
+    }));
 
-    const doc = weatherDocs[0];
+    // If no events, add the scan itself as a source
+    if (weatherSources.length === 0) {
+      weatherSources.push({
+        source: "SkaiScraper Weather Intelligence",
+        data: stormEvidence.aiNarrative || "Weather scan completed",
+        timestamp: new Date(),
+      });
+    }
+
+    // DOL confidence label for narrative
+    const dolConfLabel =
+      stormEvidence.dolConfidence >= 0.8
+        ? "high confidence"
+        : stormEvidence.dolConfidence >= 0.5
+          ? "medium confidence"
+          : "low confidence";
+
+    // Build enhanced narrative with storm intelligence
+    let narrativeSummary =
+      stormEvidence.aiNarrative || "Weather verification completed via SkaiScraper.";
+    if ((stormEvidence.correlationScore ?? 0) > 0) {
+      narrativeSummary += ` Photo correlation: ${Math.round((stormEvidence.correlationScore ?? 0) * 100)}% of inspection photos within storm window.`;
+    }
+    if (stormEvidence.evidenceGrade) {
+      narrativeSummary += ` Evidence grade: ${stormEvidence.evidenceGrade} (${stormEvidence.overallScore}/100).`;
+    }
 
     return {
-      stormDate: doc.dolDate ? new Date(doc.dolDate) : new Date(),
-      stormType: "other" as const,
-      noaaVerification: true,
-      narrativeSummary: doc.summaryText || "Weather verification pending.",
-      weatherSources: [
-        {
-          source: "NOAA",
-          data: doc.summaryText || "",
-          timestamp: doc.createdAt,
-        },
-      ],
-    };
+      stormDate: stormEvidence.selectedDOL || new Date(),
+      stormType,
+      hailSize: stormEvidence.hailSizeInches ? `${stormEvidence.hailSizeInches} inch` : undefined,
+      windSpeed: stormEvidence.windSpeedMph || undefined,
+      noaaVerification: topEvents.length > 0,
+      narrativeSummary,
+      weatherSources,
+      // Enhanced fields from storm_evidence
+      dolConfidence: stormEvidence.dolConfidence ?? undefined,
+      evidenceGrade: stormEvidence.evidenceGrade ?? undefined,
+      overallScore: stormEvidence.overallScore ?? undefined,
+      correlationScore: stormEvidence.correlationScore ?? undefined,
+      photoCorrelations: stormEvidence.photoCorrelations?.map((p) => ({
+        photoId: p.photoId,
+        photoTimestamp: p.photoTimestamp,
+        matchedEventType: p.matchedEventType,
+        timeDeltaMinutes: p.timeDeltaMinutes,
+        correlationStrength: p.correlationStrength,
+      })),
+    } as WeatherCauseOfLossData;
   } catch (error) {
     logger.error("Error fetching weather data:", error);
     return null;
@@ -141,6 +191,191 @@ export async function fetchPhotos(claimId: string): Promise<AnnotatedPhoto[]> {
     }));
   } catch (error) {
     logger.error("Error fetching photos:", error);
+    return [];
+  }
+}
+
+/**
+ * Fetch damage grid data from AI detections
+ */
+export async function fetchDamageGrids(claimId: string): Promise<DamageGridData | null> {
+  try {
+    const detections = await prisma.claim_detections.findMany({
+      where: { claimId },
+      select: {
+        modelGroup: true,
+        className: true,
+        confidence: true,
+        severity: true,
+        perilType: true,
+        componentType: true,
+      },
+    });
+
+    if (detections.length === 0) return null;
+
+    // Group detections by location/elevation
+    const locationGroups: Record<string, typeof detections> = {};
+    detections.forEach((d) => {
+      const location = d.componentType || "general";
+      if (!locationGroups[location]) locationGroups[location] = [];
+      locationGroups[location].push(d);
+    });
+
+    // Build elevation data
+    const directions = ["north", "east", "south", "west"] as const;
+    const elevations = directions.map((dir) => {
+      const dirDetections = locationGroups[dir] || [];
+      const hitCount = dirDetections.length;
+      const avgConfidence =
+        hitCount > 0 ? dirDetections.reduce((s, d) => s + (d.confidence || 0), 0) / hitCount : 0;
+      return {
+        direction: dir,
+        hitCount,
+        creasePatterns: dirDetections.some((d) => d.className?.toLowerCase().includes("crease")),
+        mechanicalDamage: dirDetections.some((d) => d.perilType === "mechanical"),
+        damagePercentage: Math.round(avgConfidence * 100),
+      };
+    });
+
+    // Determine damage pattern
+    const hitCounts = elevations.map((e) => e.hitCount || 0);
+    const maxHits = Math.max(...hitCounts);
+    const minHits = Math.min(...hitCounts);
+    const damagePattern =
+      maxHits - minHits > 5 ? "directional" : maxHits > 3 ? "random" : "concentrated";
+
+    return {
+      elevations,
+      totalAffectedArea: detections.length * 10, // Rough estimate
+      damagePattern,
+    };
+  } catch (error) {
+    logger.error("Error fetching damage grids:", error);
+    return null;
+  }
+}
+
+/**
+ * Fetch supplements and variances data
+ */
+export async function fetchSupplementsData(claimId: string): Promise<{
+  supplements: Array<{
+    id: string;
+    name: string;
+    status: string;
+    totalAmount: number;
+    lineItems: Array<{ description: string; amount: number; status: string }>;
+    createdAt: Date;
+  }>;
+  totalVariance: number;
+} | null> {
+  try {
+    const supplements = await prisma.supplements.findMany({
+      where: { claim_id: claimId },
+      include: {
+        supplement_items: true,
+      },
+      orderBy: { created_at: "desc" },
+    });
+
+    if (supplements.length === 0) return null;
+
+    const mappedSupplements = supplements.map((s) => ({
+      id: s.id,
+      name: `Supplement`,
+      status: s.status || "pending",
+      totalAmount: (s.total as number) || 0,
+      lineItems:
+        s.supplement_items?.map((item: any) => ({
+          description: item.description || "",
+          amount: (item.amount as number) || 0,
+          status: item.status || "pending",
+        })) || [],
+      createdAt: s.created_at,
+    }));
+
+    const totalVariance = mappedSupplements.reduce((sum, s) => sum + s.totalAmount, 0);
+
+    return { supplements: mappedSupplements, totalVariance };
+  } catch (error) {
+    logger.error("Error fetching supplements data:", error);
+    return null;
+  }
+}
+
+/**
+ * Fetch homeowner statement if captured
+ */
+export async function fetchHomeownerStatement(claimId: string): Promise<{
+  statementText: string;
+  homeownerName: string;
+  signedAt?: Date;
+} | null> {
+  try {
+    const claim = await prisma.claims.findUnique({
+      where: { id: claimId },
+      select: {
+        insured_name: true,
+        description: true,
+        createdAt: true,
+      },
+    });
+
+    // For now, use description field as placeholder - homeowner statement capture is TODO
+    if (!claim?.description) return null;
+
+    return {
+      statementText: claim.description,
+      homeownerName: claim.insured_name || "Homeowner",
+      signedAt: claim.createdAt || undefined,
+    };
+  } catch (error) {
+    logger.error("Error fetching homeowner statement:", error);
+    return null;
+  }
+}
+
+/**
+ * Fetch attachments index
+ */
+export async function fetchAttachments(
+  claimId: string,
+  orgId: string
+): Promise<
+  Array<{
+    id: string;
+    name: string;
+    type: string;
+    category: string;
+    uploadedAt: Date;
+    url?: string;
+  }>
+> {
+  try {
+    const files = await prisma.file_assets.findMany({
+      where: { claimId, orgId },
+      select: {
+        id: true,
+        filename: true,
+        mimeType: true,
+        category: true,
+        createdAt: true,
+        publicUrl: true,
+      },
+      orderBy: { createdAt: "desc" },
+    });
+
+    return files.map((f) => ({
+      id: f.id,
+      name: f.filename || "Document",
+      type: f.mimeType || "application/octet-stream",
+      category: f.category || "other",
+      uploadedAt: f.createdAt,
+      url: f.publicUrl || undefined,
+    }));
+  } catch (error) {
+    logger.error("Error fetching attachments:", error);
     return [];
   }
 }
@@ -446,16 +681,37 @@ export async function assembleClaimFolder(
   const warnings: string[] = [];
 
   try {
+    // First get the orgId for fetchers that need it
+    const claimBasic = await prisma.claims.findUnique({
+      where: { id: claimId },
+      select: { orgId: true },
+    });
+    const orgId = claimBasic?.orgId || "";
+
     // Fetch all data in parallel
-    const [weatherData, { coverSheet, inspection }, photos, codeData, scopeData, timeline] =
-      await Promise.all([
-        fetchWeatherData(claimId),
-        fetchClaimData(claimId),
-        fetchPhotos(claimId),
-        fetchCodeData(claimId),
-        fetchScopeData(claimId),
-        fetchTimeline(claimId),
-      ]);
+    const [
+      weatherData,
+      { coverSheet, inspection },
+      photos,
+      codeData,
+      scopeData,
+      timeline,
+      damageGrids,
+      supplementsData,
+      homeownerStatement,
+      attachments,
+    ] = await Promise.all([
+      fetchWeatherData(claimId),
+      fetchClaimData(claimId),
+      fetchPhotos(claimId),
+      fetchCodeData(claimId),
+      fetchScopeData(claimId),
+      fetchTimeline(claimId),
+      fetchDamageGrids(claimId),
+      fetchSupplementsData(claimId),
+      fetchHomeownerStatement(claimId),
+      fetchAttachments(claimId, orgId),
+    ]);
 
     // Validate required data
     if (!coverSheet) {
@@ -468,7 +724,7 @@ export async function assembleClaimFolder(
       metadata: {
         folderId: `folder-${claimId}-${Date.now()}`,
         claimId,
-        orgId: "", // Would be filled from auth context
+        orgId,
         createdAt: new Date(),
         generatedBy: "SkaiScraper AI",
         version: "1.0.0",
@@ -476,12 +732,29 @@ export async function assembleClaimFolder(
       coverSheet,
       weatherCauseOfLoss: weatherData || undefined,
       inspectionOverview: inspection || undefined,
+      damageGrids: damageGrids || undefined,
       photos,
       codeCompliance: codeData || undefined,
       scopePricing: scopeData || undefined,
       timeline,
+      homeownerStatement: homeownerStatement
+        ? {
+            statementText: homeownerStatement.statementText,
+            homeownerName: homeownerStatement.homeownerName,
+            signedAt: homeownerStatement.signedAt,
+          }
+        : undefined,
       signatures: [],
       checklist: [],
+      exportFiles:
+        attachments.length > 0
+          ? attachments.map((a) => ({
+              name: a.name,
+              type: a.type.includes("pdf") ? ("pdf" as const) : ("zip" as const),
+              url: a.url,
+              generatedAt: a.uploadedAt,
+            }))
+          : undefined,
     };
 
     // Add warnings for missing data
@@ -489,14 +762,46 @@ export async function assembleClaimFolder(
     if (!codeData) warnings.push("Code compliance data not generated.");
     if (!scopeData) warnings.push("Scope and pricing data not found.");
     if (photos.length === 0) warnings.push("No photos uploaded for this claim.");
+    if (!damageGrids) warnings.push("Damage grid data not found. Run AI detection first.");
+    if (!supplementsData) warnings.push("No supplements found for this claim.");
+    if (!homeownerStatement) warnings.push("Homeowner statement not captured.");
 
     // Generate AI narratives if requested
     if (generateNarratives) {
-      // TODO: Call AI engines to generate:
-      // - repairJustification
-      // - contractorSummary
-      // - adjusterCoverLetter
-      warnings.push("AI narratives generation pending implementation.");
+      try {
+        // Generate all narratives in parallel
+        const [repairJustification, contractorSummary, adjusterCoverLetter] = await Promise.all([
+          generateRepairJustification({ claimId, orgId }),
+          generateContractorSummary({ claimId, orgId }),
+          generateAdjusterCoverLetter({
+            claimId,
+            orgId,
+            senderName: coverSheet.preparedBy,
+            senderTitle: "Project Manager",
+          }),
+        ]);
+
+        if (repairJustification) {
+          partialFolder.repairJustification = repairJustification;
+        } else {
+          warnings.push("Repair justification generation failed.");
+        }
+
+        if (contractorSummary) {
+          partialFolder.contractorSummary = contractorSummary;
+        } else {
+          warnings.push("Contractor summary generation failed.");
+        }
+
+        if (adjusterCoverLetter) {
+          partialFolder.adjusterCoverLetter = adjusterCoverLetter;
+        } else {
+          warnings.push("Adjuster cover letter generation failed.");
+        }
+      } catch (narrativeError) {
+        logger.error("[FOLDER_ASSEMBLER] Narrative generation error:", narrativeError);
+        warnings.push("AI narratives generation encountered an error.");
+      }
     }
 
     // Calculate readiness score
