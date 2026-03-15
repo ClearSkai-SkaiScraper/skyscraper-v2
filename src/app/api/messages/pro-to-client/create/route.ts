@@ -11,7 +11,8 @@ export const dynamic = "force-dynamic";
  * POST /api/messages/pro-to-client/create
  *
  * Creates a new message thread from a Pro to a Client.
- * Uses the ClientProConnection system to verify the relationship.
+ * Supports both Trades Network members (via tradesCompanyMember)
+ * AND regular CRM pro users (via user_organizations + Org).
  *
  * Body:
  *  - clientId: string  (Client.id from the clients table)
@@ -37,7 +38,13 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Get the pro's company membership
+    // ── Resolve the pro's identity ─────────────────────────────────────
+    // Try trades network membership first, then fall back to CRM org membership
+    let companyId: string | null = null;
+    let companyName = "Your Contractor";
+    let proOrgId: string | null = null;
+
+    // Path 1: Trades Network member
     const membership = await prisma.tradesCompanyMember.findFirst({
       where: { userId },
       select: {
@@ -55,15 +62,32 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    if (!membership?.companyId) {
+    if (membership?.companyId) {
+      companyId = membership.companyId;
+      companyName = membership.company?.name || membership.companyName || "Your Contractor";
+    }
+
+    // Path 2: Regular CRM pro user (user_organizations → Org)
+    if (!companyId) {
+      const orgMembership = await prisma.user_organizations.findFirst({
+        where: { userId },
+        include: { Org: { select: { id: true, name: true } } },
+        orderBy: { createdAt: "asc" },
+      });
+
+      if (orgMembership?.organizationId && orgMembership.Org) {
+        companyId = orgMembership.organizationId;
+        proOrgId = orgMembership.organizationId;
+        companyName = orgMembership.Org.name || "Your Contractor";
+      }
+    }
+
+    if (!companyId) {
       return NextResponse.json(
-        { error: "Professional profile not found. Complete your profile first." },
+        { error: "No organization found. Please complete your profile first." },
         { status: 404 }
       );
     }
-
-    const companyId = membership.companyId;
-    const companyName = membership.company?.name || membership.companyName || "Your Contractor";
 
     // Get the client
     const client = await prisma.client.findUnique({
@@ -84,27 +108,27 @@ export async function POST(req: NextRequest) {
     // Multiple checks for maximum compatibility across legacy and new systems
     let hasConnection = false;
 
-    // Check 1: ClientProConnection (new portal system)
-    const connection = await prisma.clientProConnection.findFirst({
-      where: {
-        clientId: client.id,
-        contractorId: companyId,
-        status: { in: ["accepted", "ACCEPTED", "connected", "pending", "PENDING"] },
-      },
-    });
-    if (connection) hasConnection = true;
+    // Check 1: ClientProConnection (new portal system) — only if companyId is a UUID (trades system)
+    try {
+      const connection = await prisma.clientProConnection.findFirst({
+        where: {
+          clientId: client.id,
+          contractorId: companyId,
+          status: { in: ["accepted", "ACCEPTED", "connected", "pending", "PENDING"] },
+        },
+      });
+      if (connection) hasConnection = true;
+    } catch {
+      // contractorId requires UUID — if companyId isn't UUID format, skip
+    }
 
     // Check 2: Legacy ClientConnection
     if (!hasConnection) {
-      const proUser = await prisma.users.findFirst({
-        where: { clerkUserId: userId },
-        select: { orgId: true },
-      });
-
-      if (proUser?.orgId && client.id) {
+      const resolvedOrgId = proOrgId || companyId;
+      if (resolvedOrgId && client.id) {
         const legacyConn = await prisma.clientConnection.findFirst({
           where: {
-            orgId: proUser.orgId,
+            orgId: resolvedOrgId,
             clientId: client.id,
           },
         });
@@ -113,7 +137,7 @@ export async function POST(req: NextRequest) {
         // Check 3: Client was created in the pro's org
         if (!hasConnection) {
           const clientInOrg = await prisma.client.findFirst({
-            where: { id: clientId, orgId: proUser.orgId },
+            where: { id: clientId, orgId: resolvedOrgId },
           });
           if (clientInOrg) hasConnection = true;
         }
@@ -151,7 +175,11 @@ export async function POST(req: NextRequest) {
     let thread = await prisma.messageThread.findFirst({
       where: {
         clientId: client.id,
-        tradePartnerId: companyId,
+        OR: [
+          { tradePartnerId: companyId },
+          { orgId: companyId },
+          ...(proOrgId ? [{ orgId: proOrgId }] : []),
+        ],
         ...(claimId ? { claimId } : {}),
       },
     });
@@ -161,10 +189,10 @@ export async function POST(req: NextRequest) {
       thread = await prisma.messageThread.create({
         data: {
           id: crypto.randomUUID(),
-          orgId: companyId,
+          orgId: proOrgId || companyId,
           claimId: claimId || null,
           clientId: client.id,
-          tradePartnerId: companyId,
+          tradePartnerId: membership?.companyId || null,
           participants: [userId, client.userId || client.id],
           subject: subject || `Message from ${companyName}`,
           isPortalThread: true,
@@ -207,15 +235,12 @@ export async function POST(req: NextRequest) {
 
     // ── Auto-create a Contact card if one doesn't exist ──
     try {
-      const proUser = await prisma.users.findFirst({
-        where: { clerkUserId: userId },
-        select: { orgId: true },
-      });
+      const resolvedOrgId = proOrgId || companyId;
 
-      if (proUser?.orgId) {
+      if (resolvedOrgId) {
         const existingContact = client.email
           ? await prisma.contacts.findFirst({
-              where: { orgId: proUser.orgId, email: client.email },
+              where: { orgId: resolvedOrgId, email: client.email },
             })
           : null;
 
@@ -224,7 +249,7 @@ export async function POST(req: NextRequest) {
           await prisma.contacts.create({
             data: {
               id: crypto.randomUUID(),
-              orgId: proUser.orgId,
+              orgId: resolvedOrgId,
               firstName: nameParts[0] || "Client",
               lastName: nameParts.slice(1).join(" ") || "",
               slug: generateContactSlug(
@@ -254,8 +279,9 @@ export async function POST(req: NextRequest) {
       messageId: message.id,
       clientName: client.name,
     });
-  } catch (error) {
-    logger.error("[messages/pro-to-client/create] Error:", error);
-    return NextResponse.json({ error: "Failed to create message" }, { status: 500 });
+  } catch (error: any) {
+    const errMsg = error?.message || error?.toString?.() || "Unknown error";
+    logger.error("[messages/pro-to-client/create] Error:", { error: errMsg, stack: error?.stack });
+    return NextResponse.json({ error: `Failed to create message: ${errMsg}` }, { status: 500 });
   }
 }

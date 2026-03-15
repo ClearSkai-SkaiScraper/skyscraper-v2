@@ -94,19 +94,22 @@ export const POST = withAuth(async (req: NextRequest, { userId, orgId }) => {
     };
 
     // ── Resolve DB user ID for FK (weather_reports.createdById → users.id) ──
-    const dbUser = await prisma.users.findUnique({
+    // Auto-create the DB user row if it doesn't exist yet (Clerk → DB sync)
+    const dbUser = await prisma.users.upsert({
       where: { clerkUserId: userId },
+      create: {
+        id: userId,
+        clerkUserId: userId,
+        email: `pending-${userId}@sync.local`,
+        orgId,
+        role: "USER",
+        lastSeenAt: new Date(),
+      },
+      update: {
+        lastSeenAt: new Date(),
+      },
       select: { id: true },
     });
-
-    if (!dbUser) {
-      logger.warn("[weather/quick-dol] No DB user found for Clerk userId:", userId);
-      // Return results but warn that scan could not be saved
-      return NextResponse.json(
-        { ...response, warning: "Scan results returned but could not be saved (user not synced)." },
-        { status: 200 }
-      );
-    }
 
     // ── Save scan to weather_reports for recall + history ──
     try {

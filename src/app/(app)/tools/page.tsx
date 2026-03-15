@@ -3,16 +3,19 @@
  *
  * Central hub for all SkaiScraper Pro AI-powered tools.
  * Links to supplement builder, rebuttal generator, depreciation calculator,
- * mockup generator, and other AI features.
+ * mockup generator, damage builder, and other AI features.
  */
 
 import {
   Brain,
   Calculator,
   Camera,
+  ClipboardCheck,
   FileText,
   Hammer,
   Image,
+  LayoutGrid,
+  Scale,
   Shield,
   Sparkles,
   Zap,
@@ -34,7 +37,18 @@ export const metadata: Metadata = {
     "AI-powered tools for insurance claims — supplement builder, rebuttal generator, depreciation calculator, and more.",
 };
 
-const TOOLS = [
+interface ToolDef {
+  title: string;
+  description: string;
+  href: string;
+  icon: React.ElementType;
+  gradient: string;
+  badge: string | null;
+  category: "documents" | "analysis" | "visual" | "estimation";
+}
+
+const TOOLS: ToolDef[] = [
+  // ── Documents ────────────────────────────────────────────────────────
   {
     title: "Supplement Builder",
     description:
@@ -43,6 +57,7 @@ const TOOLS = [
     icon: FileText,
     gradient: "from-blue-500 to-blue-600",
     badge: "Most Popular",
+    category: "documents",
   },
   {
     title: "Rebuttal Generator",
@@ -52,7 +67,80 @@ const TOOLS = [
     icon: Shield,
     gradient: "from-red-500 to-red-600",
     badge: null,
+    category: "documents",
   },
+  {
+    title: "Report Assembly",
+    description:
+      "AI-generated comprehensive inspection reports with photos, findings, and recommendations.",
+    href: "/ai/report-assembly",
+    icon: Brain,
+    gradient: "from-indigo-500 to-indigo-600",
+    badge: null,
+    category: "documents",
+  },
+  // ── Analysis ─────────────────────────────────────────────────────────
+  {
+    title: "Damage Analysis",
+    description:
+      "Upload photos and get instant AI-powered damage detection, severity assessment, and repair estimates.",
+    href: "/ai/damage-builder",
+    icon: Camera,
+    gradient: "from-emerald-500 to-emerald-600",
+    badge: "Pro",
+    category: "analysis",
+  },
+  {
+    title: "Claims Analysis",
+    description:
+      "Deep-dive AI analysis of claim data to identify patterns, missing items, and approval strategy.",
+    href: "/ai/claims-analysis",
+    icon: ClipboardCheck,
+    gradient: "from-cyan-500 to-cyan-600",
+    badge: null,
+    category: "analysis",
+  },
+  {
+    title: "Bad Faith Detection",
+    description:
+      "Analyze carrier responses and timelines for potential bad faith indicators and compliance issues.",
+    href: "/ai/bad-faith",
+    icon: Scale,
+    gradient: "from-rose-500 to-rose-600",
+    badge: "New",
+    category: "analysis",
+  },
+  {
+    title: "Smart Actions",
+    description:
+      "Contextual AI actions — auto-draft emails, suggest next steps, and prioritize tasks.",
+    href: "/ai/smart-actions",
+    icon: Zap,
+    gradient: "from-orange-500 to-orange-600",
+    badge: null,
+    category: "analysis",
+  },
+  // ── Visual ───────────────────────────────────────────────────────────
+  {
+    title: "Mockup Generator",
+    description:
+      "Generate photorealistic before/after mockups of completed repairs using DALL-E 3.",
+    href: "/ai/mockup",
+    icon: Image,
+    gradient: "from-purple-500 to-purple-600",
+    badge: "Pro",
+    category: "visual",
+  },
+  {
+    title: "Roof Plan Builder",
+    description: "AI-assisted roof diagram and measurement tool for accurate scope documentation.",
+    href: "/ai/roofplan-builder",
+    icon: LayoutGrid,
+    gradient: "from-teal-500 to-teal-600",
+    badge: null,
+    category: "visual",
+  },
+  // ── Estimation ───────────────────────────────────────────────────────
   {
     title: "Depreciation Calculator",
     description:
@@ -61,53 +149,28 @@ const TOOLS = [
     icon: Calculator,
     gradient: "from-amber-500 to-amber-600",
     badge: null,
-  },
-  {
-    title: "AI Damage Analysis",
-    description:
-      "Upload photos and get instant AI-powered damage detection, severity assessment, and repair estimates.",
-    href: "/dashboard/ai",
-    icon: Camera,
-    gradient: "from-emerald-500 to-emerald-600",
-    badge: "Pro",
-  },
-  {
-    title: "Mockup Generator",
-    description:
-      "Generate photorealistic before/after mockups of completed repairs using DALL-E 3.",
-    href: "/dashboard/ai",
-    icon: Image,
-    gradient: "from-purple-500 to-purple-600",
-    badge: "Pro",
-  },
-  {
-    title: "Report Builder",
-    description:
-      "AI-generated comprehensive inspection reports with photos, findings, and recommendations.",
-    href: "/dashboard/ai",
-    icon: Brain,
-    gradient: "from-indigo-500 to-indigo-600",
-    badge: null,
-  },
-  {
-    title: "Smart Actions",
-    description:
-      "Contextual AI actions — auto-draft emails, suggest next steps, and prioritize tasks.",
-    href: "/dashboard/ai",
-    icon: Zap,
-    gradient: "from-orange-500 to-orange-600",
-    badge: null,
+    category: "estimation",
   },
   {
     title: "Materials Estimator",
     description:
-      "Estimate material costs by trade with regional pricing data and supplier integrations.",
+      "Estimate material costs by trade with regional pricing, compliance codes, and supplier data.",
     href: "/materials/estimator",
     icon: Hammer,
     gradient: "from-slate-500 to-slate-600",
     badge: null,
+    category: "estimation",
   },
 ];
+
+const CATEGORY_LABELS: Record<ToolDef["category"], string> = {
+  documents: "Document Generation",
+  analysis: "AI Analysis",
+  visual: "Visual & Diagrams",
+  estimation: "Estimation & Pricing",
+};
+
+const CATEGORY_ORDER: ToolDef["category"][] = ["documents", "analysis", "visual", "estimation"];
 
 export default async function ToolsPage() {
   const orgCtx = await safeOrgContext();
@@ -123,36 +186,72 @@ export default async function ToolsPage() {
         icon={<Sparkles className="h-8 w-8 text-primary" />}
       />
 
-      <div className="mx-auto mt-8 grid max-w-6xl gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-        {TOOLS.map((tool) => {
-          const Icon = tool.icon;
+      <div className="mx-auto mt-8 max-w-6xl space-y-10">
+        {CATEGORY_ORDER.map((cat) => {
+          const tools = TOOLS.filter((t) => t.category === cat);
+          if (tools.length === 0) return null;
           return (
-            <Link key={tool.href + tool.title} href={tool.href} className="group">
-              <Card className="h-full transition-all hover:border-primary/30 hover:shadow-lg dark:hover:border-primary/20">
-                <CardHeader className="pb-3">
-                  <div className="flex items-start justify-between">
-                    <div
-                      className={`flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br ${tool.gradient} text-white shadow-sm`}
-                    >
-                      <Icon className="h-5 w-5" />
-                    </div>
-                    {tool.badge && (
-                      <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-semibold text-primary">
-                        {tool.badge}
-                      </span>
-                    )}
-                  </div>
-                  <CardTitle className="mt-3 text-base">{tool.title}</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <CardDescription className="text-sm leading-relaxed">
-                    {tool.description}
-                  </CardDescription>
-                </CardContent>
-              </Card>
-            </Link>
+            <section key={cat}>
+              <h2 className="mb-4 text-lg font-semibold text-muted-foreground">
+                {CATEGORY_LABELS[cat]}
+              </h2>
+              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                {tools.map((tool) => {
+                  const Icon = tool.icon;
+                  return (
+                    <Link key={tool.href + tool.title} href={tool.href} className="group">
+                      <Card className="h-full transition-all hover:border-primary/30 hover:shadow-lg group-hover:-translate-y-0.5 dark:hover:border-primary/20">
+                        <CardHeader className="pb-3">
+                          <div className="flex items-start justify-between">
+                            <div
+                              className={`flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br ${tool.gradient} text-white shadow-sm`}
+                            >
+                              <Icon className="h-5 w-5" />
+                            </div>
+                            {tool.badge && (
+                              <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-semibold text-primary">
+                                {tool.badge}
+                              </span>
+                            )}
+                          </div>
+                          <CardTitle className="mt-3 text-base transition-colors group-hover:text-primary">
+                            {tool.title}
+                          </CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                          <CardDescription className="text-sm leading-relaxed">
+                            {tool.description}
+                          </CardDescription>
+                        </CardContent>
+                      </Card>
+                    </Link>
+                  );
+                })}
+              </div>
+            </section>
           );
         })}
+      </div>
+
+      {/* Quick access to AI Hub */}
+      <div className="mx-auto mt-10 max-w-6xl">
+        <Link href="/ai" className="group">
+          <Card className="border-2 border-dashed transition-all hover:border-primary/40 hover:bg-primary/5">
+            <CardContent className="flex items-center gap-4 py-5">
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-primary/80 to-primary text-white">
+                <Sparkles className="h-5 w-5" />
+              </div>
+              <div>
+                <p className="font-semibold transition-colors group-hover:text-primary">
+                  AI Command Center
+                </p>
+                <p className="text-sm text-muted-foreground">
+                  Access all AI features, history, and exports in one place
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+        </Link>
       </div>
     </PageContainer>
   );

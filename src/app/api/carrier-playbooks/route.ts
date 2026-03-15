@@ -5,21 +5,16 @@
  * POST → Rebuild all playbooks (triggers full recompute)
  */
 
+import { withAuth } from "@/lib/auth/withAuth";
 import { buildCarrierPlaybooks } from "@/lib/carrier/playbook-engine";
 import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
-import { safeOrgContext } from "@/lib/safeOrgContext";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
-export async function GET() {
-  const ctx = await safeOrgContext();
-  if (!ctx.ok) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-
-  const { orgId } = ctx;
-
+export const GET = withAuth(async (_req: NextRequest, { orgId }) => {
   try {
     const playbooks = await prisma.carrier_playbooks.findMany({
       where: { orgId },
@@ -50,14 +45,9 @@ export async function GET() {
     logger.error("[CARRIER_PLAYBOOK_API] GET failed:", err);
     return NextResponse.json({ error: "Failed to fetch playbooks" }, { status: 500 });
   }
-}
+});
 
-export async function POST() {
-  const ctx = await safeOrgContext();
-  if (!ctx.ok) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-
-  const { orgId } = ctx;
-
+export const POST = withAuth(async (_req: NextRequest, { orgId }) => {
   try {
     const result = await buildCarrierPlaybooks(orgId);
     return NextResponse.json(result);
@@ -65,4 +55,4 @@ export async function POST() {
     logger.error("[CARRIER_PLAYBOOK_API] POST failed:", err);
     return NextResponse.json({ error: "Failed to build playbooks" }, { status: 500 });
   }
-}
+});

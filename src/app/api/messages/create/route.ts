@@ -14,9 +14,10 @@ const createMessageSchema = z.discriminatedUnion("isInternal", [
   z.object({
     isInternal: z.literal(false).optional().default(false),
     contactId: z.string().min(1),
-    claimId: z.string().optional(),
+    claimId: z.string().nullish(),
     subject: z.string().optional(),
     body: z.string().min(1),
+    orgId: z.string().optional(), // client may send — we ignore it
   }),
   // Internal team message
   z.object({
@@ -176,7 +177,8 @@ export const POST = withAuth(async (req: NextRequest, { userId, orgId }) => {
     }
 
     // ── Standard contact/client message path ─────────────────────────
-    const { contactId, claimId, subject, body: messageBody } = data;
+    const { contactId, subject, body: messageBody } = data;
+    const claimId = data.claimId || null;
 
     // Verify contact belongs to org — check contacts table first, then Client table
     let contact = await prisma.contacts.findFirst({
@@ -189,14 +191,30 @@ export const POST = withAuth(async (req: NextRequest, { userId, orgId }) => {
     // Fallback: contactId might be a Client.id (from ClientProConnection)
     let isClientRecord = false;
     if (!contact) {
+      // Also resolve the user's tradesCompany for ClientProConnection checks
+      let tradesCompanyId: string | null = null;
+      try {
+        const membership = await prisma.tradesCompanyMember.findFirst({
+          where: { userId },
+          select: { companyId: true },
+        });
+        tradesCompanyId = membership?.companyId || null;
+      } catch {
+        // Not a trades member — that's fine
+      }
+
       const clientRecord = await prisma.client.findFirst({
         where: {
           id: contactId,
           OR: [
             { orgId: orgId },
+            // Client was created under the trades company
+            ...(tradesCompanyId ? [{ orgId: tradesCompanyId }] : []),
             {
               ClientProConnection: {
                 some: {
+                  // Scope to the current company if possible
+                  ...(tradesCompanyId ? { contractorId: tradesCompanyId } : {}),
                   status: { in: ["accepted", "ACCEPTED", "connected", "pending", "PENDING"] },
                 },
               },
@@ -218,6 +236,7 @@ export const POST = withAuth(async (req: NextRequest, { userId, orgId }) => {
     }
 
     if (!contact) {
+      logger.warn("[MESSAGES_CREATE] Contact not found", { contactId, orgId, userId });
       return NextResponse.json(
         { error: "Contact not found or does not belong to your organization" },
         { status: 404 }
@@ -267,10 +286,6 @@ export const POST = withAuth(async (req: NextRequest, { userId, orgId }) => {
       },
     });
 
-    // Note: Email/SMS notifications can be implemented via Resend API
-    // Example: await sendMessageNotification(contact.email, messageBody, claimId);
-    // See docs/DEPLOYMENT_GUIDE.md for Resend configuration
-
     return NextResponse.json({
       success: true,
       thread: {
@@ -284,8 +299,9 @@ export const POST = withAuth(async (req: NextRequest, { userId, orgId }) => {
         createdAt: message.createdAt,
       },
     });
-  } catch (error) {
-    logger.error("[API] /api/messages/create error:", error);
-    return NextResponse.json({ error: "Failed to create message" }, { status: 500 });
+  } catch (error: any) {
+    const errMsg = error?.message || error?.toString?.() || "Unknown error";
+    logger.error("[API] /api/messages/create error:", { error: errMsg, stack: error?.stack });
+    return NextResponse.json({ error: `Failed to create message: ${errMsg}` }, { status: 500 });
   }
 });

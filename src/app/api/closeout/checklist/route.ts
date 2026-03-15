@@ -4,12 +4,13 @@
  *
  * Manages the JobCloseout checklist for a claim.
  * Creates the record on first access (upsert pattern).
+ *
+ * Auth: withAuth (resolveOrg-based — works for all users with org membership)
  */
-import { auth } from "@clerk/nextjs/server";
 import { createId } from "@paralleldrive/cuid2";
 import { NextRequest, NextResponse } from "next/server";
 
-import { getTenantContext } from "@/lib/auth/tenant";
+import { withAuth } from "@/lib/auth/withAuth";
 import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 
@@ -31,18 +32,8 @@ const BOOLEAN_FIELDS = [
   "finalPaymentReceived",
 ] as const;
 
-export async function GET(req: NextRequest) {
+export const GET = withAuth(async (req: NextRequest, { orgId }) => {
   try {
-    const { userId } = await auth();
-    if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    const ctx = await getTenantContext();
-    if (!ctx?.orgId) {
-      return NextResponse.json({ error: "No organization" }, { status: 403 });
-    }
-
     const { searchParams } = new URL(req.url);
     const entityId = searchParams.get("entityId");
     const entityType = searchParams.get("entityType");
@@ -56,20 +47,20 @@ export async function GET(req: NextRequest) {
 
     // Upsert — create if not exists
     let checklist = await prisma.jobCloseout.findFirst({
-      where: { claimId: entityId, orgId: ctx.orgId },
+      where: { claimId: entityId, orgId },
     });
 
     if (!checklist) {
       checklist = await prisma.jobCloseout.create({
         data: {
           id: createId(),
-          orgId: ctx.orgId,
+          orgId,
           claimId: entityId,
           updatedAt: new Date(),
         },
       });
       logger.info("[CLOSEOUT_CHECKLIST] Created new checklist", {
-        orgId: ctx.orgId,
+        orgId,
         claimId: entityId,
       });
     }
@@ -79,20 +70,10 @@ export async function GET(req: NextRequest) {
     logger.error("[CLOSEOUT_CHECKLIST] GET error:", err);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
-}
+});
 
-export async function PATCH(req: NextRequest) {
+export const PATCH = withAuth(async (req: NextRequest, { orgId }) => {
   try {
-    const { userId } = await auth();
-    if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    const ctx = await getTenantContext();
-    if (!ctx?.orgId) {
-      return NextResponse.json({ error: "No organization" }, { status: 403 });
-    }
-
     const body = await req.json();
     const { entityId, entityType, field, value } = body;
 
@@ -136,7 +117,7 @@ export async function PATCH(req: NextRequest) {
       update: updateData,
       create: {
         id: createId(),
-        orgId: ctx.orgId,
+        orgId,
         claimId: entityId,
         updatedAt: new Date(),
         ...updateData,
@@ -167,7 +148,7 @@ export async function PATCH(req: NextRequest) {
     }
 
     logger.info("[CLOSEOUT_CHECKLIST] Updated", {
-      orgId: ctx.orgId,
+      orgId,
       claimId: entityId,
       field,
       value,
@@ -179,4 +160,4 @@ export async function PATCH(req: NextRequest) {
     logger.error("[CLOSEOUT_CHECKLIST] PATCH error:", err);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
-}
+});

@@ -124,19 +124,20 @@ export default function NewMessageModal({
             isClientConnection: true,
           }));
 
-        // Dedupe by ID and email
-        const existingIds = new Set(allContacts.map((c: any) => c.id));
-        const existingEmails = new Set(
-          allContacts.map((c: any) => c.email?.toLowerCase()).filter(Boolean)
+        // Dedupe by ID and email — prefer the client connection version
+        // so isClientConnection flag is preserved for correct routing
+        const clientIds = new Set(connectedClients.map((c: any) => c.id));
+        const clientEmails = new Set(
+          connectedClients.map((c: any) => c.email?.toLowerCase()).filter(Boolean)
         );
-        connectedClients.forEach((client: any) => {
-          if (
-            !existingIds.has(client.id) &&
-            !(client.email && existingEmails.has(client.email.toLowerCase()))
-          ) {
-            allContacts.push(client);
-          }
+        // Remove CRM contacts that overlap with connected clients
+        allContacts = allContacts.filter((c: any) => {
+          if (clientIds.has(c.id)) return false;
+          if (c.email && clientEmails.has(c.email.toLowerCase())) return false;
+          return true;
         });
+        // Add all connected clients
+        allContacts.push(...connectedClients);
       } else {
         logger.warn(
           "[NewMessageModal] Client connections API returned",

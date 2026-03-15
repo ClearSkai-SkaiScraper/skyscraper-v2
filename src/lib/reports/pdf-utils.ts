@@ -3,9 +3,10 @@
  * Handles HTML to PDF conversion and Supabase Storage uploads
  */
 
-import { createClient } from "@supabase/supabase-js";
 import { logger } from "@/lib/logger";
-import puppeteer, { type Browser } from "puppeteer";
+import chromium from "@sparticuz/chromium";
+import { createClient } from "@supabase/supabase-js";
+import puppeteer, { type Browser } from "puppeteer-core";
 
 /**
  * Convert HTML to PDF buffer using Puppeteer with retry logic
@@ -35,17 +36,22 @@ export async function htmlToPdfBuffer(
         await new Promise((resolve) => setTimeout(resolve, 1000 * attempt));
       }
 
-      // Launch headless browser
-      browser = await puppeteer.launch({
-        headless: true,
-        args: [
-          "--no-sandbox",
-          "--disable-setuid-sandbox",
-          "--disable-dev-shm-usage",
-          "--disable-gpu",
-        ],
-        timeout: 30000,
-      });
+      // Launch headless browser (serverless-compatible)
+      const isDev = process.env.NODE_ENV === "development";
+      if (isDev) {
+        browser = await puppeteer.launch({
+          headless: true,
+          args: ["--no-sandbox", "--disable-setuid-sandbox"],
+          timeout: 30000,
+        });
+      } else {
+        browser = await puppeteer.launch({
+          args: chromium.args,
+          executablePath: await chromium.executablePath(),
+          headless: true,
+          timeout: 30000,
+        });
+      }
 
       const page = await browser.newPage();
 

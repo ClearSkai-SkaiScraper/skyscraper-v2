@@ -447,7 +447,7 @@ export default function ClaimWeatherPage({ params }: Props) {
         </Card>
       )}
 
-      {/* ── Quick one-page Weather Verification PDF ── */}
+      {/* ── Weather Verification PDF ── */}
       <Card className="border-emerald-200 bg-gradient-to-r from-emerald-50 to-sky-50 p-5 dark:border-emerald-800 dark:from-emerald-950/30 dark:to-sky-950/30">
         <div className="flex items-center justify-between gap-4">
           <div className="flex items-center gap-3">
@@ -456,7 +456,7 @@ export default function ClaimWeatherPage({ params }: Props) {
             </div>
             <div>
               <h3 className="font-semibold text-emerald-900 dark:text-emerald-100">
-                One-Page Weather Verification PDF
+                Weather Verification PDF
               </h3>
               <p className="text-xs text-emerald-700 dark:text-emerald-300">
                 Auto-scans 12 months of NOAA hail &amp; wind data, scores severity, and generates a
