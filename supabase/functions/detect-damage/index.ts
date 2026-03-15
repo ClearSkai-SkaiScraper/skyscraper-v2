@@ -29,6 +29,23 @@ const LABEL_MAP: Record<string, string> = {
   flashing: "flashing_damage",
   tile_channel: "tile_channel_mismatch",
   tile_lock: "tile_locking_mismatch",
+  // Wind damage labels
+  wind: "wind_lifted",
+  wind_lifted: "wind_lifted",
+  wind_damage: "wind_lifted",
+  crease: "wind_creased",
+  lifted: "wind_lifted",
+  torn: "wind_torn",
+  // Wear/age labels
+  wear: "wear_damage",
+  age: "wear_damage",
+  aging: "wear_damage",
+  weathering: "wear_damage",
+  // General damage labels
+  damage: "general_damage",
+  crack: "crack_damage",
+  broken: "broken_material",
+  dent: "metal_dent",
 };
 
 function nms(boxes: Box[], iouThreshold = 0.3): Box[] {
@@ -55,12 +72,20 @@ function nms(boxes: Box[], iouThreshold = 0.3): Box[] {
 }
 
 async function mockDetect(): Promise<Box[]> {
-  // Generate mock detections for demo
-  return Array.from({ length: 18 }, (_, i) => ({
-    label: "hail_hit",
+  // Generate varied mock detections for demo - NOT all hail
+  const damageTypes = [
+    "general_damage",
+    "wind_lifted",
+    "granule_loss",
+    "missing_shingle",
+    "crack_damage",
+    "wear_damage",
+  ];
+  return Array.from({ length: 6 }, (_, i) => ({
+    label: damageTypes[i % damageTypes.length],
     confidence: 0.6 + Math.random() * 0.3,
-    x: 40 + i * 12,
-    y: 60 + (i % 5) * 20,
+    x: 40 + i * 25,
+    y: 60 + (i % 3) * 40,
     w: 22,
     h: 22,
   }));
@@ -116,10 +141,11 @@ serve(async (req) => {
     const rawDetections = await mockDetect();
 
     // Normalize labels and filter by confidence
+    // IMPORTANT: Default to "general_damage" NOT "hail_hit" to avoid over-classification
     const normalized = rawDetections
       .map((d) => ({
         ...d,
-        label: LABEL_MAP[d.label] || "hail_hit",
+        label: LABEL_MAP[d.label] || d.label || "general_damage",
       }))
       .filter((d) => d.confidence >= 0.35);
 

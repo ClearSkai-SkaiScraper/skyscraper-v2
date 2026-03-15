@@ -165,6 +165,56 @@ const NON_DAMAGE_LABELS: string[] = [
   "good_condition",
 ];
 
+// ─── Class-Specific Confidence Thresholds ────────────────────────────────────
+
+/**
+ * Different damage types require different confidence thresholds.
+ * Hail damage requires higher confidence to prevent false positives.
+ * Structural damage has lower threshold because it's critical to catch.
+ *
+ * Default threshold: 0.25 (defined in shouldSuppressAnnotation)
+ */
+export const CLASS_CONFIDENCE_THRESHOLDS: Record<string, number> = {
+  // Hail damage requires HIGHER confidence (prone to false positives)
+  hail_impact: 0.45,
+  hail_bruise: 0.45,
+  hail_dent: 0.4,
+  hail_spatter: 0.5, // Very prone to false positives
+  hail_hit: 0.45,
+
+  // Wind damage - moderate threshold
+  wind_lifted: 0.35,
+  wind_torn: 0.3,
+  wind_creased: 0.35,
+  wind_displaced: 0.35,
+
+  // Structural/safety - lower threshold (important to catch)
+  structural_crack: 0.2,
+  sagging: 0.2,
+  rot_damage: 0.25,
+  water_damage: 0.25,
+
+  // General damage - standard threshold
+  general_damage: 0.3,
+  crack_damage: 0.3,
+  wear_damage: 0.35,
+
+  // Metal dents - moderate (collateral evidence)
+  metal_dent: 0.35,
+  soft_metal_dent: 0.35,
+  gutter_dent: 0.35,
+  condenser_dent: 0.35,
+};
+
+/**
+ * Get the confidence threshold for a damage type.
+ * Falls back to default of 0.25 if not specified.
+ */
+export function getConfidenceThreshold(damageType: string): number {
+  const dt = damageType.toLowerCase().replace(/\s+/g, "_");
+  return CLASS_CONFIDENCE_THRESHOLDS[dt] ?? 0.25;
+}
+
 // ─── Shape Selection ─────────────────────────────────────────────────────────
 
 /**
@@ -393,7 +443,7 @@ export interface SuppressionResult {
  * Determine if an annotation should be suppressed from the report.
  *
  * Suppression reasons:
- * 1. Confidence < 0.25 (too uncertain)
+ * 1. Confidence below class-specific threshold (hail requires higher confidence)
  * 2. Non-damage label (sky, tree, person, etc.)
  * 3. Duplicate of higher-confidence sibling (IoU > 0.5)
  * 4. Too small to be meaningful (< 0.1% of image)
@@ -409,10 +459,15 @@ export function shouldSuppressAnnotation(
     return { suppressed: true, reason: `non-damage label: ${dt}` };
   }
 
-  // Rule 2: Confidence too low
+  // Rule 2: Confidence below class-specific threshold
+  // Hail damage requires higher confidence to prevent over-classification
   const confidence = annotation.confidence ?? 0.5;
-  if (confidence < 0.25) {
-    return { suppressed: true, reason: `confidence too low: ${(confidence * 100).toFixed(0)}%` };
+  const threshold = getConfidenceThreshold(dt);
+  if (confidence < threshold) {
+    return {
+      suppressed: true,
+      reason: `confidence too low for ${dt}: ${(confidence * 100).toFixed(0)}% < ${(threshold * 100).toFixed(0)}% threshold`,
+    };
   }
 
   // Rule 3: Too small (< 0.1% of image area)

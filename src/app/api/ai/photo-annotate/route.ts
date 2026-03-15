@@ -32,7 +32,7 @@ import {
 } from "@/lib/ai/roboflow";
 import { apiError } from "@/lib/apiError";
 import { requireAuth } from "@/lib/auth/requireAuth";
-import { IRC_CODE_MAP, IRC_CODES, resolveIRCCodeKey } from "@/lib/constants/irc-codes";
+import { IRC_CODE_MAP, resolveIRCCodeKey } from "@/lib/constants/irc-codes";
 import { logger } from "@/lib/logger";
 import { checkRateLimit } from "@/lib/rate-limit";
 
@@ -2340,18 +2340,14 @@ function formatDamageType(type: string): string {
 }
 
 function buildCaption(detection: DamageDetection, ircCodeKey: string): string {
-  const ircInfo = IRC_CODES[ircCodeKey];
   const formattedType = formatDamageType(detection.type);
+  // Keep caption clean for image overlays - IRC/HAAG info stored separately in ircCode field
+  // Report generation pulls ircCode field for code references
   let caption = `${formattedType} — ${detection.severity} severity. ${detection.description}`;
 
-  if (ircInfo) {
-    caption += ` [${ircInfo.code}: ${ircInfo.title}]`;
-  }
-
-  // Add HAAG standard reference for hail damage
-  if (detection.type.toLowerCase().includes("hail")) {
-    caption += " (Per HAAG Engineering hail damage criteria)";
-  }
+  // NOTE: IRC/HAAG references intentionally omitted from captions
+  // They appear in reports via the ircCode field, not on annotated images
+  // This prevents cluttered image overlays while preserving code compliance info
 
   return caption;
 }
@@ -2362,9 +2358,9 @@ function generateOverallCaption(
 ): string {
   if (annotations.length === 0) {
     if (materialAnalysis) {
-      return `No visible storm damage detected per HAAG inspection standards. Material identified: ${materialAnalysis.primaryMaterial}. Condition: ${materialAnalysis.condition}.`;
+      return `No visible storm damage detected. Material: ${materialAnalysis.primaryMaterial}. Condition: ${materialAnalysis.condition}.`;
     }
-    return "No visible storm damage detected in this photo per HAAG inspection standards.";
+    return "No visible storm damage detected in this photo.";
   }
 
   const damageTypes = [...new Set(annotations.map((a) => a.damageType))];
@@ -2377,33 +2373,25 @@ function generateOverallCaption(
         ? "Medium"
         : "Low";
 
-  const ircCodes = [...new Set(annotations.map((a) => a.ircCode).filter(Boolean))];
-
-  let caption = `HAAG Assessment: ${annotations.length} damage area${annotations.length > 1 ? "s" : ""} identified.`;
+  // Build clean caption for image overlay - codes are in structured data
+  let caption = `${annotations.length} damage area${annotations.length > 1 ? "s" : ""} identified.`;
 
   if (materialAnalysis?.primaryMaterial) {
     caption += ` Material: ${materialAnalysis.primaryMaterial}.`;
   }
 
-  caption += ` Damage types: ${damageTypes.slice(0, 4).join(", ")}.`;
-  caption += ` Highest severity: ${highestSeverity}.`;
+  caption += ` Types: ${damageTypes.slice(0, 3).join(", ")}.`;
+  caption += ` Severity: ${highestSeverity}.`;
 
-  if (ircCodes.length > 0) {
-    const codeRefs = ircCodes
-      .slice(0, 3)
-      .map((key) => IRC_CODES[key!]?.code)
-      .filter(Boolean);
-    if (codeRefs.length > 0) {
-      caption += ` Applicable codes: ${codeRefs.join(", ")}.`;
-    }
-  }
-
-  // Add recommendation based on severity
+  // Add brief recommendation based on severity
   if (highestSeverity === "Critical" || highestSeverity === "High") {
-    caption += " Recommendation: Replacement per applicable IRC code section.";
+    caption += " Action: Replacement recommended.";
   } else if (highestSeverity === "Medium") {
-    caption += " Recommendation: Repair or replacement evaluation needed.";
+    caption += " Action: Repair evaluation needed.";
   }
+
+  // NOTE: IRC codes stored in annotation.ircCode field for report generation
+  // Not included in image caption to keep overlays clean
 
   return caption;
 }

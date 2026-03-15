@@ -36,6 +36,7 @@ import prisma from "@/lib/prisma";
 import { htmlToPdfBuffer } from "@/lib/reports/pdf-utils";
 import { capToEvents, fetchCAPAlerts } from "@/lib/weather/cap";
 import { fetchMesonetReports, mesonetToEvents } from "@/lib/weather/mesonet";
+import { formatLocationError, resolveClaimLocation } from "@/lib/weather/resolveClaimLocation";
 import { pickQuickDOL, scoreEventsForProperty } from "@/lib/weather/score";
 import type { DOLResult, ScoredEvent } from "@/types/weather";
 
@@ -49,7 +50,28 @@ export const POST = withAuth(
       const { claimId } = await routeParams.params;
       await getOrgClaimOrThrow(orgId, claimId);
 
-      // Fetch claim + property for geo data
+      // Use unified location resolver
+      const locationResult = await resolveClaimLocation(claimId);
+      if (!locationResult.ok) {
+        logger.warn("[quick-verify] Location resolution failed", {
+          claimId,
+          error: locationResult.error,
+        });
+        return NextResponse.json(
+          { error: formatLocationError(locationResult.error) },
+          { status: 400 }
+        );
+      }
+
+      const { latitude: lat, longitude: lon, fullAddress: address } = locationResult.location;
+      logger.info("[quick-verify] Resolved location", {
+        claimId,
+        lat,
+        lon,
+        source: locationResult.location.source,
+      });
+
+      // Fetch claim metadata for PDF
       const claim = await prisma.claims.findUnique({
         where: { id: claimId },
         select: {
@@ -63,35 +85,12 @@ export const POST = withAuth(
           adjusterName: true,
           adjusterPhone: true,
           adjusterEmail: true,
-          properties: {
-            select: {
-              street: true,
-              city: true,
-              state: true,
-              zipCode: true,
-            },
-          },
         },
       });
 
       if (!claim) {
         return NextResponse.json({ error: "Claim not found" }, { status: 404 });
       }
-
-      // Geocode property address to get lat/lon
-      const address = claim.properties
-        ? `${claim.properties.street}, ${claim.properties.city}, ${claim.properties.state} ${claim.properties.zipCode}`
-        : null;
-
-      if (!address) {
-        return NextResponse.json({ error: "No property address available" }, { status: 400 });
-      }
-
-      const geo = await geocodeAddress(address);
-      if (!geo) {
-        return NextResponse.json({ error: "Could not geocode property address" }, { status: 400 });
-      }
-      const { lat, lon } = geo;
 
       // Scan window: 12 months back from now (or from date of loss if set)
       const endDate = new Date();
@@ -157,9 +156,7 @@ export const POST = withAuth(
           .catch(() => null),
       ]);
 
-      const propertyAddress = claim.properties
-        ? `${claim.properties.street}, ${claim.properties.city}, ${claim.properties.state} ${claim.properties.zipCode}`
-        : "N/A";
+      const propertyAddress = locationResult.location.fullAddress || "N/A";
 
       const companyName = org?.name || "SkaiScraper";
       const primaryColor = branding?.colorPrimary || "#1e3a8a";
@@ -304,26 +301,6 @@ Format your response as JSON:
     }
   }
 );
-
-// ─────────────────────────────────────────────────────────────────────────────
-// GEOCODE (free Open-Meteo geocoding, no API key)
-// ─────────────────────────────────────────────────────────────────────────────
-
-async function geocodeAddress(address: string): Promise<{ lat: number; lon: number } | null> {
-  try {
-    const res = await fetch(
-      `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(address)}&count=1&language=en&format=json`
-    );
-    if (!res.ok) return null;
-    const data = await res.json();
-    if (data.results?.[0]) {
-      return { lat: data.results[0].latitude, lon: data.results[0].longitude };
-    }
-    return null;
-  } catch {
-    return null;
-  }
-}
 
 // ─────────────────────────────────────────────────────────────────────────────
 // COMPREHENSIVE PDF HTML TEMPLATE (Multi-Page Support)

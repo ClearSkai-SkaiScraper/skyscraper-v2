@@ -10,7 +10,8 @@ import { NextRequest, NextResponse } from "next/server";
 
 import { withAuth } from "@/lib/auth/withAuth";
 import prisma from "@/lib/prisma";
-import { fetchOpenMeteoWeather, geocodeAddress } from "@/lib/weather/openMeteo";
+import { fetchOpenMeteoWeather } from "@/lib/weather/openMeteo";
+import { formatLocationError, resolveClaimLocation } from "@/lib/weather/resolveClaimLocation";
 import { Prisma } from "@prisma/client";
 
 const RATE_LIMIT_MS = 10 * 60 * 1000; // 10 minutes
@@ -86,38 +87,27 @@ export const POST = withAuth(
         }
       }
 
-      // Get property for geocoding
-      const property = claim.propertyId
-        ? await prisma.properties.findUnique({
-            where: { id: claim.propertyId },
-            select: { street: true, city: true, state: true, zipCode: true },
-          })
-        : null;
-
-      // Geocode property address
-      let lat: number | null = null;
-      let lng: number | null = null;
-
-      if (property) {
-        const fullAddress = [property.street, property.city, property.state, property.zipCode]
-          .filter(Boolean)
-          .join(", ");
-
-        if (fullAddress) {
-          const coords = await geocodeAddress(fullAddress);
-          if (coords) {
-            lat = coords.lat;
-            lng = coords.lng;
-          }
-        }
-      }
-
-      if (!lat || !lng) {
+      // Use unified location resolver
+      const locationResult = await resolveClaimLocation(claimId);
+      if (!locationResult.ok) {
+        logger.warn("[weather/refresh] Location resolution failed", {
+          claimId,
+          error: locationResult.error,
+        });
         return NextResponse.json(
-          { error: "Unable to geocode claim location. Please add property address." },
+          { error: formatLocationError(locationResult.error) },
           { status: 400 }
         );
       }
+
+      const { latitude: lat, longitude: lng } = locationResult.location;
+      const resolvedAddress = locationResult.location.fullAddress || "Unknown";
+      logger.info("[weather/refresh] Resolved location", {
+        claimId,
+        lat,
+        lng,
+        source: locationResult.location.source,
+      });
 
       // Fetch fresh weather from Open-Meteo
       const weatherFacts = await fetchOpenMeteoWeather({
@@ -174,11 +164,7 @@ export const POST = withAuth(
             claimId,
             createdById: userId,
             mode: "open-meteo",
-            address: property
-              ? [property.street, property.city, property.state, property.zipCode]
-                  .filter(Boolean)
-                  .join(", ")
-              : "Unknown",
+            address: resolvedAddress,
             lat,
             lng,
             lossType: "weather",
