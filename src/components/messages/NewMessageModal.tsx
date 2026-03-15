@@ -1,5 +1,6 @@
 "use client";
 
+import { buildClaimLabelShort } from "@/lib/context/buildContextLabel";
 import { logger } from "@/lib/logger";
 import { Loader2 } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -89,7 +90,7 @@ export default function NewMessageModal({
       // Fetch contacts, claims, connected pros, AND connected clients
       const [contactsRes, claimsRes, prosRes, clientConnectionsRes] = await Promise.all([
         fetch(`/api/contacts?orgId=${orgId}`),
-        fetch(`/api/claims?orgId=${orgId}`),
+        fetch("/api/claims/list-lite"),
         fetch("/api/network/trades"),
         fetch("/api/clients/connections"), // Connected clients via ClientProConnection
       ]);
@@ -147,7 +148,16 @@ export default function NewMessageModal({
 
       if (claimsRes.ok) {
         const claimsData = await claimsRes.json();
-        setClaims(claimsData.claims || []);
+        // Remap list-lite fields → ClaimLabelInput shape
+        // list-lite: address=street, propertyAddress=formatted
+        // ClaimLabelInput: address=formatted, street=raw street
+        setClaims(
+          (claimsData.claims || []).map((c: any) => ({
+            ...c,
+            street: c.address,
+            address: c.propertyAddress || c.address,
+          }))
+        );
       }
 
       if (prosRes.ok) {
@@ -241,6 +251,7 @@ export default function NewMessageModal({
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             clientId: formData.contactId,
+            claimId: formData.claimId || null,
             subject: formData.subject || "New Message",
             body: formData.body,
           }),
@@ -389,7 +400,7 @@ export default function NewMessageModal({
 
             {recipientType === "contact" && (
               <div className="space-y-2">
-                <Label htmlFor="claim">Claim (Optional)</Label>
+                <Label htmlFor="claim">Attach to Claim (Optional)</Label>
                 <Select
                   value={formData.claimId}
                   onValueChange={(value) => setFormData({ ...formData, claimId: value })}
@@ -401,9 +412,9 @@ export default function NewMessageModal({
                     {claims.length === 0 ? (
                       <div className="p-2 text-sm text-slate-500">No claims found</div>
                     ) : (
-                      claims.map((claim) => (
+                      claims.map((claim: any) => (
                         <SelectItem key={claim.id} value={claim.id}>
-                          {claim.claimNumber} - {claim.title}
+                          {buildClaimLabelShort(claim)}
                         </SelectItem>
                       ))
                     )}

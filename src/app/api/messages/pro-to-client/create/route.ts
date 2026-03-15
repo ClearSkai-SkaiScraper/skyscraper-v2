@@ -17,6 +17,7 @@ export const dynamic = "force-dynamic";
  *  - clientId: string  (Client.id from the clients table)
  *  - body: string      (initial message content)
  *  - subject?: string  (optional thread subject)
+ *  - claimId?: string  (optional claim to attach to thread)
  */
 export async function POST(req: NextRequest) {
   try {
@@ -27,7 +28,7 @@ export async function POST(req: NextRequest) {
     }
 
     const body = await req.json();
-    const { clientId, body: messageBody, subject } = body;
+    const { clientId, body: messageBody, subject, claimId } = body;
 
     if (!clientId || !messageBody) {
       return NextResponse.json(
@@ -146,11 +147,12 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Check for existing thread between pro and client
+    // Check for existing thread between pro and client (optionally scoped to claim)
     let thread = await prisma.messageThread.findFirst({
       where: {
         clientId: client.id,
         tradePartnerId: companyId,
+        ...(claimId ? { claimId } : {}),
       },
     });
 
@@ -160,6 +162,7 @@ export async function POST(req: NextRequest) {
         data: {
           id: crypto.randomUUID(),
           orgId: companyId,
+          claimId: claimId || null,
           clientId: client.id,
           tradePartnerId: companyId,
           participants: [userId, client.userId || client.id],

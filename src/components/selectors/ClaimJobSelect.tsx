@@ -5,15 +5,23 @@ import { useEffect, useMemo, useState } from "react";
 import {
   Select,
   SelectContent,
+  SelectGroup,
   SelectItem,
+  SelectLabel,
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { buildClaimLabel, buildJobLabel } from "@/lib/context/buildContextLabel";
 
 type ClaimLite = {
   id: string;
   claimNumber: string | null;
+  insuredName: string | null;
   propertyAddress: string | null;
+  address: string | null;
+  city: string | null;
+  state: string | null;
+  zip: string | null;
   dateOfLoss: string | null;
 };
 
@@ -29,18 +37,6 @@ export type ClaimJobSelection = {
   jobId?: string;
   resolvedClaimId?: string;
 };
-
-function formatClaimLabel(c: ClaimLite) {
-  const number = c.claimNumber || c.id.slice(0, 8);
-  const address = c.propertyAddress || "No address";
-  return `${number} — ${address}`;
-}
-
-function formatJobLabel(j: JobLite) {
-  const title = j.title || `Job ${j.id.slice(0, 8)}`;
-  const suffix = j.status ? ` (${j.status})` : "";
-  return `${title}${suffix}`;
-}
 
 export function ClaimJobSelect(props: {
   value: ClaimJobSelection;
@@ -75,7 +71,12 @@ export function ClaimJobSelect(props: {
               .map((c: any) => ({
                 id: String(c.id),
                 claimNumber: c.claimNumber ?? null,
+                insuredName: c.insuredName ?? null,
                 propertyAddress: c.propertyAddress ?? null,
+                address: c.address ?? null,
+                city: c.city ?? null,
+                state: c.state ?? null,
+                zip: c.zip ?? null,
                 dateOfLoss: c.dateOfLoss ?? null,
               }))
           : [];
@@ -117,9 +118,21 @@ export function ClaimJobSelect(props: {
   const options = useMemo(() => {
     const claimOptions = claims.map((c) => ({
       value: `claim:${c.id}`,
-      label: formatClaimLabel(c),
+      label: buildClaimLabel({
+        id: c.id,
+        claimNumber: c.claimNumber,
+        insuredName: c.insuredName,
+        address: c.propertyAddress,
+        street: c.address,
+        city: c.city,
+        state: c.state,
+        zip: c.zip,
+      }),
     }));
-    const jobOptions = jobs.map((j) => ({ value: `job:${j.id}`, label: formatJobLabel(j) }));
+    const jobOptions = jobs.map((j) => ({
+      value: `job:${j.id}`,
+      label: buildJobLabel(j),
+    }));
     return { claimOptions, jobOptions };
   }, [claims, jobs]);
 
@@ -129,7 +142,6 @@ export function ClaimJobSelect(props: {
       ? `job:${value.jobId}`
       : undefined;
 
-  // Only disable if explicitly disabled, not just because data is empty
   const isDisabled = disabled || loading;
 
   const placeholderText = useMemo(() => {
@@ -170,16 +182,26 @@ export function ClaimJobSelect(props: {
         <SelectValue placeholder={placeholderText} />
       </SelectTrigger>
       <SelectContent>
-        {options.claimOptions.map((o) => (
-          <SelectItem key={o.value} value={o.value}>
-            {o.label}
-          </SelectItem>
-        ))}
-        {options.jobOptions.map((o) => (
-          <SelectItem key={o.value} value={o.value}>
-            {o.label}
-          </SelectItem>
-        ))}
+        {options.claimOptions.length > 0 && (
+          <SelectGroup>
+            <SelectLabel>Claims</SelectLabel>
+            {options.claimOptions.map((o) => (
+              <SelectItem key={o.value} value={o.value}>
+                {o.label}
+              </SelectItem>
+            ))}
+          </SelectGroup>
+        )}
+        {options.jobOptions.length > 0 && (
+          <SelectGroup>
+            <SelectLabel>Jobs</SelectLabel>
+            {options.jobOptions.map((o) => (
+              <SelectItem key={o.value} value={o.value}>
+                {o.label}
+              </SelectItem>
+            ))}
+          </SelectGroup>
+        )}
       </SelectContent>
     </Select>
   );

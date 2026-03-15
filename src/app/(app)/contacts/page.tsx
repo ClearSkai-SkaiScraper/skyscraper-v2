@@ -729,17 +729,6 @@ async function renderContactsPage() {
 
           {/* All Contacts Tab */}
           <TabsContent value="all" className="space-y-6">
-            {teamMembers.length > 0 && (
-              <div>
-                <h3 className="mb-4 flex items-center gap-2 text-lg font-semibold text-foreground">
-                  <UsersRound className="h-5 w-5 text-indigo-600" />
-                  Team Members ({teamCount})
-                </h3>
-                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                  {teamMembers.map(renderTeamMemberCard)}
-                </div>
-              </div>
-            )}
             {contacts.length > 0 && (
               <div>
                 <h3 className="mb-4 flex items-center gap-2 text-lg font-semibold text-foreground">
@@ -748,6 +737,17 @@ async function renderContactsPage() {
                 </h3>
                 <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                   {contacts.map(renderContactCard)}
+                </div>
+              </div>
+            )}
+            {teamMembers.length > 0 && (
+              <div>
+                <h3 className="mb-4 flex items-center gap-2 text-lg font-semibold text-foreground">
+                  <UsersRound className="h-5 w-5 text-indigo-600" />
+                  Team Members ({teamCount})
+                </h3>
+                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                  {teamMembers.map(renderTeamMemberCard)}
                 </div>
               </div>
             )}

@@ -1,19 +1,19 @@
 "use client";
 
 import {
-    CalendarCheck,
-    CheckCircle,
-    CloudLightning,
-    CloudRain,
-    Download,
-    Eye,
-    FileText,
-    History,
-    Loader2,
-    MapPin,
-    RefreshCw,
-    Wind,
-    Zap,
+  CalendarCheck,
+  CheckCircle,
+  CloudLightning,
+  CloudRain,
+  Download,
+  Eye,
+  FileText,
+  History,
+  Loader2,
+  MapPin,
+  RefreshCw,
+  Wind,
+  Zap,
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
@@ -24,11 +24,11 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
 } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { logger } from "@/lib/logger";
@@ -887,7 +887,9 @@ export default function ClaimWeatherPage({ params }: Props) {
             onClick={runWeatherReport}
             disabled={isReportRunning || !selectedDol || !fullAddress.trim()}
             size="lg"
-            className={selectedDol && fullAddress.trim() ? "bg-emerald-600 hover:bg-emerald-700" : ""}
+            className={
+              selectedDol && fullAddress.trim() ? "bg-emerald-600 hover:bg-emerald-700" : ""
+            }
           >
             {isReportRunning ? (
               <>

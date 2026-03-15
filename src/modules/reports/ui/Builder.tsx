@@ -735,9 +735,9 @@ export default function Builder() {
             <SmartTemplateSelector
               onSelect={(id) => setTemplateId(id)}
               selectedId={templateId}
-              defaultStyle="Insurance"
+              defaultStyle="Retail"
               context={{
-                intent: "claim_support",
+                intent: "homeowner_estimate",
               }}
               compact
               label="Report Template"
