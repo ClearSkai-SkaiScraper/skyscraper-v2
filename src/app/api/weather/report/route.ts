@@ -142,11 +142,27 @@ export const POST = withAuth(async (req: NextRequest, { userId, orgId }) => {
 
     let report;
     try {
+      // ── Resolve DB user ID for FK (weather_reports.createdById → users.id) ──
+      const dbUser = await prisma.users.findUnique({
+        where: { clerkUserId: userId },
+        select: { id: true },
+      });
+      if (!dbUser) {
+        logger.error("[Weather API] No DB user found for Clerk userId:", userId);
+        return NextResponse.json(
+          {
+            error: "User account not synced. Please refresh the page and try again.",
+            step: "db_save",
+          },
+          { status: 500 }
+        );
+      }
+
       report = await prisma.weather_reports.create({
         data: {
           id: randomUUID(),
           claimId: body.claim_id ?? (body.claimId as string | undefined) ?? null,
-          createdById: userId,
+          createdById: dbUser.id,
           updatedAt: new Date(),
           mode: "full_report",
           address: body.address,

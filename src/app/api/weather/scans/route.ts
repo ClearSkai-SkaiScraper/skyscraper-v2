@@ -106,6 +106,14 @@ export const GET = withAuth(async (req: NextRequest, { userId, orgId }) => {
       claimAddress: claim.properties
         ? `${claim.properties.street}, ${claim.properties.city}, ${claim.properties.state} ${claim.properties.zipCode}`
         : null,
+      claimProperty: claim.properties
+        ? {
+            street: claim.properties.street || null,
+            city: claim.properties.city || null,
+            state: claim.properties.state || null,
+            zipCode: claim.properties.zipCode || null,
+          }
+        : null,
       totalScans: scans.length,
     });
   } catch (err) {

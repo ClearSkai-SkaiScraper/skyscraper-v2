@@ -1,19 +1,19 @@
 "use client";
 
 import {
-  CalendarCheck,
-  CheckCircle,
-  CloudLightning,
-  CloudRain,
-  Download,
-  Eye,
-  FileText,
-  History,
-  Loader2,
-  MapPin,
-  RefreshCw,
-  Wind,
-  Zap,
+    CalendarCheck,
+    CheckCircle,
+    CloudLightning,
+    CloudRain,
+    Download,
+    Eye,
+    FileText,
+    History,
+    Loader2,
+    MapPin,
+    RefreshCw,
+    Wind,
+    Zap,
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
@@ -24,11 +24,11 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
 } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { logger } from "@/lib/logger";
@@ -108,8 +108,11 @@ type Props = { params: { claimId: string } };
 export default function ClaimWeatherPage({ params }: Props) {
   const { claimId } = params;
 
-  // Form state
-  const [address, setAddress] = useState("");
+  // Form state — structured address
+  const [street, setStreet] = useState("");
+  const [city, setCity] = useState("");
+  const [addrState, setAddrState] = useState("");
+  const [zip, setZip] = useState("");
   const [lossType, setLossType] = useState<"none" | "hail" | "wind" | "water">("none");
   const [dateFrom, setDateFrom] = useState("");
   const [dateTo, setDateTo] = useState("");
@@ -137,11 +140,53 @@ export default function ClaimWeatherPage({ params }: Props) {
   const [error, setError] = useState<string | null>(null);
   const [generatingPdf, setGeneratingPdf] = useState(false);
 
-  // ── Load saved scans on mount ──
+  // ── Compose full address string for API calls ──
+  const fullAddress = [street, city, [addrState, zip].filter(Boolean).join(" ")]
+    .filter(Boolean)
+    .join(", ");
+
+  // ── Load claim property address on mount (auto-fill) ──
   useEffect(() => {
-    loadSavedScans();
+    async function loadClaimAddress() {
+      try {
+        const res = await fetch(`/api/weather/scans?claimId=${claimId}`);
+        if (res.ok) {
+          const data = await res.json();
+          setSavedScans(data.scans || []);
+          setCurrentDol(data.currentDol || null);
+
+          // Auto-fill from claim property data (structured)
+          if (data.claimProperty && !street) {
+            if (data.claimProperty.street) setStreet(data.claimProperty.street);
+            if (data.claimProperty.city) setCity(data.claimProperty.city);
+            if (data.claimProperty.state) setAddrState(data.claimProperty.state);
+            if (data.claimProperty.zipCode) setZip(data.claimProperty.zipCode);
+          } else if (data.claimAddress && !street) {
+            // Fallback: parse concatenated address "street, city, state zip"
+            const parts = (data.claimAddress as string).split(",").map((s: string) => s.trim());
+            if (parts.length >= 2) {
+              setStreet(parts[0]);
+              setCity(parts[1]);
+              if (parts[2]) {
+                const stateZip = parts[2].split(" ").filter(Boolean);
+                if (stateZip.length >= 1) setAddrState(stateZip[0]);
+                if (stateZip.length >= 2) setZip(stateZip.slice(1).join(" "));
+              }
+            } else {
+              setStreet(data.claimAddress);
+            }
+          }
+        }
+      } catch (err) {
+        logger.error("Failed to load claim address:", err);
+      } finally {
+        setLoadingScans(false);
+      }
+    }
+    loadClaimAddress();
   }, [claimId]);
 
+  // ── Load saved scans ──
   async function loadSavedScans() {
     setLoadingScans(true);
     try {
@@ -150,9 +195,6 @@ export default function ClaimWeatherPage({ params }: Props) {
         const data = await res.json();
         setSavedScans(data.scans || []);
         setCurrentDol(data.currentDol || null);
-        if (data.claimAddress && !address) {
-          setAddress(data.claimAddress);
-        }
       }
     } catch (err) {
       logger.error("Failed to load saved scans:", err);
@@ -167,7 +209,7 @@ export default function ClaimWeatherPage({ params }: Props) {
     setError(null);
     setQuickDolResult(null);
 
-    if (!address.trim()) {
+    if (!fullAddress.trim()) {
       setIsQuickDolRunning(false);
       setError("Address is required.");
       return;
@@ -178,7 +220,7 @@ export default function ClaimWeatherPage({ params }: Props) {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          address,
+          address: fullAddress,
           lossType: lossType === "none" ? null : lossType,
           dateFrom: dateFrom || null,
           dateTo: dateTo || null,
@@ -191,7 +233,7 @@ export default function ClaimWeatherPage({ params }: Props) {
         throw new Error(data.error || `Request failed with ${res.status}`);
       }
 
-      const data = (await res.json()) as QuickDolResponse;
+      const data = (await res.json()) as QuickDolResponse & { warning?: string };
       setQuickDolResult(data);
 
       if (data.candidates?.length) {
@@ -203,7 +245,14 @@ export default function ClaimWeatherPage({ params }: Props) {
 
       // Refresh saved scans to include the new one
       await loadSavedScans();
-      toast.success("DOL scan complete and saved!");
+
+      if (data.warning) {
+        toast.warning(data.warning);
+      } else if (data.scanId) {
+        toast.success("DOL scan complete and saved!");
+      } else {
+        toast.warning("DOL scan completed but could not be saved.");
+      }
     } catch (err) {
       logger.error("Quick DOL error:", err);
       setError(err instanceof Error ? err.message : "Failed to run Quick DOL.");
@@ -242,9 +291,10 @@ export default function ClaimWeatherPage({ params }: Props) {
     setLoadingRadar(true);
     setRadarImages([]);
     try {
-      // Geocode address via Open-Meteo (free)
+      // Geocode address via Open-Meteo (free — works best with city names)
+      const geoQuery = city && addrState ? `${city}, ${addrState}` : fullAddress;
       const geoRes = await fetch(
-        `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(address)}&count=1&language=en&format=json`
+        `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(geoQuery)}&count=1&language=en&format=json`
       );
       let lat = 34.5;
       let lng = -112.4;
@@ -307,7 +357,7 @@ export default function ClaimWeatherPage({ params }: Props) {
     setError(null);
     setReportResult(null);
 
-    if (!address.trim()) {
+    if (!fullAddress.trim()) {
       setIsReportRunning(false);
       setError("Address is required.");
       return;
@@ -319,7 +369,7 @@ export default function ClaimWeatherPage({ params }: Props) {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          address,
+          address: fullAddress,
           dol: selectedDol || null,
           lossType: lossType === "none" ? null : lossType,
           claim_id: claimId,
@@ -448,14 +498,47 @@ export default function ClaimWeatherPage({ params }: Props) {
         </div>
 
         <div className="space-y-4">
-          <div>
-            <Label htmlFor="address">Property Address</Label>
-            <Input
-              id="address"
-              placeholder="678 N Blanco Ct, Dewey, AZ 86327"
-              value={address}
-              onChange={(e) => setAddress(e.target.value)}
-            />
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <div className="sm:col-span-2">
+              <Label htmlFor="street">Street Address</Label>
+              <Input
+                id="street"
+                placeholder="678 N Blanco Ct"
+                value={street}
+                onChange={(e) => setStreet(e.target.value)}
+              />
+            </div>
+            <div>
+              <Label htmlFor="city">City</Label>
+              <Input
+                id="city"
+                placeholder="Dewey"
+                value={city}
+                onChange={(e) => setCity(e.target.value)}
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="addr-state">State</Label>
+                <Input
+                  id="addr-state"
+                  placeholder="AZ"
+                  value={addrState}
+                  onChange={(e) => setAddrState(e.target.value)}
+                  maxLength={2}
+                />
+              </div>
+              <div>
+                <Label htmlFor="zip">Zip Code</Label>
+                <Input
+                  id="zip"
+                  placeholder="86327"
+                  value={zip}
+                  onChange={(e) => setZip(e.target.value)}
+                  maxLength={10}
+                />
+              </div>
+            </div>
           </div>
 
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
@@ -766,8 +849,8 @@ export default function ClaimWeatherPage({ params }: Props) {
           <div className="grid grid-cols-2 gap-x-6 gap-y-2 text-sm">
             <div>
               <span className="font-medium text-muted-foreground">Address:</span>{" "}
-              <span className={address ? "" : "italic text-muted-foreground"}>
-                {address || "Enter above ↑"}
+              <span className={fullAddress ? "" : "italic text-muted-foreground"}>
+                {fullAddress || "Enter above ↑"}
               </span>
             </div>
             <div>
@@ -802,9 +885,9 @@ export default function ClaimWeatherPage({ params }: Props) {
         <div className="space-y-4">
           <Button
             onClick={runWeatherReport}
-            disabled={isReportRunning || !selectedDol || !address.trim()}
+            disabled={isReportRunning || !selectedDol || !fullAddress.trim()}
             size="lg"
-            className={selectedDol && address.trim() ? "bg-emerald-600 hover:bg-emerald-700" : ""}
+            className={selectedDol && fullAddress.trim() ? "bg-emerald-600 hover:bg-emerald-700" : ""}
           >
             {isReportRunning ? (
               <>
