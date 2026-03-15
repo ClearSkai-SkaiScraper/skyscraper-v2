@@ -62,7 +62,10 @@ export default function OnboardingPage() {
       const data = await res.json();
 
       if (!data.ok) {
-        throw new Error(data.error || "Failed to create organization");
+        // Show more descriptive error message if available
+        const errorMsg = data.error || "Failed to create organization";
+        const suggestion = data.suggestedAction || "";
+        throw new Error(suggestion ? `${errorMsg}. ${suggestion}` : errorMsg);
       }
 
       // Success - redirect to dashboard

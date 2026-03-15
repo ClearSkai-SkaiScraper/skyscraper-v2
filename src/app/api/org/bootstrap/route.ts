@@ -220,17 +220,41 @@ export async function POST(req: Request) {
   } catch (error: any) {
     const errorMessage = error?.message || "Unknown error";
     const errorCode = error?.code || "UNKNOWN";
+
+    // Classify error for better user feedback
+    let userMessage = "Bootstrap failed";
+    let suggestedAction = "Please try again. If the problem persists, contact support.";
+
+    if (errorCode === "P2002") {
+      // Unique constraint violation - likely duplicate org or membership
+      userMessage = "Organization already exists or duplicate entry detected";
+      suggestedAction = "Try refreshing the page. You may already have an organization.";
+    } else if (errorCode === "P2003") {
+      // Foreign key constraint - missing related record
+      userMessage = "Database relationship error";
+      suggestedAction = "Please contact support with this error code.";
+    } else if (errorMessage.includes("connect") || errorMessage.includes("timeout")) {
+      userMessage = "Database connection issue";
+      suggestedAction = "Please wait a moment and try again.";
+    } else if (errorMessage.includes("ENOTFOUND") || errorMessage.includes("ECONNREFUSED")) {
+      userMessage = "Service temporarily unavailable";
+      suggestedAction = "Please wait a moment and try again.";
+    }
+
     logger.error("[bootstrap] Error:", {
       message: errorMessage,
       code: errorCode,
       stack: error?.stack,
+      userMessage,
     });
+
     return NextResponse.json(
       {
         ok: false,
-        error: "Bootstrap failed",
+        error: userMessage,
         detail: process.env.NODE_ENV === "development" ? errorMessage : undefined,
         code: errorCode,
+        suggestedAction,
       },
       { status: 500 }
     );
