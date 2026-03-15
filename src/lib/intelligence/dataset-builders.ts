@@ -209,6 +209,210 @@ export async function buildInternalClaimDataset(
   if (!claim) throw new Error(`Claim ${claimId} not found`);
   if (orgId && claim.orgId !== orgId) throw new Error(`Unauthorized access to claim ${claimId}`);
 
+  // Fetch all related data in parallel
+  const [
+    property,
+    damageAssessments,
+    weatherReports,
+    estimates,
+    supplements,
+    scopes,
+    reports,
+    financialSnapshots,
+    activities,
+    inspections,
+    materials,
+    messages,
+  ] = await Promise.all([
+    // Property
+    prisma.properties.findFirst({
+      where: { claims: { some: { id: claimId } } },
+      select: {
+        id: true,
+        street: true,
+        city: true,
+        state: true,
+        zipCode: true,
+        propertyType: true,
+        yearBuilt: true,
+        squareFootage: true,
+        roofType: true,
+        roofAge: true,
+      },
+    }),
+
+    // Damage assessments
+    prisma.damage_assessments.findMany({
+      where: { claim_id: claimId },
+      select: {
+        id: true,
+        primaryPeril: true,
+        summary: true,
+        confidence: true,
+        metadata: true,
+        created_at: true,
+      },
+      orderBy: { created_at: "desc" },
+      take: 20,
+    }),
+
+    // Weather reports
+    prisma.weather_reports.findMany({
+      where: { claimId },
+      select: {
+        id: true,
+        dol: true,
+        primaryPeril: true,
+        overallAssessment: true,
+        confidence: true,
+        events: true,
+        createdAt: true,
+      },
+      orderBy: { createdAt: "desc" },
+      take: 10,
+    }),
+
+    // Estimates
+    prisma.estimates.findMany({
+      where: { claim_id: claimId },
+      select: {
+        id: true,
+        title: true,
+        mode: true,
+        scopeItems: true,
+        material_tax_rate: true,
+        labor_tax_rate: true,
+        overhead_percent: true,
+        profit_percent: true,
+        o_and_p_enabled: true,
+        createdAt: true,
+      },
+      orderBy: { createdAt: "desc" },
+      take: 10,
+    }),
+
+    // Supplements
+    prisma.supplements.findMany({
+      where: { claim_id: claimId },
+      select: {
+        id: true,
+        claim_number: true,
+        carrier: true,
+        date_of_loss: true,
+        scope_items: true,
+        notes: true,
+        created_at: true,
+      },
+      orderBy: { created_at: "desc" },
+      take: 10,
+    }),
+
+    // Scopes
+    prisma.scopes.findMany({
+      where: { claim_id: claimId },
+      select: {
+        id: true,
+        title: true,
+        status: true,
+        confidence: true,
+        created_at: true,
+      },
+      orderBy: { created_at: "desc" },
+      take: 10,
+    }),
+
+    // Reports (unified envelope)
+    prisma.reports.findMany({
+      where: { claimId },
+      select: {
+        id: true,
+        title: true,
+        type: true,
+        sections: true,
+        createdAt: true,
+      },
+      orderBy: { createdAt: "desc" },
+      take: 10,
+    }),
+
+    // Financial snapshots
+    prisma.financial_snapshots.findMany({
+      where: { claimId },
+      select: {
+        id: true,
+        totals: true,
+        depreciation: true,
+        lineItems: true,
+        supplements: true,
+        projection: true,
+        underpayment_amount: true,
+        confidence: true,
+        created_at: true,
+      },
+      orderBy: { created_at: "desc" },
+      take: 5,
+    }),
+
+    // Activities
+    prisma.claim_activities.findMany({
+      where: { claim_id: claimId },
+      select: {
+        id: true,
+        type: true,
+        message: true,
+        created_at: true,
+        user_id: true,
+      },
+      orderBy: { created_at: "desc" },
+      take: 50,
+    }),
+
+    // Inspections
+    prisma.inspections.findMany({
+      where: { claimId },
+      select: {
+        id: true,
+        title: true,
+        type: true,
+        scheduledAt: true,
+        completedAt: true,
+        status: true,
+        notes: true,
+        photoCount: true,
+        weatherData: true,
+        inspectorName: true,
+      },
+      orderBy: { scheduledAt: "desc" },
+      take: 10,
+    }),
+
+    // Materials
+    prisma.claimMaterial.findMany({
+      where: { claimId },
+      select: {
+        id: true,
+        quantity: true,
+        unitPrice: true,
+        spec: true,
+        warranty: true,
+        color: true,
+      },
+      take: 50,
+    }),
+
+    // Messages (simple claim messages)
+    prisma.claimMessage.findMany({
+      where: { claimId },
+      select: {
+        id: true,
+        body: true,
+        createdAt: true,
+      },
+      orderBy: { createdAt: "desc" },
+      take: 30,
+    }),
+  ]);
+
   return {
     claim: {
       id: claim.id,
@@ -234,20 +438,122 @@ export async function buildInternalClaimDataset(
       updatedAt: claim.updatedAt,
       orgId: claim.orgId,
     },
-    property: null,
+    property: property
+      ? {
+          id: property.id,
+          street: property.street ?? "",
+          city: property.city ?? "",
+          state: property.state ?? "",
+          zipCode: property.zipCode ?? "",
+          propertyType: property.propertyType,
+          yearBuilt: property.yearBuilt,
+          squareFootage: property.squareFootage,
+          roofType: property.roofType,
+          roofAge: property.roofAge,
+        }
+      : null,
     modules: {
-      damageAssessments: [],
-      weatherReports: [],
-      estimates: [],
-      supplements: [],
-      scopes: [],
-      reports: [],
-      financialSnapshots: [],
+      damageAssessments: damageAssessments.map((d) => ({
+        id: d.id,
+        peril: d.primaryPeril,
+        severity: null,
+        summary: d.summary,
+        aiDamageJson: d.metadata,
+        createdAt: d.created_at,
+      })),
+      weatherReports: weatherReports.map((w) => ({
+        id: w.id,
+        weatherDate: w.dol,
+        weatherType: w.primaryPeril,
+        severity: w.overallAssessment,
+        dolProbability: w.confidence,
+        aiWeatherJson: w.events,
+        createdAt: w.createdAt,
+      })),
+      estimates: estimates.map((e) => ({
+        id: e.id,
+        title: e.title,
+        mode: e.mode,
+        scopeItems: e.scopeItems,
+        materialTaxRate: e.material_tax_rate ? Number(e.material_tax_rate) : null,
+        laborTaxRate: e.labor_tax_rate ? Number(e.labor_tax_rate) : null,
+        overheadPercent: e.overhead_percent ? Number(e.overhead_percent) : null,
+        profitPercent: e.profit_percent ? Number(e.profit_percent) : null,
+        oAndPEnabled: e.o_and_p_enabled,
+        createdAt: e.createdAt,
+      })),
+      supplements: supplements.map((s) => ({
+        id: s.id,
+        claimNumber: s.claim_number,
+        carrier: s.carrier,
+        dateOfLoss: s.date_of_loss,
+        scopeItems: s.scope_items,
+        notes: s.notes,
+        createdAt: s.created_at,
+      })),
+      scopes: scopes.map((sc) => ({
+        id: sc.id,
+        title: sc.title,
+        summary: sc.status,
+        aiScopeJson: null,
+        createdAt: sc.created_at,
+      })),
+      reports: reports.map((r) => ({
+        id: r.id,
+        title: r.title,
+        reportType: r.type,
+        aiReportJson: r.sections,
+        createdAt: r.createdAt,
+      })),
+      financialSnapshots: financialSnapshots.map((f) => ({
+        id: f.id,
+        totals: f.totals,
+        depreciation: f.depreciation,
+        lineItems: f.lineItems,
+        supplements: f.supplements,
+        projection: f.projection,
+        underpaymentAmount: f.underpayment_amount,
+        confidence: f.confidence,
+        createdAt: f.created_at,
+      })),
     },
-    activities: [],
-    inspections: [],
-    materials: [],
-    messages: [],
+    activities: activities.map((a) => ({
+      id: a.id,
+      type: a.type,
+      description: a.message,
+      createdAt: a.created_at,
+      user: a.user_id ? { id: a.user_id, name: null } : null,
+    })),
+    inspections: inspections.map((i) => ({
+      id: i.id,
+      title: i.title,
+      type: i.type,
+      scheduledAt: i.scheduledAt,
+      completedAt: i.completedAt,
+      status: i.status,
+      notes: i.notes,
+      photoCount: i.photoCount,
+      weatherData: i.weatherData,
+      inspectorName: i.inspectorName,
+    })),
+    materials: materials.map((m) => ({
+      id: m.id,
+      itemName: m.spec ?? "Unknown",
+      quantity: m.quantity,
+      unitCost: m.unitPrice ? Number(m.unitPrice) : 0,
+      totalCost: m.quantity * (m.unitPrice ? Number(m.unitPrice) : 0),
+      category: null,
+      supplier: null,
+    })),
+    messages: messages.map((msg) => ({
+      id: msg.id,
+      messageType: "claim_message",
+      subject: null,
+      body: msg.body,
+      sentAt: msg.createdAt,
+      recipientEmail: null,
+      status: null,
+    })),
   };
 }
 

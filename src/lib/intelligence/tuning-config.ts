@@ -159,6 +159,43 @@ export const STORM_ALERT_CONFIG = {
 } as const;
 
 // ─────────────────────────────────────────────────────────────────────────────
+// Degree of Loss (DOL)
+// ─────────────────────────────────────────────────────────────────────────────
+
+export const DOL_CONFIG = {
+  /** DOL severity tiers (0-1 scale where 1 = total loss) */
+  severity: {
+    high: 0.6, // >= 0.6 → "high" — strong evidence of significant storm damage
+    moderate: 0.35, // >= 0.35 → "moderate" — clear damage warranting claim
+    low: 0.15, // >= 0.15 → "low" — minor damage, may not meet deductible
+    // below 0.15 → "minimal" — cosmetic or no measurable damage
+  },
+
+  /** Confidence tiers for DOL readings */
+  confidence: {
+    high: 0.8, // >= 0.8 → high confidence in the DOL reading
+    moderate: 0.5, // >= 0.5 → moderate confidence
+    // below 0.5 → low confidence — may need manual verification
+  },
+
+  /** Labels (conservative wording) */
+  labels: {
+    high: "Significant Weather Impact",
+    moderate: "Moderate Weather Impact",
+    low: "Minor Weather Indicators",
+    minimal: "Below Detection Threshold",
+  },
+
+  /** How much DOL should boost simulation storm evidence score (0-25 bonus points) */
+  simulationBoost: {
+    high: 20,
+    moderate: 12,
+    low: 5,
+    minimal: 0,
+  },
+} as const;
+
+// ─────────────────────────────────────────────────────────────────────────────
 // Carrier Playbook
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -258,6 +295,26 @@ export function validateTuningConfig(): string[] {
     PACKET_SCORE_CONFIG.grades.C <= PACKET_SCORE_CONFIG.grades.D
   ) {
     errors.push("Packet grades must be in descending order: A > B > C > D");
+  }
+
+  // DOL severity thresholds must be in descending order
+  if (
+    DOL_CONFIG.severity.high <= DOL_CONFIG.severity.moderate ||
+    DOL_CONFIG.severity.moderate <= DOL_CONFIG.severity.low
+  ) {
+    errors.push("DOL severity thresholds must be in descending order: high > moderate > low");
+  }
+
+  // DOL confidence thresholds must be in descending order
+  if (DOL_CONFIG.confidence.high <= DOL_CONFIG.confidence.moderate) {
+    errors.push("DOL confidence thresholds must be in descending order: high > moderate");
+  }
+
+  // DOL simulation boosts should be non-negative
+  for (const [tier, boost] of Object.entries(DOL_CONFIG.simulationBoost)) {
+    if (boost < 0) {
+      errors.push(`DOL simulationBoost.${tier} is negative (${boost})`);
+    }
   }
 
   return errors;

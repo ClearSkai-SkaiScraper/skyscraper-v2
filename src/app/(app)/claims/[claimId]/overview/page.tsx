@@ -14,11 +14,16 @@ import { useParams, useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 
+import { CarrierPlaybookPanel } from "@/components/carrier/CarrierPlaybookPanel";
+import { AutopilotResolutionPanel } from "@/components/claimiq/AutopilotResolutionPanel";
 import { EditableField } from "@/components/claims/EditableField";
 import { ClaimNotFoundError } from "@/components/errors/ErrorStates";
 import { TabErrorBoundary } from "@/components/errors/TabErrorBoundary";
+import { EvidenceGapWidget } from "@/components/intelligence/EvidenceGapWidget";
+import { IntelligenceErrorBoundary } from "@/components/intelligence/IntelligenceErrorBoundary";
 import { JobValueBox } from "@/components/jobs/JobValueBox";
 import { ClaimWorkspaceSkeleton } from "@/components/loading/LoadingStates";
+import { SimulationComparison } from "@/components/simulation/SimulationComparison";
 
 import { CloseoutChecklist } from "@/components/jobs/CloseoutChecklist";
 import { RequestCloseoutButton } from "@/components/jobs/RequestCloseoutButton";
@@ -852,6 +857,24 @@ export default function OverviewPage() {
                 <CloseoutChecklist entityId={claimId} entityType="claim" />
               </div>
             </div>
+          </div>
+        </SectionCard>
+
+        {/* 6. Intelligence Layer — Evidence Gaps + Carrier Playbook + Autopilot + Simulation */}
+        <SectionCard title="Intelligence">
+          <div className="space-y-4">
+            <IntelligenceErrorBoundary compact>
+              <EvidenceGapWidget claimId={claimId} />
+            </IntelligenceErrorBoundary>
+            <IntelligenceErrorBoundary compact>
+              <AutopilotResolutionPanel claimId={claimId} />
+            </IntelligenceErrorBoundary>
+            <IntelligenceErrorBoundary compact>
+              <CarrierPlaybookPanel />
+            </IntelligenceErrorBoundary>
+            <IntelligenceErrorBoundary compact>
+              <SimulationComparison claimId={claimId} />
+            </IntelligenceErrorBoundary>
           </div>
         </SectionCard>
       </div>

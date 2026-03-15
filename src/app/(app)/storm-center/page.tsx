@@ -12,6 +12,7 @@ import { redirect } from "next/navigation";
 
 import { PageContainer } from "@/components/layout/PageContainer";
 import { PageHero } from "@/components/layout/PageHero";
+import { StormAlertPanel } from "@/components/storm/StormAlertPanel";
 import { WeatherAlertsPanel } from "@/components/weather/WeatherAlertsPanel";
 import prisma from "@/lib/prisma";
 import { safeOrgContext } from "@/lib/safeOrgContext";
@@ -364,6 +365,9 @@ export default async function StormCenterPage() {
         <div className="space-y-6">
           {/* Weather Alerts Panel — live NWS data */}
           <WeatherAlertsPanel />
+
+          {/* Storm Alert Intelligence — AI-powered property exposure */}
+          <StormAlertPanel />
 
           {/* Quick Actions */}
           <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900">

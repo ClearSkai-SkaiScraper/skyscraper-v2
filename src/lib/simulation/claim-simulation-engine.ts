@@ -17,7 +17,7 @@
  * Phase 2.1 of the Claim Simulation + Storm Graph system.
  */
 
-import { SIMULATION_CONFIG } from "@/lib/intelligence/tuning-config";
+import { DOL_CONFIG, SIMULATION_CONFIG } from "@/lib/intelligence/tuning-config";
 import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 import { createId } from "@paralleldrive/cuid2";
@@ -529,12 +529,44 @@ function scoreStormEvidence(
     }
 
     if (stormEvidence.dolConfidence && stormEvidence.dolConfidence >= 0.8) {
-      score += 15;
+      // DOL interpretation using DOL_CONFIG severity + confidence tiers
+      const dolSeverity = interpretDolSeverity(stormEvidence.dolConfidence);
+      const dolConf = interpretDolConfidence(stormEvidence.dolConfidence);
+      const boost =
+        DOL_CONFIG.simulationBoost[dolSeverity.tier as keyof typeof DOL_CONFIG.simulationBoost] ??
+        10;
+      score += boost;
       pos.push({
         category: "Storm Evidence",
-        description: "Date of Loss confidence HIGH",
+        description: `Date of Loss confidence ${dolConf.label} (${Math.round(stormEvidence.dolConfidence * 100)}%) — ${dolSeverity.label} severity (+${boost} pts)`,
+        impact: dolSeverity.tier === "high" ? "high" : "medium",
+        icon: "✓",
+      });
+    } else if (
+      stormEvidence.dolConfidence &&
+      stormEvidence.dolConfidence >= DOL_CONFIG.severity.moderate
+    ) {
+      const dolSeverity = interpretDolSeverity(stormEvidence.dolConfidence);
+      const boost =
+        DOL_CONFIG.simulationBoost[dolSeverity.tier as keyof typeof DOL_CONFIG.simulationBoost] ??
+        5;
+      score += boost;
+      pos.push({
+        category: "Storm Evidence",
+        description: `Date of Loss confidence moderate (${Math.round(stormEvidence.dolConfidence * 100)}%) — ${dolSeverity.label} (+${boost} pts)`,
         impact: "medium",
         icon: "✓",
+      });
+    } else if (
+      stormEvidence.dolConfidence &&
+      stormEvidence.dolConfidence >= DOL_CONFIG.severity.low
+    ) {
+      score += DOL_CONFIG.simulationBoost.low;
+      neg.push({
+        category: "Storm Evidence",
+        description: `Date of Loss confidence low (${Math.round(stormEvidence.dolConfidence * 100)}%) — weak weather correlation`,
+        impact: "low",
+        icon: "⚠",
       });
     }
 
@@ -567,7 +599,7 @@ function scoreStormEvidence(
         action: "Verify photo timestamps match claimed date of loss",
         estimatedImpact: 10,
         category: "Storm Evidence",
-        effort: "medium",
+        effort: "moderate",
       });
     }
   } else {
@@ -1220,4 +1252,37 @@ export async function recordSimulationHistory(
   } catch (err) {
     logger.error("[SIMULATION] Failed to record history", { claimId, err });
   }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// DOL Interpretation Helpers (driven by DOL_CONFIG in tuning-config)
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * Interpret a DOL confidence score into a severity tier using DOL_CONFIG thresholds.
+ */
+function interpretDolSeverity(confidence: number): { tier: string; label: string } {
+  if (confidence >= DOL_CONFIG.severity.high) {
+    return { tier: "high", label: DOL_CONFIG.labels.high };
+  }
+  if (confidence >= DOL_CONFIG.severity.moderate) {
+    return { tier: "moderate", label: DOL_CONFIG.labels.moderate };
+  }
+  if (confidence >= DOL_CONFIG.severity.low) {
+    return { tier: "low", label: DOL_CONFIG.labels.low };
+  }
+  return { tier: "minimal", label: DOL_CONFIG.labels.minimal };
+}
+
+/**
+ * Interpret a DOL confidence score into a confidence label using DOL_CONFIG.
+ */
+function interpretDolConfidence(confidence: number): { tier: string; label: string } {
+  if (confidence >= DOL_CONFIG.confidence.high) {
+    return { tier: "high", label: "High" };
+  }
+  if (confidence >= DOL_CONFIG.confidence.moderate) {
+    return { tier: "moderate", label: "Moderate" };
+  }
+  return { tier: "low", label: "Low" };
 }

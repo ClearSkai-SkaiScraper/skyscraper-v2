@@ -8,9 +8,9 @@
  * Used for canvassing decisions and outreach targeting.
  */
 
+import { PageHero } from "@/components/layout/PageHero";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { PageHero } from "@/components/ui/PageHero";
 import { Progress } from "@/components/ui/progress";
 import { cn } from "@/lib/utils";
 import {

@@ -57,11 +57,11 @@ export async function buildCarrierPlaybooks(orgId: string): Promise<CarrierPlayb
   const claims = await prisma.claims.findMany({
     where: {
       orgId,
-      insuranceCarrier: { not: null },
+      carrier: { not: null },
     },
     select: {
       id: true,
-      insuranceCarrier: true,
+      carrier: true,
       status: true,
       createdAt: true,
       updatedAt: true,
@@ -90,12 +90,12 @@ export async function buildCarrierPlaybooks(orgId: string): Promise<CarrierPlayb
   let supplementsByClaimId: Map<string, number> = new Map();
   try {
     const supplements = await prisma.supplements.findMany({
-      where: { claimId: { in: claimIds } },
-      select: { claimId: true },
+      where: { claim_id: { in: claimIds } },
+      select: { claim_id: true },
     });
     for (const s of supplements) {
-      if (s.claimId) {
-        supplementsByClaimId.set(s.claimId, (supplementsByClaimId.get(s.claimId) || 0) + 1);
+      if (s.claim_id) {
+        supplementsByClaimId.set(s.claim_id, (supplementsByClaimId.get(s.claim_id) || 0) + 1);
       }
     }
   } catch {
@@ -113,7 +113,7 @@ export async function buildCarrierPlaybooks(orgId: string): Promise<CarrierPlayb
   >();
 
   for (const claim of claims) {
-    const carrier = normalizeCarrierName(claim.insuranceCarrier || "Unknown");
+    const carrier = normalizeCarrierName(claim.carrier || "Unknown");
     if (!carrierMap.has(carrier)) {
       carrierMap.set(carrier, { claims: [], outcomes: [] });
     }
@@ -185,7 +185,7 @@ export async function buildCarrierPlaybooks(orgId: string): Promise<CarrierPlayb
 
     // Analyze denial reasons
     const denialReasons = deniedOutcomes
-      .map((o) => (o.denialReason as string) || "")
+      .map((o) => (o.carrierReason as string) || "")
       .filter(Boolean);
     const commonDenialReasons = extractTopReasons(denialReasons);
 
@@ -276,10 +276,10 @@ export async function getCarrierPlaybook(
       approvedCount: cached.approvedCount,
       partialCount: cached.partialCount,
       deniedCount: cached.deniedCount,
-      approvalRate: cached.approvalRate,
-      avgDaysToResolve: cached.avgDaysToResolve,
-      avgSupplementRounds: cached.avgSupplementRounds,
-      supplementWinRate: cached.supplementWinRate,
+      approvalRate: cached.approvalRate ?? 0,
+      avgDaysToResolve: cached.avgDaysToResolve ?? 0,
+      avgSupplementRounds: cached.avgSupplementRounds ?? 0,
+      supplementWinRate: cached.supplementWinRate ?? 0,
       commonDenialReasons: (cached.commonDenialReasons as string[]) ?? [],
       keyEvidenceNeeded: (cached.keyEvidenceNeeded as string[]) ?? [],
       carrierBehaviorNotes: cached.carrierBehaviorNotes ?? "",

@@ -245,7 +245,7 @@ export async function preQualifyAddress(
       ? stormEvents.reduce((sum, s) => sum + (s.hailSizeAvg || 0), 0) / stormEvents.length
       : null;
   const maxWind =
-    stormEvents.length > 0 ? Math.max(...stormEvents.map((s) => s.maxWindSpeed || 0)) : null;
+    stormEvents.length > 0 ? Math.max(...stormEvents.map((s) => s.windSpeedMax || 0)) : null;
 
   const density = computeDensity(nearbyClaims, point, "");
   const preQualScore = computePreQualScore(
@@ -368,15 +368,15 @@ export async function persistStormCluster(cluster: StormCluster, orgId: string):
 
 interface StormEventRow {
   id: string;
-  stormType: string;
+  eventType: string;
   detectedAt: Date;
   centerLat: number;
   centerLng: number;
   radiusMiles: number;
   hailSizeAvg: number | null;
-  maxWindSpeed: number | null;
+  windSpeedMax: number | null;
   estimatedPropertiesImpacted: number;
-  severity: string;
+  severity: number;
 }
 
 async function findNearbyStormEvents(
@@ -401,13 +401,13 @@ async function findNearbyStormEvents(
     },
     select: {
       id: true,
-      stormType: true,
+      eventType: true,
       detectedAt: true,
       centerLat: true,
       centerLng: true,
       radiusMiles: true,
       hailSizeAvg: true,
-      maxWindSpeed: true,
+      windSpeedMax: true,
       estimatedPropertiesImpacted: true,
       severity: true,
     },
@@ -422,7 +422,7 @@ async function findNearbyStormEvents(
       centerLng: Number(e.centerLng),
       radiusMiles: Number(e.radiusMiles),
       hailSizeAvg: e.hailSizeAvg ? Number(e.hailSizeAvg) : null,
-      maxWindSpeed: e.maxWindSpeed,
+      windSpeedMax: e.windSpeedMax,
     }))
     .filter((e) => {
       const dist = haversineDistance(point, {
@@ -542,7 +542,7 @@ function createCluster(
   return {
     clusterId: createId(),
     stormEventId: stormEventId || null,
-    stormType: storm?.stormType || "Unknown",
+    stormType: storm?.eventType || "Unknown",
     stormDate: storm?.detectedAt?.toISOString() || new Date().toISOString(),
     centerLat,
     centerLng,
@@ -559,7 +559,7 @@ function createCluster(
           )
         : 0,
     avgHailSize: storm?.hailSizeAvg || null,
-    maxWindSpeed: storm?.maxWindSpeed || null,
+    maxWindSpeed: storm?.windSpeedMax || null,
     confidenceLevel: confidence,
     members,
   };
@@ -736,9 +736,9 @@ function buildTimeline(
     entries.push({
       timestamp: storm.detectedAt.toISOString(),
       type: "storm_detected",
-      description: `${storm.stormType} storm detected — ${storm.severity} severity${
+      description: `${storm.eventType} storm detected — ${storm.severity} severity${
         storm.hailSizeAvg ? `, ${storm.hailSizeAvg}" hail` : ""
-      }${storm.maxWindSpeed ? `, ${storm.maxWindSpeed} mph winds` : ""}`,
+      }${storm.windSpeedMax ? `, ${storm.windSpeedMax} mph winds` : ""}`,
       stormEventId: storm.id,
       location: { latitude: storm.centerLat, longitude: storm.centerLng },
     });
@@ -757,7 +757,7 @@ function buildTimeline(
   if (sortedClaims.length > 0) {
     const first = sortedClaims[0];
     entries.push({
-      timestamp: first.dateOfLoss || new Date().toISOString(),
+      timestamp: first.dateOfLoss?.toISOString() || new Date().toISOString(),
       type: "first_impact",
       description: `First damage reported at ${first.address || "nearby property"} — ${first.damageType || "storm"} damage`,
       claimId: first.claimId,
@@ -769,7 +769,7 @@ function buildTimeline(
   for (const claim of sortedClaims.slice(0, 10)) {
     const isVerified = ["APPROVED", "SUBMITTED", "IN_REVIEW"].includes(claim.status || "");
     entries.push({
-      timestamp: claim.dateOfLoss || new Date().toISOString(),
+      timestamp: claim.dateOfLoss?.toISOString() || new Date().toISOString(),
       type: isVerified ? "claim_verified" : "claim_filed",
       description: `${isVerified ? "Verified" : "Filed"}: ${claim.damageType || "storm"} damage at ${claim.address || "nearby property"} (${claim.distanceMiles.toFixed(1)} mi)`,
       claimId: claim.claimId,
