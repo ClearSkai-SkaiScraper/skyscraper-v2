@@ -1,19 +1,9 @@
 import { logger } from "@/lib/observability/logger";
-import { Resend } from "resend";
 
+import { FROM_EMAIL, getResend } from "@/lib/email/resend";
 import { APP_URL } from "@/lib/env";
 
-let _resend: Resend | null = null;
-
-function getResend() {
-  if (!_resend) {
-    _resend = new Resend(process.env.RESEND_API_KEY);
-  }
-  return _resend;
-}
-
-const FROM_EMAIL = process.env.RESEND_FROM_EMAIL || "noreply@preloss.com";
-const APP_NAME = "PreLoss Vision";
+const APP_NAME = "SkaiScraper";
 
 interface SendInvitationEmailParams {
   to: string;
@@ -59,7 +49,14 @@ export async function sendInvitationEmail({
   });
 
   try {
-    const { data, error } = await getResend().emails.send({
+    logger.info(`[INVITATION_EMAIL] Sending to ${to} from ${FROM_EMAIL}`);
+
+    const resend = getResend();
+    if (!resend) {
+      throw new Error("Resend client not initialized - check RESEND_API_KEY");
+    }
+
+    const { data, error } = await resend.emails.send({
       from: FROM_EMAIL,
       to,
       subject: `${inviterName} invited you to join ${orgName} on ${APP_NAME}`,
@@ -68,14 +65,14 @@ export async function sendInvitationEmail({
     });
 
     if (error) {
-      logger.error("Failed to send invitation email:", error);
+      logger.error(`[INVITATION_EMAIL] Resend API error to=${to} from=${FROM_EMAIL}: ${error.message}`);
       throw new Error(error.message);
     }
 
-    logger.debug(`✅ Invitation email sent to ${to}:`, data);
+    logger.info(`[INVITATION_EMAIL] ✅ Sent successfully to ${to}, messageId:`, data?.id);
     return data;
   } catch (error) {
-    logger.error("Email sending failed:", error);
+    logger.error("[INVITATION_EMAIL] Failed:", error);
     throw error;
   }
 }
