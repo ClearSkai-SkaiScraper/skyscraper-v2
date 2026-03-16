@@ -2,6 +2,7 @@ import { AlertCircle, CheckCircle2, ClipboardList, Clock, FileCheck, Shield } fr
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
+import { NoOrgMembershipBanner } from "@/components/guards/NoOrgMembershipBanner";
 import { PageContainer } from "@/components/layout/PageContainer";
 import { PageHero } from "@/components/layout/PageHero";
 import {
@@ -46,7 +47,13 @@ const statusColors: Record<string, string> = {
 export default async function PermitsPage() {
   const ctx = await safeOrgContext();
   if (ctx.status === "unauthenticated") redirect("/sign-in");
-  if (ctx.status !== "ok" || !ctx.orgId) redirect("/dashboard");
+  if (ctx.status !== "ok" || !ctx.orgId) {
+    return (
+      <PageContainer>
+        <NoOrgMembershipBanner title="Permits" />
+      </PageContainer>
+    );
+  }
 
   const permits = await guarded(
     "permits",

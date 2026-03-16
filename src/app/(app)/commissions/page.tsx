@@ -1,6 +1,7 @@
 import { BadgeDollarSign, CheckCircle, Clock, TrendingUp } from "lucide-react";
 import { redirect } from "next/navigation";
 
+import { NoOrgMembershipBanner } from "@/components/guards/NoOrgMembershipBanner";
 import { PageContainer } from "@/components/layout/PageContainer";
 import { PageHero } from "@/components/layout/PageHero";
 import {
@@ -26,7 +27,13 @@ export const dynamic = "force-dynamic";
 export default async function CommissionsPage() {
   const ctx = await safeOrgContext();
   if (ctx.status === "unauthenticated") redirect("/sign-in");
-  if (ctx.status !== "ok" || !ctx.orgId) redirect("/dashboard");
+  if (ctx.status !== "ok" || !ctx.orgId) {
+    return (
+      <PageContainer>
+        <NoOrgMembershipBanner title="Commissions" />
+      </PageContainer>
+    );
+  }
 
   // RBAC: Commission data requires PM (manager) role or above
   if (!ctx.role || !hasMinimumRole(ctx.role as Role, "PM")) {

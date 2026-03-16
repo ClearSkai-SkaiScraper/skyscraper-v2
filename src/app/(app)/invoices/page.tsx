@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
+import { NoOrgMembershipBanner } from "@/components/guards/NoOrgMembershipBanner";
 import { PageContainer } from "@/components/layout/PageContainer";
 import { PageHero } from "@/components/layout/PageHero";
 import { Button } from "@/components/ui/button";
@@ -32,7 +33,13 @@ export const metadata: Metadata = {
 export default async function InvoicesPage() {
   const ctx = await safeOrgContext();
   if (ctx.status === "unauthenticated") redirect("/sign-in");
-  if (ctx.status !== "ok" || !ctx.orgId) redirect("/dashboard");
+  if (ctx.status !== "ok" || !ctx.orgId) {
+    return (
+      <PageContainer>
+        <NoOrgMembershipBanner title="Invoices" />
+      </PageContainer>
+    );
+  }
 
   // RBAC: Invoice data requires at least OFFICE_STAFF role
   if (!ctx.role || !hasMinimumRole(ctx.role as Role, "OFFICE_STAFF")) {

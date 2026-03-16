@@ -1,53 +1,40 @@
 export const dynamic = "force-dynamic";
 
-import { logger } from "@/lib/logger";
-import { clerkClient } from "@clerk/nextjs/server";
+import { createId } from "@paralleldrive/cuid2";
 import { NextRequest, NextResponse } from "next/server";
 
-import { withAuth } from "@/lib/auth/withAuth";
 import { prismaMaybeModel } from "@/lib/db/prismaModel";
 import { sendWelcomeEmail } from "@/lib/email/invitations";
+import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 import { checkRateLimit } from "@/lib/rate-limit";
+import { auth } from "@clerk/nextjs/server";
 
 // Use prismaMaybeModel for optional tables that may not be in schema
 const Activity = prismaMaybeModel("claim_activities");
 
-/** Typed shape for team_invitations (raw SQL table, not in Prisma schema) */
-interface TeamInvitation {
-  id: string;
-  org_id: string;
-  role: string;
-  token: string;
-  status: string;
-  expires_at: Date;
-}
+/**
+ * Team Invitation Acceptance
+ *
+ * CRITICAL: This route creates BOTH:
+ *   1. team_members row (raw SQL table for team features)
+ *   2. user_organizations row (Prisma canonical membership — ALL org resolvers depend on this)
+ *
+ * Without #2, the user will be auto-onboarded into a separate empty org
+ * and never actually join the inviting organization.
+ *
+ * NOTE: We use raw auth() instead of withAuth here because the accepting user
+ * may not have any org membership yet (which withAuth/resolveOrg requires).
+ */
 
-/** Typed shape for team_members (raw SQL table, not in Prisma schema) */
-interface TeamMember {
-  id: string;
-  org_id: string;
-  user_id: string;
-  role: string;
-  joined_at: Date;
-}
-
-/** Extended Prisma client with non-schema team tables */
-interface PrismaWithTeamTables {
-  team_invitations: {
-    findFirst(args: { where: Record<string, unknown> }): Promise<TeamInvitation | null>;
-    update(args: { where: { id: string }; data: Record<string, unknown> }): Promise<TeamInvitation>;
-  };
-  team_members: {
-    findFirst(args: { where: Record<string, unknown> }): Promise<TeamMember | null>;
-    create(args: { data: Record<string, unknown> }): Promise<TeamMember>;
-  };
-}
-
-const db = prisma as unknown as typeof prisma & PrismaWithTeamTables;
-
-export const POST = withAuth(async (req: NextRequest, { userId, orgId }) => {
+export async function POST(req: NextRequest) {
   try {
+    // ── 1. Auth check (raw Clerk — user may have no org yet) ──────────
+    const { userId } = await auth();
+    if (!userId) {
+      return NextResponse.json({ error: "Authentication required" }, { status: 401 });
+    }
+
     const rl = await checkRateLimit(userId, "API");
     if (!rl.success) {
       return NextResponse.json(
@@ -63,76 +50,120 @@ export const POST = withAuth(async (req: NextRequest, { userId, orgId }) => {
       return NextResponse.json({ error: "Invalid token" }, { status: 400 });
     }
 
-    // Find invitation (team_invitations is a raw SQL table, not in Prisma schema)
-    const invitation = await db.team_invitations.findFirst({
-      where: {
-        token,
-        status: "pending",
-        expires_at: { gte: new Date() },
-      },
-    });
+    // ── 2. Find the pending invitation (raw SQL table) ────────────────
+    const invitations = await prisma.$queryRaw<
+      Array<{
+        id: string;
+        org_id: string;
+        role: string;
+        token: string;
+        status: string;
+        email: string;
+        expires_at: Date;
+      }>
+    >`
+      SELECT id, org_id, role, token, status, email, expires_at
+      FROM team_invitations
+      WHERE token = ${token} AND status = 'pending' AND expires_at > NOW()
+      LIMIT 1
+    `;
+
+    const invitation = invitations[0] ?? null;
 
     if (!invitation) {
       return NextResponse.json({ error: "Invitation not found or expired" }, { status: 404 });
     }
 
-    // Check if user is already a member (team_members is a raw SQL table, not in Prisma schema)
-    const existingMember = await db.team_members.findFirst({
+    // ── 3. Check if user already has canonical membership ─────────────
+    const existingMembership = await prisma.user_organizations.findFirst({
       where: {
-        org_id: invitation.org_id,
-        user_id: userId,
+        userId: userId,
+        organizationId: invitation.org_id,
       },
     });
 
-    if (existingMember) {
-      return NextResponse.json(
-        { error: "You are already a member of this organization" },
-        { status: 409 }
-      );
+    if (existingMembership) {
+      // Already a member — just mark the invite as accepted and return success
+      await prisma.$executeRaw`
+        UPDATE team_invitations SET status = 'accepted', accepted_at = NOW(), accepted_by = ${userId}
+        WHERE id = ${invitation.id}
+      `;
+      return NextResponse.json({
+        success: true,
+        orgId: invitation.org_id,
+        role: existingMembership.role || invitation.role,
+        message: "You are already a member of this organization",
+      });
     }
 
-    // Get user and org details
-    const client = await clerkClient();
-    const user = await client.users.getUser(userId);
-    const org = await client.organizations.getOrganization({
-      organizationId: invitation.org_id,
+    // ── 4. Verify the org exists in DB ────────────────────────────────
+    const org = await prisma.org.findUnique({
+      where: { id: invitation.org_id },
+      select: { id: true, name: true, clerkOrgId: true },
     });
 
-    const userName = user.firstName
-      ? `${user.firstName} ${user.lastName || ""}`.trim()
-      : user.emailAddresses[0]?.emailAddress || "User";
+    if (!org) {
+      logger.error("[INVITE_ACCEPT] Invitation points to non-existent org", {
+        invitationId: invitation.id,
+        orgId: invitation.org_id,
+      });
+      return NextResponse.json({ error: "Organization not found" }, { status: 404 });
+    }
+
     const orgName = org.name || "Your Organization";
-    const userEmail = user.emailAddresses[0]?.emailAddress;
 
-    // Add user to team
-    // Create team member
-    await db.team_members.create({
+    // Map invite role to canonical role
+    const canonicalRole =
+      invitation.role === "admin" || invitation.role === "org:admin" ? "ADMIN" : "MEMBER";
+
+    // ── 5. Create CANONICAL membership (user_organizations) ───────────
+    // THIS IS THE CRITICAL FIX: Without this row, safeOrgContext/resolveOrg
+    // will never find this user's membership and they'll get auto-onboarded
+    // into a separate empty org instead.
+    await prisma.user_organizations.create({
       data: {
-        id: crypto.randomUUID(),
-        org_id: invitation.org_id,
-        user_id: userId,
-        role: invitation.role,
-        joined_at: new Date(),
-        updated_at: new Date(),
+        id: createId(),
+        userId: userId,
+        organizationId: org.id,
+        role: canonicalRole,
       },
     });
 
-    // Update invitation status
-    await db.team_invitations.update({
-      where: { id: invitation.id },
-      data: {
-        status: "accepted",
-        accepted_at: new Date(),
-        accepted_by: userId,
-      },
+    logger.info("[INVITE_ACCEPT] ✅ Created user_organizations membership", {
+      userId,
+      orgId: org.id,
+      role: canonicalRole,
     });
 
-    // Create activity log (soft-fail if audit table missing)
+    // ── 6. Also create team_members row (raw SQL) for team features ───
+    await prisma.$executeRaw`
+      INSERT INTO team_members (id, org_id, user_id, role, joined_at, updated_at)
+      VALUES (${createId()}, ${org.id}, ${userId}, ${invitation.role}, NOW(), NOW())
+      ON CONFLICT (org_id, user_id) DO NOTHING
+    `;
+
+    // ── 7. Update users.orgId legacy linkage (for fallback resolvers) ─
+    // Only update if the user exists and their orgId doesn't match
+    await prisma.$executeRaw`
+      UPDATE users SET "orgId" = ${org.id}
+      WHERE "clerkUserId" = ${userId}
+        AND ("orgId" IS NULL OR "orgId" = '' OR "orgId" LIKE 'org_%')
+    `.catch((err) => {
+      logger.warn("[INVITE_ACCEPT] Failed to update users.orgId (non-fatal):", err);
+    });
+
+    // ── 8. Mark invitation as accepted ────────────────────────────────
+    await prisma.$executeRaw`
+      UPDATE team_invitations SET status = 'accepted', accepted_at = NOW(), accepted_by = ${userId}
+      WHERE id = ${invitation.id}
+    `;
+
+    // ── 9. Activity log (soft-fail) ──────────────────────────────────
     if (Activity) {
       try {
         await Activity.create({
           data: {
-            org_id: invitation.org_id,
+            org_id: org.id,
             user_id: userId,
             action: "team_member_joined",
             description: `User joined the team via invitation`,
@@ -144,9 +175,18 @@ export const POST = withAuth(async (req: NextRequest, { userId, orgId }) => {
       }
     }
 
-    // Send welcome email
-    if (userEmail) {
-      try {
+    // ── 10. Send welcome email (soft-fail) ────────────────────────────
+    try {
+      // Get user email from Clerk
+      const { clerkClient } = await import("@clerk/nextjs/server");
+      const client = await clerkClient();
+      const user = await client.users.getUser(userId);
+      const userEmail = user.emailAddresses[0]?.emailAddress;
+      const userName = user.firstName
+        ? `${user.firstName} ${user.lastName || ""}`.trim()
+        : userEmail || "User";
+
+      if (userEmail) {
         await sendWelcomeEmail({
           to: userEmail,
           name: userName,
@@ -154,19 +194,19 @@ export const POST = withAuth(async (req: NextRequest, { userId, orgId }) => {
           role: invitation.role,
         });
         logger.debug(`✅ Welcome email sent to ${userEmail}`);
-      } catch (emailError) {
-        logger.error("Failed to send welcome email:", emailError);
-        // Don't fail the request if email fails
       }
+    } catch (emailError) {
+      logger.error("Failed to send welcome email:", emailError);
+      // Don't fail the request if email fails
     }
 
     return NextResponse.json({
       success: true,
-      orgId: invitation.org_id,
-      role: invitation.role,
+      orgId: org.id,
+      role: canonicalRole,
     });
   } catch (error) {
     logger.error("Failed to accept invitation:", error);
     return NextResponse.json({ error: "Failed to accept invitation" }, { status: 500 });
   }
-});
+}

@@ -23,15 +23,39 @@ export default async function HierarchyPage() {
     redirect("/sign-in?redirect_url=/teams/hierarchy");
   }
 
+  // TENANT ISOLATION: Require actual org membership, not just authentication
+  if (orgCtx.status !== "ok" || !orgCtx.orgId) {
+    return (
+      <PageContainer maxWidth="full">
+        <PageHero
+          section="settings"
+          title="Company Hierarchy"
+          subtitle="Join an organization to view the org chart"
+          icon={<GitBranch className="h-6 w-6" />}
+        />
+        <div className="mt-6 rounded-xl border border-amber-200 bg-amber-50 p-8 text-center dark:border-amber-800 dark:bg-amber-950/30">
+          <p className="text-amber-800 dark:text-amber-200">
+            You need to be a member of an organization to view the company hierarchy.
+          </p>
+          <p className="mt-2 text-sm text-amber-600 dark:text-amber-400">
+            Accept a team invitation or create a new organization to get started.
+          </p>
+        </div>
+      </PageContainer>
+    );
+  }
+
   const userId = orgCtx.userId as string;
+  const orgId = orgCtx.orgId;
 
   /* ── Fetch company members ───────────────────────────────────── */
   let members: any[] = [];
   let companyName = "Your Company";
 
   try {
+    // TENANT ISOLATION: Filter by BOTH userId AND orgId to prevent cross-org data leaks
     const membership = await prisma.tradesCompanyMember.findFirst({
-      where: { userId: userId },
+      where: { userId: userId, orgId: orgId },
       select: { companyId: true },
     });
 

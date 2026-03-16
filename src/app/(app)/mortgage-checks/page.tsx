@@ -1,6 +1,7 @@
 import { Banknote, Building2, CheckCircle2, Clock } from "lucide-react";
 import { redirect } from "next/navigation";
 
+import { NoOrgMembershipBanner } from "@/components/guards/NoOrgMembershipBanner";
 import { PageContainer } from "@/components/layout/PageContainer";
 import { PageHero } from "@/components/layout/PageHero";
 import {
@@ -37,7 +38,13 @@ const statusColors: Record<string, string> = {
 export default async function MortgageChecksPage() {
   const ctx = await safeOrgContext();
   if (ctx.status === "unauthenticated") redirect("/sign-in");
-  if (ctx.status !== "ok" || !ctx.orgId) redirect("/dashboard");
+  if (ctx.status !== "ok" || !ctx.orgId) {
+    return (
+      <PageContainer>
+        <NoOrgMembershipBanner title="Mortgage Checks" />
+      </PageContainer>
+    );
+  }
 
   // RBAC: Mortgage check data requires PM (manager) role or above
   if (!ctx.role || !hasMinimumRole(ctx.role as Role, "PM")) {

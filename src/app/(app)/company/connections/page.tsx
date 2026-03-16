@@ -70,7 +70,29 @@ export default async function CompanyConnectionsPage() {
   if (!user) redirect("/sign-in");
 
   const orgCtx = await safeOrgContext();
-  const orgId = orgCtx.status === "ok" ? orgCtx.orgId : null;
+
+  // TENANT ISOLATION: Require actual org membership
+  if (orgCtx.status !== "ok" || !orgCtx.orgId) {
+    return (
+      <PageContainer maxWidth="6xl">
+        <PageHero
+          section="network"
+          title="My Connections"
+          subtitle="Join an organization to view your connections"
+        />
+        <div className="mt-6 rounded-xl border border-amber-200 bg-amber-50 p-8 text-center dark:border-amber-800 dark:bg-amber-950/30">
+          <p className="text-amber-800 dark:text-amber-200">
+            You need to be a member of an organization to view connections.
+          </p>
+          <p className="mt-2 text-sm text-amber-600 dark:text-amber-400">
+            Accept a team invitation or create a new organization to get started.
+          </p>
+        </div>
+      </PageContainer>
+    );
+  }
+
+  const orgId = orgCtx.orgId;
 
   // Fetch connections from TradesTeam and contacts
   let connections: any[] = [];

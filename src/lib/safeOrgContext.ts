@@ -182,6 +182,42 @@ export async function safeOrgContext(): Promise<SafeOrgContext> {
       }
     }
 
+    // ── Check for pending invitations BEFORE auto-creating an org ──────
+    // If the user was invited to a team but hasn't accepted yet,
+    // do NOT auto-create a phantom org. Instead, return noMembership
+    // so the UI can guide them to accept the invitation.
+    try {
+      const pendingInvites = await prisma.$queryRaw<Array<{ id: string; org_id: string }>>`
+        SELECT id, org_id FROM team_invitations
+        WHERE status = 'pending'
+          AND expires_at > NOW()
+          AND email IN (
+            SELECT email FROM users WHERE "clerkUserId" = ${userId}
+          )
+        LIMIT 1
+      `;
+
+      if (pendingInvites.length > 0) {
+        logger.info("[safeOrgContext] User has pending team invitation — skipping auto-onboard", {
+          userId,
+          inviteOrgId: pendingInvites[0].org_id,
+        });
+        return {
+          status: "noMembership",
+          userId,
+          orgId: null,
+          role: null,
+          membership: null,
+          ok: false,
+          reason: "pending-invitation",
+          organizationId: null,
+        };
+      }
+    } catch (inviteCheckErr) {
+      // Non-fatal — if the table doesn't exist or query fails, fall through
+      logger.warn("[safeOrgContext] Pending invite check failed (non-fatal):", inviteCheckErr);
+    }
+
     // Final fallback: attempt auto-onboarding (create org + membership)
     logger.debug("[safeOrgContext] No org membership found, attempting auto-onboard for:", userId);
     const ensured = await ensureOrgForUser();

@@ -9,6 +9,7 @@ import { db } from "@/lib/db";
 import prisma from "@/lib/prisma";
 
 import { logger } from "@/lib/logger";
+import { resolveOrgSafe } from "@/lib/org/resolveOrg";
 import { markNotificationReadSchema } from "@/lib/validation/message-schemas";
 import { validateBody } from "@/lib/validation/middleware";
 
@@ -16,7 +17,9 @@ export async function GET() {
   const user = await currentUser();
   if (!user) return new Response("Unauthorized", { status: 401 });
 
-  const orgId = user.publicMetadata?.orgId as string | undefined;
+  // Use DB-backed org resolver instead of Clerk publicMetadata (which may be stale/empty)
+  const orgCtx = await resolveOrgSafe();
+  const orgId = orgCtx?.orgId || (user.publicMetadata?.orgId as string | undefined) || null;
 
   // ── Parallel fetch: raw notifications + membership (shared) ──
   // NOTE: The raw `notifications` table may not exist in all environments.

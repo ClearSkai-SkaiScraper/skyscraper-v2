@@ -85,11 +85,44 @@ export default async function DashboardPage() {
 
     // If org resolution failed but user is authenticated, continue with
     // degraded dashboard instead of blocking the entire page.
+    // Show a special banner if they have a pending invite (reason: "pending-invitation")
     if (!orgId) {
       logger.warn(
         "[DASHBOARD] Org resolution returned no orgId — rendering degraded dashboard:",
         orgCtx.status
       );
+
+      // Special handling for users with pending invitations
+      if (orgCtx.reason === "pending-invitation") {
+        return (
+          <PageContainer>
+            <PageHero
+              section="command"
+              title="Welcome to SkaiScraper!"
+              subtitle="You have a pending team invitation"
+              icon={<LayoutDashboard className="h-6 w-6" />}
+            />
+            <div className="mx-auto mt-8 max-w-lg">
+              <div className="rounded-2xl border-2 border-indigo-200 bg-indigo-50/80 p-8 text-center shadow-sm dark:border-indigo-800 dark:bg-indigo-950/30">
+                <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-indigo-100 dark:bg-indigo-900/40">
+                  <LayoutDashboard className="h-7 w-7 text-indigo-600 dark:text-indigo-400" />
+                </div>
+                <h2 className="mb-2 text-xl font-bold text-indigo-900 dark:text-indigo-100">
+                  Check Your Email!
+                </h2>
+                <p className="mb-4 text-indigo-800 dark:text-indigo-200">
+                  Someone invited you to their team on SkaiScraper. Look for the invitation email
+                  and click <strong>&quot;Accept Invitation&quot;</strong> to join.
+                </p>
+                <p className="text-sm text-indigo-600 dark:text-indigo-400">
+                  Once you accept, you&apos;ll have full access to the team&apos;s dashboard,
+                  claims, and tools.
+                </p>
+              </div>
+            </div>
+          </PageContainer>
+        );
+      }
     }
 
     // ⚠️ DEMO SEEDING REMOVED FROM RENDER PATH
