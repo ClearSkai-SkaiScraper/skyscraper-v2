@@ -1,8 +1,8 @@
 import { Lock, Users } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
-import { redirect } from "next/navigation";
 
+import { NoOrgMembershipBanner } from "@/components/guards/NoOrgMembershipBanner";
 import { PageContainer } from "@/components/layout/PageContainer";
 import { PageHero } from "@/components/layout/PageHero";
 import { PageSectionCard } from "@/components/layout/PageSectionCard";
@@ -57,7 +57,11 @@ export default async function TradesNetworkPage() {
     const userId = orgCtx.userId;
 
     if (!orgId || !userId) {
-      redirect("/sign-in");
+      return (
+        <PageContainer>
+          <NoOrgMembershipBanner title="Trades Network" />
+        </PageContainer>
+      );
     }
 
     // Fetch current user trades profile

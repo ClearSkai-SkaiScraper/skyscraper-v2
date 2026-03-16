@@ -2,6 +2,7 @@ import { Activity, UserPlus, Users } from "lucide-react";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
+import { NoOrgMembershipBanner } from "@/components/guards/NoOrgMembershipBanner";
 import TeamInvitationsList from "@/components/team/TeamInvitationsList";
 import TeamInviteForm from "@/components/team/TeamInviteForm";
 import { guarded } from "@/lib/buildPhase";
@@ -41,24 +42,6 @@ function MembershipMissing() {
     </div>
   );
 }
-function ErrorCard({ message }: { message: string }) {
-  return (
-    <div className="mx-auto mt-8 max-w-2xl rounded-xl border border-red-500/40 bg-red-50 p-6 dark:bg-red-950">
-      <h2 className="mb-2 text-xl font-semibold text-red-700 dark:text-red-200">
-        ⚠️ Team Unavailable
-      </h2>
-      <p className="text-sm text-red-600 dark:text-red-300">{message}</p>
-      <div className="mt-4 flex gap-3">
-        <Link href="/dashboard" className="rounded border border-[color:var(--border)] px-4 py-2">
-          Dashboard
-        </Link>
-        <Link href="/onboarding/start" className="rounded bg-[var(--primary)] px-4 py-2 text-white">
-          Onboarding
-        </Link>
-      </div>
-    </div>
-  );
-}
 
 export default async function TeamPage() {
   const orgCtx = await safeOrgContext();
@@ -67,9 +50,9 @@ export default async function TeamPage() {
   if (orgCtx.status === "unauthenticated") {
     redirect("/sign-in");
   }
-  // Auto-onboarding handled by safeOrgContext
-  // if (orgCtx.status === 'noMembership') return <MembershipMissing />;
-  if (orgCtx.status === "error") return <ErrorCard message="Organization context unavailable." />;
+  if (orgCtx.status !== "ok" || !organizationId) {
+    return <NoOrgMembershipBanner title="Team Management" />;
+  }
 
   // Dynamic counts with guarded fallbacks (no crashes if tables missing).
   const [memberCount, pendingInvitesCount, todayActivityCount] = await guarded(

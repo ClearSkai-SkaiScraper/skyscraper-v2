@@ -24,6 +24,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
+import { NoOrgMembershipBanner } from "@/components/guards/NoOrgMembershipBanner";
 import { PageContainer } from "@/components/layout/PageContainer";
 import { PageHero } from "@/components/layout/PageHero";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -174,8 +175,15 @@ const CATEGORY_ORDER: ToolDef["category"][] = ["documents", "analysis", "visual"
 
 export default async function ToolsPage() {
   const orgCtx = await safeOrgContext();
-  if (!orgCtx.ok) {
+  if (orgCtx.status === "unauthenticated") {
     redirect("/sign-in");
+  }
+  if (!orgCtx.ok || !orgCtx.orgId) {
+    return (
+      <PageContainer>
+        <NoOrgMembershipBanner title="AI Tools" />
+      </PageContainer>
+    );
   }
 
   return (

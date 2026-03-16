@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 
+import { NoOrgMembershipBanner } from "@/components/guards/NoOrgMembershipBanner";
 import { safeOrgContext } from "@/lib/safeOrgContext";
 
 import { TemplateEditor } from "../_components/TemplateEditor";
@@ -7,7 +8,9 @@ import { TemplateEditor } from "../_components/TemplateEditor";
 export default async function NewTemplatePage() {
   const ctx = await safeOrgContext();
   if (ctx.status === "unauthenticated" || !ctx.userId) redirect("/sign-in");
-  if (ctx.status !== "ok" || !ctx.orgId) redirect("/dashboard");
+  if (ctx.status !== "ok" || !ctx.orgId) {
+    return <NoOrgMembershipBanner title="Report Templates" />;
+  }
 
   return <TemplateEditor orgId={ctx.orgId} userId={ctx.userId} />;
 }

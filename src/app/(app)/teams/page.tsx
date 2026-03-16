@@ -56,11 +56,12 @@ export default async function CompanySeatsPage() {
   /* ── Fetch team members from DB ─────────────────────────────── */
   let members: any[] = [];
 
-  if (orgId) {
+  if (orgId && userId) {
     try {
+      // TENANT ISOLATION: Filter by BOTH userId AND orgId
       const membership = userId
         ? await prisma.tradesCompanyMember.findFirst({
-            where: { userId },
+            where: { userId, orgId },
             select: { companyId: true },
           })
         : null;

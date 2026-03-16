@@ -7,6 +7,7 @@
 import { Calculator, FileText, Info } from "lucide-react";
 import { Metadata } from "next";
 
+import { NoOrgMembershipBanner } from "@/components/guards/NoOrgMembershipBanner";
 import { PageContainer } from "@/components/layout/PageContainer";
 import { PageHero } from "@/components/layout/PageHero";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -34,17 +35,10 @@ export default async function DepreciationBuilderPage({ searchParams }: PageProp
   if (!ctx.ok || !ctx.orgId) {
     return (
       <PageContainer maxWidth="7xl">
-        <PageHero
+        <NoOrgMembershipBanner
           title="Depreciation Builder"
-          subtitle="Final payout system for depreciation recovery, invoices, and homeowner acceptance forms"
-          icon={<Calculator className="h-5 w-5" />}
-          section="claims"
+          description="Join an organization to use the Depreciation Builder workspace."
         />
-        <div className="rounded-2xl border border-[color:var(--border)] bg-[var(--surface-glass)] p-12 text-center backdrop-blur-xl">
-          <p className="text-slate-500 dark:text-slate-400">
-            Unable to load workspace. Please try again or contact support.
-          </p>
-        </div>
       </PageContainer>
     );
   }

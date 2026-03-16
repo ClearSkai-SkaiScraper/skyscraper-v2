@@ -2,6 +2,7 @@ import { AlertCircle, CheckCircle2, ClipboardList, Clock, HardHat, Loader2 } fro
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 
+import { NoOrgMembershipBanner } from "@/components/guards/NoOrgMembershipBanner";
 import { PageContainer } from "@/components/layout/PageContainer";
 import { PageHero } from "@/components/layout/PageHero";
 import { guarded } from "@/lib/buildPhase";
@@ -40,7 +41,14 @@ const statusIcon: Record<string, React.ReactNode> = {
 
 export default async function WorkOrdersPage() {
   const ctx = await safeOrgContext();
-  if (ctx.status !== "ok" || !ctx.orgId) redirect("/dashboard");
+  if (ctx.status === "unauthenticated") redirect("/sign-in");
+  if (ctx.status !== "ok" || !ctx.orgId) {
+    return (
+      <PageContainer>
+        <NoOrgMembershipBanner title="Work Orders" />
+      </PageContainer>
+    );
+  }
 
   const workOrders = await guarded(
     "work-orders",
