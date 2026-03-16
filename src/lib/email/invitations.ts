@@ -65,7 +65,9 @@ export async function sendInvitationEmail({
     });
 
     if (error) {
-      logger.error(`[INVITATION_EMAIL] Resend API error to=${to} from=${FROM_EMAIL}: ${error.message}`);
+      logger.error(
+        `[INVITATION_EMAIL] Resend API error to=${to} from=${FROM_EMAIL}: ${error.message}`
+      );
       throw new Error(error.message);
     }
 
