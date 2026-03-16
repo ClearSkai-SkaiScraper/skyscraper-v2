@@ -2,76 +2,28 @@ export const dynamic = "force-dynamic";
 
 /**
  * Team Invitations API
- * Uses Clerk's native organization invitation system
+ * Sends invitation emails via Resend and stores tokens in DB
  */
 
 import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
-import { clerkClient } from "@clerk/nextjs/server";
+import { currentUser } from "@clerk/nextjs/server";
+import crypto from "crypto";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 
 import { createForbiddenResponse, requirePermission } from "@/lib/auth/rbac";
 import { withManager } from "@/lib/auth/withAuth";
+import { sendInvitationEmail } from "@/lib/email/invitations";
 import { checkRateLimit } from "@/lib/rate-limit";
 
 const invitationSchema = z.object({
   email: z.string().email("A valid email is required"),
   role: z.enum(["org:member", "org:admin", "admin", "member"]).optional().default("org:member"),
+  message: z.string().optional(),
 });
 
-/**
- * Helper to get the Clerk organization ID from the DB org ID.
- * If the org doesn't have a real Clerk org yet (i.e., clerkOrgId is a deterministic ID),
- * create one and update the DB.
- */
-async function getOrCreateClerkOrg(dbOrgId: string, userId: string): Promise<string | null> {
-  const org = await prisma.org.findUnique({
-    where: { id: dbOrgId },
-    select: { id: true, name: true, clerkOrgId: true },
-  });
-
-  if (!org) return null;
-
-  const clerkOrgId = org.clerkOrgId;
-
-  // If clerkOrgId looks like a real Clerk org (starts with "org_" and is longer than 20 chars),
-  // verify it exists in Clerk. Real Clerk org IDs are like "org_2abc..." (28+ chars)
-  if (clerkOrgId && clerkOrgId.startsWith("org_") && clerkOrgId.length > 20) {
-    try {
-      const client = await clerkClient();
-      await client.organizations.getOrganization({ organizationId: clerkOrgId });
-      return clerkOrgId; // Verified to exist
-    } catch (e: any) {
-      // Org doesn't exist in Clerk - fall through to create
-      logger.warn("[TEAM_INVITATIONS] Clerk org not found, will create:", clerkOrgId);
-    }
-  }
-
-  // Either no clerkOrgId, or it's a deterministic ID, or the Clerk org doesn't exist
-  // Create a new Clerk organization
-  try {
-    const client = await clerkClient();
-    const newClerkOrg = await client.organizations.createOrganization({
-      name: org.name || "My Organization",
-      createdBy: userId,
-    });
-
-    // Update DB with the real Clerk org ID
-    await prisma.org.update({
-      where: { id: dbOrgId },
-      data: { clerkOrgId: newClerkOrg.id },
-    });
-
-    logger.info("[TEAM_INVITATIONS] Created Clerk org for team invites:", newClerkOrg.id);
-    return newClerkOrg.id;
-  } catch (createError: any) {
-    logger.error("[TEAM_INVITATIONS] Failed to create Clerk org:", createError);
-    return null;
-  }
-}
-
-// Send team invitation email via Clerk
+// Send team invitation email via Resend (NOT Clerk - we control email delivery)
 // 🛡️ MASTER PROMPT #66: RBAC Protection - requires "team:invite" permission
 export const POST = withManager(async (req: NextRequest, { userId, orgId }) => {
   try {
@@ -103,72 +55,106 @@ export const POST = withManager(async (req: NextRequest, { userId, orgId }) => {
         { status: 400 }
       );
     }
-    const { email, role = "org:member" } = parsed.data;
+    const { email, role = "org:member", message } = parsed.data;
+    const normalizedEmail = email.toLowerCase().trim();
 
-    // CRITICAL: Get or create the Clerk org for team invites
-    const clerkOrgId = await getOrCreateClerkOrg(orgId, userId);
-    if (!clerkOrgId) {
-      logger.error("[TEAM_INVITATIONS] Failed to get/create Clerk org for DB org:", orgId);
+    // Get org details
+    const org = await prisma.org.findUnique({
+      where: { id: orgId },
+      select: { id: true, name: true, clerkOrgId: true },
+    });
+
+    if (!org) {
+      return NextResponse.json({ error: "Organization not found" }, { status: 404 });
+    }
+
+    // Get inviter details
+    const user = await currentUser();
+    const inviterName = user
+      ? [user.firstName, user.lastName].filter(Boolean).join(" ") || "A team member"
+      : "A team member";
+
+    // Check for existing pending invitation
+    const existingInvite = await prisma.$queryRaw<{ id: string }[]>`
+      SELECT id FROM team_invitations 
+      WHERE org_id = ${orgId} AND email = ${normalizedEmail} AND status = 'pending'
+      LIMIT 1
+    `.catch(() => []);
+
+    if (existingInvite.length > 0) {
       return NextResponse.json(
-        { error: "Unable to set up team invitations. Please try again or contact support." },
-        { status: 500 }
+        { error: "An invitation has already been sent to this email address" },
+        { status: 409 }
       );
     }
 
-    const client = await clerkClient();
+    // Generate secure token
+    const token = crypto.randomBytes(32).toString("hex");
+    const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days
 
-    // Use Clerk's native invitation system
+    // Store invitation in DB
+    await prisma.$executeRaw`
+      INSERT INTO team_invitations (id, org_id, email, role, token, status, invited_by, message, expires_at, created_at, updated_at)
+      VALUES (
+        ${crypto.randomUUID()},
+        ${orgId},
+        ${normalizedEmail},
+        ${role === "admin" || role === "org:admin" ? "admin" : "member"},
+        ${token},
+        'pending',
+        ${userId},
+        ${message || null},
+        ${expiresAt},
+        NOW(),
+        NOW()
+      )
+    `;
+
+    // Send email via Resend
     try {
-      const invitation = await client.organizations.createOrganizationInvitation({
-        organizationId: clerkOrgId, // Use Clerk org ID, not DB UUID
-        emailAddress: email.toLowerCase(),
-        role: role === "admin" ? "org:admin" : "org:member",
-        inviterUserId: userId,
+      await sendInvitationEmail({
+        to: normalizedEmail,
+        inviterName,
+        orgName: org.name || "the team",
+        role: role === "admin" || role === "org:admin" ? "Admin" : "Member",
+        token,
+        message,
       });
 
-      logger.debug(`✅ Invitation sent to ${email} via Clerk (clerkOrgId: ${clerkOrgId})`);
+      logger.info(`✅ Team invitation email sent to ${normalizedEmail} via Resend`);
 
       return NextResponse.json({
         success: true,
         invitation: {
-          id: invitation.id,
-          email: invitation.emailAddress,
-          role: invitation.role,
-          status: invitation.status,
+          id: token.slice(0, 8), // Return partial token as ID
+          email: normalizedEmail,
+          role: role === "admin" || role === "org:admin" ? "admin" : "member",
+          status: "pending",
         },
       });
-    } catch (clerkError: any) {
-      logger.error("Clerk invitation error:", clerkError);
+    } catch (emailError: any) {
+      logger.error("[TEAM_INVITATIONS] Failed to send email:", emailError);
 
-      // Handle duplicate invitation
-      if (clerkError.errors?.[0]?.code === "duplicate_record") {
-        return NextResponse.json(
-          { error: "Invitation already sent to this email" },
-          { status: 409 }
-        );
-      }
+      // Clean up the DB entry if email fails
+      await prisma.$executeRaw`
+        DELETE FROM team_invitations WHERE token = ${token}
+      `.catch(() => {});
 
-      // Handle organization not found in Clerk
-      if (clerkError.errors?.[0]?.code === "resource_not_found") {
-        logger.error("[TEAM_INVITATIONS] Clerk org not found:", clerkOrgId);
-        return NextResponse.json(
-          {
-            error:
-              "Organization not found in authentication system. Please complete company setup first.",
-          },
-          { status: 400 }
-        );
-      }
-
-      throw clerkError;
+      return NextResponse.json(
+        { error: `Failed to send invitation email: ${emailError.message || "Unknown error"}` },
+        { status: 500 }
+      );
     }
-  } catch (error) {
+  } catch (error: any) {
     logger.error("Failed to send invitation:", error);
-    return NextResponse.json({ error: "Failed to send invitation" }, { status: 500 });
+    return NextResponse.json(
+      { error: error.message || "Failed to send invitation" },
+      { status: 500 }
+    );
   }
 });
 
-// Get all pending invitations for the org via Clerk
+// Get all pending invitations for the org from DB
 export const GET = withManager(async (req: NextRequest, { userId, orgId }) => {
   try {
     const rl = await checkRateLimit(userId, "API");
@@ -179,42 +165,33 @@ export const GET = withManager(async (req: NextRequest, { userId, orgId }) => {
       );
     }
 
-    // Get the Clerk org ID - don't create if it doesn't exist (just listing)
-    const org = await prisma.org.findUnique({
-      where: { id: orgId },
-      select: { clerkOrgId: true },
-    });
-    const clerkOrgId = org?.clerkOrgId;
+    // Get pending invitations from DB
+    const invitations = await prisma.$queryRaw<
+      Array<{
+        id: string;
+        email: string;
+        role: string;
+        status: string;
+        created_at: Date;
+        expires_at: Date;
+      }>
+    >`
+      SELECT id, email, role, status, created_at, expires_at
+      FROM team_invitations
+      WHERE org_id = ${orgId} AND status = 'pending' AND expires_at > NOW()
+      ORDER BY created_at DESC
+    `.catch(() => []);
 
-    // If no real Clerk org, return empty array
-    if (!clerkOrgId || !clerkOrgId.startsWith("org_") || clerkOrgId.length <= 20) {
-      return NextResponse.json([]); // No real Clerk org yet
-    }
+    const formattedInvitations = invitations.map((inv) => ({
+      id: inv.id,
+      email: inv.email,
+      role: inv.role,
+      status: inv.status,
+      createdAt: inv.created_at,
+      expiresAt: inv.expires_at,
+    }));
 
-    const client = await clerkClient();
-
-    // Get pending invitations from Clerk
-    try {
-      const invitations = await client.organizations.getOrganizationInvitationList({
-        organizationId: clerkOrgId, // Use Clerk org ID
-      });
-
-      const formattedInvitations = invitations.data.map((inv) => ({
-        id: inv.id,
-        email: inv.emailAddress,
-        role: inv.role,
-        status: inv.status,
-        createdAt: inv.createdAt,
-      }));
-
-      return NextResponse.json(formattedInvitations);
-    } catch (clerkError: any) {
-      // Handle organization not found - return empty array
-      if (clerkError.errors?.[0]?.code === "resource_not_found") {
-        return NextResponse.json([]);
-      }
-      throw clerkError;
-    }
+    return NextResponse.json(formattedInvitations);
   } catch (error) {
     logger.error("Failed to fetch invitations:", error);
     return NextResponse.json({ error: "Failed to fetch invitations" }, { status: 500 });
