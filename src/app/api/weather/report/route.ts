@@ -10,17 +10,84 @@ import {
   requireActiveSubscription,
   SubscriptionRequiredError,
 } from "@/lib/billing/requireActiveSubscription";
+import { getBrandingForOrg, getBrandingWithDefaults } from "@/lib/branding/fetchBranding";
 import { logger } from "@/lib/logger";
-import { renderWeatherPDF } from "@/lib/pdf/weather-pdf";
+import { renderWeatherReportPDF, WeatherReportPdfInput } from "@/lib/pdf/weather-report-pdf";
 import prisma from "@/lib/prisma";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { saveAiPdfToStorage } from "@/lib/reports/saveAiPdfToStorage";
 import { saveReportHistory } from "@/lib/reports/saveReportHistory";
 import { getRadarForEvent } from "@/lib/weather/radarService";
 
+// ─────────────────────────────────────────────────────────────────────────────
+// Geocoding
+// ─────────────────────────────────────────────────────────────────────────────
+
+interface GeocodingResult {
+  lat: number;
+  lng: number;
+  resolved: boolean;
+}
+
+async function geocodeAddress(address: string): Promise<GeocodingResult> {
+  if (!address) {
+    logger.warn("[Weather API] No address provided for geocoding");
+    return { lat: 0, lng: 0, resolved: false };
+  }
+
+  try {
+    // Try Open-Meteo first (free, no key required)
+    const geoRes = await fetch(
+      `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(address)}&count=1&language=en&format=json`
+    );
+
+    if (geoRes.ok) {
+      const geoData = await geoRes.json();
+      if (geoData.results?.[0]) {
+        const lat = geoData.results[0].latitude;
+        const lng = geoData.results[0].longitude;
+
+        // Validate coordinates are reasonable
+        if (lat !== 0 && lng !== 0 && !isNaN(lat) && !isNaN(lng)) {
+          logger.info("[Weather API] Geocoded address successfully", { address, lat, lng });
+          return { lat, lng, resolved: true };
+        }
+      }
+    }
+
+    // Fallback to Nominatim (OpenStreetMap) - also free
+    const nominatimRes = await fetch(
+      `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(address)}&format=json&limit=1`,
+      { headers: { "User-Agent": "SkaiScraper/1.0 (support@skaiscrape.com)" } }
+    );
+
+    if (nominatimRes.ok) {
+      const nominatimData = await nominatimRes.json();
+      if (nominatimData?.[0]) {
+        const lat = parseFloat(nominatimData[0].lat);
+        const lng = parseFloat(nominatimData[0].lon);
+
+        if (lat !== 0 && lng !== 0 && !isNaN(lat) && !isNaN(lng)) {
+          logger.info("[Weather API] Geocoded via Nominatim fallback", { address, lat, lng });
+          return { lat, lng, resolved: true };
+        }
+      }
+    }
+
+    logger.warn("[Weather API] Geocoding failed for address", { address });
+    return { lat: 0, lng: 0, resolved: false };
+  } catch (err) {
+    logger.error("[Weather API] Geocoding error:", err);
+    return { lat: 0, lng: 0, resolved: false };
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// GET - List reports
+// ─────────────────────────────────────────────────────────────────────────────
+
 export const GET = withAuth(async (req: NextRequest, { userId, orgId }) => {
   try {
-    // List all reports the user has access to (orgId is DB-backed UUID from withAuth)
     const reports = await prisma.weather_reports.findMany({
       where: {
         OR: [{ createdById: userId }, { claims: { orgId } }],
@@ -49,9 +116,13 @@ export const GET = withAuth(async (req: NextRequest, { userId, orgId }) => {
   }
 });
 
+// ─────────────────────────────────────────────────────────────────────────────
+// POST - Generate new weather report
+// ─────────────────────────────────────────────────────────────────────────────
+
 export const POST = withAuth(async (req: NextRequest, { userId, orgId }) => {
   try {
-    // ── Billing guard ── (orgId is DB-backed UUID from withAuth)
+    // ── Billing guard ──
     try {
       await requireActiveSubscription(orgId);
     } catch (error) {
@@ -88,12 +159,134 @@ export const POST = withAuth(async (req: NextRequest, { userId, orgId }) => {
       return NextResponse.json({ error: "address and dol are required." }, { status: 400 });
     }
 
+    const claimId = body.claimId ?? body.claim_id ?? null;
+
+    // ══════════════════════════════════════════════════════════════════════════
+    // STEP 1: Fetch claim details if we have a claim ID
+    // ══════════════════════════════════════════════════════════════════════════
+    let claimDetails: {
+      claimNumber?: string;
+      insuredName?: string;
+      carrier?: string;
+      policyNumber?: string;
+      adjusterName?: string;
+      adjusterPhone?: string;
+      adjusterEmail?: string;
+      propertyAddress?: string;
+      propertyLat?: number;
+      propertyLng?: number;
+    } = {};
+
+    if (claimId) {
+      try {
+        const claim = await prisma.claims.findUnique({
+          where: { id: claimId },
+          select: {
+            claimNumber: true,
+            insured_name: true,
+            carrier: true,
+            policy_number: true,
+            adjusterName: true,
+            adjusterPhone: true,
+            adjusterEmail: true,
+            properties: {
+              select: {
+                street: true,
+                city: true,
+                state: true,
+                zipCode: true,
+              },
+            },
+          },
+        });
+
+        if (claim) {
+          // Build full address from property components
+          const prop = claim.properties;
+          const fullAddress = prop
+            ? [prop.street, prop.city, prop.state, prop.zipCode].filter(Boolean).join(", ")
+            : undefined;
+
+          claimDetails = {
+            claimNumber: claim.claimNumber || undefined,
+            insuredName: claim.insured_name || undefined,
+            carrier: claim.carrier || undefined,
+            policyNumber: claim.policy_number || undefined,
+            adjusterName: claim.adjusterName || undefined,
+            adjusterPhone: claim.adjusterPhone || undefined,
+            adjusterEmail: claim.adjusterEmail || undefined,
+            propertyAddress: fullAddress,
+            // Note: properties table doesn't have lat/lng, will use geocoding
+            propertyLat: undefined,
+            propertyLng: undefined,
+          };
+          logger.info("[Weather API] Loaded claim details", {
+            claimId,
+            claimNumber: claim.claimNumber,
+          });
+        }
+      } catch (claimErr) {
+        logger.warn("[Weather API] Failed to load claim details:", claimErr);
+      }
+    }
+
+    // ══════════════════════════════════════════════════════════════════════════
+    // STEP 2: Fetch org branding
+    // ══════════════════════════════════════════════════════════════════════════
+    let brandingData = {
+      companyName: "SkaiScraper",
+      phone: undefined as string | undefined,
+      email: undefined as string | undefined,
+      website: undefined as string | undefined,
+      license: undefined as string | undefined,
+      logoUrl: undefined as string | undefined,
+      primaryColor: "#1e40af",
+    };
+
+    if (orgId) {
+      try {
+        const branding = await getBrandingForOrg(orgId);
+        const defaults = getBrandingWithDefaults(branding);
+        brandingData = {
+          companyName: defaults.businessName,
+          phone: defaults.phone || undefined,
+          email: defaults.email || undefined,
+          website: defaults.website || undefined,
+          license: defaults.license || undefined,
+          logoUrl: defaults.logo || undefined,
+          primaryColor: defaults.primaryColor,
+        };
+        logger.info("[Weather API] Loaded org branding", {
+          orgId,
+          companyName: brandingData.companyName,
+        });
+      } catch (brandErr) {
+        logger.warn("[Weather API] Failed to load branding:", brandErr);
+      }
+    }
+
+    // ══════════════════════════════════════════════════════════════════════════
+    // STEP 3: Get user name for "generated by"
+    // ══════════════════════════════════════════════════════════════════════════
+    let generatedBy: string | undefined;
+    try {
+      const user = await prisma.users.findFirst({
+        where: { clerkUserId: userId },
+        select: { name: true, email: true },
+      });
+      generatedBy = user?.name || user?.email || undefined;
+    } catch {
+      // Ignore
+    }
+
+    // ══════════════════════════════════════════════════════════════════════════
+    // STEP 4: Run AI weather analysis
+    // ══════════════════════════════════════════════════════════════════════════
     let aiReport;
     try {
       aiReport = await runWeatherReport({
         ...body,
-        // Accept either claimId or claim_id (UI uses claim_id)
-        claimId: (body.claimId ?? body.claim_id ?? null) as string | null,
+        claimId: claimId as string | null,
         orgId: orgId ?? null,
       });
     } catch (aiErr) {
@@ -108,7 +301,33 @@ export const POST = withAuth(async (req: NextRequest, { userId, orgId }) => {
       );
     }
 
-    // ── Fetch NEXRAD radar imagery + Visual Crossing weather data for the DOL ──
+    // ══════════════════════════════════════════════════════════════════════════
+    // STEP 5: Geocode the address
+    // ══════════════════════════════════════════════════════════════════════════
+    // First try property coordinates from claim, then geocode
+    let geocodeResult: GeocodingResult;
+
+    if (
+      claimDetails.propertyLat &&
+      claimDetails.propertyLng &&
+      claimDetails.propertyLat !== 0 &&
+      claimDetails.propertyLng !== 0
+    ) {
+      // Use existing property coordinates
+      geocodeResult = {
+        lat: claimDetails.propertyLat,
+        lng: claimDetails.propertyLng,
+        resolved: true,
+      };
+      logger.info("[Weather API] Using existing property coordinates", geocodeResult);
+    } else {
+      // Geocode the address
+      geocodeResult = await geocodeAddress(body.address);
+    }
+
+    // ══════════════════════════════════════════════════════════════════════════
+    // STEP 6: Fetch radar and weather data
+    // ══════════════════════════════════════════════════════════════════════════
     let radarImages: { url: string; label: string; stationId?: string }[] = [];
     let radarStationId: string | null = null;
     let weatherConditions: {
@@ -123,24 +342,11 @@ export const POST = withAuth(async (req: NextRequest, { userId, orgId }) => {
       icon: string;
       description?: string;
     }[] = [];
-    let lat = 0;
-    let lng = 0;
-    try {
-      // Geocode address via Open-Meteo (free, no key)
-      const geoRes = await fetch(
-        `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(body.address)}&count=1&language=en&format=json`
-      );
-      if (geoRes.ok) {
-        const geoData = await geoRes.json();
-        if (geoData.results?.[0]) {
-          lat = geoData.results[0].latitude;
-          lng = geoData.results[0].longitude;
-        }
-      }
 
-      if (lat && lng) {
+    if (geocodeResult.resolved) {
+      try {
         const dolDate = aiReport.dol || body.dol;
-        const radarResult = await getRadarForEvent(lat, lng, dolDate);
+        const radarResult = await getRadarForEvent(geocodeResult.lat, geocodeResult.lng, dolDate);
         radarImages = radarResult.images;
         radarStationId = radarResult.stationId;
         weatherConditions = radarResult.weatherData || [];
@@ -149,15 +355,18 @@ export const POST = withAuth(async (req: NextRequest, { userId, orgId }) => {
           radarCount: radarImages.length,
           weatherDays: weatherConditions.length,
         });
+      } catch (radarErr) {
+        logger.error("[Weather API] Radar/weather fetch failed (non-critical):", radarErr);
       }
-    } catch (radarErr) {
-      logger.error("[Weather API] Radar/weather fetch failed (non-critical):", radarErr);
-      // Continue — radar is supplementary, not critical
+    } else {
+      logger.warn("[Weather API] Skipping weather data fetch - location not resolved");
     }
 
+    // ══════════════════════════════════════════════════════════════════════════
+    // STEP 7: Save to database
+    // ══════════════════════════════════════════════════════════════════════════
     let report;
     try {
-      // ── Resolve DB user ID for FK (weather_reports.createdById → users.id) ──
       const dbUser = await prisma.users.findUnique({
         where: { clerkUserId: userId },
         select: { id: true },
@@ -173,10 +382,11 @@ export const POST = withAuth(async (req: NextRequest, { userId, orgId }) => {
         );
       }
 
+      const reportId = randomUUID();
       report = await prisma.weather_reports.create({
         data: {
-          id: randomUUID(),
-          claimId: body.claim_id ?? (body.claimId as string | undefined) ?? null,
+          id: reportId,
+          claimId: claimId || null,
           createdById: dbUser.id,
           updatedAt: new Date(),
           mode: "full_report",
@@ -188,18 +398,21 @@ export const POST = withAuth(async (req: NextRequest, { userId, orgId }) => {
             contractorNarrative: aiReport.carrierTalkingPoints ?? "",
             radarStation: radarStationId,
             radarImageCount: radarImages.length,
+            locationResolved: geocodeResult.resolved,
+            lat: geocodeResult.lat,
+            lng: geocodeResult.lng,
           },
           events: aiReport.events ?? [],
           providerRaw: aiReport,
         },
       });
 
-      // Audit log weather report generation
       await logCriticalAction("WEATHER_REPORT_GENERATED", userId, orgId || "unknown", {
         reportId: report.id,
         address: body.address,
         dol: body.dol,
-        claimId: body.claim_id || null,
+        claimId: claimId || null,
+        locationResolved: geocodeResult.resolved,
       });
     } catch (dbErr) {
       logger.error("[Weather API] DB save failed:", dbErr);
@@ -213,59 +426,96 @@ export const POST = withAuth(async (req: NextRequest, { userId, orgId }) => {
       );
     }
 
-    // Generate PDF and save to storage using jsPDF (serverless-compatible)
+    // ══════════════════════════════════════════════════════════════════════════
+    // STEP 8: Generate PDF with full hydration
+    // ══════════════════════════════════════════════════════════════════════════
     let pdfSaved = false;
     let pdfUrl: string | null = null;
+
     try {
-      if (body.claim_id && orgId) {
-        logger.info("[Weather API] Generating PDF with jsPDF (serverless)", {
-          claimId: body.claim_id,
-          address: body.address,
+      if (claimId && orgId) {
+        logger.info("[Weather API] Generating fully-hydrated PDF", {
+          claimId,
+          hasBranding: !!brandingData.companyName,
+          hasClaim: !!claimDetails.claimNumber,
+          locationResolved: geocodeResult.resolved,
         });
 
-        // Use serverless-compatible jsPDF renderer
-        const pdfBuffer = renderWeatherPDF({
+        const pdfInput: WeatherReportPdfInput = {
           address: body.address,
           dol: aiReport.dol || body.dol,
+          lat: geocodeResult.lat,
+          lng: geocodeResult.lng,
+          locationResolved: geocodeResult.resolved,
           peril: aiReport.peril,
           summary: aiReport.summary,
           carrierTalkingPoints: aiReport.carrierTalkingPoints,
-          events: aiReport.events,
-          lat,
-          lng,
+          events: aiReport.events?.map((e) => ({
+            date: e.date,
+            time: e.time,
+            type: e.type,
+            intensity: e.intensity,
+            notes: e.notes,
+          })),
+          weatherConditions,
           radarStationId,
           radarImageCount: radarImages.length,
-          weatherConditions,
-        });
+          claim: claimDetails.claimNumber
+            ? {
+                claimNumber: claimDetails.claimNumber,
+                insuredName: claimDetails.insuredName,
+                carrier: claimDetails.carrier,
+                policyNumber: claimDetails.policyNumber,
+                adjusterName: claimDetails.adjusterName,
+                adjusterPhone: claimDetails.adjusterPhone,
+                adjusterEmail: claimDetails.adjusterEmail,
+                propertyAddress: claimDetails.propertyAddress,
+              }
+            : undefined,
+          branding: {
+            companyName: brandingData.companyName,
+            phone: brandingData.phone,
+            email: brandingData.email,
+            website: brandingData.website,
+            license: brandingData.license,
+            logoUrl: brandingData.logoUrl,
+            primaryColor: brandingData.primaryColor,
+          },
+          reportId: report.id,
+          generatedBy,
+        };
+
+        const pdfBuffer = renderWeatherReportPDF(pdfInput);
 
         const pdfResult = await saveAiPdfToStorage({
           orgId,
-          claimId: body.claim_id,
+          claimId,
           userId,
           type: "WEATHER",
           label: `Weather Report - ${body.address}`,
           pdfBuffer,
           visibleToClient: true,
-          aiReportId: report.id, // Link to weather_reports.id for PDF lookup
+          aiReportId: report.id,
         });
 
         pdfSaved = true;
         pdfUrl = pdfResult.publicUrl;
-        logger.debug(`[Weather API] PDF saved for claim ${body.claim_id}`, { pdfUrl });
+        logger.info(`[Weather API] PDF saved for claim ${claimId}`, { pdfUrl });
       }
     } catch (pdfError) {
       logger.error("[Weather API] PDF generation failed (non-critical):", pdfError);
-      // Continue - PDF failure should not break the weather report
     }
 
-    // ── Save to report_history so it appears on Reports History page ──
+    // ══════════════════════════════════════════════════════════════════════════
+    // STEP 9: Save to report_history
+    // ══════════════════════════════════════════════════════════════════════════
     try {
       await saveReportHistory({
         orgId,
         userId,
         type: "weather_report",
         title: `Weather Report — ${body.address}`,
-        sourceId: body.claim_id ?? (body.claimId as string | undefined) ?? null,
+        sourceId: claimId ?? null,
         fileUrl: pdfUrl,
         metadata: {
           address: body.address,
@@ -273,31 +523,33 @@ export const POST = withAuth(async (req: NextRequest, { userId, orgId }) => {
           peril: aiReport.peril,
           pdfSaved,
           reportId: report.id,
+          locationResolved: geocodeResult.resolved,
         },
       });
     } catch (histErr) {
       logger.error("[Weather API] Report history save failed (non-critical):", histErr);
-      // Continue - history save failure should not break the weather report
     }
 
-    // ── Save to file_assets so it appears on the claim's Documents tab ──
-    if (body.claim_id && pdfUrl) {
+    // ══════════════════════════════════════════════════════════════════════════
+    // STEP 10: Save to file_assets
+    // ══════════════════════════════════════════════════════════════════════════
+    if (claimId && pdfUrl) {
       try {
         const fileAssetId = crypto.randomUUID();
-        const storageKey = `claims/${body.claim_id}/weather/report_${Date.now()}.pdf`;
+        const storageKey = `claims/${claimId}/weather/report_${Date.now()}.pdf`;
 
         await prisma.file_assets.create({
           data: {
             id: fileAssetId,
             orgId,
-            claimId: body.claim_id,
+            claimId,
             ownerId: userId,
             filename: `Weather Report — ${body.address} — ${new Date().toLocaleDateString("en-US")}.pdf`,
             publicUrl: pdfUrl,
             storageKey: storageKey,
-            bucket: "documents",
+            bucket: "claim-photos", // Correct bucket!
             mimeType: "application/pdf",
-            sizeBytes: 0, // Size not available here, but required field
+            sizeBytes: 0,
             category: "report",
             file_type: "weather_report",
             visibleToClient: true,
@@ -305,20 +557,16 @@ export const POST = withAuth(async (req: NextRequest, { userId, orgId }) => {
           },
         });
         logger.info(
-          `[Weather API] ✅ Saved to file_assets for claim ${body.claim_id}, fileAssetId=${fileAssetId}`
+          `[Weather API] Saved to file_assets for claim ${claimId}, fileAssetId=${fileAssetId}`
         );
       } catch (faErr) {
-        logger.error("[Weather API] ❌ Could not save to file_assets:", {
+        logger.error("[Weather API] Could not save to file_assets:", {
           error: faErr,
-          claimId: body.claim_id,
+          claimId,
           orgId,
           pdfUrl,
         });
       }
-    } else {
-      logger.warn(
-        `[Weather API] Skipped file_assets save: claim_id=${body.claim_id}, pdfUrl=${!!pdfUrl}`
-      );
     }
 
     return NextResponse.json(
@@ -329,6 +577,8 @@ export const POST = withAuth(async (req: NextRequest, { userId, orgId }) => {
         weatherReportId: report.id,
         radarStation: radarStationId,
         radarImageCount: radarImages.length,
+        locationResolved: geocodeResult.resolved,
+        weatherDaysCount: weatherConditions.length,
       },
       { status: 200 }
     );
