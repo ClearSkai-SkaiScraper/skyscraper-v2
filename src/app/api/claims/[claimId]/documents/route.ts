@@ -39,6 +39,8 @@ export const GET = withAuth(
 
       // Map category + file_type to document type
       const categoryToType = (cat: string, mime: string, fileType?: string | null): string => {
+        // Weather reports get their own type (saved with file_type: "weather_report")
+        if (fileType === "weather_report") return "WEATHER";
         // Damage reports get their own type
         if (fileType === "damage_report") return "DAMAGE_REPORT";
         if (mime?.startsWith("image/")) return "PHOTO";
@@ -50,6 +52,7 @@ export const GET = withAuth(
           invoice: "INVOICE",
           contract: "CONTRACT",
           depreciation: "DEPRECIATION",
+          weather: "WEATHER",
         };
         return map[cat] || "OTHER";
       };

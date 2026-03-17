@@ -592,10 +592,21 @@ export const POST = withAuth(async (req: NextRequest, { userId, orgId }) => {
             updatedAt: new Date(),
           },
         });
-        logger.debug(`[Weather API] Saved to file_assets for claim ${body.claim_id}`);
+        logger.info(
+          `[Weather API] ✅ Saved to file_assets for claim ${body.claim_id}, fileAssetId=${fileAssetId}`
+        );
       } catch (faErr) {
-        logger.warn("[Weather API] Could not save to file_assets:", faErr);
+        logger.error("[Weather API] ❌ Could not save to file_assets:", {
+          error: faErr,
+          claimId: body.claim_id,
+          orgId,
+          pdfUrl,
+        });
       }
+    } else {
+      logger.warn(
+        `[Weather API] Skipped file_assets save: claim_id=${body.claim_id}, pdfUrl=${!!pdfUrl}`
+      );
     }
 
     return NextResponse.json(

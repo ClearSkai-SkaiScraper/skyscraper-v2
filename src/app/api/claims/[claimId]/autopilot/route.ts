@@ -54,9 +54,18 @@ export const GET = withAuth(
       }
 
       // Count existing evidence to build smart recommendations
+      // Photos are stored in file_assets with mimeType starting with "image/"
       const [photosCount, documentsCount, supplementsCount, weatherScansCount] = await Promise.all([
-        prisma.completion_photos
-          .count({ where: { claim_id: claimId, org_id: orgId } })
+        prisma.file_assets
+          .count({
+            where: {
+              claimId,
+              orgId,
+              mimeType: { startsWith: "image/" },
+              // Exclude damage_report PDFs
+              OR: [{ file_type: { notIn: ["damage_report"] } }, { file_type: null }],
+            },
+          })
           .catch(() => 0),
         prisma.inspections.count({ where: { claimId, orgId } }).catch(() => 0),
         prisma.supplements.count({ where: { claim_id: claimId } }).catch(() => 0),

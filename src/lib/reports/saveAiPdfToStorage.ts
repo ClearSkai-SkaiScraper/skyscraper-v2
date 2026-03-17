@@ -3,8 +3,8 @@
  * Standardized pipeline for saving AI-generated PDFs to Supabase + GeneratedArtifact
  */
 
-import prisma from "@/lib/prisma";
 import { logger } from "@/lib/logger";
+import prisma from "@/lib/prisma";
 import { uploadSupabase } from "@/lib/storage";
 
 interface SaveAiPdfOptions {
@@ -70,12 +70,20 @@ export async function saveAiPdfToStorage(options: SaveAiPdfOptions): Promise<Sav
       },
     });
     artifactId = artifact.id;
-    logger.debug(`[saveAiPdfToStorage] Saved artifact ${artifactId} for claim ${claimId}`);
-  } catch (dbErr) {
-    console.warn(
-      `[saveAiPdfToStorage] Artifact DB write failed (PDF still saved to storage):`,
-      dbErr
+    logger.info(
+      `[saveAiPdfToStorage] ✅ Saved artifact ${artifactId} for claim ${claimId}, aiReportId=${aiReportId}`
     );
+  } catch (dbErr) {
+    // Log full error details for debugging
+    logger.error(`[saveAiPdfToStorage] ❌ Artifact DB write failed for claim ${claimId}:`, {
+      error: dbErr,
+      orgId,
+      claimId,
+      type,
+      aiReportId,
+    });
+    // Re-throw so callers know the artifact wasn't saved
+    throw new Error(`Failed to save GeneratedArtifact: ${dbErr}`);
   }
 
   return {

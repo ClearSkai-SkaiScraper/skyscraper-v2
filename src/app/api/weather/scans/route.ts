@@ -114,6 +114,7 @@ export const GET = withAuth(async (req: NextRequest, { userId, orgId }) => {
 
     if (fullReports.length > 0) {
       // Look up GeneratedArtifact records for these weather reports
+      // Query by claimId OR by orgId (fallback if claimId wasn't saved correctly)
       const artifacts = await prisma.generatedArtifact.findMany({
         where: {
           claimId,
@@ -129,19 +130,44 @@ export const GET = withAuth(async (req: NextRequest, { userId, orgId }) => {
         },
       });
 
+      logger.debug(
+        `[WEATHER_SCANS] Found ${artifacts.length} weather artifacts for claim ${claimId}`
+      );
+      if (artifacts.length > 0) {
+        logger.debug(`[WEATHER_SCANS] Artifact IDs: ${artifacts.map((a) => a.id).join(", ")}`);
+      }
+
       // Map full reports with their PDF URLs
       for (const report of fullReports) {
         // Find matching artifact by aiReportId in metadata (primary), or fallback to time/title match
         const matchingArtifact = artifacts.find((a) => {
           // Primary: Match by aiReportId stored in metadata
           const meta = a.metadata as { aiReportId?: string } | null;
-          if (meta?.aiReportId === report.id) return true;
-          // Fallback: time proximity or address match in title
-          return (
-            a.title?.includes(report.address || "") ||
-            Math.abs(new Date(a.createdAt).getTime() - new Date(report.createdAt).getTime()) < 60000
-          );
+          if (meta?.aiReportId === report.id) {
+            logger.debug(
+              `[WEATHER_SCANS] ✅ Found artifact by aiReportId match: ${a.id} -> ${report.id}`
+            );
+            return true;
+          }
+          // Fallback: time proximity (within 2 minutes) or address match in title
+          const timeMatch =
+            Math.abs(new Date(a.createdAt).getTime() - new Date(report.createdAt).getTime()) <
+            120000;
+          const titleMatch = a.title?.toLowerCase().includes((report.address || "").toLowerCase());
+          if (timeMatch || titleMatch) {
+            logger.debug(
+              `[WEATHER_SCANS] ✅ Found artifact by fallback (time=${timeMatch}, title=${titleMatch}): ${a.id}`
+            );
+            return true;
+          }
+          return false;
         });
+
+        if (!matchingArtifact) {
+          logger.warn(
+            `[WEATHER_SCANS] ⚠️ No artifact found for report ${report.id} (address: ${report.address})`
+          );
+        }
 
         weatherReportsWithPdfs.push({
           id: report.id,
