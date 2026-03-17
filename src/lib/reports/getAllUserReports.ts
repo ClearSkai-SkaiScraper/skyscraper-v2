@@ -154,6 +154,30 @@ export async function getAllUserReports(params?: {
       take: 100,
     });
 
+    // Look up PDF URLs from GeneratedArtifact for weather reports
+    const weatherClaimIds = weatherReports.map((w) => w.claimId).filter(Boolean) as string[];
+    let weatherArtifacts: Record<string, string> = {};
+    if (weatherClaimIds.length > 0) {
+      try {
+        const artifacts = await prisma.generatedArtifact.findMany({
+          where: {
+            claimId: { in: weatherClaimIds },
+            type: "weather",
+          },
+          select: { claimId: true, fileUrl: true, createdAt: true },
+          orderBy: { createdAt: "desc" },
+        });
+        // Map latest artifact URL per claim
+        for (const a of artifacts) {
+          if (a.claimId && a.fileUrl && !weatherArtifacts[a.claimId]) {
+            weatherArtifacts[a.claimId] = a.fileUrl;
+          }
+        }
+      } catch {
+        // GeneratedArtifact lookup failed — continue without URLs
+      }
+    }
+
     weatherUnified = weatherReports.map((w) => ({
       id: w.id,
       type: "WEATHER_REPORT",
@@ -161,7 +185,7 @@ export async function getAllUserReports(params?: {
       leadId: w.leadId ?? null,
       title: "Weather Verification",
       createdAt: w.createdAt.toISOString(),
-      url: null,
+      url: w.claimId ? weatherArtifacts[w.claimId] || null : null,
       source: "Weather Verify",
       metadata: { address: w.address, mode: w.mode, overallAssessment: w.overallAssessment },
     }));

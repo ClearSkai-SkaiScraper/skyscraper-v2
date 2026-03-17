@@ -352,6 +352,15 @@ export default async function ReportHistoryPage({
                           <ArrowUpRight className="h-3 w-3" /> Resume
                         </Link>
                       )}
+                      {r.type === "WEATHER_REPORT" && r.claimId && (
+                        <Link
+                          href={`/claims/${r.claimId}/weather`}
+                          className="flex items-center gap-1 rounded-md border border-[color:var(--border)] px-2 py-1 text-slate-700 hover:border-indigo-500 hover:text-indigo-600 dark:text-slate-300"
+                          title="View Weather"
+                        >
+                          <ArrowUpRight className="h-3 w-3" /> Weather
+                        </Link>
+                      )}
                       <CopyIdButton id={r.id} />
                     </div>
                   </div>

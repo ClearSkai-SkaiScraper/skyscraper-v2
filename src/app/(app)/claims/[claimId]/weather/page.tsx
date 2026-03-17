@@ -292,8 +292,17 @@ export default function ClaimWeatherPage({ params }: Props) {
     setLoadingRadar(true);
     setRadarImages([]);
     try {
+      // Parse and format the date to YYYY-MM-DD
+      const dateObj = new Date(date);
+      const formattedDate = dateObj.toISOString().split("T")[0];
+
       // Geocode address via Open-Meteo (free — works best with city names)
       const geoQuery = city && addrState ? `${city}, ${addrState}` : fullAddress;
+      if (!geoQuery.trim()) {
+        toast.error("Enter an address first to fetch radar images");
+        return;
+      }
+
       const geoRes = await fetch(
         `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(geoQuery)}&count=1&language=en&format=json`
       );
@@ -307,15 +316,24 @@ export default function ClaimWeatherPage({ params }: Props) {
         }
       }
 
-      const res = await fetch(`/api/weather/radar?lat=${lat}&lng=${lng}&date=${date}`);
+      const res = await fetch(`/api/weather/radar?lat=${lat}&lng=${lng}&date=${formattedDate}`);
       if (res.ok) {
         const data = await res.json();
-        setRadarImages(data.images || []);
-        setRadarStation(data.stationId || null);
-        setSelectedRadarIdx(0);
+        if (data.images?.length > 0) {
+          setRadarImages(data.images);
+          setRadarStation(data.stationId || null);
+          setSelectedRadarIdx(0);
+          toast.success(`Loaded ${data.images.length} radar images for ${formattedDate}`);
+        } else {
+          toast.info("No radar images available for this date");
+        }
+      } else {
+        const errData = await res.json().catch(() => ({}));
+        toast.error(errData.error || "Failed to fetch radar images");
       }
     } catch (err) {
       logger.error("Radar fetch error:", err);
+      toast.error("Failed to fetch radar images");
     } finally {
       setLoadingRadar(false);
     }

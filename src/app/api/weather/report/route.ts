@@ -11,6 +11,7 @@ import {
   requireActiveSubscription,
   SubscriptionRequiredError,
 } from "@/lib/billing/requireActiveSubscription";
+import { db } from "@/lib/db";
 import prisma from "@/lib/prisma";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { htmlToPdfBuffer } from "@/lib/reports/pdf-utils";
@@ -338,6 +339,32 @@ export const POST = withAuth(async (req: NextRequest, { userId, orgId }) => {
     } catch (histErr) {
       logger.error("[Weather API] Report history save failed (non-critical):", histErr);
       // Continue - history save failure should not break the weather report
+    }
+
+    // ── Save to claim_documents so it appears on the claim's Documents tab ──
+    if (body.claim_id && pdfUrl) {
+      try {
+        await db.query(
+          `INSERT INTO claim_documents (
+            id, "claimId", "orgId", "fileName", "fileType",
+            "publicUrl", "visibleToClient", "createdAt", "updatedAt"
+          ) VALUES (
+            gen_random_uuid(), $1, $2, $3, 'PDF',
+            $4, true, NOW(), NOW()
+          )
+          ON CONFLICT DO NOTHING`,
+          [
+            body.claim_id,
+            orgId,
+            `Weather Report — ${body.address} — ${new Date().toLocaleDateString("en-US")}`,
+            pdfUrl,
+          ]
+        );
+        logger.debug(`[Weather API] Saved to claim_documents for claim ${body.claim_id}`);
+      } catch (cdErr) {
+        // claim_documents table may not exist yet — non-blocking
+        logger.warn("[Weather API] Could not save to claim_documents:", cdErr);
+      }
     }
 
     return NextResponse.json(
