@@ -677,7 +677,9 @@ export default function ClientProfilePage() {
             messages: data.messages ?? 0,
           });
         }
-      } catch {}
+      } catch (error) {
+        console.warn("[Portal Profile] Failed to load stats:", error);
+      }
     }
     if (isLoaded && user) loadStats();
   }, [isLoaded, user]);
@@ -695,7 +697,9 @@ export default function ClientProfilePage() {
           const data = await res.json();
           if (data.company) setLinkedCompany(data.company);
         }
-      } catch {}
+      } catch (error) {
+        console.warn("[Portal Profile] Failed to load linked company:", error);
+      }
     }
     if (isLoaded && user) loadLinkedCompany();
   }, [isLoaded, user]);

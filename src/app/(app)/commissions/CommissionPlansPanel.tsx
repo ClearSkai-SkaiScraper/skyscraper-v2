@@ -148,7 +148,9 @@ export default function CommissionPlansPanel() {
         body: JSON.stringify({ isActive: !currentActive }),
       });
       fetchPlans();
-    } catch {}
+    } catch (error) {
+      console.error("[CommissionPlans] Failed to toggle plan:", error);
+    }
   };
 
   const setDefault = async (planId: string) => {
@@ -159,7 +161,9 @@ export default function CommissionPlansPanel() {
         body: JSON.stringify({ isDefault: true }),
       });
       fetchPlans();
-    } catch {}
+    } catch (error) {
+      console.error("[CommissionPlans] Failed to set default:", error);
+    }
   };
 
   const deletePlan = async (planId: string) => {
@@ -167,7 +171,9 @@ export default function CommissionPlansPanel() {
     try {
       await fetch(`/api/finance/commission-plans/${planId}`, { method: "DELETE" });
       fetchPlans();
-    } catch {}
+    } catch (error) {
+      console.error("[CommissionPlans] Failed to delete plan:", error);
+    }
   };
 
   return (

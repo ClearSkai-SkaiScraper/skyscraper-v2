@@ -5,12 +5,15 @@
  * Uses service-role admin client for server-side uploads (no user auth required)
  */
 
+import crypto from "crypto";
+
 import { createClient } from "@supabase/supabase-js";
 
 import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 
-const BUCKET = "documents";
+// Use claim-photos bucket which is guaranteed to exist and have proper policies
+const BUCKET = "claim-photos";
 
 /**
  * Get Supabase admin client with service role key for server-side uploads
@@ -58,10 +61,13 @@ export async function saveAiPdfToStorage(options: SaveAiPdfOptions): Promise<Sav
 
   const supabase = getSupabaseAdmin();
 
-  // Build storage path
+  // Build storage path - matches claim-photos bucket structure: orgId/claimId/category/filename
   const timestamp = Date.now();
-  const filename = `${type.toLowerCase()}_${timestamp}.pdf`;
-  const storageKey = `claims/${claimId}/ai/${filename}`;
+  const uuid = crypto.randomUUID();
+  const filename = `${type.toLowerCase()}_${timestamp}_${uuid}.pdf`;
+  const storageKey = `${orgId}/${claimId}/ai-reports/${filename}`;
+
+  logger.info("[saveAiPdfToStorage] Uploading PDF:", { bucket: BUCKET, storageKey, size: pdfBuffer.length });
 
   // Upload to Supabase Storage using admin client (no user auth required)
   const { error: uploadError } = await supabase.storage.from(BUCKET).upload(storageKey, pdfBuffer, {
@@ -72,6 +78,7 @@ export async function saveAiPdfToStorage(options: SaveAiPdfOptions): Promise<Sav
   if (uploadError) {
     logger.error("[saveAiPdfToStorage] ❌ Supabase upload failed:", {
       error: uploadError,
+      bucket: BUCKET,
       claimId,
       storageKey,
     });
