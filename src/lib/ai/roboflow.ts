@@ -306,7 +306,8 @@ const CLASS_MAPPING: Record<string, string> = {
   hail: "hail_impact",
   "hail-mark": "hail_impact",
   bruise: "hail_bruise",
-  dent: "hail_dent",
+  // Generic "dent" stays neutral — only hail-specific classes map to hail
+  dent: "dent",
 
   // ─── WIND DAMAGE ────────────────────────────────────────────────────────────
   "wind-damage": "wind_damage",

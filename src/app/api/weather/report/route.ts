@@ -329,7 +329,7 @@ export const POST = withAuth(async (req: NextRequest, { userId, orgId }) => {
     // ══════════════════════════════════════════════════════════════════════════
     // STEP 6: Fetch radar and weather data
     // ══════════════════════════════════════════════════════════════════════════
-    let radarImages: { url: string; label: string; stationId?: string }[] = [];
+    let radarImages: { url: string; label: string; stationId?: string; timestamp?: string }[] = [];
     let radarStationId: string | null = null;
     let weatherConditions: {
       datetime: string;
@@ -446,8 +446,8 @@ export const POST = withAuth(async (req: NextRequest, { userId, orgId }) => {
           eventsCount: aiReport.events?.length ?? 0,
         });
 
-        // Build the view model using the canonical builder
-        const viewModel = buildWeatherPdfViewModel({
+        // Build the view model using the canonical builder (v2 — async, fetches real radar images)
+        const viewModel = await buildWeatherPdfViewModel({
           // Report metadata
           reportId: report.id,
           generatedBy,
@@ -497,15 +497,19 @@ export const POST = withAuth(async (req: NextRequest, { userId, orgId }) => {
               intensity: e.intensity,
               notes: e.notes,
             })) ?? [],
-          // Radar frames
+          // Radar frames (preserve real per-frame timestamps from IEM)
           radarFrames: radarImages.map((r) => ({
             url: r.url,
-            timestamp: aiReport.dol || body.dol, // Use DOL as fallback timestamp
+            timestamp: r.timestamp || `${aiReport.dol || body.dol}T12:00:00Z`,
             label: r.label,
           })),
           // Analysis
           summary: aiReport.summary,
           carrierTalkingPoints: aiReport.carrierTalkingPoints,
+          // v2 — DOL context for canonical consistency
+          dolSource: "user_input",
+          providersUsed: geocodeResult.resolved ? ["visual_crossing", "iem_nexrad"] : [],
+          providersFailed: [],
         });
 
         logger.info("[Weather API] Generated view model", {

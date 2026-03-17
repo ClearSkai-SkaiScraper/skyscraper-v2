@@ -1,30 +1,76 @@
 /**
- * Weather PDF View Model
+ * Weather PDF View Model — v2
  *
- * Centralized data structure and helpers for weather report PDF generation.
- * Separates business logic from rendering logic.
+ * Centralized data structure for weather report PDF generation.
+ * Uses EffectiveDolContext as the single source of truth.
+ * Separates claim-window conditions from storm-event evidence.
+ * Embeds real radar images (base64) instead of text placeholders.
+ *
+ * Business logic happens HERE. The PDF renderer only renders.
  *
  * @module lib/weather/weatherPdfViewModel
  */
 
 import { logger } from "@/lib/logger";
 
+import type { EffectiveDolContext } from "./effectiveDolContext";
+import { buildEffectiveDolContext } from "./effectiveDolContext";
+
 // ─────────────────────────────────────────────────────────────────────────────
-// Types
+// Normalized Weather Models
 // ─────────────────────────────────────────────────────────────────────────────
 
-export interface WeatherEvent {
-  date: string;
-  time?: string;
-  type: string;
-  description?: string;
-  severity?: string;
-  intensity?: string;
-  hailSize?: string;
-  windSpeed?: string;
-  notes?: string;
-  confidence?: number;
+export interface NormalizedWeatherObservation {
+  date: string; // YYYY-MM-DD
+  source: string; // "visual_crossing", "weatherstack", "open_meteo"
+  tempHigh?: number; // °F
+  tempLow?: number; // °F
+  precip?: number; // inches
+  precipProb?: number; // 0-100
+  windSpeed?: number; // mph (sustained)
+  windGust?: number; // mph
+  snowfall?: number; // inches
+  conditions?: string; // "Clear", "Rain", "Thunderstorm", etc.
+  description?: string; // Longer description
+  humidity?: number; // %
+  confidence: number; // 0-1 how reliable this data is
 }
+
+export interface NormalizedStormEvidence {
+  date: string; // YYYY-MM-DD
+  time?: string; // HH:MM
+  type: string; // "hail", "wind", "tornado_warning", "thunderstorm", etc.
+  description?: string;
+  severity?: string; // "Severe", "Moderate", "Minor"
+  intensity?: string;
+  hailSize?: string; // e.g. "1.75 inch"
+  windSpeed?: string; // e.g. "65 mph"
+  distanceMiles?: number;
+  direction?: string; // "NW", "SE", etc.
+  source: string; // "mesonet", "cap", "ai_analysis"
+  score: number; // 0-100 relevance
+  notes?: string;
+  /** Whether this event falls within the 3-day claim window */
+  isInClaimWindow: boolean;
+  /** Whether this event falls on a different date than the DOL */
+  isNearbyEvent: boolean;
+}
+
+export interface NormalizedRadarFrame {
+  url: string;
+  timestamp: string;
+  stationId: string;
+  label: string;
+  frameType: "before" | "peak" | "after" | "other";
+  /** Base64-encoded image data for PDF embedding */
+  base64Data?: string;
+  /** Whether we actually fetched the image successfully */
+  imageLoaded: boolean;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// View Model Types
+// ─────────────────────────────────────────────────────────────────────────────
 
 export interface WeatherDayData {
   date: string;
@@ -38,15 +84,6 @@ export interface WeatherDayData {
   conditions?: string;
   description?: string;
   isAnchorDay: boolean;
-}
-
-export interface RadarFrame {
-  url: string;
-  timestamp: string;
-  stationId: string;
-  label: string;
-  frameType: "before" | "peak" | "after" | "other";
-  base64Data?: string; // For embedding
 }
 
 export interface ClaimSnapshot {
@@ -68,7 +105,7 @@ export interface CompanyBranding {
   website: string;
   license: string;
   logoUrl: string;
-  logoBase64?: string; // For embedding
+  logoBase64?: string;
   primaryColor: string;
   address: string;
 }
@@ -81,10 +118,10 @@ export interface LocationData {
 }
 
 export interface ResolvedPeril {
-  type: string; // "Hail", "Wind", "Rain", etc.
+  type: string;
   confidence: "high" | "medium" | "low" | "unknown";
-  displayText: string; // User-facing text
-  evidenceSummary: string; // Brief evidence note
+  displayText: string;
+  evidenceSummary: string;
 }
 
 export interface EvidenceSummary {
@@ -104,6 +141,9 @@ export interface WeatherPdfViewModel {
   generatedAt: string;
   generatedBy: string;
 
+  // Canonical DOL context (drives everything)
+  dolContext: EffectiveDolContext;
+
   // Company branding
   branding: CompanyBranding;
 
@@ -116,19 +156,23 @@ export interface WeatherPdfViewModel {
   // Resolved peril
   peril: ResolvedPeril;
 
-  // Anchor date window (day before / DOL / day after)
+  // Claim window anchor
   anchorDate: string;
+
+  // SECTION: Claim Window Conditions (day before / DOL / day after)
   weatherWindow: WeatherDayData[];
 
-  // Storm events
-  events: WeatherEvent[];
+  // SECTION: Storm Event Evidence (significant events in evidence window)
+  stormEvidence: NormalizedStormEvidence[];
   hasStormEvidence: boolean;
+  /** If event anchor differs from DOL, this note explains it */
+  eventAnchorNote: string | null;
 
   // Evidence summary
   evidence: EvidenceSummary;
 
-  // Radar imagery
-  radarFrames: RadarFrame[];
+  // SECTION: Radar imagery (real embedded images)
+  radarFrames: NormalizedRadarFrame[];
   hasRadarImagery: boolean;
 
   // Analysis text
@@ -137,126 +181,40 @@ export interface WeatherPdfViewModel {
 
   // Data sources
   dataSources: string[];
+
+  // Provider diagnostics (dev/admin only)
+  diagnostics: ProviderDiagnostics;
+
+  // ── Backward compat shims ──
+  /** @deprecated Use stormEvidence */
+  events: NormalizedStormEvidence[];
+}
+
+export interface ProviderDiagnostics {
+  providersRequested: string[];
+  providersSucceeded: string[];
+  providersFailed: string[];
+  providerTimestamps: Record<string, string>;
+  selectedDol: string;
+  eventAnchor: string;
+  radarFrameCount: number;
+  eventSource: "provider" | "ai" | "mixed" | "none";
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Anchor Date Window Helper
+// Peril Resolution
 // ─────────────────────────────────────────────────────────────────────────────
 
-/**
- * Get the canonical 3-day window: day before, DOL, day after
- */
-export function getWeatherDisplayWindow(anchorDate: string): {
-  dayBefore: string;
-  anchor: string;
-  dayAfter: string;
-} {
-  const anchor = new Date(anchorDate);
-
-  const dayBefore = new Date(anchor);
-  dayBefore.setDate(dayBefore.getDate() - 1);
-
-  const dayAfter = new Date(anchor);
-  dayAfter.setDate(dayAfter.getDate() + 1);
-
-  return {
-    dayBefore: formatDateISO(dayBefore),
-    anchor: formatDateISO(anchor),
-    dayAfter: formatDateISO(dayAfter),
-  };
-}
-
-/**
- * Filter weather conditions to exactly the 3-day window
- */
-export function filterWeatherToWindow(
-  conditions: Array<{
-    datetime: string;
-    tempmax?: number;
-    tempmin?: number;
-    precip?: number;
-    precipprob?: number;
-    windspeed?: number;
-    windgust?: number;
-    conditions?: string;
-    description?: string;
-  }>,
-  anchorDate: string
-): WeatherDayData[] {
-  const window = getWeatherDisplayWindow(anchorDate);
-  const result: WeatherDayData[] = [];
-
-  // Find day before
-  const dayBeforeData = conditions.find((c) => c.datetime === window.dayBefore);
-  if (dayBeforeData) {
-    result.push({
-      date: window.dayBefore,
-      label: "Day Before",
-      tempHigh: dayBeforeData.tempmax,
-      tempLow: dayBeforeData.tempmin,
-      precip: dayBeforeData.precip,
-      precipProb: dayBeforeData.precipprob,
-      windSpeed: dayBeforeData.windspeed,
-      windGust: dayBeforeData.windgust,
-      conditions: dayBeforeData.conditions,
-      description: dayBeforeData.description,
-      isAnchorDay: false,
-    });
-  }
-
-  // Find anchor day (DOL)
-  const anchorData = conditions.find((c) => c.datetime === window.anchor);
-  if (anchorData) {
-    result.push({
-      date: window.anchor,
-      label: "Date of Loss",
-      tempHigh: anchorData.tempmax,
-      tempLow: anchorData.tempmin,
-      precip: anchorData.precip,
-      precipProb: anchorData.precipprob,
-      windSpeed: anchorData.windspeed,
-      windGust: anchorData.windgust,
-      conditions: anchorData.conditions,
-      description: anchorData.description,
-      isAnchorDay: true,
-    });
-  }
-
-  // Find day after
-  const dayAfterData = conditions.find((c) => c.datetime === window.dayAfter);
-  if (dayAfterData) {
-    result.push({
-      date: window.dayAfter,
-      label: "Day After",
-      tempHigh: dayAfterData.tempmax,
-      tempLow: dayAfterData.tempmin,
-      precip: dayAfterData.precip,
-      precipProb: dayAfterData.precipprob,
-      windSpeed: dayAfterData.windspeed,
-      windGust: dayAfterData.windgust,
-      conditions: dayAfterData.conditions,
-      description: dayAfterData.description,
-      isAnchorDay: false,
-    });
-  }
-
-  return result;
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Peril Resolution Helper
-// ─────────────────────────────────────────────────────────────────────────────
-
-/**
- * Resolve the primary peril with clean display text
- */
 export function resolvePrimaryPeril(
   claimPeril: string | null | undefined,
-  events: WeatherEvent[],
+  stormEvidence: NormalizedStormEvidence[],
   weatherData: WeatherDayData[]
 ): ResolvedPeril {
   // Priority 1: Explicit claim peril if set and valid
-  if (claimPeril && !["unknown", "unspecified", "other", ""].includes(claimPeril.toLowerCase())) {
+  if (
+    claimPeril &&
+    !["unknown", "unspecified", "other", "multiple", ""].includes(claimPeril.toLowerCase())
+  ) {
     return {
       type: capitalizeFirst(claimPeril),
       confidence: "high",
@@ -265,19 +223,47 @@ export function resolvePrimaryPeril(
     };
   }
 
-  // Priority 2: Infer from strongest detected event
-  const hailEvents = events.filter(
+  // Priority 2: Infer from strongest storm evidence
+  const hailEvents = stormEvidence.filter(
     (e) =>
       e.type?.toLowerCase().includes("hail") ||
       e.description?.toLowerCase().includes("hail") ||
       e.hailSize
   );
-  const windEvents = events.filter(
+  const windEvents = stormEvidence.filter(
     (e) =>
       e.type?.toLowerCase().includes("wind") ||
       e.description?.toLowerCase().includes("wind") ||
       (e.windSpeed && parseFloat(e.windSpeed) > 40)
   );
+
+  if (hailEvents.length > 0 && windEvents.length > 0) {
+    const maxHailScore = Math.max(...hailEvents.map((e) => e.score));
+    const maxWindScore = Math.max(...windEvents.map((e) => e.score));
+    if (maxHailScore >= maxWindScore) {
+      const maxHail = hailEvents.find((e) => e.hailSize);
+      return {
+        type: "Hail",
+        confidence: "high",
+        displayText: "Hail",
+        evidenceSummary: maxHail?.hailSize
+          ? `Hail up to ${maxHail.hailSize} detected`
+          : `${hailEvents.length} hail event(s) detected`,
+      };
+    } else {
+      const maxWind = windEvents.reduce((max, e) => {
+        const speed = e.windSpeed ? parseFloat(e.windSpeed) : 0;
+        return speed > max ? speed : max;
+      }, 0);
+      return {
+        type: "Wind",
+        confidence: "high",
+        displayText: "Wind",
+        evidenceSummary:
+          maxWind > 0 ? `Wind gusts up to ${maxWind} mph` : "High wind events detected",
+      };
+    }
+  }
 
   if (hailEvents.length > 0) {
     const maxHail = hailEvents.find((e) => e.hailSize);
@@ -328,7 +314,7 @@ export function resolvePrimaryPeril(
   }
 
   // Priority 4: No significant evidence
-  if (events.length === 0 && weatherData.length === 0) {
+  if (stormEvidence.length === 0 && weatherData.length === 0) {
     return {
       type: "Unknown",
       confidence: "unknown",
@@ -346,34 +332,30 @@ export function resolvePrimaryPeril(
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Radar Frame Selection Helper
+// Radar Frame Selection
 // ─────────────────────────────────────────────────────────────────────────────
 
-/**
- * Select the best radar frames for the PDF (before / peak / after)
- */
-export function selectBestRadarFrames(
+export function selectRadarFramesForDolOrEvent(
   frames: Array<{ url: string; timestamp: string; stationId?: string; label: string }>,
-  anchorDate: string,
+  dolContext: EffectiveDolContext,
   maxFrames: number = 3
-): RadarFrame[] {
-  if (!frames || frames.length === 0) {
-    return [];
-  }
+): NormalizedRadarFrame[] {
+  if (!frames || frames.length === 0) return [];
 
-  const anchor = new Date(anchorDate);
-  const anchorStart = new Date(anchor);
-  anchorStart.setHours(0, 0, 0, 0);
-  const anchorEnd = new Date(anchor);
-  anchorEnd.setHours(23, 59, 59, 999);
+  const anchorDateStr = dolContext.eventAnchorDate;
+  const anchor = new Date(anchorDateStr + "T12:00:00Z");
 
-  // Score frames by relevance to anchor date
-  const scoredFrames = frames.map((frame) => {
+  const scored = frames.map((frame) => {
     const frameTime = new Date(frame.timestamp);
     const hoursDiff = Math.abs(frameTime.getTime() - anchor.getTime()) / (1000 * 60 * 60);
 
-    let score = 100 - hoursDiff * 2; // Closer to anchor = higher score
+    let score = Math.max(0, 100 - hoursDiff * 2);
     let frameType: "before" | "peak" | "after" | "other" = "other";
+
+    const anchorStart = new Date(anchor);
+    anchorStart.setUTCHours(0, 0, 0, 0);
+    const anchorEnd = new Date(anchor);
+    anchorEnd.setUTCHours(23, 59, 59, 999);
 
     if (frameTime < anchorStart) {
       frameType = "before";
@@ -381,26 +363,27 @@ export function selectBestRadarFrames(
       frameType = "after";
     } else {
       frameType = "peak";
-      score += 50; // Bonus for being on the anchor day
+      score += 50;
     }
 
     return {
-      ...frame,
+      url: frame.url,
+      timestamp: frame.timestamp,
       stationId: frame.stationId || "Unknown",
+      label: frame.label,
       frameType,
       score,
+      imageLoaded: false as boolean,
     };
   });
 
-  // Sort by score and take the best
-  scoredFrames.sort((a, b) => b.score - a.score);
+  scored.sort((a, b) => b.score - a.score);
 
-  // Try to get one of each type if possible
-  const result: RadarFrame[] = [];
+  const result: NormalizedRadarFrame[] = [];
   const types: Array<"before" | "peak" | "after"> = ["before", "peak", "after"];
 
   for (const type of types) {
-    const frame = scoredFrames.find((f) => f.frameType === type && !result.includes(f));
+    const frame = scored.find((f) => f.frameType === type && !result.some((r) => r.url === f.url));
     if (frame && result.length < maxFrames) {
       result.push({
         url: frame.url,
@@ -408,20 +391,21 @@ export function selectBestRadarFrames(
         stationId: frame.stationId,
         label: frame.label,
         frameType: frame.frameType,
+        imageLoaded: false,
       });
     }
   }
 
-  // Fill remaining slots with highest scored frames
-  for (const frame of scoredFrames) {
+  for (const frame of scored) {
     if (result.length >= maxFrames) break;
-    if (!result.find((r) => r.url === frame.url)) {
+    if (!result.some((r) => r.url === frame.url)) {
       result.push({
         url: frame.url,
         timestamp: frame.timestamp,
         stationId: frame.stationId,
         label: frame.label,
         frameType: frame.frameType,
+        imageLoaded: false,
       });
     }
   }
@@ -430,22 +414,81 @@ export function selectBestRadarFrames(
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
+// Radar Image Fetcher (real images for PDF embedding)
+// ─────────────────────────────────────────────────────────────────────────────
+
+export async function fetchRadarImages(
+  frames: NormalizedRadarFrame[]
+): Promise<NormalizedRadarFrame[]> {
+  if (frames.length === 0) return [];
+
+  const results = await Promise.allSettled(
+    frames.map(async (frame) => {
+      try {
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), 8000);
+
+        const response = await fetch(frame.url, {
+          headers: { "User-Agent": "SkaiScraper/1.0 (support@skaiscrape.com)" },
+          signal: controller.signal,
+        });
+        clearTimeout(timeout);
+
+        if (!response.ok) {
+          logger.warn("[RADAR_IMG] Failed to fetch", { url: frame.url, status: response.status });
+          return { ...frame, imageLoaded: false };
+        }
+
+        const contentType = response.headers.get("content-type") || "image/png";
+
+        // Only accept image content types
+        if (!contentType.startsWith("image/")) {
+          logger.warn("[RADAR_IMG] Non-image content type", { url: frame.url, contentType });
+          return { ...frame, imageLoaded: false };
+        }
+
+        const buffer = Buffer.from(await response.arrayBuffer());
+
+        // Reject tiny images (likely error pages)
+        if (buffer.length < 500) {
+          logger.warn("[RADAR_IMG] Image too small, likely error", {
+            url: frame.url,
+            size: buffer.length,
+          });
+          return { ...frame, imageLoaded: false };
+        }
+
+        const base64 = buffer.toString("base64");
+        return { ...frame, base64Data: `data:${contentType};base64,${base64}`, imageLoaded: true };
+      } catch (err) {
+        logger.warn("[RADAR_IMG] Fetch error", { url: frame.url, error: String(err) });
+        return { ...frame, imageLoaded: false };
+      }
+    })
+  );
+
+  return results.map((r, i) =>
+    r.status === "fulfilled" ? r.value : { ...frames[i], imageLoaded: false }
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 // Evidence Summary Builder
 // ─────────────────────────────────────────────────────────────────────────────
 
 export function buildEvidenceSummary(
-  events: WeatherEvent[],
+  stormEvidence: NormalizedStormEvidence[],
   weatherData: WeatherDayData[],
   radarFrameCount: number
 ): EvidenceSummary {
-  const hasHail = events.some(
+  const hasHail = stormEvidence.some(
     (e) =>
       e.type?.toLowerCase().includes("hail") ||
       e.description?.toLowerCase().includes("hail") ||
       e.hailSize
   );
 
-  const hasWind = events.some(
+  const hasWind = stormEvidence.some(
     (e) =>
       e.type?.toLowerCase().includes("wind") ||
       e.windSpeed ||
@@ -457,9 +500,9 @@ export function buildEvidenceSummary(
   const maxWindGust = Math.max(...weatherData.map((w) => w.windGust || 0), 0);
   const maxPrecip = Math.max(...weatherData.map((w) => w.precip || 0), 0);
   const hailSizeMax =
-    events
+    stormEvidence
       .filter((e) => e.hailSize)
-      .map((e) => e.hailSize)
+      .map((e) => e.hailSize!)
       .sort()
       .pop() || undefined;
 
@@ -468,7 +511,7 @@ export function buildEvidenceSummary(
     stormConfidence = "high";
   } else if (hasWind || maxWindGust > 40 || maxPrecip > 0.5) {
     stormConfidence = "medium";
-  } else if (maxPrecip > 0.1 || events.length > 0) {
+  } else if (maxPrecip > 0.1 || stormEvidence.length > 0) {
     stormConfidence = "low";
   }
 
@@ -485,15 +528,266 @@ export function buildEvidenceSummary(
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
+// Weather Window Builder
+// ─────────────────────────────────────────────────────────────────────────────
+
+export function filterWeatherToClaimWindow(
+  conditions: NormalizedWeatherObservation[],
+  dolContext: EffectiveDolContext
+): WeatherDayData[] {
+  const [dayBefore, dolDay, dayAfter] = dolContext.claimWindowDays;
+  const result: WeatherDayData[] = [];
+
+  const buildDay = (
+    date: string,
+    label: WeatherDayData["label"],
+    isAnchor: boolean
+  ): WeatherDayData => {
+    const data = conditions.find((c) => c.date === date);
+    if (data) {
+      return {
+        date,
+        label,
+        tempHigh: data.tempHigh,
+        tempLow: data.tempLow,
+        precip: data.precip,
+        precipProb: data.precipProb,
+        windSpeed: data.windSpeed,
+        windGust: data.windGust,
+        conditions: data.conditions,
+        description: data.description,
+        isAnchorDay: isAnchor,
+      };
+    }
+    return { date, label, conditions: "No data available", isAnchorDay: isAnchor };
+  };
+
+  result.push(buildDay(dayBefore, "Day Before", false));
+  result.push(buildDay(dolDay, "Date of Loss", true));
+  result.push(buildDay(dayAfter, "Day After", false));
+
+  return result;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Storm Evidence Normalizer
+// ─────────────────────────────────────────────────────────────────────────────
+
+export function normalizeStormEvidence(
+  aiEvents: Array<{
+    type: string;
+    date: string;
+    time?: string;
+    intensity?: string;
+    notes?: string;
+    severity?: string;
+    hailSize?: string;
+    windSpeed?: string;
+  }>,
+  dolContext: EffectiveDolContext,
+  maxEvents: number = 6
+): NormalizedStormEvidence[] {
+  const [dayBefore, dolDay, dayAfter] = dolContext.claimWindowDays;
+  const claimDays = new Set([dayBefore, dolDay, dayAfter]);
+
+  const normalized: NormalizedStormEvidence[] = aiEvents.map((e) => {
+    const eventDate = e.date;
+    const isInClaimWindow = claimDays.has(eventDate);
+
+    let score = 50;
+    if (eventDate === dolDay) score += 40;
+    else if (isInClaimWindow) score += 20;
+    else score += 5;
+
+    if (e.hailSize) {
+      const size = parseFloat(e.hailSize);
+      if (!isNaN(size)) score += size * 15;
+    }
+    if (e.windSpeed) {
+      const speed = parseFloat(e.windSpeed);
+      if (!isNaN(speed) && speed > 40) score += (speed - 40) * 0.5;
+    }
+    if (e.intensity?.toLowerCase().includes("severe")) score += 10;
+
+    return {
+      date: eventDate,
+      time: e.time,
+      type: e.type,
+      description: e.notes,
+      severity: e.severity || e.intensity,
+      intensity: e.intensity,
+      hailSize: e.hailSize,
+      windSpeed: e.windSpeed,
+      source: "ai_analysis" as const,
+      score: Math.min(100, score),
+      notes: e.notes,
+      isInClaimWindow,
+      isNearbyEvent: !isInClaimWindow,
+    };
+  });
+
+  // Add nearby event candidates from DOL context
+  for (const candidate of dolContext.nearbyEventCandidates) {
+    const alreadyExists = normalized.some(
+      (e) => e.date === candidate.date && e.type === candidate.type
+    );
+    if (!alreadyExists) {
+      const isInClaimWindow = claimDays.has(candidate.date);
+      normalized.push({
+        date: candidate.date,
+        type: candidate.type,
+        distanceMiles: candidate.distanceMiles,
+        source: candidate.source,
+        score: candidate.score,
+        isInClaimWindow,
+        isNearbyEvent: !isInClaimWindow,
+      });
+    }
+  }
+
+  return normalized.sort((a, b) => b.score - a.score).slice(0, maxEvents);
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Executive Summary Builder
+// ─────────────────────────────────────────────────────────────────────────────
+
+function buildCanonicalSummary(
+  peril: ResolvedPeril,
+  evidence: EvidenceSummary,
+  dolContext: EffectiveDolContext,
+  stormEvidence: NormalizedStormEvidence[],
+  weatherWindow: WeatherDayData[]
+): string {
+  const dolDisplay = formatDateDisplay(dolContext.selectedDol);
+  const dolDay = weatherWindow.find((d) => d.isAnchorDay);
+
+  if (evidence.stormConfidence === "none") {
+    const baseMsg = `Weather analysis for the reporting period around ${dolDisplay} did not identify significant storm activity in the claim window.`;
+    if (dolDay && dolDay.conditions && dolDay.conditions !== "No data available") {
+      return `${baseMsg} Conditions on the date of loss were reported as ${dolDay.conditions.toLowerCase()} with ${(dolDay.precip || 0).toFixed(2)} inches of precipitation.`;
+    }
+    return `${baseMsg} No severe weather events such as hail, damaging wind, or heavy precipitation were detected in the available data sources.`;
+  }
+
+  const parts: string[] = [];
+  parts.push(
+    `Weather analysis for the ${dolDisplay} date of loss indicates ${peril.displayText.toLowerCase()} activity in the area.`
+  );
+
+  if (dolDay && dolDay.conditions !== "No data available") {
+    const dolConditions: string[] = [];
+    if (dolDay.precip && dolDay.precip > 0)
+      dolConditions.push(`${dolDay.precip.toFixed(2)}" precipitation`);
+    if (dolDay.windGust && dolDay.windGust > 30)
+      dolConditions.push(`wind gusts to ${dolDay.windGust.toFixed(0)} mph`);
+    if (dolConditions.length > 0) {
+      parts.push(`On the date of loss, conditions included ${dolConditions.join(" and ")}.`);
+    } else if (dolDay.conditions?.toLowerCase().includes("clear")) {
+      parts.push(
+        `Daily conditions on the date of loss were reported as ${dolDay.conditions.toLowerCase()}.`
+      );
+    }
+  }
+
+  const claimWindowEvents = stormEvidence.filter((e) => e.isInClaimWindow);
+  const nearbyEvents = stormEvidence.filter((e) => e.isNearbyEvent);
+
+  if (claimWindowEvents.length > 0) {
+    if (evidence.hasHail && evidence.hailSizeMax)
+      parts.push(`Hail up to ${evidence.hailSizeMax} was reported within the claim window.`);
+    if (evidence.maxWindGust && evidence.maxWindGust > 40)
+      parts.push(`Wind gusts reached ${evidence.maxWindGust.toFixed(0)} mph.`);
+  }
+
+  if (nearbyEvents.length > 0 && claimWindowEvents.length === 0) {
+    const bestNearby = nearbyEvents[0];
+    parts.push(
+      `Relevant storm activity was identified on ${bestNearby.date} within the broader search window, though the 3-day claim window showed milder conditions.`
+    );
+  } else if (nearbyEvents.length > 0 && claimWindowEvents.length > 0) {
+    parts.push(
+      `Additional supporting storm evidence was identified within the broader search window.`
+    );
+  }
+
+  return parts.join(" ");
+}
+
+function buildCanonicalTalkingPoints(
+  peril: ResolvedPeril,
+  evidence: EvidenceSummary,
+  dolContext: EffectiveDolContext,
+  stormEvidence: NormalizedStormEvidence[]
+): string {
+  if (evidence.stormConfidence === "none") {
+    return "Weather data for the claimed date of loss does not show significant storm activity in the immediate area. Consider requesting additional documentation or adjusting the date of loss if the insured has evidence of storm damage.";
+  }
+
+  const points: string[] = [];
+  if (evidence.hasHail)
+    points.push(
+      `Hail activity was confirmed in the area${evidence.hailSizeMax ? ` with sizes up to ${evidence.hailSizeMax}` : ""}.`
+    );
+  if (evidence.maxWindGust && evidence.maxWindGust > 40)
+    points.push(`Damaging wind gusts of ${evidence.maxWindGust.toFixed(0)} mph were recorded.`);
+  if (evidence.hasRadar)
+    points.push(`NEXRAD radar imagery confirms storm cell activity over the property location.`);
+
+  if (dolContext.eventAnchorDiffersFromDol) {
+    points.push(
+      `Note: The strongest storm evidence was identified on ${dolContext.eventAnchorDate}, which differs from the claimed date of loss (${dolContext.selectedDol}). This may warrant a date of loss review.`
+    );
+  }
+
+  if (points.length === 0)
+    points.push(
+      "Weather conditions during the reporting period support the possibility of storm-related damage."
+    );
+
+  return points.join(" ");
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Validation
+// ─────────────────────────────────────────────────────────────────────────────
+
+export interface ValidationResult {
+  valid: boolean;
+  errors: string[];
+  warnings: string[];
+}
+
+export function validateBeforeGeneration(input: BuildViewModelInput): ValidationResult {
+  const errors: string[] = [];
+  const warnings: string[] = [];
+
+  if (!input.propertyAddress || input.propertyAddress === "Not Provided") {
+    errors.push("Claim has no property address.");
+  }
+  if (!input.dateOfLoss) {
+    errors.push("Date of Loss is required.");
+  }
+  if (!input.locationResolved || (input.lat === 0 && input.lng === 0)) {
+    warnings.push(
+      "Property location could not be geocoded. Radar and location-specific data may be unavailable."
+    );
+  }
+  if (input.weatherConditions.length === 0) {
+    warnings.push("No weather condition data available from providers.");
+  }
+
+  return { valid: errors.length === 0, errors, warnings };
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 // View Model Builder
 // ─────────────────────────────────────────────────────────────────────────────
 
 export interface BuildViewModelInput {
-  // Report metadata
   reportId: string;
   generatedBy?: string;
 
-  // Claim data
   claimNumber?: string;
   insuredName?: string;
   carrier?: string;
@@ -505,13 +799,11 @@ export interface BuildViewModelInput {
   dateOfLoss: string;
   claimPeril?: string | null;
 
-  // Location
   lat: number;
   lng: number;
   locationResolved: boolean;
   radarStationId?: string;
 
-  // Branding
   companyName?: string;
   companyPhone?: string;
   companyEmail?: string;
@@ -521,7 +813,6 @@ export interface BuildViewModelInput {
   companyAddress?: string;
   primaryColor?: string;
 
-  // Weather data
   weatherConditions: Array<{
     datetime: string;
     tempmax?: number;
@@ -534,52 +825,137 @@ export interface BuildViewModelInput {
     description?: string;
   }>;
 
-  // Events from AI
-  events: WeatherEvent[];
+  events: Array<{
+    date: string;
+    time?: string;
+    type: string;
+    severity?: string;
+    intensity?: string;
+    hailSize?: string;
+    windSpeed?: string;
+    notes?: string;
+  }>;
 
-  // Radar
   radarFrames: Array<{ url: string; timestamp: string; stationId?: string; label: string }>;
 
-  // Analysis
   summary?: string;
   carrierTalkingPoints?: string;
+
+  dolSource?: "claim" | "quick_dol" | "manual_override" | "user_input";
+  quickDolResult?: {
+    confidence?: number;
+    candidates?: Array<{
+      date: string;
+      type?: string;
+      magnitude?: number;
+      distanceMiles?: number;
+      score: number;
+      source?: string;
+    }>;
+    fromDate?: string;
+    toDate?: string;
+  } | null;
+
+  providersUsed?: string[];
+  providersFailed?: string[];
 }
 
-export function buildWeatherPdfViewModel(input: BuildViewModelInput): WeatherPdfViewModel {
-  const anchorDate = input.dateOfLoss;
+export async function buildWeatherPdfViewModel(
+  input: BuildViewModelInput
+): Promise<WeatherPdfViewModel> {
+  const startTime = Date.now();
 
-  // Build weather window (day before / DOL / day after)
-  const weatherWindow = filterWeatherToWindow(input.weatherConditions, anchorDate);
-
-  // Resolve peril
-  const peril = resolvePrimaryPeril(input.claimPeril, input.events, weatherWindow);
-
-  // Select best radar frames
-  const radarFrames = selectBestRadarFrames(input.radarFrames, anchorDate, 3);
-
-  // Build evidence summary
-  const evidence = buildEvidenceSummary(input.events, weatherWindow, radarFrames.length);
-
-  // Build data sources list
-  const dataSources: string[] = [];
-  if (weatherWindow.length > 0) dataSources.push("Visual Crossing Weather API");
-  if (radarFrames.length > 0) dataSources.push(`NEXRAD Radar (${input.radarStationId || "N/A"})`);
-  dataSources.push("Iowa Environmental Mesonet", "NWS RIDGE");
-
-  logger.info("[WeatherPdfViewModel] Built view model", {
-    anchorDate,
-    weatherDays: weatherWindow.length,
-    events: input.events.length,
-    radarFrames: radarFrames.length,
-    perilType: peril.type,
-    stormConfidence: evidence.stormConfidence,
+  // 1. Build canonical DOL context — THE SINGLE SOURCE OF TRUTH
+  const dolContext = buildEffectiveDolContext({
+    dol: input.dateOfLoss,
+    dolSource: input.dolSource || "user_input",
+    quickDolResult: input.quickDolResult,
+    providersUsed: input.providersUsed,
+    radarStationId: input.radarStationId,
   });
 
-  return {
+  // 2. Normalize weather conditions
+  const normalizedConditions: NormalizedWeatherObservation[] = input.weatherConditions.map((c) => ({
+    date: c.datetime,
+    source: "visual_crossing",
+    tempHigh: c.tempmax,
+    tempLow: c.tempmin,
+    precip: c.precip,
+    precipProb: c.precipprob,
+    windSpeed: c.windspeed,
+    windGust: c.windgust,
+    conditions: c.conditions,
+    description: c.description,
+    confidence: 0.9,
+  }));
+
+  // 3. Filter to claim window using DOL context
+  const weatherWindow = filterWeatherToClaimWindow(normalizedConditions, dolContext);
+
+  // 4. Normalize storm evidence using DOL context
+  const stormEvidence = normalizeStormEvidence(input.events, dolContext);
+
+  // 5. Resolve peril from evidence
+  const peril = resolvePrimaryPeril(input.claimPeril, stormEvidence, weatherWindow);
+
+  // 6. Select radar frames centered on event anchor
+  let radarFrames = selectRadarFramesForDolOrEvent(input.radarFrames, dolContext);
+
+  // 7. Fetch actual radar images
+  radarFrames = await fetchRadarImages(radarFrames);
+  const loadedFrames = radarFrames.filter((f) => f.imageLoaded);
+  const hasRadarImagery = loadedFrames.length > 0;
+
+  // 8. Build evidence summary
+  const evidence = buildEvidenceSummary(stormEvidence, weatherWindow, loadedFrames.length);
+
+  // 9. Build event anchor note
+  let eventAnchorNote: string | null = null;
+  if (dolContext.eventAnchorDiffersFromDol) {
+    eventAnchorNote = `Strongest storm evidence was identified on ${formatDateDisplay(dolContext.eventAnchorDate)}, which differs from the claimed Date of Loss (${formatDateDisplay(dolContext.selectedDol)}). Radar imagery is centered on the event anchor date.`;
+  }
+
+  // 10. Build canonical summary (consistent with timeline & evidence)
+  const executiveSummary =
+    input.summary && evidence.stormConfidence !== "none"
+      ? input.summary
+      : buildCanonicalSummary(peril, evidence, dolContext, stormEvidence, weatherWindow);
+
+  // 11. Build carrier talking points
+  const carrierTalkingPoints =
+    input.carrierTalkingPoints && evidence.stormConfidence !== "none"
+      ? input.carrierTalkingPoints
+      : buildCanonicalTalkingPoints(peril, evidence, dolContext, stormEvidence);
+
+  // 12. Data sources
+  const dataSources: string[] = [];
+  if (normalizedConditions.length > 0) dataSources.push("Visual Crossing Weather API");
+  if (loadedFrames.length > 0)
+    dataSources.push(`NEXRAD Radar (${dolContext.radarStationId || "N/A"})`);
+  dataSources.push("Iowa Environmental Mesonet", "NWS RIDGE");
+
+  // 13. Diagnostics
+  const diagnostics: ProviderDiagnostics = {
+    providersRequested: input.providersUsed || ["visual_crossing", "iem_nexrad"],
+    providersSucceeded: input.providersUsed || [],
+    providersFailed: input.providersFailed || [],
+    providerTimestamps: { built: new Date().toISOString() },
+    selectedDol: dolContext.selectedDol,
+    eventAnchor: dolContext.eventAnchorDate,
+    radarFrameCount: loadedFrames.length,
+    eventSource:
+      stormEvidence.length > 0
+        ? stormEvidence.some((e) => e.source !== "ai_analysis")
+          ? "mixed"
+          : "ai"
+        : "none",
+  };
+
+  const vm: WeatherPdfViewModel = {
     reportId: input.reportId,
     generatedAt: new Date().toISOString(),
     generatedBy: input.generatedBy || "SkaiScraper",
-
+    dolContext,
     branding: {
       companyName: input.companyName || "SkaiScraper",
       phone: input.companyPhone || "",
@@ -590,7 +966,6 @@ export function buildWeatherPdfViewModel(input: BuildViewModelInput): WeatherPdf
       primaryColor: input.primaryColor || "#1e40af",
       address: input.companyAddress || "",
     },
-
     claim: {
       claimNumber: input.claimNumber || "Not Provided",
       insuredName: input.insuredName || "Not Provided",
@@ -599,110 +974,60 @@ export function buildWeatherPdfViewModel(input: BuildViewModelInput): WeatherPdf
       adjusterName: input.adjusterName || "Not Provided",
       adjusterPhone: input.adjusterPhone || "",
       adjusterEmail: input.adjusterEmail || "",
-      dateOfLoss: formatDateDisplay(anchorDate),
+      dateOfLoss: formatDateDisplay(dolContext.selectedDol),
       propertyAddress: input.propertyAddress || "Not Provided",
     },
-
     location: {
       lat: input.lat,
       lng: input.lng,
       resolved: input.locationResolved,
-      radarStationId: input.radarStationId || "N/A",
+      radarStationId: dolContext.radarStationId || "N/A",
     },
-
     peril,
-    anchorDate,
+    anchorDate: dolContext.selectedDol,
     weatherWindow,
-
-    events: input.events,
+    stormEvidence,
     hasStormEvidence: evidence.stormConfidence !== "none",
-
+    eventAnchorNote,
     evidence,
-
-    radarFrames,
-    hasRadarImagery: radarFrames.length > 0,
-
-    executiveSummary: input.summary || buildDefaultSummary(peril, evidence, anchorDate),
-    carrierTalkingPoints: input.carrierTalkingPoints || buildDefaultTalkingPoints(peril, evidence),
-
+    radarFrames: loadedFrames,
+    hasRadarImagery,
+    executiveSummary,
+    carrierTalkingPoints,
     dataSources,
+    diagnostics,
+    // Backward compat
+    events: stormEvidence,
   };
+
+  logger.info("[WeatherPdfViewModel] Built v2 view model", {
+    anchorDate: vm.anchorDate,
+    eventAnchor: dolContext.eventAnchorDate,
+    anchorDiffers: dolContext.eventAnchorDiffersFromDol,
+    weatherDays: vm.weatherWindow.length,
+    stormEvents: vm.stormEvidence.length,
+    radarFrames: vm.radarFrames.length,
+    hasRadarImages: vm.hasRadarImagery,
+    perilType: vm.peril.type,
+    stormConfidence: vm.evidence.stormConfidence,
+    buildTimeMs: Date.now() - startTime,
+  });
+
+  return vm;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Default Text Builders
+// Utilities
 // ─────────────────────────────────────────────────────────────────────────────
-
-function buildDefaultSummary(
-  peril: ResolvedPeril,
-  evidence: EvidenceSummary,
-  anchorDate: string
-): string {
-  if (evidence.stormConfidence === "none") {
-    return `Weather analysis for the reporting period around ${formatDateDisplay(anchorDate)} did not identify significant storm activity. No severe weather events such as hail, damaging wind, or heavy precipitation were detected in the available data sources.`;
-  }
-
-  const parts: string[] = [];
-  parts.push(
-    `Weather analysis for the ${formatDateDisplay(anchorDate)} date of loss indicates ${peril.displayText.toLowerCase()} activity in the area.`
-  );
-
-  if (evidence.hasHail && evidence.hailSizeMax) {
-    parts.push(`Hail up to ${evidence.hailSizeMax} was reported.`);
-  }
-  if (evidence.maxWindGust && evidence.maxWindGust > 40) {
-    parts.push(`Wind gusts reached ${evidence.maxWindGust.toFixed(0)} mph.`);
-  }
-  if (evidence.maxPrecip && evidence.maxPrecip > 0.1) {
-    parts.push(`Total precipitation of ${evidence.maxPrecip.toFixed(2)} inches was recorded.`);
-  }
-
-  return parts.join(" ");
-}
-
-function buildDefaultTalkingPoints(peril: ResolvedPeril, evidence: EvidenceSummary): string {
-  if (evidence.stormConfidence === "none") {
-    return "Weather data for the claimed date of loss does not show significant storm activity in the immediate area. Consider requesting additional documentation or adjusting the date of loss if the insured has evidence of storm damage.";
-  }
-
-  const points: string[] = [];
-
-  if (evidence.hasHail) {
-    points.push(
-      `Hail activity was confirmed in the area${evidence.hailSizeMax ? ` with sizes up to ${evidence.hailSizeMax}` : ""}.`
-    );
-  }
-  if (evidence.maxWindGust && evidence.maxWindGust > 40) {
-    points.push(`Damaging wind gusts of ${evidence.maxWindGust.toFixed(0)} mph were recorded.`);
-  }
-  if (evidence.hasRadar) {
-    points.push("NEXRAD radar imagery confirms storm cell activity over the property location.");
-  }
-
-  if (points.length === 0) {
-    points.push(
-      "Weather conditions during the reporting period support the possibility of storm-related damage."
-    );
-  }
-
-  return points.join(" ");
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Utility Functions
-// ─────────────────────────────────────────────────────────────────────────────
-
-function formatDateISO(date: Date): string {
-  return date.toISOString().split("T")[0];
-}
 
 function formatDateDisplay(dateStr: string): string {
   try {
-    const date = new Date(dateStr);
+    const date = new Date(dateStr + "T12:00:00Z");
     return date.toLocaleDateString("en-US", {
       month: "long",
       day: "numeric",
       year: "numeric",
+      timeZone: "UTC",
     });
   } catch {
     return dateStr;
@@ -713,3 +1038,22 @@ function capitalizeFirst(str: string): string {
   if (!str) return "";
   return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
 }
+
+// Backward compat re-exports
+export { getClaimWindowDays } from "./effectiveDolContext";
+export type { EffectiveDolContext } from "./effectiveDolContext";
+/** @deprecated Use NormalizedRadarFrame */
+export type RadarFrame = NormalizedRadarFrame;
+/** @deprecated Use the new WeatherEvent from old module — storm evidence replaces it */
+export type WeatherEvent = {
+  date: string;
+  time?: string;
+  type: string;
+  description?: string;
+  severity?: string;
+  intensity?: string;
+  hailSize?: string;
+  windSpeed?: string;
+  notes?: string;
+  confidence?: number;
+};

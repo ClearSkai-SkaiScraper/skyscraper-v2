@@ -319,7 +319,7 @@ export async function POST(request: NextRequest) {
           dataUrl,
           validated.componentType as ComponentType,
           validated.claimType as "hail" | "wind" | "storm" | "water" | "fire" | "general",
-          0.35 // 35% confidence threshold - slightly lower for comprehensive detection
+          0.45 // 45% confidence threshold — raised from 0.35 to reduce false positive hail hits
         );
 
         logger.info("[PHOTO_ANNOTATE] YOLO detection complete", {
@@ -424,7 +424,8 @@ export async function POST(request: NextRequest) {
           return false;
         }
         // - Low confidence detections (AI isn't sure)
-        if (detection.confidence < 0.3) {
+        // Raised from 0.3 → 0.5 to eliminate false positives (was causing phantom hail hits)
+        if (detection.confidence < 0.5) {
           logger.warn("[PHOTO_ANNOTATE] Low confidence detection filtered", {
             type: detection.type,
             confidence: detection.confidence,
@@ -763,7 +764,7 @@ GARAGE DOOR SPECIFIC (often missed):
 
 Draw bounding boxes around EVERY paint chip, dent, divot, or impact mark.
 Understand IRC R703 exterior wall covering requirements.
-Be AGGRESSIVE in identifying damage — every chip, dent, and mark matters for insurance.
+Be thorough in identifying damage — document each genuine chip, dent, and mark. Only mark what you can clearly see.
 Use "hail_impact" or "hail_spatter" for hail damage, NEVER "crack" for circular marks.`;
   }
 
@@ -856,7 +857,7 @@ WIND TRIM DAMAGE - ALSO LOOK FOR:
 
 Draw precise bounding boxes around ALL damaged areas.
 Every paint chip, crack, or dent on trim = DAMAGE that must be documented.
-Be AGGRESSIVE — subtle damage from hail is still damage.
+Be thorough — subtle damage from hail is still damage, but only mark what you can clearly identify.
 Use "hail_impact" or "hail_spatter" for hail damage, NEVER "crack" for circular marks.`;
   }
 
@@ -896,15 +897,15 @@ WINDOW SCREEN HITS - COMMON PATTERNS:
 
 Draw precise bounding boxes around ALL damaged areas, even small holes.
 Zoom in mentally on each quadrant of the screen to find damage.
-Be AGGRESSIVE - mark every hole, tear, stretch, or dent you see.`;
+Be thorough - mark every hole, tear, stretch, or dent you can clearly see.`;
   }
 
   if (componentType === "general") {
-    return `You are a HAAG Engineering certified property damage assessor — the WORLD'S BEST AI damage analyzer for insurance claims.
-You can identify damage on ANY component shown in the image using HAAG methodology, ITEL standards, and IICRC protocols.
+    return `You are a HAAG Engineering certified property damage assessor for insurance claims.
+You identify damage on ANY component using HAAG methodology, ITEL standards, and IICRC protocols.
 
-You are AGGRESSIVE and THOROUGH — you identify EVERY mark, dent, chip, hole, stain, and anomaly.
-Insurance adjusters rely on you to catch damage that human inspectors miss.
+You are THOROUGH and ACCURATE — you identify genuine damage with precision.
+Insurance adjusters rely on you for credible, defensible findings. False positives waste their time.
 
 CRITICAL BOUNDING BOX ACCURACY:
 - Coordinates are 0-100 percentages where 0,0 is TOP-LEFT of image
@@ -1076,13 +1077,14 @@ THEN: Identify ALL visible damage using HAAG insurance terminology:
 - Ponding water areas
 
 IMPORTANT RULES:
-1. Be AGGRESSIVE — mark EVERYTHING suspicious. Every dent, chip, mark matters.
+1. Be THOROUGH but ACCURATE — only mark damage you can clearly see. Zero detections is valid for clean surfaces.
 2. Use TIGHT bounding boxes — small boxes around each damage point.
 3. NEVER group multiple hits into one large box.
 4. Use "hail_impact" or "hail_spatter" for hail, NEVER "crack" for circular marks.
-5. Soft metal damage is the #1 indicator of hail — always check mailboxes, AC units, gutters.
-6. Paint chips in circular pattern = HAIL, paint peeling in sheets = MOISTURE.
-7. Scan the ENTIRE image systematically: top-left → top-center → top-right → center-left → center → center-right → bottom-left → bottom-center → bottom-right.`;
+5. Soft metal damage is a strong indicator of hail — check mailboxes, AC units, gutters.
+6. Paint chips in circular pattern = likely hail, paint peeling in sheets = moisture.
+7. Scan the ENTIRE image systematically: top-left → top-center → top-right → center-left → center → center-right → bottom-left → bottom-center → bottom-right.
+8. NEVER fabricate detections. If the surface is clean, report zero findings — that's still valuable data.`;
   }
 
   // Route new component types to the general system prompt (handles everything)
@@ -1189,7 +1191,7 @@ COLLATERAL DAMAGE INDICATORS (check ALL of these):
 - Wood damage: dents, gouges, or splits on exposed wood (deck rails, fences, trim)
 - Vehicle damage: matching dent pattern on cars parked nearby (if visible)
 
-Always be thorough and AGGRESSIVE in identifying damage — insurance adjusters need every hit documented.
+Always be thorough and precise in identifying damage — insurance adjusters need credible, accurate documentation.
 Distinguish between pre-existing conditions and recent storm damage.
 When in doubt between "crack" and "hail impact," if the mark is circular or semi-circular with displaced granules, it is HAIL IMPACT.`;
 }
@@ -1454,7 +1456,7 @@ Return JSON in this exact format:
   prompt += `
 }
 
-Be AGGRESSIVE in marking damage — every hail hit matters for insurance documentation.
+Be thorough in marking genuine damage — each real hail hit matters for insurance documentation.
 Mark each individual impact separately with its own tight bounding box.
 Use HAAG-standard terminology: "hail impact" not "crack", "wind crease" not "bend".
 If no damage is visible, return an empty detections array.`;
@@ -1595,7 +1597,8 @@ function buildSidingPrompt(claimType: string): string {
   const hailSpecific =
     claimType === "hail" || claimType === "storm"
       ? `
-⚠️ THIS IS A HAIL CLAIM — The homeowner reported hail damage. You MUST find evidence.
+⚠️ This is a HAIL CLAIM — Look carefully for hail damage evidence on all surfaces.
+Document genuine hail impacts you can clearly see. If a surface is clean, that's a valid finding.
 
 STUCCO HAIL DAMAGE (MOST COMMONLY MISSED BY ADJUSTERS):
 - Circular divots/chips in random pattern = HAIL HITS (not settlement cracks)
@@ -1620,7 +1623,7 @@ CRITICAL DISTINCTION:
 - NEVER call stucco chips/divots "spatter" — they are IMPACTS
 - NEVER call trim cracking/chipping "spatter" — they are IMPACTS
 
-AGGRESSIVENESS: Document EVERY potential damage point. When in doubt, mark it.
+QUALITY: Document EVERY genuine damage point. If unsure, skip it rather than guess.
 Insurance adjusters will verify — your job is to find ALL possibilities.
 
 BOUNDING BOX SIZE:
@@ -1831,7 +1834,7 @@ function buildWindowPrompt(claimType: string): string {
   const hailSpecific =
     claimType === "hail"
       ? `
-⚠️ THIS IS A HAIL CLAIM — The homeowner reported hail damage to windows/trim. You MUST find evidence.
+⚠️ This is a HAIL CLAIM — Look carefully for hail damage on windows and trim. Document genuine impacts only.
 
 WINDOW TRIM HAIL DAMAGE (FREQUENTLY MISSED):
 - Paint chips showing bare wood/substrate = HAIL IMPACT
@@ -1854,7 +1857,7 @@ HAIL DAMAGE SIGNATURES (DOCUMENT EVERY HIT):
 - Drip cap dents above window
 - Window sill: chips, dents, paint displacement from hail strikes
 
-AGGRESSIVENESS: If you see ANY paint chip on trim, DOCUMENT IT. Insurance will verify.`
+QUALITY: If you see a clear paint chip on trim, document it. Skip ambiguous marks.`
       : "";
 
   return `Analyze this WINDOW photo for an ACTIVE INSURANCE CLAIM.
@@ -1983,26 +1986,26 @@ Return JSON:
 
 function buildGeneralPrompt(claimType: string): string {
   const claimContext = {
-    hail: "CRITICAL: This is a HAIL CLAIM - the homeowner reported HAIL DAMAGE. You MUST find hail damage evidence. Look for: circular chips/divots in STUCCO (even tiny ones), paint chips on window TRIM showing wood substrate, dents in any soft metal, granule loss on shingles. DAMAGE TYPE RULES: (1) 'hail_impact' = ALL material damage (chips, cracks, dents, divots) on stucco, trim, siding, metal. (2) 'hail_spatter' = ONLY tiny paint-only marks on smooth PAINTED METAL. (3) NEVER use 'spatter' for stucco/trim/siding material damage. Draw boxes around EVERY impact mark - even small circular discolorations or subtle texture changes could be hail hits. MINIMUM 5 detections expected for any surface with hail exposure.",
+    hail: "This is a HAIL CLAIM. Look carefully for: circular chips/divots in stucco, paint chips on window trim showing wood substrate, dents in soft metal (gutters, AC, mailbox), granule displacement on shingles. DAMAGE TYPE RULES: (1) 'hail_impact' = material damage (chips, cracks, dents, divots) on stucco, trim, siding, metal. (2) 'hail_spatter' = ONLY tiny paint-only marks on smooth PAINTED METAL surfaces. (3) NEVER use 'spatter' for stucco/trim/siding material damage. Mark each genuine impact with its own bounding box. IMPORTANT: Only mark damage you can CLEARLY see — do NOT guess or fabricate hits. If a surface appears clean and undamaged, report zero detections for that area. False positives undermine credibility with adjusters.",
     wind: "Focus on torn/lifted materials, displaced items, directional damage patterns, structural shifts, debris impacts",
     fire: "Focus on charring, smoke damage, heat warping, discoloration, fire suppression water damage",
     water:
       "Focus on staining, warping, mold, rot, water lines, paint bubbling/peeling, efflorescence, water intrusion behind awnings/overhangs",
     storm:
-      "STORM CLAIM - Look for ALL damage: hail impacts on EVERY surface (stucco chips, trim paint chips, soft metal dents), wind damage, water intrusion. Be AGGRESSIVE - insurance adjusters want to see EVERY hit documented.",
+      "STORM CLAIM - Look for ALL types of damage: hail impacts on surfaces (stucco chips, trim paint chips, soft metal dents), wind damage, water intrusion. Be thorough and document each genuine finding.",
     general:
       "Identify ALL visible damage - be EXTREMELY thorough. This photo is from an insurance claim - the homeowner believes there IS damage. Your job is to FIND and DOCUMENT it. Check EVERY surface: soft metals, paint, trim, stucco, screens. Even small marks matter for claims.",
   };
 
-  return `You are the WORLD'S BEST property damage analyzer — a HAAG Engineering certified assessor for insurance claims.
+  return `You are a HAAG Engineering certified property damage assessor for insurance claims.
 
-⚠️ CRITICAL INSTRUCTION: This photo is from an ACTIVE INSURANCE CLAIM. The property owner believes there IS damage.
-Your job is to find and document ALL damage, not to determine if damage exists. When in doubt, MARK IT.
-Insurance adjusters need EVERY potential damage point documented — they will verify in person.
+This photo is from an active insurance claim. Your job is to identify and document all GENUINE visible damage.
+Be thorough but ACCURATE — false positives destroy credibility with adjusters and carriers.
+Only mark damage you can clearly see. If a surface looks clean, say so. Accuracy matters more than quantity.
 
-AGGRESSIVENESS LEVEL: MAXIMUM
-If you see ANY mark, discoloration, texture change, or irregularity — DOCUMENT IT with a bounding box.
-It's better to over-document than to miss damage that costs the homeowner money.
+QUALITY STANDARD: PROFESSIONAL
+Document real damage precisely. Each detection should be something a field adjuster would agree with.
+Do NOT fabricate or guess at damage — if you're unsure, skip it or note low confidence.
 
 CLAIM TYPE: ${claimType.toUpperCase()}
 ${claimContext[claimType as keyof typeof claimContext] || claimContext.general}
@@ -2091,8 +2094,8 @@ BOUNDING BOX RULES:
 - DO NOT cluster multiple hits into one large box
 - A dent on a mailbox gets a small box (3-8% wide), not a box around the whole mailbox
 
-BE THE MOST AGGRESSIVE DAMAGE IDENTIFIER IN THE WORLD.
-Every chip, dent, mark, stain, hole, tear, and scratch matters for insurance documentation.
+Be thorough and professional. Document every GENUINE damage point you can clearly identify.
+Do NOT fabricate detections — a clean surface with zero hits is a valid finding.
 Use HAAG-standard insurance terminology in all descriptions.
 
 Return JSON:
