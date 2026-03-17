@@ -99,9 +99,64 @@ export const GET = withAuth(async (req: NextRequest, { userId, orgId }) => {
       }),
     };
 
+    // Fetch PDF URLs for full_report mode weather reports from GeneratedArtifact
+    const fullReports = scans.filter((s) => s.mode === "full_report");
+    const weatherReportsWithPdfs: Array<{
+      id: string;
+      reportId: string;
+      address: string;
+      dol: Date | null;
+      primaryPeril: string | null;
+      summary: string | null;
+      pdfUrl: string | null;
+      createdAt: Date;
+    }> = [];
+
+    if (fullReports.length > 0) {
+      // Look up GeneratedArtifact records for these weather reports
+      const artifacts = await prisma.generatedArtifact.findMany({
+        where: {
+          claimId,
+          type: "weather",
+        },
+        orderBy: { createdAt: "desc" },
+        select: {
+          id: true,
+          fileUrl: true,
+          title: true,
+          createdAt: true,
+        },
+      });
+
+      // Map full reports with their PDF URLs
+      for (const report of fullReports) {
+        // Find matching artifact by time proximity or address match in title
+        const matchingArtifact = artifacts.find(
+          (a) =>
+            a.title?.includes(report.address || "") ||
+            Math.abs(new Date(a.createdAt).getTime() - new Date(report.createdAt).getTime()) < 60000 // within 1 minute
+        );
+
+        weatherReportsWithPdfs.push({
+          id: report.id,
+          reportId: report.id,
+          address: report.address || "",
+          dol: report.dol,
+          primaryPeril: report.primaryPeril,
+          summary:
+            typeof report.globalSummary === "object" && report.globalSummary !== null
+              ? (report.globalSummary as { overallAssessment?: string }).overallAssessment || null
+              : null,
+          pdfUrl: matchingArtifact?.fileUrl || null,
+          createdAt: report.createdAt,
+        });
+      }
+    }
+
     return NextResponse.json({
       scans,
       categorized,
+      weatherReports: weatherReportsWithPdfs,
       currentDol: claim.dateOfLoss,
       claimAddress: claim.properties
         ? `${claim.properties.street}, ${claim.properties.city}, ${claim.properties.state} ${claim.properties.zipCode}`

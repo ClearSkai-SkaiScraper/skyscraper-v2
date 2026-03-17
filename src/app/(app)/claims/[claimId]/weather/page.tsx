@@ -65,6 +65,17 @@ type SavedScan = {
   users: { name: string | null } | null;
 };
 
+type SavedWeatherReport = {
+  id: string;
+  reportId: string;
+  address: string;
+  dol: string | null;
+  primaryPeril: string | null;
+  summary: string | null;
+  pdfUrl: string | null;
+  createdAt: string;
+};
+
 type RadarImage = {
   url: string;
   timestamp: string;
@@ -125,6 +136,7 @@ export default function ClaimWeatherPage({ params }: Props) {
 
   // Saved scans state
   const [savedScans, setSavedScans] = useState<SavedScan[]>([]);
+  const [savedWeatherReports, setSavedWeatherReports] = useState<SavedWeatherReport[]>([]);
   const [currentDol, setCurrentDol] = useState<string | null>(null);
   const [loadingScans, setLoadingScans] = useState(true);
   const [settingDol, setSettingDol] = useState<string | null>(null);
@@ -154,6 +166,7 @@ export default function ClaimWeatherPage({ params }: Props) {
         if (res.ok) {
           const data = await res.json();
           setSavedScans(data.scans || []);
+          setSavedWeatherReports(data.weatherReports || []);
           setCurrentDol(data.currentDol || null);
 
           // Auto-fill from claim property data (structured)
@@ -195,6 +208,7 @@ export default function ClaimWeatherPage({ params }: Props) {
       if (res.ok) {
         const data = await res.json();
         setSavedScans(data.scans || []);
+        setSavedWeatherReports(data.weatherReports || []);
         setCurrentDol(data.currentDol || null);
       }
     } catch (err) {
@@ -1026,6 +1040,87 @@ export default function ClaimWeatherPage({ params }: Props) {
                 Estimate, Supplement, and Claims Assembly builders.
               </p>
             </Card>
+          )}
+
+          {/* ── Saved Weather Reports ── */}
+          {savedWeatherReports.length > 0 && (
+            <div className="mt-6 border-t pt-6">
+              <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold text-muted-foreground">
+                <FileText className="h-4 w-4" />
+                Previously Generated Weather Reports ({savedWeatherReports.length})
+              </h3>
+              <div className="space-y-2">
+                {savedWeatherReports.map((report) => (
+                  <Card
+                    key={report.id}
+                    className="flex items-center justify-between border-slate-200 bg-slate-50/50 p-3 dark:border-slate-700 dark:bg-slate-800/50"
+                  >
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 text-sm font-medium">
+                        <FileText className="h-4 w-4 text-emerald-600" />
+                        Weather Report
+                        {report.primaryPeril && (
+                          <Badge
+                            className={
+                              PERIL_COLORS[report.primaryPeril.toLowerCase()] || PERIL_COLORS.other
+                            }
+                          >
+                            {report.primaryPeril}
+                          </Badge>
+                        )}
+                      </div>
+                      <p className="mt-0.5 text-xs text-muted-foreground">
+                        {report.address} •{" "}
+                        {new Date(report.createdAt).toLocaleDateString("en-US", {
+                          month: "short",
+                          day: "numeric",
+                          year: "numeric",
+                          hour: "numeric",
+                          minute: "2-digit",
+                        })}
+                      </p>
+                      {report.summary && (
+                        <p className="mt-1 line-clamp-1 text-xs text-muted-foreground">
+                          {report.summary}
+                        </p>
+                      )}
+                    </div>
+                    <div className="ml-3 flex shrink-0 gap-2">
+                      {report.pdfUrl ? (
+                        <>
+                          <Button
+                            size="sm"
+                            variant="default"
+                            className="gap-1.5 bg-emerald-600 hover:bg-emerald-700"
+                            onClick={() => window.open(report.pdfUrl!, "_blank")}
+                          >
+                            <Eye className="h-3.5 w-3.5" />
+                            View PDF
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="gap-1.5"
+                            onClick={() => {
+                              const link = document.createElement("a");
+                              link.href = report.pdfUrl!;
+                              link.download = `weather-report-${report.id}.pdf`;
+                              link.click();
+                            }}
+                          >
+                            <Download className="h-3.5 w-3.5" />
+                          </Button>
+                        </>
+                      ) : (
+                        <span className="text-xs italic text-muted-foreground">
+                          PDF not available
+                        </span>
+                      )}
+                    </div>
+                  </Card>
+                ))}
+              </div>
+            </div>
           )}
         </div>
       </Card>
