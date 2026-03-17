@@ -163,10 +163,13 @@ export default async function CarrierPage({ params }: Props) {
           </div>
           <div>
             <h1 className="text-2xl font-bold text-slate-900 dark:text-white">
-              {carrierName} — Carrier Intelligence
+              Carrier Intelligence
             </h1>
             <p className="text-sm text-slate-500 dark:text-slate-400">
-              AI-generated carrier-specific policies, coverage info, and claim strategy
+              Identified Carrier:{" "}
+              <span className="font-semibold text-indigo-600 dark:text-indigo-400">
+                {carrierName}
+              </span>
             </p>
           </div>
         </div>

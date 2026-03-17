@@ -370,19 +370,19 @@ export default async function ClaimsPage({ searchParams }: { searchParams: Claim
                               {claim.insured_name}
                             </span>
                           )}
-                          {claim.properties?.street || claim.properties?.city ? (
-                            <span className="flex items-center gap-1">
-                              <MapPin className="h-3 w-3" />
-                              {[
-                                claim.properties.street,
-                                claim.properties.city,
-                                claim.properties.state,
-                                claim.properties.zipCode,
-                              ]
-                                .filter(Boolean)
-                                .join(", ")}
-                            </span>
-                          ) : null}
+                          <span className="flex items-center gap-1">
+                            <MapPin className="h-3 w-3" />
+                            {claim.properties?.street || claim.properties?.city
+                              ? [
+                                  claim.properties.street,
+                                  claim.properties.city,
+                                  claim.properties.state,
+                                  claim.properties.zipCode,
+                                ]
+                                  .filter(Boolean)
+                                  .join(", ")
+                              : "No address"}
+                          </span>
                           {claim.createdAt && (
                             <span>
                               {new Date(claim.createdAt).toLocaleDateString("en-US", {

@@ -9,7 +9,17 @@
  */
 
 import { currentUser } from "@clerk/nextjs/server";
-import { Building2, HardHat, Package, Plus, Search, UserCheck, Users } from "lucide-react";
+import {
+  Building2,
+  HardHat,
+  Mail,
+  Package,
+  Phone,
+  Plus,
+  Search,
+  UserCheck,
+  Users,
+} from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
@@ -96,6 +106,7 @@ export default async function CompanyConnectionsPage() {
 
   // Fetch connections from TradesTeam and contacts
   let connections: any[] = [];
+  let clientContacts: any[] = [];
   let clientCount = 0;
   let vendorCount = 0;
   let subCount = 0;
@@ -148,10 +159,37 @@ export default async function CompanyConnectionsPage() {
       subCount = connections.filter((c) => c.type === "subcontractor").length;
       contractorCount = connections.filter((c) => c.type === "contractor").length;
 
-      // Fetch client contacts count
-      clientCount = await prisma.contacts.count({
+      // Fetch ALL client contacts (not just count) so we can display them
+      const contacts = await prisma.contacts.findMany({
         where: { orgId },
+        select: {
+          id: true,
+          firstName: true,
+          lastName: true,
+          email: true,
+          phone: true,
+          company: true,
+          city: true,
+          state: true,
+          createdAt: true,
+        },
+        orderBy: { createdAt: "desc" },
+        take: 100, // Limit for performance
       });
+      clientContacts = contacts.map((c) => ({
+        id: c.id,
+        type: "client",
+        name: [c.firstName, c.lastName].filter(Boolean).join(" ") || c.company || "Unknown",
+        firstName: c.firstName,
+        lastName: c.lastName,
+        email: c.email,
+        phone: c.phone,
+        companyName: c.company,
+        city: c.city,
+        state: c.state,
+        createdAt: c.createdAt,
+      }));
+      clientCount = contacts.length;
     } catch (error) {
       logger.error("[CompanyConnections] Error fetching data:", error);
     }
@@ -249,16 +287,19 @@ export default async function CompanyConnectionsPage() {
               {connections.map((connection) => (
                 <ConnectionCard key={connection.id} connection={connection} />
               ))}
-              {/* Show link to clients */}
-              {clientCount > 0 && (
+              {/* Show first few clients inline, link to see all */}
+              {clientContacts.slice(0, 3).map((client) => (
+                <ClientCard key={client.id} client={client} />
+              ))}
+              {clientCount > 3 && (
                 <Link
                   href="/contacts"
                   className="flex items-center justify-center rounded-xl border-2 border-dashed border-slate-300 p-6 text-center transition hover:border-blue-500 hover:bg-blue-50 dark:border-slate-600 dark:hover:bg-blue-900/20"
                 >
                   <div>
                     <UserCheck className="mx-auto mb-2 h-8 w-8 text-cyan-600" />
-                    <p className="font-medium">View {clientCount} Clients</p>
-                    <p className="text-sm text-muted-foreground">In Company Contacts</p>
+                    <p className="font-medium">+{clientCount - 3} More Clients</p>
+                    <p className="text-sm text-muted-foreground">View all in Contacts</p>
                   </div>
                 </Link>
               )}
@@ -292,19 +333,93 @@ export default async function CompanyConnectionsPage() {
 
         {/* Clients */}
         <TabsContent value="client" className="space-y-4">
-          <div className="rounded-xl border bg-white p-8 text-center dark:bg-slate-800">
-            <UserCheck className="mx-auto mb-4 h-12 w-12 text-cyan-600" />
-            <h3 className="mb-2 text-lg font-semibold">Company Contacts</h3>
-            <p className="mb-4 text-muted-foreground">
-              Your {clientCount} clients are managed in the Contacts section.
-            </p>
-            <Button asChild>
-              <Link href="/contacts">View Company Contacts</Link>
-            </Button>
-          </div>
+          {clientCount === 0 ? (
+            <div className="rounded-xl border-2 border-dashed border-slate-300 bg-slate-50 p-8 text-center dark:border-slate-700 dark:bg-slate-800/50">
+              <UserCheck className="mx-auto mb-4 h-12 w-12 text-slate-400" />
+              <h3 className="mb-2 text-lg font-semibold">No clients yet</h3>
+              <p className="mb-4 text-muted-foreground">
+                Add your first client contact to get started.
+              </p>
+              <Button asChild>
+                <Link href="/contacts/new">
+                  <Plus className="mr-2 h-4 w-4" />
+                  Add Client
+                </Link>
+              </Button>
+            </div>
+          ) : (
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+              {clientContacts.map((client) => (
+                <ClientCard key={client.id} client={client} />
+              ))}
+            </div>
+          )}
         </TabsContent>
       </Tabs>
     </PageContainer>
+  );
+}
+
+// Client Card Component — shows individual client contacts
+function ClientCard({ client }: { client: any }) {
+  return (
+    <Link
+      href={`/contacts/${client.id}`}
+      className="block rounded-xl border bg-white p-4 transition hover:shadow-md dark:bg-slate-800"
+    >
+      <div className="mb-3 flex items-start justify-between">
+        <div className="flex items-center gap-3">
+          <div className="flex h-12 w-12 items-center justify-center rounded-full bg-cyan-100 dark:bg-cyan-900/30">
+            <UserCheck className="h-6 w-6 text-cyan-600" />
+          </div>
+          <div>
+            <h3 className="font-semibold">{client.name}</h3>
+            {client.companyName && (
+              <p className="text-sm text-muted-foreground">{client.companyName}</p>
+            )}
+            {client.city && (
+              <p className="text-xs text-muted-foreground">
+                {client.city}
+                {client.state ? `, ${client.state}` : ""}
+              </p>
+            )}
+          </div>
+        </div>
+      </div>
+      {/* Contact Actions */}
+      <div className="flex flex-wrap gap-2">
+        {client.phone && (
+          <a
+            href={`tel:${client.phone}`}
+            onClick={(e) => e.stopPropagation()}
+            className="inline-flex items-center gap-1 rounded-full bg-green-100 px-2.5 py-1 text-xs font-medium text-green-700 hover:bg-green-200 dark:bg-green-900/30 dark:text-green-400"
+          >
+            <Phone className="h-3 w-3" />
+            Call
+          </a>
+        )}
+        {client.email && (
+          <a
+            href={`mailto:${client.email}`}
+            onClick={(e) => e.stopPropagation()}
+            className="inline-flex items-center gap-1 rounded-full bg-blue-100 px-2.5 py-1 text-xs font-medium text-blue-700 hover:bg-blue-200 dark:bg-blue-900/30 dark:text-blue-400"
+          >
+            <Mail className="h-3 w-3" />
+            Email
+          </a>
+        )}
+        {client.phone && (
+          <a
+            href={`sms:${client.phone}`}
+            onClick={(e) => e.stopPropagation()}
+            className="inline-flex items-center gap-1 rounded-full bg-purple-100 px-2.5 py-1 text-xs font-medium text-purple-700 hover:bg-purple-200 dark:bg-purple-900/30 dark:text-purple-400"
+          >
+            <Phone className="h-3 w-3" />
+            Text
+          </a>
+        )}
+      </div>
+    </Link>
   );
 }
 

@@ -363,6 +363,9 @@ export default function ClaimWeatherPage({ params }: Props) {
       return;
     }
 
+    // Use selectedDol if available, otherwise fallback to currentDol (saved on claim)
+    const effectiveDol = selectedDol || currentDol;
+
     try {
       toast.info("Generating full weather & loss justification report…", { duration: 6000 });
       const res = await fetch("/api/weather/report", {
@@ -370,7 +373,7 @@ export default function ClaimWeatherPage({ params }: Props) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           address: fullAddress,
-          dol: selectedDol || null,
+          dol: effectiveDol || null,
           lossType: lossType === "none" ? null : lossType,
           claim_id: claimId,
         }),
@@ -854,16 +857,16 @@ export default function ClaimWeatherPage({ params }: Props) {
               </span>
             </div>
             <div>
-              <span className="font-medium text-muted-foreground">Selected DOL:</span>{" "}
+              <span className="font-medium text-muted-foreground">Date of Loss:</span>{" "}
               <span
                 className={
-                  selectedDol
+                  selectedDol || currentDol
                     ? "font-semibold text-emerald-700 dark:text-emerald-400"
                     : "italic text-muted-foreground"
                 }
               >
-                {selectedDol
-                  ? new Date(selectedDol).toLocaleDateString("en-US", {
+                {selectedDol || currentDol
+                  ? new Date(selectedDol || currentDol!).toLocaleDateString("en-US", {
                       weekday: "short",
                       month: "short",
                       day: "numeric",
@@ -885,10 +888,12 @@ export default function ClaimWeatherPage({ params }: Props) {
         <div className="space-y-4">
           <Button
             onClick={runWeatherReport}
-            disabled={isReportRunning || !selectedDol || !fullAddress.trim()}
+            disabled={isReportRunning || (!selectedDol && !currentDol) || !fullAddress.trim()}
             size="lg"
             className={
-              selectedDol && fullAddress.trim() ? "bg-emerald-600 hover:bg-emerald-700" : ""
+              (selectedDol || currentDol) && fullAddress.trim()
+                ? "bg-emerald-600 hover:bg-emerald-700"
+                : ""
             }
           >
             {isReportRunning ? (
@@ -904,9 +909,10 @@ export default function ClaimWeatherPage({ params }: Props) {
             )}
           </Button>
 
-          {!selectedDol && !isReportRunning && (
+          {!selectedDol && !currentDol && !isReportRunning && (
             <p className="text-sm text-amber-600 dark:text-amber-400">
-              ⚠️ Run Quick DOL above and select a candidate date before generating the full report.
+              ⚠️ Run Quick DOL above and select a candidate date, or set a DOL on the claim before
+              generating the full report.
             </p>
           )}
 
