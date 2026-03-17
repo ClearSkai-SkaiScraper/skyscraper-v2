@@ -534,6 +534,7 @@ export const POST = withAuth(async (req: NextRequest, { userId, orgId }) => {
           label: `Weather Report - ${body.address}`,
           pdfBuffer,
           visibleToClient: true,
+          aiReportId: report.id, // Link to weather_reports.id for PDF lookup
         });
 
         pdfSaved = true;

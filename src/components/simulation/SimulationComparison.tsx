@@ -64,7 +64,19 @@ export function SimulationComparison({ claimId, className }: Props) {
       const res = await fetch(`/api/claims/${claimId}/simulation/history?limit=10`);
       if (!res.ok) throw new Error("Failed to fetch");
       const json = await res.json();
-      const items: SimulationRun[] = json.runs ?? json ?? [];
+      // API returns { history: [...] } - transform to SimulationRun shape
+      const rawHistory = json.history ?? json.runs ?? [];
+      const items: SimulationRun[] = rawHistory.map((h: any) => ({
+        id: h.id,
+        createdAt: h.createdAt,
+        overallScore: h.approvalProbability ?? h.overallScore ?? 0,
+        confidence: h.confidence ?? 0.8,
+        predictedOutcome:
+          h.predictedOutcome ?? (h.approvalProbability > 70 ? "Approved" : "Review"),
+        outcomes: h.outcomes ?? [],
+        parameters: h.parameters ?? {},
+        notes: h.notes,
+      }));
       setRuns(items);
       if (items.length >= 2) {
         setLeftIdx(0);

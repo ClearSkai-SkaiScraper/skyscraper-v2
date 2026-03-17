@@ -125,17 +125,23 @@ export const GET = withAuth(async (req: NextRequest, { userId, orgId }) => {
           fileUrl: true,
           title: true,
           createdAt: true,
+          metadata: true,
         },
       });
 
       // Map full reports with their PDF URLs
       for (const report of fullReports) {
-        // Find matching artifact by time proximity or address match in title
-        const matchingArtifact = artifacts.find(
-          (a) =>
+        // Find matching artifact by aiReportId in metadata (primary), or fallback to time/title match
+        const matchingArtifact = artifacts.find((a) => {
+          // Primary: Match by aiReportId stored in metadata
+          const meta = a.metadata as { aiReportId?: string } | null;
+          if (meta?.aiReportId === report.id) return true;
+          // Fallback: time proximity or address match in title
+          return (
             a.title?.includes(report.address || "") ||
-            Math.abs(new Date(a.createdAt).getTime() - new Date(report.createdAt).getTime()) < 60000 // within 1 minute
-        );
+            Math.abs(new Date(a.createdAt).getTime() - new Date(report.createdAt).getTime()) < 60000
+          );
+        });
 
         weatherReportsWithPdfs.push({
           id: report.id,
