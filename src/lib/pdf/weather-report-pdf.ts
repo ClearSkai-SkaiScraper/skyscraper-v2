@@ -1,12 +1,18 @@
 /**
- * Weather Report PDF Renderer (Production-Ready)
+ * Premium Weather Report PDF Renderer
  *
- * A professional, fully-hydrated weather report PDF that includes:
- * - Claim details (insured name, claim number, carrier)
- * - Company branding (logo, name, contact info)
- * - Real weather data from Visual Crossing / WeatherStack
- * - Proper geocoding with error handling
- * - Clean formatting without Unicode symbols
+ * A polished, branded weather report PDF that matches the quality
+ * of our better report generators.
+ *
+ * Layout:
+ * 1. Branded Header
+ * 2. Claim Snapshot Grid
+ * 3. Executive Summary
+ * 4. Weather Timeline (Day Before / DOL / Day After)
+ * 5. Storm Event Evidence
+ * 6. Radar Imagery (if available)
+ * 7. Carrier Talking Points
+ * 8. Sources + Footer
  *
  * @module lib/pdf/weather-report-pdf
  */
@@ -14,709 +20,777 @@
 import { jsPDF } from "jspdf";
 
 import { logger } from "@/lib/logger";
+import type { WeatherPdfViewModel } from "@/lib/weather/weatherPdfViewModel";
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Types
-// ─────────────────────────────────────────────────────────────────────────────
-
-export interface WeatherEvent {
-  date?: string;
-  time?: string;
-  type?: string;
-  description?: string;
-  severity?: string;
-  intensity?: string;
-  hailSize?: string;
-  windSpeed?: string;
-  notes?: string;
-}
-
-export interface WeatherCondition {
-  datetime: string;
-  tempmax?: number;
-  tempmin?: number;
-  precip?: number;
-  precipprob?: number;
-  windspeed?: number;
-  windgust?: number;
-  conditions?: string;
-  icon?: string;
-  description?: string;
-}
-
-export interface ClaimDetails {
-  claimNumber?: string;
-  insuredName?: string;
-  carrier?: string;
-  policyNumber?: string;
-  adjusterName?: string;
-  adjusterPhone?: string;
-  adjusterEmail?: string;
-  dateOfLoss?: string;
-  propertyAddress?: string;
-}
-
-export interface CompanyBranding {
-  companyName: string;
-  phone?: string;
-  email?: string;
-  website?: string;
-  license?: string;
-  logoUrl?: string;
-  primaryColor?: string;
-}
-
-export interface WeatherReportPdfInput {
-  // Required
-  address: string;
-  dol: string;
-
-  // Location (validated - must not be 0,0)
-  lat: number;
-  lng: number;
-  locationResolved: boolean;
-
-  // Weather Analysis
-  peril?: string | null;
-  summary?: string | null;
-  carrierTalkingPoints?: string | null;
-  events?: WeatherEvent[];
-
-  // Weather Data Sources
-  weatherConditions?: WeatherCondition[];
-  radarStationId?: string | null;
-  radarImageCount?: number;
-
-  // Claim Context
-  claim?: ClaimDetails;
-
-  // Company Branding
-  branding?: CompanyBranding;
-
-  // Metadata
-  reportId?: string;
-  generatedBy?: string;
-}
+// Re-export types for route compatibility
+export { buildWeatherPdfViewModel } from "@/lib/weather/weatherPdfViewModel";
+export type { WeatherPdfViewModel };
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Color Palette
 // ─────────────────────────────────────────────────────────────────────────────
 
 const COLORS = {
-  primary: { r: 30, g: 64, b: 175 }, // #1e40af - Blue
-  danger: { r: 220, g: 38, b: 38 }, // #dc2626 - Red
-  success: { r: 5, g: 150, b: 105 }, // #059669 - Green
-  warning: { r: 245, g: 158, b: 11 }, // #f59e0b - Amber
-  dark: { r: 15, g: 23, b: 42 }, // #0f172a - Slate 900
-  muted: { r: 100, g: 116, b: 139 }, // #64748b - Slate 500
-  light: { r: 248, g: 250, b: 252 }, // #f8fafc - Slate 50
-  border: { r: 226, g: 232, b: 240 }, // #e2e8f0 - Slate 200
+  primary: { r: 30, g: 64, b: 175 }, // #1e40af
+  secondary: { r: 59, g: 130, b: 246 }, // #3b82f6
+  danger: { r: 220, g: 38, b: 38 }, // #dc2626
+  success: { r: 5, g: 150, b: 105 }, // #059669
+  warning: { r: 245, g: 158, b: 11 }, // #f59e0b
+  dark: { r: 15, g: 23, b: 42 }, // #0f172a
+  text: { r: 30, g: 41, b: 59 }, // #1e293b
+  muted: { r: 100, g: 116, b: 139 }, // #64748b
+  light: { r: 248, g: 250, b: 252 }, // #f8fafc
+  lightBlue: { r: 239, g: 246, b: 255 }, // #eff6ff
+  border: { r: 226, g: 232, b: 240 }, // #e2e8f0
+  white: { r: 255, g: 255, b: 255 },
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Main Renderer
 // ─────────────────────────────────────────────────────────────────────────────
 
-export function renderWeatherReportPDF(input: WeatherReportPdfInput): Buffer {
-  const {
-    address,
-    dol,
-    lat,
-    lng,
-    locationResolved,
-    peril,
-    summary,
-    carrierTalkingPoints,
-    events = [],
-    weatherConditions = [],
-    radarStationId,
-    radarImageCount = 0,
-    claim,
-    branding,
-    reportId,
-    generatedBy,
-  } = input;
-
-  logger.info("[WEATHER_REPORT_PDF] Rendering PDF", {
-    address,
-    dol,
-    peril,
-    locationResolved,
-    lat,
-    lng,
-    eventsCount: events.length,
-    weatherDays: weatherConditions.length,
-    hasClaim: !!claim,
-    hasBranding: !!branding,
+export function renderWeatherReportPDF(viewModel: WeatherPdfViewModel): Buffer {
+  logger.info("[WEATHER_PDF] Rendering premium PDF", {
+    reportId: viewModel.reportId,
+    anchorDate: viewModel.anchorDate,
+    weatherDays: viewModel.weatherWindow.length,
+    events: viewModel.events.length,
+    radarFrames: viewModel.radarFrames.length,
+    hasStormEvidence: viewModel.hasStormEvidence,
+    peril: viewModel.peril.type,
   });
 
   const doc = new jsPDF({ format: "letter" });
   const pageWidth = 215.9;
-  const margin = 20;
+  const pageHeight = 279.4;
+  const margin = 18;
   const contentWidth = pageWidth - margin * 2;
-  let yPos = 20;
 
-  // Use branding color if available
-  const brandColor = branding?.primaryColor
-    ? hexToRgb(branding.primaryColor) || COLORS.primary
-    : COLORS.primary;
+  // Parse brand color
+  const brandColor = hexToRgb(viewModel.branding.primaryColor) || COLORS.primary;
+
+  let yPos = margin;
 
   // ═══════════════════════════════════════════════════════════════════════════
-  // HEADER - Company Branding
+  // SECTION 1: BRANDED HEADER
   // ═══════════════════════════════════════════════════════════════════════════
-  const companyName = branding?.companyName || "SkaiScraper";
+  yPos = renderBrandedHeader(doc, viewModel, margin, contentWidth, pageWidth, brandColor, yPos);
 
-  doc.setFontSize(16);
+  // ═══════════════════════════════════════════════════════════════════════════
+  // SECTION 2: CLAIM SNAPSHOT
+  // ═══════════════════════════════════════════════════════════════════════════
+  yPos = renderClaimSnapshot(doc, viewModel, margin, contentWidth, brandColor, yPos);
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // SECTION 3: EXECUTIVE SUMMARY
+  // ═══════════════════════════════════════════════════════════════════════════
+  yPos = checkPageBreak(doc, yPos, 40, pageHeight, margin);
+  yPos = renderExecutiveSummary(doc, viewModel, margin, contentWidth, brandColor, yPos);
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // SECTION 4: WEATHER TIMELINE
+  // ═══════════════════════════════════════════════════════════════════════════
+  if (viewModel.weatherWindow.length > 0) {
+    yPos = checkPageBreak(doc, yPos, 50, pageHeight, margin);
+    yPos = renderWeatherTimeline(doc, viewModel, margin, contentWidth, brandColor, yPos);
+  }
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // SECTION 5: STORM EVENT EVIDENCE
+  // ═══════════════════════════════════════════════════════════════════════════
+  if (viewModel.events.length > 0) {
+    yPos = checkPageBreak(doc, yPos, 40, pageHeight, margin);
+    yPos = renderStormEvents(doc, viewModel, margin, contentWidth, brandColor, yPos, pageHeight);
+  }
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // SECTION 6: EVIDENCE SUMMARY (if storm evidence exists)
+  // ═══════════════════════════════════════════════════════════════════════════
+  if (viewModel.hasStormEvidence) {
+    yPos = checkPageBreak(doc, yPos, 35, pageHeight, margin);
+    yPos = renderEvidenceSummary(doc, viewModel, margin, contentWidth, brandColor, yPos);
+  }
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // SECTION 7: RADAR IMAGERY NOTE
+  // ═══════════════════════════════════════════════════════════════════════════
+  yPos = checkPageBreak(doc, yPos, 30, pageHeight, margin);
+  yPos = renderRadarSection(doc, viewModel, margin, contentWidth, brandColor, yPos);
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // SECTION 8: CARRIER TALKING POINTS
+  // ═══════════════════════════════════════════════════════════════════════════
+  if (viewModel.carrierTalkingPoints) {
+    yPos = checkPageBreak(doc, yPos, 40, pageHeight, margin);
+    yPos = renderCarrierTalkingPoints(doc, viewModel, margin, contentWidth, yPos);
+  }
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // SECTION 9: DATA SOURCES + FOOTER
+  // ═══════════════════════════════════════════════════════════════════════════
+  renderFooter(doc, viewModel, margin, contentWidth, pageWidth, pageHeight, brandColor);
+
+  // ── Return as Buffer ──
+  const arrayBuffer = doc.output("arraybuffer");
+  logger.info("[WEATHER_PDF] PDF generated successfully", {
+    byteSize: arrayBuffer.byteLength,
+    pages: doc.getNumberOfPages(),
+  });
+
+  return Buffer.from(arrayBuffer);
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Section Renderers
+// ─────────────────────────────────────────────────────────────────────────────
+
+function renderBrandedHeader(
+  doc: jsPDF,
+  vm: WeatherPdfViewModel,
+  margin: number,
+  contentWidth: number,
+  pageWidth: number,
+  brandColor: RGB,
+  yPos: number
+): number {
+  // Brand color top bar
+  doc.setFillColor(brandColor.r, brandColor.g, brandColor.b);
+  doc.rect(0, 0, pageWidth, 4, "F");
+
+  yPos = 12;
+
+  // Company name
+  doc.setFontSize(18);
   doc.setFont("helvetica", "bold");
   doc.setTextColor(brandColor.r, brandColor.g, brandColor.b);
-  doc.text(companyName, margin, yPos);
+  doc.text(vm.branding.companyName, margin, yPos);
 
-  // Sub-header with company info
-  if (branding?.phone || branding?.email || branding?.website) {
-    yPos += 5;
-    doc.setFontSize(8);
-    doc.setFont("helvetica", "normal");
-    doc.setTextColor(COLORS.muted.r, COLORS.muted.g, COLORS.muted.b);
-    const contactParts = [branding.phone, branding.email, branding.website].filter(Boolean);
-    doc.text(contactParts.join(" | "), margin, yPos);
-  }
-
-  // License if available
-  if (branding?.license) {
-    yPos += 4;
-    doc.setFontSize(7);
-    doc.text(`License: ${branding.license}`, margin, yPos);
-  }
-
-  // Report type badge on right
-  doc.setFontSize(8);
+  // Report badge
   doc.setFillColor(brandColor.r, brandColor.g, brandColor.b);
-  doc.roundedRect(pageWidth - margin - 55, 15, 55, 10, 2, 2, "F");
+  doc.roundedRect(pageWidth - margin - 48, yPos - 6, 48, 10, 2, 2, "F");
+  doc.setFontSize(7);
   doc.setTextColor(255, 255, 255);
   doc.setFont("helvetica", "bold");
-  doc.text("WEATHER INTELLIGENCE", pageWidth - margin - 53, 21);
+  doc.text("WEATHER REPORT", pageWidth - margin - 46, yPos - 1);
 
-  yPos += 6;
+  yPos += 5;
 
-  // Header line
-  doc.setDrawColor(brandColor.r, brandColor.g, brandColor.b);
-  doc.setLineWidth(1);
-  doc.line(margin, yPos, pageWidth - margin, yPos);
-  yPos += 10;
-
-  // ═══════════════════════════════════════════════════════════════════════════
-  // CLAIM DETAILS BOX (if available)
-  // ═══════════════════════════════════════════════════════════════════════════
-  if (claim && (claim.insuredName || claim.claimNumber || claim.carrier)) {
-    doc.setFillColor(COLORS.light.r, COLORS.light.g, COLORS.light.b);
-    doc.roundedRect(margin, yPos, contentWidth, 28, 2, 2, "F");
-    doc.setDrawColor(brandColor.r, brandColor.g, brandColor.b);
-    doc.setLineWidth(1);
-    doc.line(margin, yPos, margin, yPos + 28);
-
-    const col1 = margin + 6;
-    const col2 = margin + contentWidth / 3;
-    const col3 = margin + (contentWidth * 2) / 3;
-
-    // Row 1 labels
-    doc.setFontSize(7);
+  // Company contact line
+  const contactParts = [vm.branding.phone, vm.branding.email, vm.branding.website].filter(Boolean);
+  if (contactParts.length > 0) {
+    doc.setFontSize(8);
     doc.setFont("helvetica", "normal");
     doc.setTextColor(COLORS.muted.r, COLORS.muted.g, COLORS.muted.b);
-    doc.text("INSURED / CLIENT", col1, yPos + 5);
-    doc.text("CLAIM NUMBER", col2, yPos + 5);
-    doc.text("CARRIER", col3, yPos + 5);
-
-    // Row 1 values
-    doc.setFontSize(9);
-    doc.setFont("helvetica", "bold");
-    doc.setTextColor(COLORS.dark.r, COLORS.dark.g, COLORS.dark.b);
-    doc.text(claim.insuredName || "N/A", col1, yPos + 11);
-    doc.text(claim.claimNumber || "N/A", col2, yPos + 11);
-    doc.text(claim.carrier || "N/A", col3, yPos + 11);
-
-    // Row 2 labels
-    doc.setFontSize(7);
-    doc.setFont("helvetica", "normal");
-    doc.setTextColor(COLORS.muted.r, COLORS.muted.g, COLORS.muted.b);
-    doc.text("POLICY NUMBER", col1, yPos + 17);
-    doc.text("ADJUSTER", col2, yPos + 17);
-    doc.text("DATE OF LOSS", col3, yPos + 17);
-
-    // Row 2 values
-    doc.setFontSize(9);
-    doc.setFont("helvetica", "bold");
-    doc.setTextColor(COLORS.dark.r, COLORS.dark.g, COLORS.dark.b);
-    doc.text(claim.policyNumber || "N/A", col1, yPos + 23);
-    doc.text(claim.adjusterName || "N/A", col2, yPos + 23);
-    doc.text(dol || "N/A", col3, yPos + 23);
-
-    yPos += 34;
+    doc.text(contactParts.join("  |  "), margin, yPos);
+    yPos += 4;
   }
 
-  // ═══════════════════════════════════════════════════════════════════════════
-  // PROPERTY & LOCATION BOX
-  // ═══════════════════════════════════════════════════════════════════════════
-  doc.setFillColor(COLORS.light.r, COLORS.light.g, COLORS.light.b);
-  doc.roundedRect(margin, yPos, contentWidth, 24, 2, 2, "F");
-  doc.setDrawColor(COLORS.border.r, COLORS.border.g, COLORS.border.b);
-  doc.roundedRect(margin, yPos, contentWidth, 24, 2, 2, "S");
+  // License
+  if (vm.branding.license) {
+    doc.setFontSize(7);
+    doc.text(`License: ${vm.branding.license}`, margin, yPos);
+    yPos += 3;
+  }
 
-  const propCol1 = margin + 4;
-  const propCol2 = margin + contentWidth / 2;
+  // Divider line
+  yPos += 2;
+  doc.setDrawColor(brandColor.r, brandColor.g, brandColor.b);
+  doc.setLineWidth(0.8);
+  doc.line(margin, yPos, pageWidth - margin, yPos);
+
+  return yPos + 8;
+}
+
+function renderClaimSnapshot(
+  doc: jsPDF,
+  vm: WeatherPdfViewModel,
+  margin: number,
+  contentWidth: number,
+  brandColor: RGB,
+  yPos: number
+): number {
+  // Section header
+  yPos = renderSectionHeader(doc, "CLAIM SNAPSHOT", margin, contentWidth, brandColor, yPos);
+
+  // Snapshot grid background
+  const gridHeight = 38;
+  doc.setFillColor(COLORS.light.r, COLORS.light.g, COLORS.light.b);
+  doc.roundedRect(margin, yPos, contentWidth, gridHeight, 3, 3, "F");
+  doc.setDrawColor(COLORS.border.r, COLORS.border.g, COLORS.border.b);
+  doc.setLineWidth(0.3);
+  doc.roundedRect(margin, yPos, contentWidth, gridHeight, 3, 3, "S");
+
+  // Brand accent line
+  doc.setFillColor(brandColor.r, brandColor.g, brandColor.b);
+  doc.rect(margin, yPos, 3, gridHeight, "F");
+
+  const col1 = margin + 8;
+  const col2 = margin + contentWidth * 0.35;
+  const col3 = margin + contentWidth * 0.67;
 
   // Row 1
-  doc.setFontSize(7);
-  doc.setFont("helvetica", "normal");
-  doc.setTextColor(COLORS.muted.r, COLORS.muted.g, COLORS.muted.b);
-  doc.text("PROPERTY ADDRESS", propCol1, yPos + 5);
-  doc.text("PRIMARY PERIL", propCol2, yPos + 5);
-
-  doc.setFontSize(9);
-  doc.setFont("helvetica", "bold");
-  doc.setTextColor(COLORS.dark.r, COLORS.dark.g, COLORS.dark.b);
-  doc.text(address || "N/A", propCol1, yPos + 11);
-
-  // Peril with color coding
-  const perilDisplay = peril || "Unknown";
-  if (peril?.toLowerCase().includes("hail")) {
-    doc.setTextColor(COLORS.primary.r, COLORS.primary.g, COLORS.primary.b);
-  } else if (peril?.toLowerCase().includes("wind")) {
-    doc.setTextColor(COLORS.danger.r, COLORS.danger.g, COLORS.danger.b);
-  } else {
-    doc.setTextColor(COLORS.dark.r, COLORS.dark.g, COLORS.dark.b);
-  }
-  doc.text(perilDisplay.toUpperCase(), propCol2, yPos + 11);
+  const row1Y = yPos + 7;
+  renderInfoField(doc, "INSURED / CLIENT", vm.claim.insuredName, col1, row1Y);
+  renderInfoField(doc, "CLAIM NUMBER", vm.claim.claimNumber, col2, row1Y);
+  renderInfoField(doc, "CARRIER", vm.claim.carrier, col3, row1Y);
 
   // Row 2
+  const row2Y = yPos + 18;
+  renderInfoField(doc, "POLICY NUMBER", vm.claim.policyNumber, col1, row2Y);
+  renderInfoField(doc, "DATE OF LOSS", vm.claim.dateOfLoss, col2, row2Y);
+  renderInfoField(doc, "ADJUSTER", vm.claim.adjusterName, col3, row2Y);
+
+  // Row 3
+  const row3Y = yPos + 29;
+  renderInfoField(
+    doc,
+    "PROPERTY ADDRESS",
+    vm.claim.propertyAddress,
+    col1,
+    row3Y,
+    contentWidth * 0.6
+  );
+
+  // Peril badge
+  const perilBadgeX = col3;
   doc.setFontSize(7);
   doc.setFont("helvetica", "normal");
   doc.setTextColor(COLORS.muted.r, COLORS.muted.g, COLORS.muted.b);
-  doc.text("COORDINATES", propCol1, yPos + 17);
-  doc.text("RADAR STATION", propCol2, yPos + 17);
+  doc.text("PRIMARY PERIL", perilBadgeX, row3Y);
+
+  // Peril value with appropriate color
+  const perilColor = getPerilColor(vm.peril.type);
+  doc.setFillColor(perilColor.r, perilColor.g, perilColor.b);
+  doc.roundedRect(perilBadgeX, row3Y + 1, 40, 7, 2, 2, "F");
+  doc.setFontSize(8);
+  doc.setFont("helvetica", "bold");
+  doc.setTextColor(255, 255, 255);
+  doc.text(vm.peril.displayText.toUpperCase(), perilBadgeX + 20, row3Y + 6, { align: "center" });
+
+  return yPos + gridHeight + 10;
+}
+
+function renderExecutiveSummary(
+  doc: jsPDF,
+  vm: WeatherPdfViewModel,
+  margin: number,
+  contentWidth: number,
+  brandColor: RGB,
+  yPos: number
+): number {
+  yPos = renderSectionHeader(doc, "EXECUTIVE SUMMARY", margin, contentWidth, brandColor, yPos);
+
+  const summary = sanitizeText(vm.executiveSummary);
+  const lines = doc.splitTextToSize(summary, contentWidth - 16);
+  const boxHeight = Math.max(20, lines.length * 4.5 + 12);
+
+  // Summary box
+  doc.setFillColor(COLORS.lightBlue.r, COLORS.lightBlue.g, COLORS.lightBlue.b);
+  doc.roundedRect(margin, yPos, contentWidth, boxHeight, 3, 3, "F");
+
+  // Accent line
+  doc.setFillColor(brandColor.r, brandColor.g, brandColor.b);
+  doc.rect(margin, yPos, 3, boxHeight, "F");
 
   doc.setFontSize(9);
-  doc.setFont("helvetica", "bold");
+  doc.setFont("helvetica", "normal");
+  doc.setTextColor(COLORS.text.r, COLORS.text.g, COLORS.text.b);
 
-  // Location warning if not resolved
-  if (!locationResolved || (lat === 0 && lng === 0)) {
-    doc.setTextColor(COLORS.danger.r, COLORS.danger.g, COLORS.danger.b);
-    doc.text("LOCATION NOT RESOLVED", propCol1, yPos + 22);
-  } else {
-    doc.setTextColor(COLORS.dark.r, COLORS.dark.g, COLORS.dark.b);
-    doc.text(`${lat.toFixed(4)}, ${lng.toFixed(4)}`, propCol1, yPos + 22);
+  let textY = yPos + 8;
+  for (const line of lines) {
+    doc.text(line, margin + 10, textY);
+    textY += 4.5;
   }
 
-  doc.setTextColor(COLORS.dark.r, COLORS.dark.g, COLORS.dark.b);
-  doc.text(radarStationId || "N/A", propCol2, yPos + 22);
+  return yPos + boxHeight + 8;
+}
 
-  yPos += 30;
+function renderWeatherTimeline(
+  doc: jsPDF,
+  vm: WeatherPdfViewModel,
+  margin: number,
+  contentWidth: number,
+  brandColor: RGB,
+  yPos: number
+): number {
+  yPos = renderSectionHeader(
+    doc,
+    "WEATHER TIMELINE - Day Before / Date of Loss / Day After",
+    margin,
+    contentWidth,
+    brandColor,
+    yPos
+  );
 
-  // ═══════════════════════════════════════════════════════════════════════════
-  // LOCATION WARNING (if geocoding failed)
-  // ═══════════════════════════════════════════════════════════════════════════
-  if (!locationResolved || (lat === 0 && lng === 0)) {
-    doc.setFillColor(254, 226, 226); // Red 100
-    doc.roundedRect(margin, yPos, contentWidth, 14, 2, 2, "F");
-    doc.setDrawColor(COLORS.danger.r, COLORS.danger.g, COLORS.danger.b);
-    doc.setLineWidth(1);
-    doc.line(margin, yPos, margin, yPos + 14);
+  // Table header
+  const colWidths = [45, 30, 25, 22, 30, contentWidth - 152];
+  const headers = ["Date", "Temp (H/L)", "Precip", "Prob", "Wind", "Conditions"];
 
-    doc.setFontSize(9);
-    doc.setFont("helvetica", "bold");
-    doc.setTextColor(COLORS.danger.r, COLORS.danger.g, COLORS.danger.b);
-    doc.text("WARNING: Location could not be geocoded", margin + 6, yPos + 6);
+  doc.setFillColor(brandColor.r, brandColor.g, brandColor.b);
+  doc.rect(margin, yPos, contentWidth, 8, "F");
+
+  doc.setFontSize(7);
+  doc.setFont("helvetica", "bold");
+  doc.setTextColor(255, 255, 255);
+
+  let xOffset = margin + 3;
+  for (let i = 0; i < headers.length; i++) {
+    doc.text(headers[i], xOffset, yPos + 5.5);
+    xOffset += colWidths[i];
+  }
+  yPos += 8;
+
+  // Table rows
+  for (const day of vm.weatherWindow) {
+    const rowHeight = 8;
+
+    // Highlight DOL row
+    if (day.isAnchorDay) {
+      doc.setFillColor(254, 243, 199); // Amber 100
+    } else {
+      doc.setFillColor(COLORS.white.r, COLORS.white.g, COLORS.white.b);
+    }
+    doc.rect(margin, yPos, contentWidth, rowHeight, "F");
+
+    // Row border
+    doc.setDrawColor(COLORS.border.r, COLORS.border.g, COLORS.border.b);
+    doc.setLineWidth(0.2);
+    doc.line(margin, yPos + rowHeight, margin + contentWidth, yPos + rowHeight);
+
     doc.setFontSize(8);
-    doc.setFont("helvetica", "normal");
-    doc.text(
-      "Weather data may be incomplete. Please verify the property address.",
-      margin + 6,
-      yPos + 11
-    );
+    doc.setFont("helvetica", day.isAnchorDay ? "bold" : "normal");
+    doc.setTextColor(COLORS.text.r, COLORS.text.g, COLORS.text.b);
 
-    yPos += 18;
-  }
+    xOffset = margin + 3;
 
-  // ═══════════════════════════════════════════════════════════════════════════
-  // KEY METRICS CARDS
-  // ═══════════════════════════════════════════════════════════════════════════
-  const cardWidth = contentWidth / 3 - 4;
-  const cardHeight = 20;
+    // Date + Label
+    const dateDisplay = formatShortDate(day.date);
+    doc.text(`${dateDisplay} (${day.label})`, xOffset, yPos + 5.5);
+    xOffset += colWidths[0];
 
-  // Card 1: Peril
-  doc.setFillColor(COLORS.light.r, COLORS.light.g, COLORS.light.b);
-  doc.roundedRect(margin, yPos, cardWidth, cardHeight, 2, 2, "F");
-  doc.setDrawColor(COLORS.danger.r, COLORS.danger.g, COLORS.danger.b);
-  doc.setLineWidth(1.5);
-  doc.line(margin, yPos, margin, yPos + cardHeight);
-  doc.setFontSize(12);
-  doc.setFont("helvetica", "bold");
-  doc.setTextColor(COLORS.danger.r, COLORS.danger.g, COLORS.danger.b);
-  doc.text(peril || "--", margin + cardWidth / 2, yPos + 9, { align: "center" });
-  doc.setFontSize(6);
-  doc.setTextColor(COLORS.muted.r, COLORS.muted.g, COLORS.muted.b);
-  doc.text("PRIMARY PERIL", margin + cardWidth / 2, yPos + 15, { align: "center" });
+    // Temp
+    const tempStr = `${day.tempHigh?.toFixed(0) || "--"}F / ${day.tempLow?.toFixed(0) || "--"}F`;
+    doc.text(tempStr, xOffset, yPos + 5.5);
+    xOffset += colWidths[1];
 
-  // Card 2: Radar Station
-  const card2X = margin + cardWidth + 6;
-  doc.setFillColor(COLORS.light.r, COLORS.light.g, COLORS.light.b);
-  doc.roundedRect(card2X, yPos, cardWidth, cardHeight, 2, 2, "F");
-  doc.setDrawColor(brandColor.r, brandColor.g, brandColor.b);
-  doc.line(card2X, yPos, card2X, yPos + cardHeight);
-  doc.setFontSize(12);
-  doc.setFont("helvetica", "bold");
-  doc.setTextColor(brandColor.r, brandColor.g, brandColor.b);
-  doc.text(radarStationId || "--", card2X + cardWidth / 2, yPos + 9, { align: "center" });
-  doc.setFontSize(6);
-  doc.setTextColor(COLORS.muted.r, COLORS.muted.g, COLORS.muted.b);
-  doc.text("RADAR STATION", card2X + cardWidth / 2, yPos + 15, { align: "center" });
-
-  // Card 3: Weather Days
-  const card3X = margin + (cardWidth + 6) * 2;
-  doc.setFillColor(COLORS.light.r, COLORS.light.g, COLORS.light.b);
-  doc.roundedRect(card3X, yPos, cardWidth, cardHeight, 2, 2, "F");
-  doc.setDrawColor(COLORS.success.r, COLORS.success.g, COLORS.success.b);
-  doc.line(card3X, yPos, card3X, yPos + cardHeight);
-  doc.setFontSize(12);
-  doc.setFont("helvetica", "bold");
-  doc.setTextColor(COLORS.success.r, COLORS.success.g, COLORS.success.b);
-  doc.text(String(weatherConditions.length || 0), card3X + cardWidth / 2, yPos + 9, {
-    align: "center",
-  });
-  doc.setFontSize(6);
-  doc.setTextColor(COLORS.muted.r, COLORS.muted.g, COLORS.muted.b);
-  doc.text("WEATHER DAYS", card3X + cardWidth / 2, yPos + 15, { align: "center" });
-
-  yPos += cardHeight + 10;
-
-  // ═══════════════════════════════════════════════════════════════════════════
-  // EXECUTIVE SUMMARY
-  // ═══════════════════════════════════════════════════════════════════════════
-  if (summary) {
-    yPos = addSectionHeader(doc, "EXECUTIVE SUMMARY", yPos, margin, contentWidth, brandColor);
-
-    const cleanSummary = sanitizeText(summary);
-    const summaryLines = doc.splitTextToSize(cleanSummary, contentWidth - 16);
-    const boxHeight = Math.max(20, summaryLines.length * 4.5 + 12);
-
-    yPos = checkPage(doc, yPos, boxHeight);
-
-    doc.setFillColor(239, 246, 255); // Light blue
-    doc.roundedRect(margin, yPos, contentWidth, boxHeight, 3, 3, "F");
-    doc.setDrawColor(brandColor.r, brandColor.g, brandColor.b);
-    doc.setLineWidth(1.5);
-    doc.line(margin, yPos, margin, yPos + boxHeight);
-
-    doc.setFontSize(9);
-    doc.setFont("helvetica", "normal");
-    doc.setTextColor(40, 40, 40);
-    for (let i = 0; i < summaryLines.length; i++) {
-      doc.text(summaryLines[i], margin + 8, yPos + 8 + i * 4.5);
+    // Precip
+    const precipStr = `${day.precip?.toFixed(2) || "0.00"}"`;
+    if ((day.precip || 0) > 0.1) {
+      doc.setTextColor(COLORS.secondary.r, COLORS.secondary.g, COLORS.secondary.b);
     }
+    doc.text(precipStr, xOffset, yPos + 5.5);
+    doc.setTextColor(COLORS.text.r, COLORS.text.g, COLORS.text.b);
+    xOffset += colWidths[2];
 
-    yPos += boxHeight + 8;
+    // Prob
+    doc.text(`${day.precipProb?.toFixed(0) || 0}%`, xOffset, yPos + 5.5);
+    xOffset += colWidths[3];
+
+    // Wind
+    const windStr = day.windGust
+      ? `${day.windSpeed?.toFixed(0) || "--"} (${day.windGust.toFixed(0)}) mph`
+      : `${day.windSpeed?.toFixed(0) || "--"} mph`;
+    if ((day.windGust || 0) > 40) {
+      doc.setTextColor(COLORS.danger.r, COLORS.danger.g, COLORS.danger.b);
+    }
+    doc.text(windStr, xOffset, yPos + 5.5);
+    doc.setTextColor(COLORS.text.r, COLORS.text.g, COLORS.text.b);
+    xOffset += colWidths[4];
+
+    // Conditions
+    const condStr = sanitizeText(day.conditions || "--").substring(0, 30);
+    doc.text(condStr, xOffset, yPos + 5.5);
+
+    yPos += rowHeight;
   }
 
-  // ═══════════════════════════════════════════════════════════════════════════
-  // CARRIER TALKING POINTS
-  // ═══════════════════════════════════════════════════════════════════════════
-  if (carrierTalkingPoints) {
-    yPos = checkPage(doc, yPos, 30);
+  return yPos + 8;
+}
 
-    const cleanTalking = sanitizeText(carrierTalkingPoints);
-    const talkingLines = doc.splitTextToSize(cleanTalking, contentWidth - 16);
-    const boxHeight = Math.max(20, talkingLines.length * 4.5 + 14);
+function renderStormEvents(
+  doc: jsPDF,
+  vm: WeatherPdfViewModel,
+  margin: number,
+  contentWidth: number,
+  brandColor: RGB,
+  yPos: number,
+  pageHeight: number
+): number {
+  yPos = renderSectionHeader(doc, "STORM EVENT EVIDENCE", margin, contentWidth, brandColor, yPos);
 
-    doc.setFillColor(254, 243, 199); // Amber 100
-    doc.roundedRect(margin, yPos, contentWidth, boxHeight, 3, 3, "F");
-    doc.setDrawColor(COLORS.warning.r, COLORS.warning.g, COLORS.warning.b);
-    doc.setLineWidth(1.5);
-    doc.line(margin, yPos, margin, yPos + boxHeight);
+  for (const event of vm.events.slice(0, 4)) {
+    // Max 4 events
+    yPos = checkPageBreak(doc, yPos, 18, pageHeight, margin);
 
+    // Event card
+    const cardHeight = 15;
+    doc.setFillColor(COLORS.light.r, COLORS.light.g, COLORS.light.b);
+    doc.roundedRect(margin, yPos, contentWidth, cardHeight, 2, 2, "F");
+
+    // Type accent
+    const eventColor = getEventColor(event.type);
+    doc.setFillColor(eventColor.r, eventColor.g, eventColor.b);
+    doc.rect(margin, yPos, 3, cardHeight, "F");
+
+    // Event date/time
     doc.setFontSize(9);
     doc.setFont("helvetica", "bold");
-    doc.setTextColor(120, 53, 15); // Amber 900
-    doc.text("CARRIER TALKING POINTS", margin + 8, yPos + 7);
+    doc.setTextColor(COLORS.text.r, COLORS.text.g, COLORS.text.b);
+    const eventDateTime = event.time ? `${event.date} at ${event.time}` : event.date;
+    doc.text(eventDateTime || "Unknown Date", margin + 8, yPos + 6);
 
-    doc.setFontSize(9);
-    doc.setFont("helvetica", "normal");
-    for (let i = 0; i < talkingLines.length; i++) {
-      doc.text(talkingLines[i], margin + 8, yPos + 15 + i * 4.5);
-    }
-
-    yPos += boxHeight + 10;
-  }
-
-  // ═══════════════════════════════════════════════════════════════════════════
-  // WEATHER CONDITIONS TABLE
-  // ═══════════════════════════════════════════════════════════════════════════
-  if (weatherConditions.length > 0) {
-    yPos = checkPage(doc, yPos, 50);
-    yPos = addSectionHeader(
-      doc,
-      "WEATHER DATA - 3-DAY WINDOW",
-      yPos,
-      margin,
-      contentWidth,
-      brandColor
-    );
-
-    // Table header
-    const colWidths = [32, 28, 22, 22, 32, 40];
-    const headers = ["Date", "Temp (H/L)", "Precip", "Prob", "Wind", "Conditions"];
-    let xOffset = margin;
-
-    doc.setFillColor(brandColor.r, brandColor.g, brandColor.b);
-    doc.rect(margin, yPos, contentWidth, 7, "F");
-    doc.setFontSize(7);
-    doc.setFont("helvetica", "bold");
+    // Event type badge
+    doc.setFillColor(eventColor.r, eventColor.g, eventColor.b);
+    doc.roundedRect(margin + 70, yPos + 2, 25, 6, 1, 1, "F");
+    doc.setFontSize(6);
     doc.setTextColor(255, 255, 255);
+    doc.text((event.type || "Event").toUpperCase(), margin + 82.5, yPos + 6, { align: "center" });
 
-    for (let i = 0; i < headers.length; i++) {
-      doc.text(headers[i], xOffset + 2, yPos + 5);
-      xOffset += colWidths[i];
-    }
-    yPos += 7;
-
-    // Table rows
+    // Details line
     doc.setFontSize(8);
     doc.setFont("helvetica", "normal");
-    doc.setTextColor(COLORS.dark.r, COLORS.dark.g, COLORS.dark.b);
+    doc.setTextColor(COLORS.muted.r, COLORS.muted.g, COLORS.muted.b);
 
-    for (let idx = 0; idx < Math.min(weatherConditions.length, 7); idx++) {
-      const w = weatherConditions[idx];
-      yPos = checkPage(doc, yPos, 7);
+    const detailParts: string[] = [];
+    if (event.severity || event.intensity) {
+      detailParts.push(`Severity: ${event.severity || event.intensity}`);
+    }
+    if (event.hailSize) {
+      detailParts.push(`Hail: ${event.hailSize}`);
+    }
+    if (event.windSpeed) {
+      detailParts.push(`Wind: ${event.windSpeed}`);
+    }
+    if (event.notes) {
+      detailParts.push(sanitizeText(event.notes).substring(0, 50));
+    }
 
-      // Alternating row bg
-      if (idx % 2 === 0) {
-        doc.setFillColor(249, 250, 251);
-        doc.rect(margin, yPos, contentWidth, 6, "F");
-      }
+    if (detailParts.length > 0) {
+      doc.text(detailParts.join("  |  "), margin + 8, yPos + 12);
+    }
 
-      xOffset = margin;
-      const dateStr = formatWeatherDate(w.datetime);
+    yPos += cardHeight + 4;
+  }
 
-      const rowData = [
-        dateStr,
-        `${w.tempmax?.toFixed(0) || "--"}F / ${w.tempmin?.toFixed(0) || "--"}F`,
-        `${w.precip?.toFixed(2) || "0.00"}"`,
-        `${w.precipprob?.toFixed(0) || 0}%`,
-        `${w.windspeed?.toFixed(0) || "--"} mph`,
-        sanitizeText(w.conditions || "--"),
-      ];
+  return yPos + 4;
+}
 
-      for (let i = 0; i < rowData.length; i++) {
-        // Highlight high precip or wind
-        if (i === 2 && (w.precip || 0) > 0.1) {
-          doc.setTextColor(37, 99, 235); // Blue
-        } else if (i === 4 && (w.windspeed || 0) > 30) {
-          doc.setTextColor(COLORS.danger.r, COLORS.danger.g, COLORS.danger.b);
-        } else {
-          doc.setTextColor(COLORS.dark.r, COLORS.dark.g, COLORS.dark.b);
-        }
-        doc.text(rowData[i].substring(0, 18), xOffset + 2, yPos + 4); // Truncate long text
-        xOffset += colWidths[i];
-      }
+function renderEvidenceSummary(
+  doc: jsPDF,
+  vm: WeatherPdfViewModel,
+  margin: number,
+  contentWidth: number,
+  brandColor: RGB,
+  yPos: number
+): number {
+  yPos = renderSectionHeader(doc, "EVIDENCE SUMMARY", margin, contentWidth, brandColor, yPos);
 
-      // Row border
+  // Evidence cards grid
+  const cardWidth = (contentWidth - 12) / 4;
+  const cardHeight = 18;
+  const cards = [
+    {
+      label: "HAIL",
+      value: vm.evidence.hasHail ? vm.evidence.hailSizeMax || "Detected" : "None",
+      active: vm.evidence.hasHail,
+    },
+    {
+      label: "WIND",
+      value: vm.evidence.maxWindGust ? `${vm.evidence.maxWindGust.toFixed(0)} mph` : "None",
+      active: vm.evidence.hasWind,
+    },
+    {
+      label: "RAIN",
+      value: vm.evidence.maxPrecip ? `${vm.evidence.maxPrecip.toFixed(2)}"` : "None",
+      active: vm.evidence.hasRain,
+    },
+    {
+      label: "RADAR",
+      value: vm.evidence.hasRadar ? `${vm.radarFrames.length} frames` : "N/A",
+      active: vm.evidence.hasRadar,
+    },
+  ];
+
+  let cardX = margin;
+  for (const card of cards) {
+    // Card background
+    if (card.active) {
+      doc.setFillColor(COLORS.lightBlue.r, COLORS.lightBlue.g, COLORS.lightBlue.b);
+    } else {
+      doc.setFillColor(COLORS.light.r, COLORS.light.g, COLORS.light.b);
+    }
+    doc.roundedRect(cardX, yPos, cardWidth, cardHeight, 2, 2, "F");
+
+    // Border
+    if (card.active) {
+      doc.setDrawColor(brandColor.r, brandColor.g, brandColor.b);
+    } else {
       doc.setDrawColor(COLORS.border.r, COLORS.border.g, COLORS.border.b);
-      doc.setLineWidth(0.2);
-      doc.line(margin, yPos + 6, margin + contentWidth, yPos + 6);
-
-      yPos += 6;
     }
+    doc.setLineWidth(0.5);
+    doc.roundedRect(cardX, yPos, cardWidth, cardHeight, 2, 2, "S");
 
-    yPos += 8;
-  }
+    // Label
+    doc.setFontSize(6);
+    doc.setFont("helvetica", "normal");
+    doc.setTextColor(COLORS.muted.r, COLORS.muted.g, COLORS.muted.b);
+    doc.text(card.label, cardX + cardWidth / 2, yPos + 5, { align: "center" });
 
-  // ═══════════════════════════════════════════════════════════════════════════
-  // WEATHER EVENTS
-  // ═══════════════════════════════════════════════════════════════════════════
-  if (events.length > 0) {
-    yPos = checkPage(doc, yPos, 30);
-    yPos = addSectionHeader(doc, "WEATHER EVENTS DETECTED", yPos, margin, contentWidth, brandColor);
-
-    for (const event of events.slice(0, 5)) {
-      // Max 5 events
-      yPos = checkPage(doc, yPos, 18);
-
-      // Event card
-      doc.setFillColor(255, 251, 235); // Amber 50
-      doc.roundedRect(margin, yPos, contentWidth, 14, 2, 2, "F");
-      doc.setDrawColor(COLORS.warning.r, COLORS.warning.g, COLORS.warning.b);
-      doc.setLineWidth(1.5);
-      doc.line(margin, yPos, margin, yPos + 14);
-
-      doc.setFontSize(9);
-      doc.setFont("helvetica", "bold");
-      doc.setTextColor(120, 53, 15);
-      const eventDate = event.date || "Unknown Date";
-      const eventTime = event.time ? ` at ${event.time}` : "";
-      doc.text(`${eventDate}${eventTime}:`, margin + 6, yPos + 6);
-
-      doc.setFont("helvetica", "normal");
-      const eventType = event.type || event.description || "Weather Event";
-      doc.text(sanitizeText(eventType).substring(0, 50), margin + 50, yPos + 6);
-
-      // Details row
-      doc.setFontSize(8);
+    // Value
+    doc.setFontSize(10);
+    doc.setFont("helvetica", "bold");
+    if (card.active) {
+      doc.setTextColor(brandColor.r, brandColor.g, brandColor.b);
+    } else {
       doc.setTextColor(COLORS.muted.r, COLORS.muted.g, COLORS.muted.b);
-      const details: string[] = [];
-      if (event.intensity || event.severity) {
-        details.push(`Severity: ${event.intensity || event.severity}`);
-      }
-      if (event.hailSize) {
-        details.push(`Hail: ${event.hailSize}`);
-      }
-      if (event.windSpeed) {
-        details.push(`Wind: ${event.windSpeed}`);
-      }
-      if (event.notes) {
-        details.push(sanitizeText(event.notes).substring(0, 40));
-      }
-      if (details.length > 0) {
-        doc.text(details.join(" | "), margin + 6, yPos + 11);
-      }
-
-      yPos += 18;
     }
+    doc.text(card.value, cardX + cardWidth / 2, yPos + 13, { align: "center" });
 
-    yPos += 6;
+    cardX += cardWidth + 4;
   }
 
-  // ═══════════════════════════════════════════════════════════════════════════
-  // DATA SOURCES
-  // ═══════════════════════════════════════════════════════════════════════════
-  yPos = checkPage(doc, yPos, 30);
+  // Confidence badge
+  yPos += cardHeight + 4;
+  const confColor = getConfidenceColor(vm.evidence.stormConfidence);
+  doc.setFillColor(confColor.r, confColor.g, confColor.b);
+  doc.roundedRect(margin, yPos, 80, 7, 2, 2, "F");
+  doc.setFontSize(7);
+  doc.setFont("helvetica", "bold");
+  doc.setTextColor(255, 255, 255);
+  doc.text(
+    `Storm Confidence: ${vm.evidence.stormConfidence.toUpperCase()}`,
+    margin + 40,
+    yPos + 5,
+    { align: "center" }
+  );
 
+  return yPos + 14;
+}
+
+function renderRadarSection(
+  doc: jsPDF,
+  vm: WeatherPdfViewModel,
+  margin: number,
+  contentWidth: number,
+  brandColor: RGB,
+  yPos: number
+): number {
+  yPos = renderSectionHeader(doc, "RADAR IMAGERY", margin, contentWidth, brandColor, yPos);
+
+  if (!vm.hasRadarImagery) {
+    // No radar available - clean note
+    doc.setFillColor(COLORS.light.r, COLORS.light.g, COLORS.light.b);
+    doc.roundedRect(margin, yPos, contentWidth, 14, 2, 2, "F");
+
+    doc.setFontSize(9);
+    doc.setFont("helvetica", "italic");
+    doc.setTextColor(COLORS.muted.r, COLORS.muted.g, COLORS.muted.b);
+    doc.text(
+      "No radar imagery available for the selected time window. Weather data sourced from station observations.",
+      margin + 6,
+      yPos + 9
+    );
+
+    return yPos + 20;
+  }
+
+  // Radar metadata card
   doc.setFillColor(COLORS.dark.r, COLORS.dark.g, COLORS.dark.b);
   doc.roundedRect(margin, yPos, contentWidth, 22, 3, 3, "F");
 
   doc.setFontSize(9);
   doc.setFont("helvetica", "bold");
-  doc.setTextColor(248, 250, 252);
-  doc.text("DATA SOURCES", margin + 8, yPos + 7);
+  doc.setTextColor(COLORS.white.r, COLORS.white.g, COLORS.white.b);
+  doc.text("NEXRAD Radar Data", margin + 8, yPos + 8);
 
   doc.setFontSize(8);
   doc.setFont("helvetica", "normal");
   doc.setTextColor(148, 163, 184);
 
-  const sources: string[] = [];
-  if (weatherConditions.length > 0) sources.push("Visual Crossing Weather API");
-  if (radarStationId) sources.push(`NEXRAD Radar (${radarStationId})`);
-  sources.push("Iowa Environmental Mesonet", "NWS RIDGE");
+  const radarInfo = [
+    `Station: ${vm.location.radarStationId}`,
+    `Frames Captured: ${vm.radarFrames.length}`,
+    `Location: ${vm.location.lat.toFixed(4)}, ${vm.location.lng.toFixed(4)}`,
+  ];
+  doc.text(radarInfo.join("  |  "), margin + 8, yPos + 15);
 
-  doc.text(sources.join(" | "), margin + 8, yPos + 13);
-  doc.text(
-    `Radar frames captured: ${radarImageCount} | Location: ${lat.toFixed(4)}, ${lng.toFixed(4)}`,
-    margin + 8,
-    yPos + 18
-  );
+  yPos += 26;
 
-  yPos += 28;
+  // Radar frame metadata
+  if (vm.radarFrames.length > 0) {
+    doc.setFontSize(7);
+    doc.setFont("helvetica", "normal");
+    doc.setTextColor(COLORS.muted.r, COLORS.muted.g, COLORS.muted.b);
+    doc.text("Selected radar frames:", margin, yPos);
+    yPos += 4;
 
-  // ═══════════════════════════════════════════════════════════════════════════
-  // FOOTER
-  // ═══════════════════════════════════════════════════════════════════════════
-  const footerY = 268;
+    for (const frame of vm.radarFrames.slice(0, 3)) {
+      const frameLabel = `[${frame.frameType.toUpperCase()}] ${formatTimestamp(frame.timestamp)} - ${frame.label}`;
+      doc.text(frameLabel, margin + 4, yPos);
+      yPos += 3.5;
+    }
+  }
+
+  return yPos + 6;
+}
+
+function renderCarrierTalkingPoints(
+  doc: jsPDF,
+  vm: WeatherPdfViewModel,
+  margin: number,
+  contentWidth: number,
+  yPos: number
+): number {
+  // Amber/warning style box
+  const text = sanitizeText(vm.carrierTalkingPoints);
+  const lines = doc.splitTextToSize(text, contentWidth - 16);
+  const boxHeight = Math.max(22, lines.length * 4.5 + 16);
+
+  doc.setFillColor(254, 243, 199); // Amber 100
+  doc.roundedRect(margin, yPos, contentWidth, boxHeight, 3, 3, "F");
+
+  // Warning accent
+  doc.setFillColor(COLORS.warning.r, COLORS.warning.g, COLORS.warning.b);
+  doc.rect(margin, yPos, 3, boxHeight, "F");
+
+  // Header
+  doc.setFontSize(9);
+  doc.setFont("helvetica", "bold");
+  doc.setTextColor(120, 53, 15); // Amber 900
+  doc.text("CARRIER TALKING POINTS", margin + 10, yPos + 8);
+
+  // Content
+  doc.setFontSize(9);
+  doc.setFont("helvetica", "normal");
+  doc.setTextColor(COLORS.text.r, COLORS.text.g, COLORS.text.b);
+
+  let textY = yPos + 16;
+  for (const line of lines) {
+    doc.text(line, margin + 10, textY);
+    textY += 4.5;
+  }
+
+  return yPos + boxHeight + 8;
+}
+
+function renderFooter(
+  doc: jsPDF,
+  vm: WeatherPdfViewModel,
+  margin: number,
+  contentWidth: number,
+  pageWidth: number,
+  pageHeight: number,
+  brandColor: RGB
+): void {
+  const footerY = pageHeight - 22;
+
+  // Divider
   doc.setDrawColor(COLORS.border.r, COLORS.border.g, COLORS.border.b);
-  doc.setLineWidth(0.5);
+  doc.setLineWidth(0.3);
   doc.line(margin, footerY, pageWidth - margin, footerY);
 
-  doc.setFontSize(7);
+  // Data sources
+  doc.setFontSize(6);
   doc.setFont("helvetica", "normal");
-  doc.setTextColor(148, 163, 184);
+  doc.setTextColor(COLORS.muted.r, COLORS.muted.g, COLORS.muted.b);
+  doc.text(`Data Sources: ${vm.dataSources.join(" | ")}`, margin, footerY + 5);
 
-  // Left side - company info
-  const footerLeft: string[] = [];
-  footerLeft.push(`Generated by ${companyName}`);
-  if (generatedBy) footerLeft.push(`Prepared by: ${generatedBy}`);
-  doc.text(footerLeft.join(" | "), margin, footerY + 5);
-
-  // Center - date
-  const genDate = new Date().toLocaleDateString("en-US", {
+  // Generated info
+  const genDate = new Date(vm.generatedAt).toLocaleDateString("en-US", {
     month: "long",
     day: "numeric",
     year: "numeric",
     hour: "2-digit",
     minute: "2-digit",
   });
-  doc.text(genDate, pageWidth / 2, footerY + 5, { align: "center" });
+  doc.text(`Generated: ${genDate}`, margin, footerY + 9);
+  doc.text(`Prepared by: ${vm.generatedBy}`, margin, footerY + 13);
 
-  // Right side - report ID
-  if (reportId) {
-    doc.text(`Report ID: ${reportId.substring(0, 8)}`, pageWidth - margin, footerY + 5, {
-      align: "right",
-    });
-  }
+  // Report ID
+  doc.text(`Report ID: ${vm.reportId.substring(0, 8)}`, pageWidth - margin - 30, footerY + 5);
 
   // Disclaimer
-  doc.setFontSize(6);
+  doc.setFontSize(5);
   doc.text(
-    "This report is generated using publicly available weather data and AI analysis. It should be used as supporting evidence only.",
+    "This report is generated using publicly available weather data and AI analysis. It should be used as supporting evidence only and does not constitute a formal weather certification.",
     margin,
-    footerY + 10
+    footerY + 18
   );
 
-  // ── Return as Buffer ──
-  const arrayBuffer = doc.output("arraybuffer");
-  logger.info("[WEATHER_REPORT_PDF] PDF generated successfully", {
-    byteSize: arrayBuffer.byteLength,
-  });
-  return Buffer.from(arrayBuffer);
+  // Brand bar at bottom
+  doc.setFillColor(brandColor.r, brandColor.g, brandColor.b);
+  doc.rect(0, pageHeight - 3, pageWidth, 3, "F");
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Helpers
+// Helper Functions
 // ─────────────────────────────────────────────────────────────────────────────
 
-function addSectionHeader(
+interface RGB {
+  r: number;
+  g: number;
+  b: number;
+}
+
+function renderSectionHeader(
   doc: jsPDF,
   title: string,
-  yPos: number,
   margin: number,
   contentWidth: number,
-  brandColor: { r: number; g: number; b: number }
+  brandColor: RGB,
+  yPos: number
 ): number {
   doc.setFontSize(10);
   doc.setFont("helvetica", "bold");
   doc.setTextColor(brandColor.r, brandColor.g, brandColor.b);
   doc.text(title, margin, yPos);
-  yPos += 3;
+
+  yPos += 2;
   doc.setDrawColor(COLORS.border.r, COLORS.border.g, COLORS.border.b);
-  doc.setLineWidth(0.5);
+  doc.setLineWidth(0.3);
   doc.line(margin, yPos, margin + contentWidth, yPos);
-  yPos += 6;
-  return yPos;
+
+  return yPos + 5;
 }
 
-function checkPage(doc: jsPDF, yPos: number, needed: number): number {
-  if (yPos + needed > 262) {
+function renderInfoField(
+  doc: jsPDF,
+  label: string,
+  value: string,
+  x: number,
+  y: number,
+  maxWidth?: number
+): void {
+  doc.setFontSize(6);
+  doc.setFont("helvetica", "normal");
+  doc.setTextColor(COLORS.muted.r, COLORS.muted.g, COLORS.muted.b);
+  doc.text(label, x, y);
+
+  doc.setFontSize(9);
+  doc.setFont("helvetica", "bold");
+  doc.setTextColor(COLORS.text.r, COLORS.text.g, COLORS.text.b);
+
+  const displayValue = maxWidth
+    ? sanitizeText(value).substring(0, Math.floor(maxWidth / 2))
+    : sanitizeText(value);
+  doc.text(displayValue, x, y + 5);
+}
+
+function checkPageBreak(
+  doc: jsPDF,
+  yPos: number,
+  needed: number,
+  pageHeight: number,
+  margin: number
+): number {
+  if (yPos + needed > pageHeight - 30) {
     doc.addPage();
-    return 20;
+    return margin;
   }
   return yPos;
 }
 
-/**
- * Remove unsupported Unicode characters and emojis for jsPDF
- */
-function sanitizeText(text: string): string {
-  if (!text) return "";
-  // Remove emojis, special symbols, and problematic characters
-  return text
-    .replace(
-      /[\u{1F600}-\u{1F64F}|\u{1F300}-\u{1F5FF}|\u{1F680}-\u{1F6FF}|\u{1F1E0}-\u{1F1FF}|\u{2600}-\u{26FF}|\u{2700}-\u{27BF}]/gu,
-      ""
-    )
-    .replace(/[^\x00-\x7F]/g, "") // Remove non-ASCII
-    .replace(/\s+/g, " ") // Normalize whitespace
-    .trim();
-}
-
-/**
- * Convert hex color to RGB
- */
-function hexToRgb(hex: string): { r: number; g: number; b: number } | null {
+function hexToRgb(hex: string): RGB | null {
   const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
   return result
     ? {
@@ -727,17 +801,69 @@ function hexToRgb(hex: string): { r: number; g: number; b: number } | null {
     : null;
 }
 
-/**
- * Format weather date for display
- */
-function formatWeatherDate(datetime: string): string {
+function sanitizeText(text: string): string {
+  if (!text) return "";
+  return text
+    .replace(
+      /[\u{1F600}-\u{1F64F}|\u{1F300}-\u{1F5FF}|\u{1F680}-\u{1F6FF}|\u{1F1E0}-\u{1F1FF}|\u{2600}-\u{26FF}|\u{2700}-\u{27BF}]/gu,
+      ""
+    )
+    .replace(/[^\x00-\x7F]/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function formatShortDate(dateStr: string): string {
   try {
-    return new Date(datetime).toLocaleDateString("en-US", {
-      weekday: "short",
+    return new Date(dateStr).toLocaleDateString("en-US", {
       month: "short",
       day: "numeric",
     });
   } catch {
-    return datetime || "--";
+    return dateStr;
+  }
+}
+
+function formatTimestamp(ts: string): string {
+  try {
+    return new Date(ts).toLocaleString("en-US", {
+      month: "short",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  } catch {
+    return ts;
+  }
+}
+
+function getPerilColor(peril: string): RGB {
+  const p = peril.toLowerCase();
+  if (p.includes("hail")) return { r: 37, g: 99, b: 235 }; // Blue
+  if (p.includes("wind")) return COLORS.danger;
+  if (p.includes("rain") || p.includes("storm")) return COLORS.secondary;
+  if (p.includes("unknown") || p.includes("review")) return COLORS.muted;
+  return COLORS.warning;
+}
+
+function getEventColor(type?: string): RGB {
+  if (!type) return COLORS.muted;
+  const t = type.toLowerCase();
+  if (t.includes("hail")) return { r: 37, g: 99, b: 235 };
+  if (t.includes("wind")) return COLORS.danger;
+  if (t.includes("rain") || t.includes("storm")) return COLORS.warning;
+  return COLORS.secondary;
+}
+
+function getConfidenceColor(confidence: string): RGB {
+  switch (confidence) {
+    case "high":
+      return COLORS.success;
+    case "medium":
+      return COLORS.warning;
+    case "low":
+      return { r: 234, g: 179, b: 8 }; // Yellow
+    default:
+      return COLORS.muted;
   }
 }

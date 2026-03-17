@@ -12,12 +12,13 @@ import {
 } from "@/lib/billing/requireActiveSubscription";
 import { getBrandingForOrg, getBrandingWithDefaults } from "@/lib/branding/fetchBranding";
 import { logger } from "@/lib/logger";
-import { renderWeatherReportPDF, WeatherReportPdfInput } from "@/lib/pdf/weather-report-pdf";
+import { renderWeatherReportPDF } from "@/lib/pdf/weather-report-pdf";
 import prisma from "@/lib/prisma";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { saveAiPdfToStorage } from "@/lib/reports/saveAiPdfToStorage";
 import { saveReportHistory } from "@/lib/reports/saveReportHistory";
 import { getRadarForEvent } from "@/lib/weather/radarService";
+import { buildWeatherPdfViewModel } from "@/lib/weather/weatherPdfViewModel";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Geocoding
@@ -427,65 +428,95 @@ export const POST = withAuth(async (req: NextRequest, { userId, orgId }) => {
     }
 
     // ══════════════════════════════════════════════════════════════════════════
-    // STEP 8: Generate PDF with full hydration
+    // STEP 8: Generate PDF with full hydration via WeatherPdfViewModel
     // ══════════════════════════════════════════════════════════════════════════
     let pdfSaved = false;
     let pdfUrl: string | null = null;
 
     try {
       if (claimId && orgId) {
-        logger.info("[Weather API] Generating fully-hydrated PDF", {
+        logger.info("[Weather API] Building WeatherPdfViewModel", {
           claimId,
           hasBranding: !!brandingData.companyName,
           hasClaim: !!claimDetails.claimNumber,
           locationResolved: geocodeResult.resolved,
+          anchorDate: aiReport.dol || body.dol,
+          weatherDays: weatherConditions.length,
+          radarCount: radarImages.length,
+          eventsCount: aiReport.events?.length ?? 0,
         });
 
-        const pdfInput: WeatherReportPdfInput = {
-          address: body.address,
-          dol: aiReport.dol || body.dol,
+        // Build the view model using the canonical builder
+        const viewModel = buildWeatherPdfViewModel({
+          // Report metadata
+          reportId: report.id,
+          generatedBy,
+          // Claim data (flattened)
+          claimNumber: claimDetails.claimNumber,
+          insuredName: claimDetails.insuredName,
+          carrier: claimDetails.carrier,
+          policyNumber: claimDetails.policyNumber,
+          adjusterName: claimDetails.adjusterName,
+          adjusterPhone: claimDetails.adjusterPhone,
+          adjusterEmail: claimDetails.adjusterEmail,
+          propertyAddress: claimDetails.propertyAddress || body.address,
+          dateOfLoss: aiReport.dol || body.dol,
+          claimPeril: aiReport.peril,
+          // Location
           lat: geocodeResult.lat,
           lng: geocodeResult.lng,
           locationResolved: geocodeResult.resolved,
-          peril: aiReport.peril,
+          radarStationId: radarStationId || undefined,
+          // Branding (flattened)
+          companyName: brandingData.companyName,
+          companyPhone: brandingData.phone,
+          companyEmail: brandingData.email,
+          companyWebsite: brandingData.website,
+          companyLicense: brandingData.license,
+          companyLogoUrl: brandingData.logoUrl,
+          primaryColor: brandingData.primaryColor,
+          // Weather data
+          weatherConditions: weatherConditions.map((wc) => ({
+            datetime: wc.datetime,
+            tempmax: wc.tempmax,
+            tempmin: wc.tempmin,
+            precip: wc.precip,
+            precipprob: wc.precipprob,
+            windspeed: wc.windspeed,
+            windgust: wc.windgust,
+            conditions: wc.conditions,
+            description: wc.description,
+          })),
+          // Events from AI
+          events:
+            aiReport.events?.map((e) => ({
+              date: e.date,
+              time: e.time,
+              type: e.type,
+              severity: e.intensity,
+              intensity: e.intensity,
+              notes: e.notes,
+            })) ?? [],
+          // Radar frames
+          radarFrames: radarImages.map((r) => ({
+            url: r.url,
+            timestamp: aiReport.dol || body.dol, // Use DOL as fallback timestamp
+            label: r.label,
+          })),
+          // Analysis
           summary: aiReport.summary,
           carrierTalkingPoints: aiReport.carrierTalkingPoints,
-          events: aiReport.events?.map((e) => ({
-            date: e.date,
-            time: e.time,
-            type: e.type,
-            intensity: e.intensity,
-            notes: e.notes,
-          })),
-          weatherConditions,
-          radarStationId,
-          radarImageCount: radarImages.length,
-          claim: claimDetails.claimNumber
-            ? {
-                claimNumber: claimDetails.claimNumber,
-                insuredName: claimDetails.insuredName,
-                carrier: claimDetails.carrier,
-                policyNumber: claimDetails.policyNumber,
-                adjusterName: claimDetails.adjusterName,
-                adjusterPhone: claimDetails.adjusterPhone,
-                adjusterEmail: claimDetails.adjusterEmail,
-                propertyAddress: claimDetails.propertyAddress,
-              }
-            : undefined,
-          branding: {
-            companyName: brandingData.companyName,
-            phone: brandingData.phone,
-            email: brandingData.email,
-            website: brandingData.website,
-            license: brandingData.license,
-            logoUrl: brandingData.logoUrl,
-            primaryColor: brandingData.primaryColor,
-          },
-          reportId: report.id,
-          generatedBy,
-        };
+        });
 
-        const pdfBuffer = renderWeatherReportPDF(pdfInput);
+        logger.info("[Weather API] Generated view model", {
+          anchorDate: viewModel.anchorDate,
+          weatherWindowDays: viewModel.weatherWindow.length,
+          peril: viewModel.peril.displayText,
+          confidence: viewModel.evidence.stormConfidence,
+          hasStormEvidence: viewModel.hasStormEvidence,
+        });
+
+        const pdfBuffer = renderWeatherReportPDF(viewModel);
 
         const pdfResult = await saveAiPdfToStorage({
           orgId,
