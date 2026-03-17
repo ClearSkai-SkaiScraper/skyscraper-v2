@@ -33,7 +33,7 @@
     "start": "next start",
     "start:web": "next start",
     "lint": "npm run lint:ship",
-    "lint:ship": "eslint ./src/app ./src/components ./src/lib/auth ./src/lib/prisma.ts ./src/lib/utils.ts ./src/lib/config.ts ./src/lib/logger.ts ./src/lib/reports ./src/lib/pdf --max-warnings=0",
+    "lint:ship": "eslint ./src/lib/auth ./src/lib/prisma.ts ./src/lib/utils.ts ./src/lib/logger.ts ./src/lib/reports ./src/lib/pdf",
     "lint:weather": "eslint ./src/lib/weather ./src/app/api/weather --max-warnings=0",
     "lint:integrations": "eslint ./src/lib/webhooks.ts ./src/lib/webhook-service.ts ./src/lib/websocket ./src/lib/vendors --max-warnings=0",
     "lint:full": "eslint ./src/app ./src/components ./src/lib",

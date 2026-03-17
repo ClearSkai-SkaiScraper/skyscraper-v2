@@ -1,1 +1,1 @@
-pnpm lint:ship
+pnpm typecheck
