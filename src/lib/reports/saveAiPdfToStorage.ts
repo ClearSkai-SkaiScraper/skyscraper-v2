@@ -67,7 +67,11 @@ export async function saveAiPdfToStorage(options: SaveAiPdfOptions): Promise<Sav
   const filename = `${type.toLowerCase()}_${timestamp}_${uuid}.pdf`;
   const storageKey = `${orgId}/${claimId}/ai-reports/${filename}`;
 
-  logger.info("[saveAiPdfToStorage] Uploading PDF:", { bucket: BUCKET, storageKey, size: pdfBuffer.length });
+  logger.info("[saveAiPdfToStorage] Uploading PDF:", {
+    bucket: BUCKET,
+    storageKey,
+    size: pdfBuffer.length,
+  });
 
   // Upload to Supabase Storage using admin client (no user auth required)
   const { error: uploadError } = await supabase.storage.from(BUCKET).upload(storageKey, pdfBuffer, {
