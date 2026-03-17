@@ -8,8 +8,8 @@ import {
   Users,
 } from "lucide-react";
 import Link from "next/link";
-import { redirect } from "next/navigation";
 
+import { NoOrgMembershipBanner } from "@/components/guards/NoOrgMembershipBanner";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { StatCard } from "@/components/ui/MetricCard";
 import { getCurrentUserPermissions } from "@/lib/permissions";
@@ -19,7 +19,7 @@ export const dynamic = "force-dynamic";
 
 export default async function PerformanceMonitoringPage() {
   const { orgId } = await getCurrentUserPermissions();
-  if (!orgId) redirect("/sign-in");
+  if (!orgId) return <NoOrgMembershipBanner title="Performance Monitoring" />;
 
   // ── Real data: org-wide activity metrics ─────────────────────────
   const now = new Date();

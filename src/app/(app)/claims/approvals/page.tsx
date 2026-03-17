@@ -1,5 +1,4 @@
-import { redirect } from "next/navigation";
-
+import { NoOrgMembershipBanner } from "@/components/guards/NoOrgMembershipBanner";
 import { getOrgContext } from "@/lib/org/getOrgContext";
 
 export const dynamic = "force-dynamic";
@@ -16,7 +15,7 @@ export const metadata = {
  */
 export default async function ApprovalsPage() {
   const ctx = await getOrgContext();
-  if (!ctx.orgId) redirect("/sign-in");
+  if (!ctx.orgId) return <NoOrgMembershipBanner title="Pending Approvals" />;
 
   return (
     <div className="mx-auto max-w-7xl space-y-6 p-6">

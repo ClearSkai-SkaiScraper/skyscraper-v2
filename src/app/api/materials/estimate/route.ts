@@ -8,6 +8,7 @@ export const dynamic = "force-dynamic";
 
 import { NextRequest, NextResponse } from "next/server";
 
+import { getOpenAI } from "@/lib/ai/client";
 import { getAuthContext } from "@/lib/auth/getAuthContext";
 import { logger } from "@/lib/logger";
 import {
@@ -22,14 +23,7 @@ import {
   type ShingleSpec,
 } from "@/lib/materials/estimator";
 
-let _openai: any = null;
-async function getOpenAI() {
-  if (!_openai) {
-    const { default: OpenAI } = await import("openai");
-    _openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
-  }
-  return _openai;
-}
+// Use canonical AI client singleton
 
 export const runtime = "nodejs";
 
@@ -213,7 +207,7 @@ export async function POST(req: NextRequest) {
         contextInstructions[jobContextType || "claim"] || contextInstructions.claim;
 
       try {
-        const openai = await getOpenAI();
+        const openai = getOpenAI();
 
         const systemPrompt = `You are SkaiScraper's Universal Trade-Modular AI Estimating Assistant — a senior construction estimator with 25+ years experience across all residential and commercial trades.
 
@@ -382,7 +376,7 @@ Trade: ${tradeLabel}`,
       }
 
       try {
-        const openai = await getOpenAI();
+        const openai = getOpenAI();
 
         // Build conversation history
         const history = (chatHistory || []).map((m) => ({
@@ -441,7 +435,7 @@ Do NOT generate material lists or prices — that happens when they click "Calcu
       }
 
       try {
-        const openai = await getOpenAI();
+        const openai = getOpenAI();
 
         const parseResponse = await openai.chat.completions.create({
           model: "gpt-4o",

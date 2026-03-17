@@ -38,6 +38,28 @@ type PrismaWithUserOrgs = typeof prisma & {
   user_organizations?: UserOrgDelegate;
 };
 
+/**
+ * Check if user has any pending team invitations.
+ * If yes, we must NOT auto-create an org — let them accept the invite first.
+ */
+async function checkPendingInvites(userId: string): Promise<boolean> {
+  try {
+    const pendingInvites = await prisma.$queryRaw<Array<{ id: string }>>` 
+      SELECT id FROM team_invitations
+      WHERE status = 'pending'
+        AND expires_at > NOW()
+        AND email IN (
+          SELECT email FROM users WHERE "clerkUserId" = ${userId}
+        )
+      LIMIT 1
+    `;
+    return pendingInvites.length > 0;
+  } catch {
+    // Non-fatal: table may not exist
+    return false;
+  }
+}
+
 export type ActiveOrgResult =
   | {
       ok: true;
@@ -240,8 +262,19 @@ export async function getActiveOrgSafe(opts?: {
           } as ActiveOrgResult;
         }
 
-        // Clerk org exists but not in DB - auto-create if allowed
+        // Clerk org exists but not in DB — check for pending invites FIRST
         if (allowAutoCreate) {
+          const hasPendingInvite = await checkPendingInvites(userId);
+          if (hasPendingInvite) {
+            logger.info("[ORG_SAFE] User has pending invite — skipping auto-create");
+            return {
+              ok: false,
+              reason: "NO_SESSION" as const,
+              error: "User has pending invitation — must accept before org creation",
+              userId,
+            };
+          }
+
           logger.debug("[ORG_SAFE] Clerk org not in DB, creating...");
           org = await tryCreateOrgMinimal({
             name: "My Organization",
@@ -357,8 +390,22 @@ export async function getActiveOrgSafe(opts?: {
       );
     }
 
-    // STRATEGY 3: No org found - auto-create if allowed
+    // STRATEGY 3: No org found - check pending invites, then auto-create if allowed
     if (allowAutoCreate) {
+      // ── CRITICAL: Pending invite check ──────────────────────────
+      // If user was invited to a team, do NOT auto-create a phantom org.
+      // Let the UI show the invite banner so they can accept.
+      const hasPendingInvite = await checkPendingInvites(userId);
+      if (hasPendingInvite) {
+        logger.info("[ORG_SAFE] User has pending invite — skipping auto-create (Strategy 3)");
+        return {
+          ok: false,
+          reason: "DB_ERROR" as const,
+          error: "User has pending invitation — must accept before org creation",
+          userId,
+        };
+      }
+
       try {
         logger.debug("[ORG_SAFE] No org found, creating default org for user...");
         const org = await tryCreateOrgMinimal({

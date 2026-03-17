@@ -3,6 +3,7 @@ import { AlertTriangle, Calendar, Home, MapPin, Plus, TrendingUp } from "lucide-
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
+import { NoOrgMembershipBanner } from "@/components/guards/NoOrgMembershipBanner";
 import { PageContainer } from "@/components/layout/PageContainer";
 import { PageHero } from "@/components/layout/PageHero";
 import { Badge } from "@/components/ui/badge";
@@ -77,10 +78,9 @@ export default async function PropertyProfilesPage() {
   const user = await currentUser();
   if (!user) redirect("/sign-in");
 
-  // Get org context - redirects to /sign-in or /onboarding if no org
+  // Get org context
   const orgResult = await getResolvedOrgResult();
-  // orgResult.ok is guaranteed true here (redirects otherwise)
-  if (!orgResult.ok) redirect("/sign-in");
+  if (!orgResult.ok) return <NoOrgMembershipBanner title="Property Profiles" />;
 
   const orgId = orgResult.orgId;
 

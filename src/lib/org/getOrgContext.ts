@@ -39,8 +39,14 @@ export async function getOrgContext(): Promise<OrgContext> {
 
   let orgId = ctx.orgId;
 
-  // If we failed to establish an org membership, self-heal by creating/attaching one.
+  // If we failed to establish an org membership, check WHY before auto-creating.
+  // CRITICAL: If the user has a pending invitation, do NOT create a phantom org.
   if (ctx.status !== "ok" || !orgId) {
+    if (ctx.reason === "pending-invitation") {
+      // User has a pending invite — redirect to dashboard where the
+      // invite banner will guide them to accept it.
+      redirect("/dashboard");
+    }
     const ensured = await ensureOrgForUser();
     orgId = ensured.orgId;
   }

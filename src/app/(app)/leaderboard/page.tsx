@@ -1,6 +1,5 @@
-import { redirect } from "next/navigation";
-
 import { CompanyLeaderboard } from "@/components/dashboard/CompanyLeaderboard";
+import { NoOrgMembershipBanner } from "@/components/guards/NoOrgMembershipBanner";
 import { getOrgContext } from "@/lib/org/getOrgContext";
 
 export const dynamic = "force-dynamic";
@@ -17,7 +16,7 @@ export const metadata = {
  */
 export default async function LeaderboardPage() {
   const ctx = await getOrgContext();
-  if (!ctx.orgId) redirect("/sign-in");
+  if (!ctx.orgId) return <NoOrgMembershipBanner title="Team Leaderboard" />;
 
   return (
     <div className="mx-auto max-w-7xl space-y-6 p-6">

@@ -1,6 +1,6 @@
+import { NoOrgMembershipBanner } from "@/components/guards/NoOrgMembershipBanner";
 import prisma from "@/lib/prisma";
 import { safeOrgContext } from "@/lib/safeOrgContext";
-import { redirect } from "next/navigation";
 import { Suspense } from "react";
 import ClaimAppealClient from "./ClaimAppealClient";
 export const dynamic = "force-dynamic";
@@ -21,7 +21,7 @@ export default async function AppealBuilderPage({
   searchParams: Record<string, string | undefined>;
 }) {
   const ctx = await safeOrgContext();
-  if (ctx.status !== "ok" || !ctx.orgId) redirect("/sign-in");
+  if (ctx.status !== "ok" || !ctx.orgId) return <NoOrgMembershipBanner title="Appeal Builder" />;
   const orgId = ctx.orgId;
   const claims = await loadClaims(orgId);
   const initialClaimId =

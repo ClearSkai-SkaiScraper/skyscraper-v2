@@ -21,9 +21,9 @@ export const revalidate = 0;
 
 import heicConvert from "heic-convert";
 import { NextRequest, NextResponse } from "next/server";
-import OpenAI from "openai";
 import { z } from "zod";
 
+import { getOpenAI } from "@/lib/ai/client";
 import {
   ComponentType,
   detectByComponent,
@@ -36,14 +36,7 @@ import { IRC_CODE_MAP, resolveIRCCodeKey } from "@/lib/constants/irc-codes";
 import { logger } from "@/lib/logger";
 import { checkRateLimit } from "@/lib/rate-limit";
 
-// Lazy singleton for OpenAI
-let _openai: OpenAI | null = null;
-function getOpenAI(): OpenAI {
-  if (!_openai) {
-    _openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
-  }
-  return _openai;
-}
+// Use canonical AI client singleton from @/lib/ai/client
 
 const RequestSchema = z.object({
   imageUrl: z.string().min(1),

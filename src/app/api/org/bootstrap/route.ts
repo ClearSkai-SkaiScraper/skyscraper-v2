@@ -30,6 +30,40 @@ export async function POST(req: Request) {
       return NextResponse.json({ ok: false, error: "Unauthorized" }, { status: 401 });
     }
 
+    // ── GUARD: Check for pending invitations ──────────────────────────
+    // If the user was invited to a team, they should accept the invite
+    // rather than creating their own org (which creates a phantom org).
+    try {
+      const pendingInvites = await prisma.$queryRaw<Array<{ id: string; org_id: string }>>`
+        SELECT id, org_id FROM team_invitations
+        WHERE status = 'pending'
+          AND expires_at > NOW()
+          AND email IN (
+            SELECT email FROM users WHERE "clerkUserId" = ${userId}
+          )
+        LIMIT 1
+      `;
+
+      if (pendingInvites.length > 0) {
+        logger.warn("[bootstrap] User has pending invite — blocking org creation", {
+          userId,
+          inviteOrgId: pendingInvites[0].org_id,
+        });
+        return NextResponse.json(
+          {
+            ok: false,
+            error:
+              "You have a pending team invitation. Please accept it before creating a new organization.",
+            pendingInvite: true,
+            inviteId: pendingInvites[0].id,
+          },
+          { status: 409 }
+        );
+      }
+    } catch {
+      // Non-fatal: table may not exist
+    }
+
     // Parse optional org name from request body
     let customOrgName: string | undefined;
     try {

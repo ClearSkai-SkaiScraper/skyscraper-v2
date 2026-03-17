@@ -3,6 +3,7 @@ import { Calendar, CheckCircle, Clock, Users } from "lucide-react";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
+import { NoOrgMembershipBanner } from "@/components/guards/NoOrgMembershipBanner";
 import { PageHero } from "@/components/layout/PageHero";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -17,7 +18,7 @@ export default async function TimeTrackingPage() {
   const user = await currentUser();
   if (!user) redirect("/sign-in");
   const { orgId } = await getCurrentUserPermissions();
-  if (!orgId) redirect("/sign-in");
+  if (!orgId) return <NoOrgMembershipBanner title="Time Tracking" />;
 
   // ── Fetch real team members ───────────────────────────────────────
   let members: any[] = [];

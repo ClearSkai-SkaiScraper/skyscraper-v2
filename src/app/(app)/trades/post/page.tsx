@@ -2,6 +2,7 @@ import { currentUser } from "@clerk/nextjs/server";
 import { X } from "lucide-react";
 import { redirect } from "next/navigation";
 
+import { NoOrgMembershipBanner } from "@/components/guards/NoOrgMembershipBanner";
 import { Button } from "@/components/ui/button";
 import { getCurrentUserPermissions } from "@/lib/permissions";
 import prisma from "@/lib/prisma";
@@ -15,7 +16,7 @@ export default async function CreatePostPage() {
   if (!user) redirect("/sign-in");
 
   const { orgId, userId } = await getCurrentUserPermissions();
-  if (!orgId || !userId) redirect("/sign-in");
+  if (!orgId || !userId) return <NoOrgMembershipBanner title="Create Post" />;
 
   // Fetch user's trades profile (employee membership)
   const userProfile = await prisma.tradesCompanyMember

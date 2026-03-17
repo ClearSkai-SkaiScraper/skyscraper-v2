@@ -3,6 +3,7 @@ import { ArrowLeft, Calendar, DollarSign, MapPin, User } from "lucide-react";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 
+import { NoOrgMembershipBanner } from "@/components/guards/NoOrgMembershipBanner";
 import { PageContainer } from "@/components/layout/PageContainer";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -47,7 +48,7 @@ export default async function ContractDetailPage({ params }: { params: { id: str
   const user = await currentUser();
   if (!user) redirect("/sign-in");
   const { orgId } = await getCurrentUserPermissions();
-  if (!orgId) redirect("/sign-in");
+  if (!orgId) return <NoOrgMembershipBanner title="Contract Detail" />;
 
   // Try to find as a claim first
   let claim: ClaimDetail | null = null;

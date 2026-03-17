@@ -3,6 +3,7 @@ import { Award, DollarSign, Gift, Link2, Share2, TrendingUp, Users } from "lucid
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
+import { NoOrgMembershipBanner } from "@/components/guards/NoOrgMembershipBanner";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -17,7 +18,7 @@ export default async function ReferralProgramPage() {
   const user = await currentUser();
   if (!user) redirect("/sign-in");
   const { orgId } = await getCurrentUserPermissions();
-  if (!orgId) redirect("/sign-in");
+  if (!orgId) return <NoOrgMembershipBanner title="Referral Program" />;
 
   // ── Real data: leads that came from referral source ───────────────
   let referralLeads: any[] = [];
