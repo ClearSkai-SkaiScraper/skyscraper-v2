@@ -11,9 +11,9 @@ import {
   requireActiveSubscription,
   SubscriptionRequiredError,
 } from "@/lib/billing/requireActiveSubscription";
+import { renderWeatherPDF } from "@/lib/pdf/weather-pdf";
 import prisma from "@/lib/prisma";
 import { checkRateLimit } from "@/lib/rate-limit";
-import { htmlToPdfBuffer } from "@/lib/reports/pdf-utils";
 import { saveAiPdfToStorage } from "@/lib/reports/saveAiPdfToStorage";
 import { saveReportHistory } from "@/lib/reports/saveReportHistory";
 import { getRadarForEvent } from "@/lib/weather/radarService";
@@ -213,318 +213,30 @@ export const POST = withAuth(async (req: NextRequest, { userId, orgId }) => {
       );
     }
 
-    // Generate PDF and save to storage (non-blocking)
+    // Generate PDF and save to storage using jsPDF (serverless-compatible)
     let pdfSaved = false;
     let pdfUrl: string | null = null;
     try {
       if (body.claim_id && orgId) {
-        // Build weather conditions table rows
-        const weatherRows = weatherConditions
-          .map(
-            (w) => `
-          <tr>
-            <td style="font-weight:600;">${new Date(w.datetime).toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" })}</td>
-            <td>${w.tempmax?.toFixed(0) || "—"}° / ${w.tempmin?.toFixed(0) || "—"}°F</td>
-            <td style="color:${w.precip > 0.1 ? "#2563eb" : "#6b7280"}">${w.precip?.toFixed(2) || "0.00"}"</td>
-            <td>${w.precipprob?.toFixed(0) || 0}%</td>
-            <td style="color:${(w.windspeed || 0) > 30 ? "#dc2626" : "#6b7280"}">${w.windspeed?.toFixed(0) || "—"} mph${w.windgust ? ` (${w.windgust.toFixed(0)} gust)` : ""}</td>
-            <td><strong>${w.conditions || "—"}</strong></td>
-          </tr>
-        `
-          )
-          .join("");
+        logger.info("[Weather API] Generating PDF with jsPDF (serverless)", {
+          claimId: body.claim_id,
+          address: body.address,
+        });
 
-        const weatherHTML = `
-          <!DOCTYPE html>
-          <html>
-          <head>
-            <meta charset="UTF-8">
-            <style>
-              @page { size: Letter; margin: 0; }
-              * { margin: 0; padding: 0; box-sizing: border-box; }
-              body {
-                font-family: 'Helvetica Neue', Arial, sans-serif;
-                color: #1f2937;
-                font-size: 11px;
-                line-height: 1.5;
-                padding: 32px 36px;
-                background: #ffffff;
-              }
-              .header {
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-                border-bottom: 3px solid #1e40af;
-                padding-bottom: 12px;
-                margin-bottom: 16px;
-              }
-              .company-name { font-size: 18px; font-weight: 800; color: #1e40af; }
-              .badge {
-                display: inline-block;
-                background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%);
-                color: white;
-                padding: 6px 14px;
-                border-radius: 4px;
-                font-size: 10px;
-                font-weight: 700;
-                text-transform: uppercase;
-                letter-spacing: 0.5px;
-              }
-              .meta-grid {
-                display: grid;
-                grid-template-columns: 1fr 1fr 1fr;
-                gap: 8px 20px;
-                background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
-                border: 1px solid #e2e8f0;
-                border-radius: 8px;
-                padding: 14px 18px;
-                margin-bottom: 16px;
-              }
-              .meta-grid .label { color: #64748b; font-weight: 600; font-size: 9px; text-transform: uppercase; }
-              .meta-grid .value { font-weight: 600; color: #0f172a; font-size: 11px; }
-              .section-title {
-                font-size: 13px;
-                font-weight: 700;
-                color: #1e40af;
-                margin: 16px 0 8px;
-                padding-bottom: 4px;
-                border-bottom: 2px solid #e2e8f0;
-                display: flex;
-                align-items: center;
-                gap: 6px;
-              }
-              .stats-row {
-                display: flex;
-                gap: 12px;
-                margin-bottom: 14px;
-              }
-              .stat-card {
-                flex: 1;
-                background: #f8fafc;
-                border: 1px solid #e2e8f0;
-                border-radius: 8px;
-                padding: 12px 14px;
-                text-align: center;
-              }
-              .stat-card.peril { border-left: 4px solid #dc2626; }
-              .stat-card.radar { border-left: 4px solid #2563eb; }
-              .stat-card.location { border-left: 4px solid #059669; }
-              .stat-value { font-size: 18px; font-weight: 800; }
-              .stat-value.peril { color: #dc2626; }
-              .stat-value.radar { color: #2563eb; }
-              .stat-value.location { color: #059669; }
-              .stat-label { font-size: 9px; color: #64748b; font-weight: 600; text-transform: uppercase; margin-top: 2px; }
-              .summary-box {
-                background: linear-gradient(135deg, #eff6ff 0%, #f0fdf4 100%);
-                border: 1px solid #bfdbfe;
-                border-left: 4px solid #1e40af;
-                border-radius: 8px;
-                padding: 14px 18px;
-                margin: 12px 0;
-                font-size: 11px;
-                line-height: 1.6;
-              }
-              .summary-box h4 { font-size: 12px; color: #1e40af; margin-bottom: 6px; }
-              .carrier-box {
-                background: linear-gradient(135deg, #fef3c7 0%, #fef9c3 100%);
-                border: 1px solid #fbbf24;
-                border-left: 4px solid #f59e0b;
-                border-radius: 8px;
-                padding: 12px 16px;
-                margin: 12px 0;
-              }
-              .carrier-box h4 { font-size: 11px; color: #92400e; margin-bottom: 6px; }
-              .carrier-box p { font-size: 10px; color: #78350f; line-height: 1.5; }
-              table {
-                width: 100%;
-                border-collapse: collapse;
-                font-size: 10px;
-                margin: 8px 0;
-              }
-              th {
-                background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%);
-                color: white;
-                padding: 8px 10px;
-                text-align: left;
-                font-size: 9px;
-                font-weight: 600;
-              }
-              td { padding: 6px 10px; border-bottom: 1px solid #e5e7eb; }
-              tr:nth-child(even) { background: #f9fafb; }
-              .event-card {
-                background: #fffbeb;
-                border: 1px solid #fcd34d;
-                border-left: 4px solid #f59e0b;
-                padding: 10px 14px;
-                margin: 8px 0;
-                border-radius: 6px;
-              }
-              .event-card strong { color: #92400e; }
-              .radar-section {
-                background: #0f172a;
-                border-radius: 8px;
-                padding: 16px;
-                margin-top: 16px;
-              }
-              .radar-section h3 { color: #f8fafc; font-size: 12px; margin-bottom: 10px; }
-              .radar-grid {
-                display: grid;
-                grid-template-columns: repeat(3, 1fr);
-                gap: 10px;
-              }
-              .radar-frame {
-                background: #1e293b;
-                border-radius: 6px;
-                overflow: hidden;
-                text-align: center;
-              }
-              .radar-frame img { width: 100%; height: auto; display: block; }
-              .radar-frame .caption { color: #94a3b8; font-size: 9px; padding: 6px 8px; }
-              .radar-note { font-size: 9px; color: #64748b; margin-top: 10px; font-style: italic; }
-              .no-data { color: #9ca3af; font-style: italic; padding: 12px; text-align: center; background: #f9fafb; border-radius: 6px; }
-              .footer {
-                margin-top: 16px;
-                padding-top: 10px;
-                border-top: 1px solid #e2e8f0;
-                font-size: 8px;
-                color: #94a3b8;
-                display: flex;
-                justify-content: space-between;
-              }
-            </style>
-          </head>
-          <body>
-            <!-- HEADER -->
-            <div class="header">
-              <div class="company-name">SkaiScraper Weather Intelligence</div>
-              <div class="badge">Comprehensive Weather Report</div>
-            </div>
-
-            <!-- CLAIM META GRID -->
-            <div class="meta-grid">
-              <div><div class="label">Property Address</div><div class="value">${body.address}</div></div>
-              <div><div class="label">Date of Loss</div><div class="value">${aiReport.dol || body.dol}</div></div>
-              <div><div class="label">Primary Peril</div><div class="value">${aiReport.peril || "Unknown"}</div></div>
-              <div><div class="label">Coordinates</div><div class="value">${lat.toFixed(4)}, ${lng.toFixed(4)}</div></div>
-              <div><div class="label">Nearest Radar</div><div class="value">${radarStationId || "N/A"}</div></div>
-              <div><div class="label">Generated</div><div class="value">${new Date().toLocaleString()}</div></div>
-            </div>
-
-            <!-- KEY METRICS -->
-            <div class="stats-row">
-              <div class="stat-card peril">
-                <div class="stat-value peril">${aiReport.peril || "—"}</div>
-                <div class="stat-label">Primary Peril</div>
-              </div>
-              <div class="stat-card radar">
-                <div class="stat-value radar">${radarStationId || "—"}</div>
-                <div class="stat-label">Radar Station</div>
-              </div>
-              <div class="stat-card location">
-                <div class="stat-value location">${weatherConditions.length || 0}</div>
-                <div class="stat-label">Weather Days Analyzed</div>
-              </div>
-            </div>
-
-            <!-- AI SUMMARY -->
-            <div class="summary-box">
-              <h4>🔍 Executive Summary</h4>
-              <p>${aiReport.summary || "No summary available."}</p>
-            </div>
-            
-            ${
-              aiReport.carrierTalkingPoints
-                ? `
-              <div class="carrier-box">
-                <h4>📋 Carrier Talking Points</h4>
-                <p>${aiReport.carrierTalkingPoints}</p>
-              </div>
-            `
-                : ""
-            }
-
-            ${
-              weatherConditions.length > 0
-                ? `
-              <!-- WEATHER CONDITIONS TABLE -->
-              <div class="section-title">🌤️ Visual Crossing Weather Data — 3-Day Window</div>
-              <table>
-                <thead>
-                  <tr>
-                    <th>Date</th>
-                    <th>Temp (H/L)</th>
-                    <th>Precip</th>
-                    <th>Precip %</th>
-                    <th>Wind</th>
-                    <th>Conditions</th>
-                  </tr>
-                </thead>
-                <tbody>${weatherRows}</tbody>
-              </table>
-            `
-                : ""
-            }
-
-            ${
-              aiReport.events && aiReport.events.length > 0
-                ? `
-              <div class="section-title">⚡ Weather Events Detected</div>
-              ${aiReport.events
-                .map(
-                  (e: any) => `
-                <div class="event-card">
-                  <p><strong>${e.date || "Unknown Date"}:</strong> ${e.description || e.type || "Weather Event"}</p>
-                  ${e.severity ? `<p style="margin-top:4px;font-size:10px;">Severity: <strong>${e.severity}</strong></p>` : ""}
-                  ${e.hailSize ? `<p style="font-size:10px;">Hail Size: <strong>${e.hailSize}</strong></p>` : ""}
-                  ${e.windSpeed ? `<p style="font-size:10px;">Wind Speed: <strong>${e.windSpeed}</strong></p>` : ""}
-                </div>
-              `
-                )
-                .join("")}
-            `
-                : ""
-            }
-
-            ${
-              radarImages.length > 0
-                ? `
-              <div class="radar-section">
-                <h3>📡 NEXRAD Radar Imagery — ${aiReport.dol || body.dol}</h3>
-                <p style="color:#94a3b8;font-size:10px;margin-bottom:10px;">
-                  Radar composites from station <strong style="color:#60a5fa;">${radarStationId || "N/A"}</strong> 
-                  showing precipitation patterns on the date of loss.
-                </p>
-                <div class="radar-grid">
-                  ${radarImages
-                    .filter((img) => img.url.includes("n0q_"))
-                    .slice(0, 6)
-                    .map(
-                      (img) => `
-                      <div class="radar-frame">
-                        <img src="${img.url}" alt="${img.label}" onerror="this.style.display='none'" />
-                        <div class="caption">${img.label}</div>
-                      </div>
-                    `
-                    )
-                    .join("")}
-                </div>
-                <p class="radar-note">Source: Iowa Environmental Mesonet NEXRAD Archive / NWS RIDGE. 
-                Images show base reflectivity (n0q) composites. Brighter colors indicate heavier precipitation.</p>
-              </div>
-            `
-                : ""
-            }
-
-            <!-- FOOTER -->
-            <div class="footer">
-              <span>Generated by SkaiScraper Weather Intelligence • ${new Date().toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}</span>
-              <span>Sources: Visual Crossing, Iowa Mesonet NEXRAD, NWS RIDGE • Coords: ${lat.toFixed(4)}, ${lng.toFixed(4)}</span>
-            </div>
-          </body>
-          </html>
-        `;
-
-        const pdfBuffer = await htmlToPdfBuffer(weatherHTML);
+        // Use serverless-compatible jsPDF renderer
+        const pdfBuffer = renderWeatherPDF({
+          address: body.address,
+          dol: aiReport.dol || body.dol,
+          peril: aiReport.peril,
+          summary: aiReport.summary,
+          carrierTalkingPoints: aiReport.carrierTalkingPoints,
+          events: aiReport.events,
+          lat,
+          lng,
+          radarStationId,
+          radarImageCount: radarImages.length,
+          weatherConditions,
+        });
 
         const pdfResult = await saveAiPdfToStorage({
           orgId,
