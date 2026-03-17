@@ -9,6 +9,7 @@ export const dynamic = "force-dynamic";
 
 import { NextRequest, NextResponse } from "next/server";
 
+import { logCriticalAction } from "@/lib/audit/criticalActions";
 import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 import { safeOrgContext } from "@/lib/safeOrgContext";
@@ -71,6 +72,13 @@ export async function PUT(req: NextRequest) {
     });
 
     logger.info("[SETTINGS_BRANDING] Updated", { orgId: ctx.orgId });
+
+    // Audit log branding update
+    await logCriticalAction("BRANDING_UPDATED", ctx.userId || "unknown", ctx.orgId, {
+      changedFields: Object.keys(body)
+        .filter((k) => body[k] !== undefined)
+        .join(","),
+    });
 
     return NextResponse.json({ success: true, branding: updated });
   } catch (error) {

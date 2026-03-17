@@ -5,6 +5,7 @@ import { randomUUID } from "crypto";
 import { NextRequest, NextResponse } from "next/server";
 
 import { runWeatherReport, WeatherReportInput } from "@/lib/ai/weather";
+import { logCriticalAction } from "@/lib/audit/criticalActions";
 import { withAuth } from "@/lib/auth/withAuth";
 import {
   requireActiveSubscription,
@@ -177,6 +178,14 @@ export const POST = withAuth(async (req: NextRequest, { userId, orgId }) => {
           events: aiReport.events ?? [],
           providerRaw: aiReport,
         },
+      });
+
+      // Audit log weather report generation
+      await logCriticalAction("WEATHER_REPORT_GENERATED", userId, orgId || "unknown", {
+        reportId: report.id,
+        address: body.address,
+        dol: body.dol,
+        claimId: body.claim_id || null,
       });
     } catch (dbErr) {
       logger.error("[Weather API] DB save failed:", dbErr);

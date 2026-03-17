@@ -10,6 +10,7 @@ import { NextResponse } from "next/server";
 
 import { getOpenAI } from "@/lib/ai/client";
 import { apiError } from "@/lib/apiError";
+import { logCriticalAction } from "@/lib/audit/criticalActions";
 import { withOrgScope } from "@/lib/auth/tenant";
 import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
@@ -127,6 +128,13 @@ Be specific, practical, and actionable. Focus on information that helps contract
         claimId,
         orgId,
         carrier: carrierName,
+      });
+
+      // Audit log carrier intelligence generation
+      await logCriticalAction("CARRIER_INTELLIGENCE_GENERATED", userId, orgId, {
+        claimId,
+        carrier: carrierName,
+        tokensUsed: completion.usage?.total_tokens ?? 0,
       });
 
       // Redirect back to carrier tab

@@ -9,6 +9,7 @@ export const dynamic = "force-dynamic";
 import { logger } from "@/lib/logger";
 import { NextRequest, NextResponse } from "next/server";
 
+import { logCriticalAction } from "@/lib/audit/criticalActions";
 import { withAuth } from "@/lib/auth/withAuth";
 import prisma from "@/lib/prisma";
 
@@ -102,6 +103,15 @@ export const POST = withAuth(async (request: NextRequest, { userId, orgId }) => 
     const sent = results.filter((r) => r.status === "sent").length;
     const alreadyConnected = results.filter((r) => r.status === "already_connected").length;
 
+    // Audit log invitation sends
+    if (sent > 0) {
+      await logCriticalAction("INVITE_SENT", userId, member.companyId, {
+        inviteCount: sent,
+        alreadyConnected,
+        total: results.length,
+      });
+    }
+
     return NextResponse.json({
       success: true,
       sent,
@@ -111,9 +121,6 @@ export const POST = withAuth(async (request: NextRequest, { userId, orgId }) => 
     });
   } catch (error) {
     logger.error("[POST /api/invitations/send] Error:", error);
-    return NextResponse.json(
-      { error: "Failed to send invitations" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Failed to send invitations" }, { status: 500 });
   }
 });

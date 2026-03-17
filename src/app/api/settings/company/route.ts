@@ -12,6 +12,7 @@ import { NextRequest, NextResponse } from "next/server";
 
 import { createId } from "@paralleldrive/cuid2";
 
+import { logCriticalAction } from "@/lib/audit/criticalActions";
 import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 import { safeOrgContext } from "@/lib/safeOrgContext";
@@ -115,6 +116,13 @@ export async function PATCH(req: NextRequest) {
     });
 
     logger.info("[SETTINGS_COMPANY] Updated", { orgId: ctx.orgId });
+
+    // Audit log company settings update
+    await logCriticalAction("COMPANY_SETTINGS_UPDATED", ctx.userId || "unknown", ctx.orgId, {
+      changedFields: Object.keys(body)
+        .filter((k) => body[k] !== undefined)
+        .join(","),
+    });
 
     return NextResponse.json({ success: true, profile });
   } catch (error) {

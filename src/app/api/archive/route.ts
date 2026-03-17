@@ -8,6 +8,7 @@ export const dynamic = "force-dynamic";
 import { logger } from "@/lib/logger";
 import { NextRequest, NextResponse } from "next/server";
 
+import { logCriticalAction } from "@/lib/audit/criticalActions";
 import prisma from "@/lib/prisma";
 import { safeOrgContext } from "@/lib/safeOrgContext";
 
@@ -61,6 +62,19 @@ export async function POST(req: NextRequest) {
     } else {
       return NextResponse.json({ error: "Invalid itemType" }, { status: 400 });
     }
+
+    // Audit log archive action
+    const actionType =
+      itemType === "claim"
+        ? "CLAIM_ARCHIVED"
+        : itemType === "lead"
+          ? "LEAD_ARCHIVED"
+          : "PROJECT_ARCHIVED";
+    await logCriticalAction(actionType, userId, orgId, {
+      itemId,
+      itemType,
+      archivedAt: now.toISOString(),
+    });
 
     return NextResponse.json({
       success: true,

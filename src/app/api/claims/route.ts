@@ -3,6 +3,8 @@ import { auth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
+import { logCriticalAction } from "@/lib/audit/criticalActions";
+
 import { createOrUpdateClaimEmbedding } from "@/lib/ai/similarity/embedClaim";
 import { apiError } from "@/lib/apiError";
 import { getVisibleUserIds } from "@/lib/auth/managerScope";
@@ -222,6 +224,14 @@ export const POST = withOrgScope(async (req, { userId, orgId }) => {
     // });
 
     logInfo("claim.created", { claimId: claim.id, orgId });
+
+    // Audit log claim creation
+    await logCriticalAction("CLAIM_CREATED", userId, orgId, {
+      claimId: claim.id,
+      claimNumber: claim.claimNumber,
+      carrier: claim.carrier,
+      damageType: claim.damageType,
+    });
 
     // H-9: Track usage metering
     try {
