@@ -84,6 +84,7 @@ type WeatherReportApiResponse = {
     provider?: string | null;
   };
   pdfSaved?: boolean;
+  pdfUrl?: string | null;
 };
 
 const PERIL_COLORS: Record<string, string> = {
@@ -973,6 +974,35 @@ export default function ClaimWeatherPage({ params }: Props) {
                   </div>
                 )}
               </div>
+
+              {/* Action Buttons */}
+              {reportResult.pdfUrl && (
+                <div className="mt-4 flex flex-wrap gap-2 border-t border-green-200 pt-4 dark:border-green-700">
+                  <Button
+                    size="sm"
+                    onClick={() => window.open(reportResult.pdfUrl!, "_blank")}
+                    className="gap-2"
+                  >
+                    <Eye className="h-4 w-4" />
+                    View PDF
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => {
+                      const link = document.createElement("a");
+                      link.href = reportResult.pdfUrl!;
+                      link.download = `weather-report-${claimId}.pdf`;
+                      link.click();
+                    }}
+                    className="gap-2"
+                  >
+                    <Download className="h-4 w-4" />
+                    Download
+                  </Button>
+                </div>
+              )}
+
               <p className="mt-3 border-t border-green-200 pt-3 text-xs text-muted-foreground dark:border-green-700">
                 This report is available in Claim Files, Reports History, and can be referenced in
                 Estimate, Supplement, and Claims Assembly builders.

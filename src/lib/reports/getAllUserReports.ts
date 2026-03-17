@@ -274,6 +274,21 @@ export async function getAllUserReports(params?: {
     ...reportHistoryUnified,
   ];
 
+  // Deduplicate: For weather reports, prefer entries from report_history (have URLs)
+  // over entries from weather_reports table (no URLs)
+  const seen = new Map<string, UnifiedReport>();
+  for (const r of combined) {
+    // Create a unique key based on type + rough timestamp (within 5 seconds)
+    const timeKey = Math.floor(new Date(r.createdAt).getTime() / 5000);
+    const key = `${r.type}-${r.claimId || ""}-${timeKey}`;
+    const existing = seen.get(key);
+    // Keep the one with a URL, or the newer one
+    if (!existing || (r.url && !existing.url)) {
+      seen.set(key, r);
+    }
+  }
+  combined = Array.from(seen.values());
+
   // Enrich with claimNumber + address for search
   const claimIds = Array.from(new Set(combined.filter((c) => c.claimId).map((c) => c.claimId!)));
   if (claimIds.length) {

@@ -7,16 +7,27 @@
  */
 
 import {
+  BarChart3,
+  BookOpen,
   Calculator,
   Camera,
   ClipboardCheck,
+  Cloud,
   FileText,
+  FolderOpen,
   Hammer,
+  History,
   Image,
   LayoutGrid,
+  MapPin,
+  Package,
+  PenLine,
   Scale,
   Shield,
+  ShoppingBag,
   Sparkles,
+  Users,
+  Video,
   Zap,
 } from "lucide-react";
 import type { Metadata } from "next";
@@ -44,18 +55,28 @@ interface ToolDef {
   icon: React.ElementType;
   gradient: string;
   badge: string | null;
-  category: "documents" | "analysis" | "visual" | "estimation";
+  category: "documents" | "analysis" | "visual" | "estimation" | "field" | "resources";
 }
 
 const TOOLS: ToolDef[] = [
   // ── Documents ────────────────────────────────────────────────────────
+  {
+    title: "Claim Packet",
+    description:
+      "Generate carrier-compliant claim packets with weather reports, damage docs, and adjuster-ready formatting.",
+    href: "/claims-ready-folder",
+    icon: ClipboardCheck,
+    gradient: "from-blue-500 to-blue-600",
+    badge: "Core",
+    category: "documents",
+  },
   {
     title: "Supplement Builder",
     description:
       "AI-assisted supplement letter generation with line-item analysis and carrier-specific formatting.",
     href: "/ai/tools/supplement",
     icon: FileText,
-    gradient: "from-blue-500 to-blue-600",
+    gradient: "from-cyan-500 to-cyan-600",
     badge: "Most Popular",
     category: "documents",
   },
@@ -69,6 +90,16 @@ const TOOLS: ToolDef[] = [
     badge: null,
     category: "documents",
   },
+  {
+    title: "Bid Package",
+    description:
+      "Create polished homeowner-facing proposals with your branding, pricing, and project timelines.",
+    href: "/reports/contractor-packet",
+    icon: PenLine,
+    gradient: "from-emerald-500 to-emerald-600",
+    badge: null,
+    category: "documents",
+  },
 
   // ── Analysis ─────────────────────────────────────────────────────────
   {
@@ -79,6 +110,16 @@ const TOOLS: ToolDef[] = [
     icon: Camera,
     gradient: "from-emerald-500 to-emerald-600",
     badge: "Pro",
+    category: "analysis",
+  },
+  {
+    title: "Video Intelligence",
+    description:
+      "Upload inspection videos for AI analysis — automatic damage detection and timestamped findings.",
+    href: "/ai/video-analysis",
+    icon: Video,
+    gradient: "from-violet-500 to-violet-600",
+    badge: "New",
     category: "analysis",
   },
   {
@@ -98,7 +139,17 @@ const TOOLS: ToolDef[] = [
     href: "/ai/bad-faith",
     icon: Scale,
     gradient: "from-rose-500 to-rose-600",
-    badge: "New",
+    badge: null,
+    category: "analysis",
+  },
+  {
+    title: "Weather Verification",
+    description:
+      "Generate certified weather reports tied to storm events and claim dates with NOAA/NWS data.",
+    href: "/reports/weather",
+    icon: Cloud,
+    gradient: "from-sky-500 to-sky-600",
+    badge: null,
     category: "analysis",
   },
   {
@@ -111,6 +162,7 @@ const TOOLS: ToolDef[] = [
     badge: null,
     category: "analysis",
   },
+
   // ── Visual ───────────────────────────────────────────────────────────
   {
     title: "Mockup Generator",
@@ -131,6 +183,17 @@ const TOOLS: ToolDef[] = [
     badge: null,
     category: "visual",
   },
+  {
+    title: "Cover Page Builder",
+    description:
+      "Design polished cover pages with your logo, tagline, and brand colors for professional reports.",
+    href: "/settings/branding/cover-page",
+    icon: BookOpen,
+    gradient: "from-pink-500 to-pink-600",
+    badge: null,
+    category: "visual",
+  },
+
   // ── Estimation ───────────────────────────────────────────────────────
   {
     title: "Depreciation Calculator",
@@ -152,6 +215,79 @@ const TOOLS: ToolDef[] = [
     badge: null,
     category: "estimation",
   },
+  {
+    title: "Carrier Exports",
+    description:
+      "Generate Xactimate, Symbility, and carrier-specific formatted exports for claim submissions.",
+    href: "/ai/exports",
+    icon: Package,
+    gradient: "from-teal-500 to-teal-600",
+    badge: null,
+    category: "estimation",
+  },
+
+  // ── Field Tools ──────────────────────────────────────────────────────
+  {
+    title: "Door Knocking Tracker",
+    description:
+      "Track leads from door-to-door canvassing with real-time mapping and territory management.",
+    href: "/door-knocking",
+    icon: MapPin,
+    gradient: "from-green-500 to-green-600",
+    badge: "Field",
+    category: "field",
+  },
+  {
+    title: "Lead Management",
+    description:
+      "Manage all your leads with status tracking, follow-up reminders, and conversion analytics.",
+    href: "/leads",
+    icon: Users,
+    gradient: "from-indigo-500 to-indigo-600",
+    badge: null,
+    category: "field",
+  },
+  {
+    title: "Storm Analytics",
+    description:
+      "Track active storms, hail paths, and wind damage areas to identify high-opportunity regions.",
+    href: "/weather/analytics",
+    icon: BarChart3,
+    gradient: "from-sky-500 to-sky-600",
+    badge: null,
+    category: "field",
+  },
+
+  // ── Resources ────────────────────────────────────────────────────────
+  {
+    title: "Report History",
+    description:
+      "View, download, and manage all generated reports and exports in one central location.",
+    href: "/reports/history",
+    icon: History,
+    gradient: "from-purple-500 to-purple-600",
+    badge: null,
+    category: "resources",
+  },
+  {
+    title: "Template Marketplace",
+    description:
+      "Browse and purchase professional report templates from the community marketplace.",
+    href: "/reports/templates/marketplace",
+    icon: ShoppingBag,
+    gradient: "from-indigo-500 to-indigo-600",
+    badge: null,
+    category: "resources",
+  },
+  {
+    title: "Company Documents",
+    description: "Manage contracts, agreements, W-9s, and insurance certificates for your company.",
+    href: "/settings/company-documents",
+    icon: FolderOpen,
+    gradient: "from-gray-500 to-gray-600",
+    badge: null,
+    category: "resources",
+  },
 ];
 
 const CATEGORY_LABELS: Record<ToolDef["category"], string> = {
@@ -159,9 +295,18 @@ const CATEGORY_LABELS: Record<ToolDef["category"], string> = {
   analysis: "AI Analysis",
   visual: "Visual & Diagrams",
   estimation: "Estimation & Pricing",
+  field: "Field & Sales Tools",
+  resources: "Templates & Resources",
 };
 
-const CATEGORY_ORDER: ToolDef["category"][] = ["documents", "analysis", "visual", "estimation"];
+const CATEGORY_ORDER: ToolDef["category"][] = [
+  "documents",
+  "analysis",
+  "visual",
+  "estimation",
+  "field",
+  "resources",
+];
 
 export default async function ToolsPage() {
   const orgCtx = await safeOrgContext();

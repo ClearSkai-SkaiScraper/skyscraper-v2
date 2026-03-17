@@ -201,6 +201,7 @@ export const POST = withAuth(async (req: NextRequest, { userId, orgId }) => {
 
     // Generate PDF and save to storage (non-blocking)
     let pdfSaved = false;
+    let pdfUrl: string | null = null;
     try {
       if (body.claim_id && orgId) {
         const weatherHTML = `
@@ -298,7 +299,7 @@ export const POST = withAuth(async (req: NextRequest, { userId, orgId }) => {
 
         const pdfBuffer = await htmlToPdfBuffer(weatherHTML);
 
-        await saveAiPdfToStorage({
+        const pdfResult = await saveAiPdfToStorage({
           orgId,
           claimId: body.claim_id,
           userId,
@@ -309,7 +310,8 @@ export const POST = withAuth(async (req: NextRequest, { userId, orgId }) => {
         });
 
         pdfSaved = true;
-        logger.debug(`[Weather API] PDF saved for claim ${body.claim_id}`);
+        pdfUrl = pdfResult.publicUrl;
+        logger.debug(`[Weather API] PDF saved for claim ${body.claim_id}`, { pdfUrl });
       }
     } catch (pdfError) {
       logger.error("[Weather API] PDF generation failed (non-critical):", pdfError);
@@ -324,7 +326,7 @@ export const POST = withAuth(async (req: NextRequest, { userId, orgId }) => {
         type: "weather_report",
         title: `Weather Report — ${body.address}`,
         sourceId: body.claim_id ?? (body.claimId as string | undefined) ?? null,
-        fileUrl: null,
+        fileUrl: pdfUrl,
         metadata: {
           address: body.address,
           dol: body.dol,
@@ -342,6 +344,7 @@ export const POST = withAuth(async (req: NextRequest, { userId, orgId }) => {
       {
         report,
         pdfSaved,
+        pdfUrl,
         weatherReportId: report.id,
         radarStation: radarStationId,
         radarImageCount: radarImages.length,
