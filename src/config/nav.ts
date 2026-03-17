@@ -106,12 +106,7 @@ export const CORE_NAV: NavItem[] = [
     icon: "Search",
     match: /^\/ai\/claims-analysis(\/.*)?$/,
   },
-  {
-    href: "/ai/report-assembly",
-    label: "Report Assembly",
-    icon: "Package",
-    match: /^\/ai\/report-assembly(\/.*)?$/,
-  },
+
   {
     href: "/ai/bad-faith",
     label: "Bad Faith Detector",
@@ -347,7 +342,6 @@ export const CONTEXT_NAV: Record<string, NavItem[]> = {
   ],
   "/ai": [
     { href: "/ai/claims-analysis", label: "Claims Analysis" },
-    { href: "/ai/report-assembly", label: "Report Assembly" },
     { href: "/ai/bad-faith-detector", label: "Bad Faith Detector" },
     { href: "/ai/damage-builder", label: "Damage Builder" },
     { href: "/ai/video-reports", label: "Video Reports" },

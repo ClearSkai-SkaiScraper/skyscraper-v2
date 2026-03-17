@@ -269,7 +269,7 @@ export async function getActiveOrgSafe(opts?: {
             logger.info("[ORG_SAFE] User has pending invite — skipping auto-create");
             return {
               ok: false,
-              reason: "NO_SESSION" as const,
+              reason: "CREATE_FAILED" as const,
               error: "User has pending invitation — must accept before org creation",
               userId,
             };

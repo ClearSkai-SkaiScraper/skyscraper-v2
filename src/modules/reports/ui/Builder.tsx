@@ -113,23 +113,7 @@ const SECTION_DETAILS: Record<
     ],
     dataFields: ["Photo Grid", "Captions", "Damage Labels", "Location Tags"],
   },
-  "test-cuts": {
-    description:
-      "Documentation of invasive testing including core samples, moisture readings, and pull tests to support the scope of damage.",
-    tips: [
-      "Photograph each test cut location before and after",
-      "Record moisture meter readings with specific values",
-      "Include pull test results with pass/fail thresholds",
-    ],
-    dataFields: [
-      "Test Location",
-      "Test Type",
-      "Core Sample Results",
-      "Moisture Readings",
-      "Pull Test Results",
-      "Photos",
-    ],
-  },
+
   "scope-matrix": {
     description: "Detailed line items with quantities, unit pricing, and trade categories.",
     tips: [

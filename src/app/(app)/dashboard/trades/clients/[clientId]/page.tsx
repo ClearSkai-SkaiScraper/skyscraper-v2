@@ -22,6 +22,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 
+import { NoOrgMembershipBanner } from "@/components/guards/NoOrgMembershipBanner";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -39,7 +40,7 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
   const ctx = await safeOrgContext();
 
   if (ctx.status !== "ok" || !ctx.orgId) {
-    redirect("/sign-in");
+    return <NoOrgMembershipBanner title="Client Detail" />;
   }
 
   // Get the contractor profile for access check

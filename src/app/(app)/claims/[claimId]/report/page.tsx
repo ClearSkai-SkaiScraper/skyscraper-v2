@@ -7,6 +7,7 @@ import { auth } from "@clerk/nextjs/server";
 import { Prisma } from "@prisma/client";
 import { notFound, redirect } from "next/navigation";
 
+import { NoOrgMembershipBanner } from "@/components/guards/NoOrgMembershipBanner";
 import prisma from "@/lib/prisma";
 
 import { UniversalReportEditorClient } from "./UniversalReportEditorClient";
@@ -28,8 +29,11 @@ export default async function UniversalReportPage({
     where: { clerkUserId },
     select: { id: true, name: true, orgId: true },
   });
-  if (!user || !user.orgId) {
+  if (!user) {
     redirect("/sign-in");
+  }
+  if (!user.orgId) {
+    return <NoOrgMembershipBanner title="Report Editor" />;
   }
   const { id: userId, name: userName } = user;
   const orgId = user.orgId;

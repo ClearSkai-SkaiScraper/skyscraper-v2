@@ -76,7 +76,7 @@ export const SECTION_REGISTRY: Record<SectionKey, Section> = {
     key: "test-cuts",
     title: "Test Cuts & Invasive Testing",
     icon: "Scissors",
-    enabled: true,
+    enabled: false,
     order: 6,
     requiredDataKeys: ["testCutsData"],
     renderFn: placeholderRender("Test Cuts"),
@@ -110,12 +110,12 @@ export const SECTION_REGISTRY: Record<SectionKey, Section> = {
   },
   supplements: {
     key: "supplements",
-    title: "Supplements & Change Orders",
+    title: "Change Orders",
     icon: "FilePlus",
     enabled: true,
     order: 10,
     requiredDataKeys: ["supplements"],
-    renderFn: placeholderRender("Supplements"),
+    renderFn: placeholderRender("Change Orders"),
   },
   "signature-page": {
     key: "signature-page",

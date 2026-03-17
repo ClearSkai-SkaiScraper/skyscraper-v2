@@ -7,7 +7,6 @@
  */
 
 import {
-  Brain,
   Calculator,
   Camera,
   ClipboardCheck,
@@ -35,7 +34,7 @@ export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
   title: "AI Tools | SkaiScraper Pro",
   description:
-    "AI-powered tools for insurance claims — supplement builder, rebuttal generator, depreciation calculator, and more.",
+    "AI-powered tools for contractors — supplement builder, rebuttal generator, project planning, and more.",
 };
 
 interface ToolDef {
@@ -70,16 +69,7 @@ const TOOLS: ToolDef[] = [
     badge: null,
     category: "documents",
   },
-  {
-    title: "Report Assembly",
-    description:
-      "AI-generated comprehensive inspection reports with photos, findings, and recommendations.",
-    href: "/ai/report-assembly",
-    icon: Brain,
-    gradient: "from-indigo-500 to-indigo-600",
-    badge: null,
-    category: "documents",
-  },
+
   // ── Analysis ─────────────────────────────────────────────────────────
   {
     title: "Damage Analysis",
@@ -133,8 +123,8 @@ const TOOLS: ToolDef[] = [
     category: "visual",
   },
   {
-    title: "Roof Plan Builder",
-    description: "AI-assisted roof diagram and measurement tool for accurate scope documentation.",
+    title: "Project Plan Builder",
+    description: "AI-assisted project planning with scope of work, timelines, and material lists.",
     href: "/ai/roofplan-builder",
     icon: LayoutGrid,
     gradient: "from-teal-500 to-teal-600",

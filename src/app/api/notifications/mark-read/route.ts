@@ -1,8 +1,8 @@
 export const dynamic = "force-dynamic";
 
 // MODULE 2: Notifications - Mark as read (supports both client and pro)
-import { auth, currentUser } from "@clerk/nextjs/server";
 import { logger } from "@/lib/logger";
+import { auth, currentUser } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 
@@ -63,7 +63,19 @@ export async function POST(req: NextRequest) {
         if (notifId.startsWith("msg-")) {
           const msgId = notifId.replace("msg-", "");
           try {
-            await prisma.message.update({ where: { id: msgId }, data: { read: true } });
+            // Ownership check: only mark if user is a participant in the message thread
+            const msg = await prisma.message.findUnique({
+              where: { id: msgId },
+              select: { threadId: true },
+            });
+            if (msg) {
+              const thread = await prisma.messageThread.findFirst({
+                where: { id: msg.threadId, participants: { has: userId } },
+              });
+              if (thread) {
+                await prisma.message.update({ where: { id: msgId }, data: { read: true } });
+              }
+            }
           } catch {
             /* ignore if not found */
           }
@@ -73,8 +85,9 @@ export async function POST(req: NextRequest) {
         if (notifId.startsWith("tn-")) {
           const tnId = notifId.replace("tn-", "");
           try {
-            await prisma.tradeNotification.update({
-              where: { id: tnId },
+            // Ownership check: only mark if recipient matches the caller
+            await prisma.tradeNotification.updateMany({
+              where: { id: tnId, recipientId: userId },
               data: { isRead: true, readAt: new Date() },
             });
           } catch {
@@ -111,7 +124,19 @@ export async function POST(req: NextRequest) {
         if (notifId.startsWith("msg-")) {
           const msgId = notifId.replace("msg-", "");
           try {
-            await prisma.message.update({ where: { id: msgId }, data: { read: true } });
+            // Ownership check: only mark if user is a participant in the message thread
+            const msg = await prisma.message.findUnique({
+              where: { id: msgId },
+              select: { threadId: true },
+            });
+            if (msg) {
+              const thread = await prisma.messageThread.findFirst({
+                where: { id: msg.threadId, participants: { has: userId } },
+              });
+              if (thread) {
+                await prisma.message.update({ where: { id: msgId }, data: { read: true } });
+              }
+            }
           } catch {
             /* ignore if not found */
           }
@@ -121,8 +146,9 @@ export async function POST(req: NextRequest) {
         if (notifId.startsWith("tn-")) {
           const tnId = notifId.replace("tn-", "");
           try {
-            await prisma.tradeNotification.update({
-              where: { id: tnId },
+            // Ownership check: only mark if recipient matches the caller
+            await prisma.tradeNotification.updateMany({
+              where: { id: tnId, recipientId: userId },
               data: { isRead: true, readAt: new Date() },
             });
           } catch {

@@ -10,9 +10,9 @@ import {
   Users,
 } from "lucide-react";
 import Link from "next/link";
-import { redirect } from "next/navigation";
 
 import { AnalyticsDashboard } from "@/components/claimiq/AnalyticsDashboard";
+import { NoOrgMembershipBanner } from "@/components/guards/NoOrgMembershipBanner";
 import KPIDashboardClient from "@/components/kpi-dashboard/KPIDashboardClient";
 import { PageContainer } from "@/components/layout/PageContainer";
 import { PageHero } from "@/components/layout/PageHero";
@@ -113,7 +113,7 @@ export default async function AnalyticsDashboardPage() {
   // Get org - redirect if not authenticated
   const orgResult = await getOrg({ mode: "required" });
   if (!orgResult.ok) {
-    redirect("/sign-in");
+    return <NoOrgMembershipBanner title="Analytics Dashboard" />;
   }
 
   const organizationId = orgResult.orgId;

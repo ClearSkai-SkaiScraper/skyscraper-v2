@@ -6,8 +6,8 @@
 import { format } from "date-fns";
 import { Mail, MapPin, Phone, Users } from "lucide-react";
 import Link from "next/link";
-import { redirect } from "next/navigation";
 
+import { NoOrgMembershipBanner } from "@/components/guards/NoOrgMembershipBanner";
 import { PageHero } from "@/components/layout/PageHero";
 import GlassPanel from "@/components/trades/GlassPanel";
 import { Button } from "@/components/ui/button";
@@ -20,7 +20,7 @@ export default async function MyClientsPage() {
   const ctx = await safeOrgContext();
 
   if (ctx.status !== "ok" || !ctx.orgId) {
-    redirect("/sign-in");
+    return <NoOrgMembershipBanner title="My Clients" />;
   }
 
   // Get contractor profile - orgId is not unique, must use findFirst

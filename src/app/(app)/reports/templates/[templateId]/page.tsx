@@ -1,7 +1,8 @@
 import { ArrowLeft, Download, FileText, Settings } from "lucide-react";
 import Link from "next/link";
-import { notFound, redirect } from "next/navigation";
+import { notFound } from "next/navigation";
 
+import { NoOrgMembershipBanner } from "@/components/guards/NoOrgMembershipBanner";
 import { PageContainer } from "@/components/layout/PageContainer";
 import { PageHero } from "@/components/layout/PageHero";
 import { Button } from "@/components/ui/button";
@@ -16,7 +17,7 @@ export default async function TemplateDetailPage({ params }: { params: { templat
   const orgResult = await getOrg({ mode: "required" });
 
   if (!orgResult.ok) {
-    redirect("/sign-in");
+    return <NoOrgMembershipBanner title="Template Details" />;
   }
 
   const orgId = orgResult.orgId;

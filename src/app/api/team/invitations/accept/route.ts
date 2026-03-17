@@ -74,6 +74,30 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Invitation not found or expired" }, { status: 404 });
     }
 
+    // ── 2b. Verify accepting user's email matches the invitation ──────
+    const { clerkClient } = await import("@clerk/nextjs/server");
+    const client = await clerkClient();
+    const clerkUser = await client.users.getUser(userId);
+    const userEmails = clerkUser.emailAddresses.map((e) => e.emailAddress.toLowerCase());
+
+    if (!userEmails.includes(invitation.email.toLowerCase())) {
+      logger.warn(
+        "[INVITE_ACCEPT] Email mismatch — user tried to accept invite for different email",
+        {
+          userId,
+          inviteEmail: invitation.email,
+          userEmails,
+        }
+      );
+      return NextResponse.json(
+        {
+          error:
+            "This invitation was sent to a different email address. Please sign in with the correct account.",
+        },
+        { status: 403 }
+      );
+    }
+
     // ── 3. Check if user already has canonical membership ─────────────
     const existingMembership = await prisma.user_organizations.findFirst({
       where: {
@@ -177,13 +201,10 @@ export async function POST(req: NextRequest) {
 
     // ── 10. Send welcome email (soft-fail) ────────────────────────────
     try {
-      // Get user email from Clerk
-      const { clerkClient } = await import("@clerk/nextjs/server");
-      const client = await clerkClient();
-      const user = await client.users.getUser(userId);
-      const userEmail = user.emailAddresses[0]?.emailAddress;
-      const userName = user.firstName
-        ? `${user.firstName} ${user.lastName || ""}`.trim()
+      // Reuse clerkUser fetched during email verification (step 2b)
+      const userEmail = clerkUser.emailAddresses[0]?.emailAddress;
+      const userName = clerkUser.firstName
+        ? `${clerkUser.firstName} ${clerkUser.lastName || ""}`.trim()
         : userEmail || "User";
 
       if (userEmail) {

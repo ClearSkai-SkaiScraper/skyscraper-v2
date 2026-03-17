@@ -1,11 +1,12 @@
 export const dynamic = "force-dynamic";
 
-import { auth } from "@clerk/nextjs/server";
 import { logger } from "@/lib/logger";
+import { auth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 
 import { getTenant } from "@/lib/auth/tenant";
 import { prismaModel } from "@/lib/db/prismaModel";
+import { sendInvitationEmail } from "@/lib/email/invitations";
 import prisma from "@/lib/prisma";
 
 // Activity model for logging (soft-fail if not available)
@@ -54,9 +55,20 @@ export async function POST(request: Request, { params }: { params: { id: string 
       },
     });
 
-    // Note: Team invitations can be sent via Resend API
-    // Example: await resend.emails.send({ to: invitation.email, subject: "Team Invitation", ... });
-    logger.debug(`📧 Invitation resent to ${invitation.email}`);
+    // Actually resend the invitation email via Resend
+    try {
+      await sendInvitationEmail({
+        to: invitation.email,
+        inviterName: "Your team admin",
+        orgName: "the team",
+        role: invitation.role === "admin" || invitation.role === "org:admin" ? "Admin" : "Member",
+        token: invitation.token,
+      });
+      logger.info(`📧 Invitation resent to ${invitation.email} via Resend`);
+    } catch (emailErr) {
+      logger.error(`[INVITE_RESEND] Failed to send email to ${invitation.email}:`, emailErr);
+      return NextResponse.json({ error: "Failed to send invitation email" }, { status: 500 });
+    }
 
     // Log activity (soft-fail if audit table missing)
     if (Activity) {

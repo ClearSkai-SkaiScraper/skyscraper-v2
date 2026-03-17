@@ -1,5 +1,4 @@
-import { redirect } from "next/navigation";
-
+import { NoOrgMembershipBanner } from "@/components/guards/NoOrgMembershipBanner";
 import { PageContainer } from "@/components/layout/PageContainer";
 import { logger } from "@/lib/logger";
 import { safeOrgContext } from "@/lib/safeOrgContext";
@@ -13,14 +12,14 @@ export default async function NewRetailJobPage() {
   try {
     const orgResult = await safeOrgContext();
     if (!orgResult.ok) {
-      redirect("/sign-in");
+      return <NoOrgMembershipBanner title="Create Retail Job" />;
     }
     orgId = orgResult.orgId;
   } catch (error: unknown) {
     // redirect() throws a special error that must be re-thrown
     if (error && typeof error === "object" && "digest" in error) throw error;
     logger.error("[NewRetailJobPage] Org context error:", error);
-    redirect("/sign-in");
+    return <NoOrgMembershipBanner title="Create Retail Job" />;
   }
 
   return (

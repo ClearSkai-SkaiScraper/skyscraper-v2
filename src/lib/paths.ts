@@ -75,7 +75,7 @@ export const PATHS = {
   AI_DAMAGE_BUILDER: "/ai/damage-builder",
   AI_DAMAGE_HISTORY: "/ai/damage-builder/history",
   AI_VIDEO_REPORTS: "/ai/video-reports",
-  AI_REPORT_ASSEMBLY: "/ai/report-assembly",
+
   AI_CLAIMS_ANALYSIS: "/ai/claims-analysis",
   AI_BAD_FAITH_DETECTOR: "/ai/bad-faith-detector",
 

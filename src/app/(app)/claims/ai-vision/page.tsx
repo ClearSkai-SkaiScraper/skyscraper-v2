@@ -1,16 +1,16 @@
 import DamageVisionUploader from "@/components/claims/DamageVisionUploader";
+import { NoOrgMembershipBanner } from "@/components/guards/NoOrgMembershipBanner";
 import { PageHero } from "@/components/layout/PageHero";
 import { getTenant } from "@/lib/auth/tenant";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
-import { redirect } from "next/navigation";
 
 export const dynamic = "force-dynamic";
 
 export default async function AIVisionPage() {
   const orgId = await getTenant();
   if (!orgId) {
-    redirect("/sign-in");
+    return <NoOrgMembershipBanner title="AI Damage Analysis" />;
   }
 
   return (

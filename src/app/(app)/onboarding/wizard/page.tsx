@@ -78,6 +78,19 @@ function StepCompanyProfile({
         body: JSON.stringify({ orgName: data.companyName.trim() }),
       });
       const json = await res.json();
+
+      // Handle pending invite — bootstrap returns 409 when user has a pending team invitation
+      if (res.status === 409 && json.pendingInvite) {
+        setError(
+          "You have a pending team invitation! Please accept it from your dashboard instead of creating a new company."
+        );
+        // Redirect to dashboard where the Accept Invitation banner will show
+        setTimeout(() => {
+          window.location.href = "/dashboard";
+        }, 2500);
+        return;
+      }
+
       if (!json.ok) throw new Error(json.error || "Failed to save");
 
       // Save additional fields to company settings

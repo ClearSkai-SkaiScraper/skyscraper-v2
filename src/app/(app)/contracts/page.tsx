@@ -3,6 +3,7 @@ import { AlertTriangle, CheckCircle, Clock, DollarSign, FileText, PlusIcon } fro
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
+import { NoOrgMembershipBanner } from "@/components/guards/NoOrgMembershipBanner";
 import { PageHero } from "@/components/layout/PageHero";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -18,7 +19,7 @@ export default async function ContractsPage() {
   const { orgId } = await getCurrentUserPermissions();
 
   if (!orgId) {
-    redirect("/sign-in");
+    return <NoOrgMembershipBanner title="Contracts" />;
   }
 
   // ── Real data from claims + jobs ──────────────────────────────────

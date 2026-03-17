@@ -1,7 +1,7 @@
 import { BarChart3, Download, Sparkles, TrendingUp } from "lucide-react";
 import Link from "next/link";
-import { redirect } from "next/navigation";
 
+import { NoOrgMembershipBanner } from "@/components/guards/NoOrgMembershipBanner";
 import { PageHero } from "@/components/layout/PageHero";
 import CustomReportBuilder from "@/components/reports/CustomReportBuilder";
 import DataExportPanel from "@/components/reports/DataExportPanel";
@@ -12,7 +12,7 @@ export const dynamic = "force-dynamic";
 export default async function AdvancedAnalyticsPage() {
   const orgId = await getTenant();
   if (!orgId) {
-    redirect("/sign-in");
+    return <NoOrgMembershipBanner title="Advanced Analytics" />;
   }
 
   return (

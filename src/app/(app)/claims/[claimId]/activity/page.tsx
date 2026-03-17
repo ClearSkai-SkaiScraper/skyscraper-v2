@@ -16,8 +16,9 @@ import {
   Upload,
   Users,
 } from "lucide-react";
-import { notFound, redirect } from "next/navigation";
+import { notFound } from "next/navigation";
 
+import { NoOrgMembershipBanner } from "@/components/guards/NoOrgMembershipBanner";
 import { PageHero } from "@/components/layout/PageHero";
 import { getClaimActivity } from "@/lib/claims/activityLog";
 import prisma from "@/lib/prisma";
@@ -53,7 +54,7 @@ export default async function ClaimActivityPage({ params }: ActivityPageProps) {
   const ctx = await safeOrgContext();
 
   if (ctx.status !== "ok" || !ctx.orgId) {
-    redirect("/sign-in");
+    return <NoOrgMembershipBanner title="Claim Activity" />;
   }
 
   // Verify claim belongs to org

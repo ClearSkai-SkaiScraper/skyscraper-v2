@@ -95,7 +95,7 @@ export default async function LeadsPage({ searchParams }: { searchParams: LeadsS
       const contactIds = Array.from(new Set(leads.map((l) => l.contactId).filter(Boolean)));
       if (contactIds.length > 0) {
         const contacts = await prisma.contacts.findMany({
-          where: { id: { in: contactIds } },
+          where: { id: { in: contactIds }, orgId },
           select: {
             id: true,
             firstName: true,

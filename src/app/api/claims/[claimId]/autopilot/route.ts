@@ -30,7 +30,7 @@ export const GET = withAuth(
       await getOrgClaimOrThrow(orgId, claimId);
 
       const claim = await prisma.claims.findUnique({
-        where: { id: claimId },
+        where: { id: claimId, orgId },
         select: {
           id: true,
           claimNumber: true,
@@ -55,7 +55,9 @@ export const GET = withAuth(
 
       // Count existing evidence to build smart recommendations
       const [photosCount, documentsCount, supplementsCount, weatherScansCount] = await Promise.all([
-        prisma.completion_photos.count({ where: { claim_id: claimId } }).catch(() => 0),
+        prisma.completion_photos
+          .count({ where: { claim_id: claimId, org_id: orgId } })
+          .catch(() => 0),
         prisma.inspections.count({ where: { claimId, orgId } }).catch(() => 0),
         prisma.supplements.count({ where: { claim_id: claimId } }).catch(() => 0),
         prisma.weather_reports.count({ where: { claimId } }).catch(() => 0),

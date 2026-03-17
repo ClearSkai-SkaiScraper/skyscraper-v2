@@ -20,16 +20,12 @@ async function markAsRead(req: NextRequest, context: RouteContext) {
 
     const { id } = await context.params;
 
-    const existing = await prisma.notification.findUnique({
-      where: { id },
+    const existing = await prisma.notification.findFirst({
+      where: { id, userId },
     });
 
     if (!existing) {
       return NextResponse.json({ error: "Notification not found" }, { status: 404 });
-    }
-
-    if (existing.userId !== userId) {
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
     const notification = await prisma.notification.update({

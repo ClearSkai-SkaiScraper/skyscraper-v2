@@ -307,9 +307,18 @@ export default clerkMiddleware((auth, req) => {
     res.headers.set("x-auth-mode", "protected");
     return res;
   } catch (error) {
-    // SAFETY NET: If middleware throws, fail closed for protected routes.
-    // Only allow through for public/static routes where auth is not needed.
+    // SAFETY NET: If middleware throws, handle appropriately.
+    // Clerk throws NEXT_REDIRECT for unauthenticated users hitting protected routes
+    // — those MUST be re-thrown so Next.js handles the redirect correctly.
+    // Other errors should fail open for app routes (pages have safeOrgContext guards)
+    // but fail closed for API routes.
     const pathname = req.nextUrl.pathname;
+
+    // CRITICAL: Re-throw NEXT_REDIRECT — this is Clerk's auth().protect() redirect mechanism
+    if (error instanceof Error && error.message === "NEXT_REDIRECT") {
+      throw error;
+    }
+
     console.error("[MIDDLEWARE_ERROR]", error instanceof Error ? error.message : error);
 
     // Allow static assets and known public paths through on error
@@ -330,10 +339,13 @@ export default clerkMiddleware((auth, req) => {
       return NextResponse.json({ error: "Internal server error" }, { status: 500 });
     }
 
-    // Protected page routes redirect to sign-in
-    const isPortalRoute = pathname.startsWith("/portal");
-    const signInPath = isPortalRoute ? "/client/sign-in" : "/sign-in";
-    return NextResponse.redirect(new URL(signInPath, req.url));
+    // For app page routes: fail OPEN — let the page-level safeOrgContext() handle auth.
+    // This prevents the intermittent "blue sign-in screen flash" when Clerk auth
+    // experiences a transient hiccup during client-side navigation.
+    const res = NextResponse.next();
+    res.headers.set("x-auth-mode", "middleware-error-passthrough");
+    res.headers.set("x-pathname", pathname);
+    return res;
   }
 });
 

@@ -1,7 +1,7 @@
 import { Database, Key, Webhook, Zap } from "lucide-react";
-import { redirect } from "next/navigation";
 
 import { AccessDenied } from "@/components/auth/AccessDenied";
+import { NoOrgMembershipBanner } from "@/components/guards/NoOrgMembershipBanner";
 import AccuLynxMigration from "@/components/integrations/AccuLynxMigration";
 import WebhookForm from "@/components/integrations/WebhookForm";
 import { PageHero } from "@/components/layout/PageHero";
@@ -31,7 +31,7 @@ export default async function IntegrationsPage() {
 
   const orgId = await getTenant();
   if (!orgId) {
-    redirect("/sign-in");
+    return <NoOrgMembershipBanner title="Integrations" />;
   }
 
   return (

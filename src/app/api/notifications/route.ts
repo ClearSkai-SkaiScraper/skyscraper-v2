@@ -17,9 +17,9 @@ export async function GET() {
   const user = await currentUser();
   if (!user) return new Response("Unauthorized", { status: 401 });
 
-  // Use DB-backed org resolver instead of Clerk publicMetadata (which may be stale/empty)
+  // Use DB-backed org resolver — never fall back to Clerk publicMetadata (may be stale/cross-tenant)
   const orgCtx = await resolveOrgSafe();
-  const orgId = orgCtx?.orgId || (user.publicMetadata?.orgId as string | undefined) || null;
+  const orgId = orgCtx?.orgId || null;
 
   // ── Parallel fetch: raw notifications + membership (shared) ──
   // NOTE: The raw `notifications` table may not exist in all environments.

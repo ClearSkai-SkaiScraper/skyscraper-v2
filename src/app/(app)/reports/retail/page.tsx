@@ -1,5 +1,4 @@
-import { redirect } from "next/navigation";
-
+import { NoOrgMembershipBanner } from "@/components/guards/NoOrgMembershipBanner";
 import { safeRetailContext } from "@/lib/db/safeRetailContext";
 import { safeOrgContext } from "@/lib/safeOrgContext";
 
@@ -15,7 +14,7 @@ export default async function RetailProposalPage({
 }) {
   const ctx = await safeOrgContext();
   if (ctx.status === "unauthenticated" || !ctx.orgId) {
-    redirect("/sign-in");
+    return <NoOrgMembershipBanner title="Retail Proposals" />;
   }
   const orgId = ctx.orgId;
   const { leads, claims } = await safeRetailContext(orgId);

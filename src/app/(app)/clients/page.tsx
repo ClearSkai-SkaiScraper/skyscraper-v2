@@ -1,8 +1,8 @@
 import { Search, UserPlus, Users } from "lucide-react";
 import Link from "next/link";
-import { redirect } from "next/navigation";
 
 import InviteClientButton from "@/components/clients/InviteClientButton";
+import { NoOrgMembershipBanner } from "@/components/guards/NoOrgMembershipBanner";
 import { PageHero } from "@/components/layout/PageHero";
 import { Button } from "@/components/ui/button";
 import { getTenant } from "@/lib/auth/tenant";
@@ -22,7 +22,7 @@ export default async function ClientsPage({ searchParams }: PageProps) {
   const searchQuery = params.search || "";
 
   if (!orgId) {
-    redirect("/sign-in");
+    return <NoOrgMembershipBanner title="Clients" />;
   }
 
   let clients: any[] = [];

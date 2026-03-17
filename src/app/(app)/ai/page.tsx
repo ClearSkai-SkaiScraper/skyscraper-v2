@@ -10,7 +10,6 @@ import {
   FileBarChart,
   FileCheck,
   FileSearch,
-  FileText,
   Image,
   Package,
   Scale,
@@ -80,13 +79,6 @@ const claimsAITools = [
 ];
 
 const productionAITools = [
-  {
-    href: "/ai/report-assembly",
-    title: "Report Assembly",
-    desc: "AI-powered report generation with customizable section templates and auto-fill.",
-    icon: FileText,
-    color: "from-green-500 to-green-600",
-  },
   {
     href: "/ai/smart-actions",
     title: "Smart Actions",
