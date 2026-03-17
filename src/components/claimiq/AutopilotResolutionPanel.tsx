@@ -20,7 +20,6 @@ import {
   FileText,
   Loader2,
   MessageSquare,
-  RefreshCw,
 } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 
@@ -91,25 +90,82 @@ const ACTION_META: Record<
 };
 
 /* ------------------------------------------------------------------ */
+/* Helpers                                                             */
+/* ------------------------------------------------------------------ */
+
+/** Map API action types → component ActionType */
+function mapActionType(raw: string): ActionType {
+  const lower = raw.toLowerCase();
+  if (lower === "collect" || lower === "evidence") return "collect";
+  if (lower === "derive" || lower === "financial" || lower === "strategic") return "derive";
+  if (lower === "generate" || lower === "document") return "generate";
+  if (lower === "prompt" || lower === "communicate") return "prompt";
+  return "collect"; // safe fallback
+}
+
+/* ------------------------------------------------------------------ */
 /* Component                                                           */
 /* ------------------------------------------------------------------ */
 
 export function AutopilotResolutionPanel({ claimId, className }: Props) {
   const [plan, setPlan] = useState<AutopilotPlan | null>(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [expandedType, setExpandedType] = useState<ActionType | null>(null);
 
   const fetchPlan = useCallback(async () => {
     setLoading(true);
-    setError(null);
     try {
       const res = await fetch(`/api/claims/${claimId}/autopilot`);
-      if (!res.ok) throw new Error("Failed to fetch");
+      if (!res.ok) {
+        // Treat API failure as empty plan
+        setPlan({
+          claimId,
+          totalActions: 0,
+          autonomousActions: 0,
+          promptActions: 0,
+          estimatedTime: 0,
+          estimatedTokens: 0,
+          actions: [],
+        });
+        return;
+      }
       const json = await res.json();
-      setPlan(json);
+      // Normalize API shape to component's expected shape
+      const actions: AutopilotAction[] = (json.actions ?? []).map((a: any) => ({
+        field: a.field ?? a.title ?? "Action",
+        section: a.section ?? a.type ?? "general",
+        actionType: mapActionType(a.type ?? a.actionType ?? "collect"),
+        description: a.description ?? "",
+        estimatedMinutes: a.estimatedMinutes ?? 0,
+        estimatedTokens: a.estimatedTokens ?? 0,
+        confidence: a.confidence ?? (a.completed ? 1.0 : 0.7),
+        dataSource: a.dataSource,
+      }));
+      const completedCount = json.completedCount ?? 0;
+      const pendingActions = actions.filter((a: any) => a.confidence < 1.0);
+      setPlan({
+        claimId: json.claimId ?? claimId,
+        totalActions: json.totalActions ?? actions.length,
+        autonomousActions: completedCount,
+        promptActions: json.pendingCount ?? pendingActions.length,
+        estimatedTime: json.estimatedTimeMinutes ?? 0,
+        estimatedTokens: actions.reduce(
+          (sum: number, a: AutopilotAction) => sum + a.estimatedTokens,
+          0
+        ),
+        actions,
+      });
     } catch {
-      setError("Failed to load autopilot plan");
+      // Network error — show empty plan, not red
+      setPlan({
+        claimId,
+        totalActions: 0,
+        autonomousActions: 0,
+        promptActions: 0,
+        estimatedTime: 0,
+        estimatedTokens: 0,
+        actions: [],
+      });
     } finally {
       setLoading(false);
     }
@@ -129,17 +185,12 @@ export function AutopilotResolutionPanel({ claimId, className }: Props) {
     );
   }
 
-  if (error || !plan) {
+  if (!plan || plan.totalActions === 0) {
     return (
-      <Card className={cn("border-red-200 dark:border-red-900", className)}>
-        <CardContent className="py-6 text-center">
-          <p className="text-sm text-red-600 dark:text-red-400">{error ?? "No data"}</p>
-          <button
-            onClick={fetchPlan}
-            className="mt-2 text-xs text-muted-foreground hover:text-foreground"
-          >
-            <RefreshCw className="mr-1 inline h-3 w-3" /> Retry
-          </button>
+      <Card className={className}>
+        <CardContent className="flex items-center gap-2 py-4 text-sm text-muted-foreground">
+          <Bot className="h-4 w-4" />
+          Add claim details to generate an autopilot resolution plan.
         </CardContent>
       </Card>
     );

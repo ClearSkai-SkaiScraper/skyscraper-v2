@@ -17,7 +17,6 @@ import {
   ChevronUp,
   FileSearch,
   Loader2,
-  RefreshCw,
   ShieldAlert,
 } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
@@ -85,19 +84,39 @@ const PRIORITY_STYLES: Record<string, { bg: string; text: string; icon: React.Re
 export function EvidenceGapWidget({ claimId, compact = false, className }: Props) {
   const [data, setData] = useState<EvidenceGapAnalysis | null>(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+
   const [expanded, setExpanded] = useState<string | null>(null);
 
   const fetchGaps = useCallback(async () => {
     setLoading(true);
-    setError(null);
     try {
       const res = await fetch(`/api/claims/${claimId}/evidence-gaps`);
-      if (!res.ok) throw new Error("Failed to fetch");
+      if (!res.ok) {
+        // Treat 4xx/5xx as empty — not a red error
+        setData({
+          claimId,
+          totalGaps: 0,
+          totalEstimatedImpact: 0,
+          gaps: [],
+          modelGroupsRun: [],
+          modelGroupsMissing: [],
+          coveragePercent: 0,
+        });
+        return;
+      }
       const json = await res.json();
       setData(json);
     } catch {
-      setError("Failed to load evidence gaps");
+      // Network error — show empty state, not scary red
+      setData({
+        claimId,
+        totalGaps: 0,
+        totalEstimatedImpact: 0,
+        gaps: [],
+        modelGroupsRun: [],
+        modelGroupsMissing: [],
+        coveragePercent: 0,
+      });
     } finally {
       setLoading(false);
     }
@@ -118,18 +137,13 @@ export function EvidenceGapWidget({ claimId, compact = false, className }: Props
     );
   }
 
-  /* Error state */
-  if (error || !data) {
+  /* No data yet */
+  if (!data) {
     return (
-      <Card className={cn("border-red-200 dark:border-red-900", className)}>
-        <CardContent className="py-6 text-center">
-          <p className="text-sm text-red-600 dark:text-red-400">{error ?? "No data"}</p>
-          <button
-            onClick={fetchGaps}
-            className="mt-2 text-xs text-muted-foreground hover:text-foreground"
-          >
-            <RefreshCw className="mr-1 inline h-3 w-3" /> Retry
-          </button>
+      <Card className={className}>
+        <CardContent className="flex items-center gap-2 py-4 text-sm text-muted-foreground">
+          <FileSearch className="h-4 w-4" />
+          Upload and analyze photos to detect evidence gaps.
         </CardContent>
       </Card>
     );

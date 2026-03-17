@@ -1,5 +1,5 @@
 "use client";
-import { FileCheck, FileText, Loader2, Shield, Sparkles } from "lucide-react";
+import { Camera, FileText, Loader2, Shield, Sparkles } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
@@ -142,6 +142,40 @@ export default function ClaimDocumentsPage() {
   const [generating, setGenerating] = useState(false);
   const [genSuccess, setGenSuccess] = useState("");
 
+  // ── Damage Report Generator ──────────────────────────────────
+  const [generatingDamageReport, setGeneratingDamageReport] = useState(false);
+
+  async function handleGenerateDamageReport() {
+    if (!claimId || generatingDamageReport) return;
+    setGeneratingDamageReport(true);
+    try {
+      const res = await fetch(`/api/claims/${claimId}/damage-report`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          includePhotos: true,
+          includeAnnotations: true,
+          format: "pdf",
+        }),
+      });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.error || "Failed to generate damage report");
+      }
+      const data = await res.json();
+      if (data.pdfUrl) {
+        window.open(data.pdfUrl, "_blank");
+      }
+      setGenSuccess("Damage Report generated!");
+      await fetchDocuments();
+    } catch (err) {
+      logger.error("[DAMAGE_REPORT] Generation error:", err);
+      alert(err instanceof Error ? err.message : "Failed to generate damage report");
+    } finally {
+      setGeneratingDamageReport(false);
+    }
+  }
+
   async function handleGenerateJustification() {
     if (!claimId || generating) return;
     setGenerating(true);
@@ -206,9 +240,22 @@ export default function ClaimDocumentsPage() {
                 </>
               )}
             </Button>
-            <Button onClick={() => router.push(`/claims/${claimId}/completion`)} className="gap-2">
-              <FileCheck className="h-5 w-5" />
-              Generate Documents
+            <Button
+              onClick={handleGenerateDamageReport}
+              disabled={generatingDamageReport}
+              className="gap-2 bg-purple-600 hover:bg-purple-700"
+            >
+              {generatingDamageReport ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  Generating...
+                </>
+              ) : (
+                <>
+                  <Camera className="h-5 w-5" />
+                  Build Damage Report
+                </>
+              )}
             </Button>
           </div>
         }
@@ -285,9 +332,9 @@ export default function ClaimDocumentsPage() {
           <p className="mb-6 text-gray-600 dark:text-gray-400 dark:text-gray-600">
             Generate your first document using the completion tools
           </p>
-          <Button onClick={() => router.push(`/claims/${claimId}/completion`)} className="gap-2">
-            <FileCheck className="h-5 w-5" />
-            Go to Completion
+          <Button onClick={() => router.push(`/claims/${claimId}/photos`)} className="gap-2">
+            <Camera className="h-5 w-5" />
+            Go to Photos Tab
           </Button>
         </div>
       ) : (

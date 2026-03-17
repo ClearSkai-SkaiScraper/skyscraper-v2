@@ -18,7 +18,6 @@ import {
   CheckCircle2,
   Clock,
   Loader2,
-  RefreshCw,
   Shield,
   TrendingUp,
   XCircle,
@@ -61,15 +60,17 @@ interface Props {
 export function CarrierPlaybookPanel({ carrierFilter, compact, className }: Props) {
   const [playbooks, setPlaybooks] = useState<CarrierPlaybook[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [expandedCarrier, setExpandedCarrier] = useState<string | null>(null);
 
   const fetchPlaybooks = useCallback(async () => {
     setLoading(true);
-    setError(null);
     try {
       const res = await fetch("/api/carrier-playbooks");
-      if (!res.ok) throw new Error("Failed to fetch");
+      if (!res.ok) {
+        // Treat API failure as empty — no scary red error
+        setPlaybooks([]);
+        return;
+      }
       const data = await res.json();
       let pbs = data.playbooks ?? [];
       if (carrierFilter) {
@@ -79,7 +80,8 @@ export function CarrierPlaybookPanel({ carrierFilter, compact, className }: Prop
       }
       setPlaybooks(pbs);
     } catch {
-      setError("Failed to load carrier playbooks");
+      // Network error — show empty, not red
+      setPlaybooks([]);
     } finally {
       setLoading(false);
     }
@@ -94,23 +96,6 @@ export function CarrierPlaybookPanel({ carrierFilter, compact, className }: Prop
       <Card className={className}>
         <CardContent className="flex items-center justify-center py-12">
           <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-        </CardContent>
-      </Card>
-    );
-  }
-
-  if (error) {
-    return (
-      <Card className={cn("border-red-200 dark:border-red-900", className)}>
-        <CardContent className="py-8 text-center">
-          <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
-          <button
-            onClick={fetchPlaybooks}
-            className="mt-2 text-xs text-muted-foreground hover:text-foreground"
-          >
-            <RefreshCw className="mr-1 inline h-3 w-3" />
-            Retry
-          </button>
         </CardContent>
       </Card>
     );

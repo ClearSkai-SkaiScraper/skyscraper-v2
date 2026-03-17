@@ -151,7 +151,7 @@ export default function ClaimWeatherPage({ params }: Props) {
   const [isReportRunning, setIsReportRunning] = useState(false);
   const [reportResult, setReportResult] = useState<WeatherReportApiResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [generatingPdf, setGeneratingPdf] = useState(false);
+  // generatingPdf state removed — quick-verify PDF section was removed in favor of Generate Full Weather Report
 
   // ── Compose full address string for API calls ──
   const fullAddress = [street, city, [addrState, zip].filter(Boolean).join(" ")]
@@ -353,37 +353,6 @@ export default function ClaimWeatherPage({ params }: Props) {
     }
   }
 
-  // ── Download Verification PDF ──
-  async function downloadVerificationPdf() {
-    setGeneratingPdf(true);
-    try {
-      toast.info("Scanning 12-month weather history…", { duration: 4000 });
-      const res = await fetch(`/api/claims/${claimId}/weather/quick-verify`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-      });
-      if (!res.ok) {
-        const data = await res.json().catch(() => ({ error: "Unknown error" }));
-        throw new Error(data.error || `Request failed (${res.status})`);
-      }
-      const blob = await res.blob();
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `Weather-Verification-${claimId}.pdf`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-      toast.success("Weather Verification PDF downloaded!");
-    } catch (err) {
-      logger.error("Verification PDF error:", err);
-      toast.error(err instanceof Error ? err.message : "Failed to generate verification PDF");
-    } finally {
-      setGeneratingPdf(false);
-    }
-  }
-
   // ── Generate Full Report ──
   async function runWeatherReport() {
     setIsReportRunning(true);
@@ -487,43 +456,6 @@ export default function ClaimWeatherPage({ params }: Props) {
           </div>
         </Card>
       )}
-
-      {/* ── Weather Verification PDF ── */}
-      <Card className="border-emerald-200 bg-gradient-to-r from-emerald-50 to-sky-50 p-5 dark:border-emerald-800 dark:from-emerald-950/30 dark:to-sky-950/30">
-        <div className="flex items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-100 dark:bg-emerald-900/40">
-              <CloudLightning className="h-5 w-5 text-emerald-600" />
-            </div>
-            <div>
-              <h3 className="font-semibold text-emerald-900 dark:text-emerald-100">
-                Weather Verification PDF
-              </h3>
-              <p className="text-xs text-emerald-700 dark:text-emerald-300">
-                Auto-scans 12 months of NOAA hail &amp; wind data, scores severity, and generates a
-                branded justification document.
-              </p>
-            </div>
-          </div>
-          <Button
-            onClick={downloadVerificationPdf}
-            disabled={generatingPdf}
-            className="shrink-0 bg-emerald-600 text-white hover:bg-emerald-700"
-          >
-            {generatingPdf ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Scanning…
-              </>
-            ) : (
-              <>
-                <Download className="mr-2 h-4 w-4" />
-                Download PDF
-              </>
-            )}
-          </Button>
-        </div>
-      </Card>
 
       {/* ── Quick DOL Scan ── */}
       <Card className="p-6">
@@ -1026,11 +958,20 @@ export default function ClaimWeatherPage({ params }: Props) {
                   <Button
                     size="sm"
                     variant="outline"
-                    onClick={() => {
-                      const link = document.createElement("a");
-                      link.href = reportResult.pdfUrl!;
-                      link.download = `weather-report-${claimId}.pdf`;
-                      link.click();
+                    onClick={async () => {
+                      try {
+                        const res = await fetch(reportResult.pdfUrl!);
+                        const blob = await res.blob();
+                        const url = URL.createObjectURL(blob);
+                        const link = document.createElement("a");
+                        link.href = url;
+                        link.download = `weather-report-${claimId}.pdf`;
+                        link.click();
+                        URL.revokeObjectURL(url);
+                      } catch {
+                        // Fallback: open in new tab
+                        window.open(reportResult.pdfUrl!, "_blank");
+                      }
                     }}
                     className="gap-2"
                   >
@@ -1106,11 +1047,19 @@ export default function ClaimWeatherPage({ params }: Props) {
                             size="sm"
                             variant="outline"
                             className="gap-1.5"
-                            onClick={() => {
-                              const link = document.createElement("a");
-                              link.href = report.pdfUrl!;
-                              link.download = `weather-report-${report.id}.pdf`;
-                              link.click();
+                            onClick={async () => {
+                              try {
+                                const res = await fetch(report.pdfUrl!);
+                                const blob = await res.blob();
+                                const url = URL.createObjectURL(blob);
+                                const link = document.createElement("a");
+                                link.href = url;
+                                link.download = `weather-report-${report.id}.pdf`;
+                                link.click();
+                                URL.revokeObjectURL(url);
+                              } catch {
+                                window.open(report.pdfUrl!, "_blank");
+                              }
                             }}
                           >
                             <Download className="h-3.5 w-3.5" />

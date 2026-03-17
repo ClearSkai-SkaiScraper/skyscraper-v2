@@ -10,15 +10,7 @@
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
-import {
-  ArrowDown,
-  ArrowRight,
-  ArrowUp,
-  GitCompare,
-  Loader2,
-  Minus,
-  RefreshCw,
-} from "lucide-react";
+import { ArrowDown, ArrowRight, ArrowUp, GitCompare, Loader2, Minus } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 
 /* ------------------------------------------------------------------ */
@@ -53,16 +45,18 @@ interface Props {
 export function SimulationComparison({ claimId, className }: Props) {
   const [runs, setRuns] = useState<SimulationRun[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [leftIdx, setLeftIdx] = useState(0);
   const [rightIdx, setRightIdx] = useState(1);
 
   const fetchHistory = useCallback(async () => {
     setLoading(true);
-    setError(null);
     try {
       const res = await fetch(`/api/claims/${claimId}/simulation/history?limit=10`);
-      if (!res.ok) throw new Error("Failed to fetch");
+      if (!res.ok) {
+        // Treat API failure as empty — no scary red error
+        setRuns([]);
+        return;
+      }
       const json = await res.json();
       // API returns { history: [...] } - transform to SimulationRun shape
       const rawHistory = json.history ?? json.runs ?? [];
@@ -83,7 +77,8 @@ export function SimulationComparison({ claimId, className }: Props) {
         setRightIdx(1);
       }
     } catch {
-      setError("Failed to load simulation history");
+      // Network error — show empty, not red
+      setRuns([]);
     } finally {
       setLoading(false);
     }
@@ -103,29 +98,12 @@ export function SimulationComparison({ claimId, className }: Props) {
     );
   }
 
-  if (error) {
-    return (
-      <Card className={cn("border-red-200 dark:border-red-900", className)}>
-        <CardContent className="py-6 text-center">
-          <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
-          <button
-            onClick={fetchHistory}
-            className="mt-2 text-xs text-muted-foreground hover:text-foreground"
-          >
-            <RefreshCw className="mr-1 inline h-3 w-3" /> Retry
-          </button>
-        </CardContent>
-      </Card>
-    );
-  }
-
   if (runs.length < 2) {
     return (
       <Card className={className}>
-        <CardContent className="py-8 text-center text-sm text-muted-foreground">
-          <GitCompare className="mx-auto mb-2 h-6 w-6" />
-          Need at least 2 simulation runs to compare.
-          {runs.length === 1 && " Only 1 run found."}
+        <CardContent className="py-6 text-center text-sm text-muted-foreground">
+          <GitCompare className="mx-auto mb-2 h-5 w-5" />
+          Simulation comparisons will appear here as AI analyses are run on this claim.
         </CardContent>
       </Card>
     );

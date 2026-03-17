@@ -12,6 +12,7 @@ import {
 import prisma from "@/lib/prisma";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { safeOrgContext } from "@/lib/safeOrgContext";
+import { toFile } from "openai";
 
 export async function POST(request: NextRequest) {
   try {
@@ -82,9 +83,88 @@ export async function POST(request: NextRequest) {
     );
     logger.debug(`[Mockup Generate] AI Prompt: ${aiPrompt}`);
 
-    // Try OpenAI DALL-E 3 with image editing if available
+    // Try OpenAI image editing — gpt-image-1 can SEE the original photo
     try {
       const openai = getOpenAI();
+
+      // ── PRIMARY: gpt-image-1 Edit (same property, same angle) ──
+      // gpt-image-1 accepts the original image as input, so it can produce a
+      // true like-for-like renovation mockup of the SAME building.
+      try {
+        const ext = mimeType.split("/")[1] || "png";
+        const imageFile = await toFile(buffer, `photo.${ext}`, { type: mimeType });
+
+        const editPrompt = `Apply a professional ${projectType.toLowerCase()} renovation to this property photograph. ${aiPrompt}
+
+CRITICAL EDITING RULES:
+1. This MUST remain the EXACT SAME building from the EXACT SAME camera angle and distance.
+2. Keep ALL existing architectural features: window count, door placement, garage, trim, foundation, roof shape.
+3. Keep the IDENTICAL environment: sky, trees, landscaping, driveway, neighboring structures.
+4. ONLY modify the materials/elements related to the ${projectType.toLowerCase()} renovation — everything else stays untouched.
+5. New materials must look pristine, freshly installed, and photorealistic.
+6. The result must look like a professional "after" photo taken by the same photographer from the same position after the renovation was completed.
+7. Output MUST be a photorealistic photograph indistinguishable from a real photo.`;
+
+        logger.info("[Mockup Generate] Attempting gpt-image-1 edit...");
+
+        const editResponse = await openai.images.edit({
+          model: "gpt-image-1",
+          image: imageFile,
+          prompt: editPrompt.slice(0, 32000),
+          size: "1024x1024",
+          quality: "high",
+          input_fidelity: "high",
+        });
+
+        const b64 = editResponse.data?.[0]?.b64_json;
+        if (b64) {
+          const afterImageUrl = `data:image/png;base64,${b64}`;
+          logger.info("[Mockup Generate] SUCCESS via gpt-image-1 Edit (same property)");
+
+          // Persist artifact
+          try {
+            await prisma.generatedArtifact.create({
+              data: {
+                orgId,
+                type: "mockup",
+                title: `${projectType} Mockup — ${new Date().toLocaleDateString()}`,
+                content: editPrompt,
+                fileUrl: afterImageUrl.slice(0, 500), // Store truncated ref — full image returned to client
+                model: "gpt-image-1",
+                tokensUsed: 1,
+                status: "completed",
+                metadata: {
+                  projectType,
+                  projectDescription,
+                  method: "gpt-image-1 Edit (Same Property)",
+                },
+              },
+            });
+          } catch (saveErr) {
+            logger.error("[Mockup Generate] Failed to save artifact:", saveErr);
+          }
+
+          return NextResponse.json({
+            success: true,
+            afterImageUrl,
+            projectType,
+            projectDescription,
+            aiPrompt: editPrompt,
+            method: "gpt-image-1 Edit (Same Property)",
+          });
+        }
+      } catch (editError) {
+        logger.warn(
+          "[Mockup Generate] gpt-image-1 edit failed, falling back to DALL-E 3:",
+          editError
+        );
+        // Fall through to DALL-E 3
+      }
+
+      // ── FALLBACK: GPT-4o Vision analysis → DALL-E 3 generation ──
+      // DALL-E 3 is text-only so it cannot see the original photo. GPT-4o
+      // describes the architecture in detail, then DALL-E 3 generates from text.
+      // Results may not match the exact building but still show the renovation concept.
 
       // Use GPT-4o (best vision model) to deeply analyze the property and write
       // an architecture-preserving prompt for DALL-E 3 image generation.
@@ -165,7 +245,7 @@ ABSOLUTELY NOT: illustration, digital art, render, 3D model, CGI, drawing, paint
       const afterImageUrl = imageResponse.data![0]?.url;
 
       if (afterImageUrl) {
-        logger.debug(`[Mockup Generate] SUCCESS via GPT-4o + DALL-E 3 HD`);
+        logger.debug(`[Mockup Generate] SUCCESS via GPT-4o + DALL-E 3 HD (fallback)`);
 
         // Persist the generated mockup to the database
         try {
@@ -182,7 +262,7 @@ ABSOLUTELY NOT: illustration, digital art, render, 3D model, CGI, drawing, paint
               metadata: {
                 projectType,
                 projectDescription,
-                method: "GPT-4o Vision + DALL-E 3 HD",
+                method: "GPT-4o Vision + DALL-E 3 HD (Fallback — different building)",
               },
             },
           });
@@ -196,7 +276,7 @@ ABSOLUTELY NOT: illustration, digital art, render, 3D model, CGI, drawing, paint
           projectType,
           projectDescription,
           aiPrompt: enhancedPrompt,
-          method: "GPT-4o Vision + DALL-E 3 HD",
+          method: "GPT-4o Vision + DALL-E 3 HD (Fallback)",
         });
       }
     } catch (error) {
