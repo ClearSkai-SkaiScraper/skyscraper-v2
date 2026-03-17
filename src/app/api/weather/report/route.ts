@@ -434,9 +434,10 @@ export const POST = withAuth(async (req: NextRequest, { userId, orgId }) => {
     let pdfUrl: string | null = null;
 
     try {
-      if (claimId && orgId) {
+      // Always generate PDF if orgId is present (standalone reports without claimId still get PDFs)
+      if (orgId) {
         logger.info("[Weather API] Building WeatherPdfViewModel", {
-          claimId,
+          claimId: claimId || "standalone",
           hasBranding: !!brandingData.companyName,
           hasClaim: !!claimDetails.claimNumber,
           locationResolved: geocodeResult.resolved,
@@ -524,7 +525,7 @@ export const POST = withAuth(async (req: NextRequest, { userId, orgId }) => {
 
         const pdfResult = await saveAiPdfToStorage({
           orgId,
-          claimId,
+          claimId: claimId || undefined,
           userId,
           type: "WEATHER",
           label: `Weather Report - ${body.address}`,
@@ -535,10 +536,21 @@ export const POST = withAuth(async (req: NextRequest, { userId, orgId }) => {
 
         pdfSaved = true;
         pdfUrl = pdfResult.publicUrl;
-        logger.info(`[Weather API] PDF saved for claim ${claimId}`, { pdfUrl });
+        logger.info(`[Weather API] PDF saved`, { claimId: claimId || "standalone", pdfUrl });
       }
     } catch (pdfError) {
-      logger.error("[Weather API] PDF generation failed (non-critical):", pdfError);
+      logger.error("[Weather API] PDF generation failed:", pdfError);
+      // Don't silently swallow — return error details so user knows what happened
+      return NextResponse.json(
+        {
+          error:
+            "PDF generation failed. The report data was saved but the PDF could not be created.",
+          step: "pdf_generation",
+          reportId: report.id,
+          details: process.env.NODE_ENV === "development" ? String(pdfError) : undefined,
+        },
+        { status: 500 }
+      );
     }
 
     // ══════════════════════════════════════════════════════════════════════════

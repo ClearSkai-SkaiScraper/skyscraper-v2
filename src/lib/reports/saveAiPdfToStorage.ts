@@ -29,7 +29,7 @@ function getSupabaseAdmin() {
 
 interface SaveAiPdfOptions {
   orgId: string;
-  claimId: string;
+  claimId?: string;
   userId: string;
   type: "WEATHER" | "REBUTTAL" | "DEPRECIATION" | "SUPPLEMENT" | "OTHER";
   label: string;
@@ -65,7 +65,7 @@ export async function saveAiPdfToStorage(options: SaveAiPdfOptions): Promise<Sav
   const timestamp = Date.now();
   const uuid = crypto.randomUUID();
   const filename = `${type.toLowerCase()}_${timestamp}_${uuid}.pdf`;
-  const storageKey = `${orgId}/${claimId}/ai-reports/${filename}`;
+  const storageKey = `${orgId}/${claimId || "standalone"}/ai-reports/${filename}`;
 
   logger.info("[saveAiPdfToStorage] Uploading PDF:", {
     bucket: BUCKET,
@@ -102,7 +102,7 @@ export async function saveAiPdfToStorage(options: SaveAiPdfOptions): Promise<Sav
     const artifact = await prisma.generatedArtifact.create({
       data: {
         orgId,
-        claimId,
+        claimId: claimId || null,
         type: type.toLowerCase(),
         title: label,
         fileUrl: publicUrl,

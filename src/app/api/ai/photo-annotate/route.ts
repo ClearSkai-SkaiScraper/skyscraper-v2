@@ -319,7 +319,7 @@ export async function POST(request: NextRequest) {
           dataUrl,
           validated.componentType as ComponentType,
           validated.claimType as "hail" | "wind" | "storm" | "water" | "fire" | "general",
-          0.45 // 45% confidence threshold — raised from 0.35 to reduce false positive hail hits
+          0.35 // 35% confidence threshold — balanced for real damage detection (false positives fixed via prompt + class mapping)
         );
 
         logger.info("[PHOTO_ANNOTATE] YOLO detection complete", {
@@ -424,8 +424,9 @@ export async function POST(request: NextRequest) {
           return false;
         }
         // - Low confidence detections (AI isn't sure)
-        // Raised from 0.3 → 0.5 to eliminate false positives (was causing phantom hail hits)
-        if (detection.confidence < 0.5) {
+        // Threshold: 0.35 — balanced to catch real stucco chips/trim damage while filtering noise
+        // False positive root causes (aggressive prompts, dent→hail_dent mapping) are fixed separately
+        if (detection.confidence < 0.35) {
           logger.warn("[PHOTO_ANNOTATE] Low confidence detection filtered", {
             type: detection.type,
             confidence: detection.confidence,

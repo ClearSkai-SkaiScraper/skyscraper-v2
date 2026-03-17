@@ -2,8 +2,6 @@
 import { getOpenAI } from "@/lib/openai";
 import { QUICK_DOL_PROMPT, WEATHER_REPORT_PROMPT } from "@/lib/supplement/ai-prompts";
 
-const openai = getOpenAI();
-
 export type QuickDolInput = {
   address: string;
   city?: string;
@@ -27,6 +25,7 @@ export type QuickDolResult = {
 };
 
 export async function runQuickDol(input: QuickDolInput): Promise<QuickDolResult> {
+  const openai = getOpenAI();
   const completion = await openai.chat.completions.create({
     model: "gpt-4o",
     messages: [
@@ -103,6 +102,7 @@ export type WeatherReportResult = {
 };
 
 export async function runWeatherReport(input: WeatherReportInput): Promise<WeatherReportResult> {
+  const openai = getOpenAI();
   const completion = await openai.chat.completions.create({
     model: "gpt-4o",
     messages: [
