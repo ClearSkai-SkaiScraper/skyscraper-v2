@@ -3,20 +3,35 @@
  *
  * Fetches historical NEXRAD radar imagery from Iowa Environmental Mesonet (IEM)
  * and current/recent radar from NWS RIDGE.
+ * Also fetches weather condition icons from Visual Crossing when available.
  *
- * Sources (all FREE, no API key needed):
+ * Sources (all FREE, no API key needed for radar):
  * - IEM NEXRAD Archive: Historical radar composites by date
  * - NWS RIDGE: Current/recent radar station imagery
  * - RainViewer: Recent 2-hour radar tiles (free tier)
+ * - Visual Crossing: Weather condition icons (API key required)
  */
 import { logger } from "@/lib/logger";
 
 export interface RadarImage {
   url: string;
   timestamp: string;
-  source: "iem_nexrad" | "nws_ridge" | "rainviewer";
+  source: "iem_nexrad" | "nws_ridge" | "rainviewer" | "visualcrossing";
   stationId?: string;
   label: string;
+}
+
+export interface WeatherCondition {
+  datetime: string;
+  tempmax: number;
+  tempmin: number;
+  precip: number;
+  precipprob: number;
+  windspeed: number;
+  windgust?: number;
+  conditions: string;
+  icon: string;
+  description?: string;
 }
 
 /**
@@ -134,12 +149,84 @@ export async function getRadarForEvent(
   lat: number,
   lng: number,
   eventDate: string // YYYY-MM-DD
-): Promise<{ stationId: string; images: RadarImage[] }> {
+): Promise<{ stationId: string; images: RadarImage[]; weatherData?: WeatherCondition[] }> {
   const stationId = await getNearestRadarStation(lat, lng);
   const historical = await fetchHistoricalRadar(lat, lng, eventDate);
+
+  // Also try to fetch Visual Crossing weather data for the event
+  let weatherData: WeatherCondition[] | undefined;
+  try {
+    weatherData = await fetchVisualCrossingWeather(lat, lng, eventDate);
+  } catch (err) {
+    logger.warn("[RADAR] Visual Crossing fetch failed (non-critical):", err);
+  }
 
   return {
     stationId,
     images: historical,
+    weatherData,
   };
+}
+
+/**
+ * Fetch weather data from Visual Crossing Timeline API
+ * Returns detailed hourly/daily weather conditions with icons
+ */
+export async function fetchVisualCrossingWeather(
+  lat: number,
+  lng: number,
+  date: string
+): Promise<WeatherCondition[]> {
+  const apiKey = process.env.VISUALCROSSING_API_KEY || process.env.VISUAL_CROSSING_API_KEY;
+
+  if (!apiKey) {
+    logger.debug("[RADAR] Visual Crossing API key not configured, skipping");
+    return [];
+  }
+
+  try {
+    const location = `${lat},${lng}`;
+    // Fetch 3 days around the event date for context
+    const startDate = new Date(date);
+    startDate.setDate(startDate.getDate() - 1);
+    const endDate = new Date(date);
+    endDate.setDate(endDate.getDate() + 1);
+
+    const dateRange = `${startDate.toISOString().split("T")[0]}/${endDate.toISOString().split("T")[0]}`;
+
+    const url = `https://weather.visualcrossing.com/VisualCrossingWebServices/rest/services/timeline/${encodeURIComponent(location)}/${dateRange}?key=${apiKey}&unitGroup=us&include=days,hours&contentType=json`;
+
+    const response = await fetch(url);
+
+    if (!response.ok) {
+      throw new Error(`Visual Crossing API error: ${response.status}`);
+    }
+
+    const data = await response.json();
+    const days = data.days || [];
+
+    const conditions: WeatherCondition[] = days.map((day: any) => ({
+      datetime: day.datetime,
+      tempmax: day.tempmax,
+      tempmin: day.tempmin,
+      precip: day.precip || 0,
+      precipprob: day.precipprob || 0,
+      windspeed: day.windspeed || 0,
+      windgust: day.windgust,
+      conditions: day.conditions || "",
+      icon: day.icon || "",
+      description: day.description || "",
+    }));
+
+    logger.info("[RADAR] Fetched Visual Crossing weather data", {
+      date,
+      daysCount: conditions.length,
+      conditions: conditions.map((c) => c.conditions).join(", "),
+    });
+
+    return conditions;
+  } catch (err) {
+    logger.error("[RADAR] Visual Crossing fetch error:", err);
+    return [];
+  }
 }

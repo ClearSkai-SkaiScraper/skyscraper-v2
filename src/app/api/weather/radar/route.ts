@@ -32,6 +32,7 @@ export const GET = withAuth(async (req: NextRequest) => {
     return NextResponse.json({
       stationId: result.stationId,
       images: result.images,
+      weatherData: result.weatherData || [],
       date,
       location: { lat, lng },
     });
