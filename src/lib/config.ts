@@ -159,7 +159,7 @@ export function isDevelopment(): boolean {
  * Check if AI features are enabled
  */
 export function isAIEnabled(): boolean {
-  return config.ENABLE_AI_FEATURES && !!config.OPENAI_API_KEY;
+  return (config.ENABLE_AI_FEATURES ?? true) && !!config.OPENAI_API_KEY;
 }
 
 // Type export for external use
