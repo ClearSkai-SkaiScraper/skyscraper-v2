@@ -430,6 +430,11 @@ export default function ClaimWeatherPage({ params }: Props) {
       setReportResult(data);
       await loadSavedScans();
       toast.success("Weather report generated and saved!");
+
+      // Auto-open PDF in new tab if available
+      if (data.pdfUrl) {
+        window.open(data.pdfUrl, "_blank");
+      }
     } catch (err) {
       logger.error("Weather report error:", err);
       setError(err instanceof Error ? err.message : "Failed to generate weather report.");
