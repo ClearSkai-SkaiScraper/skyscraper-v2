@@ -8,9 +8,6 @@
  * via a file upload or API fetch.
  */
 
-import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { cn } from "@/lib/utils";
 import {
   AlertTriangle,
   CheckCircle2,
@@ -22,6 +19,10 @@ import {
   XCircle,
 } from "lucide-react";
 import { useCallback, useState } from "react";
+
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { cn } from "@/lib/utils";
 
 // ─── Types (mirrors validate-intelligence.ts output) ─────────────────────────
 

@@ -1,9 +1,10 @@
 "use client";
 
 import { AlertCircle,Send, X } from "lucide-react";
-import { logger } from "@/lib/logger";
 import { useState } from "react";
 import { toast } from "sonner";
+
+import { logger } from "@/lib/logger";
 
 interface SubmitReportModalProps {
   isOpen: boolean;

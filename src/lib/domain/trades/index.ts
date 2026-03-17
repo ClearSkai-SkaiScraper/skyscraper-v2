@@ -13,9 +13,10 @@
  *                tradesCompanyEmployee, tradesCertification.
  */
 
+import crypto from "crypto";
+
 import { logger } from "@/lib/observability/logger";
 import prisma from "@/lib/prisma";
-import crypto from "crypto";
 
 // Prisma name collision: TradesConnection (uppercase) vs tradesConnection (lowercase).
 // TypeScript resolves to uppercase model types. Runtime dispatches correctly.

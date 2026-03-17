@@ -1,8 +1,9 @@
 export const dynamic = "force-dynamic";
 
-import prisma from "@/lib/prisma";
 import { auth } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
+
+import prisma from "@/lib/prisma";
 
 /**
  * GET /api/analytics/team — Team productivity analytics

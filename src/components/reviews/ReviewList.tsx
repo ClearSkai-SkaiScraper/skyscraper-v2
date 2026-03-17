@@ -1,8 +1,9 @@
 "use client";
 
 import { format } from "date-fns";
-import { logger } from "@/lib/logger";
 import { useEffect, useState } from "react";
+
+import { logger } from "@/lib/logger";
 
 import { StarRating } from "./StarRating";
 

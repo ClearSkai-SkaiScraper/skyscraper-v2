@@ -9,10 +9,10 @@ export const dynamic = "force-dynamic";
  * UPDATED: Now uses ClientJob model with fallback to claims for backwards compatibility
  */
 
-import { logger } from "@/lib/logger";
 import { auth } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
 
+import { logger } from "@/lib/logger";
 import { getClientFromAuth } from "@/lib/portal/getClientFromAuth";
 import prisma from "@/lib/prisma";
 

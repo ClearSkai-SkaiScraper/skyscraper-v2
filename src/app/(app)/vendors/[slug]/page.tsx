@@ -24,15 +24,15 @@ import {
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
+import { toast } from "sonner";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { VendorLogo } from "@/components/vendors/VendorLogo";
-import { getVendorResources } from "@/lib/vendors/vendorResources";
-import { toast } from "sonner";
-
 import { logger } from "@/lib/logger";
+import { getVendorResources } from "@/lib/vendors/vendorResources";
+
 import VendorLocationMap from "./_components/VendorLocationMap";
 
 interface VendorLocation {

@@ -4,10 +4,10 @@ export const revalidate = 0;
 
 // Universal Artifact System + Legacy Templates API
 import { currentUser } from "@clerk/nextjs/server";
-import { logger } from "@/lib/logger";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 
+import { logger } from "@/lib/logger";
 import { requireRole } from "@/lib/security/roles";
 
 const saveTemplateSchema = z.object({

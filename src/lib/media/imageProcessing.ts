@@ -5,6 +5,7 @@
  */
 
 import sharp from "sharp";
+
 import { logger } from "@/lib/logger";
 
 export interface ImageProcessingOptions {

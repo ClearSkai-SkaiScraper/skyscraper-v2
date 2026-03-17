@@ -11,16 +11,16 @@
  * Returns the generated PDF URL and structured report data.
  */
 
-import { logger } from "@/lib/logger";
-import prisma from "@/lib/prisma";
-import { safeOrgContext } from "@/lib/safeOrgContext";
 import { NextRequest, NextResponse } from "next/server";
 
 import {
   generateJustificationReport,
   type JustificationInput,
 } from "@/lib/ai/justification-engine";
+import { logger } from "@/lib/logger";
 import { renderJustificationPDF } from "@/lib/pdf/justification-pdf";
+import prisma from "@/lib/prisma";
+import { safeOrgContext } from "@/lib/safeOrgContext";
 import { getStorageClient } from "@/lib/storage/client";
 
 export const dynamic = "force-dynamic";

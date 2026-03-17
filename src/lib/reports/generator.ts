@@ -5,8 +5,8 @@
  * Support for charts, tables, photos, branding
  */
 
-import prisma from "@/lib/prisma";
 import { logger } from "@/lib/logger";
+import prisma from "@/lib/prisma";
 
 export type ReportType =
   | "CLAIM_SUMMARY"

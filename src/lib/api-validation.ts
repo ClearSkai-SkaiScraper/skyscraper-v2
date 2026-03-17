@@ -3,8 +3,9 @@
 // ============================================================================
 
 import { NextResponse } from "next/server";
-import { logger } from "@/lib/logger";
 import { z } from "zod";
+
+import { logger } from "@/lib/logger";
 
 export class ValidationError extends Error {
   constructor(public errors: any) {

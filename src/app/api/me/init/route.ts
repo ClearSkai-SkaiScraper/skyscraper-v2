@@ -2,12 +2,12 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
-import { logger } from "@/lib/logger";
 import { auth, currentUser } from "@clerk/nextjs/server";
 import { randomUUID } from "crypto";
 import { NextResponse } from "next/server";
 
 import { startTrial } from "@/lib/billing/trials";
+import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 
 export async function POST(request: Request) {

@@ -11,9 +11,9 @@
  */
 
 import { NextRequest, NextResponse } from "next/server";
-import { logger } from "@/lib/logger";
 import { z } from "zod";
 
+import { logger } from "@/lib/logger";
 import { getCurrentUserPermissions, requirePermission } from "@/lib/permissions";
 import prisma from "@/lib/prisma";
 

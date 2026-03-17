@@ -28,22 +28,22 @@ export type { ClientContext, ProContext, UserIdentity, UserType } from "./userId
 
 // Client-side React context
 export {
-  UserIdentityProvider,
   useIsClient,
   useIsPro,
-  useUserIdentity,
-  useUserType,
   type UserIdentityClient,
   type UserIdentityContextValue,
+  UserIdentityProvider,
+  useUserIdentity,
+  useUserType,
 } from "./UserIdentityContext";
 
 // Combined auth + identity hook
 export {
+  type AuthWithIdentity,
   useAuthReady,
   useAuthWithIdentity,
   useRequireClient,
   useRequirePro,
-  type AuthWithIdentity,
 } from "./useAuthWithIdentity";
 
 // Routing helpers

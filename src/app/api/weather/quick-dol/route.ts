@@ -2,11 +2,11 @@ export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
 // src/app/api/weather/quick-dol/route.ts
-import { logger } from "@/lib/logger";
 import { NextRequest, NextResponse } from "next/server";
 
 import { QuickDolInput, runQuickDol } from "@/lib/ai/weather";
 import { withAuth } from "@/lib/auth/withAuth";
+import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 import { checkRateLimit } from "@/lib/rate-limit";
 

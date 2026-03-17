@@ -21,15 +21,15 @@ import { ClaimNotFoundError } from "@/components/errors/ErrorStates";
 import { TabErrorBoundary } from "@/components/errors/TabErrorBoundary";
 import { EvidenceGapWidget } from "@/components/intelligence/EvidenceGapWidget";
 import { IntelligenceErrorBoundary } from "@/components/intelligence/IntelligenceErrorBoundary";
+import { CloseoutChecklist } from "@/components/jobs/CloseoutChecklist";
 import { JobValueBox } from "@/components/jobs/JobValueBox";
+import { RequestCloseoutButton } from "@/components/jobs/RequestCloseoutButton";
 import { ClaimWorkspaceSkeleton } from "@/components/loading/LoadingStates";
 import { SimulationComparison } from "@/components/simulation/SimulationComparison";
-
-import { CloseoutChecklist } from "@/components/jobs/CloseoutChecklist";
-import { RequestCloseoutButton } from "@/components/jobs/RequestCloseoutButton";
 import { retryQueue } from "@/lib/client/retryQueue";
 import { logger } from "@/lib/logger";
-import { WORKFLOW_STATUSES, getWorkflowStatusInfo, mapToWorkflowStatus } from "@/lib/statusMapping";
+import { getWorkflowStatusInfo, mapToWorkflowStatus,WORKFLOW_STATUSES } from "@/lib/statusMapping";
+
 import { CarrierExportButton } from "../_components/CarrierExportButton";
 import { ClaimsSidebar } from "../_components/ClaimsSidebar";
 import { ClientConnectSection } from "../_components/ClientConnectSection";

@@ -6,18 +6,18 @@ export const dynamic = "force-dynamic";
  * Analyzes property images to identify roof planes, slopes, orientations, and conditions.
  */
 
-import { logger } from "@/lib/logger";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 
 import {
   detectSlopes,
   generateSlopeScorecard,
-  segmentDamagesByPlane,
   type RoofPlane,
+  segmentDamagesByPlane,
   type SlopeScorecard,
 } from "@/lib/ai/geometry";
-import { createAiConfig, withAiBilling, type AiBillingContext } from "@/lib/ai/withAiBilling";
+import { type AiBillingContext,createAiConfig, withAiBilling } from "@/lib/ai/withAiBilling";
+import { logger } from "@/lib/logger";
 import { checkRateLimit } from "@/lib/rate-limit";
 
 const detectSlopesSchema = z.object({

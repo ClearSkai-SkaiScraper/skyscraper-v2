@@ -15,11 +15,11 @@ import { NextRequest, NextResponse } from "next/server";
 import { apiError } from "@/lib/apiError";
 import { requireAuth } from "@/lib/auth/requireAuth";
 import { getAZCode, isArizonaJurisdiction } from "@/lib/constants/irc-codes-az";
-import { generateCaption, type CaptionStyle } from "@/lib/inspection/caption-generator";
+import { type CaptionStyle,generateCaption } from "@/lib/inspection/caption-generator";
 import {
   collectUniqueCodes,
-  groupEvidence,
   type EvidenceCluster,
+  groupEvidence,
   type RawAnnotation,
 } from "@/lib/inspection/evidence-grouping";
 import { logger } from "@/lib/logger";

@@ -4,6 +4,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Plus, X } from "lucide-react";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
+import { toast } from "sonner";
 import * as z from "zod";
 
 import { Badge } from "@/components/ui/badge";
@@ -21,7 +22,6 @@ import {
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { logger } from "@/lib/logger";
-import { toast } from "sonner";
 
 const companySchema = z.object({
   businessName: z.string().min(1, "Business name is required"),

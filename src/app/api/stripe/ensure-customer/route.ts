@@ -2,11 +2,11 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
-import { logger } from "@/lib/logger";
 import { currentUser } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 
 import { withManager } from "@/lib/auth/withAuth";
+import { logger } from "@/lib/logger";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { getStripeCustomerIdForUser } from "@/lib/stripe/customer";
 

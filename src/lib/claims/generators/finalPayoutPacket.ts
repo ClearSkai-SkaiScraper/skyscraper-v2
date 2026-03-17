@@ -10,9 +10,10 @@
  * Uses pdf-lib (already in the project) for PDF generation.
  */
 
+import { PDFDocument, rgb,StandardFonts } from "pdf-lib";
+
 import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
-import { PDFDocument, StandardFonts, rgb } from "pdf-lib";
 
 export interface FinalPayoutPacketOptions {
   includePhotos?: boolean;

@@ -1,12 +1,12 @@
 "use client";
 
 import { AlertTriangle, CheckCircle2, TrendingUp } from "lucide-react";
-import { logger } from "@/lib/logger";
 import { useEffect, useState } from "react";
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Skeleton } from "@/components/ui/skeleton";
+import { logger } from "@/lib/logger";
 
 interface ClaimIntelligence {
   approvalLikelihood: number;

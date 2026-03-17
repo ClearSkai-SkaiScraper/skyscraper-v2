@@ -1,11 +1,11 @@
 "use client";
 
 import { Send } from "lucide-react";
-import { logger } from "@/lib/logger";
 import { useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import { logger } from "@/lib/logger";
 
 interface MessageComposerProps {
   onSend: (message: string) => void | Promise<void>;

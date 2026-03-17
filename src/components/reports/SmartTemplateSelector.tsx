@@ -15,10 +15,9 @@ import { useCallback, useEffect, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { cn } from "@/lib/utils";
-
 import { trackRecommendationEvent } from "@/lib/reports/recommendation-analytics";
 import type { RecommendationRequest, ScoredTemplate } from "@/lib/reports/recommendation-schema";
+import { cn } from "@/lib/utils";
 
 // ─── Style Category Config ───────────────────────────────────
 

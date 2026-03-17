@@ -1,9 +1,9 @@
 "use client";
 
 import { Copy, RefreshCw, X } from "lucide-react";
+import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
-import { toast } from "sonner";
 
 interface SmartActionModalProps {
   title: string;

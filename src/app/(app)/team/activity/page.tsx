@@ -1,10 +1,11 @@
 "use client";
 
-import { logger } from "@/lib/logger";
 import { useUser } from "@clerk/nextjs";
 import { Activity, Clock, FileText, Loader2, User, Users } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+
+import { logger } from "@/lib/logger";
 
 interface ActivityLog {
   id: string;

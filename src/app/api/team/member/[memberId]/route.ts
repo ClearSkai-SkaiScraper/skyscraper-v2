@@ -8,10 +8,10 @@ export const dynamic = "force-dynamic";
  * PATCH: Update profile fields
  */
 
-import { logger } from "@/lib/logger";
 import { NextRequest, NextResponse } from "next/server";
 
 import { withAdmin, withAuth } from "@/lib/auth/withAuth";
+import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 import { checkRateLimit } from "@/lib/rate-limit";
 

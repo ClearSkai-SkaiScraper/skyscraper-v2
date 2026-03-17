@@ -6,9 +6,9 @@
  */
 
 import { auth } from "@clerk/nextjs/server";
-import { logger } from "@/lib/logger";
 import { NextRequest, NextResponse } from "next/server";
 
+import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 import { getLogoFromWebsite, VENDOR_LOGOS } from "@/lib/vendors/vendorLogos";
 import { VENDOR_RESOURCES } from "@/lib/vendors/vendorResources";

@@ -1,9 +1,10 @@
 "use client";
 
 import { CheckCircle2, Circle, ExternalLink, X } from "lucide-react";
-import { logger } from "@/lib/logger";
 import Link from "next/link";
 import { useEffect, useState } from "react";
+
+import { logger } from "@/lib/logger";
 
 interface OnboardingTask {
   id: string;

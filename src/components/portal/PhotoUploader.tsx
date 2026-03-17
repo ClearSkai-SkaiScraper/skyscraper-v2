@@ -1,10 +1,11 @@
 "use client";
 
-import { logger } from "@/lib/logger";
 import { Camera, Loader2, X } from "lucide-react";
 import Image from "next/image";
 import { useCallback, useState } from "react";
 import { toast } from "sonner";
+
+import { logger } from "@/lib/logger";
 
 interface PhotoUploaderProps {
   onPhotosChange: (urls: string[]) => void;

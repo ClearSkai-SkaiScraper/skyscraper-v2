@@ -1,8 +1,9 @@
 "use client";
 
-import { logger } from "@/lib/logger";
 import Link from "next/link";
 import { useEffect, useState } from "react";
+
+import { logger } from "@/lib/logger";
 
 interface BrandingBannerProps {
   brandingCompleted: boolean;

@@ -4,9 +4,9 @@ export const dynamic = "force-dynamic";
 // Returns current user's role and permissions
 // Uses getActiveOrgContext to resolve orgId from DB membership (not just Clerk)
 
-import { logger } from "@/lib/logger";
 import { NextResponse } from "next/server";
 
+import { logger } from "@/lib/logger";
 import { getActiveOrgContext } from "@/lib/org/getActiveOrgContext";
 import { getUserRole, roleHierarchy, rolePermissions } from "@/lib/rbac";
 

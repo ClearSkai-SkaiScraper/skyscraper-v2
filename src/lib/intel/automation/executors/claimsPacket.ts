@@ -5,10 +5,10 @@
  */
 
 import { randomUUID } from "node:crypto";
-import { logger } from "@/lib/logger";
 
 import { buildMasterReportPayload } from "@/lib/intel/master/buildMasterPayload";
 import { generateClaimsPacket } from "@/lib/intel/reports/claims-packet";
+import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 
 export async function executeClaimsPacket(claimId: string, orgId: string) {

@@ -1,10 +1,11 @@
 "use client";
 
 import { useOrganization } from "@clerk/nextjs";
-import { logger } from "@/lib/logger";
 import { Clock, CreditCard } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
+
+import { logger } from "@/lib/logger";
 
 interface TrialInfo {
   isActive: boolean;

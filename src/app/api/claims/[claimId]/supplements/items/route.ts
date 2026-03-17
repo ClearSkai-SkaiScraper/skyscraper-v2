@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 
-import { isAuthError, requireAuth } from "@/lib/auth/requireAuth";
 import { getOrgClaimOrThrow, OrgScopeError } from "@/lib/auth/orgScope";
+import { isAuthError, requireAuth } from "@/lib/auth/requireAuth";
 import { getDelegate } from "@/lib/db/modelAliases";
 
 export const dynamic = "force-dynamic";

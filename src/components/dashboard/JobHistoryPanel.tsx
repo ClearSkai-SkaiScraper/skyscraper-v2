@@ -1,7 +1,8 @@
 import { motion } from "framer-motion";
-import { logger } from "@/lib/logger";
 import { AlertCircle,CheckCircle, Clock, FileText, XCircle } from "lucide-react";
 import React, { useEffect, useState } from "react";
+
+import { logger } from "@/lib/logger";
 
 interface Job {
   id: string;

@@ -36,21 +36,20 @@ export type { Permission as LegacyPermission, Role } from "./legacy";
 export {
   // Constants
   ALL_ROLES,
-  ROLE_HIERARCHY,
-  ROLE_PERMISSIONS,
-
+  type Permission as AppPermission,
+  // Types
+  type AppRole,
   // Helpers
   canArchive,
   canDelete,
   canUseRemoteView,
   hasMinRole,
   normalizeRole,
+  type PermissionAction,
+  type PermissionResource,
+  ROLE_HIERARCHY,
+  ROLE_PERMISSIONS,
   roleBadgeColor,
   roleHasPermission,
   roleLabel,
-  type Permission as AppPermission,
-  // Types
-  type AppRole,
-  type PermissionAction,
-  type PermissionResource,
 } from "./constants";

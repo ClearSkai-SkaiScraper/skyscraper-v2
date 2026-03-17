@@ -6,9 +6,10 @@
 "use client";
 
 import { Star } from "lucide-react";
-import { logger } from "@/lib/logger";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
+
+import { logger } from "@/lib/logger";
 
 interface Review {
   id: string;

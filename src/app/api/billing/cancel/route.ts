@@ -8,10 +8,10 @@ export const revalidate = 0;
  * before user is sent to Stripe portal for actual cancellation.
  */
 
-import { logger } from "@/lib/logger";
 import { NextRequest, NextResponse } from "next/server";
 
 import { withManager } from "@/lib/auth/withAuth";
+import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 
 export const POST = withManager(async (req: NextRequest, { orgId, userId }) => {

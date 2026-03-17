@@ -1,7 +1,6 @@
 "use client";
 
 import { format, parseISO } from "date-fns";
-import { logger } from "@/lib/logger";
 import { AlertTriangle, Cloud, Download, Droplets, FileText, Loader2, Thermometer,Wind } from "lucide-react";
 import { useState } from "react";
 
@@ -11,6 +10,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
+import { logger } from "@/lib/logger";
 
 interface WeatherEvent {
   date: string;

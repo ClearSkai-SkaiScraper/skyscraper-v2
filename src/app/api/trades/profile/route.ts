@@ -1,11 +1,11 @@
 export const dynamic = "force-dynamic";
 
-import { logger } from "@/lib/logger";
 import { auth, currentUser } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
 import { ensureUserOrgContext } from "@/lib/auth/ensureUserOrgContext";
+import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 import { ensureVendorForOrg } from "@/lib/trades/vendorSync";
 

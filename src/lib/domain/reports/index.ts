@@ -11,9 +11,10 @@
  *   - reports: generated reports with sections/PDF
  */
 
+import type { Prisma } from "@prisma/client";
+
 import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
-import type { Prisma } from "@prisma/client";
 
 // ============================================================================
 // Types

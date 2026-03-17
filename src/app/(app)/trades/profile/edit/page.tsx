@@ -21,9 +21,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { StandardButton } from "@/components/ui/StandardButton";
 import { Textarea } from "@/components/ui/textarea";
-import { TRADE_TYPES } from "@/lib/trades/constants";
-
 import { logger } from "@/lib/logger";
+import { TRADE_TYPES } from "@/lib/trades/constants";
 
 /* ─── Grouped trades from canonical source ─── */
 const GROUPED_TRADES: Record<string, { value: string; label: string }[]> = {

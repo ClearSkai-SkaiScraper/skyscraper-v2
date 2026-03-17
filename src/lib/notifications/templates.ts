@@ -5,6 +5,7 @@
  */
 
 import { logger } from "@/lib/logger";
+
 import { sendNotification } from "./sendNotification";
 
 export const NOTIFICATION_TEMPLATES = {

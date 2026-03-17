@@ -6,9 +6,8 @@ import Link from "next/link";
 import { useParams, usePathname } from "next/navigation";
 
 import { Button } from "@/components/ui/button";
+import { type FolderSectionKey,SECTION_METADATA } from "@/lib/claims-folder/folderSchema";
 import { cn } from "@/lib/utils";
-
-import { SECTION_METADATA, type FolderSectionKey } from "@/lib/claims-folder/folderSchema";
 
 // Define section order for navigation
 const SECTION_ORDER: FolderSectionKey[] = [

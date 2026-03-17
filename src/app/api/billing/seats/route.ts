@@ -7,12 +7,12 @@
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-import { logger } from "@/lib/logger";
 import { NextRequest, NextResponse } from "next/server";
 
 import { withAuth } from "@/lib/auth/withAuth";
 import { checkSeatAvailability } from "@/lib/billing/seat-enforcement";
 import { monthlyFormatted, PRICE_PER_SEAT_CENTS, pricingSummary } from "@/lib/billing/seat-pricing";
+import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 
 export const GET = withAuth(async (req: NextRequest, { orgId }) => {

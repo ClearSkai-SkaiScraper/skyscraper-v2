@@ -2,9 +2,9 @@ export const dynamic = "force-dynamic";
 
 // MODULE 4: Approvals - List approvals for claim
 import { auth, currentUser } from "@clerk/nextjs/server";
-import { logger } from "@/lib/logger";
 import { NextRequest, NextResponse } from "next/server";
 
+import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 
 export async function GET(req: NextRequest, { params }: { params: { id: string } }) {

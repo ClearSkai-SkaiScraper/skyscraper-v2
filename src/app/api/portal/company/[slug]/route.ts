@@ -6,10 +6,10 @@
  * NOTE: This is a public route — PII (email, phone) is only returned for authenticated + connected clients.
  */
 
-import { logger } from "@/lib/logger";
 import { auth } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
 
+import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 
 export const dynamic = "force-dynamic";

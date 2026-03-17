@@ -1,9 +1,9 @@
 // src/app/api/ai/dashboard-assistant/route.ts
-import { logger } from "@/lib/logger";
 import { randomUUID } from "crypto";
 import { NextRequest, NextResponse } from "next/server";
 
 import { getResolvedOrgId } from "@/lib/auth/getResolvedOrgId";
+import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { dashboardAssistantSchema, validateAIRequest } from "@/lib/validation/aiSchemas";

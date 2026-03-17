@@ -4,11 +4,11 @@
  * Save a signature for a specific signer — uploads to Supabase Storage
  */
 
-import { logger } from "@/lib/logger";
 import { NextRequest, NextResponse } from "next/server";
 
 import { isAuthError, requireAuth } from "@/lib/auth/requireAuth";
 import { storagePaths } from "@/lib/esign/storage";
+import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 import { getSupabaseAdmin } from "@/lib/supabaseAdmin";
 

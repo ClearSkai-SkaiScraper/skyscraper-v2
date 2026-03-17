@@ -1,6 +1,7 @@
 // lib/ai/video/createVideoFromScript.ts
 import { getOpenAI } from "@/lib/ai/client";
 import { logger } from "@/lib/logger";
+
 import { createPlaceholderVideo } from "./placeholderVideo";
 import type { VideoScript } from "./types";
 

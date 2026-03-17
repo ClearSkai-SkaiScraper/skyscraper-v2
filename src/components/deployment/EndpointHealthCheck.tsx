@@ -1,6 +1,5 @@
 "use client";
 
-import { logger } from "@/lib/logger";
 import { useEffect, useState } from "react";
 
 import {
@@ -9,6 +8,7 @@ import {
   getStatusColor,
   getStatusEmoji,
 } from "@/lib/deploy/endpointCheck";
+import { logger } from "@/lib/logger";
 
 const CRITICAL_ENDPOINTS = [
   "/api/ai/health",

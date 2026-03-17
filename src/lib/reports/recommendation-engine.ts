@@ -15,17 +15,6 @@
  * Total score = weighted sum, clamped to 0–100.
  */
 
-import {
-  ALL_TEMPLATES,
-  getTemplatesByStyle,
-  type DamageType,
-  type JobIntent,
-  type PropertyType,
-  type StyleCategory,
-  type TemplateDefinition,
-  type TradeType,
-} from "@/lib/templates/templateRegistry";
-
 import type {
   RecommendationRequest,
   RecommendationResponse,
@@ -33,6 +22,16 @@ import type {
   ValidateInputsRequest,
   ValidationResult,
 } from "@/lib/reports/recommendation-schema";
+import {
+  ALL_TEMPLATES,
+  type DamageType,
+  getTemplatesByStyle,
+  type JobIntent,
+  type PropertyType,
+  type StyleCategory,
+  type TemplateDefinition,
+  type TradeType,
+} from "@/lib/templates/templateRegistry";
 
 // ─── Weight Configuration ────────────────────────────────────
 

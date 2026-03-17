@@ -13,9 +13,9 @@
 
 // Re-export from canonical module
 export {
-  RATE_LIMIT_PRESETS,
   checkRateLimit,
   createRateLimitHeaders,
+  RATE_LIMIT_PRESETS,
   type RateLimitPreset,
   type RateLimitResult,
 } from "@/lib/rate-limit";

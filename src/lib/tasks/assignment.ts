@@ -5,15 +5,15 @@
  * Track progress, deadlines, priorities
  */
 
-import { logger } from "@/lib/logger";
 import type {
-  tasks as PrismaTask,
   TaskPriority as PrismaTaskPriority,
+  tasks as PrismaTask,
   TaskStatus as PrismaTaskStatus,
 } from "@prisma/client";
 import { randomUUID } from "crypto";
 
 import { logActivity } from "@/lib/activity/activityFeed";
+import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 
 export type TaskPriority = PrismaTaskPriority;

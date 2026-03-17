@@ -6,7 +6,6 @@
 "use client";
 
 import { Check,Save, Upload } from "lucide-react";
-import { logger } from "@/lib/logger";
 import Image from "next/image";
 import { useEffect,useState } from "react";
 
@@ -15,6 +14,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useDebounce } from "@/lib/hooks/useDebounce";
+import { logger } from "@/lib/logger";
 
 interface CoverPageData {
   contractorLogo?: string;

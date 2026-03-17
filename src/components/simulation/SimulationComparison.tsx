@@ -7,11 +7,12 @@
  * Shows score deltas, outcome changes, and parameter diffs.
  */
 
+import { ArrowDown, ArrowRight, ArrowUp, GitCompare, Loader2, Minus } from "lucide-react";
+import { useCallback, useEffect, useState } from "react";
+
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
-import { ArrowDown, ArrowRight, ArrowUp, GitCompare, Loader2, Minus } from "lucide-react";
-import { useCallback, useEffect, useState } from "react";
 
 /* ------------------------------------------------------------------ */
 /* Types                                                               */

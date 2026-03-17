@@ -3,9 +3,9 @@ export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
 import { currentUser } from "@clerk/nextjs/server";
-import { logger } from "@/lib/logger";
 import { NextRequest, NextResponse } from "next/server";
 
+import { logger } from "@/lib/logger";
 import { emitEvent, pushNotification, recordToolRun } from "@/lib/telemetry";
 
 export async function POST(req: NextRequest) {

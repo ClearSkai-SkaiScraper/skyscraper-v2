@@ -1,11 +1,11 @@
 export const dynamic = "force-dynamic";
 
-import { logger } from "@/lib/logger";
 import { auth, currentUser } from "@clerk/nextjs/server";
 import { randomUUID } from "crypto";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
+import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 
 const sendMessageSchema = z.object({

@@ -6,9 +6,10 @@
 // =====================================================
 
 import { Document, Page, pdf, StyleSheet,Text, View } from "@react-pdf/renderer";
-import { logger } from "@/lib/logger";
 import * as Sentry from "@sentry/nextjs";
 import React from "react";
+
+import { logger } from "@/lib/logger";
 
 const styles = StyleSheet.create({
   page: {

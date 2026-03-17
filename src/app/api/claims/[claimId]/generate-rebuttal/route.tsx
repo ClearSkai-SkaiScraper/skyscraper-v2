@@ -5,7 +5,6 @@
  * Generates carrier-aware rebuttal letter as GeneratedDocument
  */
 
-import { logger } from "@/lib/logger";
 import { renderToStream } from "@react-pdf/renderer";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -13,6 +12,7 @@ import { generateRebuttal } from "@/lib/ai/generateRebuttal";
 import { withAuth } from "@/lib/auth/withAuth";
 import { db } from "@/lib/db";
 import { createGeneratedDocument, updateDocumentStatus } from "@/lib/documents/manager";
+import { logger } from "@/lib/logger";
 import { RebuttalPDFDocument } from "@/lib/pdf/rebuttalRenderer";
 import { getOrgBranding } from "@/lib/pdf/utils";
 

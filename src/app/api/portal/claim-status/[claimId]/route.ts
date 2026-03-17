@@ -8,10 +8,10 @@ export const revalidate = 0;
  * Client users can only see their own claims (scoped by contactId).
  */
 
-import { logger } from "@/lib/logger";
 import { auth, currentUser } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
 
+import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 
 export async function GET(req: NextRequest, { params }: { params: Promise<{ claimId: string }> }) {

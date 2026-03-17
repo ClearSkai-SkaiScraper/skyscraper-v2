@@ -1,4 +1,5 @@
 import * as originalClerk from "@clerk/nextjs/server";
+
 import { logger } from "@/lib/logger";
 
 export async function auth(...args: Parameters<typeof originalClerk.auth>) {

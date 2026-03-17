@@ -6,6 +6,7 @@
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
+import { createId } from "@paralleldrive/cuid2";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 
@@ -13,7 +14,6 @@ import { apiError } from "@/lib/apiError";
 import { requireAuth } from "@/lib/auth/requireAuth";
 import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
-import { createId } from "@paralleldrive/cuid2";
 
 const AnnotationSchema = z.object({
   id: z.string(),

@@ -7,7 +7,6 @@
  * Collects: user type, needs, project details, and photos.
  */
 
-import { logger } from "@/lib/logger";
 import { useUser } from "@clerk/nextjs";
 import {
   ArrowLeft,
@@ -34,6 +33,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { logger } from "@/lib/logger";
 import { cn } from "@/lib/utils";
 
 // ----- Types -----

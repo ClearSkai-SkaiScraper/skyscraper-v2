@@ -10,12 +10,12 @@
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
+import { createClient } from "@supabase/supabase-js";
 import { NextRequest, NextResponse } from "next/server";
 
 import { withAuth } from "@/lib/auth/withAuth";
 import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
-import { createClient } from "@supabase/supabase-js";
 
 const BUCKET = "claim-photos";
 const MAX_SIZE = 20 * 1024 * 1024; // 20MB

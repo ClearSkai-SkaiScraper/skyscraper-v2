@@ -1,12 +1,12 @@
 export const dynamic = "force-dynamic";
 
-import { logger } from "@/lib/logger";
-import { checkRateLimit } from "@/lib/rate-limit";
 import { auth } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 
+import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
+import { checkRateLimit } from "@/lib/rate-limit";
 
 const createClaimSchema = z.object({
   title: z.string().min(1, "Title is required"),

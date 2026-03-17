@@ -1,7 +1,6 @@
 "use client";
 
 import { format, parseISO } from "date-fns";
-import { logger } from "@/lib/logger";
 import { Download, Eye,FileText, Loader2 } from "lucide-react";
 import { useEffect, useState } from "react";
 
@@ -9,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { logger } from "@/lib/logger";
 
 interface SavedReport {
   id: string;

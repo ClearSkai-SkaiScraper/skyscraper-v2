@@ -1,11 +1,11 @@
 export const dynamic = "force-dynamic";
 
-import { logger } from "@/lib/logger";
 import { auth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 
 import { getAIPricing } from "@/lib/ai/pricing";
 import { pool } from "@/lib/db/raw";
+import { logger } from "@/lib/logger";
 import { checkRateLimit } from "@/lib/ratelimit";
 
 export async function GET(req: Request) {

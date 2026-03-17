@@ -1,7 +1,7 @@
 import type { NextApiRequest } from "next";
-import { logger } from "@/lib/logger";
 
 import { supabase } from "@/integrations/supabase/client";
+import { logger } from "@/lib/logger";
 import { getOrgContext } from "@/lib/org/getOrgContext";
 
 /**

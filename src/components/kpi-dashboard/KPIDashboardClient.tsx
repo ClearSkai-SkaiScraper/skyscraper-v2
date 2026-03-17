@@ -1,6 +1,5 @@
 "use client";
 
-import { logger } from "@/lib/logger";
 import {
   AlertTriangle,
   ArrowRight,
@@ -20,6 +19,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { logger } from "@/lib/logger";
 
 interface KPIData {
   claimsPerStage: Record<string, number>;

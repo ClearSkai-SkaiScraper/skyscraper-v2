@@ -12,13 +12,12 @@ export const dynamic = "force-dynamic";
  * - Temporal analysis
  */
 
-import { logger } from "@/lib/logger";
 import { auth } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
 
-import { createAiConfig, withAiBilling } from "@/lib/ai/withAiBilling";
-
 import { AICoreRouter } from "@/lib/ai/router";
+import { createAiConfig, withAiBilling } from "@/lib/ai/withAiBilling";
+import { logger } from "@/lib/logger";
 import { getRateLimitIdentifier, rateLimiters } from "@/lib/rate-limit";
 import { validateAIRequest, videoSchema } from "@/lib/validation/aiSchemas";
 

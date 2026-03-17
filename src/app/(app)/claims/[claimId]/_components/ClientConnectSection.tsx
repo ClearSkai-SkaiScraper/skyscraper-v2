@@ -1,6 +1,19 @@
 // src/app/(app)/claims/[claimId]/_components/ClientConnectSection.tsx
 "use client";
 
+import {
+  CheckCircle2,
+  Copy,
+  Loader2,
+  Mail,
+  Search,
+  UserCheck,
+  UserPlus,
+  Users,
+} from "lucide-react";
+import { useEffect, useState } from "react";
+import { toast } from "sonner";
+
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -14,18 +27,6 @@ import {
 } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { logger } from "@/lib/logger";
-import {
-  CheckCircle2,
-  Copy,
-  Loader2,
-  Mail,
-  Search,
-  UserCheck,
-  UserPlus,
-  Users,
-} from "lucide-react";
-import { useEffect, useState } from "react";
-import { toast } from "sonner";
 
 interface Contact {
   id: string;

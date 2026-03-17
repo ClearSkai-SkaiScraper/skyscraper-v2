@@ -2,8 +2,8 @@
 // 🧬 FORENSICS COLLECTOR — Material failure analysis for report generation
 
 import { getDelegate } from "@/lib/db/modelAliases";
-import { logger } from "@/lib/logger";
 import { formatForensicsForReport } from "@/lib/intel/forensics/materials";
+import { logger } from "@/lib/logger";
 
 /**
  * FORENSICS COLLECTOR

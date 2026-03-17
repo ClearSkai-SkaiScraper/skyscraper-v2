@@ -1,11 +1,11 @@
 export const dynamic = "force-dynamic";
 
-import { logger } from "@/lib/logger";
 import { auth } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
 
 import { getResolvedOrgId } from "@/lib/auth/getResolvedOrgId";
 import { db } from "@/lib/db";
+import { logger } from "@/lib/logger";
 import { saveReportHistory } from "@/lib/reports/saveReportHistory";
 
 // POST /api/contractor-packet - Create new contractor packet generation job

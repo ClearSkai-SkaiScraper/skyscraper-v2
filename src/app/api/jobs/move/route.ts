@@ -5,11 +5,11 @@ export const dynamic = "force-dynamic";
  * Move a job between workflow categories (claim, repair, out_of_pocket, financed)
  */
 
-import { logger } from "@/lib/logger";
 import { NextRequest, NextResponse } from "next/server";
 
 import { withAuth } from "@/lib/auth/withAuth";
 import { generateContactSlug } from "@/lib/generateContactSlug";
+import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 
 export const POST = withAuth(async (req: NextRequest, { userId, orgId: userOrgId }) => {

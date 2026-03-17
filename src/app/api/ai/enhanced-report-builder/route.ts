@@ -8,7 +8,6 @@ export const dynamic = "force-dynamic";
  * Orchestrates: Storm Intake → Weather → Photos → Materials → Compliance → PDF
  */
 
-import { logger } from "@/lib/logger";
 import { NextRequest, NextResponse } from "next/server";
 
 import { annotatePhotos } from "@/lib/ai/photo-annotator";
@@ -16,6 +15,7 @@ import { runStormIntakePipeline } from "@/lib/ai/pipelines/stormIntake";
 import { createAiConfig, withAiBilling } from "@/lib/ai/withAiBilling";
 import { checkCompliance } from "@/lib/compliance/code-checker";
 import { fetchWeatherForDOL } from "@/lib/integrations/weather";
+import { logger } from "@/lib/logger";
 import { getRecommendedProducts } from "@/lib/materials/vendor-catalog";
 import type { EnhancedReportData } from "@/lib/pdf/enhancedReportBuilder";
 import { generateEnhancedPDFReport } from "@/lib/pdf/enhancedReportBuilder";

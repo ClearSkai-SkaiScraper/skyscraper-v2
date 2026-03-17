@@ -7,10 +7,11 @@
  * Shows a user-friendly fallback when an engine fails instead of crashing.
  */
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { cn } from "@/lib/utils";
 import { AlertTriangle, RefreshCw } from "lucide-react";
 import React from "react";
+
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { cn } from "@/lib/utils";
 
 interface Props {
   children: React.ReactNode;

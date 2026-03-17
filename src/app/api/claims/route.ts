@@ -1,16 +1,15 @@
-import { logger } from "@/lib/logger";
 import { auth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
-import { logCriticalAction } from "@/lib/audit/criticalActions";
-
 import { createOrUpdateClaimEmbedding } from "@/lib/ai/similarity/embedClaim";
 import { apiError } from "@/lib/apiError";
+import { logCriticalAction } from "@/lib/audit/criticalActions";
 import { getVisibleUserIds } from "@/lib/auth/managerScope";
 import { createForbiddenResponse, requirePermission } from "@/lib/auth/rbac";
 import { withOrgScope } from "@/lib/auth/tenant";
 import { logInfo, timeExecution } from "@/lib/log";
+import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 import { listClaims } from "@/lib/services/claimsService";
 

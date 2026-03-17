@@ -14,8 +14,9 @@
  */
 
 import { useUser } from "@clerk/nextjs";
-import { logger } from "@/lib/logger";
 import React, { createContext, useCallback, useContext, useEffect, useState } from "react";
+
+import { logger } from "@/lib/logger";
 
 // ============================================================================
 // TYPES

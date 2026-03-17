@@ -1,8 +1,8 @@
 "use client";
 
 import { AlertCircle, CheckCircle, Code, Eye, Plus, Save, Trash2, XCircle } from "lucide-react";
-import { logger } from "@/lib/logger";
 import { useEffect, useState } from "react";
+import { toast } from "sonner";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -29,7 +29,7 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
-import { toast } from "sonner";
+import { logger } from "@/lib/logger";
 
 interface Rule {
   id: string;

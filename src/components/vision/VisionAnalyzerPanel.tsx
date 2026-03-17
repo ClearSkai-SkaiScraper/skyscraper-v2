@@ -1,13 +1,13 @@
 "use client";
 
 import { AlertTriangle, Download, Loader2, Upload } from "lucide-react";
-import { logger } from "@/lib/logger";
 import { useRef, useState } from "react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import type { DamageRegion, VisionAnalysis } from "@/lib/ai/vision";
+import { logger } from "@/lib/logger";
 import { createLegend, downloadHeatmap, generateHeatmap } from "@/lib/vision/heatmap";
 
 interface VisionAnalyzerPanelProps {

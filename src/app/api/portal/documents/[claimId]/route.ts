@@ -8,10 +8,10 @@ export const revalidate = 0;
  * Only returns documents that have been explicitly shared via document_links.
  */
 
-import { logger } from "@/lib/logger";
 import { auth, currentUser } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
 
+import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 
 export async function GET(req: NextRequest, { params }: { params: Promise<{ claimId: string }> }) {

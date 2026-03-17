@@ -8,9 +8,6 @@
  * time and token costs.
  */
 
-import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { cn } from "@/lib/utils";
 import {
   Bot,
   ChevronDown,
@@ -22,6 +19,10 @@ import {
   MessageSquare,
 } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
+
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { cn } from "@/lib/utils";
 
 /* ------------------------------------------------------------------ */
 /* Types (mirrors autopilot engine)                                    */

@@ -2,9 +2,9 @@
 
 import { SignedIn, SignedOut, SignInButton } from "@clerk/nextjs";
 import { Moon, Sun } from "lucide-react";
-import { useTheme } from "next-themes";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useTheme } from "next-themes";
 
 import { MobileNav } from "@/components/nav/MobileNav";
 import ProTradesUserMenu from "@/components/nav/ProTradesUserMenu";

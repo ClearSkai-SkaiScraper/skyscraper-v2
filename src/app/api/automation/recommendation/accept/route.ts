@@ -7,12 +7,12 @@ export const dynamic = "force-dynamic";
  * Accepts and executes a recommendation
  */
 
-import { logger } from "@/lib/logger";
 import { type Prisma } from "@prisma/client";
 import { NextRequest, NextResponse } from "next/server";
 
 import { withAuth } from "@/lib/auth/withAuth";
 import { getDelegate } from "@/lib/db/modelAliases";
+import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 
 /** Shape returned by the automationRecommendation delegate */

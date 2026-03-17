@@ -1,8 +1,9 @@
 "use client";
 
 import { useTheme } from "next-themes";
-import { logger } from "@/lib/logger";
 import { useEffect, useState } from "react";
+
+import { logger } from "@/lib/logger";
 
 interface BrandingData {
   complete: boolean;

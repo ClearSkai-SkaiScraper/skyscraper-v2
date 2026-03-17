@@ -24,11 +24,11 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
-import { logger } from "@/lib/logger";
 import { NextResponse } from "next/server";
 
 import { requireApiAuth } from "@/lib/auth/apiAuth";
 import { pgPool } from "@/lib/db";
+import { logger } from "@/lib/logger";
 
 export async function GET(req: Request, { params }: { params: { jobId: string } }) {
   // Use unified auth helper instead of direct auth() call

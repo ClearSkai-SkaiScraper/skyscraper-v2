@@ -1,8 +1,9 @@
 "use client";
 
 import { Loader2,Mail } from "lucide-react";
-import { logger } from "@/lib/logger";
 import { useState } from "react";
+
+import { logger } from "@/lib/logger";
 
 interface InviteClientButtonProps {
   clientId: string;

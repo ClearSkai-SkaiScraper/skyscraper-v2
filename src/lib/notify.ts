@@ -1,8 +1,8 @@
 import { Resend } from "resend";
-import { logger } from "@/lib/logger";
 import twilio from "twilio";
 
 import { supabase } from "@/integrations/supabase/client";
+import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 
 const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;

@@ -8,9 +8,9 @@
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 import { auth } from "@clerk/nextjs/server";
-import { logger } from "@/lib/logger";
 import { NextResponse } from "next/server";
 
+import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 import { canUseRealVideo, getVideoAccessMessage } from "@/lib/video/access";
 

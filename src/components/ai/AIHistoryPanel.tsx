@@ -1,12 +1,12 @@
 "use client";
 
 import { format } from "date-fns";
-import { logger } from "@/lib/logger";
 import { ChevronRight, Clock, Loader2 } from "lucide-react";
 import { useEffect,useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { logger } from "@/lib/logger";
 
 interface AIHistoryItem {
   id: string;

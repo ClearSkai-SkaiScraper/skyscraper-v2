@@ -6,7 +6,6 @@ export const dynamic = "force-dynamic";
  * Returns section-specific data for the claims folder
  */
 
-import { logger } from "@/lib/logger";
 import { NextRequest, NextResponse } from "next/server";
 
 import { getOrgClaimOrThrow, OrgScopeError } from "@/lib/auth/orgScope";
@@ -19,6 +18,7 @@ import {
   fetchTimeline,
   fetchWeatherData,
 } from "@/lib/claims-folder/folderAssembler";
+import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 
 // Demo data for each section when claimId is "demo-claim"

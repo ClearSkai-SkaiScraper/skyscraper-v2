@@ -5,12 +5,12 @@ export const dynamic = "force-dynamic";
  * Creates a connection request from client to a pro
  */
 
-import { logger } from "@/lib/logger";
-import { checkRateLimit } from "@/lib/rate-limit";
 import { auth, currentUser } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
 
+import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
+import { checkRateLimit } from "@/lib/rate-limit";
 import { notifyConnectionRequest } from "@/lib/services/tradesNotifications";
 
 export async function POST(req: NextRequest) {

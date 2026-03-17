@@ -6,8 +6,8 @@
  * Last updated: February 2026
  */
 
-import { getUpstash } from "@/lib/upstash";
 import { logger } from "@/lib/logger";
+import { getUpstash } from "@/lib/upstash";
 
 export interface CodeViolation {
   code: string;

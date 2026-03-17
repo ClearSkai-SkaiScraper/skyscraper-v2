@@ -5,11 +5,11 @@ export const dynamic = "force-dynamic";
  * Fetch and cache weather verification data
  */
 
-import { logger } from "@/lib/logger";
 import { NextRequest, NextResponse } from "next/server";
 
 import { OrgScopeError } from "@/lib/auth/orgScope";
 import { withAuth } from "@/lib/auth/withAuth";
+import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 import { fetchOpenMeteoWeather } from "@/lib/weather/openMeteo";
 import { formatLocationError, resolveClaimLocation } from "@/lib/weather/resolveClaimLocation";

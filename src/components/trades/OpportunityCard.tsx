@@ -1,6 +1,5 @@
 "use client";
 
-import { logger } from "@/lib/logger";
 import { useAuth } from "@clerk/nextjs";
 import { Calendar, MapPin, Users } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -27,6 +26,7 @@ import {
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { logger } from "@/lib/logger";
 import { getTradeEmoji } from "@/lib/trades";
 
 interface OpportunityCardProps {

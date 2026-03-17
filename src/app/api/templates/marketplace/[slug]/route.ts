@@ -4,8 +4,8 @@
  */
 
 import { NextRequest, NextResponse } from "next/server";
-import { logger } from "@/lib/logger";
 
+import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 import { getPremiumRegistryBySlug } from "@/lib/templates/registry";
 import { getTemplateBySlug } from "@/lib/templates/templateRegistry";

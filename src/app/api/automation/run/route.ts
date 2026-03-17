@@ -8,11 +8,11 @@ export const dynamic = "force-dynamic";
  * Runs full automation pipeline for a claim
  */
 
-import { logger } from "@/lib/logger";
 import { NextRequest, NextResponse } from "next/server";
 
 import { withAuth } from "@/lib/auth/withAuth";
 import { runSkaiAutomations } from "@/lib/intel/automation/engine";
+import { logger } from "@/lib/logger";
 
 export const POST = withAuth(async (req: NextRequest, { userId, orgId }) => {
   try {

@@ -1,6 +1,6 @@
-import { logger } from "@/lib/logger";
 import { NextResponse } from "next/server";
 
+import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 import { getPremiumRegistry } from "@/lib/templates/registry";
 import { ALL_TEMPLATES } from "@/lib/templates/templateRegistry";

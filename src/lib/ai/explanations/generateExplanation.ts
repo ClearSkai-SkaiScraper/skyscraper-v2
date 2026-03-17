@@ -5,8 +5,9 @@
  * Critical for transparency, trust, and debugging.
  */
 
-import { ExplanationPayload, RuleDefinition } from "../types";
 import { logger } from "@/lib/logger";
+
+import { ExplanationPayload, RuleDefinition } from "../types";
 
 export interface ExplanationContext {
   claimId: string;

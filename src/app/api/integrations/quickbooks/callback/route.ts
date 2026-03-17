@@ -1,11 +1,11 @@
 import { NextResponse } from "next/server";
-import { logger } from "@/lib/logger";
 
 import {
   exchangeCodeForTokens,
   getAuthorizationUrl,
   saveConnection,
 } from "@/lib/integrations/quickbooks";
+import { logger } from "@/lib/logger";
 import { safeOrgContext } from "@/lib/safeOrgContext";
 
 export const dynamic = "force-dynamic";

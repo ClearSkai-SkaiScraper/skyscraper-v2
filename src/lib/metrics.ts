@@ -5,8 +5,8 @@
 // Provides data for admin dashboard analytics
 // =====================================================
 
-import prisma from "@/lib/prisma";
 import { logger } from "@/lib/logger";
+import prisma from "@/lib/prisma";
 
 export interface DailyMetrics {
   date: string;

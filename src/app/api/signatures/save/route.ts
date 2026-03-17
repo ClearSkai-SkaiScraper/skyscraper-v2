@@ -1,9 +1,9 @@
 export const dynamic = "force-dynamic";
 
 import { NextRequest, NextResponse } from "next/server";
-import { logger } from "@/lib/logger";
 
 import { requireAuth } from "@/lib/auth/requireAuth";
+import { logger } from "@/lib/logger";
 import { saveSignature } from "@/lib/signatures/saveSignature";
 
 export async function POST(request: NextRequest) {

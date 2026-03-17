@@ -1,5 +1,6 @@
 export const dynamic = "force-dynamic";
 
+import { auth } from "@clerk/nextjs/server";
 import { createId } from "@paralleldrive/cuid2";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -8,7 +9,6 @@ import { sendWelcomeEmail } from "@/lib/email/invitations";
 import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 import { checkRateLimit } from "@/lib/rate-limit";
-import { auth } from "@clerk/nextjs/server";
 
 // Use prismaMaybeModel for optional tables that may not be in schema
 const Activity = prismaMaybeModel("claim_activities");

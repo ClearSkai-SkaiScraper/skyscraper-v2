@@ -9,8 +9,9 @@
  * basic carrier info when available.
  */
 
-import { NegotiationSuggestion } from "../types";
 import { logger } from "@/lib/logger";
+
+import { NegotiationSuggestion } from "../types";
 
 // Default negotiation patterns by carrier type (stub data)
 const DEFAULT_STRATEGIES: Record<

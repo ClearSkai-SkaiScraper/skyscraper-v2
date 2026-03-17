@@ -10,10 +10,6 @@
  * - Trades Network readiness
  */
 
-import { redirect } from "next/navigation";
-
-import { getOrg } from "@/lib/org/getOrg";
-import prisma from "@/lib/prisma";
 import {
   Activity,
   AlertCircle,
@@ -30,6 +26,10 @@ import {
   XCircle,
 } from "lucide-react";
 import Link from "next/link";
+import { redirect } from "next/navigation";
+
+import { getOrg } from "@/lib/org/getOrg";
+import prisma from "@/lib/prisma";
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 

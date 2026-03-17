@@ -5,10 +5,10 @@ import Link from "next/link";
 import { PageContainer } from "@/components/layout/PageContainer";
 import { PageHero } from "@/components/layout/PageHero";
 import { PageSectionCard } from "@/components/layout/PageSectionCard";
+import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 import { safeOrgContext } from "@/lib/safeOrgContext";
 
-import { logger } from "@/lib/logger";
 import CompanySeatsClient from "./CompanySeatsClient";
 
 export const dynamic = "force-dynamic";

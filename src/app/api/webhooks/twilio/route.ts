@@ -2,10 +2,9 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 import crypto from "crypto";
-
-import { logger } from "@/lib/logger";
 import { NextRequest, NextResponse } from "next/server";
 
+import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 
 // ---------------------------------------------------------------------------

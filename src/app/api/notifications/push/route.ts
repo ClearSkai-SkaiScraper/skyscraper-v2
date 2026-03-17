@@ -6,9 +6,9 @@ export const dynamic = "force-dynamic";
  */
 
 import { auth } from "@clerk/nextjs/server";
-import { logger } from "@/lib/logger";
 import { NextRequest, NextResponse } from "next/server";
 
+import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 import { pushNotificationService } from "@/lib/services/push-notification-service";
 

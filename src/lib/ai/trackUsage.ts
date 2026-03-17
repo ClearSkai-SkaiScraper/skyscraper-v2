@@ -6,8 +6,8 @@
  * Re-enable when ready for production billing.
  */
 
-import prisma from "@/lib/prisma"; // Re-enabled for compile
 import { logger } from "@/lib/logger";
+import prisma from "@/lib/prisma"; // Re-enabled for compile
 
 export interface AiUsageParams {
   orgId: string;

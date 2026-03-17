@@ -4,9 +4,10 @@
  * Used across Phase 1-4 actions for audit trail and client visibility
  */
 
-import prisma from "@/lib/prisma";
-import { logger } from "@/lib/logger";
 import { randomUUID } from "crypto";
+
+import { logger } from "@/lib/logger";
+import prisma from "@/lib/prisma";
 
 export type TimelineEventType =
   | "PHOTO_UPLOAD"

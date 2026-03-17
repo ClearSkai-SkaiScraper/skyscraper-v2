@@ -2,8 +2,9 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
-import { requireApiAuth } from "@/lib/auth/apiAuth";
 import { NextResponse } from "next/server";
+
+import { requireApiAuth } from "@/lib/auth/apiAuth";
 
 export async function GET() {
   // Auth required — env config is internal-only

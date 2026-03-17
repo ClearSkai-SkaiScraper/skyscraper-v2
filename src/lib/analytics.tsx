@@ -1,9 +1,10 @@
 "use client";
 
-import { getAnalyticsConsent } from "@/lib/analytics/consent";
 import posthog from "posthog-js";
 import { PostHogProvider } from "posthog-js/react";
 import { useEffect } from "react";
+
+import { getAnalyticsConsent } from "@/lib/analytics/consent";
 
 if (typeof window !== "undefined") {
   posthog.init(process.env.NEXT_PUBLIC_POSTHOG_KEY!, {

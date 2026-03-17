@@ -1,8 +1,8 @@
 // ORG-SCOPE: Scoped by userId/clientId — queries clientSavedPro by client.id (derived from auth userId). No cross-tenant risk.
 import { auth } from "@clerk/nextjs/server";
-import { logger } from "@/lib/logger";
 import { NextResponse } from "next/server";
 
+import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 
 export const dynamic = "force-dynamic";

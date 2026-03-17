@@ -1,12 +1,13 @@
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-import { logger } from "@/lib/logger";
-import { getCurrentUserPermissions, requirePermission } from "@/lib/permissions";
-import prisma from "@/lib/prisma";
 import { createId } from "@paralleldrive/cuid2";
 import { NextRequest } from "next/server";
 import { z } from "zod";
+
+import { logger } from "@/lib/logger";
+import { getCurrentUserPermissions, requirePermission } from "@/lib/permissions";
+import prisma from "@/lib/prisma";
 
 /**
  * Retail Jobs API

@@ -1,5 +1,3 @@
-export { buildStormGraph, persistStormCluster, preQualifyAddress } from "./storm-graph-engine";
-
 export type {
   AddressPreQualification,
   ClusterMember,
@@ -9,3 +7,4 @@ export type {
   StormCluster,
   StormTimelineEntry,
 } from "./storm-graph-engine";
+export { buildStormGraph, persistStormCluster, preQualifyAddress } from "./storm-graph-engine";

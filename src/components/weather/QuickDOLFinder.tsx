@@ -1,6 +1,5 @@
 "use client";
 
-import { logger } from "@/lib/logger";
 import { format, parseISO } from "date-fns";
 import { AlertTriangle, Calendar, Loader2, MapPin } from "lucide-react";
 import { useState } from "react";
@@ -18,6 +17,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { logger } from "@/lib/logger";
 
 interface QuickDOLCandidate {
   date: string;

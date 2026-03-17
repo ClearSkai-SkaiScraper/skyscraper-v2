@@ -9,11 +9,11 @@
 // Re-export everything from the canonical manager
 export {
   createGeneratedDocument,
-  getDocumentHistory,
-  updateDocumentStatus,
   type DocumentStatus,
   type DocumentType,
   type GeneratedDocumentHistoryRow,
+  getDocumentHistory,
+  updateDocumentStatus,
 } from "./manager";
 
 // Legacy interface for backwards compatibility

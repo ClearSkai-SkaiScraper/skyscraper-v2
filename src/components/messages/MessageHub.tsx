@@ -12,6 +12,7 @@
 
 "use client";
 
+import { formatDistanceToNow } from "date-fns";
 import { Archive, MessageSquare, Plus, Users } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
@@ -20,10 +21,9 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Textarea } from "@/components/ui/textarea";
 import { logger } from "@/lib/logger";
 
-import { Textarea } from "@/components/ui/textarea";
-import { formatDistanceToNow } from "date-fns";
 import NewMessageModal from "./NewMessageModal";
 
 // ── Types ───────────────────────────────────────────────────────────

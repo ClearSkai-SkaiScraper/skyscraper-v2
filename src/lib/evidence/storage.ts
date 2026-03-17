@@ -5,10 +5,10 @@
  */
 
 import { auth } from "@clerk/nextjs/server";
-import { logger } from "@/lib/logger";
 import crypto from "crypto";
 
 import { supabase } from "@/integrations/supabase/client";
+import { logger } from "@/lib/logger";
 
 export interface EvidenceUploadOptions {
   orgId: string;

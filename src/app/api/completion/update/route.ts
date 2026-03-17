@@ -1,11 +1,10 @@
 export const dynamic = "force-dynamic";
 
-import { randomUUID } from "crypto";
-import { logger } from "@/lib/logger";
-
 import { currentUser } from "@clerk/nextjs/server";
+import { randomUUID } from "crypto";
 import { NextResponse } from "next/server";
 
+import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 
 export async function POST(req: Request) {

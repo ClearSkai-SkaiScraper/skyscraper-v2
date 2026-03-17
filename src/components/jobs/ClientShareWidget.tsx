@@ -2,13 +2,13 @@
 "use client";
 
 import { CheckCircle2, Copy, Eye, EyeOff, FileImage, Link2, Send, User } from "lucide-react";
-import { logger } from "@/lib/logger";
 import { useEffect, useState } from "react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
+import { logger } from "@/lib/logger";
 
 interface ClientShareWidgetProps {
   jobId: string;

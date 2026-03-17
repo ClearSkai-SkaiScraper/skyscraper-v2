@@ -9,9 +9,9 @@
  * - Creates BillingSettings if missing
  */
 
-import { logger } from "@/lib/logger";
 import { auth } from "@clerk/nextjs/server";
 
+import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 
 export type OrgContextResult =

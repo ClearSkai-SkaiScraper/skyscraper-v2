@@ -1,10 +1,10 @@
 import { auth } from "@clerk/nextjs/server";
-import { logger } from "@/lib/logger";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 
 import { getOpenAI } from "@/lib/ai/client";
 import { saveChatMessage } from "@/lib/dominus/chat";
+import { logger } from "@/lib/logger";
 
 export const dynamic = "force-dynamic";
 

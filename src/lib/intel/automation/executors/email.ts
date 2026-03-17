@@ -4,11 +4,11 @@
  * Auto-sends emails to adjusters/homeowners
  */
 
-import { logger } from "@/lib/observability/logger";
 import { randomUUID } from "node:crypto";
 
 import { Resend } from "resend";
 
+import { logger } from "@/lib/observability/logger";
 import prisma from "@/lib/prisma";
 
 let _resend: Resend | null = null;

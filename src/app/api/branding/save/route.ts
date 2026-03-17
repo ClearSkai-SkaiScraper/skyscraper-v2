@@ -48,13 +48,13 @@ export const revalidate = 0;
  * ============================================================================
  */
 
-import { logger } from "@/lib/logger";
 import { currentUser } from "@clerk/nextjs/server";
 import { revalidatePath, revalidateTag } from "next/cache";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
 import { hasTrackedEvent, PRODUCT_EVENTS, trackProductEvent } from "@/lib/analytics/track";
+import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 import { safeOrgContext } from "@/lib/safeOrgContext";
 import { isValidationError, validateBody } from "@/lib/validation/middleware";

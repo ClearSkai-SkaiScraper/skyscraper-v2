@@ -4,8 +4,8 @@
  */
 
 import "server-only";
-import { logger } from "@/lib/logger";
 
+import { logger } from "@/lib/logger";
 import { pool } from "@/server/db";
 
 export interface OrgMetrics {

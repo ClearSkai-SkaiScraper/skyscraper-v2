@@ -1,10 +1,10 @@
 export const dynamic = "force-dynamic";
 
-import { logger } from "@/lib/logger";
 import { NextResponse } from "next/server";
 
 import { requireApiAuth } from "@/lib/auth/apiAuth";
 import { generateContactSlug } from "@/lib/generateContactSlug";
+import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 import { checkRateLimit } from "@/lib/rate-limit";
 

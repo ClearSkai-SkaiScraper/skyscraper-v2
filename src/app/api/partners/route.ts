@@ -1,10 +1,10 @@
 export const dynamic = "force-dynamic";
 
 // app/api/partners/route.ts
-import { logger } from "@/lib/logger";
 import { NextResponse } from "next/server";
 
 import { withOrgScope } from "@/lib/auth/tenant";
+import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 
 export const GET = withOrgScope(async (req: Request, { orgId }) => {

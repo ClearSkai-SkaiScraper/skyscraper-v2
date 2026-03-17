@@ -13,7 +13,7 @@ import { z } from "zod";
 
 import { apiError } from "@/lib/apiError";
 import { logger } from "@/lib/logger";
-import { saveReportHistory, type ReportHistoryType } from "@/lib/reports/saveReportHistory";
+import { type ReportHistoryType,saveReportHistory } from "@/lib/reports/saveReportHistory";
 import { safeOrgContext } from "@/lib/safeOrgContext";
 
 const bodySchema = z.object({

@@ -10,16 +10,15 @@ export const dynamic = "force-dynamic";
  * - Weather correlation
  */
 
-import { logger } from "@/lib/logger";
 import { NextRequest, NextResponse } from "next/server";
 
 import { getOpenAI } from "@/lib/ai/client";
-import { createAiConfig, withAiBilling, type AiBillingContext } from "@/lib/ai/withAiBilling";
-
+import { type AiBillingContext,createAiConfig, withAiBilling } from "@/lib/ai/withAiBilling";
 import {
   requireActiveSubscription,
   SubscriptionRequiredError,
 } from "@/lib/billing/requireActiveSubscription";
+import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 import { checkRateLimit } from "@/lib/rate-limit";
 

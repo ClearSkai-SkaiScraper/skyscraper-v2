@@ -1,6 +1,12 @@
 /**
  * Geographic Utilities — Barrel Export
  */
+export type {
+  GeoPoint,
+  NearbyClaimResult,
+  NearbyImpactResult,
+  NearbyPropertyResult,
+} from "./queries";
 export {
   boundingBox,
   findNearbyClaims,
@@ -8,10 +14,4 @@ export {
   findNearbyProperties,
   getClaimLocation,
   haversineDistance,
-} from "./queries";
-export type {
-  GeoPoint,
-  NearbyClaimResult,
-  NearbyImpactResult,
-  NearbyPropertyResult,
 } from "./queries";

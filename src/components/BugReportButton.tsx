@@ -1,5 +1,11 @@
 "use client";
 
+import { useAuth } from "@clerk/nextjs";
+import { Bug, CheckCircle2, Loader2, Send, X } from "lucide-react";
+import { usePathname } from "next/navigation";
+import { useCallback, useState } from "react";
+import { toast } from "sonner";
+
 import { Button } from "@/components/ui/button";
 import {
   Select,
@@ -10,11 +16,6 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
-import { useAuth } from "@clerk/nextjs";
-import { Bug, CheckCircle2, Loader2, Send, X } from "lucide-react";
-import { usePathname } from "next/navigation";
-import { useCallback, useState } from "react";
-import { toast } from "sonner";
 
 type BugSeverity = "critical" | "high" | "medium" | "low";
 

@@ -10,9 +10,10 @@ export const revalidate = 0;
  * The Zustand store polls this to auto-refresh after background changes.
  */
 
+import { type NextRequest,NextResponse } from "next/server";
+
 import { isAuthError, requireAuth } from "@/lib/auth/requireAuth";
 import { getRecentReadinessEvents } from "@/lib/claimiq/readiness-hooks";
-import { NextResponse, type NextRequest } from "next/server";
 
 export async function GET(
   request: NextRequest,

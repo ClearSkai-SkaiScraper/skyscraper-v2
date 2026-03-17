@@ -1,7 +1,6 @@
 "use client";
 
 import { Bell, CheckCheck, ExternalLink, Mail, MessageCircle, UserPlus, Users } from "lucide-react";
-import { logger } from "@/lib/logger";
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 
@@ -14,6 +13,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { logger } from "@/lib/logger";
 
 interface Notification {
   id: string;

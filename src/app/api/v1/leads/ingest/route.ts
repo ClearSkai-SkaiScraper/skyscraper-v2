@@ -2,10 +2,10 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 import { NextRequest, NextResponse } from "next/server";
-import { logger } from "@/lib/logger";
 import { z } from "zod";
 
 import { apiError, apiOk } from "@/lib/apiError";
+import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 import { createLead } from "@/lib/services/leadsService";
 

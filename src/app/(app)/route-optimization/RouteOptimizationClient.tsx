@@ -4,8 +4,8 @@ import { Clock, Navigation, TrendingDown } from "lucide-react";
 import { useState } from "react";
 
 import { Button } from "@/components/ui/button";
-
 import { logger } from "@/lib/logger";
+
 import type { RouteStop } from "./actions";
 import { optimizeRoute } from "./actions";
 

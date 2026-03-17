@@ -16,8 +16,8 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 import { NextRequest, NextResponse } from "next/server";
-import { logger } from "@/lib/logger";
 
+import { logger } from "@/lib/logger";
 import { runAccuLynxMigration } from "@/lib/migrations/migration-engine";
 import { getCurrentUserPermissions } from "@/lib/permissions";
 

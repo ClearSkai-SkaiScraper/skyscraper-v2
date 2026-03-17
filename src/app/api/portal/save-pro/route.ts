@@ -1,9 +1,10 @@
 export const dynamic = "force-dynamic";
 
-import prisma from "@/lib/prisma";
-import { logger } from "@/lib/logger";
 import { auth } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
+
+import { logger } from "@/lib/logger";
+import prisma from "@/lib/prisma";
 
 /**
  * POST /api/portal/save-pro

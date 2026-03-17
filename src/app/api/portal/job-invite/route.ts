@@ -1,10 +1,11 @@
 export const dynamic = "force-dynamic";
 
-import { logger } from "@/lib/logger";
-import prisma from "@/lib/prisma";
 import { auth } from "@clerk/nextjs/server";
 import { createId } from "@paralleldrive/cuid2";
 import { NextRequest, NextResponse } from "next/server";
+
+import { logger } from "@/lib/logger";
+import prisma from "@/lib/prisma";
 
 /**
  * POST /api/portal/job-invite

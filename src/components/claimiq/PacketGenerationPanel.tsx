@@ -12,13 +12,14 @@
  * Shows live progress, section-by-section status, and export options.
  */
 
+import { Check, Download, FileText, Loader2, Package, Sparkles, Zap } from "lucide-react";
+import { useCallback, useState } from "react";
+
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { useClaimIQStore } from "@/stores/claimIQStore";
-import { Check, Download, FileText, Loader2, Package, Sparkles, Zap } from "lucide-react";
-import { useCallback, useState } from "react";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Types

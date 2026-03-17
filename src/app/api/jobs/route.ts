@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { logger } from "@/lib/logger";
 
+import { logger } from "@/lib/logger";
 import { getOrgContext } from "@/lib/org/getOrgContext";
 import prisma from "@/lib/prisma";
 

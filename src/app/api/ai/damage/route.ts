@@ -1,7 +1,7 @@
-import { logger } from "@/lib/logger";
 import { currentUser } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
 
+import { logger } from "@/lib/logger";
 import { getRateLimitIdentifier, rateLimiters } from "@/lib/rate-limit";
 import { damageAssessmentSchema, validateAIRequest } from "@/lib/validation/aiSchemas";
 

@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 
 import { PageContainer } from "@/components/layout/PageContainer";
 import { PageHero } from "@/components/layout/PageHero";
+
 import { WeatherChainsClient } from "./WeatherChainsClient";
 
 export const dynamic = "force-dynamic";

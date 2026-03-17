@@ -1,11 +1,11 @@
 "use client";
 import "mapbox-gl/dist/mapbox-gl.css";
-import { logger } from "@/lib/logger";
 
 import mapboxgl from "mapbox-gl";
 import { useEffect, useRef, useState } from "react";
 
 import { getMapboxToken, logMapboxDebugContext } from "@/lib/debug/mapboxDebug";
+import { logger } from "@/lib/logger";
 
 export default function MapClient() {
   const mapContainer = useRef<HTMLDivElement>(null);

@@ -6,12 +6,12 @@
 
 "use client";
 
-import { logger } from "@/lib/logger";
 import { Loader2, Zap } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
+import { logger } from "@/lib/logger";
 
 interface DominusGodModeButtonProps {
   claimId: string;

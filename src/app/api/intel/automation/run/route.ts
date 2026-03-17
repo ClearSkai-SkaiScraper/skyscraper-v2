@@ -1,10 +1,10 @@
 export const dynamic = "force-dynamic";
 
 import { currentUser } from "@clerk/nextjs/server";
-import { logger } from "@/lib/logger";
 import { NextResponse } from "next/server";
 
 import { runSkaiAutomations } from "@/lib/intel/automation/engine";
+import { logger } from "@/lib/logger";
 
 export async function POST(req: Request) {
   try {

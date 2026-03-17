@@ -10,10 +10,10 @@ export const dynamic = "force-dynamic";
  * since ai_reports doesn't have dedicated share columns.
  */
 
-import { logger } from "@/lib/logger";
 import { auth } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
 
+import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 import { generatePublicId, generateShareUrl } from "@/lib/utils/publicId";
 

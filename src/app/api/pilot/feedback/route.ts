@@ -1,10 +1,11 @@
 export const dynamic = "force-dynamic";
 
-import prisma from "@/lib/prisma";
-import { checkRateLimit } from "@/lib/rate-limit";
 import { auth } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
+
+import prisma from "@/lib/prisma";
+import { checkRateLimit } from "@/lib/rate-limit";
 
 const pilotFeedbackSchema = z.object({
   type: z.enum(["bug", "feature", "ux", "performance", "other"]),

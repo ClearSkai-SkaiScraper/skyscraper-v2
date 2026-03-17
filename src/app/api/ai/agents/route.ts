@@ -12,16 +12,16 @@ export const dynamic = "force-dynamic";
  * - Action planning
  */
 
-import { logger } from "@/lib/observability/logger";
 import { auth } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
 
 import { AICoreRouter } from "@/lib/ai/router";
-import { createAiConfig, withAiBilling, type AiBillingContext } from "@/lib/ai/withAiBilling";
+import { type AiBillingContext,createAiConfig, withAiBilling } from "@/lib/ai/withAiBilling";
 import {
   requireActiveSubscription,
   SubscriptionRequiredError,
 } from "@/lib/billing/requireActiveSubscription";
+import { logger } from "@/lib/observability/logger";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { agentsSchema, validateAIRequest } from "@/lib/validation/aiSchemas";
 

@@ -8,11 +8,12 @@
  * to build a compelling case narrative.
  */
 
+import { AlertCircle, CheckCircle2, Cloud, Loader2, MapPin, Users, XCircle } from "lucide-react";
+import { useCallback, useEffect, useState } from "react";
+
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
-import { AlertCircle, CheckCircle2, Cloud, Loader2, MapPin, Users, XCircle } from "lucide-react";
-import { useCallback, useEffect, useState } from "react";
 
 interface TimelineEntry {
   timestamp: string;

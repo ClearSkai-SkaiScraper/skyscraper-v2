@@ -2,7 +2,6 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
-import { logger } from "@/lib/logger";
 import { randomUUID } from "crypto";
 /**
  * Clerk User Webhook Handler
@@ -19,6 +18,7 @@ import { randomUUID } from "crypto";
 import { NextRequest, NextResponse } from "next/server";
 import { Webhook } from "svix";
 
+import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 import { checkRateLimit } from "@/lib/ratelimit";
 import { bootstrapNewOrg } from "@/scripts/bootstrap-new-org";

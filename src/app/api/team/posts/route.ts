@@ -8,10 +8,10 @@ export const revalidate = 0;
  * Team posts are scoped to the user's company via tradesCompanyMember.
  */
 
-import { logger } from "@/lib/logger";
 import { NextRequest, NextResponse } from "next/server";
 
 import { withAuth } from "@/lib/auth/withAuth";
+import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 
 export const GET = withAuth(async (req: NextRequest, { userId }) => {

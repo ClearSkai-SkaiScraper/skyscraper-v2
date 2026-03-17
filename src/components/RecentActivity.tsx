@@ -1,9 +1,10 @@
 "use client";
 
 import { Loader2 } from "lucide-react";
-import { logger } from "@/lib/logger";
 import Link from "next/link";
 import { useEffect, useState } from "react";
+
+import { logger } from "@/lib/logger";
 
 interface Activity {
   id: string;

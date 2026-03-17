@@ -8,8 +8,9 @@
  * const buffer = renderWeatherPDF({ report, address, dol, radarStation, weatherConditions });
  */
 
-import { logger } from "@/lib/logger";
 import { jsPDF } from "jspdf";
+
+import { logger } from "@/lib/logger";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Types

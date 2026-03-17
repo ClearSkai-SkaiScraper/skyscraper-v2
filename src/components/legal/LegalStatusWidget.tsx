@@ -1,9 +1,10 @@
 "use client";
 
 import { AlertCircle,Calendar, CheckCircle, FileCheck } from "lucide-react";
-import { logger } from "@/lib/logger";
 import Link from "next/link";
 import { useEffect,useState } from "react";
+
+import { logger } from "@/lib/logger";
 
 interface LegalAcceptance {
   documentId: string;

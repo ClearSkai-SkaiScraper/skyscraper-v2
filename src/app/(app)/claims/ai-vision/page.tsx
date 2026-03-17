@@ -1,9 +1,10 @@
+import { ArrowLeft } from "lucide-react";
+import Link from "next/link";
+
 import DamageVisionUploader from "@/components/claims/DamageVisionUploader";
 import { NoOrgMembershipBanner } from "@/components/guards/NoOrgMembershipBanner";
 import { PageHero } from "@/components/layout/PageHero";
 import { getTenant } from "@/lib/auth/tenant";
-import { ArrowLeft } from "lucide-react";
-import Link from "next/link";
 
 export const dynamic = "force-dynamic";
 

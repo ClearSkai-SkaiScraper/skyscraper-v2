@@ -5,8 +5,8 @@
  * Can be extended to store in a dedicated metrics table or analytics service.
  */
 
-import prisma from "@/lib/prisma";
 import { logger } from "@/lib/logger";
+import prisma from "@/lib/prisma";
 
 export interface ReportMetrics {
   totalReports: number;

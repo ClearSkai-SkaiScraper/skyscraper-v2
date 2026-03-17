@@ -9,7 +9,6 @@
  *    so we always return a valid analysis.
  */
 
-import { logger } from "@/lib/logger";
 import { auth } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -19,6 +18,7 @@ import {
   isRoboflowConfigured,
   type NormalizedDetection,
 } from "@/lib/ai/roboflow";
+import { logger } from "@/lib/logger";
 import { checkRateLimit } from "@/lib/rate-limit";
 
 export const dynamic = "force-dynamic";

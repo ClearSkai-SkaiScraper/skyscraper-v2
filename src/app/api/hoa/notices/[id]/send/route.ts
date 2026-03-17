@@ -1,12 +1,13 @@
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-import { getOpenAI } from "@/lib/ai/client";
-import { logger } from "@/lib/logger";
-import prisma from "@/lib/prisma";
 import { auth } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
+
+import { getOpenAI } from "@/lib/ai/client";
+import { logger } from "@/lib/logger";
+import prisma from "@/lib/prisma";
 
 const sendNoticeSchema = z.object({
   deliveryMethod: z.enum(["email", "print", "door-to-door"]).default("print"),

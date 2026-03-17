@@ -6,12 +6,12 @@ export const dynamic = "force-dynamic";
  * POST /api/leads/[id]/notes/from-ai
  */
 
-import { logger } from "@/lib/logger";
 import { auth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 
 import { compose, withRateLimit, withSentryApi } from "@/lib/api/wrappers";
 import { withOrgScope } from "@/lib/auth/tenant";
+import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 
 const basePOST = async (req: Request, { params }: { params: { id: string } }) => {

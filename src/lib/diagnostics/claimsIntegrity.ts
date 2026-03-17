@@ -5,8 +5,8 @@
  * Logs org context + DB host + claims count to server console.
  */
 
-import prisma from "@/lib/prisma";
 import { logger } from "@/lib/logger";
+import prisma from "@/lib/prisma";
 
 export interface ClaimsIntegrityLog {
   orgId: string;

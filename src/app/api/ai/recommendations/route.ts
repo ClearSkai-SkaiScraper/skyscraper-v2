@@ -1,7 +1,7 @@
-import { logger } from "@/lib/logger";
 import { NextRequest, NextResponse } from "next/server";
 
-import { createAiConfig, withAiBilling, type AiBillingContext } from "@/lib/ai/withAiBilling";
+import { type AiBillingContext,createAiConfig, withAiBilling } from "@/lib/ai/withAiBilling";
+import { logger } from "@/lib/logger";
 import { generateRecommendations } from "@/lib/ml/recommendations/engine";
 import { getActiveRecommendations, upsertRecommendations } from "@/lib/ml/recommendations/persist";
 import { getRateLimitIdentifier, rateLimiters } from "@/lib/rate-limit";

@@ -2,9 +2,10 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
+import { NextRequest, NextResponse } from "next/server";
+
 import { withAuth } from "@/lib/auth/withAuth";
 import { logRecommendationEvent } from "@/lib/reports/recommendation-analytics";
-import { NextRequest, NextResponse } from "next/server";
 
 /**
  * POST /api/reports/recommendation-analytics

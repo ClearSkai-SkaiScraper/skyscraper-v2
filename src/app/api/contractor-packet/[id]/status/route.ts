@@ -1,11 +1,11 @@
 export const dynamic = "force-dynamic";
 
 import { auth } from "@clerk/nextjs/server";
-import { logger } from "@/lib/logger";
 import { NextRequest, NextResponse } from "next/server";
 
 import { getResolvedOrgId } from "@/lib/auth/getResolvedOrgId";
 import { db } from "@/lib/db";
+import { logger } from "@/lib/logger";
 
 export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
   try {

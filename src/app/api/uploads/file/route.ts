@@ -5,13 +5,13 @@
  * Uploads to Supabase storage and returns the public URL.
  */
 
+import { auth } from "@clerk/nextjs/server";
+import { createClient } from "@supabase/supabase-js";
 import { NextRequest, NextResponse } from "next/server";
 
 import { logger } from "@/lib/logger";
 import { resolveOrg } from "@/lib/org/resolveOrg";
 import prisma from "@/lib/prisma";
-import { auth } from "@clerk/nextjs/server";
-import { createClient } from "@supabase/supabase-js";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";

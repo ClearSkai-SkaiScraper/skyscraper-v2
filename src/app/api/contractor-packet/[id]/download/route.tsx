@@ -1,10 +1,10 @@
 import { auth } from "@clerk/nextjs/server";
-import { logger } from "@/lib/logger";
 import { renderToStream } from "@react-pdf/renderer";
 import { NextRequest, NextResponse } from "next/server";
 
 import { getResolvedOrgId } from "@/lib/auth/getResolvedOrgId";
 import { db } from "@/lib/db";
+import { logger } from "@/lib/logger";
 import { ContractorPacketPDFDocument } from "@/lib/pdf/contractorPacketRenderer";
 import { getOrgBranding, sanitizeFilename } from "@/lib/pdf/utils";
 

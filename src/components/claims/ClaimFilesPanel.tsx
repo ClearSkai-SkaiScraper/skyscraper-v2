@@ -1,7 +1,6 @@
 "use client";
 
 import { DownloadIcon, FileIcon, Trash2Icon, UploadIcon } from "lucide-react";
-import { logger } from "@/lib/logger";
 import { useState } from "react";
 
 import { Badge } from "@/components/ui/badge";
@@ -15,6 +14,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { logger } from "@/lib/logger";
 
 interface ClaimFile {
   id: string;

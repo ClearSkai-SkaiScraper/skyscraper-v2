@@ -3,12 +3,12 @@
  * Generate a PDF from a premium template for a specific claim
  */
 
-import { logger } from "@/lib/logger";
 import fs from "fs/promises";
 import { NextRequest, NextResponse } from "next/server";
 import path from "path";
 
 import { requireApiAuth } from "@/lib/auth/apiAuth";
+import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 import { renderTemplateToPdf } from "@/lib/templates/renderer";
 

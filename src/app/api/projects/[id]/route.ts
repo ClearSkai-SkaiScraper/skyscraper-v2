@@ -3,9 +3,9 @@ export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
 import { NextRequest } from "next/server";
-import { logger } from "@/lib/logger";
 
 import { onStageChange } from "@/lib/automation";
+import { logger } from "@/lib/logger";
 import { getCurrentUserPermissions, requirePermission } from "@/lib/permissions";
 import prisma from "@/lib/prisma";
 

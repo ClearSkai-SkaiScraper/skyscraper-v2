@@ -1,7 +1,8 @@
 // lib/ai/video/placeholderVideo.ts
 
-import type { VideoScript } from "./types";
 import { logger } from "@/lib/logger";
+
+import type { VideoScript } from "./types";
 
 /**
  * Creates a simple placeholder video when no real video provider is available.

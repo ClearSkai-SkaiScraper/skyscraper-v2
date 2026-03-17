@@ -6,10 +6,10 @@ export const dynamic = "force-dynamic";
  * NOW USES: ensureOrgForUser to guarantee org exists
  */
 
-import { logger } from "@/lib/logger";
 import { currentUser } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 
+import { logger } from "@/lib/logger";
 import { ensureOrgForUser } from "@/lib/org/ensureOrgForUser";
 import prisma from "@/lib/prisma";
 import { isTestMode } from "@/lib/testMode";

@@ -5,10 +5,10 @@ export const dynamic = "force-dynamic";
  * Handle client social posts — uses community_posts Prisma model
  */
 
-import { logger } from "@/lib/logger";
 import { auth } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
 
+import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 
 // GET /api/portal/posts - List posts for current user or specific user

@@ -1,8 +1,9 @@
 "use client";
 
 import { ExternalLink,Loader2, Star, TrendingUp, Users } from "lucide-react";
-import { logger } from "@/lib/logger";
 import { useEffect, useState } from "react";
+
+import { logger } from "@/lib/logger";
 
 interface Contact {
   id: string;

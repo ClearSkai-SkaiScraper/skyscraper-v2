@@ -4,8 +4,9 @@
  * Utilities for recording job events during job execution.
  */
 
-import { logger } from "@/lib/logger";
 import type { Job } from "pg-boss";
+
+import { logger } from "@/lib/logger";
 
 import { pool } from "../db/index.js";
 

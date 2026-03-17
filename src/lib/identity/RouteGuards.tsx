@@ -13,8 +13,9 @@
  */
 
 import { useRouter } from "next/navigation";
-import { logger } from "@/lib/logger";
 import React, { useEffect } from "react";
+
+import { logger } from "@/lib/logger";
 
 import { useUserIdentity } from "./UserIdentityContext";
 

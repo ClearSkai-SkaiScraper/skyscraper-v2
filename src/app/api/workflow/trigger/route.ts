@@ -5,11 +5,11 @@ export const dynamic = "force-dynamic";
  * Manually trigger workflow stage change
  */
 
-import { logger } from "@/lib/logger";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
 import { withOrgScope } from "@/lib/auth/tenant";
+import { logger } from "@/lib/logger";
 import { triggerStage } from "@/lib/workflow/automationEngine";
 
 const TriggerSchema = z.object({

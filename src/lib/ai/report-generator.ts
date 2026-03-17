@@ -5,8 +5,8 @@
  * Auto-generates 10-20 page PDF with company branding.
  */
 
-import prisma from "@/lib/prisma";
 import { logger } from "@/lib/logger";
+import prisma from "@/lib/prisma";
 import { CODE_LIBRARY, UniversalClaimsReport } from "@/types/universal-claims-report";
 
 import { generatePhotoCaptionsBatch } from "./photo-caption-generator";

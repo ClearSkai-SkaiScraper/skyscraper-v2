@@ -9,8 +9,7 @@ import { useCallback, useEffect, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-
-import { SECTION_METADATA, type FolderSectionKey } from "@/lib/claims-folder/folderSchema";
+import { type FolderSectionKey,SECTION_METADATA } from "@/lib/claims-folder/folderSchema";
 import { logger } from "@/lib/logger";
 
 const SECTION_ORDER: FolderSectionKey[] = [

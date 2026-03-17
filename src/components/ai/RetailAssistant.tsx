@@ -1,8 +1,9 @@
 "use client";
 
 import { Loader2, Send, ShoppingBag } from "lucide-react";
-import { logger } from "@/lib/logger";
 import { useState } from "react";
+
+import { logger } from "@/lib/logger";
 
 interface Message {
   role: "user" | "assistant";

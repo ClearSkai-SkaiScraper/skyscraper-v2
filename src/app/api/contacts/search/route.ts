@@ -1,8 +1,8 @@
 // src/app/api/contacts/search/route.ts
-import { logger } from "@/lib/logger";
 import { NextResponse } from "next/server";
 
 import { withOrgScope } from "@/lib/auth/tenant";
+import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 import { checkRateLimit } from "@/lib/rate-limit";
 

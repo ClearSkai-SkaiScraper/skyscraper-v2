@@ -3,9 +3,9 @@ export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
 // Phase 5 - Audit Logs API Route
-import { logger } from "@/lib/logger";
 import { NextRequest, NextResponse } from "next/server";
 
+import { logger } from "@/lib/logger";
 import { requireRole } from "@/lib/security/roles";
 import { getJobAuditLogs } from "@/modules/audit/core/logger";
 

@@ -8,11 +8,11 @@
  * BatchJob, MailerBatch, and MailerJob models are added.
  */
 
-import { logger } from "@/lib/logger";
 import { NextRequest, NextResponse } from "next/server";
 
 import { withAuth } from "@/lib/auth/withAuth";
 import { LOB_ENABLED } from "@/lib/lob/client";
+import { logger } from "@/lib/logger";
 import { checkRateLimit } from "@/lib/rate-limit";
 
 export const dynamic = "force-dynamic";

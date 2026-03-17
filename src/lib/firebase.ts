@@ -1,11 +1,12 @@
 // Firebase client configuration for frontend
 import { getAnalytics, isSupported } from "firebase/analytics";
-import { logger } from "@/lib/logger";
 import { getApps, initializeApp } from "firebase/app";
 import { connectAuthEmulator, getAuth } from "firebase/auth";
 import { connectFirestoreEmulator, getFirestore } from "firebase/firestore";
 import { connectFunctionsEmulator, getFunctions } from "firebase/functions";
 import { connectStorageEmulator, getStorage } from "firebase/storage";
+
+import { logger } from "@/lib/logger";
 
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY || "AIzaSyD37KEfb73z8QvA5c7Mcpl4w0h41vIgamI",

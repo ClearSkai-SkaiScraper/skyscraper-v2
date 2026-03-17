@@ -1,6 +1,5 @@
 "use client";
 
-import { logger } from "@/lib/logger";
 import { ArrowRight, Briefcase, Loader2, Plus, Wrench } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
@@ -9,6 +8,7 @@ import PortalPageHero from "@/components/portal/portal-page-hero";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { logger } from "@/lib/logger";
 
 interface Job {
   id: string;

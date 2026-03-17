@@ -1,7 +1,8 @@
 // MODULE 2: Notifications - Helper functions
+import { v4 as uuidv4 } from "uuid";
+
 import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
-import { v4 as uuidv4 } from "uuid";
 
 type NotificationType =
   | "message"

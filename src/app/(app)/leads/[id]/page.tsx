@@ -26,6 +26,7 @@ import { TransferJobDropdown } from "@/components/jobs/TransferJobDropdown";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+
 import { ConvertToClaimButton } from "./_components/ConvertToClaimButton";
 import { EditableLeadSummary } from "./_components/EditableLeadSummary";
 import LeadDetailTabs from "./_components/LeadDetailTabs";

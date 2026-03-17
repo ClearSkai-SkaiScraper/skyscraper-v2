@@ -8,9 +8,6 @@
  * Line chart + history table.
  */
 
-import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { cn } from "@/lib/utils";
 import {
   Activity,
   ArrowDown,
@@ -22,6 +19,10 @@ import {
   TrendingUp,
 } from "lucide-react";
 import { useEffect, useState } from "react";
+
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { cn } from "@/lib/utils";
 
 interface HistoryEntry {
   id: string;

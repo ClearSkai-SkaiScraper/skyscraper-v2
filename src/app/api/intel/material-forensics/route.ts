@@ -3,7 +3,6 @@ export const dynamic = "force-dynamic";
 // app/api/intel/material-forensics/route.ts
 // 🧬 MATERIAL FORENSICS API — Generate engineering-grade material failure analysis
 
-import { logger } from "@/lib/logger";
 import { NextResponse } from "next/server";
 
 import { withAuth } from "@/lib/auth/withAuth";
@@ -14,6 +13,7 @@ import {
   getPrimaryFailureMode,
   type MaterialForensicsInput,
 } from "@/lib/intel/forensics/materials";
+import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 
 /**

@@ -5,9 +5,9 @@
  */
 
 import { NextRequest, NextResponse } from "next/server";
-import { logger } from "@/lib/logger";
 
 import { requireAuth } from "@/lib/auth/requireAuth";
+import { logger } from "@/lib/logger";
 import { getActiveOrgContext } from "@/lib/org/getActiveOrgContext";
 import prisma from "@/lib/prisma";
 import { getLogoFromWebsite, VENDOR_LOGOS } from "@/lib/vendors/vendorLogos";

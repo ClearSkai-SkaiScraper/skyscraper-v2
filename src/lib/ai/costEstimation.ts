@@ -6,8 +6,8 @@
  */
 
 import { callAI, getAIConfig } from "@/lib/ai/aiAssistant";
-import { logger } from "@/lib/logger";
 import { logAIAction } from "@/lib/ai/feedback/logAction";
+import { logger } from "@/lib/logger";
 
 export interface EstimateRequest {
   jobType: string;

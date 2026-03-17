@@ -2,13 +2,14 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
+import { auth, currentUser } from "@clerk/nextjs/server";
+import { jsPDF } from "jspdf";
+import { NextRequest, NextResponse } from "next/server";
+
 import { logger } from "@/lib/logger";
 import { drawBrandedHeader, drawPageFooter, fetchBrandingData } from "@/lib/pdf/brandedHeader";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { damageExportSchema, validateAIRequest } from "@/lib/validation/aiSchemas";
-import { auth, currentUser } from "@clerk/nextjs/server";
-import { jsPDF } from "jspdf";
-import { NextRequest, NextResponse } from "next/server";
 
 interface PhotoCaption {
   damage: string;

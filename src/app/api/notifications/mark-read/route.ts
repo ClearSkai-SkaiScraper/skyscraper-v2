@@ -1,12 +1,12 @@
 export const dynamic = "force-dynamic";
 
 // MODULE 2: Notifications - Mark as read (supports both client and pro)
-import { logger } from "@/lib/logger";
 import { auth, currentUser } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 
 import { db } from "@/lib/db";
+import { logger } from "@/lib/logger";
 import { markAllAsRead, markAsRead } from "@/lib/notifications";
 import prisma from "@/lib/prisma";
 

@@ -14,9 +14,10 @@
  * - Database: claim_builders table (already exists)
  */
 
-import { logger } from "@/lib/logger";
 import { Download, FileText, Loader2, Plus, Sparkles, Trash2 } from "lucide-react";
 import { useState } from "react";
+
+import { logger } from "@/lib/logger";
 
 // Types for damage detection results
 export type DamageResult = {

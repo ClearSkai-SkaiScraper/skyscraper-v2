@@ -20,8 +20,9 @@
  * errors in serverless environments (Vercel). Never call pool.end() in API routes!
  */
 
-import { logger } from "@/lib/logger";
 import { Pool, PoolClient, QueryResultRow } from "pg";
+
+import { logger } from "@/lib/logger";
 
 // Re-export Prisma for easy migration — consumers can switch imports gradually
 export { default as prisma } from "@/lib/prisma";

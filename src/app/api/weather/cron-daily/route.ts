@@ -1,11 +1,11 @@
 // src/app/api/weather/cron-daily/route.ts
 
 import * as Sentry from "@sentry/nextjs";
-import { logger } from "@/lib/logger";
 import { NextResponse } from "next/server";
 
 import { runDailyWeatherIngest } from "@/jobs/ingestWeather";
 import { verifyCronSecret } from "@/lib/cron/verifyCronSecret";
+import { logger } from "@/lib/logger";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";

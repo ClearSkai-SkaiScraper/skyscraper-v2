@@ -1,9 +1,10 @@
 "use client";
 
 import { ExternalLink, Loader2 } from "lucide-react";
-import { logger } from "@/lib/logger";
 import { useState } from "react";
 import { toast } from "sonner";
+
+import { logger } from "@/lib/logger";
 
 interface ManageBillingButtonProps {
   orgId: string;

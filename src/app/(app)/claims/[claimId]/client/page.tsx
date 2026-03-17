@@ -4,6 +4,7 @@
 import { useParams } from "next/navigation";
 
 import ClientDocumentSharing from "@/components/claims/ClientDocumentSharing";
+
 import { ClientConnectSection } from "../_components/ClientConnectSection";
 
 export default function ClaimClientPage() {

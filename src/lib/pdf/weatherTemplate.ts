@@ -4,9 +4,9 @@
  */
 
 import chromium from "@sparticuz/chromium";
-import { logger } from "@/lib/logger";
 import puppeteer from "puppeteer-core";
 
+import { logger } from "@/lib/logger";
 import { uploadBufferToFirebase } from "@/lib/storage/firebase-admin";
 import type { DOLResult, PropertyContext,ScoredEvent } from "@/types/weather";
 

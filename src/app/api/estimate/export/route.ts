@@ -10,7 +10,6 @@ export const dynamic = "force-dynamic";
  * - Complete ZIP bundle
  */
 
-import { logger } from "@/lib/logger";
 import { auth } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
@@ -22,6 +21,7 @@ import {
   parseScope,
 } from "@/lib/ai/estimatorEngine";
 import { buildEstimateZip } from "@/lib/export/zipBuilder";
+import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 import { checkRateLimit, getRateLimitError } from "@/lib/ratelimit";
 

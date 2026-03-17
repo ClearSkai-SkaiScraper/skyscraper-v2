@@ -1,7 +1,7 @@
 import { arrayUnion,doc, setDoc } from "firebase/firestore";
-import { logger } from "@/lib/logger";
 
 import { db } from "@/lib/firebase";
+import { logger } from "@/lib/logger";
 
 export interface EvidencePair {
   originalUrl: string;

@@ -1,8 +1,8 @@
 export const dynamic = "force-dynamic";
-import { logger } from "@/lib/logger";
 import { NextRequest, NextResponse } from "next/server";
 
 import { getTenant } from "@/lib/auth/tenant";
+import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { suggestStatusSchema, validateAIRequest } from "@/lib/validation/aiSchemas";

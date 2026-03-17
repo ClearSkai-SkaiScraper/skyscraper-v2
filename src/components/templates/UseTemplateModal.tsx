@@ -1,11 +1,11 @@
 "use client";
 
 import { CheckCircle2, FileText, Loader2 } from "lucide-react";
-import { logger } from "@/lib/logger";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 import { clientFetch } from "@/lib/http/clientFetch";
+import { logger } from "@/lib/logger";
 
 interface UseTemplateModalProps {
   templateId: string;

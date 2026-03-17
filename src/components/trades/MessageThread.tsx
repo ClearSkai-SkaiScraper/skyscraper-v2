@@ -1,6 +1,5 @@
 "use client";
 
-import { logger } from "@/lib/logger";
 import { useAuth } from "@clerk/nextjs";
 import { Paperclip, Send } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
@@ -10,6 +9,7 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Textarea } from "@/components/ui/textarea";
+import { logger } from "@/lib/logger";
 import { cn } from "@/lib/utils";
 
 interface Message {

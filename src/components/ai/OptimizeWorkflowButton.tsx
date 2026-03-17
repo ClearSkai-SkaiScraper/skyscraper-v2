@@ -7,8 +7,9 @@
 "use client";
 
 import { AlertCircle,Loader2, Zap } from "lucide-react";
-import { logger } from "@/lib/logger";
 import { useState } from "react";
+
+import { logger } from "@/lib/logger";
 
 interface OptimizeWorkflowButtonProps {
   claimId: string;

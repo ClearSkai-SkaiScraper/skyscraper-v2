@@ -6,9 +6,9 @@ export const dynamic = "force-dynamic";
  */
 
 import { currentUser } from "@clerk/nextjs/server";
-import { logger } from "@/lib/logger";
 import { NextRequest, NextResponse } from "next/server";
 
+import { logger } from "@/lib/logger";
 import { getContentPolicy, moderateContent, quickCheck } from "@/lib/services/content-moderation";
 
 export async function POST(req: NextRequest) {

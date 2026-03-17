@@ -7,12 +7,12 @@
  * Uses claim_activities for timeline events and notes (no jobTimelineEvent / jobNote tables).
  */
 
-import { logger } from "@/lib/observability/logger";
 import { auth } from "@clerk/nextjs/server";
 import crypto from "crypto";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 
+import { logger } from "@/lib/observability/logger";
 import prisma from "@/lib/prisma";
 
 export const runtime = "nodejs";

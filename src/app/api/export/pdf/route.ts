@@ -7,11 +7,11 @@
 // ============================================================================
 
 import { auth } from "@clerk/nextjs/server";
-import { logger } from "@/lib/logger";
 import * as Sentry from "@sentry/nextjs";
 import { createClient } from "@supabase/supabase-js";
 import { NextRequest, NextResponse } from "next/server";
 
+import { logger } from "@/lib/logger";
 import { exportToPdf, isLibreOfficeAvailable } from "@/lib/pdf/hybridExport";
 
 export const runtime = "nodejs";

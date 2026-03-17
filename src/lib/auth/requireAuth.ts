@@ -31,11 +31,11 @@
  * ============================================================================
  */
 
-import { logger } from "@/lib/logger";
 import "server-only";
 
 import { NextResponse } from "next/server";
 
+import { logger } from "@/lib/logger";
 import { OrgResolutionError, resolveOrg } from "@/lib/org/resolveOrg";
 
 // Re-export the type for consumers

@@ -1,6 +1,7 @@
 import mapboxgl from "mapbox-gl";
-import { logger } from "@/lib/logger";
 import { useEffect, useRef, useState } from "react";
+
+import { logger } from "@/lib/logger";
 
 interface MapboxMapProps {
   properties: Array<{

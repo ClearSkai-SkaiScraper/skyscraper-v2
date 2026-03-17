@@ -2,18 +2,17 @@ export const dynamic = "force-dynamic";
 
 // app/api/video/create/route.ts
 
-import { logger } from "@/lib/logger";
 import { NextResponse } from "next/server";
-
-import { requireAuth } from "@/lib/auth/requireAuth";
 
 import { buildClaimVideoScript } from "@/lib/ai/video/buildClaimVideoScript";
 import { buildRetailVideoScript } from "@/lib/ai/video/buildRetailVideoScript";
 import { createVideoFromScript } from "@/lib/ai/video/createVideoFromScript";
+import { requireAuth } from "@/lib/auth/requireAuth";
 import {
   requireActiveSubscription,
   SubscriptionRequiredError,
 } from "@/lib/billing/requireActiveSubscription";
+import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { buildReportData } from "@/lib/reports/buildReportData";

@@ -1,12 +1,13 @@
 "use client";
 
+import { BarChart3, CheckCircle2, Lightbulb, Loader2, TrendingDown, Users } from "lucide-react";
+import { useCallback, useEffect, useState } from "react";
+
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { ONBOARDING_STEPS } from "@/hooks/useOnboardingTracking";
 import { cn } from "@/lib/utils";
-import { BarChart3, CheckCircle2, Lightbulb, Loader2, TrendingDown, Users } from "lucide-react";
-import { useCallback, useEffect, useState } from "react";
 
 interface StepMetric {
   stepId: string;

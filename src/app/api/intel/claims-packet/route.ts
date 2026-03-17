@@ -1,11 +1,11 @@
 export const dynamic = "force-dynamic";
 
 // app/api/intel/claims-packet/route.ts
-import { logger } from "@/lib/logger";
 import { NextResponse } from "next/server";
 
 import { withAuth } from "@/lib/auth/withAuth";
 import { ClaimsPacketInput, generateClaimsPacket } from "@/lib/intel/reports/claims-packet";
+import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 
 export const POST = withAuth(async (req, { orgId, userId }) => {

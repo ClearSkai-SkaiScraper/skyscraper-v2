@@ -2,11 +2,11 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
-import { logger } from "@/lib/logger";
 import { NextRequest, NextResponse } from "next/server";
 
 import { withAuth } from "@/lib/auth/withAuth";
 import { getCustomerInvoices, getCustomerPaymentMethods } from "@/lib/billing/portal";
+import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 
 export const GET = withAuth(async (req: NextRequest, { orgId }) => {

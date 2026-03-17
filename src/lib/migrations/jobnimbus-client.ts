@@ -10,8 +10,9 @@
  * IMPORTANT: Never import this file on the client side.
  */
 
-import { logger } from "@/lib/logger";
 import "server-only";
+
+import { logger } from "@/lib/logger";
 
 // ============================================================================
 // Types

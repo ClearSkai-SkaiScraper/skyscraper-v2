@@ -11,8 +11,9 @@
  * Multiple calls with same key share the same Promise.
  */
 
-import { buildAIKey } from './cache';
 import { logger } from "@/lib/logger";
+
+import { buildAIKey } from './cache';
 
 // Global map of running AI requests
 const runningRequests = new Map<string, Promise<any>>();

@@ -2,12 +2,13 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
+import { NextRequest, NextResponse } from "next/server";
+
 import { withAuth } from "@/lib/auth/withAuth";
 import { logger } from "@/lib/logger";
 import { previewTemplateOptions } from "@/lib/reports/recommendation-engine";
 import { PreviewOptionsRequestSchema } from "@/lib/reports/recommendation-schema";
 import type { StyleCategory, TradeType } from "@/lib/templates/templateRegistry";
-import { NextRequest, NextResponse } from "next/server";
 
 /**
  * POST /api/reports/preview-template-options

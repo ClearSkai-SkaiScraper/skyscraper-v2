@@ -2,10 +2,10 @@
 // Phase G Priority 3: Complete RBAC Implementation
 // Enforces role hierarchy: OWNER > ADMIN > PM > FIELD_TECH > OFFICE_STAFF > CLIENT
 
-import { logger } from "@/lib/logger";
 import { auth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 
+import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 
 export type Role = "OWNER" | "ADMIN" | "PM" | "FIELD_TECH" | "OFFICE_STAFF" | "CLIENT";

@@ -12,9 +12,8 @@
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-import { NextRequest, NextResponse } from "next/server";
-
 import { createId } from "@paralleldrive/cuid2";
+import { NextRequest, NextResponse } from "next/server";
 
 import { getOpenAI } from "@/lib/ai/client";
 import { logger } from "@/lib/logger";

@@ -1,8 +1,8 @@
-import { logger } from "@/lib/logger";
 import * as Sentry from "@sentry/nextjs";
 import { NextResponse } from "next/server";
 
 import { withOrgScope } from "@/lib/auth/tenant";
+import { logger } from "@/lib/logger";
 import { generateTemplatePDF } from "@/lib/templates/generateTemplatePDF";
 
 export const dynamic = "force-dynamic";

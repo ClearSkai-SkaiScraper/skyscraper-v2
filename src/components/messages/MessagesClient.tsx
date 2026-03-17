@@ -1,7 +1,6 @@
 "use client";
 
 import { FilePenLine, Loader2, MessageSquare, Plus, Trash2 } from "lucide-react";
-import { logger } from "@/lib/logger";
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
@@ -11,6 +10,7 @@ import MessageThreadList from "@/components/messages/MessageThreadList";
 import MessageView from "@/components/messages/MessageView";
 import NewMessageModal from "@/components/messages/NewMessageModal";
 import { Button } from "@/components/ui/button";
+import { logger } from "@/lib/logger";
 
 interface MessagesClientProps {
   userId: string;

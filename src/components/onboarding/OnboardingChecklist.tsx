@@ -7,7 +7,6 @@
  * Tracks progress and provides guidance for getting started.
  */
 
-import { logger } from "@/lib/logger";
 import {
   Building2,
   Camera,
@@ -24,6 +23,7 @@ import {
 import { useEffect, useState } from "react";
 
 import { Button } from "@/components/ui/button";
+import { logger } from "@/lib/logger";
 import { cn } from "@/lib/utils";
 
 interface OnboardingStep {

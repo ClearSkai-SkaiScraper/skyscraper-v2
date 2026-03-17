@@ -8,11 +8,11 @@ export const dynamic = "force-dynamic";
  * Creates/updates user_registry and Client table entries.
  */
 
-import { logger } from "@/lib/logger";
 import { auth, clerkClient, currentUser } from "@clerk/nextjs/server";
 import { nanoid } from "nanoid";
 import { NextResponse } from "next/server";
 
+import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 
 // Map wizard client types to Client.category values

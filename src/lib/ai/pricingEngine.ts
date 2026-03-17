@@ -10,8 +10,9 @@
  * - Overhead & Profit
  */
 
-import { getPricing } from "./pricingTable";
 import { logger } from "@/lib/logger";
+
+import { getPricing } from "./pricingTable";
 
 export interface PricingProfile {
   taxRate: number;

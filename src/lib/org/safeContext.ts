@@ -4,8 +4,8 @@
  */
 
 import { isRedirectError } from "next/dist/client/components/redirect";
-import { logger } from "@/lib/logger";
 
+import { logger } from "@/lib/logger";
 import { getActiveOrgContext, type OrgContextResult } from "@/lib/org/getActiveOrgContext";
 
 /**

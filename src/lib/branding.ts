@@ -1,6 +1,6 @@
 import "server-only";
-import { logger } from "@/lib/logger";
 
+import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 import { pool } from "@/server/db";
 

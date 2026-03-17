@@ -7,9 +7,9 @@
  */
 
 import { NextRequest, NextResponse } from "next/server";
-import { logger } from "@/lib/logger";
 
 import { isAuthError, requireAdmin } from "@/lib/auth/requireAuth";
+import { logger } from "@/lib/logger";
 import { generateTemplateThumbnail } from "@/lib/templates/thumbnailService";
 
 export const runtime = "nodejs";

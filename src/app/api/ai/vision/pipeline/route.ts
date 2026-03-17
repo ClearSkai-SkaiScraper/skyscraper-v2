@@ -28,7 +28,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 
 import { analyzeImage } from "@/lib/ai/openai-vision";
-import { detectByComponent, type ComponentType, type NormalizedDetection } from "@/lib/ai/roboflow";
+import { type ComponentType, detectByComponent, type NormalizedDetection } from "@/lib/ai/roboflow";
 import { withAuth } from "@/lib/auth/withAuth";
 import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";

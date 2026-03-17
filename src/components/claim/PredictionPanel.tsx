@@ -7,7 +7,6 @@
 
 "use client";
 
-import { logger } from "@/lib/logger";
 import {
   AlertTriangle,
   Brain,
@@ -19,6 +18,8 @@ import {
   TrendingUp,
 } from "lucide-react";
 import React, { useEffect, useState } from "react";
+
+import { logger } from "@/lib/logger";
 
 interface PredictionData {
   probabilityFull: number;

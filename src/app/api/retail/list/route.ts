@@ -7,10 +7,11 @@
  * - Sorted by updated_at DESC
  */
 
-import { logger } from "@/lib/observability/logger";
-import { getStorageClient } from "@/lib/storage/client";
 import { auth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
+
+import { logger } from "@/lib/observability/logger";
+import { getStorageClient } from "@/lib/storage/client";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";

@@ -5,12 +5,12 @@
  * Reads from file_assets with category "company-template".
  */
 
+import { auth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 
 import { logger } from "@/lib/logger";
 import { resolveOrg } from "@/lib/org/resolveOrg";
 import prisma from "@/lib/prisma";
-import { auth } from "@clerk/nextjs/server";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";

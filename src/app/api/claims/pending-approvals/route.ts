@@ -5,10 +5,10 @@ export const dynamic = "force-dynamic";
  * Returns all claims with jobValueStatus = "pending" for the org.
  * Used by the bulk approvals page.
  */
-import { logger } from "@/lib/logger";
 import { NextResponse } from "next/server";
 
 import { requireApiAuth } from "@/lib/auth/apiAuth";
+import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 
 export async function GET() {

@@ -6,6 +6,7 @@
  * and structured JSON in the `content` field.
  */
 
+import { createId } from "@paralleldrive/cuid2";
 import { NextResponse } from "next/server";
 
 import { getOpenAI } from "@/lib/ai/client";
@@ -14,7 +15,6 @@ import { logCriticalAction } from "@/lib/audit/criticalActions";
 import { withOrgScope } from "@/lib/auth/tenant";
 import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
-import { createId } from "@paralleldrive/cuid2";
 
 export const dynamic = "force-dynamic";
 

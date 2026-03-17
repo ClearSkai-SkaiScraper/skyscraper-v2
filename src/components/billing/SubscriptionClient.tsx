@@ -1,13 +1,13 @@
 "use client";
 
 import { Check, Crown, Loader2, Sparkles } from "lucide-react";
-import { logger } from "@/lib/logger";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { logger } from "@/lib/logger";
 
 interface Plan {
   id: string;

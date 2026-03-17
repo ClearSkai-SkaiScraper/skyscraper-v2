@@ -1,10 +1,10 @@
 export const dynamic = "force-dynamic";
 
-import { logger } from "@/lib/logger";
 import { auth, currentUser } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 
 import { db } from "@/lib/db";
+import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 
 /**

@@ -4,8 +4,8 @@
 // Server-side utilities for fetching audit logs, events, webhooks
 // =====================================================
 
-import prisma from "@/lib/prisma";
 import { logger } from "@/lib/logger";
+import prisma from "@/lib/prisma";
 
 export async function getAdminLogs(orgId: string, limit = 200) {
   // Fetch report events (always available)

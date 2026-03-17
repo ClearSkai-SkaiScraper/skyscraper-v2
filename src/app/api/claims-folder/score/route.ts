@@ -7,7 +7,6 @@ export const dynamic = "force-dynamic";
  */
 
 import { NextRequest, NextResponse } from "next/server";
-import { logger } from "@/lib/logger";
 
 import { getOrgClaimOrThrow, OrgScopeError } from "@/lib/auth/orgScope";
 import { isAuthError, requireAuth } from "@/lib/auth/requireAuth";
@@ -20,6 +19,7 @@ import {
   fetchTimeline,
   fetchWeatherData,
 } from "@/lib/claims-folder/folderAssembler";
+import { logger } from "@/lib/logger";
 
 export async function GET(request: NextRequest) {
   const auth = await requireAuth();

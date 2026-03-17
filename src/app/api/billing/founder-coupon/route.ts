@@ -8,10 +8,10 @@ export const revalidate = 0;
  * Admin only. Used during early sales to offer founder pricing.
  */
 
-import { logger } from "@/lib/logger";
 import { NextRequest, NextResponse } from "next/server";
 
 import { withManager } from "@/lib/auth/withAuth";
+import { logger } from "@/lib/logger";
 import { getStripeClient } from "@/lib/stripe";
 
 const COUPON_ID = "FOUNDER50";

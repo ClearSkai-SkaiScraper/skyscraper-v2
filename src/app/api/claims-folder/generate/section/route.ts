@@ -11,14 +11,14 @@ export const revalidate = 0;
  * This replaces the need to call individual generate/* endpoints.
  */
 
-import { logger } from "@/lib/logger";
-import { NextResponse, type NextRequest } from "next/server";
+import { type NextRequest,NextResponse } from "next/server";
 import { z } from "zod";
 
 import { getOpenAI } from "@/lib/ai/client";
 import { getOrgClaimOrThrow, OrgScopeError } from "@/lib/auth/orgScope";
 import { isAuthError, requireAuth } from "@/lib/auth/requireAuth";
 import { onSectionGenerated } from "@/lib/claimiq/readiness-hooks";
+import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 
 const RequestSchema = z.object({

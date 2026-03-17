@@ -21,12 +21,11 @@ import { PageContainer } from "@/components/layout/PageContainer";
 import { PageHero } from "@/components/layout/PageHero";
 import { PageSectionCard } from "@/components/layout/PageSectionCard";
 import { DemoModeToggle } from "@/components/settings/DemoModeToggle";
+import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 import { safeOrgContext } from "@/lib/safeOrgContext";
 import { panelGhost, textMuted } from "@/lib/theme";
 import { isDemoWorkspaceReady } from "@/lib/workspace/demoWorkspaceReady";
-
-import { logger } from "@/lib/logger";
 
 import { SettingsForm } from "./_components/SettingsForm";
 

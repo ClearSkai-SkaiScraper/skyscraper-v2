@@ -28,7 +28,7 @@ import "server-only";
 
 import { NextRequest, NextResponse } from "next/server";
 
-import { type RequireAuthOptions, isAuthError, requireAuth } from "@/lib/auth/requireAuth";
+import { isAuthError, requireAuth,type RequireAuthOptions } from "@/lib/auth/requireAuth";
 
 type ResolvedAuth = {
   orgId: string;

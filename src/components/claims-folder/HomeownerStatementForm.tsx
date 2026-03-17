@@ -2,7 +2,6 @@
 "use client";
 
 import { AlertCircle, Check, FileText, Loader2, Pen, Save } from "lucide-react";
-import { logger } from "@/lib/logger";
 import { useState } from "react";
 
 import { Badge } from "@/components/ui/badge";
@@ -19,6 +18,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { logger } from "@/lib/logger";
 
 export interface HomeownerStatement {
   description: string;

@@ -1,9 +1,9 @@
 export const dynamic = "force-dynamic";
-import { logger } from "@/lib/observability/logger";
 import { NextResponse } from "next/server";
 import { Resend } from "resend";
 
 import { isAuthError, requireAuth } from "@/lib/auth/requireAuth";
+import { logger } from "@/lib/observability/logger";
 import prisma from "@/lib/prisma";
 
 let _resend: Resend | null = null;

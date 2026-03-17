@@ -7,11 +7,12 @@
  * most blocked sections, and autopilot opportunity stats.
  */
 
+import { BarChart3, Loader2, RefreshCw, Target, TrendingUp, Zap } from "lucide-react";
+import { useCallback, useEffect, useState } from "react";
+
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
-import { BarChart3, Loader2, RefreshCw, Target, TrendingUp, Zap } from "lucide-react";
-import { useCallback, useEffect, useState } from "react";
 
 /* ------------------------------------------------------------------ */
 /* Types (matches analytics engine output)                             */

@@ -5,7 +5,7 @@
  * Used by the main middleware.ts and API routes.
  */
 
-import { NextResponse, type NextRequest } from "next/server";
+import { type NextRequest,NextResponse } from "next/server";
 
 /**
  * Routes that should redirect based on user type

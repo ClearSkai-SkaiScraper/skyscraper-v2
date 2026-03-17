@@ -1,11 +1,11 @@
 "use client";
 
-import { logger } from "@/lib/logger";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useMemo, useState } from "react";
 
 import { trackSubscriptionCompleted } from "@/lib/analytics.client";
+import { logger } from "@/lib/logger";
 
 function SuccessContent() {
   const sp = useSearchParams();

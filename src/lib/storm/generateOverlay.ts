@@ -12,6 +12,7 @@
  */
 
 import sharp from "sharp";
+
 import { logger } from "@/lib/logger";
 
 import { StormEvent } from "./fetchStormData";

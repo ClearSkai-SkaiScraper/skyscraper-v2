@@ -5,10 +5,11 @@
  * POST → Trigger a new storm alert scan
  */
 
+import { NextResponse } from "next/server";
+
 import { logger } from "@/lib/logger";
 import { safeOrgContext } from "@/lib/safeOrgContext";
 import { checkForNewStormAlerts, getOrgAlerts } from "@/lib/storm-alerts/storm-alert-engine";
-import { NextResponse } from "next/server";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;

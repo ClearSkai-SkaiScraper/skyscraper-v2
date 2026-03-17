@@ -5,7 +5,6 @@
 
 "use client";
 
-import { logger } from "@/lib/logger";
 import { format } from "date-fns";
 import { Eye, FileText, Image as ImageIcon, Share, Users } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -25,6 +24,7 @@ import {
 } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
 import { Switch } from "@/components/ui/switch";
+import { logger } from "@/lib/logger";
 
 interface Document {
   id: string;

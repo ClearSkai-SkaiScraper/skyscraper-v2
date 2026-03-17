@@ -4,13 +4,13 @@
 // Wrapper for Resend with React Email templates
 // =====================================================
 
-import { logger } from "@/lib/observability/logger";
 import * as Sentry from "@sentry/nextjs";
 import { Resend } from "resend";
 
 import AcceptanceReceiptEmail from "@/email-templates/acceptance-receipt";
 import ReportReadyEmail from "@/email-templates/report-ready";
 import TeamInviteEmail from "@/email-templates/team-invite";
+import { logger } from "@/lib/observability/logger";
 
 let _resend: Resend | null = null;
 

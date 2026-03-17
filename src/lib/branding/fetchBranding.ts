@@ -3,8 +3,8 @@
  * Fetches organization branding with proper types and error handling
  */
 
-import prisma from "@/lib/prisma";
 import { logger } from "@/lib/logger";
+import prisma from "@/lib/prisma";
 
 export type OrgBranding = {
   id: string;

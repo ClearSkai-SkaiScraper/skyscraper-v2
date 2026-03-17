@@ -8,11 +8,6 @@
  * Used for canvassing decisions and outreach targeting.
  */
 
-import { PageHero } from "@/components/layout/PageHero";
-import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Progress } from "@/components/ui/progress";
-import { cn } from "@/lib/utils";
 import {
   AlertTriangle,
   ArrowRight,
@@ -26,6 +21,12 @@ import {
   Zap,
 } from "lucide-react";
 import { useState } from "react";
+
+import { PageHero } from "@/components/layout/PageHero";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Progress } from "@/components/ui/progress";
+import { cn } from "@/lib/utils";
 
 interface PreQualResult {
   address: string;

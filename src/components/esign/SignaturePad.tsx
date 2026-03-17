@@ -7,10 +7,10 @@
  */
 
 import { useRef, useState } from "react";
-import { logger } from "@/lib/logger";
 import SignatureCanvas from "react-signature-canvas";
 
 import { Button } from "@/components/ui/button";
+import { logger } from "@/lib/logger";
 
 interface SignaturePadProps {
   onSave: (signatureDataUrl: string) => void | Promise<void>;

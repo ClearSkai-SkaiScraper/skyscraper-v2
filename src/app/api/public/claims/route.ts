@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
-import { logger } from "@/lib/logger";
 
 import { ensurePublicDemoOrg } from "@/lib/demo/ensurePublicDemo";
+import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 import { toPlainJSON } from "@/lib/serialize";
 

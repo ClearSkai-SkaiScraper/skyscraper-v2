@@ -1,10 +1,10 @@
 export const dynamic = "force-dynamic";
 
 import { auth } from "@clerk/nextjs/server";
-import { logger } from "@/lib/logger";
 import { NextResponse } from "next/server";
 
 import { correlateDamageWithWeather } from "@/lib/intel/correlation/damage-weather";
+import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 
 export async function POST(req: Request) {

@@ -6,10 +6,10 @@ export const revalidate = 0;
 // EXPORT API ROUTE - /api/reports/[reportId]/export
 // ============================================================================
 
-import { logger } from "@/lib/logger";
 import { NextRequest, NextResponse } from "next/server";
 
 import { withAuth } from "@/lib/auth/withAuth";
+import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 import {
   fetchReportBranding,

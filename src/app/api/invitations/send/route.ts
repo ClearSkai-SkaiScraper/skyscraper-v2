@@ -6,11 +6,11 @@ export const dynamic = "force-dynamic";
  * Supports single and bulk invitations
  */
 
-import { logger } from "@/lib/logger";
 import { NextRequest, NextResponse } from "next/server";
 
 import { logCriticalAction } from "@/lib/audit/criticalActions";
 import { withAuth } from "@/lib/auth/withAuth";
+import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 
 export const POST = withAuth(async (request: NextRequest, { userId, orgId }) => {

@@ -7,10 +7,9 @@ import { NoOrgMembershipBanner } from "@/components/guards/NoOrgMembershipBanner
 import { PageHero } from "@/components/layout/PageHero";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { logger } from "@/lib/logger";
 import { getCurrentUserPermissions } from "@/lib/permissions";
 import prisma from "@/lib/prisma";
-
-import { logger } from "@/lib/logger";
 
 export const dynamic = "force-dynamic";
 

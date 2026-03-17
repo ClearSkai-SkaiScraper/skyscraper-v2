@@ -8,10 +8,10 @@ export const revalidate = 0;
 // GET  /api/reports/[reportId]/ai/[sectionKey] — get section state
 // POST /api/reports/[reportId]/ai/[sectionKey] — generate AI suggestion
 
-import { logger } from "@/lib/logger";
 import { NextRequest, NextResponse } from "next/server";
 
 import { withAuth } from "@/lib/auth/withAuth";
+import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 import { runReportBuilder } from "@/lib/report-engine/ai";
 import { buildPayloadWithAddons } from "@/lib/report-engine/buildMasterPayload";

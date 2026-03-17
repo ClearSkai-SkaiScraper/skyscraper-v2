@@ -10,9 +10,9 @@
  * Use this EVERYWHERE that needs org context.
  */
 
-import { logger } from "@/lib/logger";
 import { auth } from "@clerk/nextjs/server";
 
+import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 
 /** Dynamic delegate for user_organizations model */

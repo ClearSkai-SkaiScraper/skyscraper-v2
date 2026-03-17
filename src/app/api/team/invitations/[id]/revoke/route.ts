@@ -1,11 +1,11 @@
 export const dynamic = "force-dynamic";
 
 import { auth } from "@clerk/nextjs/server";
-import { logger } from "@/lib/logger";
 import { NextResponse } from "next/server";
 
 import { getTenant } from "@/lib/auth/tenant";
 import { prismaModel } from "@/lib/db/prismaModel";
+import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 
 // Activity model for logging (soft-fail if not available)

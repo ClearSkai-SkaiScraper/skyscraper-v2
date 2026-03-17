@@ -9,8 +9,9 @@
  */
 
 import fs from "fs";
-import { logger } from "@/lib/logger";
 import path from "path";
+
+import { logger } from "@/lib/logger";
 
 const LOG_DIR = path.join(process.cwd(), "logs", "ai");
 

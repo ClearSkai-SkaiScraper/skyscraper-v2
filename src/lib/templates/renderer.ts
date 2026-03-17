@@ -5,13 +5,14 @@
  * Uses Puppeteer for HTML-to-PDF conversion
  */
 
-import { logger } from "@/lib/logger";
 import puppeteer, {
   type Browser,
   type Page,
   type PDFOptions,
   type ScreenshotOptions,
 } from "puppeteer";
+
+import { logger } from "@/lib/logger";
 
 import { mergeTemplate } from "./mergeTemplate";
 

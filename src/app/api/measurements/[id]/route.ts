@@ -4,10 +4,10 @@
  * DELETE /api/measurements/[id]  — cancel an order
  */
 
-import { logger } from "@/lib/logger";
 import { NextRequest, NextResponse } from "next/server";
 
 import { requireAuth } from "@/lib/auth/requireAuth";
+import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 
 export const runtime = "nodejs";

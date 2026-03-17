@@ -11,11 +11,12 @@
  * Can be upgraded to Mapbox/Leaflet later.
  */
 
+import { Globe, Loader2, XCircle } from "lucide-react";
+import { useCallback, useEffect, useState } from "react";
+
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
-import { Globe, Loader2, XCircle } from "lucide-react";
-import { useCallback, useEffect, useState } from "react";
 
 interface ClusterMember {
   claimId: string;

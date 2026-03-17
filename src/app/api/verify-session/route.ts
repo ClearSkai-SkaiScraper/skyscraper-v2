@@ -1,7 +1,8 @@
-import { logger } from "@/lib/logger";
-import { getStripeClient } from "@/lib/stripe";
 import { auth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
+
+import { logger } from "@/lib/logger";
+import { getStripeClient } from "@/lib/stripe";
 
 export const dynamic = "force-dynamic";
 

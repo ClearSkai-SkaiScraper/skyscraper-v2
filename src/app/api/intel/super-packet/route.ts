@@ -22,7 +22,6 @@ export const dynamic = "force-dynamic";
  * - NUCLEAR: 20-40 pages (reinspection, PA disputes, attorneys)
  */
 
-import { logger } from "@/lib/logger";
 import type { Prisma } from "@prisma/client";
 import { NextResponse } from "next/server";
 
@@ -35,6 +34,7 @@ import {
   type ForensicWeatherResult,
   generateForensicWeatherReport,
 } from "@/lib/intel/reports/forensic-weather";
+import { logger } from "@/lib/logger";
 import { buildFullClaimPacketPDF } from "@/lib/pdf/full-claim-packet";
 import prisma from "@/lib/prisma";
 

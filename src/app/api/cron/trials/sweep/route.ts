@@ -1,7 +1,7 @@
-import { logger } from "@/lib/logger";
 import { NextRequest, NextResponse } from "next/server";
 
 import { verifyCronSecret } from "@/lib/cron/verifyCronSecret";
+import { logger } from "@/lib/logger";
 import {
   createTrial1HourEmail,
   createTrial24HourEmail,

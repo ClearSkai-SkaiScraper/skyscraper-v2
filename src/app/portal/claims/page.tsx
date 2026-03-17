@@ -1,6 +1,5 @@
 "use client";
 
-import { logger } from "@/lib/logger";
 import { format, isValid } from "date-fns";
 import { ArrowRight, CheckCircle, Clock, FileText, MapPin, Shield } from "lucide-react";
 import Link from "next/link";
@@ -10,6 +9,7 @@ import PortalPageHero from "@/components/portal/portal-page-hero";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { logger } from "@/lib/logger";
 
 /**
  * Claims List Page - Client Portal

@@ -4,9 +4,9 @@
  */
 
 import { NextRequest, NextResponse } from "next/server";
-import { logger } from "@/lib/logger";
 
 import { requireApiAuth } from "@/lib/auth/apiAuth";
+import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 
 export const runtime = "nodejs";

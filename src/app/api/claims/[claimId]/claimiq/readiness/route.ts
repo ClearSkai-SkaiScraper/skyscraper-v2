@@ -7,10 +7,11 @@
  * Used by the ClaimIQ Dashboard to show pros exactly where their claim stands.
  */
 
+import { NextRequest, NextResponse } from "next/server";
+
 import { assessClaimReadiness, predictScoreImpacts } from "@/lib/claimiq/assembly-engine";
 import { logger } from "@/lib/logger";
 import { safeOrgContext } from "@/lib/safeOrgContext";
-import { NextRequest, NextResponse } from "next/server";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;

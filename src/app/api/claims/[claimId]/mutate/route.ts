@@ -28,9 +28,7 @@
  * ============================================================================
  */
 
-import { logger } from "@/lib/logger";
 import crypto from "crypto";
-
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 
@@ -38,6 +36,7 @@ import { getOrgClaimOrThrow, OrgScopeError } from "@/lib/auth/orgScope";
 import { canInviteClients } from "@/lib/auth/permissions";
 import { withAuth } from "@/lib/auth/withAuth";
 import { sendEmail, TEMPLATES } from "@/lib/email/resend";
+import { logger } from "@/lib/logger";
 import { sendTemplatedNotification } from "@/lib/notifications/templates";
 import prisma from "@/lib/prisma";
 import { verifyProClaimAccess } from "@/lib/security";

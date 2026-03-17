@@ -1,6 +1,5 @@
 "use client";
 
-import { logger } from "@/lib/logger";
 import {
   Bell,
   BellOff,
@@ -19,6 +18,7 @@ import PortalPageHero from "@/components/portal/portal-page-hero";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { logger } from "@/lib/logger";
 
 interface Notification {
   id: string;

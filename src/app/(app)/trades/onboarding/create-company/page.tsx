@@ -5,11 +5,12 @@
 
 "use client";
 
-import { logger } from "@/lib/logger";
 import { Building2, Loader2, MapPin, Shield } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
+
+import { logger } from "@/lib/logger";
 
 const TRADE_TYPES = [
   "Roofing",

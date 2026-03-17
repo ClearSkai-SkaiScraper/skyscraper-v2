@@ -3,10 +3,10 @@ export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
 import { auth } from "@clerk/nextjs/server";
-import { logger } from "@/lib/logger";
 import { NextRequest, NextResponse } from "next/server";
 
 import { getTrialInfo } from "@/lib/billing/trials";
+import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 
 export async function GET(request: NextRequest) {

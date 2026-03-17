@@ -7,7 +7,6 @@
  */
 
 import { Briefcase, FileText, Loader2, Users } from "lucide-react";
-import { logger } from "@/lib/logger";
 import { useEffect, useState } from "react";
 
 import {
@@ -19,6 +18,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { logger } from "@/lib/logger";
 
 interface JobClaimItem {
   id: string;

@@ -1,7 +1,6 @@
 "use client";
 
 import { useAuth, useUser } from "@clerk/nextjs";
-import { logger } from "@/lib/logger";
 import { Check, MessageCircle, Send, Sparkles, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
@@ -17,6 +16,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { logger } from "@/lib/logger";
 
 interface FullAccessStatus {
   hasFullAccess: boolean;

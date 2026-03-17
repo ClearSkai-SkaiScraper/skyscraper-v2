@@ -6,10 +6,11 @@
  * Uses Clerk auth to identify the portal user, then looks up client_access by email.
  */
 
-import { logger } from "@/lib/logger";
-import prisma from "@/lib/prisma";
 import { auth } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
+
+import { logger } from "@/lib/logger";
+import prisma from "@/lib/prisma";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";

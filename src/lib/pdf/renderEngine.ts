@@ -1,9 +1,10 @@
 import { PutObjectCommand,S3Client } from "@aws-sdk/client-s3";
-import { logger } from "@/lib/logger";
 import crypto from "crypto";
 import fs from "fs/promises";
 import path from "path";
 import puppeteer from "puppeteer";
+
+import { logger } from "@/lib/logger";
 
 type RenderPayload = {
   jobId: string;

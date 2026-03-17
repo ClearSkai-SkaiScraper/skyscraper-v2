@@ -4,8 +4,8 @@
  * Helper to create notifications in the database
  */
 
-import prisma from "@/lib/prisma";
 import { logger } from "@/lib/logger";
+import prisma from "@/lib/prisma";
 
 export interface CreateNotificationData {
   userId: string;

@@ -7,10 +7,10 @@ export const dynamic = "force-dynamic";
  * Revokes public access to video report
  */
 
-import { logger } from "@/lib/logger";
 import { auth } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
 
+import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 
 // Prisma singleton imported from @/lib/db/prisma

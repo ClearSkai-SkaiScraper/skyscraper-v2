@@ -1,6 +1,5 @@
 "use client";
 
-import { logger } from "@/lib/logger";
 import {
   Calculator,
   Download,
@@ -25,6 +24,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { logger } from "@/lib/logger";
 
 interface Claim {
   id: string;

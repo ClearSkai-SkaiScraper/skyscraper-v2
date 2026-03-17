@@ -1,6 +1,6 @@
 // src/lib/email/draftPacketEmail.ts
-import { getOpenAI } from "@/lib/openai";
 import { logger } from "@/lib/logger";
+import { getOpenAI } from "@/lib/openai";
 
 import type { DraftedPacketEmail,PacketRecipientType } from "./types";
 

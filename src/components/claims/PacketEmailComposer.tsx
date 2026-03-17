@@ -1,7 +1,6 @@
 "use client";
 
 import { Loader2 } from "lucide-react";
-import { logger } from "@/lib/logger";
 import { useState } from "react";
 
 import { Button } from "@/components/ui/button";
@@ -10,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import type { DraftedPacketEmail } from "@/lib/email/types";
+import { logger } from "@/lib/logger";
 
 interface PacketEmailComposerProps {
   isOpen: boolean;

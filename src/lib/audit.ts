@@ -14,8 +14,8 @@ export async function recordScopeEdit(params: {
   );
 }
 // Client-side audit helper for Phase 5
-import type { AuditAction } from "@/modules/audit/core/logger";
 import { logger } from "@/lib/logger";
+import type { AuditAction } from "@/modules/audit/core/logger";
 
 export interface AuditEvent {
   action: AuditAction;

@@ -1,7 +1,7 @@
-import { logger } from "@/lib/logger";
 import { auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 
+import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 
 // Prisma singleton imported from @/lib/db/prisma

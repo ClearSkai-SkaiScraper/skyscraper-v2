@@ -1,10 +1,10 @@
 // /api/signatures/request
 
-import { logger } from "@/lib/logger";
 import { NextRequest, NextResponse } from "next/server";
 
 import { getOrgClaimOrThrow } from "@/lib/auth/orgScope";
 import { withAuth } from "@/lib/auth/withAuth";
+import { logger } from "@/lib/logger";
 import { notifySignatureRequested } from "@/lib/notifications/sendNotification";
 import prisma from "@/lib/prisma";
 import { checkRateLimit } from "@/lib/rate-limit";

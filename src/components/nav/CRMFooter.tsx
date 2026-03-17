@@ -1,8 +1,9 @@
 "use client";
 
 import { useOrganization } from "@clerk/nextjs";
-import { logger } from "@/lib/logger";
 import { useEffect, useState } from "react";
+
+import { logger } from "@/lib/logger";
 
 interface BrandingData {
   companyName: string | null;

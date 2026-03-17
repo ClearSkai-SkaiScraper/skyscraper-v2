@@ -6,11 +6,8 @@
 
 "use client";
 
-import { logger } from "@/lib/logger";
 import { Loader2, Wrench } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
-
-import { EmptyState } from "@/components/ui/EmptyState";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 
@@ -24,6 +21,8 @@ import {
   WorkspaceSignedDoc,
   WorkspaceTimelineEvent,
 } from "@/components/portal/ClientWorkspace";
+import { EmptyState } from "@/components/ui/EmptyState";
+import { logger } from "@/lib/logger";
 
 // ============================================================================
 // Main Component

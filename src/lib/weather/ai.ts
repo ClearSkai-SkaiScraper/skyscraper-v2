@@ -4,8 +4,8 @@
  */
 
 import { getOpenAI } from "@/lib/ai/client";
-import { logger } from "@/lib/logger";
 import { safeAI } from "@/lib/aiGuard";
+import { logger } from "@/lib/logger";
 import type { DOLResult, PropertyContext, ScoredEvent } from "@/types/weather";
 
 const MODEL = "gpt-4o-mini"; // Fast & cost-effective

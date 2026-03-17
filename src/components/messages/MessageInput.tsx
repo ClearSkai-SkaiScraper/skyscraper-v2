@@ -1,6 +1,5 @@
 "use client";
 
-import { logger } from "@/lib/logger";
 import { Send } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -8,6 +7,7 @@ import { toast } from "sonner";
 import { AttachmentUploadButton } from "@/components/messages/AttachmentUploadButton";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import { logger } from "@/lib/logger";
 
 interface MessageInputProps {
   threadId: string;

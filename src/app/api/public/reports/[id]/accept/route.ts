@@ -9,10 +9,10 @@ export const revalidate = 0;
 // Client acceptance endpoint (no auth required, uses token)
 // =====================================================
 
-import { logger } from "@/lib/logger";
 import { NextResponse } from "next/server";
 
 import { supabase } from "@/integrations/supabase/client";
+import { logger } from "@/lib/logger";
 import { sendAcceptanceReceiptEmail } from "@/lib/mailer";
 import prisma from "@/lib/prisma";
 import { buildAcceptanceReceiptPDF, getReceiptFilename } from "@/lib/receipt-pdf";

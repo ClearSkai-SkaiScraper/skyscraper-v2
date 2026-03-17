@@ -14,6 +14,7 @@ import { useEffect, useState } from "react";
 
 import { PageContainer } from "@/components/layout/PageContainer";
 import { PageHero } from "@/components/layout/PageHero";
+import { SmartTemplateSelector } from "@/components/reports/SmartTemplateSelector";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -25,8 +26,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-
-import { SmartTemplateSelector } from "@/components/reports/SmartTemplateSelector";
 import { logger } from "@/lib/logger";
 
 interface Claim {

@@ -6,13 +6,13 @@ export const dynamic = "force-dynamic";
  * Assembles a complete claims-ready folder from a claim ID
  */
 
-import { logger } from "@/lib/logger";
 import { auth } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
 
 import { assembleClaimFolder } from "@/lib/claims-folder/folderAssembler";
 import type { SectionStatus } from "@/lib/claims-folder/folderSchema";
 import { AssembleFolderRequestSchema } from "@/lib/claims-folder/folderSchema";
+import { logger } from "@/lib/logger";
 
 // Demo folder for testing - uses `any` to allow flexible demo structure
 // that matches what the UI components expect

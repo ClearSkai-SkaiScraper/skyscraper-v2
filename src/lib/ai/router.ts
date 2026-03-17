@@ -10,6 +10,7 @@
 // Import logging utilities
 // Static imports for all AI modules (fixes Next.js ES module issue)
 import { logger } from "@/lib/observability/logger";
+
 import * as aiAssistant from "./aiAssistant";
 import * as automation from "./automation";
 import * as autoTimeline from "./autoTimeline";

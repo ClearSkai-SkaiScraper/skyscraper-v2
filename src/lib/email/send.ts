@@ -16,8 +16,8 @@ import "server-only";
 import { render } from "@react-email/render";
 import { createElement } from "react";
 
-import ClaimAssigned from "@/emails/ClaimAssigned";
 import ClaimStatusUpdateEmail from "@/emails/claim-status-update";
+import ClaimAssigned from "@/emails/ClaimAssigned";
 import NewMessageEmail from "@/emails/new-message";
 import ReportReadyEmail from "@/emails/report-ready";
 import TeamInviteEmail from "@/emails/team-invite";

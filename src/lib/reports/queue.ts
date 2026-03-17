@@ -18,10 +18,11 @@
  * - Error logging for debugging
  */
 
-import prisma from "@/lib/prisma";
-import { logger } from "@/lib/logger";
 import { Prisma } from "@prisma/client";
 import { nanoid } from "nanoid";
+
+import { logger } from "@/lib/logger";
+import prisma from "@/lib/prisma";
 
 // Report queue statuses
 export type ReportQueueStatus = "queued" | "processing" | "completed" | "failed" | "cancelled";

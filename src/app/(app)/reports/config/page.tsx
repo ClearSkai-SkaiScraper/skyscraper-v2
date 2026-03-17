@@ -1,7 +1,8 @@
-import { PageHero } from "@/components/layout/PageHero";
-import prisma from "@/lib/prisma";
 import { Loader2 } from "lucide-react";
 import NextDynamic from "next/dynamic";
+
+import { PageHero } from "@/components/layout/PageHero";
+import prisma from "@/lib/prisma";
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 

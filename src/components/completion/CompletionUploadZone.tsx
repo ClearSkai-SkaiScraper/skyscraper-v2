@@ -1,12 +1,12 @@
 "use client";
 
-import { logger } from "@/lib/logger";
 import { FileText, Image as ImageIcon, X } from "lucide-react";
 import { useCallback, useState } from "react";
 import { useDropzone } from "react-dropzone";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
+import { logger } from "@/lib/logger";
 
 interface CompletionUploadZoneProps {
   claimId: string;

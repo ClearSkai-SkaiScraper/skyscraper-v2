@@ -5,8 +5,8 @@ import { Clock, DollarSign, Lightbulb, TrendingUp, Users } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
-import ProgressBar from "@/components/ProgressBar";
 import { PageHero } from "@/components/layout/PageHero";
+import ProgressBar from "@/components/ProgressBar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";

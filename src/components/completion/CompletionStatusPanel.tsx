@@ -1,11 +1,11 @@
 "use client";
 
-import { logger } from "@/lib/logger";
 import { AlertCircle, CheckCircle2, Circle, Loader2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
+import { logger } from "@/lib/logger";
 
 interface CompletionStatusPanelProps {
   claimId: string;

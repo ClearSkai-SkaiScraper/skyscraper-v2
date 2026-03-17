@@ -20,10 +20,10 @@
  */
 
 import {
-  getDamageColor,
-  resolveIRCCode,
   type DamageColor,
+  getDamageColor,
   type IRCCodeEntry,
+  resolveIRCCode,
 } from "@/lib/constants/irc-codes";
 import {
   classifyDamageCategory,

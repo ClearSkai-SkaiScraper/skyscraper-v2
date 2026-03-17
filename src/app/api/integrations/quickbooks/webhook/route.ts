@@ -8,9 +8,10 @@
  * Docs: https://developer.intuit.com/app/developer/qbo/docs/develop/webhooks
  */
 
+import { NextRequest, NextResponse } from "next/server";
+
 import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
-import { NextRequest, NextResponse } from "next/server";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";

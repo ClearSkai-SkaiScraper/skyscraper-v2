@@ -2,9 +2,9 @@
 "use client";
 
 import { useState } from "react";
+import { toast } from "sonner";
 
 import { useWeather } from "@/hooks/useWeather";
-import { toast } from "sonner";
 
 import { PDFPreviewModal } from "./PDFPreviewModal";
 

@@ -1,11 +1,11 @@
 export const dynamic = "force-dynamic";
 
 // src/app/api/claims-folder/generate/executive-summary/route.ts
-import { logger } from "@/lib/logger";
-import { NextResponse, type NextRequest } from "next/server";
+import { type NextRequest,NextResponse } from "next/server";
 import { z } from "zod";
 
 import { isAuthError, requireAuth } from "@/lib/auth/requireAuth";
+import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 
 const RequestSchema = z.object({

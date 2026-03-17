@@ -6,7 +6,6 @@
 
 "use client";
 
-import { logger } from "@/lib/logger";
 import {
   AlertCircle,
   Box,
@@ -20,6 +19,8 @@ import {
   Zap,
 } from "lucide-react";
 import { useEffect, useState } from "react";
+
+import { logger } from "@/lib/logger";
 
 interface AIResult {
   task: string;

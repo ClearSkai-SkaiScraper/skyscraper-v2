@@ -1,10 +1,10 @@
 export const dynamic = "force-dynamic";
 
-import { logger } from "@/lib/logger";
 import { NextRequest, NextResponse } from "next/server";
 
 import { withAuth } from "@/lib/auth/withAuth";
 import { prismaMaybeModel } from "@/lib/db/prismaModel";
+import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 
 // Use prismaMaybeModel since report_templates may not be in PRISMA_MODELS

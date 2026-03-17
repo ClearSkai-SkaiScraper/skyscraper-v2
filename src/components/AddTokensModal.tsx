@@ -8,6 +8,8 @@
  * TODO: Re-implement with Stripe checkout when token pricing is re-enabled.
  */
 
+import { Coins } from "lucide-react";
+
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -16,7 +18,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Coins } from "lucide-react";
 
 interface AddTokensModalProps {
   orgId: string;

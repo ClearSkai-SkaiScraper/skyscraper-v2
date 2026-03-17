@@ -9,9 +9,9 @@
  * Called by Vercel Cron (see vercel.json)
  */
 
-import { logger } from "@/lib/logger";
 import { NextResponse } from "next/server";
 
+import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 
 export const runtime = "nodejs";

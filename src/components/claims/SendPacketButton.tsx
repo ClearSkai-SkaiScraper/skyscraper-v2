@@ -1,11 +1,11 @@
 "use client";
 
 import { Loader2,Mail } from "lucide-react";
-import { logger } from "@/lib/logger";
 import { useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import type { DraftedPacketEmail, PacketRecipientType } from "@/lib/email/types";
+import { logger } from "@/lib/logger";
 
 import { PacketEmailComposer } from "./PacketEmailComposer";
 

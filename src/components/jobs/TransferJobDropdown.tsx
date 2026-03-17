@@ -1,7 +1,6 @@
 // src/components/jobs/TransferJobDropdown.tsx
 "use client";
 
-import { logger } from "@/lib/logger";
 import { Archive, ArrowRight, Briefcase, DollarSign, FileText, Shield, Wrench } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -16,6 +15,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { logger } from "@/lib/logger";
 
 interface TransferJobDropdownProps {
   jobId: string;

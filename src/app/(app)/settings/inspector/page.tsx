@@ -1,5 +1,9 @@
 "use client";
 
+import { Award, CheckCircle2, FileText, Loader2, Phone, Save, Shield, User, X } from "lucide-react";
+import { useCallback, useEffect, useState } from "react";
+import { toast } from "sonner";
+
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -13,9 +17,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { Award, CheckCircle2, FileText, Loader2, Phone, Save, Shield, User, X } from "lucide-react";
-import { useCallback, useEffect, useState } from "react";
-import { toast } from "sonner";
 
 interface InspectorProfile {
   id: string;

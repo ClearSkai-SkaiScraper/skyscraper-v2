@@ -14,8 +14,9 @@
  *   const { data, error } = await storage.upload('bucket', 'file.pdf', buffer);
  */
 
-import { logger } from "@/lib/observability/logger";
 import { createClient, SupabaseClient } from "@supabase/supabase-js";
+
+import { logger } from "@/lib/observability/logger";
 
 let _client: SupabaseClient | null = null;
 

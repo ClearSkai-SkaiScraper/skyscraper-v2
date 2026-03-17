@@ -3,8 +3,9 @@
  * Sends emails when storm intakes are completed
  */
 
-import { logger } from "@/lib/observability/logger";
 import { Resend } from "resend";
+
+import { logger } from "@/lib/observability/logger";
 
 let _resend: Resend | null = null;
 

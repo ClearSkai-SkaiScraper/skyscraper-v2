@@ -15,12 +15,12 @@
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-import { onPhotosUploaded } from "@/lib/claimiq/readiness-hooks";
-import { logger } from "@/lib/logger";
 import { NextRequest, NextResponse } from "next/server";
 
 import { getOrgClaimOrThrow, OrgScopeError } from "@/lib/auth/orgScope";
 import { withAuth } from "@/lib/auth/withAuth";
+import { onPhotosUploaded } from "@/lib/claimiq/readiness-hooks";
+import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 
 /**

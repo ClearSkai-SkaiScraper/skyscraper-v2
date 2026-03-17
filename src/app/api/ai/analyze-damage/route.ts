@@ -1,6 +1,5 @@
 export const dynamic = "force-dynamic";
 
-import { logger } from "@/lib/logger";
 import { currentUser } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -9,6 +8,7 @@ import {
   requireActiveSubscription,
   SubscriptionRequiredError,
 } from "@/lib/billing/requireActiveSubscription";
+import { logger } from "@/lib/logger";
 import { getRateLimitIdentifier, rateLimiters } from "@/lib/rate-limit";
 import { analyzeDamageFormDataSchema, validateAIRequest } from "@/lib/validation/aiSchemas";
 

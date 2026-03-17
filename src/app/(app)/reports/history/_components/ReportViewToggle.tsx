@@ -1,9 +1,10 @@
 "use client";
 
-import { DocumentOrganizer } from "@/components/documents/DocumentOrganizer";
-import { cn } from "@/lib/utils";
 import { FolderOpen, List } from "lucide-react";
 import { type ReactNode, useState } from "react";
+
+import { DocumentOrganizer } from "@/components/documents/DocumentOrganizer";
+import { cn } from "@/lib/utils";
 
 interface UnifiedReportItem {
   id: string;

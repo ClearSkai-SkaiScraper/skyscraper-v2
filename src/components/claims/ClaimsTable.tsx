@@ -88,7 +88,7 @@ function SortableHeader({
 
   return (
     <th
-      className={`p-3 text-${align} group cursor-pointer select-none text-xs font-semibold uppercase tracking-wide text-[color:var(--muted)] transition-colors hover:text-[color:var(--primary)]`}
+      className={`text- p-3${align} group cursor-pointer select-none text-xs font-semibold uppercase tracking-wide text-[color:var(--muted)] transition-colors hover:text-[color:var(--primary)]`}
       onClick={() => onSort(field)}
     >
       <div className={`flex items-center gap-1 ${align === "right" ? "justify-end" : ""}`}>

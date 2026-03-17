@@ -6,8 +6,8 @@
  */
 
 import { Prisma } from "@prisma/client";
-import { logger } from "@/lib/logger";
 
+import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 
 /**

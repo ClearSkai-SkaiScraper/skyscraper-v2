@@ -5,12 +5,13 @@
 
 "use client";
 
-import { logger } from "@/lib/logger";
 import { CheckCircle, Copy, Loader2, Users } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
+
+import { logger } from "@/lib/logger";
 
 export default function WaitingPage() {
   const router = useRouter();

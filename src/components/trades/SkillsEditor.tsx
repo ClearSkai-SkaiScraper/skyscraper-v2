@@ -1,14 +1,15 @@
 "use client";
 
+import { Check, Edit2, Plus, X } from "lucide-react";
+import { useState } from "react";
+import { toast } from "sonner";
+
 import { Badge } from "@/components/ui/badge";
-import { logger } from "@/lib/logger";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Check, Edit2, Plus, X } from "lucide-react";
-import { useState } from "react";
-import { toast } from "sonner";
+import { logger } from "@/lib/logger";
 
 interface Skill {
   id: string;

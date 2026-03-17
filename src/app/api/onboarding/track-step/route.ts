@@ -5,10 +5,10 @@ export const dynamic = "force-dynamic";
  * Tracks onboarding wizard progress server-side.
  * Body: { step: number, complete?: boolean, metadata?: Record<string, unknown> }
  */
-import { logger } from "@/lib/logger";
 import { NextResponse } from "next/server";
 
 import { requireApiAuth } from "@/lib/auth/apiAuth";
+import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 
 export async function POST(req: Request) {

@@ -1,10 +1,11 @@
 "use client";
 
-import { logger } from "@/lib/logger";
 import { CheckCircle2, FileText, Loader2, Scale, Shield, ShieldCheck } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 import { toast } from "sonner";
+
+import { logger } from "@/lib/logger";
 
 export interface PendingLegalDoc {
   id: string;

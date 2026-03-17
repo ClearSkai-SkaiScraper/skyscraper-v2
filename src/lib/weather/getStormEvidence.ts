@@ -7,9 +7,10 @@
  * should use this adapter instead of querying weather data directly.
  */
 
+import { createId } from "@paralleldrive/cuid2";
+
 import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
-import { createId } from "@paralleldrive/cuid2";
 
 // ============================================================================
 // TYPES

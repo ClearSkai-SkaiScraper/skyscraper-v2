@@ -9,10 +9,10 @@ export const dynamic = "force-dynamic";
  * GET /api/bids?proId=xxx - Get all bids by a pro
  */
 
-import { logger } from "@/lib/logger";
 import { auth } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
 
+import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 
 // POST - Submit new bid

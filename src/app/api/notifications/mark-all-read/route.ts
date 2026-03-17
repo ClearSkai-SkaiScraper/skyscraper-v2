@@ -4,13 +4,12 @@ export const dynamic = "force-dynamic";
  * API: Mark All Notifications as Read
  */
 
-import { logger } from "@/lib/logger";
+import { auth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 
 import { getTenant } from "@/lib/auth/tenant";
+import { logger } from "@/lib/logger";
 import { markAllNotificationsRead } from "@/lib/notifications/notificationHelper";
-
-import { auth } from "@clerk/nextjs/server";
 
 export async function POST(req: Request) {
   try {

@@ -1,8 +1,9 @@
 "use client";
 
-import { logger } from "@/lib/logger";
 import { ClerkProvider } from "@clerk/nextjs";
 import * as React from "react";
+
+import { logger } from "@/lib/logger";
 
 export default function Providers({ children }: { children: React.ReactNode }) {
   const publishableKey = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;

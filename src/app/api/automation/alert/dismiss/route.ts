@@ -7,11 +7,11 @@ export const dynamic = "force-dynamic";
  * Dismisses an alert
  */
 
-import { logger } from "@/lib/logger";
 import { NextRequest, NextResponse } from "next/server";
 
 import { withAuth } from "@/lib/auth/withAuth";
 import { getDelegate } from "@/lib/db/modelAliases";
+import { logger } from "@/lib/logger";
 
 export const POST = withAuth(async (req: NextRequest, { orgId }) => {
   try {

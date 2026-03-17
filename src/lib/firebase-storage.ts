@@ -1,5 +1,4 @@
 // Enhanced Firebase Storage utilities with upload, preview, and thumbnail generation
-import { logger } from "@/lib/logger";
 import {
   deleteObject,
   getDownloadURL,
@@ -11,6 +10,7 @@ import {
 import { toast } from "sonner";
 
 import { storage } from "@/lib/firebase";
+import { logger } from "@/lib/logger";
 
 export interface UploadProgress {
   progress: number;

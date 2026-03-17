@@ -17,6 +17,8 @@
  *   5. Address Pre-Qualification — Predict damage likelihood at any address
  */
 
+import { createId } from "@paralleldrive/cuid2";
+
 import {
   findNearbyClaims,
   findNearbyImpacts,
@@ -26,7 +28,6 @@ import {
 import type { GeoPoint, NearbyClaimResult, NearbyImpactResult } from "@/lib/geo/queries";
 import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
-import { createId } from "@paralleldrive/cuid2";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Types

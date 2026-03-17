@@ -4,8 +4,8 @@
  * Used by all PDF generators for consistent headers/footers
  */
 
-import prisma from "@/lib/prisma";
 import { logger } from "@/lib/logger";
+import prisma from "@/lib/prisma";
 
 export interface BrandingInfo {
   companyName: string;

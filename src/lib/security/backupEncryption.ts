@@ -6,9 +6,10 @@
  */
 
 import crypto from "crypto";
-import { logger } from "@/lib/logger";
 import { createReadStream, createWriteStream } from "fs";
 import { pipeline } from "stream/promises";
+
+import { logger } from "@/lib/logger";
 
 const ALGORITHM = "aes-256-gcm";
 const KEY_LENGTH = 32;

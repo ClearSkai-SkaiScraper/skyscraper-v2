@@ -5,7 +5,6 @@
 // ============================================================================
 
 import * as Sentry from "@sentry/nextjs";
-import { logger } from "@/lib/logger";
 import {
   AlignmentType,
   convertInchesToTwip,
@@ -16,6 +15,8 @@ import {
   Paragraph,
   TextRun,
 } from "docx";
+
+import { logger } from "@/lib/logger";
 
 import { ClaimPacketData, PACKET_FOOTERS,PACKET_HEADERS, PacketVersion } from "./templates";
 

@@ -1,8 +1,8 @@
-import { logger } from "@/lib/logger";
 import * as Sentry from "@sentry/nextjs";
 import { NextResponse } from "next/server";
 import Stripe from "stripe";
 
+import { logger } from "@/lib/logger";
 import {
   createPaymentFailedEmail,
   createTrialEndingEmail,

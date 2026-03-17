@@ -1,8 +1,9 @@
 "use client";
 
 import { ClockIcon, CloudIcon, ExclamationTriangleIcon,MapPinIcon } from "@heroicons/react/24/outline";
-import { logger } from "@/lib/logger";
 import React, { useEffect, useState } from "react";
+
+import { logger } from "@/lib/logger";
 
 interface StormEvent {
   date: string;

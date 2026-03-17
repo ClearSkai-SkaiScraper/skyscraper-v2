@@ -1,10 +1,11 @@
 "use client";
 
 import "mapbox-gl/dist/mapbox-gl.css";
-import { logger } from "@/lib/logger";
 
 import mapboxgl from "mapbox-gl";
 import { useEffect, useRef, useState } from "react";
+
+import { logger } from "@/lib/logger";
 
 // Clean marker interface - no business logic
 export interface MapMarker {

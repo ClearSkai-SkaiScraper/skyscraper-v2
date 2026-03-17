@@ -1,13 +1,13 @@
 "use client";
 
 import { CheckCircle, File, FileText, Loader2, X } from "lucide-react";
-import { logger } from "@/lib/logger";
 import { useCallback, useState } from "react";
 import { useDropzone } from "react-dropzone";
 
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
+import { logger } from "@/lib/logger";
 
 interface DocumentUploadProps {
   claimId: string;

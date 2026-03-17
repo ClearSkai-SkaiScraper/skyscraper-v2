@@ -7,6 +7,8 @@ export const dynamic = "force-dynamic";
  * supplements, or damage reports with appropriate documentation.
  */
 
+import { NextRequest, NextResponse } from "next/server";
+
 import { withAuth } from "@/lib/auth/withAuth";
 import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
@@ -16,7 +18,6 @@ import {
   getDamageReportAttachments,
   getSupplementAttachments,
 } from "@/lib/weather/attachmentRules";
-import { NextRequest, NextResponse } from "next/server";
 
 export const GET = withAuth(
   async (req: NextRequest, { orgId }, routeParams: { params: Promise<{ claimId: string }> }) => {

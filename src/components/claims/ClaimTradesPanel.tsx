@@ -1,8 +1,8 @@
 "use client";
 
 import { Briefcase,Mail, Phone, Plus, Trash2 } from "lucide-react";
-import { logger } from "@/lib/logger";
 import { useEffect, useState } from "react";
+import { toast } from "sonner";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -14,7 +14,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { toast } from "sonner";
+import { logger } from "@/lib/logger";
 
 interface TradePartner {
   id: string;

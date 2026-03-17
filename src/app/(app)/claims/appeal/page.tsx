@@ -1,5 +1,18 @@
 "use client";
 
+import {
+  AlertCircle,
+  CheckCircle2,
+  Clock,
+  Download,
+  FileText,
+  Loader2,
+  Send,
+  Upload,
+} from "lucide-react";
+import { useSearchParams } from "next/navigation";
+import { useEffect, useState } from "react";
+
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -15,18 +28,6 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { logger } from "@/lib/logger";
-import {
-  AlertCircle,
-  CheckCircle2,
-  Clock,
-  Download,
-  FileText,
-  Loader2,
-  Send,
-  Upload,
-} from "lucide-react";
-import { useSearchParams } from "next/navigation";
-import { useEffect, useState } from "react";
 
 interface AppealHistoryItem {
   id: string;

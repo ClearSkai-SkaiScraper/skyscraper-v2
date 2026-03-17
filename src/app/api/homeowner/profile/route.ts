@@ -1,11 +1,11 @@
 export const dynamic = "force-dynamic";
 
 // MODULE 6: Homeowner Profiles - Update profile
-import { logger } from "@/lib/logger";
 import { auth, clerkClient } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 
+import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 
 const updateProfileSchema = z.object({

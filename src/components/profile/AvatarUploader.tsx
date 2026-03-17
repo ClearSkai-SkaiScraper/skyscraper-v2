@@ -1,12 +1,12 @@
 "use client";
 
 import { Upload, User } from "lucide-react";
-import { logger } from "@/lib/logger";
 import { useState } from "react";
+import { toast } from "sonner";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { toast } from "sonner";
+import { logger } from "@/lib/logger";
 
 interface AvatarUploaderProps {
   currentPhotoUrl?: string | null;

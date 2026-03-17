@@ -9,9 +9,9 @@ export const revalidate = 0;
 // Client decline endpoint (no auth required, uses token)
 // =====================================================
 
-import { logger } from "@/lib/logger";
 import { NextResponse } from "next/server";
 
+import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 
 export async function POST(req: Request, { params }: { params: { id: string } }) {

@@ -1,8 +1,8 @@
 export const dynamic = "force-dynamic";
-import { logger } from "@/lib/logger";
 import { NextRequest, NextResponse } from "next/server";
 
 import { RebuttalAgent } from "@/agents/rebuttalAgent";
+import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 import { getRateLimitIdentifier, rateLimiters } from "@/lib/rate-limit";
 import { htmlToPdfBuffer } from "@/lib/reports/pdf-utils";

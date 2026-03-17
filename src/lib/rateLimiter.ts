@@ -9,7 +9,7 @@
  */
 
 // Re-export from canonical module
-export { RATE_LIMIT_PRESETS, checkRateLimitCustom as checkRateLimit } from "@/lib/rate-limit";
+export { checkRateLimitCustom as checkRateLimit,RATE_LIMIT_PRESETS } from "@/lib/rate-limit";
 
 // Legacy type exports for backward compatibility
 export interface RateLimitConfig {

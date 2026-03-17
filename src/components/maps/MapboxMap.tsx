@@ -1,9 +1,10 @@
 "use client";
 
 import "mapbox-gl/dist/mapbox-gl.css";
-import { logger } from "@/lib/logger";
 
 import { useEffect, useRef, useState } from "react";
+
+import { logger } from "@/lib/logger";
 
 export interface MapMarker {
   id: string;

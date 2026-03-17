@@ -12,8 +12,8 @@ try {
   logger.debug("web-push not installed - push notifications disabled");
 }
 
-import prisma from "@/lib/prisma";
 import { logger } from "@/lib/logger";
+import prisma from "@/lib/prisma";
 
 // Configure web-push (these should be set in environment)
 const VAPID_PUBLIC_KEY = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY || "";

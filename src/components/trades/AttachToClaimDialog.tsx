@@ -6,7 +6,6 @@
 "use client";
 
 import { useState } from "react";
-import { logger } from "@/lib/logger";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -21,6 +20,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Textarea } from "@/components/ui/textarea";
+import { logger } from "@/lib/logger";
 
 interface AttachToClaimDialogProps {
   open: boolean;

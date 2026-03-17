@@ -17,7 +17,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 
 import { getOpenAI } from "@/lib/ai/client";
-import { detectByComponent, type ComponentType, type NormalizedDetection } from "@/lib/ai/roboflow";
+import { type ComponentType, detectByComponent, type NormalizedDetection } from "@/lib/ai/roboflow";
 import { withAuth } from "@/lib/auth/withAuth";
 import { logger } from "@/lib/logger";
 

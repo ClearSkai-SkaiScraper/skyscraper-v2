@@ -2,12 +2,13 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
-import { withOrgScope } from "@/lib/auth/tenant";
-import { logger } from "@/lib/logger";
-import prisma from "@/lib/prisma";
 import { createId } from "@paralleldrive/cuid2";
 import { NextResponse } from "next/server";
 import { z } from "zod";
+
+import { withOrgScope } from "@/lib/auth/tenant";
+import { logger } from "@/lib/logger";
+import prisma from "@/lib/prisma";
 
 const createNoticeSchema = z.object({
   community: z.string().min(1, "Community name is required"),

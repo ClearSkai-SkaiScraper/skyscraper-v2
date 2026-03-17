@@ -1,9 +1,9 @@
 "use client";
 
 import { useEffect } from "react";
-import { logger } from "@/lib/logger";
 
 import { useAutoInit } from "@/hooks/useAutoInit";
+import { logger } from "@/lib/logger";
 
 /**
  * Client component that auto-initializes user on first dashboard load

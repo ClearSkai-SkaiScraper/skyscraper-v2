@@ -2,6 +2,7 @@
 
 import { AlertCircle, Brain, Loader2, Zap } from "lucide-react";
 import { useEffect, useState } from "react";
+import { toast } from "sonner";
 
 import { BATFPanel } from "@/components/ai/BATFPanel";
 import { CarrierCompliancePanel } from "@/components/ai/CarrierCompliancePanel";
@@ -10,7 +11,6 @@ import StormImpactPanel from "@/components/ai/StormImpactPanel";
 import { SupplementPanel } from "@/components/ai/SupplementPanel";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { toast } from "sonner";
 import { useAIStream } from "@/hooks/useAIStream";
 
 import { DominusInsightCard } from "./DominusInsightCard";

@@ -9,8 +9,8 @@
  */
 
 import crypto from "crypto";
-import { logger } from "@/lib/logger";
 
+import { logger } from "@/lib/logger";
 import { EnsuredOrg } from "@/lib/org/ensureOrgForUser";
 import prisma from "@/lib/prisma";
 

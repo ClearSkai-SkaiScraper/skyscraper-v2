@@ -2,9 +2,9 @@
 
 import { AlertCircle, Copy, RefreshCw, X } from "lucide-react";
 import { useState } from "react";
+import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
-import { toast } from "sonner";
 
 interface ImageAnalysis {
   damageTypes: string[];

@@ -7,7 +7,6 @@
 
 "use client";
 
-import { logger } from "@/lib/logger";
 import {
   AlertCircle,
   Calculator,
@@ -34,6 +33,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { logger } from "@/lib/logger";
 
 interface EstimateExportPanelProps {
   leadId: string;

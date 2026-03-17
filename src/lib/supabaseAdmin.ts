@@ -1,4 +1,5 @@
 import { createClient } from "@supabase/supabase-js";
+
 import { logger } from "@/lib/logger";
 
 // Lazy admin client accessor to avoid import-time crashes when env vars

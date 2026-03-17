@@ -5,9 +5,9 @@
  */
 
 import { Resend } from "resend";
-import { logger } from "@/lib/logger";
 
 import { shouldSendEmail, shouldSendSMS } from "@/lib/demoMode";
+import { logger } from "@/lib/logger";
 
 // Initialize email service (Resend)
 const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;

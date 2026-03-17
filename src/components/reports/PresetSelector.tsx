@@ -1,7 +1,6 @@
 "use client";
 
 import { FolderOpen, Loader2,Save } from "lucide-react";
-import { logger } from "@/lib/logger";
 import { useEffect,useState } from "react";
 
 import { Button } from "@/components/ui/button";
@@ -23,6 +22,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { logger } from "@/lib/logger";
 
 interface ReportPreset {
   id: string;

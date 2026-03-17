@@ -1,11 +1,11 @@
 export const dynamic = "force-dynamic";
 
 // app/api/report-templates/route.ts
-import { logger } from "@/lib/logger";
 import { Prisma } from "@prisma/client";
 import { NextRequest, NextResponse } from "next/server";
 
 import { withAuth } from "@/lib/auth/withAuth";
+import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 import { REPORT_SECTIONS } from "@/lib/reports/templateSections";
 

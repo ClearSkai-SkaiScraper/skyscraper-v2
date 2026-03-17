@@ -1,9 +1,10 @@
 "use client";
 
 import { Download, FileText, Lock, Send } from "lucide-react";
-import { logger } from "@/lib/logger";
 import Link from "next/link";
 import { useState } from "react";
+
+import { logger } from "@/lib/logger";
 
 interface UniversalReportSectionProps {
   claim: any;

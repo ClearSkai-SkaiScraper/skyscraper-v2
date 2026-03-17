@@ -6,7 +6,6 @@ export const dynamic = "force-dynamic";
  * Exports a claims folder to PDF, ZIP, or Xactimate ESX format
  */
 
-import { logger } from "@/lib/logger";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 
@@ -16,6 +15,7 @@ import { assembleClaimFolder } from "@/lib/claims-folder/folderAssembler";
 import type { ClaimFolder, FolderSection } from "@/lib/claims-folder/folderSchema";
 import { FOLDER_SECTIONS } from "@/lib/claims-folder/folderSchema";
 import { generatePDFDocument, renderPDFBytes } from "@/lib/claims-folder/pdfBundler";
+import { logger } from "@/lib/logger";
 
 const ExportRequestSchema = z.object({
   claimId: z.string().min(1),

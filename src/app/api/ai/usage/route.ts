@@ -8,10 +8,10 @@ export const revalidate = 0;
 // GET /api/ai/usage
 // Token system removed — returns unlimited for all buckets.
 
-import { logger } from "@/lib/logger";
 import { NextRequest, NextResponse } from "next/server";
 
-import { createAiConfig, withAiBilling, type AiBillingContext } from "@/lib/ai/withAiBilling";
+import { type AiBillingContext,createAiConfig, withAiBilling } from "@/lib/ai/withAiBilling";
+import { logger } from "@/lib/logger";
 import { getRateLimitIdentifier, rateLimiters } from "@/lib/rate-limit";
 
 async function GET_INNER(req: NextRequest, ctx: AiBillingContext) {

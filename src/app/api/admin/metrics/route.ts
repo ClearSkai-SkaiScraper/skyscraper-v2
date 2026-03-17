@@ -3,9 +3,9 @@ export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
 import { clerkClient } from "@clerk/nextjs/server";
-import { logger } from "@/lib/logger";
 import { NextResponse } from "next/server";
 
+import { logger } from "@/lib/logger";
 import { getAdminMetrics, getTokenUsageByUser } from "@/lib/metrics";
 import { safeOrgContext } from "@/lib/safeOrgContext";
 

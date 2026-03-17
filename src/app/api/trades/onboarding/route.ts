@@ -12,12 +12,12 @@ export const dynamic = "force-dynamic";
  * 4. Enable admin to create company page
  */
 
-import { logger } from "@/lib/logger";
 import { auth, currentUser } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 
 import { getResolvedOrgId } from "@/lib/auth/getResolvedOrgId";
+import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 
 const onboardingSchema = z.object({

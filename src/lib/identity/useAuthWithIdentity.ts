@@ -12,7 +12,7 @@
 
 import { useAuth, useUser } from "@clerk/nextjs";
 
-import { useUserIdentity, type UserIdentityClient, type UserType } from "./UserIdentityContext";
+import { type UserIdentityClient, type UserType,useUserIdentity } from "./UserIdentityContext";
 
 export interface AuthWithIdentity {
   // Clerk auth state

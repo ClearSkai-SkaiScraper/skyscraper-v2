@@ -9,11 +9,11 @@
  * - Returns placeholder if all else fails
  */
 
-import { logger } from "@/lib/logger";
 import fs from "fs/promises";
 import { NextRequest, NextResponse } from "next/server";
 import path from "path";
 
+import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 import { getContentType, getR2Object, isR2Configured } from "@/lib/r2";
 import { getTemplateById } from "@/lib/templates/templateRegistry";

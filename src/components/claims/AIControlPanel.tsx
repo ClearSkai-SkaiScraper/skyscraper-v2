@@ -7,7 +7,6 @@
 
 "use client";
 
-import { logger } from "@/lib/logger";
 import {
   AlertCircle,
   Brain,
@@ -22,6 +21,8 @@ import {
   Zap,
 } from "lucide-react";
 import { useEffect, useState } from "react";
+
+import { logger } from "@/lib/logger";
 
 interface AIControlPanelProps {
   claimId: string;

@@ -1,10 +1,11 @@
 "use client";
+import { Loader2 } from "lucide-react";
 import { useState } from "react";
+
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from "@/components/ui/select";
-import { Loader2 } from "lucide-react";
 
 interface ClaimLite { id: string; claimNumber: string | null; damageType: string | null; lossDate: Date | string | null; }
 
@@ -36,7 +37,7 @@ export default function ClaimAppealClient({ claims, initialClaimId }: { claims: 
   }
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
+    <div className="container mx-auto space-y-6 p-6">
       <h1 className="text-2xl font-semibold">Claim Appeal Builder</h1>
       <div className="grid gap-4 md:grid-cols-2">
         <div className="space-y-4">
@@ -68,7 +69,7 @@ export default function ClaimAppealClient({ claims, initialClaimId }: { claims: 
               </Select>
             </div>
             <div className="flex items-end">
-              <label className="flex items-center gap-2 text-sm mt-5">
+              <label className="mt-5 flex items-center gap-2 text-sm">
                 <input type="checkbox" checked={includeBadFaith} onChange={e=>setIncludeBadFaith(e.target.checked)} /> Include Bad Faith Analysis
               </label>
             </div>
@@ -83,17 +84,17 @@ export default function ClaimAppealClient({ claims, initialClaimId }: { claims: 
           {result && (
             <div className="space-y-6">
               <div className="rounded-lg border p-4">
-                <h2 className="text-lg font-semibold mb-2">Appeal Letter</h2>
+                <h2 className="mb-2 text-lg font-semibold">Appeal Letter</h2>
                 <p className="whitespace-pre-wrap text-sm leading-relaxed">{result.appealLetter}</p>
               </div>
               {Array.isArray(result.sections) && (
                 <div className="rounded-lg border p-4">
-                  <h3 className="font-medium mb-2">Sections</h3>
+                  <h3 className="mb-2 font-medium">Sections</h3>
                   <ul className="space-y-2 text-sm">
                     {result.sections.map((s:any,i:number)=>(
-                      <li key={i} className="border rounded-md p-2">
+                      <li key={i} className="rounded-md border p-2">
                         <div className="flex justify-between"><span className="font-semibold">{s.title}</span><span className="text-xs uppercase tracking-wide text-muted-foreground">{s.strength}</span></div>
-                        <p className="text-xs mt-1 leading-relaxed">{s.summary}</p>
+                        <p className="mt-1 text-xs leading-relaxed">{s.summary}</p>
                       </li>
                     ))}
                   </ul>
@@ -101,24 +102,24 @@ export default function ClaimAppealClient({ claims, initialClaimId }: { claims: 
               )}
               {Array.isArray(result.recommendedActions) && (
                 <div className="rounded-lg border p-4">
-                  <h3 className="font-medium mb-2">Recommended Actions</h3>
-                  <ul className="list-disc pl-5 text-sm space-y-1">
+                  <h3 className="mb-2 font-medium">Recommended Actions</h3>
+                  <ul className="list-disc space-y-1 pl-5 text-sm">
                     {result.recommendedActions.map((a:string,i:number)=>(<li key={i}>{a}</li>))}
                   </ul>
                 </div>
               )}
               {Array.isArray(result.citations) && (
                 <div className="rounded-lg border p-4">
-                  <h3 className="font-medium mb-2">Citations</h3>
-                  <ul className="list-disc pl-5 text-sm space-y-1">
+                  <h3 className="mb-2 font-medium">Citations</h3>
+                  <ul className="list-disc space-y-1 pl-5 text-sm">
                     {result.citations.map((c:string,i:number)=>(<li key={i}>{c}</li>))}
                   </ul>
                 </div>
               )}
               {Array.isArray(result.attachments) && (
                 <div className="rounded-lg border p-4">
-                  <h3 className="font-medium mb-2">Suggested Attachments</h3>
-                  <ul className="list-disc pl-5 text-sm space-y-1">
+                  <h3 className="mb-2 font-medium">Suggested Attachments</h3>
+                  <ul className="list-disc space-y-1 pl-5 text-sm">
                     {result.attachments.map((c:string,i:number)=>(<li key={i}>{c}</li>))}
                   </ul>
                 </div>

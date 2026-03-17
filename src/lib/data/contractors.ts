@@ -4,8 +4,8 @@
  * Data access for contractor information using Prisma
  */
 
-import prisma from "@/lib/prisma";
 import { logger } from "@/lib/logger";
+import prisma from "@/lib/prisma";
 
 export interface Contractor {
   id: string;

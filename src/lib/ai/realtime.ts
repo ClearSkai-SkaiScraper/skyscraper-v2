@@ -10,10 +10,10 @@
  * - Reconnection: Exponential backoff with 3 retries
  */
 
-import { logger } from "@/lib/logger";
 import type { ChatCompletionMessageParam } from "openai/resources/chat/completions";
 
 import { getOpenAI } from "@/lib/ai/client";
+import { logger } from "@/lib/logger";
 
 const openai = getOpenAI();
 

@@ -6,11 +6,12 @@
  * The callback route handles the OAuth response.
  */
 
+import { NextResponse } from "next/server";
+
 import { getAuthorizationUrl } from "@/lib/integrations/quickbooks";
 import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 import { safeOrgContext } from "@/lib/safeOrgContext";
-import { NextResponse } from "next/server";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";

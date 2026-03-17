@@ -15,12 +15,12 @@
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-import { logger } from "@/lib/logger";
 import crypto from "crypto";
 import { NextRequest, NextResponse } from "next/server";
 
 import { getOrgClaimOrThrow, OrgScopeError } from "@/lib/auth/orgScope";
 import { withAuth } from "@/lib/auth/withAuth";
+import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 
 /**

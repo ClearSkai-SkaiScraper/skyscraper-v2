@@ -13,10 +13,11 @@
 
 "use client";
 
-import { logger } from "@/lib/logger";
 import { AlertCircle, Download, Loader2, Share2, Upload, XCircle } from "lucide-react";
 import { useCallback, useState } from "react";
 import { useDropzone } from "react-dropzone";
+
+import { logger } from "@/lib/logger";
 
 interface BATFPanelProps {
   leadId: string;

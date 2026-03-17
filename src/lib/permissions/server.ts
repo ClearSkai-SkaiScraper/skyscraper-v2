@@ -13,10 +13,10 @@ import prisma from "@/lib/prisma";
 
 import {
   type AppRole,
-  type Permission,
-  type PermissionResource,
   hasMinRole,
   normalizeRole,
+  type Permission,
+  type PermissionResource,
   roleHasPermission,
 } from "./constants";
 

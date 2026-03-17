@@ -12,8 +12,8 @@ export * from "./router";
 // ============================================
 
 // Main orchestrator
-export { orchestrateClaim, shouldTakeAction } from "./orchestrator/orchestrateClaim";
 export type { OrchestratorInput, OrchestratorOutput } from "./orchestrator/orchestrateClaim";
+export { orchestrateClaim, shouldTakeAction } from "./orchestrator/orchestrateClaim";
 
 // Intelligence types
 export * from "./types";

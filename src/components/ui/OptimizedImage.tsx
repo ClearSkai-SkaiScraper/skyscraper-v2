@@ -12,9 +12,9 @@
  */
 
 import NextImage, { ImageProps as NextImageProps } from "next/image";
-import { logger } from "@/lib/logger";
 import { useState } from "react";
 
+import { logger } from "@/lib/logger";
 import { cn } from "@/lib/utils";
 
 interface OptimizedImageProps extends Omit<NextImageProps, "onLoad"> {

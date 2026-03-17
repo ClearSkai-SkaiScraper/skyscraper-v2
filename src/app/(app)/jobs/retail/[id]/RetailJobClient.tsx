@@ -7,7 +7,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { WORKFLOW_STATUSES, getWorkflowStatusInfo, mapToWorkflowStatus } from "@/lib/statusMapping";
+import { getWorkflowStatusInfo, mapToWorkflowStatus,WORKFLOW_STATUSES } from "@/lib/statusMapping";
 
 interface EditableFieldProps {
   label: string;

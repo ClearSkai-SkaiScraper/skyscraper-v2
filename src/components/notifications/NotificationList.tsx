@@ -6,7 +6,6 @@
 "use client";
 
 import { format } from "date-fns";
-import { logger } from "@/lib/logger";
 import {
   AlertCircle,
   Bell,
@@ -20,6 +19,7 @@ import Link from "next/link";
 import { useState } from "react";
 
 import { Button } from "@/components/ui/button";
+import { logger } from "@/lib/logger";
 
 interface Notification {
   id: string;

@@ -1,10 +1,10 @@
+import { createId } from "@paralleldrive/cuid2";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 
 import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 import { safeOrgContext } from "@/lib/safeOrgContext";
-import { createId } from "@paralleldrive/cuid2";
 
 export const dynamic = "force-dynamic";
 

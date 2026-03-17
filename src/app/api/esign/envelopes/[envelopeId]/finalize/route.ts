@@ -5,11 +5,11 @@
  * Resolves Supabase Storage URLs for signed documents
  */
 
-import { logger } from "@/lib/logger";
 import { NextRequest, NextResponse } from "next/server";
 
 import { isAuthError, requireAuth } from "@/lib/auth/requireAuth";
 import { resolveEsignUrl } from "@/lib/esign/resolveUrl";
+import { logger } from "@/lib/logger";
 import { sendTemplatedNotification } from "@/lib/notifications/templates";
 import prisma from "@/lib/prisma";
 

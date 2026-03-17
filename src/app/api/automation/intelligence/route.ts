@@ -8,11 +8,11 @@
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
-import { logger } from "@/lib/observability/logger";
 import { NextRequest, NextResponse } from "next/server";
 
 import { withAuth } from "@/lib/auth/withAuth";
 import { getClaimAutomationIntelligence } from "@/lib/intel/automation/engine";
+import { logger } from "@/lib/observability/logger";
 
 export const GET = withAuth(async (req: NextRequest, { orgId }) => {
   try {

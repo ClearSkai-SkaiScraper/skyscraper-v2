@@ -1,9 +1,9 @@
 export const dynamic = "force-dynamic";
 
-import { logger } from "@/lib/logger";
 import { NextRequest, NextResponse } from "next/server";
 
 import { withAuth } from "@/lib/auth/withAuth";
+import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 import { isPlatformAdmin } from "@/lib/security/roles";
 import { isValidationError, validateBody } from "@/lib/validation/middleware";

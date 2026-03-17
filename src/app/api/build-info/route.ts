@@ -1,5 +1,6 @@
-import { requireApiAuth } from "@/lib/auth/apiAuth";
 import { NextResponse } from "next/server";
+
+import { requireApiAuth } from "@/lib/auth/apiAuth";
 
 /**
  * Build Information API

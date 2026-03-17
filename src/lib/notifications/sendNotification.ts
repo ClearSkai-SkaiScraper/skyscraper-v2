@@ -4,8 +4,9 @@
  * Send notifications through various channels
  */
 
-import { createNotification, CreateNotificationData } from "./create-notification";
 import { logger } from "@/lib/logger";
+
+import { createNotification, CreateNotificationData } from "./create-notification";
 
 export interface SendNotificationOptions {
   channels?: ("in_app" | "email" | "push")[];

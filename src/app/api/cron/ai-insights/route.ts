@@ -9,11 +9,11 @@
  * Schedule: Weekly (0 0 * * 0) - Sundays at midnight
  */
 
-import { logger } from "@/lib/logger";
 import * as Sentry from "@sentry/nextjs";
 import { NextResponse } from "next/server";
 
 import { verifyCronSecret } from "@/lib/cron/verifyCronSecret";
+import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 
 export const runtime = "nodejs";

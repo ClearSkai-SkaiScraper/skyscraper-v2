@@ -11,6 +11,7 @@
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
+import type { Prisma } from "@prisma/client";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 
@@ -19,7 +20,6 @@ import { requireAuth } from "@/lib/auth/requireAuth";
 import { recordAnnotationEdit } from "@/lib/inspection/annotation-feedback";
 import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
-import type { Prisma } from "@prisma/client";
 
 const AnnotationSchema = z.object({
   x: z.number().min(0).max(1),

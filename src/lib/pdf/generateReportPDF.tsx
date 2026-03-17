@@ -13,9 +13,10 @@
  */
 
 import { Document, Font, Image } from "@react-pdf/renderer";
-import { logger } from "@/lib/logger";
 import QRCode from "qrcode";
 import React from "react";
+
+import { logger } from "@/lib/logger";
 
 import {
   BulletList,

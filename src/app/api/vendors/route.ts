@@ -1,9 +1,9 @@
 export const dynamic = "force-dynamic";
 
-import { logger } from "@/lib/logger";
 import { NextRequest, NextResponse } from "next/server";
 
 import { requireAuth } from "@/lib/auth/requireAuth";
+import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 import { getLogoFromWebsite, VENDOR_LOGOS } from "@/lib/vendors/vendorLogos";
 

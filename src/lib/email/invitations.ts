@@ -1,7 +1,6 @@
-import { logger } from "@/lib/observability/logger";
-
 import { FROM_EMAIL, getResend } from "@/lib/email/resend";
 import { APP_URL } from "@/lib/env";
+import { logger } from "@/lib/observability/logger";
 
 const APP_NAME = "SkaiScraper";
 

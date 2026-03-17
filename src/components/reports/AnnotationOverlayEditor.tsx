@@ -1,10 +1,11 @@
 "use client";
 
+import { Circle, Maximize2, Move, Square, Trash2, ZoomIn, ZoomOut } from "lucide-react";
+import { useCallback, useRef, useState } from "react";
+
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { Circle, Maximize2, Move, Square, Trash2, ZoomIn, ZoomOut } from "lucide-react";
-import { useCallback, useRef, useState } from "react";
 
 export interface AnnotationBox {
   x: number; // 0-1 normalized

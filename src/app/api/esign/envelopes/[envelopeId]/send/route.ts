@@ -5,11 +5,11 @@
  * Uses the actual SignatureEnvelope schema with single signer info
  */
 
-import { logger } from "@/lib/logger";
 import { NextRequest, NextResponse } from "next/server";
 
 import { isAuthError, requireAuth } from "@/lib/auth/requireAuth";
 import { sendEmail } from "@/lib/email/resend";
+import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 
 export const runtime = "nodejs";

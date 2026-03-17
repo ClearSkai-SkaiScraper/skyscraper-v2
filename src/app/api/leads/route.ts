@@ -2,7 +2,6 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
-import { logger } from "@/lib/logger";
 import { auth } from "@clerk/nextjs/server";
 import { z } from "zod";
 
@@ -11,6 +10,7 @@ import { apiError } from "@/lib/apiError";
 import { generateContactSlug } from "@/lib/generateContactSlug";
 import { autoAssignLead, geoAssignLead } from "@/lib/leads/autoAssign";
 import { logInfo } from "@/lib/log";
+import { logger } from "@/lib/logger";
 import { getCurrentUserPermissions, requirePermission } from "@/lib/permissions";
 import prisma from "@/lib/prisma";
 import { createLead, listLeads } from "@/lib/services/leadsService";

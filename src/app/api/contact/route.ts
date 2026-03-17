@@ -1,8 +1,9 @@
 export const dynamic = "force-dynamic";
 
+import { NextResponse } from "next/server";
+
 import { logger } from "@/lib/logger";
 import { checkRateLimit } from "@/lib/rate-limit";
-import { NextResponse } from "next/server";
 
 const REQUIRED_FIELDS = ["name", "email", "message"] as const;
 const MAX_FIELD_LENGTH = 2000;

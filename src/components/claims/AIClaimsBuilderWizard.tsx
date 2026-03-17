@@ -1,5 +1,4 @@
 "use client";
-import { logger } from "@/lib/logger";
 import {
   ClipboardList,
   CloudRain,
@@ -21,6 +20,7 @@ import {
   DamageResultsDisplay,
   useAIClaimsBuilder,
 } from "@/components/claims/AIClaimsBuilderIntegration";
+import { logger } from "@/lib/logger";
 import { recordReportHistory } from "@/lib/reports/history";
 import { ClaimNarratives, generateClaimNarratives } from "@/server/claims/claimNarratives";
 

@@ -1,6 +1,7 @@
 import { cert, getApps, initializeApp } from "firebase-admin/app";
-import { logger } from "@/lib/logger";
 import { getStorage } from "firebase-admin/storage";
+
+import { logger } from "@/lib/logger";
 
 // Check if storage is enabled and all required env vars are present
 const isStorageEnabled = process.env.STORAGE_ENABLED === "true";

@@ -7,12 +7,12 @@
  * Uses service layer → ai_reports model (real fields only)
  */
 
-import { logger } from "@/lib/logger";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 
 import { withAuth } from "@/lib/auth/withAuth";
 import * as reportService from "@/lib/domain/reports";
+import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 
 export const runtime = "nodejs";

@@ -5,8 +5,8 @@
  * This is a placeholder to allow builds to succeed
  */
 
-import prisma from "@/lib/prisma";
 import { logger } from "@/lib/logger";
+import prisma from "@/lib/prisma";
 
 export interface NotificationData {
   userId: string;

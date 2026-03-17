@@ -5,13 +5,13 @@ export const dynamic = "force-dynamic";
  * Replaces the old /api/copilot endpoint
  */
 
-import { logger } from "@/lib/logger";
 import { currentUser } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
 
 import { getOpenAI } from "@/lib/ai/client";
 import { ASSISTANT_SYSTEM_PROMPT } from "@/lib/ai/prompts/assistantPrompt";
 import { buildClaimContext } from "@/lib/claim/buildClaimContext";
+import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 
 const openai = getOpenAI();

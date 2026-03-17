@@ -9,10 +9,10 @@ export const dynamic = "force-dynamic";
  * Uses the Client model (not client_networks) for profile management.
  */
 
-import { logger } from "@/lib/logger";
 import { auth, currentUser } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
 
+import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 
 export async function GET(request: NextRequest, { params }: { params: { slug: string } }) {

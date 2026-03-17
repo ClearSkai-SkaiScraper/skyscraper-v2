@@ -4,8 +4,8 @@
  * DEPRECATED: claimsEmbedding model doesn't exist in schema.
  */
 
-import prisma from "@/lib/prisma";
 import { logger } from "@/lib/logger";
+import prisma from "@/lib/prisma";
 
 /**
  * Find similar claims using cosine similarity

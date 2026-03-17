@@ -4,14 +4,13 @@ export const dynamic = "force-dynamic";
  * Rate-limited and authenticated
  */
 
-import { logger } from "@/lib/logger";
 import { NextRequest, NextResponse } from "next/server";
-
-import { createAiConfig, withAiBilling } from "@/lib/ai/withAiBilling";
 
 import { trackAiUsage } from "@/lib/ai/trackUsage";
 import { analyzePropertyImage } from "@/lib/ai/vision";
+import { createAiConfig, withAiBilling } from "@/lib/ai/withAiBilling";
 import { aiFail, aiOk, classifyOpenAiError } from "@/lib/api/aiResponse";
+import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 import { checkRateLimit, getRateLimitError } from "@/lib/ratelimit";
 import { validateAIRequest, visionAnalyzeSchema } from "@/lib/validation/aiSchemas";

@@ -4,8 +4,8 @@
  * Helps users move stuck projects forward
  */
 
-import prisma from "@/lib/prisma";
 import { logger } from "@/lib/logger";
+import prisma from "@/lib/prisma";
 
 export interface Recommendation {
   id: string;

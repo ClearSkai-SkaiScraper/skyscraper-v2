@@ -2,8 +2,8 @@
  * Helper functions to auto-generate timeline events for claims
  */
 
-import prisma from "@/lib/prisma";
 import { logger } from "@/lib/logger";
+import prisma from "@/lib/prisma";
 
 export interface TimelineEventInput {
   claimId: string;

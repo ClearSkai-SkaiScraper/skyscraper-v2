@@ -8,11 +8,12 @@
  * Extend this class to create source-specific migration engines.
  */
 
-import { logger } from "@/lib/logger";
 import "server-only";
 
-import prisma from "@/lib/prisma";
 import { Prisma } from "@prisma/client";
+
+import { logger } from "@/lib/logger";
+import prisma from "@/lib/prisma";
 
 // ============================================================================
 // Types

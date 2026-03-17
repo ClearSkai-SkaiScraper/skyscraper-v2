@@ -1,7 +1,9 @@
+import { Suspense } from "react";
+
 import { NoOrgMembershipBanner } from "@/components/guards/NoOrgMembershipBanner";
 import prisma from "@/lib/prisma";
 import { safeOrgContext } from "@/lib/safeOrgContext";
-import { Suspense } from "react";
+
 import ClaimAppealClient from "./ClaimAppealClient";
 export const dynamic = "force-dynamic";
 export const revalidate = 0;

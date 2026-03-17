@@ -4,10 +4,10 @@ export const revalidate = 0;
 
 // Phase 5 - Client-side audit log API route
 // SECURITY FIX: orgId is now derived server-side via withOrgScope, not from request body
-import { logger } from "@/lib/logger";
 import { NextResponse } from "next/server";
 
 import { withOrgScope } from "@/lib/auth/tenant";
+import { logger } from "@/lib/logger";
 import { type AuditAction, logAction } from "@/modules/audit/core/logger";
 
 export const POST = withOrgScope(async (req: Request, { userId, orgId }) => {

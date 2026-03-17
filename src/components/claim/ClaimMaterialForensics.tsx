@@ -4,9 +4,9 @@
 // 🧬 MATERIAL FORENSICS UI — Engineering-grade failure analysis display
 
 import { useEffect,useState } from "react";
-import { logger } from "@/lib/logger";
 
 import { MaterialForensicsOutput } from "@/lib/intel/forensics/materials";
+import { logger } from "@/lib/logger";
 
 interface ClaimMaterialForensicsProps {
   claimId: string;

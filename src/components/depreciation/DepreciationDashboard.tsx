@@ -6,12 +6,12 @@
 'use client';
 
 import { AlertCircle, CheckCircle2, Clock, DollarSign, TrendingUp, XCircle } from 'lucide-react';
-import { logger } from "@/lib/logger";
 import { useEffect,useState } from 'react';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { logger } from "@/lib/logger";
 
 interface DepreciationDashboardProps {
   claimId: string;

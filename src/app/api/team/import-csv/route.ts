@@ -31,12 +31,12 @@
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-import { logger } from "@/lib/logger";
 import { clerkClient } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 
 import { withManager } from "@/lib/auth/withAuth";
+import { logger } from "@/lib/logger";
 
 // ── Validation ────────────────────────────────────────────────────────────
 const VALID_ROLES = ["member", "admin", "org:member", "org:admin"] as const;

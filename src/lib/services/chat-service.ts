@@ -4,8 +4,8 @@
  * Supports conversations, messages, read receipts, and typing indicators
  */
 
-import prisma from "@/lib/prisma";
 import { logger } from "@/lib/logger";
+import prisma from "@/lib/prisma";
 
 import { pushNotificationService } from "./push-notification-service";
 

@@ -1,12 +1,12 @@
 export const dynamic = "force-dynamic";
 
-import { logger } from "@/lib/logger";
 import fs from "fs";
 import { marked } from "marked";
 import { NextResponse } from "next/server";
 import path from "path";
 
 import { LEGAL_DOCUMENTS } from "@/lib/legal/config";
+import { logger } from "@/lib/logger";
 
 interface Params {
   params: Promise<{ docId: string }>;

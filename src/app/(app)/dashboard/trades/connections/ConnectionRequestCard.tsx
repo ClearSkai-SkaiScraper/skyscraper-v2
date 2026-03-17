@@ -10,10 +10,9 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
 import GlassPanel from "@/components/trades/GlassPanel";
+import { logger } from "@/lib/logger";
 
 import AcceptDeclineButtons from "./AcceptDeclineButtons";
-
-import { logger } from "@/lib/logger";
 
 interface ConnectionRequest {
   id: string;

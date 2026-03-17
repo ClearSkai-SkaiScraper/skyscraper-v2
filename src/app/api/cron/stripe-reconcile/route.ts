@@ -11,11 +11,11 @@ export const revalidate = 0;
 // Schedule: Daily via Vercel Cron
 // =====================================================
 // (Removed duplicate dynamic export)
-import { logger } from "@/lib/logger";
 import * as Sentry from "@sentry/nextjs";
 import { NextResponse } from "next/server";
 
 import { verifyCronSecret } from "@/lib/cron/verifyCronSecret";
+import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 import { getStripeClient } from "@/lib/stripe";
 

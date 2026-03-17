@@ -1,6 +1,5 @@
 "use client";
 
-import { logger } from "@/lib/logger";
 import {
   Brain,
   ChevronDown,
@@ -25,6 +24,7 @@ import {
 } from "@/components/ui/drawer";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
+import { logger } from "@/lib/logger";
 
 interface Rule {
   id: string;

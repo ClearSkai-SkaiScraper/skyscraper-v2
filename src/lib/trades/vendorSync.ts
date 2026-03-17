@@ -39,8 +39,8 @@
  * =============================================================================
  */
 
-import prisma from "@/lib/prisma";
 import { logger } from "@/lib/logger";
+import prisma from "@/lib/prisma";
 
 /**
  * Helper: Ensure vendor exists for this org

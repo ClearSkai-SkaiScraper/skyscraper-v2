@@ -11,6 +11,7 @@
 
 import { getOpenAI } from "@/lib/ai/client";
 import { logger } from "@/lib/logger";
+
 import { type ScopeLineItem } from "./carrierComplianceEngine";
 
 const openai = getOpenAI();

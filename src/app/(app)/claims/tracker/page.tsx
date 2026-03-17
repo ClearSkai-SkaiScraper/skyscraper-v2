@@ -1,14 +1,15 @@
-import ClaimsPipeline from "@/components/claims/ClaimsPipeline";
-import { Button } from "@/components/ui/button";
-import { getTenant } from "@/lib/auth/tenant";
-import { logger } from "@/lib/logger";
-import prisma from "@/lib/prisma";
 import { auth } from "@clerk/nextjs/server";
 import { ArrowLeftIcon, LayoutGrid, List, Plus, Settings } from "lucide-react";
 import { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { Suspense } from "react";
+
+import ClaimsPipeline from "@/components/claims/ClaimsPipeline";
+import { Button } from "@/components/ui/button";
+import { getTenant } from "@/lib/auth/tenant";
+import { logger } from "@/lib/logger";
+import prisma from "@/lib/prisma";
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 

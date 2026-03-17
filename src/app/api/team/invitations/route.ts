@@ -5,8 +5,6 @@ export const dynamic = "force-dynamic";
  * Sends invitation emails via Resend and stores tokens in DB
  */
 
-import { logger } from "@/lib/logger";
-import prisma from "@/lib/prisma";
 import { currentUser } from "@clerk/nextjs/server";
 import crypto from "crypto";
 import { NextRequest, NextResponse } from "next/server";
@@ -15,6 +13,8 @@ import { z } from "zod";
 import { createForbiddenResponse, requirePermission } from "@/lib/auth/rbac";
 import { withManager } from "@/lib/auth/withAuth";
 import { sendInvitationEmail } from "@/lib/email/invitations";
+import { logger } from "@/lib/logger";
+import prisma from "@/lib/prisma";
 import { checkRateLimit } from "@/lib/rate-limit";
 
 const invitationSchema = z.object({

@@ -6,9 +6,9 @@
  */
 
 import { report_templates } from "@prisma/client";
-import { logger } from "@/lib/logger";
 
 import { getOpenAI } from "@/lib/ai/client";
+import { logger } from "@/lib/logger";
 import { getSectionByKey } from "@/lib/reports/templateSections";
 
 import {

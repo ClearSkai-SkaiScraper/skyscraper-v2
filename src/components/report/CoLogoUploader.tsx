@@ -1,8 +1,8 @@
 "use client";
 import { useState } from "react";
+import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
-import { toast } from "sonner";
 
 export default function CoLogoUploader({ orgId }: { orgId: string }) {
   const [busy, setBusy] = useState(false);

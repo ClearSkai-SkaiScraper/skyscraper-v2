@@ -1,4 +1,3 @@
-import { logger } from "@/lib/logger";
 import {
   deleteObject,
   getDownloadURL,
@@ -7,6 +6,8 @@ import {
   uploadBytes,
   uploadBytesResumable,
 } from "firebase/storage";
+
+import { logger } from "@/lib/logger";
 
 import { storage } from "../firebase";
 

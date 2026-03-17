@@ -8,13 +8,13 @@ export const dynamic = "force-dynamic";
  * Creates a pending client network with invite token.
  */
 
-import { logger } from "@/lib/logger";
 import { auth, currentUser } from "@clerk/nextjs/server";
 import { randomBytes } from "crypto";
 import { NextRequest, NextResponse } from "next/server";
 
 import { getResolvedOrgId } from "@/lib/auth/getResolvedOrgId";
 import { getResend } from "@/lib/email/resend";
+import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 
 export async function POST(req: NextRequest) {

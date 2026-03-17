@@ -1,6 +1,5 @@
 "use client";
 
-import { logger } from "@/lib/logger";
 import {
   CheckCircleIcon,
   ClipboardDocumentIcon,
@@ -9,6 +8,8 @@ import {
 } from "@heroicons/react/24/outline";
 import { useCallback, useEffect, useState } from "react";
 import { useDropzone } from "react-dropzone";
+
+import { logger } from "@/lib/logger";
 
 interface DenialReason {
   category: string;

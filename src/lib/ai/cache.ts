@@ -12,8 +12,8 @@
  */
 
 import { createHash } from 'crypto';
-import { logger } from "@/lib/logger";
 
+import { logger } from "@/lib/logger";
 import { upstash } from '@/lib/upstash';
 
 // Reuse central Upstash Redis singleton (may be null). All accesses must be guarded.

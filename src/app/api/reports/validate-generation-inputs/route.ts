@@ -2,11 +2,12 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
+import { NextRequest, NextResponse } from "next/server";
+
 import { withAuth } from "@/lib/auth/withAuth";
 import { logger } from "@/lib/logger";
 import { validateGenerationInputs } from "@/lib/reports/recommendation-engine";
 import { ValidateInputsRequestSchema } from "@/lib/reports/recommendation-schema";
-import { NextRequest, NextResponse } from "next/server";
 
 /**
  * POST /api/reports/validate-generation-inputs

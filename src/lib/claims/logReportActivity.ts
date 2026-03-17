@@ -6,8 +6,8 @@
  * in the claim activity feed.
  */
 
-import prisma from "@/lib/prisma";
 import { logger } from "@/lib/logger";
+import prisma from "@/lib/prisma";
 
 export type ReportActivityType =
   | "REPORT_CREATED"

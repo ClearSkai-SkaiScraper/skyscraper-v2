@@ -3,9 +3,9 @@
  * This is the MOST IMPORTANT utility for SaaS data isolation
  */
 
-import { logger } from "@/lib/logger";
 import { auth } from "@clerk/nextjs/server";
 
+import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 
 /**

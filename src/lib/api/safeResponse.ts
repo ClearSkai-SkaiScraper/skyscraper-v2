@@ -5,8 +5,9 @@
  * and prevent 500 errors from crashing the demo.
  */
 
-import { logger } from "@/lib/logger";
 import { NextResponse } from "next/server";
+
+import { logger } from "@/lib/logger";
 
 export interface APIResponse<T = any> {
   ok: boolean;

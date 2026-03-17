@@ -4,8 +4,9 @@
  * DEPRECATED: rule model doesn't exist in schema.
  */
 
-import { ClaimContext, RuleDefinition } from "../types";
 import { logger } from "@/lib/logger";
+
+import { ClaimContext, RuleDefinition } from "../types";
 
 /**
  * Get all active rules

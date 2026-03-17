@@ -4,6 +4,7 @@
  */
 
 import { cert, getApps, initializeApp } from "firebase-admin/app";
+
 import { logger } from "@/lib/logger";
 
 let firebaseAdmin: any = null;

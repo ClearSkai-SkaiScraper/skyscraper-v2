@@ -42,8 +42,8 @@ import { StandardButton } from "@/components/ui/StandardButton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { TRADE_CATEGORIES, TRADE_TYPES, TradeCategory } from "@/lib/config/trade-types";
-
 import { logger } from "@/lib/logger";
+
 import ConnectButton from "./ConnectButton";
 import ConnectionsWidget from "./ConnectionsWidget";
 import CoverPhotoEditor from "./CoverPhotoEditor";

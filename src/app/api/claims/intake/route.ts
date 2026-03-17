@@ -7,13 +7,13 @@ export const dynamic = "force-dynamic";
  * Professional 3-step claim creation with auto-healing org validation
  */
 
-import { logger } from "@/lib/logger";
 import { nanoid } from "nanoid";
 import { NextResponse } from "next/server";
 
 import { requireAuth } from "@/lib/auth/requireAuth";
 import { getNextActionFromStatus } from "@/lib/claims/status";
 import { generateContactSlug } from "@/lib/generateContactSlug";
+import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 import { claimIntakeSchema } from "@/lib/validation/claim-schemas";
 import { isValidationError, validateBody } from "@/lib/validation/middleware";

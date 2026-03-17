@@ -1,8 +1,9 @@
 "use client";
 
 import { CheckCircle, Clock, Loader2, Mail,XCircle } from "lucide-react";
-import { logger } from "@/lib/logger";
 import { useEffect, useState } from "react";
+
+import { logger } from "@/lib/logger";
 
 interface Invitation {
   id: string;

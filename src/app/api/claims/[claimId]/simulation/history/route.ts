@@ -6,11 +6,12 @@
  * tracks how the score changes over time as evidence is added.
  */
 
+import { NextRequest, NextResponse } from "next/server";
+
 import { getOrgClaimOrThrow } from "@/lib/auth/orgScope";
 import { withAuth } from "@/lib/auth/withAuth";
 import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
-import { NextRequest, NextResponse } from "next/server";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;

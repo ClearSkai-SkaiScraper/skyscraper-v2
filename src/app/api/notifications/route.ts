@@ -6,10 +6,9 @@ import { currentUser } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
 
 import { db } from "@/lib/db";
-import prisma from "@/lib/prisma";
-
 import { logger } from "@/lib/logger";
 import { resolveOrgSafe } from "@/lib/org/resolveOrg";
+import prisma from "@/lib/prisma";
 import { markNotificationReadSchema } from "@/lib/validation/message-schemas";
 import { validateBody } from "@/lib/validation/middleware";
 

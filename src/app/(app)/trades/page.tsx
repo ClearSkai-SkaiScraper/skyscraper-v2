@@ -6,10 +6,10 @@ import { NoOrgMembershipBanner } from "@/components/guards/NoOrgMembershipBanner
 import { PageContainer } from "@/components/layout/PageContainer";
 import { PageHero } from "@/components/layout/PageHero";
 import { PageSectionCard } from "@/components/layout/PageSectionCard";
+import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 import { safeOrgContext } from "@/lib/safeOrgContext";
 
-import { logger } from "@/lib/logger";
 import TradesNetworkDashboard from "./_components/TradesNetworkDashboard";
 
 export const dynamic = "force-dynamic";

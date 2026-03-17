@@ -8,7 +8,6 @@ export const dynamic = "force-dynamic";
  * Returns conflicts, recommendations, and carrier-friendly adjusted scope
  */
 
-import { logger } from "@/lib/logger";
 import { auth } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
@@ -20,6 +19,7 @@ import {
   type ScopeLineItem,
 } from "@/lib/ai/carrierComplianceEngine";
 import { detectCarrier } from "@/lib/ai/carrierDetect";
+import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 import { checkRateLimit, getRateLimitError } from "@/lib/ratelimit";
 import { track } from "@/lib/track";

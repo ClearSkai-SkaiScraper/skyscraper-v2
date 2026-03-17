@@ -7,7 +7,6 @@ export const dynamic = "force-dynamic";
  * GET /api/claims/[claimId]/ai - Get AI analysis results
  */
 
-import { logger } from "@/lib/logger";
 import { auth } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -15,6 +14,7 @@ import { getOpenAI } from "@/lib/ai/client";
 import { withAuth } from "@/lib/auth/withAuth";
 import { buildClaimContext } from "@/lib/claim/buildClaimContext";
 import { getClaimAIAnalysis, triggerManualAnalysis } from "@/lib/claims/aiHooks";
+import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 import { checkRateLimit } from "@/lib/rate-limit";
 

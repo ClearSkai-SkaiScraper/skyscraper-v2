@@ -23,9 +23,11 @@ import {
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
+import { toast } from "sonner";
 
-import { PhotoAnnotator, type Annotation } from "@/components/annotations/PhotoAnnotator";
+import { type Annotation,PhotoAnnotator } from "@/components/annotations/PhotoAnnotator";
 import ConfirmDeleteDialog from "@/components/ConfirmDeleteDialog";
+import { DamageReportPreview } from "@/components/damage-report/DamageReportPreview";
 import { DamageBoxOverlay } from "@/components/photos/DamageBoxOverlay";
 import PhotoOverlay, { type DamageBox } from "@/components/photos/PhotoOverlay";
 import { Badge } from "@/components/ui/badge";
@@ -43,9 +45,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { ClaimPhotoUploadWithAnalysis } from "@/components/uploads/ClaimPhotoUploadWithAnalysis";
 import { logger } from "@/lib/logger";
 import { cn } from "@/lib/utils";
-import { toast } from "sonner";
 
-import { DamageReportPreview } from "@/components/damage-report/DamageReportPreview";
 import SectionCard from "../_components/SectionCard";
 
 interface AICaption {

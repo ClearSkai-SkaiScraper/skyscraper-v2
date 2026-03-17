@@ -6,13 +6,14 @@
 
 "use client";
 
+import { useEffect, useState } from "react";
+import { toast } from "sonner";
+
 import { DominusAlertsPanel } from "@/components/automation/DominusAlertsPanel";
 import { DominusGodModeButton } from "@/components/automation/DominusGodModeButton";
 import { DominusRecommendations } from "@/components/automation/DominusRecommendations";
 import { DominusTaskBoard } from "@/components/automation/DominusTaskBoard";
 import { logger } from "@/lib/logger";
-import { useEffect, useState } from "react";
-import { toast } from "sonner";
 
 interface AutomationPageProps {
   params: { claimId: string };

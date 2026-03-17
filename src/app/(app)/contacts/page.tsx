@@ -13,6 +13,7 @@ import { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
+import { UniversalContactCard } from "@/components/contacts/UniversalContactCard";
 import { CRMCard } from "@/components/crm/CRMCard";
 import { PageContainer } from "@/components/layout/PageContainer";
 import { PageHero } from "@/components/layout/PageHero";
@@ -23,8 +24,6 @@ import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 import { safeOrgContext } from "@/lib/safeOrgContext";
 import { isTestMode } from "@/lib/testMode";
-
-import { UniversalContactCard } from "@/components/contacts/UniversalContactCard";
 
 import { ConnectionCard } from "./_components/ConnectionCard";
 import { TeamMemberCard } from "./_components/TeamMemberCard";

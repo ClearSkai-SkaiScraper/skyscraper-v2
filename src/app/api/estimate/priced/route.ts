@@ -13,7 +13,6 @@ export const dynamic = "force-dynamic";
  * - O&P
  */
 
-import { logger } from "@/lib/logger";
 import { auth } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
@@ -25,6 +24,7 @@ import {
   parseScope,
 } from "@/lib/ai/estimatorEngine";
 import { priceScope, PricingProfile } from "@/lib/ai/pricingEngine";
+import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 import { checkRateLimit, getRateLimitError } from "@/lib/ratelimit";
 import { track } from "@/lib/track";

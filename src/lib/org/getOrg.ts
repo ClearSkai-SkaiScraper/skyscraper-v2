@@ -15,9 +15,9 @@
  */
 
 import { redirect } from "next/navigation";
-import { logger } from "@/lib/logger";
 
 import { getActiveOrgSafe } from "@/lib/auth/getActiveOrgSafe";
+import { logger } from "@/lib/logger";
 
 // =============================================================================
 // TYPES

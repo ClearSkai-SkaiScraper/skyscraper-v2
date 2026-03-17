@@ -14,8 +14,8 @@
  * Returns comprehensive intelligence for a claim.
  */
 
-import prisma from "@/lib/prisma";
 import { logger } from "@/lib/logger";
+import prisma from "@/lib/prisma";
 
 import { buildExplanation } from "../explanations/generateExplanation";
 import { logAIAction } from "../feedback/logAction";

@@ -5,12 +5,12 @@
  * Creates a new client profile using the unified Client model.
  */
 
-import { logger } from "@/lib/logger";
 import { clerkClient, currentUser } from "@clerk/nextjs/server";
 import { nanoid } from "nanoid";
 import { NextRequest, NextResponse } from "next/server";
 
 import { registerUser } from "@/lib/identity";
+import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 import { checkRateLimit } from "@/lib/rate-limit";
 

@@ -1,13 +1,13 @@
 "use client";
 
 import { AlertTriangle, Camera, CheckCircle2, FileText, Upload, X } from "lucide-react";
-import { logger } from "@/lib/logger";
 import { useState } from "react";
 import { toast } from "sonner";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { logger } from "@/lib/logger";
 
 interface PhotoAnalysis {
   photoUrl: string;

@@ -8,10 +8,10 @@ export const dynamic = "force-dynamic";
  * claims, contacts, properties, pipeline stages, and leaderboard data.
  * RBAC: admin only.
  */
-import { logger } from "@/lib/logger";
 import { NextRequest, NextResponse } from "next/server";
 
 import { requireApiAuth } from "@/lib/auth/apiAuth";
+import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 import { checkRateLimit } from "@/lib/rate-limit";
 

@@ -1,8 +1,8 @@
-import { logger } from "@/lib/logger";
 import { currentUser } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
 
 import { analyzeImage } from "@/lib/ai/openai-vision";
+import { logger } from "@/lib/logger";
 import { getRateLimitIdentifier, rateLimiters } from "@/lib/rate-limit";
 
 export const dynamic = "force-dynamic";

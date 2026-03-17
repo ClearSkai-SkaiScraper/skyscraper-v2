@@ -3,10 +3,11 @@
  * Handles HTML to PDF conversion and Supabase Storage uploads
  */
 
-import { logger } from "@/lib/logger";
 import chromium from "@sparticuz/chromium";
 import { createClient } from "@supabase/supabase-js";
 import puppeteer, { type Browser } from "puppeteer-core";
+
+import { logger } from "@/lib/logger";
 
 /**
  * Convert HTML to PDF buffer using Puppeteer with retry logic

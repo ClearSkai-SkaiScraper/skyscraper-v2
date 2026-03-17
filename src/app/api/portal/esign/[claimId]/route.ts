@@ -8,10 +8,10 @@ export const revalidate = 0;
  * Records the client's electronic signature on a claim document.
  */
 
-import { logger } from "@/lib/logger";
 import { auth, currentUser } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
 
+import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 
 export async function POST(req: NextRequest, { params }: { params: Promise<{ claimId: string }> }) {

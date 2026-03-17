@@ -2,8 +2,8 @@
 // Tax calculation utility for SkaiScraper
 // Supports org-level tax rates with state-specific overrides
 
-import prisma from "@/lib/prisma";
 import { logger } from "@/lib/logger";
+import prisma from "@/lib/prisma";
 
 export interface TaxConfig {
   rate: number; // Percentage (e.g., 8.5 = 8.5%)

@@ -20,6 +20,7 @@ import {
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
+import { toast } from "sonner";
 
 import { AdjusterCombobox } from "@/components/claims/AdjusterCombobox";
 import { Button } from "@/components/ui/button";
@@ -27,7 +28,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { retryQueue } from "@/lib/client/retryQueue";
 import { logger } from "@/lib/logger";
-import { toast } from "sonner";
 
 interface ClaimsSidebarProps {
   claimId: string;

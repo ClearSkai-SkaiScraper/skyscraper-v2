@@ -7,10 +7,6 @@
  * supplement stats, and winning strategies per carrier.
  */
 
-import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { INTELLIGENCE_LABELS } from "@/lib/intelligence/tuning-config";
-import { cn } from "@/lib/utils";
 import {
   AlertTriangle,
   ArrowUpRight,
@@ -23,6 +19,11 @@ import {
   XCircle,
 } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
+
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { INTELLIGENCE_LABELS } from "@/lib/intelligence/tuning-config";
+import { cn } from "@/lib/utils";
 
 /* ------------------------------------------------------------------ */
 /* Types (matches engine output)                                       */

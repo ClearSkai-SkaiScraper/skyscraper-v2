@@ -12,10 +12,11 @@
  *   2. checkPropertyStormExposure(propertyId, orgId) — single property
  */
 
+import { createId } from "@paralleldrive/cuid2";
+
+import { STORM_ALERT_CONFIG } from "@/lib/intelligence/tuning-config";
 import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
-import { createId } from "@paralleldrive/cuid2";
-import { STORM_ALERT_CONFIG } from "@/lib/intelligence/tuning-config";
 
 /* ------------------------------------------------------------------ */
 /* Types                                                               */

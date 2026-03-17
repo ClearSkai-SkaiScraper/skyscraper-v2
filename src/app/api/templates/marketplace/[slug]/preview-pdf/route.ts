@@ -9,12 +9,12 @@
  * 3) Generated lightweight PDF (pdf-lib) with the correct template title/header
  */
 
-import { logger } from "@/lib/logger";
 import fs from "fs/promises";
 import { NextRequest, NextResponse } from "next/server";
 import path from "path";
 import { PDFDocument, rgb, StandardFonts } from "pdf-lib";
 
+import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 import { getPremiumRegistryBySlug } from "@/lib/templates/registry";
 import { getTemplateBySlug } from "@/lib/templates/templateRegistry";

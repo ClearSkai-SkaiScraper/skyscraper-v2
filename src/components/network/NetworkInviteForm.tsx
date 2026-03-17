@@ -1,7 +1,6 @@
 "use client";
 
 import { Loader2, Mail, Send, User } from "lucide-react";
-import { logger } from "@/lib/logger";
 import { useState } from "react";
 import { toast } from "sonner";
 
@@ -16,6 +15,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { logger } from "@/lib/logger";
 
 interface NetworkInviteFormProps {
   orgId: string;

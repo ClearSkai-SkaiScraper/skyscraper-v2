@@ -6,7 +6,6 @@
 
 "use client";
 
-import { logger } from "@/lib/logger";
 import { useAuth } from "@clerk/nextjs";
 import { Home, Loader2 } from "lucide-react";
 import Link from "next/link";
@@ -24,6 +23,7 @@ import {
   WorkspaceTimelineEvent,
 } from "@/components/portal/ClientWorkspace";
 import { Button } from "@/components/ui/button";
+import { logger } from "@/lib/logger";
 
 export default function PortalClaimDetailPage() {
   const params = useParams();

@@ -6,12 +6,12 @@
  * contact info, policy info, damage description, line items, etc.
  */
 
-import { logger } from "@/lib/observability/logger";
 import { NextResponse } from "next/server";
 import type OpenAI from "openai";
 
 import { getOpenAI } from "@/lib/ai/client";
 import { requireAuth } from "@/lib/auth/requireAuth";
+import { logger } from "@/lib/observability/logger";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";

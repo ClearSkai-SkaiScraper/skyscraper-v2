@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+
 import { logger } from "@/lib/logger";
 
 type Handler = (req: Request, context?: any) => Promise<NextResponse>;

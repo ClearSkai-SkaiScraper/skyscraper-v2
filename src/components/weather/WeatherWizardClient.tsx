@@ -1,9 +1,9 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { logger } from "@/lib/logger";
 import { useEffect, useState } from "react";
 
+import { logger } from "@/lib/logger";
 import { PerilType, WeatherWizardPayload } from "@/lib/weather/types";
 
 import { PerilTypeSelector } from "./PerilTypeSelector";

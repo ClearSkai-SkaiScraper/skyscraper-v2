@@ -5,8 +5,8 @@
  * Real-time + persistent activity logging
  */
 
-import prisma from "@/lib/prisma";
 import { logger } from "@/lib/logger";
+import prisma from "@/lib/prisma";
 
 export type ActivityType =
   | "STATUS_CHANGE"

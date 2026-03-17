@@ -7,7 +7,6 @@
 "use client";
 
 import { MapPin, MessageCircle, Star, UserCheck, Users, Verified } from "lucide-react";
-import { logger } from "@/lib/logger";
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 
@@ -15,6 +14,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { logger } from "@/lib/logger";
 
 interface Connection {
   id: string;

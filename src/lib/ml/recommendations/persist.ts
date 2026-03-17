@@ -3,8 +3,9 @@
  * Stub implementation - to be completed
  */
 
-import type { Recommendation } from "./engine";
 import { logger } from "@/lib/logger";
+
+import type { Recommendation } from "./engine";
 
 export async function saveRecommendations(
   orgId: string,

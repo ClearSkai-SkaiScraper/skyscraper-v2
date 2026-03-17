@@ -15,9 +15,9 @@
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-import { logger } from "@/lib/logger";
 import { NextRequest, NextResponse } from "next/server";
 
+import { logger } from "@/lib/logger";
 import { JobNimbusMigrationEngine } from "@/lib/migrations/jobnimbus-engine";
 import { getCurrentUserPermissions } from "@/lib/permissions";
 

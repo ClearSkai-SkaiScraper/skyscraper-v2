@@ -6,11 +6,11 @@ export const revalidate = 0;
 // API: EXPORT QUEUE
 // ============================================================================
 
-import { logger } from "@/lib/logger";
 import { auth } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
 
 import { getDelegate } from "@/lib/db/modelAliases";
+import { logger } from "@/lib/logger";
 
 export async function GET(req: NextRequest) {
   try {

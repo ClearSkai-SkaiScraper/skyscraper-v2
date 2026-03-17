@@ -1,11 +1,11 @@
 "use client";
 
 import { AlertTriangle, Home, RefreshCw } from "lucide-react";
-import { logger } from "@/lib/logger";
 import { useEffect } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { logger } from "@/lib/logger";
 
 /**
  * PortalErrorBoundary — Shared error UI for portal sub-routes.

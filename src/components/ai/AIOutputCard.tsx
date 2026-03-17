@@ -14,10 +14,9 @@
  * - Loading/error states
  */
 
-import { useState } from "react";
-
 import { formatDistanceToNow } from "date-fns";
 import { AlertCircle, Bot, Clock, RefreshCw, Sparkles } from "lucide-react";
+import { useState } from "react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";

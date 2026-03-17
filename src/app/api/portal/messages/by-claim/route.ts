@@ -9,10 +9,10 @@ export const revalidate = 0;
  * POST: Sends a new message from the client
  */
 
-import { logger } from "@/lib/logger";
 import { auth, currentUser } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
 
+import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 
 async function verifyClientAccess(email: string, claimId: string) {

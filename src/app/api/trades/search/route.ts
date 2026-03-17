@@ -3,9 +3,9 @@
 // and Vendor records. None of these tables use orgId;
 // the trades marketplace search is intentionally cross-org for public discovery.
 
-import { logger } from "@/lib/logger";
 import { NextRequest, NextResponse } from "next/server";
 
+import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 
 export const dynamic = "force-dynamic";

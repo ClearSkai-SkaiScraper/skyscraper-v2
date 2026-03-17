@@ -5,8 +5,8 @@
  * Signed URLs are valid for 7 days by default, so we cache them for 6 days to be safe.
  */
 
-import { logCacheOperation } from "@/lib/observability/logger";
 import { logger } from "@/lib/logger";
+import { logCacheOperation } from "@/lib/observability/logger";
 import { recordCacheStat } from "@/lib/telemetry";
 import { getUpstashRedis } from "@/lib/upstash";
 

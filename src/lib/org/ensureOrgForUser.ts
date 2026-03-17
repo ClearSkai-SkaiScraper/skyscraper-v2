@@ -13,11 +13,11 @@
  * ============================================================================
  */
 
-import { logger } from "@/lib/logger";
 import { currentUser } from "@clerk/nextjs/server";
 import type { Org } from "@prisma/client";
 import { redirect } from "next/navigation";
 
+import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 
 export interface EnsuredOrg {

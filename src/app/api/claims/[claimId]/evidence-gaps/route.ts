@@ -7,11 +7,12 @@
  * impact on the simulation score.
  */
 
+import { NextRequest, NextResponse } from "next/server";
+
 import { getOrgClaimOrThrow, OrgScopeError } from "@/lib/auth/orgScope";
 import { withAuth } from "@/lib/auth/withAuth";
 import { logger } from "@/lib/logger";
 import { analyzeEvidenceGaps } from "@/lib/simulation/evidence-gap-detector";
-import { NextRequest, NextResponse } from "next/server";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;

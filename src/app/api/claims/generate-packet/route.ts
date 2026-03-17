@@ -2,13 +2,13 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
-import { logger } from "@/lib/logger";
 import * as Sentry from "@sentry/nextjs";
 import { NextRequest, NextResponse } from "next/server";
 
 import { withAuth } from "@/lib/auth/withAuth";
 import { generateClaimPacket } from "@/lib/claims/generator";
 import { ClaimPacketData, PacketVersion } from "@/lib/claims/templates";
+import { logger } from "@/lib/logger";
 
 /**
  * POST /api/claims/generate-packet

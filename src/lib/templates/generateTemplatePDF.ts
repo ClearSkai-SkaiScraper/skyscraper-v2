@@ -9,6 +9,7 @@
 import { jsPDF } from "jspdf";
 
 import { logger } from "@/lib/logger";
+
 import { getMergedTemplate } from "./mergeTemplate";
 
 interface PDFGenerationOptions {

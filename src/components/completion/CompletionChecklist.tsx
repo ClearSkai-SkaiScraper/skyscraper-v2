@@ -1,13 +1,13 @@
 "use client";
 
 import { useEffect,useState } from "react";
-import { logger } from "@/lib/logger";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
+import { logger } from "@/lib/logger";
 
 interface CompletionChecklistProps {
   claimId: string;

@@ -8,10 +8,10 @@ export const revalidate = 0;
  * Manager+ role required.
  */
 
-import { logger } from "@/lib/logger";
 import { NextRequest, NextResponse } from "next/server";
 
 import { withManager } from "@/lib/auth/withAuth";
+import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 
 export const GET = withManager(async (req: NextRequest, { orgId }) => {

@@ -1,7 +1,5 @@
 "use client";
 
-import { buildClaimLabelShort } from "@/lib/context/buildContextLabel";
-import { logger } from "@/lib/logger";
 import { Loader2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
@@ -18,6 +16,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { buildClaimLabelShort } from "@/lib/context/buildContextLabel";
+import { logger } from "@/lib/logger";
 
 interface NewMessageModalProps {
   open: boolean;

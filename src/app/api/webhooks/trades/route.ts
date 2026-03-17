@@ -5,12 +5,11 @@ export const dynamic = "force-dynamic";
  */
 
 import crypto from "crypto";
-
-import { logger } from "@/lib/logger";
 import { headers } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
 
 import { generateContactSlug } from "@/lib/generateContactSlug";
+import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 
 /**

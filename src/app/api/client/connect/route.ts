@@ -7,10 +7,10 @@ export const dynamic = "force-dynamic";
  * Allows clients to initiate connection requests to trades companies.
  */
 
-import { logger } from "@/lib/logger";
 import { auth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 
+import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 import { notifyConnectionRequest } from "@/lib/services/tradesNotifications";
 

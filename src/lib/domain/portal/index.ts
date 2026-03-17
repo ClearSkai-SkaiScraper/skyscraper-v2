@@ -6,9 +6,10 @@
  * MessageThread, Message.
  */
 
+import crypto from "crypto";
+
 import { logger } from "@/lib/observability/logger";
 import prisma from "@/lib/prisma";
-import crypto from "crypto";
 
 // ============================================================================
 // Types

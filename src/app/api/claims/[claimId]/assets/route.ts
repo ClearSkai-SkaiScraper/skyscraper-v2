@@ -29,13 +29,13 @@
  * ============================================================================
  */
 
-import { logger } from "@/lib/logger";
 import { nanoid } from "nanoid";
 import { NextRequest, NextResponse } from "next/server";
 
 import { requireApiAuth, verifyClaimAccess } from "@/lib/auth/apiAuth";
 import { getOrgClaimOrThrow, OrgScopeError } from "@/lib/auth/orgScope";
 import { isAuthError, requireAuth } from "@/lib/auth/requireAuth";
+import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 import { uploadBuffer } from "@/lib/s3";
 import { getClaimAssetsWithMetadata } from "@/server/claims/getClaimAssetsWithMetadata";

@@ -6,6 +6,7 @@
  */
 
 import ExifReader from 'exifreader';
+
 import { logger } from "@/lib/logger";
 
 export interface EXIFData {

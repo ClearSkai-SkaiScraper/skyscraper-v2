@@ -1,9 +1,9 @@
 export const dynamic = "force-dynamic";
 
-import { logger } from "@/lib/logger";
 import { NextRequest, NextResponse } from "next/server";
 
 import { withAuth } from "@/lib/auth/withAuth";
+import { logger } from "@/lib/logger";
 
 /**
  * Template sections are stored as JSON in report_templates (section_order, section_enabled).

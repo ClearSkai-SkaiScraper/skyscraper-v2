@@ -4,8 +4,8 @@
  */
 
 import { currentUser } from "@clerk/nextjs/server";
-import { logger } from "@/lib/logger";
 
+import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 
 interface PreviewOrganization {

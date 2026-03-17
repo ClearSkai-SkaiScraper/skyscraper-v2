@@ -4,7 +4,7 @@ import { ListTodo } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 
-import { useTaskSlideOver, type TaskPanelOptions } from "./TaskSlideOverContext";
+import { type TaskPanelOptions,useTaskSlideOver } from "./TaskSlideOverContext";
 
 /**
  * TaskButton — reusable button to open the Task Slide-Over panel.

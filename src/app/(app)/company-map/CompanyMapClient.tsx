@@ -4,8 +4,8 @@ import { MapPin, Navigation } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
 import { Button } from "@/components/ui/button";
-
 import { logger } from "@/lib/logger";
+
 import type { PropertyLocation } from "./actions";
 
 export default function CompanyMapClient({ locations }: { locations: PropertyLocation[] }) {

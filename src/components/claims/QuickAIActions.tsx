@@ -7,7 +7,6 @@
 
 "use client";
 
-import { logger } from "@/lib/logger";
 import {
   CheckCircle2,
   Download,
@@ -18,6 +17,8 @@ import {
   XCircle,
 } from "lucide-react";
 import { useState } from "react";
+
+import { logger } from "@/lib/logger";
 
 interface QuickAIActionsProps {
   claimId: string;

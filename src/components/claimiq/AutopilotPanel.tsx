@@ -13,11 +13,6 @@
  * Replaces the static "Still Needed" list in SectionRow.
  */
 
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { cn } from "@/lib/utils";
-import { useClaimIQStore, type AutopilotActionState } from "@/stores/claimIQStore";
 import {
   AlertCircle,
   ArrowRight,
@@ -39,6 +34,12 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
+
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { cn } from "@/lib/utils";
+import { type AutopilotActionState,useClaimIQStore } from "@/stores/claimIQStore";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Types

@@ -1,9 +1,10 @@
-import prisma from "@/lib/prisma";
 import {
   claims as ClaimModel,
   contacts as ContactModel,
   properties as PropertyModel,
 } from "@prisma/client";
+
+import prisma from "@/lib/prisma";
 
 // --- 1. COMPATIBILITY TYPE DEFINITION ---
 

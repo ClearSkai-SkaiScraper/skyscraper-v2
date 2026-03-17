@@ -1,8 +1,8 @@
-import { logger } from "@/lib/logger";
 import { NextRequest, NextResponse } from "next/server";
 
 import { withAuth } from "@/lib/auth/withAuth";
 import { isBetaMode } from "@/lib/beta";
+import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 import { isPlatformAdmin } from "@/lib/security/roles";
 

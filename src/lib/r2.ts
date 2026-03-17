@@ -4,8 +4,9 @@
  */
 
 import { GetObjectCommand, PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
-import { logger } from "@/lib/logger";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
+
+import { logger } from "@/lib/logger";
 
 // Environment variables validation
 const R2_ENDPOINT = process.env.R2_ENDPOINT;

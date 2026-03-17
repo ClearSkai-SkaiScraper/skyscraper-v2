@@ -1,5 +1,8 @@
 "use client";
 
+import { AlertTriangle, Check, ChevronDown, ChevronUp, Info, Pencil, X } from "lucide-react";
+import { useState } from "react";
+
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -14,8 +17,6 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
-import { AlertTriangle, Check, ChevronDown, ChevronUp, Info, Pencil, X } from "lucide-react";
-import { useState } from "react";
 
 export interface Finding {
   index: number;

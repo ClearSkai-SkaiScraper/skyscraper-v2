@@ -8,6 +8,7 @@
  */
 
 import { type Job, PgBoss } from "pg-boss";
+
 import { logger } from "@/lib/logger";
 
 export type { Job };

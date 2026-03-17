@@ -13,9 +13,9 @@ export const dynamic = "force-dynamic";
  * - Queues AI intake job
  */
 
-import { logger } from "@/lib/logger";
 import { NextRequest, NextResponse } from "next/server";
 
+import { logger } from "@/lib/logger";
 import { handlePublicSubmit } from "@/lib/trades/public-intake";
 
 export async function POST(req: NextRequest) {

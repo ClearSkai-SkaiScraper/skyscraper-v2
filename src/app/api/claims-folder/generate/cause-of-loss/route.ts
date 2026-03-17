@@ -1,11 +1,11 @@
 export const dynamic = "force-dynamic";
 
 // src/app/api/claims-folder/generate/cause-of-loss/route.ts
-import { NextResponse, type NextRequest } from "next/server";
-import { logger } from "@/lib/logger";
+import { type NextRequest,NextResponse } from "next/server";
 import { z } from "zod";
 
 import { isAuthError, requireAuth } from "@/lib/auth/requireAuth";
+import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 
 const RequestSchema = z.object({

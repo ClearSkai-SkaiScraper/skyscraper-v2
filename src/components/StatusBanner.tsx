@@ -1,8 +1,9 @@
 "use client";
 
-import { cn } from "@/lib/utils";
 import { AlertTriangle, CheckCircle2, Info, X } from "lucide-react";
 import { useEffect, useState } from "react";
+
+import { cn } from "@/lib/utils";
 
 type IncidentSeverity = "critical" | "warning" | "info" | "resolved";
 

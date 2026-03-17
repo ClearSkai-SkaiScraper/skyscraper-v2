@@ -1,8 +1,8 @@
 "use client";
 
 import { GeometryAnalyzerPanel } from "@/components/geometry/GeometryAnalyzerPanel";
-import { logger } from "@/lib/logger";
 import { VisionAnalyzerPanel } from "@/components/vision/VisionAnalyzerPanel";
+import { logger } from "@/lib/logger";
 
 export function ClaimVisionSection({ claim }: { claim: any }) {
   return (

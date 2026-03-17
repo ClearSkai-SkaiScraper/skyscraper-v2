@@ -28,12 +28,12 @@ export const dynamic = "force-dynamic";
  *   }
  */
 
-import { logger } from "@/lib/logger";
 import { NextRequest, NextResponse } from "next/server";
 
 import { getOrgClaimOrThrow, OrgScopeError } from "@/lib/auth/orgScope";
 import { withAuth } from "@/lib/auth/withAuth";
 import { createTimelineEvent } from "@/lib/claims/timeline";
+import { logger } from "@/lib/logger";
 import { safeSendEmail } from "@/lib/mail";
 import prisma from "@/lib/prisma";
 

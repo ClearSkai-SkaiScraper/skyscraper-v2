@@ -8,6 +8,18 @@
  * changes are made in tuning-config.ts and deployed.
  */
 
+import {
+  AlertTriangle,
+  BookOpen,
+  CheckCircle2,
+  Cloud,
+  Scale,
+  Settings2,
+  Shield,
+  Tag,
+  XCircle,
+} from "lucide-react";
+
 import { ValidationReportPanel } from "@/components/intelligence/ValidationReportPanel";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -22,17 +34,6 @@ import {
   validateTuningConfig,
 } from "@/lib/intelligence/tuning-config";
 import { cn } from "@/lib/utils";
-import {
-  AlertTriangle,
-  BookOpen,
-  CheckCircle2,
-  Cloud,
-  Scale,
-  Settings2,
-  Shield,
-  Tag,
-  XCircle,
-} from "lucide-react";
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 

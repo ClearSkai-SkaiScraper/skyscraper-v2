@@ -20,8 +20,8 @@
  */
 
 import { callOpenAI } from "@/lib/ai/client";
-import { logger } from "@/lib/logger";
 import { reconstructClaimTimeline } from "@/lib/claims/reconstructor";
+import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 
 export type NarrativeTone = "contractor" | "adjuster" | "attorney" | "homeowner";

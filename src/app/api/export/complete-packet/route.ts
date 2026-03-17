@@ -7,13 +7,13 @@
 
 export const dynamic = "force-dynamic";
 
-import { logger } from "@/lib/observability/logger";
 import { auth } from "@clerk/nextjs/server";
 import { createClient } from "@supabase/supabase-js";
 import JSZip from "jszip";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 
+import { logger } from "@/lib/observability/logger";
 import prisma from "@/lib/prisma";
 import { checkRateLimit, getRateLimitError } from "@/lib/ratelimit";
 import { track } from "@/lib/track";

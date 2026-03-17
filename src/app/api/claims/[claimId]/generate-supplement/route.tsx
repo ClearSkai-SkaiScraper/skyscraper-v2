@@ -6,7 +6,6 @@
  */
 
 import { auth } from "@clerk/nextjs/server";
-import { logger } from "@/lib/logger";
 import { renderToStream } from "@react-pdf/renderer";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -14,6 +13,7 @@ import { generateSupplement } from "@/lib/ai/generateSupplement";
 import { db } from "@/lib/db";
 import { computeDelta, computeTotalDelta, ScopeLineItem } from "@/lib/delta/computeDelta";
 import { createGeneratedDocument, updateDocumentStatus } from "@/lib/documents/manager";
+import { logger } from "@/lib/logger";
 import { getActiveOrg } from "@/lib/org/getActiveOrg";
 import { SupplementPDFDocument } from "@/lib/pdf/supplementRenderer";
 import { getOrgBranding } from "@/lib/pdf/utils";

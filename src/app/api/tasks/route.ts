@@ -3,11 +3,10 @@ export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
 import { auth } from "@clerk/nextjs/server";
+import { NextRequest } from "next/server";
 
 import { getVisibleUserIds } from "@/lib/auth/managerScope";
 import { logger } from "@/lib/logger";
-import { NextRequest } from "next/server";
-
 import { sendTemplatedNotification } from "@/lib/notifications/templates";
 import { getCurrentUserPermissions, requirePermission } from "@/lib/permissions";
 import prisma from "@/lib/prisma";

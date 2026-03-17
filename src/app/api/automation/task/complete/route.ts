@@ -7,11 +7,11 @@ export const dynamic = "force-dynamic";
  * Completes an automation task
  */
 
-import { logger } from "@/lib/logger";
 import { NextRequest, NextResponse } from "next/server";
 
 import { withAuth } from "@/lib/auth/withAuth";
 import { completeTask } from "@/lib/intel/automation/executors/tasks";
+import { logger } from "@/lib/logger";
 
 export const POST = withAuth(async (req: NextRequest, { orgId }) => {
   try {

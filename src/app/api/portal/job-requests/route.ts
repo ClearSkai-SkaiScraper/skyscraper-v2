@@ -6,10 +6,11 @@ export const dynamic = "force-dynamic";
  * Allows clients to post job requests with photos, summary, and requirements
  */
 
-import prisma from "@/lib/prisma";
-import { logger } from "@/lib/logger";
 import { auth, currentUser } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
+
+import { logger } from "@/lib/logger";
+import prisma from "@/lib/prisma";
 
 // GET - List job requests (for contractors to browse, or for client to see their own)
 export async function GET(request: NextRequest) {

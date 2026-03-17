@@ -20,7 +20,7 @@ import Replicate from "replicate";
 import sharp from "sharp";
 
 import { getOpenAI } from "@/lib/ai/client";
-import { fetchBrandingData, type BrandingData } from "@/lib/pdf/brandedHeader";
+import { type BrandingData,fetchBrandingData } from "@/lib/pdf/brandedHeader";
 
 const openai = getOpenAI();
 const replicate = new Replicate({ auth: process.env.REPLICATE_API_TOKEN });

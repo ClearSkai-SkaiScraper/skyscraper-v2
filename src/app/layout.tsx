@@ -7,9 +7,8 @@ import type { Metadata } from "next";
 import type { ReactNode } from "react";
 
 import { PHProvider } from "@/lib/analytics.tsx";
-import { ThemeProvider } from "@/modules/ui/theme/ThemeProvider";
-
 import { logger } from "@/lib/logger";
+import { ThemeProvider } from "@/modules/ui/theme/ThemeProvider";
 
 // Note: Clerk validation moved to runtime API health checks
 // Build-time validation causes Vercel builds to fail

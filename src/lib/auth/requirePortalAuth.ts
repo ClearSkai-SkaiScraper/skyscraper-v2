@@ -27,11 +27,11 @@
  */
 
 import "server-only";
-import { logger } from "@/lib/logger";
 
 import { auth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 
+import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 
 export interface PortalAuthResult {

@@ -1,11 +1,11 @@
 export const dynamic = "force-dynamic";
 
-import { logger } from "@/lib/logger";
 import { currentUser } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
 
 import { generateClaimNarrative } from "@/lib/ai/claimWriter";
 import { aiFail, aiOk } from "@/lib/api/aiResponse";
+import { logger } from "@/lib/logger";
 import { getRateLimitIdentifier, rateLimiters } from "@/lib/rate-limit";
 import { claimWriterSchema, validateAIRequest } from "@/lib/validation/aiSchemas";
 

@@ -2,12 +2,12 @@ export const dynamic = "force-dynamic";
 
 // src/app/api/estimates/[id]/draft-email/route.ts
 import { auth } from "@clerk/nextjs/server";
-import { logger } from "@/lib/logger";
 import { NextRequest, NextResponse } from "next/server";
 
 import { draftPacketEmail } from "@/lib/email/draftPacketEmail";
 import type { PacketRecipientType } from "@/lib/email/types";
 import { buildEstimatePacketPayload } from "@/lib/export/payloads";
+import { logger } from "@/lib/logger";
 
 type RouteParams = { params: { id: string } };
 

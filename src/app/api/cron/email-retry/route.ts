@@ -4,12 +4,12 @@ export const revalidate = 0;
 export const maxDuration = 120;
 
 // CRON: EMAIL RETRY WORKER
-import { logger } from "@/lib/logger";
 import * as Sentry from "@sentry/nextjs";
 import { NextResponse } from "next/server";
 import { Resend } from "resend";
 
 import { verifyCronSecret } from "@/lib/cron/verifyCronSecret";
+import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 
 let _resend: Resend | null = null;

@@ -6,12 +6,12 @@
  *          regenerate_links, update_status, add_note
  */
 
-import { logger } from "@/lib/logger";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 
 import { withAuth } from "@/lib/auth/withAuth";
 import * as reportService from "@/lib/domain/reports";
+import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 
 export const runtime = "nodejs";

@@ -3,9 +3,9 @@
  * Tracks all events on a claim for audit trail
  */
 
-import { logger } from "@/lib/logger";
 import { nanoid } from "nanoid";
 
+import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 
 export type ActivityEventType =

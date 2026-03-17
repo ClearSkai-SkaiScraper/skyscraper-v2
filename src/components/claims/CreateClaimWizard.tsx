@@ -1,7 +1,6 @@
 "use client";
 
 import { AlertCircle, CheckCircle2, ChevronLeft, ChevronRight } from "lucide-react";
-import { logger } from "@/lib/logger";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
@@ -19,6 +18,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { logger } from "@/lib/logger";
 
 interface Contact {
   id: string;

@@ -1,7 +1,8 @@
 export const dynamic = "force-dynamic";
-import { logger } from "@/lib/logger";
 import { NextRequest, NextResponse } from "next/server";
 import { createRouteHandler } from "uploadthing/next";
+
+import { logger } from "@/lib/logger";
 
 import { ourFileRouter } from "./core";
 

@@ -3,10 +3,10 @@
  * Handles fetching invitations from pros to clients (homeowners)
  */
 
-import { logger } from "@/lib/logger";
 import { NextResponse } from "next/server";
 
 import { isPortalAuthError, requirePortalAuth } from "@/lib/auth/requirePortalAuth";
+import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 import { checkRateLimit } from "@/lib/rate-limit";
 

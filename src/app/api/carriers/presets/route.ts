@@ -4,9 +4,9 @@ export const revalidate = 0;
 
 // Phase 5 - Carrier Presets API Route
 import { auth } from '@clerk/nextjs/server';
-import { logger } from "@/lib/logger";
 import { NextResponse } from 'next/server';
 
+import { logger } from "@/lib/logger";
 import { BUILT_IN_CARRIERS, getCarrierPreset } from '@/modules/carriers/core/presets';
 
 export async function GET() {

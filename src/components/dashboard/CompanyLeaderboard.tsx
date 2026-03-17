@@ -1,6 +1,5 @@
 "use client";
 
-import { logger } from "@/lib/logger";
 import {
   BarChart3,
   CalendarDays,
@@ -14,6 +13,8 @@ import {
   Users,
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
+
+import { logger } from "@/lib/logger";
 
 interface LeaderboardEntry {
   userId: string;

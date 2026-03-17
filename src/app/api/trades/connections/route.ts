@@ -10,10 +10,10 @@ export const dynamic = "force-dynamic";
  * Handles connection requests between trades professionals (friend-like system)
  */
 
-import { logger } from "@/lib/logger";
 import { auth } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
 
+import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 import { isValidationError, validateBody } from "@/lib/validation/middleware";
 import { connectionActionSchema, connectionRequestSchema } from "@/lib/validation/trades-schemas";

@@ -10,8 +10,9 @@
  * Generate a key: openssl rand -hex 32
  */
 
-import { logger } from "@/lib/logger";
 import * as crypto from "crypto";
+
+import { logger } from "@/lib/logger";
 
 const ALGORITHM = "aes-256-gcm";
 const IV_LENGTH = 12; // GCM standard

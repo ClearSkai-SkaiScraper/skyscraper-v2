@@ -1,9 +1,9 @@
-import { logger } from "@/lib/logger";
 import { renderToStream } from "@react-pdf/renderer";
 import { NextRequest, NextResponse } from "next/server";
 
 import { generatePdfDocument } from "@/lib/artifacts/pdfGenerator";
 import { verifyClaimAccess } from "@/lib/auth/apiAuth";
+import { logger } from "@/lib/logger";
 import { getActiveOrgContext } from "@/lib/org/getActiveOrgContext";
 import { fetchBrandingData } from "@/lib/pdf/brandedHeader";
 import prisma from "@/lib/prisma";

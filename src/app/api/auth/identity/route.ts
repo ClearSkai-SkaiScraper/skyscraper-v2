@@ -13,10 +13,10 @@
  */
 
 import { currentUser } from "@clerk/nextjs/server";
-import { logger } from "@/lib/logger";
 import { NextResponse } from "next/server";
 
 import { determineUserType, getUserIdentity } from "@/lib/identity/userIdentity";
+import { logger } from "@/lib/logger";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;

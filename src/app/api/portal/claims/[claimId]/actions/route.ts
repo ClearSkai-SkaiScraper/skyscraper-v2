@@ -5,13 +5,13 @@
  * Actions: accept, add_event, add_comment, request_access
  */
 
-import { logger } from "@/lib/observability/logger";
 import crypto from "crypto";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 
 import { assertPortalAccess } from "@/lib/auth/portalAccess";
 import { isPortalAuthError, requirePortalAuth } from "@/lib/auth/requirePortalAuth";
+import { logger } from "@/lib/observability/logger";
 import prisma from "@/lib/prisma";
 import { checkRateLimit } from "@/lib/rate-limit";
 

@@ -3,9 +3,10 @@
 "use client";
 
 import { formatDistanceToNow } from "date-fns";
-import { logger } from "@/lib/logger";
 import { Calendar, ChevronRight, DollarSign, FileText, MapPin } from "lucide-react";
 import Link from "next/link";
+
+import { logger } from "@/lib/logger";
 
 type ClaimItem = {
   id: string;

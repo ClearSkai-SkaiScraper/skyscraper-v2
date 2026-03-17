@@ -3,7 +3,6 @@ export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
 // src/app/api/ai/chat/route.ts
-import { logger } from "@/lib/logger";
 import { currentUser } from "@clerk/nextjs/server";
 import type { claims, jobs, Org, Plan, projects, properties } from "@prisma/client";
 import { NextRequest, NextResponse } from "next/server";
@@ -11,6 +10,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getOpenAI } from "@/lib/ai/client";
 import { trackAiUsage } from "@/lib/ai/trackUsage";
 import { aiFail, aiOk, classifyOpenAiError } from "@/lib/api/aiResponse";
+import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 import { getRateLimitIdentifier, rateLimiters } from "@/lib/rate-limit";
 import { chatSchema, validateAIRequest } from "@/lib/validation/aiSchemas";

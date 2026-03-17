@@ -3,8 +3,8 @@
  * Fetches severe weather warnings from weather.gov (100% free, no API key)
  */
 
-import type { WeatherEvent } from "@/types/weather";
 import { logger } from "@/lib/logger";
+import type { WeatherEvent } from "@/types/weather";
 
 const CAP_API_BASE = process.env.CAP_API_BASE || "https://api.weather.gov/alerts";
 

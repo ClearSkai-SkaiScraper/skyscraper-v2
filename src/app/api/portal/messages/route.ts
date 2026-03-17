@@ -1,7 +1,7 @@
-import { logger } from "@/lib/logger";
 import { auth, currentUser } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
 
+import { logger } from "@/lib/logger";
 import { getOrCreatePortalThread } from "@/lib/messages/getOrCreatePortalThread";
 import prisma from "@/lib/prisma";
 

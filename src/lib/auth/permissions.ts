@@ -1,7 +1,7 @@
 import { auth } from "@clerk/nextjs/server";
-import { logger } from "@/lib/logger";
 
 import { getTenant } from "@/lib/auth/tenant";
+import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 
 export type Role = "viewer" | "member" | "admin";

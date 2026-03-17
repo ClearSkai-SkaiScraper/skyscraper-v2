@@ -1,9 +1,9 @@
 export const dynamic = "force-dynamic";
 
-import { logger } from "@/lib/logger";
 import { NextResponse } from "next/server";
 
 import { getTenant } from "@/lib/auth/tenant";
+import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 
 // Cache map data for 5 minutes (300 seconds) - properties don't change frequently

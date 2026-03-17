@@ -3,8 +3,8 @@
  * Fetches hail and wind storm reports (100% free, no API key)
  */
 
-import type { WeatherEvent } from "@/types/weather";
 import { logger } from "@/lib/logger";
+import type { WeatherEvent } from "@/types/weather";
 
 const MESONET_API_BASE =
   process.env.MESONET_API_BASE || "https://mesonet.agron.iastate.edu/geojson";

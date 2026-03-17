@@ -11,8 +11,8 @@
  * - NEXT_PUBLIC_SIGNUPS_ENABLED: Enable/disable new user registration
  */
 
-import prisma from "@/lib/prisma";
 import { logger } from "@/lib/logger";
+import prisma from "@/lib/prisma";
 
 // ============================================================================
 // KILL SWITCHES (Global, runtime-controlled)

@@ -14,11 +14,11 @@ export const revalidate = 0;
  *   - Autopilot opportunity
  */
 
-import { logger } from "@/lib/logger";
-import { NextResponse, type NextRequest } from "next/server";
+import { type NextRequest,NextResponse } from "next/server";
 
 import { isAuthError, requireAuth } from "@/lib/auth/requireAuth";
 import { computeReadinessAnalytics } from "@/lib/claimiq/analytics";
+import { logger } from "@/lib/logger";
 
 export async function GET(request: NextRequest) {
   try {

@@ -1,10 +1,10 @@
 export const dynamic = "force-dynamic";
 
-import { logger } from "@/lib/logger";
 import { NextResponse } from "next/server";
 
 import { withOrgScope } from "@/lib/auth/tenant";
 import { getDelegate } from "@/lib/db/modelAliases";
+import { logger } from "@/lib/logger";
 
 /**
  * GET /api/damage/[id]

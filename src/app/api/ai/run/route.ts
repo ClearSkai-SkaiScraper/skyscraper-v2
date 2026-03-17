@@ -9,15 +9,14 @@ export const revalidate = 0;
 // Body: { reportId, engine, sectionKey?, context? }
 // Returns: { jobId } or { jobIds: string[] }
 
-import { logger } from "@/lib/logger";
 import { NextRequest, NextResponse } from "next/server";
 
-import { createAiConfig, withAiBilling, type AiBillingContext } from "@/lib/ai/withAiBilling";
-
+import { type AiBillingContext,createAiConfig, withAiBilling } from "@/lib/ai/withAiBilling";
 import {
   requireActiveSubscription,
   SubscriptionRequiredError,
 } from "@/lib/billing/requireActiveSubscription";
+import { logger } from "@/lib/logger";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { runSchema, validateAIRequest } from "@/lib/validation/aiSchemas";
 import { validateQuota } from "@/modules/ai/core/tokens";

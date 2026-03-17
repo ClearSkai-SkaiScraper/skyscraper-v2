@@ -26,7 +26,6 @@
  * ============================================================================
  */
 
-import { logger } from "@/lib/logger";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 
@@ -39,6 +38,7 @@ import {
   generateCarrierSummary,
 } from "@/lib/claims/generators/carrierSummary";
 import { predictClaimLifecycle, type PredictionInput } from "@/lib/claims/predictor";
+import { logger } from "@/lib/logger";
 import { requirePermission } from "@/lib/permissions";
 import prisma from "@/lib/prisma";
 import { htmlToPdfBuffer } from "@/lib/reports/pdf-utils";

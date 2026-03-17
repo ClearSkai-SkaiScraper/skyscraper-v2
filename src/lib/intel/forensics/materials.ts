@@ -2,8 +2,8 @@
 // 🧬 MATERIAL FORENSICS ENGINE — Engineering-grade material failure analysis
 // This is how SkaiScraper beats desk reviewers, engineers, and adjusters
 
-import { getOpenAI } from "@/lib/openai";
 import { logger } from "@/lib/logger";
+import { getOpenAI } from "@/lib/openai";
 
 /**
  * MATERIAL FORENSICS ENGINE
