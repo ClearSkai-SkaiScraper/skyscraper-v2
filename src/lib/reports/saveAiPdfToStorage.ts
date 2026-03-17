@@ -1,11 +1,28 @@
 /**
  * Phase 2: AI PDF Storage Helper
  * Standardized pipeline for saving AI-generated PDFs to Supabase + GeneratedArtifact
+ *
+ * Uses service-role admin client for server-side uploads (no user auth required)
  */
+
+import { createClient } from "@supabase/supabase-js";
 
 import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
-import { uploadSupabase } from "@/lib/storage";
+
+const BUCKET = "documents";
+
+/**
+ * Get Supabase admin client with service role key for server-side uploads
+ */
+function getSupabaseAdmin() {
+  const url = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!url || !key) {
+    throw new Error("[saveAiPdfToStorage] Missing SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY");
+  }
+  return createClient(url, key, { auth: { persistSession: false } });
+}
 
 interface SaveAiPdfOptions {
   orgId: string;
@@ -39,14 +56,34 @@ export async function saveAiPdfToStorage(options: SaveAiPdfOptions): Promise<Sav
     aiReportId,
   } = options;
 
-  // Create a File object from the buffer
+  const supabase = getSupabaseAdmin();
+
+  // Build storage path
   const timestamp = Date.now();
   const filename = `${type.toLowerCase()}_${timestamp}.pdf`;
-  const file = new File([new Uint8Array(pdfBuffer)], filename, { type: "application/pdf" });
+  const storageKey = `claims/${claimId}/ai/${filename}`;
 
-  // Upload to Supabase Storage
-  const folder = `claims/${claimId}/ai`;
-  const { url: publicUrl, path: storageKey } = await uploadSupabase(file, "documents", folder);
+  // Upload to Supabase Storage using admin client (no user auth required)
+  const { error: uploadError } = await supabase.storage.from(BUCKET).upload(storageKey, pdfBuffer, {
+    contentType: "application/pdf",
+    upsert: true,
+  });
+
+  if (uploadError) {
+    logger.error("[saveAiPdfToStorage] ❌ Supabase upload failed:", {
+      error: uploadError,
+      claimId,
+      storageKey,
+    });
+    throw new Error(`Supabase upload failed: ${uploadError.message}`);
+  }
+
+  // Get public URL
+  const {
+    data: { publicUrl },
+  } = supabase.storage.from(BUCKET).getPublicUrl(storageKey);
+
+  logger.info("[saveAiPdfToStorage] ✅ Uploaded to Supabase:", { storageKey, publicUrl });
 
   // Save reference as GeneratedArtifact for tracking
   let artifactId = storageKey;
