@@ -152,6 +152,17 @@ export function EvidenceGapWidget({ claimId, compact = false, className }: Props
 
   /* All clear */
   if (data.totalGaps === 0) {
+    // If coverage is 0%, no analysis has been run yet — show a prompt instead of "all clear"
+    if (data.coveragePercent === 0 && data.modelGroupsRun.length === 0) {
+      return (
+        <Card className={className}>
+          <CardContent className="flex items-center gap-2 py-4 text-sm text-muted-foreground">
+            <FileSearch className="h-4 w-4" />
+            Upload and analyze photos to detect evidence gaps.
+          </CardContent>
+        </Card>
+      );
+    }
     return (
       <Card className={cn("border-green-200 dark:border-green-900", className)}>
         <CardContent className="flex items-center gap-2 py-4 text-sm text-green-600 dark:text-green-400">

@@ -319,7 +319,7 @@ export async function POST(request: NextRequest) {
           dataUrl,
           validated.componentType as ComponentType,
           validated.claimType as "hail" | "wind" | "storm" | "water" | "fire" | "general",
-          0.35 // 35% confidence threshold — balanced for real damage detection (false positives fixed via prompt + class mapping)
+          validated.claimType === "hail" || validated.claimType === "storm" ? 0.2 : 0.35 // Lower threshold for hail — chips are small and ambiguous
         );
 
         logger.info("[PHOTO_ANNOTATE] YOLO detection complete", {
@@ -383,6 +383,9 @@ export async function POST(request: NextRequest) {
       materialIdentified: materialAnalysis?.primaryMaterial,
     });
 
+    // Determine if this is a hail/storm claim — affects sensitivity thresholds
+    const isHailClaim = validated.claimType === "hail" || validated.claimType === "storm";
+
     // Convert detections to annotations format with validation
     const rawAnnotations: AnnotationResponse[] = (detections as DamageDetection[])
       .filter((detection) => {
@@ -424,12 +427,14 @@ export async function POST(request: NextRequest) {
           return false;
         }
         // - Low confidence detections (AI isn't sure)
-        // Threshold: 0.35 — balanced to catch real stucco chips/trim damage while filtering noise
-        // False positive root causes (aggressive prompts, dent→hail_dent mapping) are fixed separately
-        if (detection.confidence < 0.35) {
+        // Use a lower threshold for hail/storm claims — hail chips and soft metal dents
+        // are inherently small and ambiguous, routinely scoring 0.20-0.34
+        const confidenceFloor = isHailClaim ? 0.2 : 0.35;
+        if (detection.confidence < confidenceFloor) {
           logger.warn("[PHOTO_ANNOTATE] Low confidence detection filtered", {
             type: detection.type,
             confidence: detection.confidence,
+            threshold: confidenceFloor,
           });
           return false;
         }
@@ -440,10 +445,11 @@ export async function POST(request: NextRequest) {
         const ircCodeKey =
           IRC_CODE_MAP[damageTypeKey] || resolveIRCCodeKey(damageTypeKey) || "shingle_damage";
 
-        // Ensure minimum box size of 5% for visibility (increased from 3%)
+        // Ensure minimum box size — 3% for hail/storm (chips are tiny), 4% for others
         let { x, y, width, height } = detection.boundingBox;
-        width = Math.max(width, 5);
-        height = Math.max(height, 5);
+        const minBox = isHailClaim ? 3 : 4;
+        width = Math.max(width, minBox);
+        height = Math.max(height, minBox);
         // Clamp to image bounds
         x = Math.min(Math.max(x, 0), 100 - width);
         y = Math.min(Math.max(y, 0), 100 - height);
@@ -527,7 +533,19 @@ export async function POST(request: NextRequest) {
     }
 
     let filteredAnnotations = rawAnnotations;
-    if (hallucinationDetected) {
+    // For hail/storm claims: real hail damage legitimately appears as rows of
+    // same-sized dents on gutters, drip edge, fascia. Don't filter those.
+    const isHailRelated =
+      validated.claimType === "hail" ||
+      validated.claimType === "storm" ||
+      rawAnnotations.some(
+        (a) =>
+          a.damageType?.toLowerCase().includes("hail") ||
+          a.damageType?.toLowerCase().includes("dent") ||
+          a.damageType?.toLowerCase().includes("chip") ||
+          a.damageType?.toLowerCase().includes("spatter")
+      );
+    if (hallucinationDetected && !isHailRelated) {
       logger.warn("[PHOTO_ANNOTATE] Detected hallucination pattern — boxes are likely fabricated", {
         reason: hallucinationReason,
         count: rawAnnotations.length,
@@ -536,24 +554,34 @@ export async function POST(request: NextRequest) {
         widths,
         heights,
       });
-      // Keep only top 2 highest confidence detections (not just 1, to preserve some coverage)
+      // Keep only top 3 highest confidence detections
       if (rawAnnotations.length > 0) {
         const sorted = [...rawAnnotations].sort((a, b) => b.confidence - a.confidence);
-        filteredAnnotations = sorted.slice(0, 2);
+        filteredAnnotations = sorted.slice(0, 3);
         logger.info(
           `[PHOTO_ANNOTATE] Keeping top ${filteredAnnotations.length} detections (${hallucinationReason})`
         );
       }
+    } else if (hallucinationDetected && isHailRelated) {
+      logger.info(
+        "[PHOTO_ANNOTATE] Hallucination pattern detected but exempted for hail/storm claim",
+        {
+          reason: hallucinationReason,
+          count: rawAnnotations.length,
+        }
+      );
     }
 
-    // Deduplicate boxes that are at nearly the same position (within 8% tolerance)
-    // This prevents the "5-in-a-row" pattern from AI hallucinations
+    // Deduplicate boxes at nearly the same position
+    // Use tighter tolerance (4%) for hail since chips cluster closely;
+    // wider tolerance (8%) for other damage types
+    const dedupTolerance = isHailRelated ? 4 : 8;
     const annotations: AnnotationResponse[] = [];
     for (const ann of filteredAnnotations) {
       const isDuplicate = annotations.some(
         (existing) =>
-          Math.abs(existing.x - ann.x) < 8 &&
-          Math.abs(existing.y - ann.y) < 8 &&
+          Math.abs(existing.x - ann.x) < dedupTolerance &&
+          Math.abs(existing.y - ann.y) < dedupTolerance &&
           existing.damageType === ann.damageType
       );
       if (!isDuplicate) {

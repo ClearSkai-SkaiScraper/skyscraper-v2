@@ -426,7 +426,7 @@ export async function fetchRadarImages(
     frames.map(async (frame) => {
       try {
         const controller = new AbortController();
-        const timeout = setTimeout(() => controller.abort(), 8000);
+        const timeout = setTimeout(() => controller.abort(), 15000);
 
         const response = await fetch(frame.url, {
           headers: { "User-Agent": "SkaiScraper/1.0 (support@skaiscrape.com)" },
@@ -915,17 +915,25 @@ export async function buildWeatherPdfViewModel(
     eventAnchorNote = `Strongest storm evidence was identified on ${formatDateDisplay(dolContext.eventAnchorDate)}, which differs from the claimed Date of Loss (${formatDateDisplay(dolContext.selectedDol)}). Radar imagery is centered on the event anchor date.`;
   }
 
-  // 10. Build canonical summary (consistent with timeline & evidence)
-  const executiveSummary =
-    input.summary && evidence.stormConfidence !== "none"
-      ? input.summary
-      : buildCanonicalSummary(peril, evidence, dolContext, stormEvidence, weatherWindow);
+  // 10. Build canonical summary (ALWAYS from real weather data for consistency)
+  // AI-generated summaries contain hallucinated wind speeds that contradict
+  // the real Visual Crossing data shown in the timeline table. Always build
+  // from the same real data so every section agrees.
+  const executiveSummary = buildCanonicalSummary(
+    peril,
+    evidence,
+    dolContext,
+    stormEvidence,
+    weatherWindow
+  );
 
-  // 11. Build carrier talking points
-  const carrierTalkingPoints =
-    input.carrierTalkingPoints && evidence.stormConfidence !== "none"
-      ? input.carrierTalkingPoints
-      : buildCanonicalTalkingPoints(peril, evidence, dolContext, stormEvidence);
+  // 11. Build canonical carrier talking points (same — always from real data)
+  const carrierTalkingPoints = buildCanonicalTalkingPoints(
+    peril,
+    evidence,
+    dolContext,
+    stormEvidence
+  );
 
   // 12. Data sources
   const dataSources: string[] = [];

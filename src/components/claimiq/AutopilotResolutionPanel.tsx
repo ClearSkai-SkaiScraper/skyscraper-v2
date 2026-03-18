@@ -237,8 +237,8 @@ export function AutopilotResolutionPanel({ claimId, className }: Props) {
             <p className="text-muted-foreground">Est. Time</p>
           </div>
           <div className="rounded-md bg-slate-50 p-2 dark:bg-slate-800">
-            <p className="font-semibold">{plan.estimatedTokens.toLocaleString()}</p>
-            <p className="text-muted-foreground">Est. Tokens</p>
+            <p className="font-semibold">{plan.autonomousActions}</p>
+            <p className="text-muted-foreground">Completed</p>
           </div>
           <div className="rounded-md bg-slate-50 p-2 dark:bg-slate-800">
             <p className="font-semibold">{plan.totalActions}</p>

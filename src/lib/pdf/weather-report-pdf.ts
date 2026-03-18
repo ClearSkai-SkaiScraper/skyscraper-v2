@@ -131,7 +131,8 @@ export function renderWeatherReportPDF(viewModel: WeatherPdfViewModel): Buffer {
 
   // 9. CARRIER TALKING POINTS
   if (viewModel.carrierTalkingPoints) {
-    yPos = checkPageBreak(doc, yPos, 40, pageHeight, margin);
+    // Carrier talking points now handle their own page-break logic internally
+    yPos = checkPageBreak(doc, yPos, 30, pageHeight, margin);
     yPos = renderCarrierTalkingPoints(doc, viewModel, margin, contentWidth, yPos);
   }
 
@@ -755,13 +756,54 @@ function renderCarrierTalkingPoints(
   yPos: number
 ): number {
   const text = sanitizeText(vm.carrierTalkingPoints);
-  const lines = doc.splitTextToSize(text, contentWidth - 16);
-  const boxHeight = Math.max(22, lines.length * 4.5 + 16);
+  const lines = doc.splitTextToSize(text, contentWidth - 20);
+  const lineHeight = 4.5;
+  const headerHeight = 16;
+  const padding = 8;
+  const boxHeight = Math.max(22, lines.length * lineHeight + headerHeight + padding);
+  const pageHeight = 279.4;
+  const maxContentY = pageHeight - 30; // footer zone
 
+  // If the whole box fits on this page, render it in one go
+  if (yPos + boxHeight <= maxContentY) {
+    doc.setFillColor(254, 243, 199);
+    doc.roundedRect(margin, yPos, contentWidth, boxHeight, 3, 3, "F");
+    doc.setFillColor(COLORS.warning.r, COLORS.warning.g, COLORS.warning.b);
+    doc.rect(margin, yPos, 3, boxHeight, "F");
+
+    doc.setFontSize(9);
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(120, 53, 15);
+    doc.text("CARRIER TALKING POINTS", margin + 10, yPos + 8);
+
+    doc.setFontSize(9);
+    doc.setFont("helvetica", "normal");
+    doc.setTextColor(COLORS.text.r, COLORS.text.g, COLORS.text.b);
+
+    let textY = yPos + headerHeight;
+    for (const line of lines) {
+      doc.text(line, margin + 10, textY);
+      textY += lineHeight;
+    }
+
+    return yPos + boxHeight + 8;
+  }
+
+  // Box is too tall — render with page breaks
+  // Draw header box on current page
+  const firstPageLines: string[] = [];
+  let testY = yPos + headerHeight;
+  for (const line of lines) {
+    if (testY + lineHeight > maxContentY) break;
+    firstPageLines.push(line);
+    testY += lineHeight;
+  }
+
+  const firstBoxHeight = firstPageLines.length * lineHeight + headerHeight + padding;
   doc.setFillColor(254, 243, 199);
-  doc.roundedRect(margin, yPos, contentWidth, boxHeight, 3, 3, "F");
+  doc.roundedRect(margin, yPos, contentWidth, firstBoxHeight, 3, 3, "F");
   doc.setFillColor(COLORS.warning.r, COLORS.warning.g, COLORS.warning.b);
-  doc.rect(margin, yPos, 3, boxHeight, "F");
+  doc.rect(margin, yPos, 3, firstBoxHeight, "F");
 
   doc.setFontSize(9);
   doc.setFont("helvetica", "bold");
@@ -772,13 +814,42 @@ function renderCarrierTalkingPoints(
   doc.setFont("helvetica", "normal");
   doc.setTextColor(COLORS.text.r, COLORS.text.g, COLORS.text.b);
 
-  let textY = yPos + 16;
-  for (const line of lines) {
-    doc.text(line, margin + 10, textY);
-    textY += 4.5;
+  let currentY = yPos + headerHeight;
+  for (const line of firstPageLines) {
+    doc.text(line, margin + 10, currentY);
+    currentY += lineHeight;
   }
 
-  return yPos + boxHeight + 8;
+  // Remaining lines on new page(s)
+  const remainingLines = lines.slice(firstPageLines.length);
+  if (remainingLines.length > 0) {
+    doc.addPage();
+    currentY = margin;
+
+    const contBoxHeight = remainingLines.length * lineHeight + padding + 4;
+    doc.setFillColor(254, 243, 199);
+    doc.roundedRect(margin, currentY, contentWidth, contBoxHeight, 3, 3, "F");
+    doc.setFillColor(COLORS.warning.r, COLORS.warning.g, COLORS.warning.b);
+    doc.rect(margin, currentY, 3, contBoxHeight, "F");
+
+    doc.setFontSize(9);
+    doc.setFont("helvetica", "normal");
+    doc.setTextColor(COLORS.text.r, COLORS.text.g, COLORS.text.b);
+
+    currentY += 4;
+    for (const line of remainingLines) {
+      if (currentY + lineHeight > maxContentY) {
+        doc.addPage();
+        currentY = margin + 4;
+      }
+      doc.text(line, margin + 10, currentY);
+      currentY += lineHeight;
+    }
+
+    return currentY + 8;
+  }
+
+  return currentY + 8;
 }
 
 function renderFooter(

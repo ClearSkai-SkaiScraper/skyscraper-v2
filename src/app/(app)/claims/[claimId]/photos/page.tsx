@@ -25,7 +25,7 @@ import { useParams } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 
-import { type Annotation,PhotoAnnotator } from "@/components/annotations/PhotoAnnotator";
+import { type Annotation, PhotoAnnotator } from "@/components/annotations/PhotoAnnotator";
 import ConfirmDeleteDialog from "@/components/ConfirmDeleteDialog";
 import { DamageReportPreview } from "@/components/damage-report/DamageReportPreview";
 import { DamageBoxOverlay } from "@/components/photos/DamageBoxOverlay";
@@ -634,35 +634,46 @@ export default function PhotosPage() {
   };
 
   const handleSaveAnnotations = useCallback(
-    async (photoId: string, annotations: Annotation[]) => {
+    async (
+      photoId: string,
+      annotations: Annotation[],
+      canvasSize?: { width: number; height: number }
+    ) => {
+      // Use actual canvas dimensions for coordinate conversion (not hardcoded 800x600)
+      const cw = canvasSize?.width || 800;
+      const ch = canvasSize?.height || 600;
       try {
         await fetch(`/api/claims/photos/${photoId}/annotations`, {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ annotations }),
+          body: JSON.stringify({
+            annotations,
+            canvasWidth: cw,
+            canvasHeight: ch,
+          }),
         });
 
         // Build damageBoxes from annotations for display overlay
-        // Annotations are stored in pixel space (0-800, 0-600)
+        // Annotations are stored in pixel space relative to the annotator canvas
         // DamageBoxes need to be 0-1 fractions for CSS positioning
         const damageBoxes: DamageBox[] = annotations.map((ann) => {
           // Handle circles (x,y is center, has radius)
           if (ann.type === "circle" && ann.radius) {
             const r = ann.radius;
             return {
-              x: (ann.x - r) / 800,
-              y: (ann.y - r) / 600,
-              w: (r * 2) / 800,
-              h: (r * 2) / 600,
+              x: (ann.x - r) / cw,
+              y: (ann.y - r) / ch,
+              w: (r * 2) / cw,
+              h: (r * 2) / ch,
               label: ann.caption || ann.damageType || "Damage",
             };
           }
           // Handle rectangles/ai_detection (x,y is top-left, has width/height)
           return {
-            x: ann.x / 800,
-            y: ann.y / 600,
-            w: (ann.width || 50) / 800,
-            h: (ann.height || 50) / 600,
+            x: ann.x / cw,
+            y: ann.y / ch,
+            w: (ann.width || 50) / cw,
+            h: (ann.height || 50) / ch,
             label: ann.caption || ann.damageType || "Damage",
           };
         });
@@ -1499,7 +1510,9 @@ export default function PhotosPage() {
                     <PhotoAnnotator
                       imageUrl={selectedPhoto.publicUrl}
                       initialAnnotations={selectedPhoto.annotations || []}
-                      onSave={(annotations) => handleSaveAnnotations(selectedPhoto.id, annotations)}
+                      onSave={(annotations, canvasSize) =>
+                        handleSaveAnnotations(selectedPhoto.id, annotations, canvasSize)
+                      }
                       onAnalyze={() => handleAnalyze(selectedPhoto.id)}
                       isAnalyzing={analyzing === selectedPhoto.id}
                     />

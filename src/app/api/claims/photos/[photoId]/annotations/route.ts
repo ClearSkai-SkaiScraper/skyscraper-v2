@@ -36,6 +36,8 @@ const AnnotationSchema = z.object({
 const PutSchema = z.object({
   annotations: z.array(AnnotationSchema),
   note: z.string().optional(),
+  canvasWidth: z.number().optional(),
+  canvasHeight: z.number().optional(),
 });
 
 interface RouteParams {
@@ -99,7 +101,7 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
 
   try {
     const body = await request.json();
-    const { annotations, note } = PutSchema.parse(body);
+    const { annotations, note, canvasWidth, canvasHeight } = PutSchema.parse(body);
 
     // Find the file_asset and verify org access
     const file = await prisma.file_assets.findFirst({
@@ -124,7 +126,7 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
     const caption = generateCaptionFromAnnotations(annotations);
     const severity = determineSeverity(annotations);
 
-    // Update metadata with annotations
+    // Update metadata with annotations + canvas dimensions for correct coordinate conversion
     const updatedMetadata = {
       ...existingMetadata,
       annotations,
@@ -132,6 +134,8 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
       lastAnnotatedAt: new Date().toISOString(),
       lastAnnotatedBy: userId,
       generatedCaption: caption,
+      canvasWidth: canvasWidth || 800,
+      canvasHeight: canvasHeight || 600,
     };
 
     await prisma.file_assets.update({

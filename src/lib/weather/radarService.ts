@@ -74,8 +74,8 @@ export async function fetchHistoricalRadar(
     const mm = String(d.getUTCMonth() + 1).padStart(2, "0");
     const dd = String(d.getUTCDate()).padStart(2, "0");
 
-    // IEM NEXRAD composites — available at various times throughout the day
-    // National composite (n0q = base reflectivity)
+    // IEM NEXRAD composites — national composite (n0q = base reflectivity)
+    // Use both timestamped files AND the station-level archive for better coverage
     const timeSlots = ["0000", "0600", "1200", "1500", "1800", "2100", "2359"];
 
     for (const time of timeSlots) {
@@ -92,14 +92,25 @@ export async function fetchHistoricalRadar(
       });
     }
 
-    // Station-specific RIDGE images
-    const ridgeUrl = `https://radar.weather.gov/ridge/standard/${stationId}_0.gif`;
+    // Also add station-specific RIDGE archive images (historical, not current)
+    // IEM archives station-level images at these paths
+    const ridgeArchiveUrl = `https://mesonet.agron.iastate.edu/archive/data/${yyyy}/${mm}/${dd}/GIS/ridge/${stationId}/N0Q_${yyyy}${mm}${dd}1200.png`;
     images.push({
-      url: ridgeUrl,
-      timestamp: new Date().toISOString(),
-      source: "nws_ridge",
+      url: ridgeArchiveUrl,
+      timestamp: `${date}T12:00:00Z`,
+      source: "iem_nexrad",
       stationId,
-      label: `${stationId} Current RIDGE Radar`,
+      label: `${stationId} Station Radar — Noon`,
+    });
+
+    // Alternative: IEM WMS-based single-frame tile (more reliable for older dates)
+    const wmsUrl = `https://mesonet.agron.iastate.edu/cgi-bin/wms/nexrad/n0q.cgi?SERVICE=WMS&VERSION=1.1.1&REQUEST=GetMap&FORMAT=image/png&TRANSPARENT=true&LAYERS=nexrad-n0q-900913&SRS=EPSG:4326&BBOX=${lng - 2},${lat - 2},${lng + 2},${lat + 2}&WIDTH=512&HEIGHT=512&TIME=${yyyy}-${mm}-${dd}T18:00:00Z`;
+    images.push({
+      url: wmsUrl,
+      timestamp: `${date}T18:00:00Z`,
+      source: "iem_nexrad",
+      stationId,
+      label: `NEXRAD WMS — ${stationId} Area`,
     });
 
     logger.info("[RADAR] Fetched radar image URLs", { date, stationId, count: images.length });

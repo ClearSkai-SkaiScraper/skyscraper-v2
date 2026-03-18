@@ -139,7 +139,7 @@ async function _analyzeImageInternal(
           role: "user",
           content: [
             { type: "text", text: prompt },
-            { type: "image_url", image_url: { url: imageUrl } },
+            { type: "image_url", image_url: { url: imageUrl, detail: "high" } },
           ],
         },
       ],
