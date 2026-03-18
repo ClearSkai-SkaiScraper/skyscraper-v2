@@ -497,8 +497,8 @@ export const POST = withAuth(async (req: NextRequest, { userId, orgId }) => {
               type: e.type,
               severity: e.intensity,
               intensity: e.intensity,
-              hailSize: (e as Record<string, unknown>).hailSize as string | undefined,
-              windSpeed: (e as Record<string, unknown>).windSpeed as string | undefined,
+              hailSize: e.hailSize || undefined,
+              windSpeed: e.windSpeed || undefined,
               notes: e.notes,
             })) ?? [],
           // Radar frames (preserve real per-frame timestamps from IEM)

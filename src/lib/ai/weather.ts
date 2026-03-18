@@ -110,6 +110,8 @@ export type WeatherReportResult = {
     time?: string;
     intensity?: string;
     notes?: string;
+    hailSize?: string;
+    windSpeed?: string;
   }>;
   carrierTalkingPoints: string;
 };
@@ -174,8 +176,18 @@ export async function runWeatherReport(input: WeatherReportInput): Promise<Weath
                   time: { type: "string" },
                   intensity: { type: "string" },
                   notes: { type: "string" },
+                  hailSize: {
+                    type: "string",
+                    description:
+                      "Hail diameter if hail event, e.g. '1.75 inch'. Empty string if not applicable.",
+                  },
+                  windSpeed: {
+                    type: "string",
+                    description:
+                      "Peak wind gust in mph if wind event, e.g. '65 mph'. Empty string if not applicable.",
+                  },
                 },
-                required: ["type", "date", "time", "intensity", "notes"],
+                required: ["type", "date", "time", "intensity", "notes", "hailSize", "windSpeed"],
                 additionalProperties: false,
               },
             },

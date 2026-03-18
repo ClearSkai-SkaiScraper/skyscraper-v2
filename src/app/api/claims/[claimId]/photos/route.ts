@@ -84,9 +84,13 @@ export const GET = withAuth(
 
           // Build damage boxes from annotations for overlay display
           // Annotations may be stored in two formats:
-          //   - Pixel-based: x/y in 0-800, width/height in 0-800/600 (from ClaimPhotoUploadWithAnalysis)
+          //   - Pixel-based: x/y in canvas pixels (from PhotoAnnotator)
           //   - Percentage-based: x/y in 0-100, with isPercentage=true flag (legacy)
           // Both need to be converted to 0-1 fractions for CSS positioning
+          // Use the stored canvasWidth/canvasHeight for accurate conversion
+          const canvasWidth = (metadata.canvasWidth as number) || 800;
+          const canvasHeight = (metadata.canvasHeight as number) || 600;
+
           const damageBoxes = hasAnnotations
             ? (
                 annotations as Array<{
@@ -94,6 +98,8 @@ export const GET = withAuth(
                   y: number;
                   width?: number;
                   height?: number;
+                  radius?: number;
+                  type?: string;
                   caption?: string;
                   damageType?: string;
                   severity?: string;
@@ -101,13 +107,27 @@ export const GET = withAuth(
                 }>
               ).map((ann) => {
                 // Detect format: if isPercentage flag is set, divide by 100
-                // Otherwise assume pixel-based (0-800/0-600) and divide accordingly
+                // Otherwise use stored canvas dimensions for pixel-to-fraction conversion
                 const isPercent = ann.isPercentage === true;
+
+                // Handle circles: x,y is center, has radius
+                if (ann.type === "circle" && ann.radius) {
+                  const r = ann.radius;
+                  return {
+                    x: isPercent ? (ann.x - r) / 100 : (ann.x - r) / canvasWidth,
+                    y: isPercent ? (ann.y - r) / 100 : (ann.y - r) / canvasHeight,
+                    w: isPercent ? (r * 2) / 100 : (r * 2) / canvasWidth,
+                    h: isPercent ? (r * 2) / 100 : (r * 2) / canvasHeight,
+                    label: ann.caption || ann.damageType || "Damage",
+                  };
+                }
+
+                // Handle rectangles/ai_detection: x,y is top-left, has width/height
                 return {
-                  x: isPercent ? (ann.x || 0) / 100 : (ann.x || 0) / 800,
-                  y: isPercent ? (ann.y || 0) / 100 : (ann.y || 0) / 600,
-                  w: isPercent ? (ann.width || 5) / 100 : (ann.width || 50) / 800,
-                  h: isPercent ? (ann.height || 5) / 100 : (ann.height || 50) / 600,
+                  x: isPercent ? (ann.x || 0) / 100 : (ann.x || 0) / canvasWidth,
+                  y: isPercent ? (ann.y || 0) / 100 : (ann.y || 0) / canvasHeight,
+                  w: isPercent ? (ann.width || 5) / 100 : (ann.width || 50) / canvasWidth,
+                  h: isPercent ? (ann.height || 5) / 100 : (ann.height || 50) / canvasHeight,
                   label: ann.caption || ann.damageType || "Damage",
                 };
               })
