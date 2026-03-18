@@ -70,6 +70,41 @@ interface PhotoDetailModalProps {
   analyzing?: string | null;
 }
 
+// Compute the canvas size that PhotoAnnotator will use for a given image.
+// Must match the exact same formula in PhotoAnnotator's image onload handler.
+function computeCanvasSize(naturalWidth: number, naturalHeight: number) {
+  const maxWidth = 800;
+  const maxHeight = 700;
+  let width = naturalWidth;
+  let height = naturalHeight;
+  if (width > maxWidth) {
+    height = (height * maxWidth) / width;
+    width = maxWidth;
+  }
+  if (height > maxHeight) {
+    width = (width * maxHeight) / height;
+    height = maxHeight;
+  }
+  return { width: Math.round(width), height: Math.round(height) };
+}
+
+// Load an image and return its natural dimensions (uses browser cache)
+function loadImageDimensions(
+  src: string
+): Promise<{ naturalWidth: number; naturalHeight: number }> {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.crossOrigin = "anonymous";
+    img.onload = () =>
+      resolve({ naturalWidth: img.naturalWidth, naturalHeight: img.naturalHeight });
+    img.onerror = () => reject(new Error("Failed to load image"));
+    if (img.complete && img.naturalWidth > 0) {
+      resolve({ naturalWidth: img.naturalWidth, naturalHeight: img.naturalHeight });
+    }
+    img.src = src;
+  });
+}
+
 export function PhotoDetailModal({
   photo,
   open,
@@ -82,13 +117,17 @@ export function PhotoDetailModal({
   const [aiAnalyzing, setAiAnalyzing] = useState(false);
   const [savingAnnotations, setSavingAnnotations] = useState(false);
 
-  // Call AI annotation API
+  // Call AI annotation API — returns annotations in canvas pixel space
   const handleAIAnnotate = useCallback(
-    async (imageUrl: string) => {
+    async (imageUrl: string): Promise<{ annotations: Annotation[]; slopeData?: unknown }> => {
       if (!photo) return { annotations: [] };
       setAiAnalyzing(true);
 
       try {
+        // Get actual image dimensions to compute correct canvas size
+        const dims = await loadImageDimensions(imageUrl);
+        const cs = computeCanvasSize(dims.naturalWidth, dims.naturalHeight);
+
         const res = await fetch("/api/ai/photo-annotate", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -107,7 +146,8 @@ export function PhotoDetailModal({
 
         const data = await res.json();
 
-        // Convert API response to annotations format
+        // Convert API response (0-100 percentage) to pixel coordinates
+        // using ACTUAL canvas size, not hardcoded 800×600
         const annotations: Annotation[] = data.annotations.map(
           (ann: {
             id: string;
@@ -123,11 +163,11 @@ export function PhotoDetailModal({
           }) => ({
             id: ann.id,
             type: "ai_detection" as const,
-            // Convert percentage to pixel coordinates (assuming 800x600 canvas)
-            x: (ann.x / 100) * 800,
-            y: (ann.y / 100) * 600,
-            width: (ann.width / 100) * 800,
-            height: (ann.height / 100) * 600,
+            // Convert percentage to pixel coordinates using actual canvas size
+            x: (ann.x / 100) * cs.width,
+            y: (ann.y / 100) * cs.height,
+            width: (ann.width / 100) * cs.width,
+            height: (ann.height / 100) * cs.height,
             color: getSeverityColor(ann.severity),
             damageType: ann.damageType,
             severity: ann.severity,
@@ -154,8 +194,9 @@ export function PhotoDetailModal({
   );
 
   // Save annotations to photo
+  // canvasSize comes from PhotoAnnotator so we use the ACTUAL dimensions
   const handleSaveAnnotations = useCallback(
-    async (annotations: Annotation[]) => {
+    async (annotations: Annotation[], canvasSize: { width: number; height: number }) => {
       if (!photo || !onPhotoUpdate) return;
       setSavingAnnotations(true);
 
@@ -164,32 +205,35 @@ export function PhotoDetailModal({
         const res = await fetch(`/api/claims/photos/${photo.id}/annotations`, {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ annotations }),
+          body: JSON.stringify({ annotations, canvasSize }),
         });
 
         if (res.ok) {
           // Build damageBoxes from annotations for display overlay
-          // Annotations are stored in pixel space (0-800, 0-600)
-          // DamageBoxes need to be 0-1 fractions for CSS positioning
-          const damageBoxes = annotations.map((ann) => {
+          // Use ACTUAL canvas dimensions (not hardcoded 800×600) for correct conversion
+          const cw = canvasSize.width;
+          const ch = canvasSize.height;
+          const damageBoxes: DamageBox[] = annotations.map((ann) => {
             // Handle circles (x,y is center, has radius)
             if (ann.type === "circle" && ann.radius) {
               const r = ann.radius;
               return {
-                x: (ann.x - r) / 800,
-                y: (ann.y - r) / 600,
-                w: (r * 2) / 800,
-                h: (r * 2) / 600,
+                x: (ann.x - r) / cw,
+                y: (ann.y - r) / ch,
+                w: (r * 2) / cw,
+                h: (r * 2) / ch,
                 label: ann.caption || ann.damageType || "Damage",
+                sourceModel: "manual" as const,
               };
             }
             // Handle rectangles/ai_detection (x,y is top-left, has width/height)
             return {
-              x: ann.x / 800,
-              y: ann.y / 600,
-              w: (ann.width || 50) / 800,
-              h: (ann.height || 50) / 600,
+              x: ann.x / cw,
+              y: ann.y / ch,
+              w: (ann.width || 50) / cw,
+              h: (ann.height || 50) / ch,
               label: ann.caption || ann.damageType || "Damage",
+              sourceModel: ann.type === "ai_detection" ? ("gpt4" as const) : ("manual" as const),
             };
           });
 
@@ -257,15 +301,37 @@ export function PhotoDetailModal({
             )}
           </DialogTitle>
           <DialogDescription>
-            {photo.analyzed
-              ? photo.aiCaption?.summary || "AI analysis complete - click Annotate to add markups"
-              : "Photo not yet analyzed - run AI analysis or manually annotate damage"}
+            {(() => {
+              const aiCount =
+                photo.annotations?.filter((a) => a.type === "ai_detection").length || 0;
+              const manualCount =
+                photo.annotations?.filter((a) => a.type !== "ai_detection").length || 0;
+              if (photo.analyzed && manualCount > 0 && aiCount === 0) {
+                return `AI did not identify high-confidence storm damage — ${manualCount} manual finding(s) documented by reviewer`;
+              }
+              if (photo.analyzed && manualCount > 0 && aiCount > 0) {
+                return `${aiCount} AI detection(s) + ${manualCount} manual finding(s) documented`;
+              }
+              if (photo.analyzed) {
+                return (
+                  photo.aiCaption?.summary || "AI analysis complete - click Annotate to add markups"
+                );
+              }
+              return "Photo not yet analyzed - run AI analysis or manually annotate damage";
+            })()}
           </DialogDescription>
         </DialogHeader>
 
         <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as typeof activeTab)}>
           <TabsList className="mb-4">
-            <TabsTrigger value="view">View</TabsTrigger>
+            <TabsTrigger value="view">
+              View
+              {photo.damageBoxes && photo.damageBoxes.length > 0 && (
+                <Badge className="ml-1.5 h-5 min-w-5 rounded-full bg-blue-600 px-1.5 text-[10px] text-white">
+                  {photo.damageBoxes.length}
+                </Badge>
+              )}
+            </TabsTrigger>
             <TabsTrigger value="annotate">
               <Edit3 className="mr-1 h-4 w-4" />
               Annotate
@@ -275,17 +341,49 @@ export function PhotoDetailModal({
 
           {/* View Tab - Basic photo view */}
           <TabsContent value="view" className="space-y-4">
-            <div className="relative overflow-hidden rounded-lg bg-slate-100 dark:bg-slate-800">
-              <img
-                src={photo.publicUrl}
-                alt={photo.filename}
-                className="h-auto max-h-[60vh] w-full object-contain"
-              />
+            {/* Annotation source badges */}
+            {photo.annotations && photo.annotations.length > 0 && (
+              <div className="flex flex-wrap items-center gap-2">
+                {photo.annotations.some((a) => a.type === "ai_detection") && (
+                  <Badge className="gap-1 bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400">
+                    <Sparkles className="h-3 w-3" />
+                    {photo.annotations.filter((a) => a.type === "ai_detection").length} AI
+                    Detection(s)
+                  </Badge>
+                )}
+                {photo.annotations.some((a) => a.type !== "ai_detection") && (
+                  <Badge className="gap-1 bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400">
+                    <Edit3 className="h-3 w-3" />
+                    {photo.annotations.filter((a) => a.type !== "ai_detection").length} Manual
+                    Finding(s)
+                  </Badge>
+                )}
+                {photo.annotations.length > 0 &&
+                  !photo.annotations.some((a) => a.type === "ai_detection") && (
+                    <Badge
+                      variant="outline"
+                      className="gap-1 border-amber-300 text-amber-600 dark:border-amber-700 dark:text-amber-400"
+                    >
+                      AI inconclusive — manual review regions identified
+                    </Badge>
+                  )}
+              </div>
+            )}
 
-              {/* Overlay existing damage boxes */}
-              {photo.damageBoxes && photo.damageBoxes.length > 0 && (
-                <DamageBoxOverlay boxes={photo.damageBoxes} mode="full" />
-              )}
+            {/* Image + overlay wrapper — sized to actual image bounds */}
+            <div className="flex items-center justify-center overflow-hidden rounded-lg bg-slate-100 dark:bg-slate-800">
+              <div className="relative inline-block">
+                <img
+                  src={photo.publicUrl}
+                  alt={photo.filename}
+                  className="block h-auto max-h-[60vh] max-w-full"
+                />
+
+                {/* Overlay existing damage boxes — positioned against the image, not the container */}
+                {photo.damageBoxes && photo.damageBoxes.length > 0 && (
+                  <DamageBoxOverlay boxes={photo.damageBoxes} mode="full" />
+                )}
+              </div>
             </div>
 
             {/* Quick AI analysis from view tab */}
@@ -334,8 +432,9 @@ export function PhotoDetailModal({
               photoId={photo.id}
               initialAnnotations={photo.annotations || []}
               onSave={handleSaveAnnotations}
-              onAnalyze={() => {
-                handleAIAnnotate(photo.publicUrl);
+              onAnalyze={async () => {
+                const result = await handleAIAnnotate(photo.publicUrl);
+                return result;
               }}
               isAnalyzing={aiAnalyzing}
             />

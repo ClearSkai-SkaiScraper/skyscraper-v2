@@ -12,6 +12,7 @@ import {
   Loader2,
   MapPin,
   RefreshCw,
+  Trash2,
   Wind,
   Zap,
 } from "lucide-react";
@@ -1070,6 +1071,39 @@ export default function ClaimWeatherPage({ params }: Props) {
                           PDF not available
                         </span>
                       )}
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        className="gap-1 text-red-500 hover:bg-red-50 hover:text-red-700 dark:text-red-400 dark:hover:bg-red-900/20 dark:hover:text-red-300"
+                        onClick={async () => {
+                          if (
+                            !confirm(
+                              "Delete this weather report? This removes the report and any generated PDF. Raw weather data is not affected."
+                            )
+                          )
+                            return;
+                          try {
+                            const res = await fetch(`/api/weather/report/${report.reportId}`, {
+                              method: "DELETE",
+                            });
+                            if (!res.ok) {
+                              const err = await res.json().catch(() => ({}));
+                              throw new Error(err.error || "Delete failed");
+                            }
+                            setSavedWeatherReports((prev) =>
+                              prev.filter((r) => r.id !== report.id)
+                            );
+                            toast.success("Weather report deleted");
+                          } catch (err) {
+                            logger.error("[WEATHER] Delete failed:", err);
+                            toast.error(
+                              err instanceof Error ? err.message : "Failed to delete report"
+                            );
+                          }
+                        }}
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </Button>
                     </div>
                   </Card>
                 ))}

@@ -211,8 +211,8 @@ export interface Annotation {
 interface PhotoAnnotatorProps {
   imageUrl: string;
   photoId?: string;
-  onSave?: (annotations: Annotation[]) => void;
-  onAnalyze?: () => void;
+  onSave?: (annotations: Annotation[], canvasSize: { width: number; height: number }) => void;
+  onAnalyze?: () => Promise<{ annotations: Annotation[] } | void>;
   initialAnnotations?: Annotation[];
   readOnly?: boolean;
   isAnalyzing?: boolean;
@@ -886,8 +886,13 @@ export function PhotoAnnotator({
     setSelectedAnnotation(duplicate.id);
   };
 
-  const handleAIAnalyze = () => {
-    if (onAnalyze) onAnalyze();
+  const handleAIAnalyze = async () => {
+    if (onAnalyze) {
+      const result = await onAnalyze();
+      if (result?.annotations && result.annotations.length > 0) {
+        setAnnotations((prev) => [...prev, ...result.annotations]);
+      }
+    }
   };
 
   const handleDelete = () => {
@@ -903,7 +908,7 @@ export function PhotoAnnotator({
   };
 
   const handleSave = () => {
-    if (onSave) onSave(annotations);
+    if (onSave) onSave(annotations, canvasSize);
   };
 
   const generateCaption = (): string => {
