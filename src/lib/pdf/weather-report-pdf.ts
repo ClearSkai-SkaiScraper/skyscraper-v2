@@ -63,8 +63,32 @@ export function renderWeatherReportPDF(viewModel: WeatherPdfViewModel): Buffer {
     anchorDate: viewModel.anchorDate,
     hasStormEvidence: viewModel.hasStormEvidence,
     hasRadarImages: viewModel.hasRadarImagery,
-    stormConfidence: viewModel.evidence.stormConfidence,
+    stormConfidence: viewModel.evidence?.stormConfidence,
   });
+
+  // Defensive: ensure all required nested objects exist
+  if (!viewModel.branding) viewModel.branding = {} as WeatherPdfViewModel["branding"];
+  if (!viewModel.claim) viewModel.claim = {} as WeatherPdfViewModel["claim"];
+  if (!viewModel.location) viewModel.location = {} as WeatherPdfViewModel["location"];
+  if (!viewModel.peril)
+    viewModel.peril = {
+      type: "Unknown",
+      confidence: "unknown",
+      displayText: "Unknown",
+      evidenceSummary: "",
+    };
+  if (!viewModel.evidence)
+    viewModel.evidence = {
+      hasHail: false,
+      hasWind: false,
+      hasRain: false,
+      hasRadar: false,
+      stormConfidence: "none",
+    };
+  if (!viewModel.weatherWindow) viewModel.weatherWindow = [];
+  if (!viewModel.stormEvidence) viewModel.stormEvidence = [];
+  if (!viewModel.radarFrames) viewModel.radarFrames = [];
+  if (!viewModel.dataSources) viewModel.dataSources = [];
 
   const doc = new jsPDF({ format: "letter" });
   const pageWidth = 215.9;
@@ -72,60 +96,80 @@ export function renderWeatherReportPDF(viewModel: WeatherPdfViewModel): Buffer {
   const margin = 18;
   const contentWidth = pageWidth - margin * 2;
 
-  const brandColor = hexToRgb(viewModel.branding.primaryColor) || COLORS.primary;
+  const brandColor = hexToRgb(viewModel.branding.primaryColor || "#1e40af") || COLORS.primary;
 
   let yPos = margin;
 
+  // Each section wrapped in try/catch so a single section failure doesn't kill the entire PDF
+  const safeRender = (name: string, fn: () => number): number => {
+    try {
+      return fn();
+    } catch (err) {
+      logger.error(`[WEATHER_PDF] Section "${name}" failed:`, err);
+      return yPos; // skip section, continue
+    }
+  };
+
   // 1. BRANDED HEADER
-  yPos = renderBrandedHeader(doc, viewModel, margin, contentWidth, pageWidth, brandColor, yPos);
+  yPos = safeRender("header", () =>
+    renderBrandedHeader(doc, viewModel, margin, contentWidth, pageWidth, brandColor, yPos)
+  );
 
   // 2. CLAIM SNAPSHOT
-  yPos = renderClaimSnapshot(doc, viewModel, margin, contentWidth, brandColor, yPos);
+  yPos = safeRender("claimSnapshot", () =>
+    renderClaimSnapshot(doc, viewModel, margin, contentWidth, brandColor, yPos)
+  );
 
   // 3. EXECUTIVE SUMMARY
   yPos = checkPageBreak(doc, yPos, 40, pageHeight, margin);
-  yPos = renderExecutiveSummary(doc, viewModel, margin, contentWidth, brandColor, yPos);
+  yPos = safeRender("executiveSummary", () =>
+    renderExecutiveSummary(doc, viewModel, margin, contentWidth, brandColor, yPos)
+  );
 
   // 4. CLAIM WINDOW CONDITIONS (day before / DOL / day after)
   if (viewModel.weatherWindow.length > 0) {
     yPos = checkPageBreak(doc, yPos, 50, pageHeight, margin);
-    yPos = renderClaimWindowConditions(doc, viewModel, margin, contentWidth, brandColor, yPos);
+    yPos = safeRender("claimWindow", () =>
+      renderClaimWindowConditions(doc, viewModel, margin, contentWidth, brandColor, yPos)
+    );
   }
 
   // 5. STORM EVENT EVIDENCE (separate section!)
   if (viewModel.stormEvidence.length > 0) {
     yPos = checkPageBreak(doc, yPos, 40, pageHeight, margin);
-    yPos = renderStormEventEvidence(
-      doc,
-      viewModel,
-      margin,
-      contentWidth,
-      brandColor,
-      yPos,
-      pageHeight
+    yPos = safeRender("stormEvidence", () =>
+      renderStormEventEvidence(doc, viewModel, margin, contentWidth, brandColor, yPos, pageHeight)
     );
   } else if (!viewModel.hasStormEvidence) {
     // No storm: clean message
     yPos = checkPageBreak(doc, yPos, 25, pageHeight, margin);
-    yPos = renderNoStormMessage(doc, viewModel, margin, contentWidth, brandColor, yPos);
+    yPos = safeRender("noStorm", () =>
+      renderNoStormMessage(doc, viewModel, margin, contentWidth, brandColor, yPos)
+    );
   }
 
   // 6. EVENT ANCHOR NOTE (if evidence is on a different date than DOL)
   if (viewModel.eventAnchorNote) {
     yPos = checkPageBreak(doc, yPos, 20, pageHeight, margin);
-    yPos = renderEventAnchorNote(doc, viewModel, margin, contentWidth, yPos);
+    yPos = safeRender("anchorNote", () =>
+      renderEventAnchorNote(doc, viewModel, margin, contentWidth, yPos)
+    );
   }
 
   // 7. EVIDENCE SUMMARY CARDS
   if (viewModel.hasStormEvidence) {
     yPos = checkPageBreak(doc, yPos, 35, pageHeight, margin);
-    yPos = renderEvidenceSummary(doc, viewModel, margin, contentWidth, brandColor, yPos);
+    yPos = safeRender("evidenceSummary", () =>
+      renderEvidenceSummary(doc, viewModel, margin, contentWidth, brandColor, yPos)
+    );
   }
 
   // 8. RADAR IMAGERY (real images OR clean omission)
   if (viewModel.hasRadarImagery) {
     yPos = checkPageBreak(doc, yPos, 60, pageHeight, margin);
-    yPos = renderRadarImagery(doc, viewModel, margin, contentWidth, brandColor, yPos, pageHeight);
+    yPos = safeRender("radarImagery", () =>
+      renderRadarImagery(doc, viewModel, margin, contentWidth, brandColor, yPos, pageHeight)
+    );
   }
   // If no radar images: don't render the section at all. No empty placeholders.
 
@@ -133,11 +177,16 @@ export function renderWeatherReportPDF(viewModel: WeatherPdfViewModel): Buffer {
   if (viewModel.carrierTalkingPoints) {
     // Carrier talking points now handle their own page-break logic internally
     yPos = checkPageBreak(doc, yPos, 30, pageHeight, margin);
-    yPos = renderCarrierTalkingPoints(doc, viewModel, margin, contentWidth, yPos);
+    yPos = safeRender("talkingPoints", () =>
+      renderCarrierTalkingPoints(doc, viewModel, margin, contentWidth, yPos)
+    );
   }
 
   // 10. SOURCES + FOOTER
-  renderFooter(doc, viewModel, margin, contentWidth, pageWidth, pageHeight, brandColor);
+  safeRender("footer", () => {
+    renderFooter(doc, viewModel, margin, contentWidth, pageWidth, pageHeight, brandColor);
+    return yPos;
+  });
 
   const arrayBuffer = doc.output("arraybuffer");
   logger.info("[WEATHER_PDF] PDF generated", {
@@ -922,7 +971,7 @@ function renderSectionHeader(
 function renderInfoField(
   doc: jsPDF,
   label: string,
-  value: string,
+  value: string | null | undefined,
   x: number,
   y: number,
   maxWidth?: number
@@ -930,13 +979,12 @@ function renderInfoField(
   doc.setFontSize(6);
   doc.setFont("helvetica", "normal");
   doc.setTextColor(COLORS.muted.r, COLORS.muted.g, COLORS.muted.b);
-  doc.text(label, x, y);
+  doc.text(label || "", x, y);
   doc.setFontSize(9);
   doc.setFont("helvetica", "bold");
   doc.setTextColor(COLORS.text.r, COLORS.text.g, COLORS.text.b);
-  const displayValue = maxWidth
-    ? sanitizeText(value).substring(0, Math.floor(maxWidth / 2))
-    : sanitizeText(value);
+  const safeValue = sanitizeText(value) || "--";
+  const displayValue = maxWidth ? safeValue.substring(0, Math.floor(maxWidth / 2)) : safeValue;
   doc.text(displayValue, x, y + 5);
 }
 
@@ -961,9 +1009,9 @@ function hexToRgb(hex: string): RGB | null {
     : null;
 }
 
-function sanitizeText(text: string): string {
+function sanitizeText(text: string | null | undefined): string {
   if (!text) return "";
-  return text
+  return String(text)
     .replace(
       /[\u{1F600}-\u{1F64F}|\u{1F300}-\u{1F5FF}|\u{1F680}-\u{1F6FF}|\u{1F1E0}-\u{1F1FF}|\u{2600}-\u{26FF}|\u{2700}-\u{27BF}]/gu,
       ""

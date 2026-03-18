@@ -560,18 +560,16 @@ export const POST = withAuth(async (req: NextRequest, { userId, orgId }) => {
         logger.info(`[Weather API] PDF saved`, { claimId: claimId || "standalone", pdfUrl });
       }
     } catch (pdfError) {
-      logger.error("[Weather API] PDF generation failed:", pdfError);
-      // Don't silently swallow — return error details so user knows what happened
-      return NextResponse.json(
-        {
-          error:
-            "PDF generation failed. The report data was saved but the PDF could not be created.",
-          step: "pdf_generation",
-          reportId: report.id,
-          details: process.env.NODE_ENV === "development" ? String(pdfError) : undefined,
-        },
-        { status: 500 }
-      );
+      const errMsg = pdfError instanceof Error ? pdfError.message : String(pdfError);
+      logger.error("[Weather API] PDF generation failed (non-fatal):", {
+        error: errMsg,
+        stack: pdfError instanceof Error ? pdfError.stack : undefined,
+        reportId: report.id,
+        claimId: claimId || "standalone",
+      });
+      // PDF failure is non-fatal — report data is already saved.
+      // Continue to return the report so the user can still see the data.
+      // The PDF can be retried later.
     }
 
     // ══════════════════════════════════════════════════════════════════════════
@@ -642,6 +640,9 @@ export const POST = withAuth(async (req: NextRequest, { userId, orgId }) => {
         report,
         pdfSaved,
         pdfUrl,
+        pdfError: pdfSaved
+          ? undefined
+          : "PDF generation failed — report data saved. You can retry PDF generation.",
         weatherReportId: report.id,
         radarStation: radarStationId,
         radarImageCount: radarImages.length,

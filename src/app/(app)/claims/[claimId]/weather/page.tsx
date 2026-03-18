@@ -97,6 +97,7 @@ type WeatherReportApiResponse = {
   };
   pdfSaved?: boolean;
   pdfUrl?: string | null;
+  pdfError?: string;
 };
 
 const PERIL_COLORS: Record<string, string> = {
@@ -399,11 +400,17 @@ export default function ClaimWeatherPage({ params }: Props) {
       const data = (await res.json()) as WeatherReportApiResponse;
       setReportResult(data);
       await loadSavedScans();
-      toast.success("Weather report generated and saved!");
 
-      // Auto-open PDF in new tab if available
-      if (data.pdfUrl) {
+      if (data.pdfSaved && data.pdfUrl) {
+        toast.success("Weather report generated with PDF!");
         window.open(data.pdfUrl, "_blank");
+      } else if (data.pdfError) {
+        toast.warning(
+          "Report data saved, but PDF generation failed. You can retry from Report History.",
+          { duration: 8000 }
+        );
+      } else {
+        toast.success("Weather report generated and saved!");
       }
     } catch (err) {
       logger.error("Weather report error:", err);
@@ -941,6 +948,28 @@ export default function ClaimWeatherPage({ params }: Props) {
                   <div className="flex items-center gap-1 text-green-700 dark:text-green-300">
                     <CheckCircle className="h-3.5 w-3.5" />
                     PDF saved to claim files
+                  </div>
+                )}
+                {reportResult.pdfError && !reportResult.pdfSaved && (
+                  <div className="mt-2 rounded-md border border-amber-200 bg-amber-50 p-3 text-sm dark:border-amber-800 dark:bg-amber-900/20">
+                    <p className="font-medium text-amber-700 dark:text-amber-300">
+                      ⚠️ PDF generation failed
+                    </p>
+                    <p className="mt-1 text-amber-600 dark:text-amber-400">
+                      Report data was saved successfully. PDF can be retried from Report History.
+                    </p>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="mt-2"
+                      onClick={() => {
+                        setReportResult(null);
+                        runWeatherReport();
+                      }}
+                      disabled={isReportRunning}
+                    >
+                      Retry Report with PDF
+                    </Button>
                   </div>
                 )}
               </div>
