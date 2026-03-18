@@ -95,6 +95,28 @@ export const PATCH = withAuth(
         updateData.jobValueApprovedBy = userId;
       }
 
+      // ── CRITICAL: Sync estimatedJobValue → approvedValue on approval ──
+      // When manager approves the scope of work, the approved number
+      // flows to approvedValue so financial cards, sidebar, and intel/financial
+      // all reflect the approved amount.
+      if (body.jobValueStatus === "approved") {
+        const jobValueCents =
+          body.estimatedJobValue ||
+          (await prisma.claims
+            .findUnique({ where: { id: claimId }, select: { estimatedJobValue: true } })
+            .then((c) => c?.estimatedJobValue));
+        if (jobValueCents) {
+          // Both estimatedJobValue and approvedValue are stored in cents
+          updateData.approvedValue = jobValueCents;
+          logger.info("[CLAIM_UPDATE] Manager approved → synced approvedValue", {
+            claimId,
+            jobValueCents,
+            approvedValueCents: jobValueCents,
+            userId,
+          });
+        }
+      }
+
       // Track if we made any changes at all (including property address)
       const hasPropertyAddressUpdate =
         body.propertyAddress !== undefined ||

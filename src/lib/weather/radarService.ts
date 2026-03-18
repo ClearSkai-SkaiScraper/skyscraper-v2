@@ -52,6 +52,22 @@ async function getNearestRadarStation(lat: number, lng: number): Promise<string>
 }
 
 /**
+ * Quick HEAD check — returns true if URL responds 200 within timeout.
+ * Used to filter out 404-returning radar archive URLs before they reach the PDF renderer.
+ */
+async function urlIsReachable(url: string, timeoutMs = 4000): Promise<boolean> {
+  try {
+    const ctrl = new AbortController();
+    const timer = setTimeout(() => ctrl.abort(), timeoutMs);
+    const res = await fetch(url, { method: "HEAD", signal: ctrl.signal });
+    clearTimeout(timer);
+    return res.ok;
+  } catch {
+    return false;
+  }
+}
+
+/**
  * Fetch historical NEXRAD radar composite images from IEM
  *
  * IEM provides archived NEXRAD composites at:
@@ -116,6 +132,19 @@ export async function fetchHistoricalRadar(
     logger.info("[RADAR] Fetched radar image URLs", { date, stationId, count: images.length });
   } catch (err) {
     logger.error("[RADAR] Error building radar URLs:", err);
+  }
+
+  // HEAD-validate all URLs in parallel — drop any that 404
+  if (images.length > 0) {
+    const checks = await Promise.all(
+      images.map(async (img) => ({ img, ok: await urlIsReachable(img.url) }))
+    );
+    const valid = checks.filter((c) => c.ok).map((c) => c.img);
+    const dropped = images.length - valid.length;
+    if (dropped > 0) {
+      logger.info("[RADAR] Dropped unreachable radar URLs", { dropped, kept: valid.length });
+    }
+    return valid;
   }
 
   return images;

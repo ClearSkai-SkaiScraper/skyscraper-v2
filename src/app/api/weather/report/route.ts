@@ -281,29 +281,7 @@ export const POST = withAuth(async (req: NextRequest, { userId, orgId }) => {
     }
 
     // ══════════════════════════════════════════════════════════════════════════
-    // STEP 4: Run AI weather analysis
-    // ══════════════════════════════════════════════════════════════════════════
-    let aiReport;
-    try {
-      aiReport = await runWeatherReport({
-        ...body,
-        claimId: claimId as string | null,
-        orgId: orgId ?? null,
-      });
-    } catch (aiErr) {
-      logger.error("[Weather API] AI report generation failed:", aiErr);
-      return NextResponse.json(
-        {
-          error: "Weather AI analysis failed. Please try again.",
-          step: "ai_generation",
-          details: process.env.NODE_ENV === "development" ? String(aiErr) : undefined,
-        },
-        { status: 502 }
-      );
-    }
-
-    // ══════════════════════════════════════════════════════════════════════════
-    // STEP 5: Geocode the address
+    // STEP 4: Geocode the address (moved before AI so we can fetch real data)
     // ══════════════════════════════════════════════════════════════════════════
     // First try property coordinates from claim, then geocode
     let geocodeResult: GeocodingResult;
@@ -327,7 +305,7 @@ export const POST = withAuth(async (req: NextRequest, { userId, orgId }) => {
     }
 
     // ══════════════════════════════════════════════════════════════════════════
-    // STEP 6: Fetch radar and weather data
+    // STEP 5: Fetch radar and weather data (moved before AI for real data)
     // ══════════════════════════════════════════════════════════════════════════
     let radarImages: { url: string; label: string; stationId?: string; timestamp?: string }[] = [];
     let radarStationId: string | null = null;
@@ -346,7 +324,7 @@ export const POST = withAuth(async (req: NextRequest, { userId, orgId }) => {
 
     if (geocodeResult.resolved) {
       try {
-        const dolDate = aiReport.dol || body.dol;
+        const dolDate = body.dol;
         const radarResult = await getRadarForEvent(geocodeResult.lat, geocodeResult.lng, dolDate);
         radarImages = radarResult.images;
         radarStationId = radarResult.stationId;
@@ -361,6 +339,29 @@ export const POST = withAuth(async (req: NextRequest, { userId, orgId }) => {
       }
     } else {
       logger.warn("[Weather API] Skipping weather data fetch - location not resolved");
+    }
+
+    // ══════════════════════════════════════════════════════════════════════════
+    // STEP 6: Run AI weather analysis (now with real weather observations)
+    // ══════════════════════════════════════════════════════════════════════════
+    let aiReport;
+    try {
+      aiReport = await runWeatherReport({
+        ...body,
+        claimId: claimId as string | null,
+        orgId: orgId ?? null,
+        weatherConditions: weatherConditions.length > 0 ? weatherConditions : undefined,
+      });
+    } catch (aiErr) {
+      logger.error("[Weather API] AI report generation failed:", aiErr);
+      return NextResponse.json(
+        {
+          error: "Weather AI analysis failed. Please try again.",
+          step: "ai_generation",
+          details: process.env.NODE_ENV === "development" ? String(aiErr) : undefined,
+        },
+        { status: 502 }
+      );
     }
 
     // ══════════════════════════════════════════════════════════════════════════
@@ -496,6 +497,8 @@ export const POST = withAuth(async (req: NextRequest, { userId, orgId }) => {
               type: e.type,
               severity: e.intensity,
               intensity: e.intensity,
+              hailSize: (e as Record<string, unknown>).hailSize as string | undefined,
+              windSpeed: (e as Record<string, unknown>).windSpeed as string | undefined,
               notes: e.notes,
             })) ?? [],
           // Radar frames (preserve real per-frame timestamps from IEM)
@@ -520,6 +523,24 @@ export const POST = withAuth(async (req: NextRequest, { userId, orgId }) => {
           confidence: viewModel.evidence.stormConfidence,
           hasStormEvidence: viewModel.hasStormEvidence,
         });
+
+        // ── Cross-check logger: verify all sections use the same truth ──
+        const sectionCrossCheck = {
+          dolClaim: viewModel.claim.dateOfLoss,
+          dolAnchor: viewModel.anchorDate,
+          evidenceMaxWind: viewModel.evidence.maxWindGust ?? null,
+          timelineMaxWind: Math.max(
+            ...viewModel.weatherWindow.map((d) => d.windGust ?? d.windSpeed ?? 0)
+          ),
+          evidenceMaxPrecip: viewModel.evidence.maxPrecip ?? null,
+          timelineMaxPrecip: Math.max(...viewModel.weatherWindow.map((d) => d.precip ?? 0)),
+          evidenceHailMax: viewModel.evidence.hailSizeMax ?? null,
+          stormConfidence: viewModel.evidence.stormConfidence,
+          radarFrameCount: viewModel.radarFrames.length,
+          radarClaimed: viewModel.hasRadarImagery,
+          summaryMentionsRadar: viewModel.executiveSummary.toLowerCase().includes("radar"),
+        };
+        logger.info("[Weather API] Section cross-check", sectionCrossCheck);
 
         const pdfBuffer = renderWeatherReportPDF(viewModel);
 

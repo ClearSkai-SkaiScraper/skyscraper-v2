@@ -107,6 +107,8 @@ export async function getClaimDetailsByParam(orgId: string, claimParam: string) 
           createdAt: true,
           updatedAt: true,
           propertyId: true,
+          estimatedJobValue: true,
+          jobValueStatus: true,
         },
       })
       .catch(() => null);
@@ -159,6 +161,8 @@ export async function getClaimDetailsByParam(orgId: string, claimParam: string) 
       estimatedValue: claim.estimatedValue || 0,
       approvedValue: claim.approvedValue || 0,
       deductible: claim.deductible || 0,
+      estimatedJobValue: claim.estimatedJobValue ?? null,
+      jobValueStatus: (claim.jobValueStatus as string) || "draft",
       assignedTo: claim.assignedTo || null,
       createdAt: claim.createdAt,
       updatedAt: claim.updatedAt,

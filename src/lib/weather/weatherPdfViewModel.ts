@@ -1021,7 +1021,116 @@ export async function buildWeatherPdfViewModel(
     buildTimeMs: Date.now() - startTime,
   });
 
+  // ── Preflight consistency validation ──────────────────────────────────────
+  // Cross-check that all report sections resolve from the same source-of-truth.
+  // Log warnings for any contradiction; attach diagnostics to vm for callers.
+  const preflight = validateReportConsistency(vm);
+  if (preflight.warnings.length > 0) {
+    logger.warn("[WeatherPdfViewModel] Preflight consistency warnings", {
+      reportId: vm.reportId,
+      warningCount: preflight.warnings.length,
+      warnings: preflight.warnings,
+    });
+  }
+
   return vm;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Preflight Consistency Validator
+// ─────────────────────────────────────────────────────────────────────────────
+
+export interface PreflightResult {
+  ok: boolean;
+  warnings: string[];
+}
+
+/**
+ * Cross-check that all report sections resolve from the same source-of-truth.
+ * This catches contradictions BEFORE the PDF is rendered.
+ *
+ * Checks:
+ * 1. DOL matches across sections
+ * 2. Wind speed values agree between evidence summary, executive summary, and timeline
+ * 3. Hail values agree across sections
+ * 4. Radar frames exist if claimed in summary
+ * 5. Storm confidence vs evidence presence
+ */
+export function validateReportConsistency(vm: WeatherPdfViewModel): PreflightResult {
+  const warnings: string[] = [];
+
+  // 1. DOL consistency — claim DOL should match anchor date
+  if (vm.claim.dateOfLoss && vm.anchorDate) {
+    const claimDol = vm.claim.dateOfLoss;
+    const anchorFormatted = formatDateDisplay(vm.anchorDate);
+    // Only warn if anchor differs AND there's no explicit anchor note
+    if (claimDol !== anchorFormatted && !vm.eventAnchorNote) {
+      warnings.push(
+        `DOL mismatch: claim says "${claimDol}" but anchor resolved to "${anchorFormatted}" with no explanation`
+      );
+    }
+  }
+
+  // 2. Wind speed cross-check — evidence.maxWindGust vs. weatherWindow
+  const timelineMaxGust = Math.max(...vm.weatherWindow.map((d) => d.windGust ?? d.windSpeed ?? 0));
+  if (vm.evidence.maxWindGust && timelineMaxGust > 0) {
+    const diff = Math.abs(vm.evidence.maxWindGust - timelineMaxGust);
+    if (diff > 5) {
+      warnings.push(
+        `Wind speed contradiction: evidence summary says ${vm.evidence.maxWindGust} mph but timeline max is ${timelineMaxGust} mph (diff: ${diff})`
+      );
+    }
+  }
+
+  // 3. Wind in executive summary should reference the same max gust
+  if (vm.executiveSummary && vm.evidence.maxWindGust) {
+    const gustMatch = vm.executiveSummary.match(/(\d+(?:\.\d+)?)\s*mph/);
+    if (gustMatch) {
+      const summaryWind = parseFloat(gustMatch[1]);
+      const diff = Math.abs(summaryWind - vm.evidence.maxWindGust);
+      if (diff > 5) {
+        warnings.push(
+          `Executive summary wind (${summaryWind} mph) contradicts evidence max gust (${vm.evidence.maxWindGust} mph)`
+        );
+      }
+    }
+  }
+
+  // 4. Hail cross-check — evidence card vs storm events
+  if (vm.evidence.hasHail && !vm.evidence.hailSizeMax) {
+    warnings.push(
+      "Evidence says hasHail=true but hailSizeMax is empty — hail size data missing from events"
+    );
+  }
+
+  // 5. Radar imagery — summary claims vs actual
+  if (vm.hasRadarImagery && vm.radarFrames.length === 0) {
+    warnings.push("hasRadarImagery is true but no radar frames loaded");
+  }
+  if (!vm.hasRadarImagery && vm.executiveSummary.toLowerCase().includes("radar")) {
+    warnings.push("Executive summary mentions radar but no radar imagery was loaded");
+  }
+
+  // 6. Storm confidence vs evidence
+  if (vm.evidence.stormConfidence === "high" && !vm.hasStormEvidence) {
+    warnings.push("Storm confidence is HIGH but hasStormEvidence is false — contradictory");
+  }
+  if (vm.evidence.stormConfidence === "none" && vm.hasStormEvidence) {
+    warnings.push("Storm confidence is NONE but storm evidence entries exist — contradictory");
+  }
+
+  // 7. Precipitation check
+  const timelineMaxPrecip = Math.max(...vm.weatherWindow.map((d) => d.precip ?? 0));
+  if (vm.evidence.maxPrecip && timelineMaxPrecip > 0) {
+    const diff = Math.abs(vm.evidence.maxPrecip - timelineMaxPrecip);
+    if (diff > 0.5) {
+      warnings.push(
+        `Precipitation mismatch: evidence ${vm.evidence.maxPrecip}in vs timeline ${timelineMaxPrecip}in`
+      );
+    }
+  }
+
+  return { ok: warnings.length === 0, warnings };
 }
 
 // ─────────────────────────────────────────────────────────────────────────────

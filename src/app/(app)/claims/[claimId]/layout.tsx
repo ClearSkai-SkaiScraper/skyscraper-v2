@@ -152,10 +152,12 @@ export default async function ClaimLayout({ children, params }: ClaimLayoutProps
 
                 {/* Job Value Pill */}
                 {(() => {
-                  const approvedValue = (claim as any).estimatedJobValue;
+                  const jobValue = (claim as any).estimatedJobValue;
+                  const jobStatus = (claim as any).jobValueStatus;
                   const legacyValue = claim.estimatedValue ?? 0;
-                  const displayValue = approvedValue ? approvedValue / 100 : legacyValue;
-                  const label = approvedValue ? "Approved Value" : "Est. Value";
+                  const displayValue = jobValue ? jobValue / 100 : legacyValue;
+                  const label =
+                    jobStatus === "approved" && jobValue ? "Approved Value" : "Est. Value";
                   if (displayValue <= 0) return null;
                   return (
                     <div className="hidden items-center gap-2 sm:flex">
@@ -340,10 +342,12 @@ export default async function ClaimLayout({ children, params }: ClaimLayoutProps
                 claimTitle={claim.title || claim.claimNumber || "Claim"}
               />
               {(() => {
-                const approvedValue = (claim as any).estimatedJobValue;
+                const jobValue = (claim as any).estimatedJobValue;
+                const jobStatus = (claim as any).jobValueStatus;
                 const legacyValue = (claim as any).estimatedValue;
-                const displayValue = approvedValue ? approvedValue / 100 : (legacyValue ?? 0);
-                const label = approvedValue ? "Approved Value" : "Est. Value";
+                const displayValue = jobValue ? jobValue / 100 : (legacyValue ?? 0);
+                const label =
+                  jobStatus === "approved" && jobValue ? "Approved Value" : "Est. Value";
                 if (displayValue <= 0) return null;
                 return (
                   <div className="hidden items-center gap-2 sm:flex">

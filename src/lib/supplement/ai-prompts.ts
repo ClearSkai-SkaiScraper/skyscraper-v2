@@ -344,53 +344,30 @@ INPUT:
 {
   "address": "property address",
   "lossType": "hail" | "wind" | "water" | null,
-  "dol": "YYYY-MM-DD" | null
+  "dol": "YYYY-MM-DD" | null,
+  "observedWeatherData": [     // REAL station data — use these numbers, do NOT invent your own
+    {
+      "date": "YYYY-MM-DD",
+      "highF": number,
+      "lowF": number,
+      "precipIn": number,
+      "precipProb": number,
+      "windMph": number,
+      "gustMph": number | null,
+      "conditions": "string",
+      "description": "string"
+    }
+  ]
 }
 
 PROCESS:
-1. Analyze weather conditions at the property location
+1. If "observedWeatherData" is provided, use ONLY those real measurements — do NOT invent wind speeds, hail sizes, or precipitation values
 2. If DOL is provided, focus on that specific date +/- 3 days
-3. Identify storm events that could cause the claimed damage type
-4. Gather hail size, wind speeds, precipitation data
-5. Assess likelihood of damage given the weather severity
+3. Identify storm events from the observed data that could cause the claimed damage type
+4. Use the real wind gust speeds, precipitation amounts, and conditions exactly as given
+5. Assess likelihood of damage given the observed weather severity
 
-OUTPUT FORMAT (JSON):
-{
-  "dol": "YYYY-MM-DD" | null,
-  "provider": "VisualCrossing" | "NOAA" | "Mesonet" | null,
-  "summary": "2-3 sentence summary of weather findings",
-  "events": [
-    {
-      "date": "YYYY-MM-DD",
-      "time": "HH:MM" | null,
-      "type": "hail" | "wind" | "thunderstorm" | "tornado" | "hurricane",
-      "severity": "minor" | "moderate" | "severe" | "catastrophic",
-      "details": {
-        "hailSize": "inches" | null,
-        "windSpeed": "mph" | null,
-        "precipitation": "inches" | null,
-        "temperature": "F" | null
-      },
-      "distance": "miles from property" | null,
-      "confidence": 0.0-1.0,
-      "notes": "Additional context"
-    }
-  ],
-  "rawData": {},
-  "meta": {
-    "recommendation": "supports_claim" | "inconclusive" | "does_not_support_claim",
-    "riskFactors": ["list of risk factors or concerns"],
-    "strengths": ["list of supporting evidence"]
-  }
-}
-
-RULES:
-- Base findings on actual weather data patterns for the location
-- Be objective - report both supporting and contradicting evidence
-- Include specific measurements (hail size in inches, wind in mph)
-- Note proximity of storm events to property
-- Provide clear recommendation for claim viability
-- Never fabricate specific weather data`;
+CRITICAL: When observedWeatherData is present, every number you cite (wind speed, precipitation, temperature) MUST match the provided data. Never fabricate measurements.`;
 
 // ============================================================================
 // HELPER FUNCTIONS

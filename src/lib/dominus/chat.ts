@@ -1,7 +1,8 @@
 import { logger } from "@/lib/logger";
+import prisma from "@/lib/prisma";
 
 /**
- * DEPRECATED: skaiChatMessage model doesn't exist in schema.
+ * Persist Ask Dominus chat messages via the DominusChatMessage table.
  */
 
 export interface ChatMessageInput {
@@ -14,13 +15,31 @@ export interface ChatMessageInput {
 }
 
 export async function saveChatMessage(data: ChatMessageInput) {
-  // skaiChatMessage model doesn't exist in schema
-  logger.debug(`[skai/chat] Would save chat message for user ${data.userId}`);
-  return null;
+  try {
+    await prisma.dominusChatMessage.create({
+      data: {
+        userId: data.userId ?? null,
+        orgId: data.orgId ?? null,
+        claimId: data.claimId ?? null,
+        routeName: data.routeName ?? null,
+        role: data.role,
+        content: data.content,
+      },
+    });
+  } catch (err) {
+    logger.error("[skai/chat] saveChatMessage failed:", err);
+  }
 }
 
 export async function getRecentChatHistory(userId: string, limit = 25) {
-  // skaiChatMessage model doesn't exist in schema
-  logger.debug(`[skai/chat] Would get chat history for user ${userId}`);
-  return [];
+  try {
+    return await prisma.dominusChatMessage.findMany({
+      where: { userId },
+      orderBy: { createdAt: "desc" },
+      take: limit,
+    });
+  } catch (err) {
+    logger.error("[skai/chat] getRecentChatHistory failed:", err);
+    return [];
+  }
 }

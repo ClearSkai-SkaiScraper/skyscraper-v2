@@ -9,6 +9,7 @@ import { logger } from "@/lib/logger";
 import { NextRequest, NextResponse } from "next/server";
 
 import { logCriticalAction } from "@/lib/audit/criticalActions";
+import { requirePermission } from "@/lib/auth/rbac";
 import prisma from "@/lib/prisma";
 import { safeOrgContext } from "@/lib/safeOrgContext";
 
@@ -22,6 +23,16 @@ export async function POST(req: NextRequest) {
     const { userId, orgId } = ctx;
     if (!orgId) {
       return NextResponse.json({ error: "Organization required" }, { status: 403 });
+    }
+
+    // 🛡️ RBAC: Require edit permission (members+ can archive)
+    try {
+      await requirePermission("claims:edit");
+    } catch {
+      return NextResponse.json(
+        { error: "You don't have permission to archive items" },
+        { status: 403 }
+      );
     }
 
     const body = await req.json();

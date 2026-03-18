@@ -17,6 +17,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
+import { useRBAC } from "@/hooks/useRBAC";
 
 interface ArchiveJobButtonProps {
   jobId: string;
@@ -25,6 +26,11 @@ interface ArchiveJobButtonProps {
 }
 
 export function ArchiveJobButton({ jobId, jobTitle, type = "lead" }: ArchiveJobButtonProps) {
+  const { can, loading: rbacLoading } = useRBAC();
+
+  // Only members+ can archive — hide button for viewers/clients
+  if (rbacLoading) return null;
+  if (!can("claims:edit")) return null;
   const router = useRouter();
   const [archiving, setArchiving] = useState(false);
   const [open, setOpen] = useState(false);

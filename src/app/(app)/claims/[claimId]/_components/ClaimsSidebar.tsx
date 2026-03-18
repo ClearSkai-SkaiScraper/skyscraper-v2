@@ -209,34 +209,48 @@ export function ClaimsSidebar({ claimId, claim, onFieldUpdate }: ClaimsSidebarPr
 
   return (
     <div className="space-y-4">
-      {/* Claim Value Card */}
-      <Card className="border-0 bg-gradient-to-br from-emerald-50 to-teal-50 shadow-lg dark:from-emerald-950/30 dark:to-teal-950/30">
-        <CardHeader className="pb-3">
-          <CardTitle className="flex items-center gap-2 text-base">
+      {/* Claim Value Card — only show when at least one value is available */}
+      {claim.estimatedValue || claim.approvedValue ? (
+        <Card className="border-0 bg-gradient-to-br from-emerald-50 to-teal-50 shadow-lg dark:from-emerald-950/30 dark:to-teal-950/30">
+          <CardHeader className="pb-3">
+            <CardTitle className="flex items-center gap-2 text-base">
+              <DollarSign className="h-5 w-5 text-emerald-600" />
+              Claim Value
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-muted-foreground">Estimated</span>
+              <span className="text-lg font-bold text-emerald-700 dark:text-emerald-400">
+                {formatCurrency(claim.estimatedValue)}
+              </span>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-muted-foreground">Approved</span>
+              <span className="text-lg font-bold text-emerald-700 dark:text-emerald-400">
+                {formatCurrency(claim.approvedValue)}
+              </span>
+            </div>
+            <Link href={`/claims/${claimId}/financial`}>
+              <Button variant="outline" size="sm" className="mt-2 w-full">
+                View Financials
+              </Button>
+            </Link>
+          </CardContent>
+        </Card>
+      ) : (
+        <Card className="border-0 bg-gradient-to-br from-emerald-50 to-teal-50 shadow-lg dark:from-emerald-950/30 dark:to-teal-950/30">
+          <CardContent className="flex items-center gap-3 py-4">
             <DollarSign className="h-5 w-5 text-emerald-600" />
-            Claim Value
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-3">
-          <div className="flex items-center justify-between">
-            <span className="text-sm text-muted-foreground">Estimated</span>
-            <span className="text-lg font-bold text-emerald-700 dark:text-emerald-400">
-              {formatCurrency(claim.estimatedValue)}
-            </span>
-          </div>
-          <div className="flex items-center justify-between">
-            <span className="text-sm text-muted-foreground">Approved</span>
-            <span className="text-lg font-bold text-emerald-700 dark:text-emerald-400">
-              {formatCurrency(claim.approvedValue)}
-            </span>
-          </div>
-          <Link href={`/claims/${claimId}/financial`}>
-            <Button variant="outline" size="sm" className="mt-2 w-full">
-              View Financials
-            </Button>
-          </Link>
-        </CardContent>
-      </Card>
+            <Link
+              href={`/claims/${claimId}/financial`}
+              className="text-sm text-muted-foreground hover:underline"
+            >
+              Add claim value in Financials →
+            </Link>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Key Dates Card */}
       <Card className="border-0 shadow-lg">

@@ -550,10 +550,19 @@ export default function PhotosPage() {
       if (detectionCount > 0) {
         toast.success(`AI found ${detectionCount} damage area${detectionCount > 1 ? "s" : ""}`);
       } else {
-        toast.info(
-          "No damage detected. Try uploading a closer photo or check lighting conditions.",
-          { duration: 5000 }
-        );
+        // Check if user already added manual annotations on this photo
+        const manualCount = existingManualForState.length;
+        if (manualCount > 0) {
+          toast.info(
+            `AI found no additional damage — your ${manualCount} manual annotation${manualCount > 1 ? "s are" : " is"} preserved.`,
+            { duration: 4000 }
+          );
+        } else {
+          toast.info(
+            "No damage detected by AI. Try uploading a closer photo or check lighting conditions.",
+            { duration: 5000 }
+          );
+        }
       }
     } catch (error) {
       logger.error("Analyze error:", error);

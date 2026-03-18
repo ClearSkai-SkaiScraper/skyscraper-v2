@@ -1065,10 +1065,23 @@ THEN: Identify ALL visible damage using HAAG insurance terminology:
 - End caps: Dents, displacement
 - Splash blocks: Damage, displacement
 
-═══ WIND DAMAGE ═══
-- Lifted/torn materials, displaced components
-- Directional damage patterns (debris throw direction)
-- Missing components in pattern following wind flow
+═══ WIND DAMAGE / WIND UPLIFT (CHECK BEFORE HAIL — often more valuable claim-wise) ═══
+- LIFTED SHINGLES: Edges peeled back/bent upward, exposing underlayment or nail strip
+- CREASED SHINGLES: Fold lines across shingle face from wind uplift (permanent deformation)
+- TORN SHINGLES: Partial or complete tear-away, ragged edges left behind
+- MISSING SHINGLES/MATERIALS: Bare underlayment or deck exposed where material was removed
+- EXPOSED UNDERLAYMENT: Felt paper or synthetic underlayment visible = IMMEDIATE water intrusion risk
+- LIFTED FLASHING: Step flashing, counter-flashing, or wall flashing peeled back by wind
+- RIDGE CAP DAMAGE: Lifted, cracked, or missing ridge cap shingles (high exposure area)
+- DISPLACED COMPONENTS: Vents, pipe boots, or satellite dishes shifted by wind
+- DIRECTIONAL PATTERN: Damage concentrated on windward slopes/faces = WIND signature
+- DEBRIS IMPACT: Punctures or tears from wind-thrown branches, fencing, gravel
+- SOFFIT DAMAGE: Blown-in or detached soffit panels from uplift pressure
+- FASCIA/DRIP EDGE: Peeled back or detached from wind uplift
+- SEALANT FAILURE: Self-seal strips failed from wind stress (tabs lifting)
+- UNDERLAYMENT WRINKLING: Visible wrinkles through shingles from wind-driven rain infiltration
+- Each lifted/creased/torn area = its own bounding box with "wind_damage" type
+- Wind uplift on a roof slope = CRITICAL severity (water intrusion risk)
 
 ═══ WATER DAMAGE (look for ALL signs) ═══
 - Staining, tide marks, discoloration on any surface
@@ -1219,6 +1232,16 @@ COLLATERAL DAMAGE INDICATORS (check ALL of these):
 - Paint chip test: spatter patterns on painted surfaces
 - Wood damage: dents, gouges, or splits on exposed wood (deck rails, fences, trim)
 - Vehicle damage: matching dent pattern on cars parked nearby (if visible)
+
+WIND UPLIFT INDICATORS (PRIORITY — check EVERY roof photo for these):
+- Lifted shingles: tabs peeled back exposing nail strip or underlayment
+- Creased shingles: permanent fold lines across face from wind bending
+- Missing shingles: bare underlayment/deck = CRITICAL severity
+- Exposed underlayment/felt: water intrusion risk
+- Ridge cap damage: lifted/cracked/missing ridge caps (high exposure)
+- Directional pattern: damage concentrated on windward slope = wind signature
+- Sealant failure: self-seal strip not adhering, tabs can be lifted
+- Each lifted/creased/torn/missing area = "wind_damage" type with its own box
 
 Always be thorough and precise in identifying damage — insurance adjusters need credible, accurate documentation.
 Distinguish between pre-existing conditions and recent storm damage.
@@ -2383,9 +2406,9 @@ function generateOverallCaption(
 ): string {
   if (annotations.length === 0) {
     if (materialAnalysis) {
-      return `No visible storm damage detected. Material: ${materialAnalysis.primaryMaterial}. Condition: ${materialAnalysis.condition}.`;
+      return `AI found no additional storm damage. Material: ${materialAnalysis.primaryMaterial}. Condition: ${materialAnalysis.condition}. Manual findings may exist.`;
     }
-    return "No visible storm damage detected in this photo.";
+    return "AI found no additional storm damage in this photo. Manual findings may exist.";
   }
 
   const damageTypes = [...new Set(annotations.map((a) => a.damageType))];

@@ -85,6 +85,19 @@ export type WeatherReportInput = {
   zip?: string;
   dol: string;
   peril?: "hail" | "wind" | "rain" | "snow" | "other";
+  /** Real Visual Crossing observations — fed to AI so it won't hallucinate */
+  weatherConditions?: Array<{
+    datetime: string;
+    tempmax: number;
+    tempmin: number;
+    precip: number;
+    precipprob: number;
+    windspeed: number;
+    windgust?: number;
+    conditions: string;
+    icon: string;
+    description?: string;
+  }>;
 };
 
 export type WeatherReportResult = {
@@ -103,6 +116,31 @@ export type WeatherReportResult = {
 
 export async function runWeatherReport(input: WeatherReportInput): Promise<WeatherReportResult> {
   const openai = getOpenAI();
+
+  // Build user message — include real weather data if available
+  const userPayload: Record<string, unknown> = {
+    address: input.address,
+    city: input.city,
+    state: input.state,
+    zip: input.zip,
+    dol: input.dol,
+    peril: input.peril,
+  };
+
+  if (input.weatherConditions && input.weatherConditions.length > 0) {
+    userPayload.observedWeatherData = input.weatherConditions.map((d) => ({
+      date: d.datetime,
+      highF: d.tempmax,
+      lowF: d.tempmin,
+      precipIn: d.precip,
+      precipProb: d.precipprob,
+      windMph: d.windspeed,
+      gustMph: d.windgust ?? null,
+      conditions: d.conditions,
+      description: d.description ?? null,
+    }));
+  }
+
   const completion = await openai.chat.completions.create({
     model: "gpt-4o",
     messages: [
@@ -112,7 +150,7 @@ export async function runWeatherReport(input: WeatherReportInput): Promise<Weath
       },
       {
         role: "user",
-        content: JSON.stringify(input),
+        content: JSON.stringify(userPayload),
       },
     ],
     response_format: {

@@ -50,9 +50,10 @@ export const POST = withAuth(async (req: NextRequest, { orgId }) => {
     ]);
 
     // Build analysis conforming to FinancialAnalysisResult type
-    const estimatedValue = claim.estimatedValue || 0;
-    const approvedValue = claim.approvedValue || 0;
-    const deductible = claim.deductible || 0;
+    // All values stored in cents — convert to dollars for display/analysis
+    const estimatedValue = (claim.estimatedValue || 0) / 100;
+    const approvedValue = (claim.approvedValue || 0) / 100;
+    const deductible = (claim.deductible || 0) / 100;
 
     const totalPayments = payments.reduce((sum: number, p: any) => sum + (p.amount_cents || 0), 0);
     const totalSupplements = supplements.reduce(

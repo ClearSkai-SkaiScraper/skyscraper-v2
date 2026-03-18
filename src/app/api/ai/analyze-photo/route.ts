@@ -46,14 +46,14 @@ export async function POST(request: NextRequest) {
     // Transform to PhotoAnalysis format for frontend
     const photoAnalysis = {
       photoUrl: imageDataUrl,
-      caption: damageReport.summary || "No damage detected in this photo.",
+      caption: damageReport.summary || "AI found no damage in this photo.",
       codeNotes: (damageReport.recommendations || [])
         .filter((note: string) => note && note.length > 0)
         .slice(0, 5),
       damageType:
         damageReport.items.length > 0
           ? damageReport.items[0].type || "Unknown Damage"
-          : "No Damage",
+          : "AI: No Damage",
       severity: determineSeverity(damageReport),
     };
 

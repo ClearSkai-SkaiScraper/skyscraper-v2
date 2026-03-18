@@ -5673,6 +5673,8 @@ model user_permissions {
   @@index([userId])
 }
 
+/// NOTE: This table lives in the "app" schema (app.user_registry), not "public".
+/// All access is via raw SQL with `app.user_registry` — the Prisma model is for documentation only.
 /// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
 /// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
 model user_registry {
@@ -5720,6 +5722,7 @@ model users {
   years_experience                              Int?
   specialties                                   Json                        @default("[]")
   is_default_inspector                          Boolean                     @default(false)
+  stripe_customer_id                            String?                     @unique
   ClaimMessage                                  ClaimMessage[]
   CrewSchedule                                  CrewSchedule[]
   claim_activities                              claim_activities[]
@@ -7287,4 +7290,158 @@ model carrier_playbooks {
 
   @@unique([orgId, carrierName])
   @@index([carrierName])
+}
+
+// ──────────────────────────────────────────────────────────────────
+// Ghost tables — previously raw-SQL only, now with Prisma models
+// ──────────────────────────────────────────────────────────────────
+
+model chat_conversations {
+  id              String    @id @default(dbgenerated("gen_random_uuid()::text"))
+  type            String?   @default("direct")
+  title           String?
+  participant_ids String[]
+  last_message_id String?
+  last_message_at DateTime? @db.Timestamptz
+  metadata        Json      @default("{}")
+  archived        Boolean   @default(false)
+  created_at      DateTime  @default(now()) @db.Timestamptz
+  updated_at      DateTime  @default(now()) @db.Timestamptz
+
+  messages      chat_messages[]
+  participants  chat_conversation_participants[]
+  read_receipts chat_read_receipts[]
+}
+
+model chat_messages {
+  id              String    @id @default(dbgenerated("gen_random_uuid()::text"))
+  conversation_id String
+  sender_id       String
+  sender_type     String?   @default("user")
+  content         String
+  content_type    String?   @default("text")
+  file_url        String?
+  file_name       String?
+  file_size       Int?
+  metadata        Json      @default("{}")
+  edited          Boolean   @default(false)
+  edited_at       DateTime? @db.Timestamptz
+  deleted         Boolean   @default(false)
+  deleted_at      DateTime? @db.Timestamptz
+  created_at      DateTime  @default(now()) @db.Timestamptz
+
+  conversation chat_conversations @relation(fields: [conversation_id], references: [id], onDelete: Cascade)
+
+  @@index([conversation_id])
+}
+
+model chat_conversation_participants {
+  id              String    @id @default(dbgenerated("gen_random_uuid()::text"))
+  conversation_id String
+  user_id         String
+  role            String?   @default("client")
+  name            String?
+  avatar_url      String?
+  joined_at       DateTime  @default(now()) @db.Timestamptz
+  left_at         DateTime? @db.Timestamptz
+  is_active       Boolean   @default(true)
+  created_at      DateTime  @default(now()) @db.Timestamptz
+
+  conversation chat_conversations @relation(fields: [conversation_id], references: [id], onDelete: Cascade)
+
+  @@unique([conversation_id, user_id], name: "chat_participants_unique")
+}
+
+model chat_read_receipts {
+  id                   String    @id @default(dbgenerated("gen_random_uuid()::text"))
+  conversation_id      String
+  user_id              String
+  last_read_at         DateTime? @default(now()) @db.Timestamptz
+  last_read_message_id String?
+  message_id           String?
+  read_at              DateTime? @default(now()) @db.Timestamptz
+
+  conversation chat_conversations @relation(fields: [conversation_id], references: [id], onDelete: Cascade)
+}
+
+model report_history {
+  id         String   @id @default(dbgenerated("gen_random_uuid()"))
+  org_id     String
+  user_id    String
+  type       String
+  source_id  String?
+  title      String?
+  file_url   String?
+  metadata   Json?
+  created_at DateTime @default(now()) @db.Timestamptz
+}
+
+model team_invitations {
+  id          String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  org_id      String
+  email       String
+  role        String    @default("member")
+  invited_by  String
+  message     String?
+  token       String    @unique
+  status      String    @default("pending")
+  expires_at  DateTime  @db.Timestamptz
+  accepted_at DateTime? @db.Timestamptz
+  accepted_by String?
+  created_at  DateTime  @default(now()) @db.Timestamptz
+  updated_at  DateTime  @default(now()) @db.Timestamptz
+}
+
+model team_members {
+  id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  org_id     String
+  user_id    String
+  role       String   @default("member")
+  joined_at  DateTime @default(now()) @db.Timestamptz
+  created_at DateTime @default(now()) @db.Timestamptz
+  updated_at DateTime @default(now()) @db.Timestamptz
+
+  @@unique([org_id, user_id])
+}
+
+model activity_events {
+  id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  org_id     String   @db.Uuid
+  userId     String
+  event_type String
+  event_data Json     @default("{}")
+  created_at DateTime @default(now()) @db.Timestamptz
+}
+
+model proposal_events {
+  id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  proposal_id String?  @db.Uuid
+  event_type  String
+  message     String?
+  metadata    Json     @default("{}")
+  created_at  DateTime @default(now()) @db.Timestamptz
+}
+
+model tn_memberships {
+  user_id                String    @id @db.Uuid
+  full_access            Boolean   @default(false)
+  stripe_subscription_id String?
+  expires_at             DateTime? @db.Timestamptz
+  created_at             DateTime  @default(now()) @db.Timestamptz
+  updated_at             DateTime  @default(now()) @db.Timestamptz
+}
+
+model DominusChatMessage {
+  id        String   @id @default(dbgenerated("gen_random_uuid()"))
+  userId    String?
+  orgId     String?
+  claimId   String?
+  routeName String?
+  role      String
+  content   String
+  createdAt DateTime @default(now()) @db.Timestamptz
+
+  @@index([userId, createdAt])
+  @@index([orgId, createdAt])
+  @@index([claimId, createdAt])
 }
