@@ -1,6 +1,6 @@
 // src/lib/ai/weather.ts
-import { getOpenAI } from "@/lib/openai";
 import { logger } from "@/lib/logger";
+import { getOpenAI } from "@/lib/openai";
 import { QUICK_DOL_PROMPT, WEATHER_REPORT_PROMPT } from "@/lib/supplement/ai-prompts";
 
 export type QuickDolInput = {
@@ -53,8 +53,7 @@ export async function runQuickDol(input: QuickDolInput): Promise<QuickDolResult>
     // Cap at most recent 90 days to avoid oversized payloads
     const observations = input.weatherObservations.slice(0, 90);
     userPayload.observedWeatherData = observations;
-    userPayload._dataNote =
-      `REAL weather station data is provided (${observations.length} days). Use ONLY these measurements to identify storm dates. Do NOT invent weather events. Cite actual wind speeds, precipitation amounts, and conditions from this data.`;
+    userPayload._dataNote = `REAL weather station data is provided (${observations.length} days). Use ONLY these measurements to identify storm dates. Do NOT invent weather events. Cite actual wind speeds, precipitation amounts, and conditions from this data.`;
     logger.info("[runQuickDol] Sending real weather data to GPT-4o", {
       daysCount: observations.length,
       address: input.address,

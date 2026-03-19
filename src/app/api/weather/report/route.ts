@@ -42,8 +42,7 @@ async function geocodeAddress(address: string): Promise<GeocodingResult> {
 
   try {
     // ── 1. Try Mapbox (best accuracy for street addresses) ──
-    const mapboxToken =
-      process.env.NEXT_PUBLIC_MAPBOX_TOKEN || process.env.MAPBOX_ACCESS_TOKEN;
+    const mapboxToken = process.env.NEXT_PUBLIC_MAPBOX_TOKEN || process.env.MAPBOX_ACCESS_TOKEN;
     if (mapboxToken) {
       try {
         const url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(address)}.json?access_token=${mapboxToken}&limit=1&types=address,place`;
@@ -52,7 +51,11 @@ async function geocodeAddress(address: string): Promise<GeocodingResult> {
           const data = await res.json();
           const feat = data.features?.[0];
           if (feat?.center) {
-            logger.info("[Weather API] Geocoded via Mapbox", { address, lat: feat.center[1], lng: feat.center[0] });
+            logger.info("[Weather API] Geocoded via Mapbox", {
+              address,
+              lat: feat.center[1],
+              lng: feat.center[0],
+            });
             return { lat: feat.center[1], lng: feat.center[0], resolved: true };
           }
         }
@@ -85,11 +88,12 @@ async function geocodeAddress(address: string): Promise<GeocodingResult> {
 
     // ── 3. Open-Meteo (city-level only — extract city name) ──
     const parts = address.split(",").map((s) => s.trim());
-    const cityQuery = parts.length >= 3
-      ? `${parts[1]}, ${parts[2].split(" ")[0]}`
-      : parts.length === 2
-        ? address
-        : parts[0];
+    const cityQuery =
+      parts.length >= 3
+        ? `${parts[1]}, ${parts[2].split(" ")[0]}`
+        : parts.length === 2
+          ? address
+          : parts[0];
 
     const geoRes = await fetch(
       `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(cityQuery)}&count=1&language=en&format=json`,
@@ -103,7 +107,11 @@ async function geocodeAddress(address: string): Promise<GeocodingResult> {
         const lng = geoData.results[0].longitude;
 
         if (lat !== 0 && lng !== 0 && !isNaN(lat) && !isNaN(lng)) {
-          logger.info("[Weather API] Geocoded via Open-Meteo (city-level)", { cityQuery, lat, lng });
+          logger.info("[Weather API] Geocoded via Open-Meteo (city-level)", {
+            cityQuery,
+            lat,
+            lng,
+          });
           return { lat, lng, resolved: true };
         }
       }
