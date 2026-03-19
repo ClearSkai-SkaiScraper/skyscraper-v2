@@ -1096,9 +1096,39 @@ export default function ClaimWeatherPage({ params }: Props) {
                           </Button>
                         </>
                       ) : (
-                        <span className="text-xs italic text-muted-foreground">
-                          PDF not available
-                        </span>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="gap-1.5 border-amber-300 text-amber-700 hover:bg-amber-50 dark:border-amber-600 dark:text-amber-400 dark:hover:bg-amber-900/20"
+                          onClick={async () => {
+                            const toastId = toast.loading("Retrying PDF generation...");
+                            try {
+                              const res = await fetch(
+                                `/api/weather/report/${report.reportId}/retry-pdf`,
+                                { method: "POST" }
+                              );
+                              const data = await res.json();
+                              if (!res.ok) {
+                                throw new Error(data.error || "Retry failed");
+                              }
+                              toast.success("PDF generated successfully!", { id: toastId });
+                              // Update the report in state with the new PDF URL
+                              setSavedWeatherReports((prev) =>
+                                prev.map((r) =>
+                                  r.id === report.id ? { ...r, pdfUrl: data.pdfUrl } : r
+                                )
+                              );
+                            } catch (err) {
+                              logger.error("[WEATHER] PDF retry failed:", err);
+                              toast.error(err instanceof Error ? err.message : "PDF retry failed", {
+                                id: toastId,
+                              });
+                            }
+                          }}
+                        >
+                          <RefreshCw className="h-3.5 w-3.5" />
+                          Retry PDF
+                        </Button>
                       )}
                       <Button
                         size="sm"

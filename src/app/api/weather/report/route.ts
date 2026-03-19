@@ -1,4 +1,5 @@
 export const dynamic = "force-dynamic";
+export const maxDuration = 120; // PDF generation + radar image downloads can be slow
 
 import { randomUUID } from "crypto";
 import { NextRequest, NextResponse } from "next/server";
@@ -437,7 +438,8 @@ export const POST = withAuth(async (req: NextRequest, { userId, orgId }) => {
     try {
       // Always generate PDF if orgId is present (standalone reports without claimId still get PDFs)
       if (orgId) {
-        logger.info("[Weather API] Building WeatherPdfViewModel", {
+        const pdfStartTime = Date.now();
+        logger.info("[Weather API] ▶ Step 8a: Building WeatherPdfViewModel", {
           claimId: claimId || "standalone",
           hasBranding: !!brandingData.companyName,
           hasClaim: !!claimDetails.claimNumber,
@@ -516,12 +518,15 @@ export const POST = withAuth(async (req: NextRequest, { userId, orgId }) => {
           providersFailed: [],
         });
 
-        logger.info("[Weather API] Generated view model", {
+        logger.info("[Weather API] ✅ Step 8a complete: View model built", {
           anchorDate: viewModel.anchorDate,
           weatherWindowDays: viewModel.weatherWindow.length,
           peril: viewModel.peril.displayText,
           confidence: viewModel.evidence.stormConfidence,
           hasStormEvidence: viewModel.hasStormEvidence,
+          radarFramesLoaded: viewModel.radarFrames.length,
+          hasRadarImagery: viewModel.hasRadarImagery,
+          durationMs: Date.now() - pdfStartTime,
         });
 
         // ── Cross-check logger: verify all sections use the same truth ──
@@ -542,8 +547,16 @@ export const POST = withAuth(async (req: NextRequest, { userId, orgId }) => {
         };
         logger.info("[Weather API] Section cross-check", sectionCrossCheck);
 
+        logger.info("[Weather API] ▶ Step 8b: Rendering PDF via jsPDF");
+        const renderStart = Date.now();
         const pdfBuffer = renderWeatherReportPDF(viewModel);
+        logger.info("[Weather API] ✅ Step 8b complete: PDF rendered", {
+          pdfBytes: pdfBuffer.length,
+          durationMs: Date.now() - renderStart,
+        });
 
+        logger.info("[Weather API] ▶ Step 8c: Uploading PDF to Supabase");
+        const uploadStart = Date.now();
         const pdfResult = await saveAiPdfToStorage({
           orgId,
           claimId: claimId || undefined,
@@ -557,7 +570,12 @@ export const POST = withAuth(async (req: NextRequest, { userId, orgId }) => {
 
         pdfSaved = true;
         pdfUrl = pdfResult.publicUrl;
-        logger.info(`[Weather API] PDF saved`, { claimId: claimId || "standalone", pdfUrl });
+        logger.info("[Weather API] ✅ Step 8c complete: PDF uploaded to Supabase", {
+          claimId: claimId || "standalone",
+          pdfUrl,
+          totalPdfPipelineMs: Date.now() - pdfStartTime,
+          uploadMs: Date.now() - uploadStart,
+        });
       }
     } catch (pdfError) {
       const errMsg = pdfError instanceof Error ? pdfError.message : String(pdfError);
