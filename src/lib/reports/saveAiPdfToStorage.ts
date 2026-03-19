@@ -67,17 +67,41 @@ export async function saveAiPdfToStorage(options: SaveAiPdfOptions): Promise<Sav
   const filename = `${type.toLowerCase()}_${timestamp}_${uuid}.pdf`;
   const storageKey = `${orgId}/${claimId || "standalone"}/ai-reports/${filename}`;
 
+  const sizeMB = (pdfBuffer.length / (1024 * 1024)).toFixed(2);
   logger.info("[saveAiPdfToStorage] Uploading PDF:", {
     bucket: BUCKET,
     storageKey,
-    size: pdfBuffer.length,
+    sizeBytes: pdfBuffer.length,
+    sizeMB,
   });
 
   // Upload to Supabase Storage using admin client (no user auth required)
-  const { error: uploadError } = await supabase.storage.from(BUCKET).upload(storageKey, pdfBuffer, {
+  let { error: uploadError } = await supabase.storage.from(BUCKET).upload(storageKey, pdfBuffer, {
     contentType: "application/pdf",
     upsert: true,
   });
+
+  // If upload failed due to size limit, try to increase the bucket limit and retry
+  if (uploadError?.message?.includes("maximum allowed size")) {
+    logger.warn("[saveAiPdfToStorage] Upload rejected by size limit, attempting to update bucket", {
+      pdfSizeMB: sizeMB,
+    });
+    try {
+      await supabase.storage.updateBucket(BUCKET, {
+        public: true,
+        fileSizeLimit: 50 * 1024 * 1024, // 50 MB
+      });
+      logger.info("[saveAiPdfToStorage] Bucket limit updated to 50 MB, retrying upload");
+      const retryResult = await supabase.storage.from(BUCKET).upload(storageKey, pdfBuffer, {
+        contentType: "application/pdf",
+        upsert: true,
+      });
+      uploadError = retryResult.error;
+    } catch (bucketErr) {
+      logger.error("[saveAiPdfToStorage] Failed to update bucket limit:", bucketErr);
+      // Fall through to original error handling
+    }
+  }
 
   if (uploadError) {
     logger.error("[saveAiPdfToStorage] ❌ Supabase upload failed:", {
@@ -85,8 +109,9 @@ export async function saveAiPdfToStorage(options: SaveAiPdfOptions): Promise<Sav
       bucket: BUCKET,
       claimId,
       storageKey,
+      pdfSizeMB: sizeMB,
     });
-    throw new Error(`Supabase upload failed: ${uploadError.message}`);
+    throw new Error(`Supabase upload failed: ${uploadError.message} (PDF size: ${sizeMB} MB)`);
   }
 
   // Get public URL

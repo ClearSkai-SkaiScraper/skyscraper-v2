@@ -458,7 +458,25 @@ export async function fetchRadarImages(
           return { ...frame, imageLoaded: false };
         }
 
+        // Reject oversized images — IEM national composites can be 2-5 MB each.
+        // With 3 images as base64 (~33% overhead), the PDF can exceed Supabase's
+        // upload limit.  Cap at 500 KB per raw image (≈667 KB base64).
+        const MAX_IMAGE_BYTES = 500_000;
+        if (buffer.length > MAX_IMAGE_BYTES) {
+          logger.warn("[RADAR_IMG] Image too large, skipping to keep PDF size manageable", {
+            url: frame.url,
+            sizeBytes: buffer.length,
+            maxAllowed: MAX_IMAGE_BYTES,
+          });
+          return { ...frame, imageLoaded: false };
+        }
+
         const base64 = buffer.toString("base64");
+        logger.info("[RADAR_IMG] Image loaded OK", {
+          url: frame.url,
+          rawBytes: buffer.length,
+          base64Len: base64.length,
+        });
         return { ...frame, base64Data: `data:${contentType};base64,${base64}`, imageLoaded: true };
       } catch (err) {
         logger.warn("[RADAR_IMG] Fetch error", { url: frame.url, error: String(err) });

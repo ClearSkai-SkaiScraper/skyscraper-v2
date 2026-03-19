@@ -551,6 +551,7 @@ export const POST = withAuth(async (req: NextRequest, { userId, orgId }) => {
 
         // ── Step 8b: Render PDF ──
         let pdfBuffer: Buffer;
+        const MAX_PDF_BYTES = 5_000_000; // 5 MB — Supabase free-tier limit
         try {
           logger.info("[Weather API] ▶ Step 8b: Rendering PDF via jsPDF");
           const renderStart = Date.now();
@@ -559,6 +560,24 @@ export const POST = withAuth(async (req: NextRequest, { userId, orgId }) => {
             pdfBytes: pdfBuffer.length,
             durationMs: Date.now() - renderStart,
           });
+
+          // Guard: if PDF is too large (usually due to embedded radar PNGs),
+          // strip radar imagery and re-render a lighter version.
+          if (pdfBuffer.length > MAX_PDF_BYTES) {
+            logger.warn("[Weather API] PDF too large, stripping radar and re-rendering", {
+              originalBytes: pdfBuffer.length,
+              maxAllowed: MAX_PDF_BYTES,
+              radarFrames: viewModel.radarFrames.length,
+            });
+            viewModel.radarFrames = [];
+            viewModel.hasRadarImagery = false;
+            const reRenderStart = Date.now();
+            pdfBuffer = renderWeatherReportPDF(viewModel);
+            logger.info("[Weather API] ✅ Step 8b re-render complete (no radar)", {
+              pdfBytes: pdfBuffer.length,
+              durationMs: Date.now() - reRenderStart,
+            });
+          }
         } catch (step8bErr) {
           const msg = step8bErr instanceof Error ? step8bErr.message : String(step8bErr);
           throw new Error(`[Step 8b FAILED - renderWeatherReportPDF] ${msg}`);
