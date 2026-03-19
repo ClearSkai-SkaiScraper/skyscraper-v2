@@ -9,6 +9,7 @@ import { withAuth } from "@/lib/auth/withAuth";
 import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 import { checkRateLimit } from "@/lib/rate-limit";
+import { type WeatherCondition } from "@/lib/weather/radarService";
 
 type WeatherUiQuickDolRequest = {
   address?: string;
@@ -37,6 +38,89 @@ function mapLossTypeToPeril(
   if (!lossType || lossType === "unspecified") return undefined;
   if (lossType === "water") return "rain";
   return lossType;
+}
+
+/**
+ * Geocode an address to lat/lng via Open-Meteo (free, no key needed)
+ */
+async function geocodeAddress(address: string): Promise<{ lat: number; lng: number } | null> {
+  try {
+    const res = await fetch(
+      `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(address)}&count=1&language=en&format=json`
+    );
+    if (!res.ok) return null;
+    const data = await res.json();
+    if (data.results?.[0]) {
+      return { lat: data.results[0].latitude, lng: data.results[0].longitude };
+    }
+    return null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Fetch Visual Crossing data for a date range (up to 90 days) around the search window.
+ * Falls back gracefully if no API key or fetch fails.
+ */
+async function fetchWeatherForRange(
+  lat: number,
+  lng: number,
+  startDate?: string,
+  endDate?: string
+): Promise<WeatherCondition[]> {
+  const apiKey = process.env.VISUALCROSSING_API_KEY || process.env.VISUAL_CROSSING_API_KEY;
+  if (!apiKey) {
+    logger.warn("[QUICK_DOL] No Visual Crossing API key — scan will rely on AI knowledge only");
+    return [];
+  }
+
+  try {
+    // Default range: last 90 days
+    const end = endDate ? new Date(endDate) : new Date();
+    const start = startDate
+      ? new Date(startDate)
+      : new Date(end.getTime() - 90 * 24 * 60 * 60 * 1000);
+
+    // Clamp to max 90 days for API limits
+    const maxRange = 90 * 24 * 60 * 60 * 1000;
+    const actualStart =
+      end.getTime() - start.getTime() > maxRange ? new Date(end.getTime() - maxRange) : start;
+
+    const dateRange = `${actualStart.toISOString().split("T")[0]}/${end.toISOString().split("T")[0]}`;
+    const location = `${lat},${lng}`;
+    const url = `https://weather.visualcrossing.com/VisualCrossingWebServices/rest/services/timeline/${encodeURIComponent(location)}/${dateRange}?key=${apiKey}&unitGroup=us&include=days&contentType=json`;
+
+    logger.info("[QUICK_DOL] Fetching Visual Crossing weather data", { dateRange, location });
+    const response = await fetch(url);
+
+    if (!response.ok) {
+      logger.error("[QUICK_DOL] Visual Crossing API error:", response.status);
+      return [];
+    }
+
+    const data = await response.json();
+    const days = data.days || [];
+
+    const conditions: WeatherCondition[] = days.map((day: any) => ({
+      datetime: day.datetime,
+      tempmax: day.tempmax,
+      tempmin: day.tempmin,
+      precip: day.precip || 0,
+      precipprob: day.precipprob || 0,
+      windspeed: day.windspeed || 0,
+      windgust: day.windgust,
+      conditions: day.conditions || "",
+      icon: day.icon || "",
+      description: day.description || "",
+    }));
+
+    logger.info("[QUICK_DOL] Got real weather data", { daysCount: conditions.length });
+    return conditions;
+  } catch (err) {
+    logger.error("[QUICK_DOL] Weather data fetch failed:", err);
+    return [];
+  }
 }
 
 export const POST = withAuth(async (req: NextRequest, { userId, orgId }) => {
@@ -71,11 +155,41 @@ export const POST = withAuth(async (req: NextRequest, { userId, orgId }) => {
           ? body.endDate
           : undefined;
 
+    // ── Step 1: Geocode the address ──
+    const geo = await geocodeAddress(address);
+    const lat = geo?.lat ?? null;
+    const lng = geo?.lng ?? null;
+
+    // ── Step 2: Fetch REAL weather data from Visual Crossing ──
+    let weatherData: WeatherCondition[] = [];
+    if (lat !== null && lng !== null) {
+      weatherData = await fetchWeatherForRange(lat, lng, startDate, endDate);
+    } else {
+      logger.warn("[QUICK_DOL] Geocoding failed for address, proceeding without weather data", {
+        address,
+      });
+    }
+
     const input: QuickDolInput = {
       address,
       startDate,
       endDate,
       peril: mapLossTypeToPeril(body.lossType),
+      // Pass real weather observations so AI can ground its analysis
+      weatherObservations:
+        weatherData.length > 0
+          ? weatherData.map((d) => ({
+              date: d.datetime,
+              highF: d.tempmax,
+              lowF: d.tempmin,
+              precipIn: d.precip,
+              precipProb: d.precipprob,
+              windMph: d.windspeed,
+              gustMph: d.windgust ?? null,
+              conditions: d.conditions,
+              description: d.description ?? null,
+            }))
+          : undefined,
     };
 
     const result = await runQuickDol(input);
@@ -85,12 +199,16 @@ export const POST = withAuth(async (req: NextRequest, { userId, orgId }) => {
       confidence: normalizeConfidence(c.score),
       reasoning: c.reason || undefined,
       perilType: body.lossType || "unknown",
+      // Attach real weather data for this specific candidate date
+      weatherData: weatherData.find((w) => w.datetime === c.date) || null,
     }));
 
     const response = {
       candidates,
       notes: result.bestGuess ? `Best guess: ${result.bestGuess}` : undefined,
       scanId: null as string | null,
+      dataSource: weatherData.length > 0 ? "visual_crossing" : "ai_knowledge",
+      weatherDaysAnalyzed: weatherData.length,
     };
 
     // ── Resolve DB user ID for FK (weather_reports.createdById → users.id) ──
@@ -114,6 +232,8 @@ export const POST = withAuth(async (req: NextRequest, { userId, orgId }) => {
     // ── Save scan to weather_reports for recall + history ──
     try {
       const scanId = crypto.randomUUID();
+      // Strip weatherData (with nulls) for Prisma JSON compatibility
+      const candidatesForDb = candidates.map(({ weatherData: _wd, ...rest }) => rest);
       await prisma.weather_reports.create({
         data: {
           id: scanId,
@@ -128,14 +248,16 @@ export const POST = withAuth(async (req: NextRequest, { userId, orgId }) => {
           periodTo: endDate ? new Date(endDate) : null,
           primaryPeril: body.lossType || null,
           confidence: candidates[0]?.confidence ?? null,
-          candidateDates: candidates,
+          candidateDates: candidatesForDb as any,
           events: result.candidates || [],
           globalSummary: {
             notes: result.bestGuess || null,
             scanType: "quick_dol",
             perilCategory: body.lossType || "auto",
+            dataSource: weatherData.length > 0 ? "visual_crossing" : "ai_knowledge",
+            weatherDaysAnalyzed: weatherData.length,
           },
-          providerRaw: result,
+          providerRaw: result as any,
         },
       });
       response.scanId = scanId;

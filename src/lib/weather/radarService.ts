@@ -90,9 +90,24 @@ export async function fetchHistoricalRadar(
     const mm = String(d.getUTCMonth() + 1).padStart(2, "0");
     const dd = String(d.getUTCDate()).padStart(2, "0");
 
-    // IEM NEXRAD composites — national composite (n0q = base reflectivity)
-    // Use both timestamped files AND the station-level archive for better coverage
-    const timeSlots = ["0000", "0600", "1200", "1500", "1800", "2100", "2359"];
+    // ── Priority 1: IEM WMS-based regional radar (smaller images, better for PDFs) ──
+    // These are region-specific tiles centered on the property location
+    const wmsTimeSlots = ["12:00:00", "15:00:00", "18:00:00", "21:00:00"];
+    for (const time of wmsTimeSlots) {
+      const wmsUrl = `https://mesonet.agron.iastate.edu/cgi-bin/wms/nexrad/n0q.cgi?SERVICE=WMS&VERSION=1.1.1&REQUEST=GetMap&FORMAT=image/png&TRANSPARENT=true&LAYERS=nexrad-n0q-900913&SRS=EPSG:4326&BBOX=${lng - 2},${lat - 2},${lng + 2},${lat + 2}&WIDTH=512&HEIGHT=512&TIME=${yyyy}-${mm}-${dd}T${time}Z`;
+      const hour = parseInt(time.split(":")[0]);
+      const label = `${hour > 12 ? hour - 12 : hour}:00 ${hour >= 12 ? "PM" : "AM"} UTC`;
+      images.push({
+        url: wmsUrl,
+        timestamp: `${date}T${time}Z`,
+        source: "iem_nexrad",
+        stationId,
+        label: `NEXRAD Regional — ${label}`,
+      });
+    }
+
+    // ── Priority 2: IEM NEXRAD national composites (may be larger) ──
+    const timeSlots = ["0600", "1200", "1800", "2359"];
 
     for (const time of timeSlots) {
       const url = `https://mesonet.agron.iastate.edu/archive/data/${yyyy}/${mm}/${dd}/GIS/uscomp/n0q_${yyyy}${mm}${dd}${time}.png`;
@@ -109,7 +124,6 @@ export async function fetchHistoricalRadar(
     }
 
     // Also add station-specific RIDGE archive images (historical, not current)
-    // IEM archives station-level images at these paths
     const ridgeArchiveUrl = `https://mesonet.agron.iastate.edu/archive/data/${yyyy}/${mm}/${dd}/GIS/ridge/${stationId}/N0Q_${yyyy}${mm}${dd}1200.png`;
     images.push({
       url: ridgeArchiveUrl,
@@ -117,16 +131,6 @@ export async function fetchHistoricalRadar(
       source: "iem_nexrad",
       stationId,
       label: `${stationId} Station Radar — Noon`,
-    });
-
-    // Alternative: IEM WMS-based single-frame tile (more reliable for older dates)
-    const wmsUrl = `https://mesonet.agron.iastate.edu/cgi-bin/wms/nexrad/n0q.cgi?SERVICE=WMS&VERSION=1.1.1&REQUEST=GetMap&FORMAT=image/png&TRANSPARENT=true&LAYERS=nexrad-n0q-900913&SRS=EPSG:4326&BBOX=${lng - 2},${lat - 2},${lng + 2},${lat + 2}&WIDTH=512&HEIGHT=512&TIME=${yyyy}-${mm}-${dd}T18:00:00Z`;
-    images.push({
-      url: wmsUrl,
-      timestamp: `${date}T18:00:00Z`,
-      source: "iem_nexrad",
-      stationId,
-      label: `NEXRAD WMS — ${stationId} Area`,
     });
 
     logger.info("[RADAR] Fetched radar image URLs", { date, stationId, count: images.length });
@@ -189,7 +193,12 @@ export async function getRadarForEvent(
   lat: number,
   lng: number,
   eventDate: string // YYYY-MM-DD
-): Promise<{ stationId: string; images: RadarImage[]; weatherData?: WeatherCondition[] }> {
+): Promise<{
+  stationId: string;
+  images: RadarImage[];
+  weatherData?: WeatherCondition[];
+  propertyMapUrl?: string;
+}> {
   const stationId = await getNearestRadarStation(lat, lng);
   const historical = await fetchHistoricalRadar(lat, lng, eventDate);
 
@@ -201,11 +210,38 @@ export async function getRadarForEvent(
     logger.warn("[RADAR] Visual Crossing fetch failed (non-critical):", err);
   }
 
+  // Generate property location map with pin overlay
+  let propertyMapUrl: string | undefined;
+  try {
+    propertyMapUrl = buildPropertyMapUrl(lat, lng);
+  } catch (err) {
+    logger.warn("[RADAR] Property map generation failed (non-critical):", err);
+  }
+
   return {
     stationId,
     images: historical,
     weatherData,
+    propertyMapUrl,
   };
+}
+
+/**
+ * Build a Mapbox Static Image URL with a property pin marker.
+ * Falls back to OpenStreetMap static tile if no Mapbox token is available.
+ */
+export function buildPropertyMapUrl(lat: number, lng: number): string | undefined {
+  const mapboxToken = process.env.NEXT_PUBLIC_MAPBOX_TOKEN || process.env.MAPBOX_ACCESS_TOKEN;
+
+  if (mapboxToken) {
+    // Mapbox Static Images API — satellite with a red pin marker
+    // pin-l = large pin, +e74c3c = red color
+    return `https://api.mapbox.com/styles/v1/mapbox/satellite-streets-v12/static/pin-l+e74c3c(${lng},${lat})/${lng},${lat},15,0/600x400@2x?access_token=${mapboxToken}&attribution=false&logo=false`;
+  }
+
+  // Fallback: OpenStreetMap static tile (free, no key needed)
+  // Uses the static map service from staticmap.org
+  return `https://staticmap.openstreetmap.de/staticmap.php?center=${lat},${lng}&zoom=15&size=600x400&markers=${lat},${lng},lightblue`;
 }
 
 /**

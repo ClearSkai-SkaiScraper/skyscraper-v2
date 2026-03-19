@@ -3,15 +3,19 @@
 import {
   CalendarCheck,
   CheckCircle,
+  ChevronDown,
+  ChevronUp,
   CloudLightning,
   CloudRain,
   Download,
+  Droplets,
   Eye,
   FileText,
   History,
   Loader2,
   MapPin,
   RefreshCw,
+  Thermometer,
   Trash2,
   Wind,
   Zap,
@@ -41,12 +45,26 @@ type QuickDolCandidate = {
   confidence: number;
   reasoning?: string;
   perilType?: string;
+  weatherData?: {
+    datetime: string;
+    tempmax: number;
+    tempmin: number;
+    precip: number;
+    precipprob: number;
+    windspeed: number;
+    windgust?: number;
+    conditions: string;
+    icon?: string;
+    description?: string;
+  } | null;
 };
 
 type QuickDolResponse = {
   candidates: QuickDolCandidate[];
   notes?: string;
   scanId?: string | null;
+  dataSource?: "visual_crossing" | "ai_knowledge";
+  weatherDaysAnalyzed?: number;
 };
 
 type SavedScan = {
@@ -581,92 +599,47 @@ export default function ClaimWeatherPage({ params }: Props) {
 
           {/* DOL Candidates from current scan */}
           {quickDolResult && (
-            <Card className="border-blue-200 bg-blue-50/50 p-4 dark:border-blue-800 dark:bg-blue-900/20">
-              <h3 className="mb-3 flex items-center gap-2 font-semibold text-blue-900 dark:text-blue-100">
-                <CheckCircle className="h-4 w-4" />
-                DOL Candidates ({quickDolResult.candidates.length})
-              </h3>
-              <div className="space-y-2">
-                {quickDolResult.candidates.map((c) => (
-                  <div
+            <Card className="overflow-hidden border-blue-200 dark:border-blue-800">
+              <div className="flex items-center justify-between border-b bg-gradient-to-r from-blue-50 to-indigo-50 px-5 py-3 dark:from-blue-950/40 dark:to-indigo-950/40">
+                <h3 className="flex items-center gap-2 font-semibold text-blue-900 dark:text-blue-100">
+                  <CheckCircle className="h-4 w-4 text-blue-500" />
+                  DOL Candidates ({quickDolResult.candidates.length})
+                </h3>
+                <div className="flex items-center gap-2">
+                  {quickDolResult.dataSource === "visual_crossing" ? (
+                    <Badge className="gap-1 bg-emerald-100 text-emerald-700 dark:bg-emerald-900 dark:text-emerald-300">
+                      <CheckCircle className="h-3 w-3" />
+                      Real Weather Data ({quickDolResult.weatherDaysAnalyzed} days)
+                    </Badge>
+                  ) : (
+                    <Badge className="gap-1 bg-amber-100 text-amber-700 dark:bg-amber-900 dark:text-amber-300">
+                      <CloudLightning className="h-3 w-3" />
+                      AI Knowledge Only
+                    </Badge>
+                  )}
+                </div>
+              </div>
+              <div className="divide-y">
+                {quickDolResult.candidates.map((c, idx) => (
+                  <DolCandidateCard
                     key={c.date}
-                    className={`flex items-start gap-3 rounded-lg border p-3 transition-colors ${
-                      selectedDol === c.date
-                        ? "border-blue-500 bg-blue-100 dark:border-blue-400 dark:bg-blue-800/40"
-                        : "border-transparent hover:bg-blue-100/50 dark:hover:bg-blue-800/30"
-                    }`}
-                  >
-                    <input
-                      type="radio"
-                      name="dol"
-                      className="mt-1"
-                      title={`Select ${c.date} as DOL`}
-                      checked={selectedDol === c.date}
-                      onChange={() => setSelectedDol(c.date)}
-                    />
-                    <div className="flex-1">
-                      <div className="flex flex-wrap items-center gap-2 font-medium">
-                        {new Date(c.date).toLocaleDateString("en-US", {
-                          weekday: "short",
-                          month: "short",
-                          day: "numeric",
-                          year: "numeric",
-                        })}
-                        <Badge variant="secondary">
-                          {Math.round((c.confidence ?? 0) * 100)}% confidence
-                        </Badge>
-                        {c.perilType && (
-                          <Badge className={PERIL_COLORS[c.perilType] || PERIL_COLORS.other}>
-                            {c.perilType}
-                          </Badge>
-                        )}
-                      </div>
-                      {c.reasoning && (
-                        <p className="mt-1 text-sm text-muted-foreground">{c.reasoning}</p>
-                      )}
-                    </div>
-                    <div className="flex shrink-0 gap-2">
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => fetchRadar(c.date)}
-                        disabled={loadingRadar}
-                        title="View radar imagery for this date"
-                      >
-                        <Eye className="mr-1 h-3.5 w-3.5" />
-                        Radar
-                      </Button>
-                      <Button
-                        size="sm"
-                        onClick={() => setDolOnClaim(c.date, quickDolResult.scanId || undefined)}
-                        disabled={settingDol === c.date || currentDol === c.date}
-                        className={
-                          currentDol === c.date ? "bg-emerald-600" : "bg-blue-600 hover:bg-blue-700"
-                        }
-                      >
-                        {settingDol === c.date ? (
-                          <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                        ) : currentDol === c.date ? (
-                          <>
-                            <CheckCircle className="mr-1 h-3.5 w-3.5" />
-                            Current DOL
-                          </>
-                        ) : (
-                          <>
-                            <CalendarCheck className="mr-1 h-3.5 w-3.5" />
-                            Set as DOL
-                          </>
-                        )}
-                      </Button>
-                    </div>
-                  </div>
+                    candidate={c}
+                    rank={idx + 1}
+                    isSelected={selectedDol === c.date}
+                    isCurrentDol={currentDol === c.date}
+                    onSelect={() => setSelectedDol(c.date)}
+                    onSetDol={() => setDolOnClaim(c.date, quickDolResult.scanId || undefined)}
+                    onViewRadar={() => fetchRadar(c.date)}
+                    loadingRadar={loadingRadar}
+                    settingDol={settingDol === c.date}
+                  />
                 ))}
               </div>
 
               {quickDolResult.notes && (
-                <p className="mt-3 border-t pt-3 text-sm text-muted-foreground">
-                  {quickDolResult.notes}
-                </p>
+                <div className="border-t bg-slate-50/50 px-5 py-3 dark:bg-slate-800/30">
+                  <p className="text-sm text-muted-foreground">{quickDolResult.notes}</p>
+                </div>
               )}
             </Card>
           )}
@@ -1168,6 +1141,246 @@ export default function ClaimWeatherPage({ params }: Props) {
           )}
         </div>
       </Card>
+    </div>
+  );
+}
+
+// ─── DOL Candidate Card Component (Expandable) ────────────────────────────
+
+function DolCandidateCard({
+  candidate,
+  rank,
+  isSelected,
+  isCurrentDol,
+  onSelect,
+  onSetDol,
+  onViewRadar,
+  loadingRadar,
+  settingDol,
+}: {
+  candidate: QuickDolCandidate;
+  rank: number;
+  isSelected: boolean;
+  isCurrentDol: boolean;
+  onSelect: () => void;
+  onSetDol: () => void;
+  onViewRadar: () => void;
+  loadingRadar: boolean;
+  settingDol: boolean;
+}) {
+  const [expanded, setExpanded] = useState(rank === 1); // Auto-expand top candidate
+  const confidence = Math.round((candidate.confidence ?? 0) * 100);
+  const wd = candidate.weatherData;
+
+  // Confidence color coding
+  const confidenceColor =
+    confidence >= 80
+      ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-900 dark:text-emerald-200"
+      : confidence >= 60
+        ? "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200"
+        : confidence >= 40
+          ? "bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-200"
+          : "bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400";
+
+  // Confidence bar width
+  const barWidth = Math.max(4, confidence);
+
+  return (
+    <div
+      className={`transition-all ${
+        isSelected
+          ? "bg-blue-50/80 dark:bg-blue-950/30"
+          : "hover:bg-slate-50/50 dark:hover:bg-slate-800/30"
+      }`}
+    >
+      {/* Header row — always visible */}
+      <div className="flex items-center gap-3 px-5 py-3">
+        <input
+          type="radio"
+          name="dol-candidate"
+          className="mt-0.5 h-4 w-4 accent-blue-600"
+          title={`Select ${candidate.date} as DOL`}
+          checked={isSelected}
+          onChange={onSelect}
+        />
+
+        {/* Rank badge */}
+        <div
+          className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-xs font-bold ${
+            rank === 1
+              ? "bg-amber-100 text-amber-700 dark:bg-amber-900 dark:text-amber-300"
+              : "bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400"
+          }`}
+        >
+          #{rank}
+        </div>
+
+        {/* Date + peril */}
+        <div className="flex-1">
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="font-semibold">
+              {new Date(candidate.date).toLocaleDateString("en-US", {
+                weekday: "short",
+                month: "short",
+                day: "numeric",
+                year: "numeric",
+              })}
+            </span>
+            {candidate.perilType && candidate.perilType !== "unknown" && (
+              <Badge className={PERIL_COLORS[candidate.perilType] || PERIL_COLORS.other}>
+                {PERIL_ICONS[candidate.perilType]}
+                <span className="ml-1">{candidate.perilType}</span>
+              </Badge>
+            )}
+            {isCurrentDol && (
+              <Badge className="bg-emerald-100 text-emerald-700 dark:bg-emerald-900 dark:text-emerald-300">
+                ✓ Active DOL
+              </Badge>
+            )}
+          </div>
+          {/* Inline weather summary when collapsed */}
+          {!expanded && wd && (
+            <div className="mt-0.5 flex items-center gap-3 text-xs text-muted-foreground">
+              <span className="flex items-center gap-1">
+                <Wind className="h-3 w-3" />
+                {wd.windgust ? `${wd.windgust} mph gusts` : `${wd.windspeed} mph`}
+              </span>
+              <span className="flex items-center gap-1">
+                <Droplets className="h-3 w-3" />
+                {wd.precip} in
+              </span>
+              <span>{wd.conditions}</span>
+            </div>
+          )}
+        </div>
+
+        {/* Confidence bar + percentage */}
+        <div className="flex items-center gap-2">
+          <div className="hidden w-24 sm:block">
+            <div className="h-2 overflow-hidden rounded-full bg-slate-200 dark:bg-slate-700">
+              <div
+                className={`h-full rounded-full transition-all ${
+                  confidence >= 80
+                    ? "bg-emerald-500"
+                    : confidence >= 60
+                      ? "bg-blue-500"
+                      : confidence >= 40
+                        ? "bg-amber-500"
+                        : "bg-slate-400"
+                }`}
+                style={{ width: `${barWidth}%` }}
+              />
+            </div>
+          </div>
+          <Badge className={`min-w-[52px] justify-center ${confidenceColor}`}>{confidence}%</Badge>
+        </div>
+
+        {/* Expand/collapse toggle */}
+        <button
+          onClick={() => setExpanded(!expanded)}
+          className="rounded-md p-1 hover:bg-slate-200 dark:hover:bg-slate-700"
+          title={expanded ? "Collapse" : "Expand details"}
+        >
+          {expanded ? (
+            <ChevronUp className="h-4 w-4 text-muted-foreground" />
+          ) : (
+            <ChevronDown className="h-4 w-4 text-muted-foreground" />
+          )}
+        </button>
+      </div>
+
+      {/* Expanded details */}
+      {expanded && (
+        <div className="border-t bg-white/60 px-5 pb-4 pt-3 dark:bg-slate-900/40">
+          {/* AI reasoning */}
+          {candidate.reasoning && (
+            <div className="mb-3 rounded-lg border bg-white p-3 text-sm dark:border-slate-700 dark:bg-slate-800">
+              <p className="mb-1 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                Analysis
+              </p>
+              <p className="text-slate-700 dark:text-slate-300">{candidate.reasoning}</p>
+            </div>
+          )}
+
+          {/* Real weather data cards */}
+          {wd && (
+            <div className="mb-3 grid grid-cols-2 gap-2 sm:grid-cols-4">
+              <div className="rounded-lg border bg-white p-2.5 text-center dark:border-slate-700 dark:bg-slate-800">
+                <Thermometer className="mx-auto mb-1 h-4 w-4 text-red-500" />
+                <p className="text-lg font-bold">
+                  {wd.tempmax}°<span className="text-xs text-muted-foreground">F</span>
+                </p>
+                <p className="text-xs text-muted-foreground">High / {wd.tempmin}° Low</p>
+              </div>
+              <div className="rounded-lg border bg-white p-2.5 text-center dark:border-slate-700 dark:bg-slate-800">
+                <Wind className="mx-auto mb-1 h-4 w-4 text-blue-500" />
+                <p className="text-lg font-bold">
+                  {wd.windgust ?? wd.windspeed}
+                  <span className="text-xs text-muted-foreground"> mph</span>
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  {wd.windgust ? "Peak Gust" : "Wind Speed"}
+                </p>
+              </div>
+              <div className="rounded-lg border bg-white p-2.5 text-center dark:border-slate-700 dark:bg-slate-800">
+                <Droplets className="mx-auto mb-1 h-4 w-4 text-cyan-500" />
+                <p className="text-lg font-bold">
+                  {wd.precip}
+                  <span className="text-xs text-muted-foreground"> in</span>
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  Precipitation ({wd.precipprob}% prob)
+                </p>
+              </div>
+              <div className="rounded-lg border bg-white p-2.5 text-center dark:border-slate-700 dark:bg-slate-800">
+                <CloudRain className="mx-auto mb-1 h-4 w-4 text-indigo-500" />
+                <p className="truncate text-sm font-bold">{wd.conditions}</p>
+                <p className="truncate text-xs text-muted-foreground">
+                  {wd.description || "Conditions"}
+                </p>
+              </div>
+            </div>
+          )}
+
+          {/* Action buttons */}
+          <div className="flex flex-wrap gap-2">
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={onViewRadar}
+              disabled={loadingRadar}
+              className="gap-1.5"
+            >
+              <Eye className="h-3.5 w-3.5" />
+              View Radar
+            </Button>
+            <Button
+              size="sm"
+              onClick={onSetDol}
+              disabled={settingDol || isCurrentDol}
+              className={`gap-1.5 ${
+                isCurrentDol
+                  ? "bg-emerald-600 hover:bg-emerald-600"
+                  : "bg-blue-600 hover:bg-blue-700"
+              }`}
+            >
+              {settingDol ? (
+                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+              ) : isCurrentDol ? (
+                <>
+                  <CheckCircle className="h-3.5 w-3.5" />
+                  Current DOL
+                </>
+              ) : (
+                <>
+                  <CalendarCheck className="h-3.5 w-3.5" />
+                  Set as DOL
+                </>
+              )}
+            </Button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

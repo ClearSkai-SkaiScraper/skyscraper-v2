@@ -120,6 +120,52 @@ export function renderWeatherReportPDF(viewModel: WeatherPdfViewModel): Buffer {
     renderClaimSnapshot(doc, viewModel, margin, contentWidth, brandColor, yPos)
   );
 
+  // 2.5. PROPERTY LOCATION MAP (if available)
+  if (viewModel.propertyMapBase64) {
+    yPos = checkPageBreak(doc, yPos, 70, pageHeight, margin);
+    yPos = safeRender("propertyMap", () => {
+      yPos += 4;
+      // Section heading
+      doc.setFillColor(brandColor.r, brandColor.g, brandColor.b);
+      doc.rect(margin, yPos, 3, 7, "F");
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(11);
+      doc.setTextColor(COLORS.dark.r, COLORS.dark.g, COLORS.dark.b);
+      doc.text("PROPERTY LOCATION", margin + 6, yPos + 5.5);
+      yPos += 12;
+
+      // Embed map image
+      try {
+        const imgWidth = contentWidth * 0.7;
+        const imgHeight = imgWidth * (400 / 600); // Maintain 600x400 aspect ratio
+        const imgX = margin + (contentWidth - imgWidth) / 2; // Center
+
+        doc.addImage(viewModel.propertyMapBase64!, "PNG", imgX, yPos, imgWidth, imgHeight);
+
+        // Map border
+        doc.setDrawColor(COLORS.border.r, COLORS.border.g, COLORS.border.b);
+        doc.setLineWidth(0.3);
+        doc.rect(imgX, yPos, imgWidth, imgHeight, "S");
+
+        yPos += imgHeight + 2;
+
+        // Caption
+        doc.setFont("helvetica", "italic");
+        doc.setFontSize(7);
+        doc.setTextColor(COLORS.muted.r, COLORS.muted.g, COLORS.muted.b);
+        doc.text(`📍 ${viewModel.claim.propertyAddress}`, margin + contentWidth / 2, yPos, {
+          align: "center",
+        });
+        yPos += 8;
+      } catch (imgErr) {
+        logger.warn("[WEATHER_PDF] Property map image embed failed:", imgErr);
+        yPos += 4;
+      }
+
+      return yPos;
+    });
+  }
+
   // 3. EXECUTIVE SUMMARY
   yPos = checkPageBreak(doc, yPos, 40, pageHeight, margin);
   yPos = safeRender("executiveSummary", () =>

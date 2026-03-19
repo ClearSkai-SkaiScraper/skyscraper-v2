@@ -313,6 +313,7 @@ export const POST = withAuth(async (req: NextRequest, { userId, orgId }) => {
     // ══════════════════════════════════════════════════════════════════════════
     let radarImages: { url: string; label: string; stationId?: string; timestamp?: string }[] = [];
     let radarStationId: string | null = null;
+    let propertyMapUrl: string | undefined;
     let weatherConditions: {
       datetime: string;
       tempmax: number;
@@ -333,6 +334,7 @@ export const POST = withAuth(async (req: NextRequest, { userId, orgId }) => {
         radarImages = radarResult.images;
         radarStationId = radarResult.stationId;
         weatherConditions = radarResult.weatherData || [];
+        propertyMapUrl = radarResult.propertyMapUrl;
         logger.info("[Weather API] Fetched radar + weather data", {
           stationId: radarStationId,
           radarCount: radarImages.length,
@@ -509,6 +511,7 @@ export const POST = withAuth(async (req: NextRequest, { userId, orgId }) => {
               timestamp: r.timestamp || `${aiReport.dol || body.dol}T12:00:00Z`,
               label: r.label,
             })),
+            propertyMapUrl,
             summary: aiReport.summary,
             carrierTalkingPoints: aiReport.carrierTalkingPoints,
             dolSource: "user_input",

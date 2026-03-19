@@ -10,6 +10,18 @@ export type QuickDolInput = {
   startDate?: string;
   endDate?: string;
   peril?: "hail" | "wind" | "rain" | "snow" | "other";
+  /** Real Visual Crossing weather observations for the date range */
+  weatherObservations?: Array<{
+    date: string;
+    highF: number;
+    lowF: number;
+    precipIn: number;
+    precipProb: number;
+    windMph: number;
+    gustMph: number | null;
+    conditions: string;
+    description: string | null;
+  }>;
 };
 
 export type QuickDolCandidate = {
@@ -26,6 +38,22 @@ export type QuickDolResult = {
 
 export async function runQuickDol(input: QuickDolInput): Promise<QuickDolResult> {
   const openai = getOpenAI();
+
+  // Build user message — include real weather data if available
+  const userPayload: Record<string, unknown> = {
+    address: input.address,
+    startDate: input.startDate,
+    endDate: input.endDate,
+    peril: input.peril,
+  };
+
+  // Include real weather observations so the AI can ground its analysis
+  if (input.weatherObservations && input.weatherObservations.length > 0) {
+    userPayload.observedWeatherData = input.weatherObservations;
+    userPayload._dataNote =
+      "REAL weather station data is provided above. Use ONLY these measurements to identify storm dates. Do NOT invent weather events. Cite actual wind speeds, precipitation amounts, and conditions from this data.";
+  }
+
   const completion = await openai.chat.completions.create({
     model: "gpt-4o",
     messages: [
@@ -35,7 +63,7 @@ export async function runQuickDol(input: QuickDolInput): Promise<QuickDolResult>
       },
       {
         role: "user",
-        content: JSON.stringify(input),
+        content: JSON.stringify(userPayload),
       },
     ],
     response_format: {

@@ -175,6 +175,10 @@ export interface WeatherPdfViewModel {
   radarFrames: NormalizedRadarFrame[];
   hasRadarImagery: boolean;
 
+  // SECTION: Property location map (satellite with pin)
+  propertyMapUrl?: string;
+  propertyMapBase64?: string;
+
   // Analysis text
   executiveSummary: string;
   carrierTalkingPoints: string;
@@ -460,8 +464,9 @@ export async function fetchRadarImages(
 
         // Reject oversized images — IEM national composites can be 2-5 MB each.
         // With 3 images as base64 (~33% overhead), the PDF can exceed Supabase's
-        // upload limit.  Cap at 500 KB per raw image (≈667 KB base64).
-        const MAX_IMAGE_BYTES = 500_000;
+        // upload limit. Use 1.5 MB cap per image to allow regional WMS tiles while
+        // still keeping total PDF size manageable.
+        const MAX_IMAGE_BYTES = 1_500_000;
         if (buffer.length > MAX_IMAGE_BYTES) {
           logger.warn("[RADAR_IMG] Image too large, skipping to keep PDF size manageable", {
             url: frame.url,
@@ -856,6 +861,9 @@ export interface BuildViewModelInput {
 
   radarFrames: Array<{ url: string; timestamp: string; stationId?: string; label: string }>;
 
+  /** Mapbox/OSM static map URL with property pin */
+  propertyMapUrl?: string;
+
   summary?: string;
   carrierTalkingPoints?: string;
 
@@ -923,6 +931,27 @@ export async function buildWeatherPdfViewModel(
   radarFrames = await fetchRadarImages(radarFrames);
   const loadedFrames = radarFrames.filter((f) => f.imageLoaded);
   const hasRadarImagery = loadedFrames.length > 0;
+
+  // 7b. Fetch property map image as base64 (for PDF embedding)
+  let propertyMapBase64: string | undefined;
+  if (input.propertyMapUrl) {
+    try {
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 10000);
+      const mapRes = await fetch(input.propertyMapUrl, { signal: controller.signal });
+      clearTimeout(timeout);
+      if (mapRes.ok) {
+        const contentType = mapRes.headers.get("content-type") || "image/png";
+        const buffer = Buffer.from(await mapRes.arrayBuffer());
+        if (buffer.length > 500 && buffer.length < 3_000_000) {
+          propertyMapBase64 = `data:${contentType};base64,${buffer.toString("base64")}`;
+          logger.info("[WeatherPdfViewModel] Property map fetched OK", { bytes: buffer.length });
+        }
+      }
+    } catch (mapErr) {
+      logger.warn("[WeatherPdfViewModel] Property map fetch failed (non-critical):", mapErr);
+    }
+  }
 
   // 8. Build evidence summary
   const evidence = buildEvidenceSummary(stormEvidence, weatherWindow, loadedFrames.length);
@@ -1018,6 +1047,8 @@ export async function buildWeatherPdfViewModel(
     evidence,
     radarFrames: loadedFrames,
     hasRadarImagery,
+    propertyMapUrl: input.propertyMapUrl,
+    propertyMapBase64,
     executiveSummary,
     carrierTalkingPoints,
     dataSources,
