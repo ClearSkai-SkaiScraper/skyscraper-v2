@@ -1,5 +1,6 @@
 // src/lib/ai/weather.ts
 import { getOpenAI } from "@/lib/openai";
+import { logger } from "@/lib/logger";
 import { QUICK_DOL_PROMPT, WEATHER_REPORT_PROMPT } from "@/lib/supplement/ai-prompts";
 
 export type QuickDolInput = {
@@ -42,66 +43,97 @@ export async function runQuickDol(input: QuickDolInput): Promise<QuickDolResult>
   // Build user message — include real weather data if available
   const userPayload: Record<string, unknown> = {
     address: input.address,
-    startDate: input.startDate,
-    endDate: input.endDate,
-    peril: input.peril,
+    startDate: input.startDate || null,
+    endDate: input.endDate || null,
+    peril: input.peril || null,
   };
 
   // Include real weather observations so the AI can ground its analysis
   if (input.weatherObservations && input.weatherObservations.length > 0) {
-    userPayload.observedWeatherData = input.weatherObservations;
+    // Cap at most recent 90 days to avoid oversized payloads
+    const observations = input.weatherObservations.slice(0, 90);
+    userPayload.observedWeatherData = observations;
     userPayload._dataNote =
-      "REAL weather station data is provided above. Use ONLY these measurements to identify storm dates. Do NOT invent weather events. Cite actual wind speeds, precipitation amounts, and conditions from this data.";
+      `REAL weather station data is provided (${observations.length} days). Use ONLY these measurements to identify storm dates. Do NOT invent weather events. Cite actual wind speeds, precipitation amounts, and conditions from this data.`;
+    logger.info("[runQuickDol] Sending real weather data to GPT-4o", {
+      daysCount: observations.length,
+      address: input.address,
+    });
+  } else {
+    userPayload._dataNote =
+      "No observed weather station data is available. Analyze based on general knowledge of the region and time period. Clearly state that your analysis is based on general knowledge only, not verified station data.";
+    logger.info("[runQuickDol] No weather data available — AI knowledge only", {
+      address: input.address,
+    });
   }
 
-  const completion = await openai.chat.completions.create({
-    model: "gpt-4o",
-    messages: [
-      {
-        role: "system",
-        content: QUICK_DOL_PROMPT,
-      },
-      {
-        role: "user",
-        content: JSON.stringify(userPayload),
-      },
-    ],
-    response_format: {
-      type: "json_schema",
-      json_schema: {
-        name: "QuickDolResult",
-        strict: true,
-        schema: {
-          type: "object",
-          properties: {
-            peril: { type: "string" },
-            bestGuess: {
-              type: "string",
-              description: "Best guess date or empty string if unknown",
-            },
-            candidates: {
-              type: "array",
-              items: {
-                type: "object",
-                properties: {
-                  date: { type: "string" },
-                  score: { type: "number" },
-                  reason: { type: "string" },
+  try {
+    const completion = await openai.chat.completions.create({
+      model: "gpt-4o",
+      messages: [
+        {
+          role: "system",
+          content: QUICK_DOL_PROMPT,
+        },
+        {
+          role: "user",
+          content: JSON.stringify(userPayload),
+        },
+      ],
+      response_format: {
+        type: "json_schema",
+        json_schema: {
+          name: "QuickDolResult",
+          strict: true,
+          schema: {
+            type: "object",
+            properties: {
+              peril: { type: "string" },
+              bestGuess: {
+                type: "string",
+                description: "Best guess date or empty string if unknown",
+              },
+              candidates: {
+                type: "array",
+                items: {
+                  type: "object",
+                  properties: {
+                    date: { type: "string" },
+                    score: { type: "number" },
+                    reason: { type: "string" },
+                  },
+                  required: ["date", "score", "reason"],
+                  additionalProperties: false,
                 },
-                required: ["date", "score", "reason"],
-                additionalProperties: false,
               },
             },
-          },
-          required: ["peril", "bestGuess", "candidates"],
-          additionalProperties: false,
-        } as const,
+            required: ["peril", "bestGuess", "candidates"],
+            additionalProperties: false,
+          } as const,
+        },
       },
-    },
-  });
+      timeout: 45000, // 45 second timeout
+    });
 
-  const json = JSON.parse(completion.choices[0]?.message?.content || "{}") as QuickDolResult;
-  return json;
+    const raw = completion.choices[0]?.message?.content || "{}";
+    logger.info("[runQuickDol] GPT-4o response received", {
+      candidateCount: (JSON.parse(raw) as QuickDolResult).candidates?.length ?? 0,
+    });
+
+    const json = JSON.parse(raw) as QuickDolResult;
+
+    // Validate the response has actual data
+    if (!json.candidates || !Array.isArray(json.candidates)) {
+      logger.error("[runQuickDol] Invalid response — no candidates array", { raw });
+      return { peril: json.peril || "unknown", bestGuess: null, candidates: [] };
+    }
+
+    return json;
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : "Unknown AI error";
+    logger.error("[runQuickDol] OpenAI call failed:", { error: msg, address: input.address });
+    throw new Error(`AI analysis failed: ${msg}`);
+  }
 }
 
 export type WeatherReportInput = {

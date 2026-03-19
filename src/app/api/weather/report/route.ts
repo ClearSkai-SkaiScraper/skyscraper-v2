@@ -41,29 +41,33 @@ async function geocodeAddress(address: string): Promise<GeocodingResult> {
   }
 
   try {
-    // Try Open-Meteo first (free, no key required)
-    const geoRes = await fetch(
-      `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(address)}&count=1&language=en&format=json`
-    );
-
-    if (geoRes.ok) {
-      const geoData = await geoRes.json();
-      if (geoData.results?.[0]) {
-        const lat = geoData.results[0].latitude;
-        const lng = geoData.results[0].longitude;
-
-        // Validate coordinates are reasonable
-        if (lat !== 0 && lng !== 0 && !isNaN(lat) && !isNaN(lng)) {
-          logger.info("[Weather API] Geocoded address successfully", { address, lat, lng });
-          return { lat, lng, resolved: true };
+    // ── 1. Try Mapbox (best accuracy for street addresses) ──
+    const mapboxToken =
+      process.env.NEXT_PUBLIC_MAPBOX_TOKEN || process.env.MAPBOX_ACCESS_TOKEN;
+    if (mapboxToken) {
+      try {
+        const url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(address)}.json?access_token=${mapboxToken}&limit=1&types=address,place`;
+        const res = await fetch(url, { signal: AbortSignal.timeout(5000) });
+        if (res.ok) {
+          const data = await res.json();
+          const feat = data.features?.[0];
+          if (feat?.center) {
+            logger.info("[Weather API] Geocoded via Mapbox", { address, lat: feat.center[1], lng: feat.center[0] });
+            return { lat: feat.center[1], lng: feat.center[0], resolved: true };
+          }
         }
+      } catch {
+        logger.warn("[Weather API] Mapbox geocoding failed, trying fallbacks");
       }
     }
 
-    // Fallback to Nominatim (OpenStreetMap) - also free
+    // ── 2. Nominatim / OpenStreetMap (free, handles full addresses) ──
     const nominatimRes = await fetch(
       `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(address)}&format=json&limit=1`,
-      { headers: { "User-Agent": "SkaiScraper/1.0 (support@skaiscrape.com)" } }
+      {
+        headers: { "User-Agent": "SkaiScraper/1.0 (support@skaiscrape.com)" },
+        signal: AbortSignal.timeout(5000),
+      }
     );
 
     if (nominatimRes.ok) {
@@ -73,13 +77,39 @@ async function geocodeAddress(address: string): Promise<GeocodingResult> {
         const lng = parseFloat(nominatimData[0].lon);
 
         if (lat !== 0 && lng !== 0 && !isNaN(lat) && !isNaN(lng)) {
-          logger.info("[Weather API] Geocoded via Nominatim fallback", { address, lat, lng });
+          logger.info("[Weather API] Geocoded via Nominatim", { address, lat, lng });
           return { lat, lng, resolved: true };
         }
       }
     }
 
-    logger.warn("[Weather API] Geocoding failed for address", { address });
+    // ── 3. Open-Meteo (city-level only — extract city name) ──
+    const parts = address.split(",").map((s) => s.trim());
+    const cityQuery = parts.length >= 3
+      ? `${parts[1]}, ${parts[2].split(" ")[0]}`
+      : parts.length === 2
+        ? address
+        : parts[0];
+
+    const geoRes = await fetch(
+      `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(cityQuery)}&count=1&language=en&format=json`,
+      { signal: AbortSignal.timeout(5000) }
+    );
+
+    if (geoRes.ok) {
+      const geoData = await geoRes.json();
+      if (geoData.results?.[0]) {
+        const lat = geoData.results[0].latitude;
+        const lng = geoData.results[0].longitude;
+
+        if (lat !== 0 && lng !== 0 && !isNaN(lat) && !isNaN(lng)) {
+          logger.info("[Weather API] Geocoded via Open-Meteo (city-level)", { cityQuery, lat, lng });
+          return { lat, lng, resolved: true };
+        }
+      }
+    }
+
+    logger.warn("[Weather API] All geocoding methods failed for address", { address });
     return { lat: 0, lng: 0, resolved: false };
   } catch (err) {
     logger.error("[Weather API] Geocoding error:", err);
