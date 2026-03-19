@@ -111,8 +111,7 @@ export async function runQuickDol(input: QuickDolInput): Promise<QuickDolResult>
           } as const,
         },
       },
-      timeout: 45000, // 45 second timeout
-    });
+    }, { signal: AbortSignal.timeout(45000) });
 
     const raw = completion.choices[0]?.message?.content || "{}";
     logger.info("[runQuickDol] GPT-4o response received", {
