@@ -23,6 +23,14 @@
     }
   ],
   "functions": {
+    "app/api/weather/report/route.ts": {
+      "maxDuration": 120,
+      "memory": 1024
+    },
+    "app/api/weather/report/[reportId]/retry-pdf/route.ts": {
+      "maxDuration": 120,
+      "memory": 1024
+    },
     "app/api/**/*.ts": {
       "maxDuration": 60
     },

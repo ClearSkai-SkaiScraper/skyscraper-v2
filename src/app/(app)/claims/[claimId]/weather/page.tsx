@@ -405,10 +405,7 @@ export default function ClaimWeatherPage({ params }: Props) {
         toast.success("Weather report generated with PDF!");
         window.open(data.pdfUrl, "_blank");
       } else if (data.pdfError) {
-        toast.warning(
-          "Report data saved, but PDF generation failed. You can retry from Report History.",
-          { duration: 8000 }
-        );
+        toast.warning(`Report saved, but PDF failed: ${data.pdfError}`, { duration: 12000 });
       } else {
         toast.success("Weather report generated and saved!");
       }
@@ -955,8 +952,8 @@ export default function ClaimWeatherPage({ params }: Props) {
                     <p className="font-medium text-amber-700 dark:text-amber-300">
                       ⚠️ PDF generation failed
                     </p>
-                    <p className="mt-1 text-amber-600 dark:text-amber-400">
-                      Report data was saved successfully. PDF can be retried from Report History.
+                    <p className="mt-1 font-mono text-xs text-amber-600 dark:text-amber-400">
+                      {reportResult.pdfError}
                     </p>
                     <Button
                       variant="outline"

@@ -19,7 +19,10 @@ import { checkRateLimit } from "@/lib/rate-limit";
 import { saveAiPdfToStorage } from "@/lib/reports/saveAiPdfToStorage";
 import { saveReportHistory } from "@/lib/reports/saveReportHistory";
 import { getRadarForEvent } from "@/lib/weather/radarService";
-import { buildWeatherPdfViewModel } from "@/lib/weather/weatherPdfViewModel";
+import {
+  buildWeatherPdfViewModel,
+  type WeatherPdfViewModel,
+} from "@/lib/weather/weatherPdfViewModel";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Geocoding
@@ -434,102 +437,101 @@ export const POST = withAuth(async (req: NextRequest, { userId, orgId }) => {
     // ══════════════════════════════════════════════════════════════════════════
     let pdfSaved = false;
     let pdfUrl: string | null = null;
+    let pdfErrorDetail: string | null = null;
 
     try {
       // Always generate PDF if orgId is present (standalone reports without claimId still get PDFs)
       if (orgId) {
         const pdfStartTime = Date.now();
-        logger.info("[Weather API] ▶ Step 8a: Building WeatherPdfViewModel", {
-          claimId: claimId || "standalone",
-          hasBranding: !!brandingData.companyName,
-          hasClaim: !!claimDetails.claimNumber,
-          locationResolved: geocodeResult.resolved,
-          anchorDate: aiReport.dol || body.dol,
-          weatherDays: weatherConditions.length,
-          radarCount: radarImages.length,
-          eventsCount: aiReport.events?.length ?? 0,
-        });
 
-        // Build the view model using the canonical builder (v2 — async, fetches real radar images)
-        const viewModel = await buildWeatherPdfViewModel({
-          // Report metadata
-          reportId: report.id,
-          generatedBy,
-          // Claim data (flattened)
-          claimNumber: claimDetails.claimNumber,
-          insuredName: claimDetails.insuredName,
-          carrier: claimDetails.carrier,
-          policyNumber: claimDetails.policyNumber,
-          adjusterName: claimDetails.adjusterName,
-          adjusterPhone: claimDetails.adjusterPhone,
-          adjusterEmail: claimDetails.adjusterEmail,
-          propertyAddress: claimDetails.propertyAddress || body.address,
-          dateOfLoss: aiReport.dol || body.dol,
-          claimPeril: aiReport.peril,
-          // Location
-          lat: geocodeResult.lat,
-          lng: geocodeResult.lng,
-          locationResolved: geocodeResult.resolved,
-          radarStationId: radarStationId || undefined,
-          // Branding (flattened)
-          companyName: brandingData.companyName,
-          companyPhone: brandingData.phone,
-          companyEmail: brandingData.email,
-          companyWebsite: brandingData.website,
-          companyLicense: brandingData.license,
-          companyLogoUrl: brandingData.logoUrl,
-          primaryColor: brandingData.primaryColor,
-          // Weather data
-          weatherConditions: weatherConditions.map((wc) => ({
-            datetime: wc.datetime,
-            tempmax: wc.tempmax,
-            tempmin: wc.tempmin,
-            precip: wc.precip,
-            precipprob: wc.precipprob,
-            windspeed: wc.windspeed,
-            windgust: wc.windgust,
-            conditions: wc.conditions,
-            description: wc.description,
-          })),
-          // Events from AI
-          events:
-            aiReport.events?.map((e) => ({
-              date: e.date,
-              time: e.time,
-              type: e.type,
-              severity: e.intensity,
-              intensity: e.intensity,
-              hailSize: e.hailSize || undefined,
-              windSpeed: e.windSpeed || undefined,
-              notes: e.notes,
-            })) ?? [],
-          // Radar frames (preserve real per-frame timestamps from IEM)
-          radarFrames: radarImages.map((r) => ({
-            url: r.url,
-            timestamp: r.timestamp || `${aiReport.dol || body.dol}T12:00:00Z`,
-            label: r.label,
-          })),
-          // Analysis
-          summary: aiReport.summary,
-          carrierTalkingPoints: aiReport.carrierTalkingPoints,
-          // v2 — DOL context for canonical consistency
-          dolSource: "user_input",
-          providersUsed: geocodeResult.resolved ? ["visual_crossing", "iem_nexrad"] : [],
-          providersFailed: [],
-        });
+        // ── Step 8a: Build View Model ──
+        let viewModel: WeatherPdfViewModel;
+        try {
+          logger.info("[Weather API] ▶ Step 8a: Building WeatherPdfViewModel", {
+            claimId: claimId || "standalone",
+            hasBranding: !!brandingData.companyName,
+            hasClaim: !!claimDetails.claimNumber,
+            locationResolved: geocodeResult.resolved,
+            anchorDate: aiReport.dol || body.dol,
+            weatherDays: weatherConditions.length,
+            radarCount: radarImages.length,
+            eventsCount: aiReport.events?.length ?? 0,
+          });
 
-        logger.info("[Weather API] ✅ Step 8a complete: View model built", {
-          anchorDate: viewModel.anchorDate,
-          weatherWindowDays: viewModel.weatherWindow.length,
-          peril: viewModel.peril.displayText,
-          confidence: viewModel.evidence.stormConfidence,
-          hasStormEvidence: viewModel.hasStormEvidence,
-          radarFramesLoaded: viewModel.radarFrames.length,
-          hasRadarImagery: viewModel.hasRadarImagery,
-          durationMs: Date.now() - pdfStartTime,
-        });
+          viewModel = await buildWeatherPdfViewModel({
+            reportId: report.id,
+            generatedBy,
+            claimNumber: claimDetails.claimNumber,
+            insuredName: claimDetails.insuredName,
+            carrier: claimDetails.carrier,
+            policyNumber: claimDetails.policyNumber,
+            adjusterName: claimDetails.adjusterName,
+            adjusterPhone: claimDetails.adjusterPhone,
+            adjusterEmail: claimDetails.adjusterEmail,
+            propertyAddress: claimDetails.propertyAddress || body.address,
+            dateOfLoss: aiReport.dol || body.dol,
+            claimPeril: aiReport.peril,
+            lat: geocodeResult.lat,
+            lng: geocodeResult.lng,
+            locationResolved: geocodeResult.resolved,
+            radarStationId: radarStationId || undefined,
+            companyName: brandingData.companyName,
+            companyPhone: brandingData.phone,
+            companyEmail: brandingData.email,
+            companyWebsite: brandingData.website,
+            companyLicense: brandingData.license,
+            companyLogoUrl: brandingData.logoUrl,
+            primaryColor: brandingData.primaryColor,
+            weatherConditions: weatherConditions.map((wc) => ({
+              datetime: wc.datetime,
+              tempmax: wc.tempmax,
+              tempmin: wc.tempmin,
+              precip: wc.precip,
+              precipprob: wc.precipprob,
+              windspeed: wc.windspeed,
+              windgust: wc.windgust,
+              conditions: wc.conditions,
+              description: wc.description,
+            })),
+            events:
+              aiReport.events?.map((e) => ({
+                date: e.date,
+                time: e.time,
+                type: e.type,
+                severity: e.intensity,
+                intensity: e.intensity,
+                hailSize: e.hailSize || undefined,
+                windSpeed: e.windSpeed || undefined,
+                notes: e.notes,
+              })) ?? [],
+            radarFrames: radarImages.map((r) => ({
+              url: r.url,
+              timestamp: r.timestamp || `${aiReport.dol || body.dol}T12:00:00Z`,
+              label: r.label,
+            })),
+            summary: aiReport.summary,
+            carrierTalkingPoints: aiReport.carrierTalkingPoints,
+            dolSource: "user_input",
+            providersUsed: geocodeResult.resolved ? ["visual_crossing", "iem_nexrad"] : [],
+            providersFailed: [],
+          });
 
-        // ── Cross-check logger: verify all sections use the same truth ──
+          logger.info("[Weather API] ✅ Step 8a complete: View model built", {
+            anchorDate: viewModel.anchorDate,
+            weatherWindowDays: viewModel.weatherWindow.length,
+            peril: viewModel.peril.displayText,
+            confidence: viewModel.evidence.stormConfidence,
+            hasStormEvidence: viewModel.hasStormEvidence,
+            radarFramesLoaded: viewModel.radarFrames.length,
+            hasRadarImagery: viewModel.hasRadarImagery,
+            durationMs: Date.now() - pdfStartTime,
+          });
+        } catch (step8aErr) {
+          const msg = step8aErr instanceof Error ? step8aErr.message : String(step8aErr);
+          throw new Error(`[Step 8a FAILED - buildWeatherPdfViewModel] ${msg}`);
+        }
+
+        // ── Cross-check logger ──
         const sectionCrossCheck = {
           dolClaim: viewModel.claim.dateOfLoss,
           dolAnchor: viewModel.anchorDate,
@@ -547,38 +549,54 @@ export const POST = withAuth(async (req: NextRequest, { userId, orgId }) => {
         };
         logger.info("[Weather API] Section cross-check", sectionCrossCheck);
 
-        logger.info("[Weather API] ▶ Step 8b: Rendering PDF via jsPDF");
-        const renderStart = Date.now();
-        const pdfBuffer = renderWeatherReportPDF(viewModel);
-        logger.info("[Weather API] ✅ Step 8b complete: PDF rendered", {
-          pdfBytes: pdfBuffer.length,
-          durationMs: Date.now() - renderStart,
-        });
+        // ── Step 8b: Render PDF ──
+        let pdfBuffer: Buffer;
+        try {
+          logger.info("[Weather API] ▶ Step 8b: Rendering PDF via jsPDF");
+          const renderStart = Date.now();
+          pdfBuffer = renderWeatherReportPDF(viewModel);
+          logger.info("[Weather API] ✅ Step 8b complete: PDF rendered", {
+            pdfBytes: pdfBuffer.length,
+            durationMs: Date.now() - renderStart,
+          });
+        } catch (step8bErr) {
+          const msg = step8bErr instanceof Error ? step8bErr.message : String(step8bErr);
+          throw new Error(`[Step 8b FAILED - renderWeatherReportPDF] ${msg}`);
+        }
 
-        logger.info("[Weather API] ▶ Step 8c: Uploading PDF to Supabase");
-        const uploadStart = Date.now();
-        const pdfResult = await saveAiPdfToStorage({
-          orgId,
-          claimId: claimId || undefined,
-          userId,
-          type: "WEATHER",
-          label: `Weather Report - ${body.address}`,
-          pdfBuffer,
-          visibleToClient: true,
-          aiReportId: report.id,
-        });
+        // ── Step 8c: Upload to Supabase ──
+        try {
+          logger.info("[Weather API] ▶ Step 8c: Uploading PDF to Supabase", {
+            pdfBytes: pdfBuffer.length,
+          });
+          const uploadStart = Date.now();
+          const pdfResult = await saveAiPdfToStorage({
+            orgId,
+            claimId: claimId || undefined,
+            userId,
+            type: "WEATHER",
+            label: `Weather Report - ${body.address}`,
+            pdfBuffer,
+            visibleToClient: true,
+            aiReportId: report.id,
+          });
 
-        pdfSaved = true;
-        pdfUrl = pdfResult.publicUrl;
-        logger.info("[Weather API] ✅ Step 8c complete: PDF uploaded to Supabase", {
-          claimId: claimId || "standalone",
-          pdfUrl,
-          totalPdfPipelineMs: Date.now() - pdfStartTime,
-          uploadMs: Date.now() - uploadStart,
-        });
+          pdfSaved = true;
+          pdfUrl = pdfResult.publicUrl;
+          logger.info("[Weather API] ✅ Step 8c complete: PDF uploaded to Supabase", {
+            claimId: claimId || "standalone",
+            pdfUrl,
+            totalPdfPipelineMs: Date.now() - pdfStartTime,
+            uploadMs: Date.now() - uploadStart,
+          });
+        } catch (step8cErr) {
+          const msg = step8cErr instanceof Error ? step8cErr.message : String(step8cErr);
+          throw new Error(`[Step 8c FAILED - saveAiPdfToStorage] ${msg}`);
+        }
       }
     } catch (pdfError) {
       const errMsg = pdfError instanceof Error ? pdfError.message : String(pdfError);
+      pdfErrorDetail = errMsg;
       logger.error("[Weather API] PDF generation failed (non-fatal):", {
         error: errMsg,
         stack: pdfError instanceof Error ? pdfError.stack : undefined,
@@ -660,7 +678,7 @@ export const POST = withAuth(async (req: NextRequest, { userId, orgId }) => {
         pdfUrl,
         pdfError: pdfSaved
           ? undefined
-          : "PDF generation failed — report data saved. You can retry PDF generation.",
+          : `PDF generation failed: ${pdfErrorDetail || "unknown error"}. Report data saved — you can retry PDF generation.`,
         weatherReportId: report.id,
         radarStation: radarStationId,
         radarImageCount: radarImages.length,
