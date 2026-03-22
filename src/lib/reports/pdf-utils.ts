@@ -85,7 +85,7 @@ export async function htmlToPdfBuffer(
       return Buffer.from(pdfBuffer);
     } catch (error) {
       lastError = error instanceof Error ? error : new Error("Unknown error");
-      console.error(`[htmlToPdfBuffer] Attempt ${attempt + 1} failed:`, lastError.message);
+      logger.error(`[htmlToPdfBuffer] Attempt ${attempt + 1} failed: ${lastError.message}`);
 
       if (browser) {
         try {
@@ -171,7 +171,7 @@ export async function uploadReport({
       return data.publicUrl;
     } catch (error) {
       lastError = error instanceof Error ? error : new Error("Unknown error");
-      console.error(`[uploadReport] Attempt ${attempt + 1} failed:`, lastError.message);
+      logger.error(`[uploadReport] Attempt ${attempt + 1} failed: ${lastError.message}`);
 
       if (attempt === retries) {
         break;
@@ -217,7 +217,7 @@ export async function generateAndUploadPDF(
     return { success: true, data: url, error: null };
   } catch (error) {
     const message = error instanceof Error ? error.message : "Unknown error";
-    console.error("[generateAndUploadPDF] Failed:", message);
+    logger.error(`[generateAndUploadPDF] Failed: ${message}`);
     return { success: false, data: null, error: message };
   }
 }

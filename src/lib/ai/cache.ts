@@ -1,9 +1,9 @@
 /**
  * PHASE 34: AI CACHE MANAGER
- * 
+ *
  * Redis-backed caching system for expensive AI operations.
  * Reduces costs by 60-85% through intelligent caching.
- * 
+ *
  * Features:
  * - Deterministic SHA256 hashing
  * - 7-day default TTL
@@ -11,10 +11,10 @@
  * - Cache key namespacing
  */
 
-import { createHash } from 'crypto';
+import { createHash } from "crypto";
 
 import { logger } from "@/lib/logger";
-import { upstash } from '@/lib/upstash';
+import { upstash } from "@/lib/upstash";
 
 // Reuse central Upstash Redis singleton (may be null). All accesses must be guarded.
 const redis = upstash;
@@ -27,7 +27,7 @@ const DEFAULT_TTL = 60 * 60 * 24 * 7; // 7 days in seconds
  */
 export function hashInput(input: any): string {
   const normalized = JSON.stringify(input, Object.keys(input).sort());
-  return createHash('sha256').update(normalized).digest('hex');
+  return createHash("sha256").update(normalized).digest("hex");
 }
 
 /**
@@ -47,10 +47,12 @@ export async function getCache<T>(key: string): Promise<T | null> {
   try {
     const cached = await redis.get(key);
     if (!cached) return null;
-    await redis.incr(`ai:stats:cache-hits`).catch(() => {});
+    await redis.incr(`ai:stats:cache-hits`).catch((e) => {
+      logger.debug(`[AI Cache] Stats increment failed: ${e?.message}`);
+    });
     return cached as T;
   } catch (error) {
-    logger.error('[AI Cache] Error getting cache:', error);
+    logger.error("[AI Cache] Error getting cache:", error);
     return null;
   }
 }
@@ -58,17 +60,15 @@ export async function getCache<T>(key: string): Promise<T | null> {
 /**
  * Set cached AI response with TTL
  */
-export async function setCache<T>(
-  key: string,
-  data: T,
-  ttl: number = DEFAULT_TTL
-): Promise<void> {
+export async function setCache<T>(key: string, data: T, ttl: number = DEFAULT_TTL): Promise<void> {
   if (!redis) return; // No-op when Redis absent
   try {
     await redis.setex(key, ttl, JSON.stringify(data));
-    await redis.incr(`ai:stats:cache-sets`).catch(() => {});
+    await redis.incr(`ai:stats:cache-sets`).catch((e) => {
+      logger.debug(`[AI Cache] Stats increment failed: ${e?.message}`);
+    });
   } catch (error) {
-    logger.error('[AI Cache] Error setting cache:', error);
+    logger.error("[AI Cache] Error setting cache:", error);
   }
 }
 
@@ -81,7 +81,7 @@ export async function hasCache(key: string): Promise<boolean> {
     const exists = await redis.exists(key);
     return exists === 1;
   } catch (error) {
-    logger.error('[AI Cache] Error checking cache:', error);
+    logger.error("[AI Cache] Error checking cache:", error);
     return false;
   }
 }
@@ -94,7 +94,7 @@ export async function invalidateCache(key: string): Promise<void> {
   try {
     await redis.del(key);
   } catch (error) {
-    logger.error('[AI Cache] Error invalidating cache:', error);
+    logger.error("[AI Cache] Error invalidating cache:", error);
   }
 }
 
@@ -108,7 +108,7 @@ export async function invalidateRoute(routeName: string): Promise<void> {
     const keys = await redis.keys(pattern);
     if (keys.length > 0) await redis.del(...keys);
   } catch (error) {
-    logger.error('[AI Cache] Error invalidating route:', error);
+    logger.error("[AI Cache] Error invalidating route:", error);
   }
 }
 
@@ -123,8 +123,8 @@ export async function getCacheStats(): Promise<{
   if (!redis) return { hits: 0, sets: 0, hitRate: 0 };
   try {
     const [hits, sets] = await Promise.all([
-      redis.get('ai:stats:cache-hits'),
-      redis.get('ai:stats:cache-sets'),
+      redis.get("ai:stats:cache-hits"),
+      redis.get("ai:stats:cache-sets"),
     ]);
     const hitsNum = Number(hits) || 0;
     const setsNum = Number(sets) || 0;
@@ -132,14 +132,14 @@ export async function getCacheStats(): Promise<{
     const hitRate = total > 0 ? (hitsNum / total) * 100 : 0;
     return { hits: hitsNum, sets: setsNum, hitRate };
   } catch (error) {
-    logger.error('[AI Cache] Error getting stats:', error);
+    logger.error("[AI Cache] Error getting stats:", error);
     return { hits: 0, sets: 0, hitRate: 0 };
   }
 }
 
 /**
  * Helper: Cache wrapper for AI functions
- * 
+ *
  * Usage:
  *   const result = await withCache(
  *     'skai',
@@ -188,6 +188,6 @@ export async function withConditionalCache<T>(
     const data = await fn();
     return { data, cached: false };
   }
-  
+
   return withCache(routeName, inputObj, fn, options.cacheTTL);
 }

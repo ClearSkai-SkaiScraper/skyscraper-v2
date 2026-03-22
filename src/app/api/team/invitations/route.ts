@@ -138,7 +138,11 @@ export const POST = withManager(async (req: NextRequest, { userId, orgId }) => {
       // Clean up the DB entry if email fails
       await prisma.$executeRaw`
         DELETE FROM team_invitations WHERE token = ${token}
-      `.catch(() => {});
+      `.catch((e) => {
+        logger.warn(
+          `[TEAM_INVITATIONS] Failed to cleanup invitation after email failure: ${e?.message}`
+        );
+      });
 
       return NextResponse.json(
         { error: `Failed to send invitation email: ${emailError.message || "Unknown error"}` },

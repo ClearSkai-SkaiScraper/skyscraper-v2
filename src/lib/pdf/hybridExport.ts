@@ -9,10 +9,10 @@
 
 import * as Sentry from "@sentry/nextjs";
 import { exec } from "child_process";
-import { readFile, unlink,writeFile } from "fs/promises";
+import { readFile, unlink, writeFile } from "fs/promises";
 import { tmpdir } from "os";
 import { join } from "path";
-import { PDFDocument, rgb,StandardFonts } from "pdf-lib";
+import { PDFDocument, rgb, StandardFonts } from "pdf-lib";
 import { promisify } from "util";
 
 import { logger } from "@/lib/logger";
@@ -66,18 +66,22 @@ export async function convertDocxToPdfWithLibreOffice(docxBuffer: Buffer): Promi
     const pdfBuffer = await readFile(pdfPath);
 
     // Cleanup temp files
-    await unlink(inputPath).catch(() => {});
-    await unlink(pdfPath).catch(() => {});
+    await unlink(inputPath).catch((e) =>
+      logger.debug(`[LibreOffice] Cleanup failed: ${e?.message}`)
+    );
+    await unlink(pdfPath).catch((e) => logger.debug(`[LibreOffice] Cleanup failed: ${e?.message}`));
 
     return pdfBuffer;
   } catch (error: any) {
-    console.error("[LibreOffice] Conversion failed:", error.message);
+    logger.error(`[LibreOffice] Conversion failed: ${error.message}`);
     Sentry.captureException(error, {
       tags: { component: "libreoffice-export" },
     });
 
     // Cleanup on error
-    await unlink(inputPath).catch(() => {});
+    await unlink(inputPath).catch((e) =>
+      logger.debug(`[LibreOffice] Cleanup failed: ${e?.message}`)
+    );
 
     return null;
   }
@@ -149,12 +153,12 @@ export async function generatePdfWithPdfLib(packetData: PacketData): Promise<Buf
     font: timesRoman,
     color: rgb(0.5, 0.5, 0.5),
   });
-  
+
   // Branding footer (if present)
   if (data.branding) {
     try {
-      const brandName = data.branding.companyName || 'SkaiScraper';
-      const brandTag = brandName + (data.branding.logoUrl ? '' : '');
+      const brandName = data.branding.companyName || "SkaiScraper";
+      const brandTag = brandName + (data.branding.logoUrl ? "" : "");
       const footerSize = 10;
       const footerWidth = timesRoman.widthOfTextAtSize(brandTag, footerSize);
       coverPage.drawText(brandTag, {
@@ -162,10 +166,10 @@ export async function generatePdfWithPdfLib(packetData: PacketData): Promise<Buf
         y: 40,
         size: footerSize,
         font: timesRoman,
-        color: rgb(0.3,0.3,0.3),
+        color: rgb(0.3, 0.3, 0.3),
       });
     } catch (e) {
-      logger.warn('[PDF_EXPORT] Branding draw skipped:', (e as any)?.message);
+      logger.warn("[PDF_EXPORT] Branding draw skipped:", (e as any)?.message);
     }
   }
 

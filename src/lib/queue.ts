@@ -3,6 +3,8 @@
  * Provides job queue functionality
  */
 
+import { logger } from "@/lib/logger";
+
 export interface QueueJob<T = any> {
   id: string;
   type: string;
@@ -35,7 +37,7 @@ export async function enqueue<T = any>(
       try {
         await handler(...args);
       } catch (err) {
-        console.error("[queue] job failed", jobName, err);
+        logger.error(`[queue] job failed: ${jobName}`, err);
       }
     }, delayMs);
     return;
@@ -44,7 +46,7 @@ export async function enqueue<T = any>(
   try {
     await handler(...args);
   } catch (err) {
-    console.error("[queue] job failed", jobName, err);
+    logger.error(`[queue] job failed: ${jobName}`, err);
   }
 }
 

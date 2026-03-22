@@ -296,7 +296,7 @@ export async function markReportFailed(reportId: string, error: string): Promise
     },
   });
 
-  console.log(
+  logger.info(
     `[ReportQueue] Report ${reportId} failed (attempt ${attempts}/${maxAttempts}): ${error}`
   );
 }
@@ -359,7 +359,7 @@ async function notifyReportComplete(
   try {
     // TODO: Implement email notification via Resend
     // The email_queue model doesn't exist yet, so we log for now
-    console.log(
+    logger.info(
       `[ReportQueue] Report ${reportId} ready - would notify ${email} with URL: ${pdfUrl}`
     );
   } catch (error) {

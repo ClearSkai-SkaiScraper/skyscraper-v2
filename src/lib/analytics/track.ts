@@ -65,7 +65,7 @@ export async function trackProductEvent({
     });
   } catch (error) {
     // Silent fail - don't break user flows
-    console.error("[TRACK_EVENT] Failed:", eventName, error);
+    logger.error(`[TRACK_EVENT] Failed: ${eventName}`, error);
   }
 }
 
@@ -87,7 +87,7 @@ export async function hasTrackedEvent(
     });
     return !!event;
   } catch (error) {
-    console.error("[HAS_TRACKED_EVENT] Failed:", eventName, error);
+    logger.error(`[HAS_TRACKED_EVENT] Failed: ${eventName}`, error);
     return false;
   }
 }

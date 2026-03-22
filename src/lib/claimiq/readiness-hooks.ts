@@ -89,10 +89,7 @@ export async function getRecentReadinessEvents(
   }
 }
 
-async function persistReadinessEvent(
-  event: ReadinessChangeEvent,
-  userId: string
-): Promise<void> {
+async function persistReadinessEvent(event: ReadinessChangeEvent, userId: string): Promise<void> {
   try {
     await prisma.claim_activities.create({
       data: {
@@ -154,7 +151,9 @@ export async function onClaimDataChanged(
       newAutoActions: plan.autonomousActions,
     };
 
-    persistReadinessEvent(event, userId).catch(() => {});
+    persistReadinessEvent(event, userId).catch((e) => {
+      logger.warn(`[CLAIMIQ_HOOK] persistReadinessEvent failed: ${e?.message}`);
+    });
 
     logger.info("[CLAIMIQ_HOOK] Readiness refreshed", {
       claimId,
@@ -174,14 +173,20 @@ export async function onClaimDataChanged(
 // Convenience hooks
 
 export async function onPhotosUploaded(
-  claimId: string, orgId: string, userId: string, photoCount: number
+  claimId: string,
+  orgId: string,
+  userId: string,
+  photoCount: number
 ) {
   logger.info("[CLAIMIQ_HOOK] Photos uploaded", { claimId, count: photoCount });
   return onClaimDataChanged(claimId, orgId, "photo_upload", userId);
 }
 
 export async function onPhotosAnalyzed(
-  claimId: string, orgId: string, userId: string, detectionCount: number
+  claimId: string,
+  orgId: string,
+  userId: string,
+  detectionCount: number
 ) {
   logger.info("[CLAIMIQ_HOOK] Photos analyzed", { claimId, detections: detectionCount });
   return onClaimDataChanged(claimId, orgId, "photo_analysis", userId);
@@ -193,7 +198,10 @@ export async function onWeatherVerified(claimId: string, orgId: string, userId: 
 }
 
 export async function onDocumentUploaded(
-  claimId: string, orgId: string, userId: string, docType: string
+  claimId: string,
+  orgId: string,
+  userId: string,
+  docType: string
 ) {
   logger.info("[CLAIMIQ_HOOK] Document uploaded", { claimId, docType });
   return onClaimDataChanged(claimId, orgId, "document_upload", userId);
@@ -205,14 +213,20 @@ export async function onContactUpdated(claimId: string, orgId: string, userId: s
 }
 
 export async function onSectionGenerated(
-  claimId: string, orgId: string, userId: string, sectionKey: string
+  claimId: string,
+  orgId: string,
+  userId: string,
+  sectionKey: string
 ) {
   logger.info("[CLAIMIQ_HOOK] Section generated", { claimId, sectionKey });
   return onClaimDataChanged(claimId, orgId, "section_generation", userId);
 }
 
 export async function onClaimUpdated(
-  claimId: string, orgId: string, userId: string, updatedFields: string[]
+  claimId: string,
+  orgId: string,
+  userId: string,
+  updatedFields: string[]
 ) {
   logger.info("[CLAIMIQ_HOOK] Claim updated", { claimId, fields: updatedFields });
   return onClaimDataChanged(claimId, orgId, "claim_update", userId);

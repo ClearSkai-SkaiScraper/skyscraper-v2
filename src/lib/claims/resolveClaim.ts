@@ -52,7 +52,7 @@ export async function resolveClaim(
     // Determine which field matched
     const foundBy = claim.id === inputId ? ("id" as const) : ("claimNumber" as const);
 
-    console.log(
+    logger.info(
       `[resolveClaim] SUCCESS - Found claim #${claim.claimNumber} by ${foundBy} (canonical: ${claim.id})`
     );
 

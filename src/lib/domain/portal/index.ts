@@ -378,7 +378,9 @@ export async function markThreadRead(userId: string, threadId: string) {
       where: { threadId, read: false },
       data: { read: true },
     })
-    .catch(() => {});
+    .catch((e) => {
+      logger.warn(`[PORTAL] markThreadRead failed for thread ${threadId}: ${e?.message}`);
+    });
 
   return { success: true };
 }

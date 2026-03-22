@@ -1,6 +1,7 @@
 "use server";
 
 import { getDelegate } from "@/lib/db/modelAliases";
+import { logger } from "@/lib/logger";
 import { resolveOrgSafe } from "@/lib/org/resolveOrg";
 import prisma from "@/lib/prisma";
 import { createSupabaseServerClient } from "@/lib/supabase-server";
@@ -108,9 +109,8 @@ export async function getAllUserReports(params?: {
       };
     });
   } catch (e) {
-    console.warn(
-      "[getAllUserReports] ai_reports fetch failed:",
-      e instanceof Error ? e.message : e
+    logger.warn(
+      `[getAllUserReports] ai_reports fetch failed: ${e instanceof Error ? e.message : e}`
     );
   }
 
@@ -138,7 +138,7 @@ export async function getAllUserReports(params?: {
       claimNumber: null,
     }));
   } catch (e) {
-    console.warn("[getAllUserReports] reports fetch failed:", e instanceof Error ? e.message : e);
+    logger.warn(`[getAllUserReports] reports fetch failed: ${e instanceof Error ? e.message : e}`);
   }
 
   // 3. weather_reports (scoped by createdById membership)
@@ -190,9 +190,8 @@ export async function getAllUserReports(params?: {
       metadata: { address: w.address, mode: w.mode, overallAssessment: w.overallAssessment },
     }));
   } catch (e) {
-    console.warn(
-      "[getAllUserReports] weather_reports fetch failed:",
-      e instanceof Error ? e.message : e
+    logger.warn(
+      `[getAllUserReports] weather_reports fetch failed: ${e instanceof Error ? e.message : e}`
     );
   }
 
@@ -221,9 +220,8 @@ export async function getAllUserReports(params?: {
       metadata: { mimeType: f.mimeType, sizeBytes: f.sizeBytes, category: f.category },
     }));
   } catch (e) {
-    console.warn(
-      "[getAllUserReports] file_assets fetch failed:",
-      e instanceof Error ? e.message : e
+    logger.warn(
+      `[getAllUserReports] file_assets fetch failed: ${e instanceof Error ? e.message : e}`
     );
   }
 
@@ -252,9 +250,8 @@ export async function getAllUserReports(params?: {
       }));
     }
   } catch (e) {
-    console.warn(
-      "[getAllUserReports] Retail packets fetch failed:",
-      e instanceof Error ? e.message : e
+    logger.warn(
+      `[getAllUserReports] Retail packets fetch failed: ${e instanceof Error ? e.message : e}`
     );
   }
 
@@ -283,9 +280,8 @@ export async function getAllUserReports(params?: {
       };
     });
   } catch (e) {
-    console.warn(
-      "[getAllUserReports] report_history fetch failed:",
-      e instanceof Error ? e.message : e
+    logger.warn(
+      `[getAllUserReports] report_history fetch failed: ${e instanceof Error ? e.message : e}`
     );
   }
 

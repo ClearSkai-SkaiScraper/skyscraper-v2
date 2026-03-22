@@ -69,7 +69,7 @@ export async function sendMagicLink(email: string, createUser = true) {
     logger.info("auth_link_sent", { email, createUser });
     return res;
   } catch (err: any) {
-    console.error("auth_failure", err?.message || err);
+    logger.error(`auth_failure: ${err?.message || err}`);
     return { error: err };
   }
 }

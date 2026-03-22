@@ -52,7 +52,7 @@ export async function logReportActivity({
       },
     });
 
-    console.log(
+    logger.info(
       `[ReportActivity] Logged ${type} for claim ${claimId} by user ${userId || "system"}`
     );
   } catch (error) {

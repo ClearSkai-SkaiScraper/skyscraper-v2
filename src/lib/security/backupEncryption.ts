@@ -160,7 +160,9 @@ export async function createEncryptedBackup(
   } catch (error) {
     logger.error("Failed to create encrypted backup:", error);
     // Cleanup temp file if it exists
-    await execAsync(`rm -f ${tempPath}`).catch(() => {});
+    await execAsync(`rm -f ${tempPath}`).catch((e: any) => {
+      logger.debug(`[BACKUP] Temp file cleanup failed: ${e?.message}`);
+    });
     throw error;
   }
 }
@@ -194,7 +196,9 @@ export async function restoreEncryptedBackup(
   } catch (error) {
     logger.error("Failed to restore encrypted backup:", error);
     // Cleanup temp file if it exists
-    await execAsync(`rm -f ${tempPath}`).catch(() => {});
+    await execAsync(`rm -f ${tempPath}`).catch((e: any) => {
+      logger.debug(`[BACKUP] Restore temp file cleanup failed: ${e?.message}`);
+    });
     throw error;
   }
 }

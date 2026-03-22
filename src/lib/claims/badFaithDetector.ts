@@ -365,7 +365,7 @@ export async function getBadFaithAnalysis(claimId: string): Promise<BadFaithAnal
         severity: severityMap[analysis.overallSeverity],
       },
     })
-    .catch((err) => console.error("[BAD FAITH] Failed to cache analysis:", err));
+    .catch((err) => logger.error(`[BAD FAITH] Failed to cache analysis: ${err?.message}`));
 
   return analysis;
 }

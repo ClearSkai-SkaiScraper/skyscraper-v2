@@ -161,7 +161,7 @@ export async function onPhotosChanged(claimId: string, photoUrls: string[]) {
         timestamp: new Date().toISOString(),
       });
 
-      console.log(
+      logger.info(
         `[AI Hook] Damage assessment completed for ${claimId}: ${photoUrls.length} photos in ${executionTime}ms`
       );
     }
@@ -313,7 +313,7 @@ export async function onStatusChanged(claimId: string, oldStatus: string, newSta
         timestamp: new Date().toISOString(),
       });
 
-      console.log(
+      logger.info(
         `[AI Hook] Policy optimization completed for ${claimId}: ${oldStatus} → ${newStatus} in ${executionTime}ms`
       );
     }

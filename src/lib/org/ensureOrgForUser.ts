@@ -78,7 +78,7 @@ export async function ensureOrgForUser(): Promise<EnsuredOrg> {
       if (membershipsWithOrgs.length === 0) {
         // 🔥 ACTUAL FIX: If memberships exist but all orgs are deleted,
         // delete the orphaned memberships so we can create a fresh org
-        console.warn(
+        logger.warn(
           "[ensureOrgForUser] ⚠️ Existing memberships point to deleted orgs - cleaning up orphaned memberships"
         );
 
@@ -95,10 +95,8 @@ export async function ensureOrgForUser(): Promise<EnsuredOrg> {
         const canonicalMembership =
           membershipsWithOrgs.find((m) => m.claimsCount > 0) || membershipsWithOrgs[0];
 
-        console.log(
-          "[ensureOrgForUser] Found CANONICAL org:",
-          canonicalMembership.organizationId,
-          `(${canonicalMembership.claimsCount} claims)`
+        logger.info(
+          `[ensureOrgForUser] Found CANONICAL org: ${canonicalMembership.organizationId} (${canonicalMembership.claimsCount} claims)`
         );
 
         return {
@@ -147,7 +145,7 @@ export async function ensureOrgForUser(): Promise<EnsuredOrg> {
       });
 
       if (duplicateCheck > 0) {
-        console.error(
+        logger.error(
           "[ensureOrgForUser] ⚠️ PREVENTED ORG SPAM: Org exists but membership missing. Auto-healing..."
         );
         // Re-fetch the org and create membership instead of new org
@@ -239,8 +237,8 @@ export async function ensureOrgForUser(): Promise<EnsuredOrg> {
   } catch (error) {
     logger.error("🚨🚨🚨 [ensureOrgForUser] FATAL ORG CONTEXT ERROR 🚨🚨🚨");
     logger.error("Error details:", error);
-    console.error("User ID:", userId);
-    console.error("Email:", primaryEmail);
+    logger.error("User ID:", userId);
+    logger.error("Email:", primaryEmail);
     // Throwing with clear log so we don't get silent white screens
     throw error;
   }

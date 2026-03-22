@@ -64,7 +64,11 @@ export async function generateMagicLink(
           create: { id: token, claimId, email },
           update: {},
         })
-        .catch(() => {});
+        .catch((e) => {
+          logger.warn(
+            `[CLIENT_PORTAL] client_access upsert failed for claim ${claimId}: ${e?.message}`
+          );
+        });
     }
 
     // Link points to Clerk sign-in with a redirect to the portal

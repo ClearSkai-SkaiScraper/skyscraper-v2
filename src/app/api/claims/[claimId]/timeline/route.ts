@@ -40,8 +40,8 @@ export const GET = withAuth(
       const claim = await getOrgClaimOrThrow(orgId, claimId);
 
       // Fetch claim with related data for enriched timeline
-      const claimData = await prisma.claims.findUnique({
-        where: { id: claimId },
+      const claimData = await prisma.claims.findFirst({
+        where: { id: claimId, orgId },
         include: {
           storm_events: true,
           weather_reports: {

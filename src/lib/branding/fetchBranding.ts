@@ -40,7 +40,7 @@ export async function getBrandingForOrg(orgId: string): Promise<OrgBranding | nu
 
     return branding as OrgBranding | null;
   } catch (error) {
-    console.error("[PDF Branding] Failed to fetch branding for orgId:", orgId, error);
+    logger.error(`[PDF Branding] Failed to fetch branding for orgId: ${orgId}`, error);
     return null;
   }
 }

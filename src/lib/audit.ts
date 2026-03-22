@@ -2,6 +2,9 @@
  * DEPRECATED: activity_events model doesn't exist in schema.
  */
 
+import { logger } from "@/lib/logger";
+import type { AuditAction } from "@/modules/audit/core/logger";
+
 export async function recordScopeEdit(params: {
   claimId: string;
   userId: string;
@@ -9,13 +12,11 @@ export async function recordScopeEdit(params: {
   after: any;
 }) {
   // activity_events model doesn't exist in schema
-  console.log(
+  logger.debug(
     `[audit] Would record scope edit for claim ${params.claimId} by user ${params.userId}`
   );
 }
 // Client-side audit helper for Phase 5
-import { logger } from "@/lib/logger";
-import type { AuditAction } from "@/modules/audit/core/logger";
 
 export interface AuditEvent {
   action: AuditAction;
