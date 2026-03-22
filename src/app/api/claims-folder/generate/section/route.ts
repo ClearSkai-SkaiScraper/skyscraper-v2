@@ -11,7 +11,7 @@ export const revalidate = 0;
  * This replaces the need to call individual generate/* endpoints.
  */
 
-import { type NextRequest,NextResponse } from "next/server";
+import { type NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 
 import { getOpenAI } from "@/lib/ai/client";
@@ -96,7 +96,13 @@ export async function POST(request: NextRequest) {
       const result = await res.json();
 
       // Fire ClaimIQ readiness refresh (non-blocking)
-      onSectionGenerated(claimId, orgId, userId, sectionKey).catch(() => {});
+      onSectionGenerated(claimId, orgId, userId, sectionKey).catch((e) =>
+        logger.warn("[SECTION_GENERATE] ClaimIQ readiness hook failed", {
+          claimId,
+          sectionKey,
+          error: e?.message,
+        })
+      );
 
       return NextResponse.json({
         success: true,

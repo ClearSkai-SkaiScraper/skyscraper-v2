@@ -163,7 +163,12 @@ export async function POST(req: NextRequest) {
           entityType: entityType === "claim" ? "Claim" : "Retail Job",
           entityTitle,
           reason: reason || "No reason provided",
-        }).catch(() => {}); // non-blocking
+        }).catch((e) =>
+          logger.warn("[CLOSEOUT] Individual notification failed", {
+            userId: mgr.clerkUserId,
+            error: e?.message,
+          })
+        );
       }
     } catch (notifyErr) {
       logger.warn("[CLOSEOUT] Notification send failed:", notifyErr);

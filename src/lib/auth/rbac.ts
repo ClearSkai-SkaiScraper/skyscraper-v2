@@ -157,7 +157,7 @@ export async function getCurrentUserRole(): Promise<{
         });
         if (membership) {
           effectiveOrgId = membership.organizationId;
-          console.log(
+          logger.debug(
             `[RBAC] Derived orgId ${effectiveOrgId} for user ${userId} via membership fallback`
           );
         }
@@ -288,7 +288,7 @@ export async function getCurrentUserRole(): Promise<{
         return { userId, orgId: effectiveOrgId, role: "admin" };
       }
     } catch (fallbackErr) {
-      console.error("[RBAC] Fallback admin assignment failed", fallbackErr);
+      logger.error("[RBAC] Fallback admin assignment failed", fallbackErr);
     }
     return null;
   }

@@ -5,6 +5,7 @@
 
 import { auth, currentUser } from "@clerk/nextjs/server";
 
+import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 
 function makeDefaultOrgName(clerkUser: Awaited<ReturnType<typeof currentUser>>): string {
@@ -111,7 +112,7 @@ export async function ensureActiveOrgForUser() {
   // Clean up orphaned memberships
   const orphanedMemberships = memberships.filter((m) => m.organizationId && !m.Org);
   if (orphanedMemberships.length > 0) {
-    console.warn("[ensureOrg] Cleaning up orphaned memberships:", {
+    logger.warn("[ensureOrg] Cleaning up orphaned memberships:", {
       userId: dbUser.id,
       orphanedCount: orphanedMemberships.length,
     });

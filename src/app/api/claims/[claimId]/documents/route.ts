@@ -177,7 +177,12 @@ export const POST = withAuth(
       });
 
       // Fire ClaimIQ readiness refresh (non-blocking)
-      onDocumentUploaded(claimId, orgId, userId, "document").catch(() => {});
+      onDocumentUploaded(claimId, orgId, userId, "document").catch((e) =>
+        logger.warn("[CLAIM_DOCUMENTS] ClaimIQ readiness hook failed", {
+          claimId,
+          error: e?.message,
+        })
+      );
 
       return NextResponse.json({
         success: true,

@@ -114,7 +114,12 @@ export const POST = withAuth(
                   where: { id: contactId },
                   data: { orgId },
                 })
-                .catch(() => {}); // non-critical
+                .catch((e) =>
+                  logger.warn("[ATTACH_CONTACT] Client orgId backfill failed", {
+                    contactId,
+                    error: e?.message,
+                  })
+                );
             }
           }
         }

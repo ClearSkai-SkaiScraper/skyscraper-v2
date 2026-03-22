@@ -38,8 +38,8 @@ async function retryWithBackoff<T>(
       }
 
       const delay = initialDelay * Math.pow(2, attempt - 1);
-      console.log(
-        `⚠️ [Retry ${attempt}/${maxRetries}] Network error (${error.code}), retrying in ${delay}ms...`
+      logger.warn(
+        `[Retry ${attempt}/${maxRetries}] Network error (${error.code}), retrying in ${delay}ms...`
       );
       await new Promise((resolve) => setTimeout(resolve, delay));
     }
@@ -118,8 +118,8 @@ export async function getTenant(): Promise<string | null> {
             select: { id: true },
           });
           if (orgCheck) {
-            console.warn(
-              "[getTenant] Fallback 2: using tradesCompanyMember companyId as orgId:",
+            logger.warn(
+              "[getTenant] Fallback 2: using tradesCompanyMember companyId as orgId (DEPRECATED):",
               tradeMember.companyId
             );
             return tradeMember.companyId;
@@ -130,7 +130,7 @@ export async function getTenant(): Promise<string | null> {
 
     // OPTIONAL AUTO-CREATE ORG (legacy support) gated behind env flag AUTO_CREATE_TENANT=1
     if (!membership && process.env.AUTO_CREATE_TENANT === "1") {
-      console.log(
+      logger.info(
         "[getTenant] No Org membership found - AUTO-CREATING (flag enabled) for userId:",
         userId
       );
@@ -162,14 +162,14 @@ export async function getTenant(): Promise<string | null> {
         );
         logger.debug("[getTenant] AUTO-CREATED Org:", Org.id);
       } catch (createError: any) {
-        console.error(
-          "🚨 ORG CREATION FAILURE (auto-create disabled or failed):",
+        logger.error(
+          "[getTenant] ORG CREATION FAILURE (auto-create disabled or failed):",
           createError.message
         );
       }
     } else if (!membership) {
       // Return null without auto-provisioning; onboarding flow will handle initialization
-      console.log(
+      logger.debug(
         "[getTenant] No membership (and no users.orgId fallback) and auto-create flag not set; returning null"
       );
       return null;

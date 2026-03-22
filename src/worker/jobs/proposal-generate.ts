@@ -16,7 +16,7 @@ import { recordJobEvent } from "../../lib/queue/hooks.js";
 
 export interface ProposalGeneratePayload {
   leadId?: string;
-  orgId?: string;
+  orgId: string; // S1-06: MANDATORY — tenant isolation requires orgId
   userId?: string;
   title?: string;
   sections?: Array<{ key: string; data: any }>;
@@ -33,7 +33,15 @@ export async function jobProposalGenerate(
   payload: ProposalGeneratePayload,
   job: PgBossJob
 ): Promise<void> {
-  console.log(`Starting proposal generation`);
+  console.log(`Starting proposal generation for org=${payload.orgId}`);
+
+  // S1-06: Runtime validation — reject jobs without orgId
+  if (!payload.orgId) {
+    const msg = "[PROPOSAL_GENERATE] Rejected: missing orgId in job payload";
+    console.error(msg);
+    await recordJobEvent(job, "failed", msg);
+    throw new Error(msg);
+  }
 
   await recordJobEvent(job, "working", "Building proposal");
 

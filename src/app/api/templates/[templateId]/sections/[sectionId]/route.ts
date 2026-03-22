@@ -9,14 +9,17 @@ import { logger } from "@/lib/logger";
  * Template sections are stored as JSON in report_templates (section_order, section_enabled).
  * Individual section editing is not yet implemented.
  */
-export const PATCH = withAuth(async (request: NextRequest) => {
+export const PATCH = withAuth(async (request: NextRequest, ctx: { orgId: string }) => {
   try {
     const url = new URL(request.url);
     const segments = url.pathname.split("/").filter(Boolean);
     // /api/templates/{templateId}/sections/{sectionId}
     const sectionId = segments[segments.length - 1] || "";
     const templateId = segments[segments.length - 3] || "";
-    logger.debug(`[TemplateSections] PATCH stub for template ${templateId} section ${sectionId}`);
+    // S1-10: Log orgId for audit trail even on stub endpoints
+    logger.debug(
+      `[TemplateSections] PATCH stub for template ${templateId} section ${sectionId} org=${ctx.orgId}`
+    );
 
     // Sections are stored as JSON in report_templates.section_order / section_enabled
     // Individual section editing would require JSON manipulation
@@ -31,13 +34,16 @@ export const PATCH = withAuth(async (request: NextRequest) => {
   }
 });
 
-export const DELETE = withAuth(async (request: NextRequest) => {
+export const DELETE = withAuth(async (request: NextRequest, ctx: { orgId: string }) => {
   try {
     const url = new URL(request.url);
     const segments = url.pathname.split("/").filter(Boolean);
     const sectionId = segments[segments.length - 1] || "";
     const templateId = segments[segments.length - 3] || "";
-    logger.debug(`[TemplateSections] DELETE stub for template ${templateId} section ${sectionId}`);
+    // S1-10: Log orgId for audit trail even on stub endpoints
+    logger.debug(
+      `[TemplateSections] DELETE stub for template ${templateId} section ${sectionId} org=${ctx.orgId}`
+    );
 
     return NextResponse.json({
       message: "Section deletion stored in template JSON. Use template PATCH endpoint.",

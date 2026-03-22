@@ -4,6 +4,8 @@ import { auth } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 
+import { logger } from "@/lib/logger";
+
 import prisma from "@/lib/prisma";
 import { checkRateLimit } from "@/lib/rate-limit";
 
@@ -67,11 +69,11 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    console.log(`[support] New ${severity} ${type} from user=${userId} org=${orgId}`);
+    logger.info("[SUPPORT_TICKET_CREATED]", { severity, type, userId, orgId, ticketId: ticket.id });
 
     return NextResponse.json({ ok: true, data: { ticketId: ticket.id, status: "open" } });
   } catch (error) {
-    console.error("[support] Failed:", error);
+    logger.error("[SUPPORT_TICKET_FAILED]", { error });
     return NextResponse.json({ ok: false, error: "Failed to create ticket" }, { status: 500 });
   }
 }

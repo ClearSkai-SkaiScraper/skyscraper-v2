@@ -270,7 +270,9 @@ export const POST = withAuth(
       });
 
       // Fire ClaimIQ readiness refresh (non-blocking)
-      onPhotosUploaded(claimId, orgId, userId, 1).catch(() => {});
+      onPhotosUploaded(claimId, orgId, userId, 1).catch((e) =>
+        logger.warn("[CLAIM_PHOTOS] ClaimIQ readiness hook failed", { claimId, error: e?.message })
+      );
 
       return NextResponse.json({
         success: true,

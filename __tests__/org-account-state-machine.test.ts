@@ -26,8 +26,8 @@ vi.mock("@clerk/nextjs/server", () => ({
     }),
 }));
 
-// Mock Prisma
-const mockPrisma = {
+// Mock Prisma — use vi.hoisted to avoid TDZ issues with vi.mock hoisting
+const mockPrisma = vi.hoisted(() => ({
   user_organizations: {
     findMany: vi.fn(),
     findFirst: vi.fn(),
@@ -49,7 +49,7 @@ const mockPrisma = {
   },
   $queryRaw: vi.fn(),
   $executeRaw: vi.fn(),
-};
+}));
 
 vi.mock("@/lib/prisma", () => ({ default: mockPrisma }));
 vi.mock("@/lib/logger", () => ({

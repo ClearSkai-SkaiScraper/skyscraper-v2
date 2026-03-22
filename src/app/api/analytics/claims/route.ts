@@ -3,6 +3,8 @@ export const dynamic = "force-dynamic";
 import { auth } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
 
+import { logger } from "@/lib/logger";
+
 import prisma from "@/lib/prisma";
 
 /**
@@ -92,7 +94,7 @@ export async function GET(req: NextRequest) {
       },
     });
   } catch (error) {
-    console.error("[analytics/claims] Failed:", error);
+    logger.error("[ANALYTICS_CLAIMS_FAILED]", { error });
     return NextResponse.json(
       { ok: false, error: "Failed to generate claims analytics" },
       { status: 500 }

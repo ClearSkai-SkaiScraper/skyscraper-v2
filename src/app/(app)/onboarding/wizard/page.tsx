@@ -104,7 +104,7 @@ function StepCompanyProfile({
             licenseNumber: data.license,
             serviceArea: data.serviceArea,
           }),
-        }).catch(() => {}); // Non-critical
+        }).catch((e) => console.warn("[ONBOARDING] Company settings save failed:", e?.message));
       }
 
       // Track step
@@ -112,7 +112,7 @@ function StepCompanyProfile({
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ step: 1 }),
-      }).catch(() => {});
+      }).catch((e) => console.warn("[ONBOARDING] Step 1 tracking failed:", e?.message));
 
       onNext();
     } catch (err: any) {
@@ -235,7 +235,9 @@ function StepBranding({ onNext, onSkip }: { onNext: () => void; onSkip: () => vo
         const fd = new FormData();
         fd.append("file", logoFile);
         fd.append("category", "branding");
-        await fetch("/api/upload", { method: "POST", body: fd }).catch(() => {});
+        await fetch("/api/upload", { method: "POST", body: fd }).catch((e) =>
+          console.warn("[ONBOARDING] Logo upload failed:", e?.message)
+        );
       }
 
       // Save branding settings
@@ -246,14 +248,14 @@ function StepBranding({ onNext, onSkip }: { onNext: () => void; onSkip: () => vo
           colorPrimary: primaryColor,
           tagline,
         }),
-      }).catch(() => {});
+      }).catch((e) => console.warn("[ONBOARDING] Branding save failed:", e?.message));
 
       // Track step
       await fetch("/api/onboarding/track-step", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ step: 2 }),
-      }).catch(() => {});
+      }).catch((e) => console.warn("[ONBOARDING] Step 2 tracking failed:", e?.message));
 
       onNext();
     } finally {
@@ -388,7 +390,7 @@ function StepInviteTeam({ onNext, onSkip }: { onNext: () => void; onSkip: () => 
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ email: inv.email, role: inv.role }),
-        }).catch(() => {});
+        }).catch((e) => console.warn("[ONBOARDING] Invite send failed:", e?.message));
       }
 
       // Track step
@@ -396,7 +398,7 @@ function StepInviteTeam({ onNext, onSkip }: { onNext: () => void; onSkip: () => 
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ step: 3, metadata: { inviteCount: validInvites.length } }),
-      }).catch(() => {});
+      }).catch((e) => console.warn("[ONBOARDING] Step 3 tracking failed:", e?.message));
 
       setSent(true);
       setTimeout(onNext, 1500);
@@ -523,7 +525,7 @@ function StepFirstClaim({ onNext }: { onNext: () => void }) {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ step: 4, metadata: { mode: "sample" } }),
-        }).catch(() => {});
+        }).catch((e) => console.warn("[ONBOARDING] Step 4 tracking failed:", e?.message));
 
         setTimeout(onNext, 2000);
       } else if (res.status === 400) {
@@ -547,7 +549,7 @@ function StepFirstClaim({ onNext }: { onNext: () => void }) {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ step: 4, metadata: { mode: "demo-seed" } }),
-        }).catch(() => {});
+        }).catch((e) => console.warn("[ONBOARDING] Step 4 demo tracking failed:", e?.message));
         setTimeout(onNext, 2000);
       }
     } catch {
@@ -658,7 +660,7 @@ function StepComplete() {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ step: 5, complete: true }),
-    }).catch(() => {});
+    }).catch((e) => console.warn("[ONBOARDING] Step 5 completion tracking failed:", e?.message));
 
     // Set cookie so middleware knows onboarding is complete (prevents redirect loop)
     document.cookie = "x-onboarding-complete=1;path=/;max-age=31536000;SameSite=Lax";

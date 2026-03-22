@@ -308,7 +308,12 @@ async function handleUpdateStatus(
           claimNumber: updated.claimNumber || claimId,
           newStatus: payload.lifecycleStage,
           claimId,
-        }).catch(() => {});
+        }).catch((e) =>
+          logger.warn("[CLAIM_STATUS_CHANGE] Individual notification failed", {
+            userId: member.clerkUserId,
+            error: e?.message,
+          })
+        );
       }
     }
   } catch (notifErr) {

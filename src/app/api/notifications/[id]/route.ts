@@ -17,17 +17,16 @@ export async function DELETE(req: NextRequest, context: RouteContext) {
     if (!userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
+    // S1-04: orgId is MANDATORY — no conditional bypass
+    if (!orgId) {
+      return NextResponse.json({ error: "Organization context required" }, { status: 403 });
+    }
 
     const { id } = await context.params;
 
-    // B-14: Verify ownership with both userId AND orgId guard
-    const whereClause: Record<string, unknown> = { id, userId };
-    if (orgId) {
-      whereClause.orgId = orgId;
-    }
-
+    // B-14 + S1-04: Verify ownership with BOTH userId AND orgId (mandatory)
     const existing = await prisma.notification.findFirst({
-      where: whereClause,
+      where: { id, userId, orgId },
       select: { id: true },
     });
 

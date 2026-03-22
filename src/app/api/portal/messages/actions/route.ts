@@ -153,7 +153,12 @@ async function handleMarkRead(
       where: { threadId: input.threadId, read: false },
       data: { read: true },
     })
-    .catch(() => {});
+    .catch((e) =>
+      logger.warn("[PORTAL_MESSAGES] Mark-read failed", {
+        threadId: input.threadId,
+        error: e?.message,
+      })
+    );
 
   return NextResponse.json({ success: true });
 }

@@ -457,14 +457,14 @@ describe("after-sign-in page routing", () => {
       expect(mockCookieStore["x-user-type"]).toBe("client");
     });
 
-    it("new user with NO mode → defaults to pro → /dashboard", async () => {
+    it("new user with NO mode and no org → defaults to client → /portal", async () => {
       setupNewUser();
 
       const dest = await callAfterSignIn({});
 
-      // Default newType is "pro" when mode is not explicitly "client"
-      expect(dest).toBe("/dashboard");
-      expect(mockCookieStore["x-user-type"]).toBe("pro");
+      // No mode + no org memberships → safer default is "client" (prevents dashboard stuck state)
+      expect(dest).toBe("/portal");
+      expect(mockCookieStore["x-user-type"]).toBe("client");
     });
 
     it("new user creates DB registry entry", async () => {

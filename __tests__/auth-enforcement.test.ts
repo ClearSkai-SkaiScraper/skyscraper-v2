@@ -146,11 +146,19 @@ describe("appointments/[id] — org guard", () => {
 /* ------------------------------------------------------------------ */
 
 describe("notifications/[id] — no enumeration", () => {
-  it("does not expose 403 Forbidden (prevents enumeration)", () => {
+  it("does not expose Forbidden on invalid notification IDs (uses uniform 404)", () => {
     const src = readRoute("notifications/[id]/route.ts");
-    // Should not have distinct 403 response — use uniform 404
-    expect(src).not.toContain("403");
-    expect(src).not.toContain("Forbidden");
+    // 403 is ONLY allowed for missing org context (auth failure)
+    // but NEVER for "wrong org" — that must use 404 to prevent enumeration
+    // Check that "Notification not found" uses 404 (not 403)
+    expect(src).toContain('"Notification not found"');
+    expect(src).toContain("404");
+  });
+
+  it("has mandatory orgId check (returns 403 for missing org)", () => {
+    const src = readRoute("notifications/[id]/route.ts");
+    // S1-04: orgId is mandatory — 403 for missing org context
+    expect(src).toContain('"Organization context required"');
   });
 
   it("uses findFirst with userId instead of findUnique", () => {

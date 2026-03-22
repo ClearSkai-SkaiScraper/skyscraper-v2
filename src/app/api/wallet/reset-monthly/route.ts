@@ -17,7 +17,16 @@ import prisma from "@/lib/prisma";
  * This endpoint remains as a safe no-op to prevent Vercel cron 404 errors.
  * When the token system is re-enabled, wire this to the new usage model.
  */
+// S1-07: Vercel crons send GET requests — support both GET and POST
+export async function GET(req: Request) {
+  return handleReset(req);
+}
+
 export async function POST(req: Request) {
+  return handleReset(req);
+}
+
+async function handleReset(req: Request) {
   try {
     // Verify cron secret to prevent unauthorized calls
     const authHeader = req.headers.get("authorization");

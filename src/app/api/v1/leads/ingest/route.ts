@@ -61,7 +61,12 @@ async function resolveApiKey(req: NextRequest) {
       where: { id: apiKey.id },
       data: { last_used_at: new Date(), updated_at: new Date() },
     })
-    .catch(() => {});
+    .catch((e) => {
+      // Non-blocking — log but don't fail auth
+      if (typeof logger !== "undefined") {
+        console.warn("[LEADS_INGEST] API key last_used_at touch failed", e?.message);
+      }
+    });
 
   return apiKey;
 }

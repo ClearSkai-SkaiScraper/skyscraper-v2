@@ -99,12 +99,6 @@ export const CORE_NAV: NavItem[] = [
     icon: "Scan",
     match: /^\/ai\/damage-builder(\/.*)?$/,
   },
-  {
-    href: "/ai/video-reports",
-    label: "AI Video Reports",
-    icon: "Video",
-    match: /^\/ai\/video-reports(\/.*)?$/,
-  },
   // AI Agent Tools — rebuttal moved to /ai/tools/rebuttal above
   {
     href: "/ai/claims-analysis",
@@ -126,6 +120,36 @@ export const CORE_NAV: NavItem[] = [
     match: /^\/settings\/security-audit(\/.*)?$/,
   },
   { href: "/claims", label: "Claims", icon: "FileText", match: /^\/claims(\/.*)?$/ },
+  {
+    href: "/tasks",
+    label: "Tasks",
+    icon: "CheckSquare",
+    match: /^\/tasks(\/.*)?$/,
+  },
+  {
+    href: "/clients",
+    label: "Clients",
+    icon: "Users",
+    match: /^\/clients(\/.*)?$/,
+  },
+  {
+    href: "/invoices",
+    label: "Invoices",
+    icon: "Receipt",
+    match: /^\/invoices(\/.*)?$/,
+  },
+  {
+    href: "/contracts",
+    label: "Contracts",
+    icon: "FileSignature",
+    match: /^\/contracts(\/.*)?$/,
+  },
+  {
+    href: "/work-orders",
+    label: "Work Orders",
+    icon: "ClipboardCheck",
+    match: /^\/work-orders(\/.*)?$/,
+  },
   {
     href: "/pipeline",
     label: "Job Pipeline",
@@ -350,7 +374,6 @@ export const CONTEXT_NAV: Record<string, NavItem[]> = {
     { href: "/ai/claims-analysis", label: "Claims Analysis" },
     { href: "/ai/bad-faith", label: "Bad Faith Detector" },
     { href: "/ai/damage-builder", label: "Damage Builder" },
-    { href: "/ai/video-reports", label: "Video Reports" },
   ],
   "/reports/history": [
     { href: "/reports/claims", label: "Claims PDF" },
@@ -358,7 +381,7 @@ export const CONTEXT_NAV: Record<string, NavItem[]> = {
   ],
   "/trades": [
     { href: "/trades/feed", label: "Trades Feed" },
-    { href: "/trades/metrics", label: "My Metrics" },
+    { href: "/trades/analytics", label: "Analytics" },
   ],
   "/vendor-network": [
     { href: "/vendor-network", label: "Browse" },

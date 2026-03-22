@@ -26,6 +26,7 @@ const EXEMPT_ROUTES = new Set([
   "suggest-status", // withAiBilling GET — no user body
   "status", // GET only — reads DB state
   "recommendations", // GET only — optional claimId query, withAiBilling wrapped
+  "debug/yolo", // Debug endpoint — manual imageUrl validation, not production input
 ]);
 
 function findRouteFiles(dir: string, base = ""): { relPath: string; absPath: string }[] {

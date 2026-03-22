@@ -242,7 +242,7 @@ export async function log2FAEvent(
     | "BACKUP_CODE_USED"
     | "BACKUP_CODES_REGENERATED"
 ): Promise<void> {
-  console.log(
+  logger.info(
     JSON.stringify({
       timestamp: new Date().toISOString(),
       userId,

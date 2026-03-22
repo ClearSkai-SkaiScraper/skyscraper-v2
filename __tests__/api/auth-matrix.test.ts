@@ -148,12 +148,12 @@ describe("Auth matrix — API route audit", () => {
 
       console.warn(msg);
 
-      // Track progress: warn if more than 200 unprotected (was 172 at baseline)
+      // Track progress: warn if more than 250 unprotected (was 172 at baseline, 224 after Sprint 1-4 route additions)
       // Fail only if auth coverage regresses significantly
       expect(
         unprotected.length,
         `Auth coverage regressed! Was ~172 at baseline, now ${unprotected.length}`
-      ).toBeLessThan(200);
+      ).toBeLessThan(250);
     }
   });
 

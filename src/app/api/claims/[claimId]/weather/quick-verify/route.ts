@@ -23,6 +23,8 @@
  */
 
 export const runtime = "nodejs";
+
+import { logger } from "@/lib/logger";
 export const dynamic = "force-dynamic";
 
 import { NextRequest, NextResponse } from "next/server";
@@ -31,7 +33,6 @@ import { getOpenAI } from "@/lib/ai/client";
 import { getOrgClaimOrThrow, OrgScopeError } from "@/lib/auth/orgScope";
 import { withAuth } from "@/lib/auth/withAuth";
 import { onWeatherVerified } from "@/lib/claimiq/readiness-hooks";
-import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 import { htmlToPdfBuffer } from "@/lib/reports/pdf-utils";
 import { capToEvents, fetchCAPAlerts } from "@/lib/weather/cap";
@@ -278,7 +279,12 @@ Format your response as JSON:
       });
 
       // Fire ClaimIQ readiness refresh (non-blocking)
-      onWeatherVerified(claimId, orgId, userId).catch(() => {});
+      onWeatherVerified(claimId, orgId, userId).catch((e) =>
+        logger.warn("[WEATHER_VERIFY] ClaimIQ readiness hook failed", {
+          claimId,
+          error: e?.message,
+        })
+      );
 
       // Return PDF as download
       return new NextResponse(pdfBuffer as unknown as BodyInit, {

@@ -155,7 +155,7 @@ async function tryCreateOrgMinimal(params: {
             logger.debug("[ORG_SAFE] ✅ Linked user to org via users.orgId (created)");
           }
         } catch (linkError: unknown) {
-          console.error(
+          logger.error(
             "[ORG_SAFE] Membership link fallback failed:",
             linkError instanceof Error ? linkError.message : String(linkError)
           );
@@ -191,7 +191,7 @@ async function tryCreateOrgMinimal(params: {
       logger.debug("[ORG_SAFE] ✅ Created org_branding for org:", result.id);
     } catch (brandingErr: unknown) {
       // Non-fatal - table may not exist in all environments
-      console.warn(
+      logger.warn(
         "[ORG_SAFE] Branding setup skipped:",
         brandingErr instanceof Error ? brandingErr.message : String(brandingErr)
       );
@@ -200,7 +200,7 @@ async function tryCreateOrgMinimal(params: {
     return result;
   } catch (createError: unknown) {
     const errInfo = createError as { message?: string; code?: string; meta?: unknown };
-    console.error("[ORG_SAFE] Org creation failed:", {
+    logger.error("[ORG_SAFE] Org creation failed:", {
       message: errInfo.message,
       code: errInfo.code,
       meta: errInfo.meta,
@@ -290,7 +290,7 @@ export async function getActiveOrgSafe(opts?: {
           };
         }
       } catch (error: unknown) {
-        console.error(
+        logger.error(
           "[ORG_SAFE] Error with Clerk org strategy:",
           error instanceof Error ? error.message : String(error)
         );
@@ -325,17 +325,15 @@ export async function getActiveOrgSafe(opts?: {
           // Clean up any orphaned memberships in the background
           const orphanedMemberships = memberships.filter((m: OrgMembership) => !m.Org);
           if (orphanedMemberships.length > 0) {
-            console.warn(
-              "[ORG_SAFE] Cleaning up",
-              orphanedMemberships.length,
-              "orphaned memberships"
+            logger.warn(
+              `[ORG_SAFE] Cleaning up ${orphanedMemberships.length} orphaned memberships`
             );
             prismaDynamic
               .user_organizations!.deleteMany({
                 where: { id: { in: orphanedMemberships.map((m: OrgMembership) => m.id) } },
               })
               .catch((err: unknown) =>
-                console.error(
+                logger.error(
                   "[ORG_SAFE] Orphan cleanup failed:",
                   err instanceof Error ? err.message : String(err)
                 )
@@ -352,10 +350,8 @@ export async function getActiveOrgSafe(opts?: {
 
         // All memberships are orphaned - clean them up
         if (memberships.length > 0) {
-          console.warn(
-            "[ORG_SAFE] All",
-            memberships.length,
-            "memberships are orphaned, cleaning up..."
+          logger.warn(
+            `[ORG_SAFE] All ${memberships.length} memberships are orphaned, cleaning up...`
           );
           await prismaDynamic.user_organizations!.deleteMany({
             where: { userId },
@@ -384,7 +380,7 @@ export async function getActiveOrgSafe(opts?: {
         }
       }
     } catch (error: unknown) {
-      console.error(
+      logger.error(
         "[ORG_SAFE] Error querying membership:",
         error instanceof Error ? error.message : String(error)
       );
@@ -423,7 +419,7 @@ export async function getActiveOrgSafe(opts?: {
         };
       } catch (createError: unknown) {
         const errMsg = createError instanceof Error ? createError.message : String(createError);
-        console.error("[ORG_SAFE] Auto-create failed:", errMsg);
+        logger.error("[ORG_SAFE] Auto-create failed:", errMsg);
         return {
           ok: false,
           reason: "CREATE_FAILED",

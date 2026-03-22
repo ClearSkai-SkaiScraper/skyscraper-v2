@@ -14,7 +14,7 @@ export interface WeatherPayload {
   lng: number;
   dateFrom?: string; // ISO date
   dateTo?: string; // ISO date
-  orgId?: string;
+  orgId: string; // S1-06: MANDATORY — tenant isolation requires orgId
   userId?: string;
 }
 
@@ -22,7 +22,17 @@ export interface WeatherPayload {
  * Weather analysis job handler
  */
 export async function jobWeatherAnalyze(payload: WeatherPayload, job: PgBossJob): Promise<void> {
-  console.log(`Starting weather analysis for (${payload.lat}, ${payload.lng})`);
+  console.log(
+    `Starting weather analysis for (${payload.lat}, ${payload.lng}) org=${payload.orgId}`
+  );
+
+  // S1-06: Runtime validation — reject jobs without orgId
+  if (!payload.orgId) {
+    const msg = "[WEATHER_ANALYZE] Rejected: missing orgId in job payload";
+    console.error(msg);
+    await recordJobEvent(job, "failed", msg);
+    throw new Error(msg);
+  }
 
   await recordJobEvent(job, "working", "Weather analysis started");
 

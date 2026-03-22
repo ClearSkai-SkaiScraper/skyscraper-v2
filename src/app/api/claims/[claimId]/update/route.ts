@@ -186,9 +186,17 @@ export const PATCH = withAuth(
       // Update the claim record if we have claim-level changes
       let updated;
       if (Object.keys(updateData).length > 0) {
-        updated = await prisma.claims.update({
-          where: { id: claimId },
+        // S2: Use updateMany with orgId to prevent TOCTOU race condition
+        const result = await prisma.claims.updateMany({
+          where: { id: claimId, orgId },
           data: updateData,
+        });
+        if (result.count === 0) {
+          return NextResponse.json({ error: "Claim not found" }, { status: 404 });
+        }
+        updated = await prisma.claims.findFirst({
+          where: { id: claimId, orgId },
+          select: { id: true, title: true, propertyId: true },
         });
       } else {
         // Still need the claim for propertyId lookup even if no claim-level changes
@@ -204,14 +212,22 @@ export const PATCH = withAuth(
 
       // Notify managers when a job value is submitted for approval
       if (body.jobValueStatus === "submitted" && body.estimatedJobValue) {
-        notifyManagersOfSubmission({
-          orgId,
-          submittedByUserId: userId,
-          entityType: "claim",
-          entityId: claimId,
-          entityTitle: (updated as any)?.title || "Claim",
-          estimatedValue: body.estimatedJobValue,
-        });
+        // S2: Awaited with error logging instead of fire-and-forget
+        try {
+          await notifyManagersOfSubmission({
+            orgId,
+            submittedByUserId: userId,
+            entityType: "claim",
+            entityId: claimId,
+            entityTitle: (updated as any)?.title || "Claim",
+            estimatedValue: body.estimatedJobValue,
+          });
+        } catch (notifyErr) {
+          logger.warn("[CLAIM_UPDATE] notifyManagersOfSubmission failed", {
+            claimId,
+            error: notifyErr,
+          });
+        }
       }
 
       // Update property address fields if provided
@@ -249,7 +265,12 @@ export const PATCH = withAuth(
 
       // Fire ClaimIQ readiness refresh (non-blocking)
       if (Object.keys(updateData).length > 0) {
-        onClaimUpdated(claimId, orgId, userId, Object.keys(updateData)).catch(() => {});
+        onClaimUpdated(claimId, orgId, userId, Object.keys(updateData)).catch((e) =>
+          logger.warn("[CLAIM_UPDATE] ClaimIQ readiness hook failed", {
+            claimId,
+            error: e?.message,
+          })
+        );
       }
 
       return NextResponse.json({ success: true, claim: updated });

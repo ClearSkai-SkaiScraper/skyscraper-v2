@@ -4,6 +4,8 @@ import { auth } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 
+import { logger } from "@/lib/logger";
+
 import prisma from "@/lib/prisma";
 import { checkRateLimit } from "@/lib/rate-limit";
 
@@ -76,7 +78,7 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({ ok: true, data: { submitted: true } });
   } catch (error) {
-    console.error("[pilot-feedback] Failed to store feedback:", error);
+    logger.error("[PILOT_FEEDBACK_STORE_FAILED]", { error });
     return NextResponse.json({ ok: false, error: "Failed to submit feedback" }, { status: 500 });
   }
 }
@@ -124,7 +126,7 @@ export async function GET(req: NextRequest) {
       },
     });
   } catch (error) {
-    console.error("[pilot-feedback] Failed to retrieve feedback:", error);
+    logger.error("[PILOT_FEEDBACK_RETRIEVE_FAILED]", { error });
     return NextResponse.json({ ok: false, error: "Failed to retrieve feedback" }, { status: 500 });
   }
 }
