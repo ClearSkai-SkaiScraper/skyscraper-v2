@@ -17,7 +17,7 @@ export const revalidate = 0;
 export const PATCH = withAuth(async (req: NextRequest, { userId, orgId }) => {
   try {
     const body = await req.json();
-    const { claimId, dol, scanId } = body;
+    const { claimId, dol, scanId, perilType } = body;
 
     if (!claimId || !dol) {
       return NextResponse.json({ error: "claimId and dol are required" }, { status: 400 });
@@ -32,7 +32,7 @@ export const PATCH = withAuth(async (req: NextRequest, { userId, orgId }) => {
     // Verify claim belongs to org
     const claim = await prisma.claims.findFirst({
       where: { id: claimId, orgId },
-      select: { id: true, dateOfLoss: true },
+      select: { id: true, dateOfLoss: true, damageType: true },
     });
 
     if (!claim) {
@@ -40,31 +40,45 @@ export const PATCH = withAuth(async (req: NextRequest, { userId, orgId }) => {
     }
 
     const previousDol = claim.dateOfLoss;
+    const previousDamageType = claim.damageType;
 
-    // Update claim's dateOfLoss
+    // Normalize peril type to damage type format (capitalize first letter)
+    const normalizedDamageType =
+      perilType && perilType !== "unknown"
+        ? perilType.charAt(0).toUpperCase() + perilType.slice(1).toLowerCase()
+        : null;
+
+    // Update claim's dateOfLoss and optionally damageType
     await prisma.claims.update({
       where: { id: claimId },
       data: {
         dateOfLoss: dolDate,
+        ...(normalizedDamageType && { damageType: normalizedDamageType }),
         updatedAt: new Date(),
       },
     });
 
     // Log activity
     try {
+      const descParts = [scanId ? "DOL set from weather scan" : "DOL set manually"];
+      if (normalizedDamageType && normalizedDamageType !== previousDamageType) {
+        descParts.push(`Cause of loss: ${normalizedDamageType}`);
+      }
       await prisma.activities.create({
         data: {
           id: crypto.randomUUID(),
           orgId,
           type: "dol_updated",
-          title: "Date of Loss updated",
-          description: scanId ? "DOL set from weather scan" : "DOL set manually",
+          title: normalizedDamageType ? "Date of Loss & Cause Updated" : "Date of Loss updated",
+          description: descParts.join(". "),
           userId,
           userName: userId,
           claimId,
           metadata: {
             previousDol: previousDol?.toISOString() || null,
             newDol: dolDate.toISOString(),
+            previousDamageType: previousDamageType || null,
+            newDamageType: normalizedDamageType || null,
             source: scanId ? "weather_scan" : "manual",
             scanId: scanId || null,
           },
@@ -96,6 +110,8 @@ export const PATCH = withAuth(async (req: NextRequest, { userId, orgId }) => {
       claimId,
       previousDol: previousDol?.toISOString(),
       newDol: dolDate.toISOString(),
+      previousDamageType,
+      newDamageType: normalizedDamageType,
       scanId,
     });
 
@@ -104,6 +120,8 @@ export const PATCH = withAuth(async (req: NextRequest, { userId, orgId }) => {
       claimId,
       previousDol: previousDol?.toISOString() || null,
       newDol: dolDate.toISOString(),
+      previousDamageType: previousDamageType || null,
+      newDamageType: normalizedDamageType,
     });
   } catch (err) {
     logger.error("[SET_DOL] PATCH error:", err);

@@ -55,6 +55,7 @@ export async function GET(_req: NextRequest) {
         license: true,
         logoUrl: true,
         colorPrimary: true,
+        colorAccent: true,
         teamPhotoUrl: true,
       },
     });
@@ -104,9 +105,11 @@ export async function GET(_req: NextRequest) {
       companyLicense: branding?.license || undefined,
       logoUrl: branding?.logoUrl || undefined,
       brandColor: branding?.colorPrimary || "#1e40af",
+      accentColor: branding?.colorAccent || undefined,
       employeeName,
       employeeTitle,
       employeeEmail,
+      employeePhone: branding?.phone || undefined,
       headshotUrl: branding?.teamPhotoUrl || headshotUrl || undefined,
     });
   } catch (error) {

@@ -55,6 +55,11 @@ import {
   drawPageFooterClient,
   fetchClientBranding,
 } from "@/lib/pdf/clientBrandedHeader";
+import {
+  drawClientCoverPage,
+  fetchPropertyMapClient,
+  type ClientCoverPageData,
+} from "@/lib/pdf/clientCoverPage";
 
 // ── Types matching the API response shape ───────────────────────────────────
 interface MaterialLine {
@@ -902,6 +907,44 @@ export default function MaterialEstimatorPage() {
 
       // ── Fetch company branding (logo, headshot, company info) ──
       const branding = await fetchClientBranding();
+
+      // ── COVER PAGE ──
+      try {
+        const propertyAddress = scopeResult?.claimNumber
+          ? undefined // We don't have address from scope parse
+          : undefined;
+        const mapBase64 = propertyAddress
+          ? await fetchPropertyMapClient(propertyAddress)
+          : undefined;
+
+        const coverData: ClientCoverPageData = {
+          reportTitle: "Material Estimate",
+          reportSubtitle: `${tradeLabel}  •  ${contextLabel}`,
+          reportCategory: scopeResult?.carrierName ? "insurance" : "retail",
+          companyName: branding.companyName,
+          companyLicense: branding.companyLicense,
+          companyPhone: branding.companyPhone,
+          companyEmail: branding.companyEmail,
+          companyWebsite: branding.companyWebsite,
+          logoUrl: branding.logoUrl,
+          headshotUrl: branding.headshotUrl,
+          employeeName: branding.employeeName,
+          employeeTitle: branding.employeeTitle,
+          employeePhone: branding.employeePhone || branding.companyPhone,
+          brandColor: branding.brandColor,
+          accentColor: branding.accentColor,
+          propertyMapBase64: mapBase64,
+          carrierName: scopeResult?.carrierName,
+          claimNumber: scopeResult?.claimNumber,
+          reportDate: new Date(),
+        };
+
+        await drawClientCoverPage(pdf, coverData);
+        pdf.addPage();
+        y = margin;
+      } catch (coverErr) {
+        console.warn("[MaterialEstimator] Cover page failed, continuing:", coverErr);
+      }
 
       // ── Helper: check page break ──
       const checkPageBreak = (needed: number) => {

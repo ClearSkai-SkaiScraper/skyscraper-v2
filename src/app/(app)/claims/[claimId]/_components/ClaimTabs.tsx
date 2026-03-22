@@ -23,6 +23,7 @@ const tabs = [
   { label: "Messages", href: "/messages" },
   { label: "Timeline", href: "/timeline" },
   { label: "Weather", href: "/weather" },
+  { label: "Intel", href: "/intel" },
   { label: "Trades", href: "/trades" },
   { label: "Client", href: "/client" },
   { label: "Notes", href: "/notes" },

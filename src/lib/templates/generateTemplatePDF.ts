@@ -9,6 +9,8 @@
 import { jsPDF } from "jspdf";
 
 import { logger } from "@/lib/logger";
+import { drawCoverPage, fetchPropertyMapBase64, type CoverPageData } from "@/lib/pdf/coverPage";
+import prisma from "@/lib/prisma";
 
 import { getMergedTemplate } from "./mergeTemplate";
 
@@ -45,7 +47,7 @@ export async function generateTemplatePDF(options: PDFGenerationOptions): Promis
     logger.debug(`[PDF_GENERATION] Merged template loaded with branding`);
 
     // 2. Generate PDF using jsPDF (works in all environments)
-    const pdfBuffer = generatePDFWithJsPDF(mergedTemplate, claimData);
+    const pdfBuffer = await generatePDFWithJsPDF(mergedTemplate, orgId, claimData);
 
     logger.info(`[PDF_GENERATION] PDF generated successfully (${pdfBuffer.length} bytes)`);
 
@@ -63,7 +65,11 @@ export async function generateTemplatePDF(options: PDFGenerationOptions): Promis
 /**
  * Generate PDF using jsPDF — serverless-safe, no Chromium required.
  */
-function generatePDFWithJsPDF(mergedTemplate: any, claimData?: any): Buffer {
+async function generatePDFWithJsPDF(
+  mergedTemplate: any,
+  orgId: string,
+  claimData?: any
+): Promise<Buffer> {
   const doc = new jsPDF({ format: "letter" });
 
   const primaryColor = mergedTemplate?.styles?.primaryColor ?? "#0A1A2F";
@@ -71,6 +77,56 @@ function generatePDFWithJsPDF(mergedTemplate: any, claimData?: any): Buffer {
 
   // Parse primary color
   const pRgb = hexToRgb(primaryColor);
+
+  // ── COVER PAGE ──
+  try {
+    // Fetch org branding for cover page
+    const branding = await prisma.org_branding
+      .findFirst({
+        where: { orgId },
+        select: {
+          companyName: true,
+          license: true,
+          phone: true,
+          email: true,
+          website: true,
+          logoUrl: true,
+          colorPrimary: true,
+          colorAccent: true,
+          teamPhotoUrl: true,
+        },
+      })
+      .catch(() => null);
+
+    const mapBase64 = claimData?.propertyAddress
+      ? await fetchPropertyMapBase64(claimData.propertyAddress)
+      : undefined;
+
+    const coverData: CoverPageData = {
+      reportTitle: mergedTemplate?.header?.reportTitle || "Document Report",
+      reportCategory: claimData?.claimNumber ? "insurance" : "retail",
+      companyName: branding?.companyName || companyName,
+      companyLicense: branding?.license || undefined,
+      companyPhone: branding?.phone || undefined,
+      companyEmail: branding?.email || undefined,
+      companyWebsite: branding?.website || undefined,
+      logoUrl: branding?.logoUrl || undefined,
+      headshotUrl: branding?.teamPhotoUrl || undefined,
+      brandColor: branding?.colorPrimary || primaryColor,
+      accentColor: branding?.colorAccent || undefined,
+      propertyAddress: claimData?.propertyAddress,
+      propertyMapBase64: mapBase64,
+      insuredName: claimData?.insured_name,
+      claimNumber: claimData?.claimNumber,
+      dateOfLoss: claimData?.lossDate,
+      reportDate: new Date(),
+    };
+
+    await drawCoverPage(doc, coverData);
+    doc.addPage();
+  } catch (coverErr) {
+    logger.warn("[PDF_GENERATION] Cover page failed, continuing:", coverErr);
+  }
 
   let yPos = 20;
 

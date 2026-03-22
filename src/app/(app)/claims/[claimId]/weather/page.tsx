@@ -297,13 +297,13 @@ export default function ClaimWeatherPage({ params }: Props) {
   }
 
   // ── Set DOL on Claim ──
-  async function setDolOnClaim(dol: string, scanId?: string) {
+  async function setDolOnClaim(dol: string, scanId?: string, perilType?: string) {
     setSettingDol(dol);
     try {
       const res = await fetch("/api/weather/set-dol", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ claimId, dol, scanId }),
+        body: JSON.stringify({ claimId, dol, scanId, perilType }),
       });
 
       if (!res.ok) {
@@ -313,7 +313,8 @@ export default function ClaimWeatherPage({ params }: Props) {
 
       setCurrentDol(dol);
       setSelectedDol(dol);
-      toast.success(`Date of Loss updated to ${new Date(dol).toLocaleDateString()}`);
+      const perilMsg = perilType && perilType !== "unknown" ? ` (${perilType})` : "";
+      toast.success(`Date of Loss updated to ${new Date(dol).toLocaleDateString()}${perilMsg}`);
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Failed to set DOL");
     } finally {
@@ -628,7 +629,9 @@ export default function ClaimWeatherPage({ params }: Props) {
                     isSelected={selectedDol === c.date}
                     isCurrentDol={currentDol === c.date}
                     onSelect={() => setSelectedDol(c.date)}
-                    onSetDol={() => setDolOnClaim(c.date, quickDolResult.scanId || undefined)}
+                    onSetDol={() =>
+                      setDolOnClaim(c.date, quickDolResult.scanId || undefined, c.perilType)
+                    }
                     onViewRadar={() => fetchRadar(c.date)}
                     loadingRadar={loadingRadar}
                     settingDol={settingDol === c.date}
@@ -768,7 +771,7 @@ export default function ClaimWeatherPage({ params }: Props) {
                       scan={scan}
                       currentDol={currentDol}
                       settingDol={settingDol}
-                      onSetDol={(dol) => setDolOnClaim(dol, scan.id)}
+                      onSetDol={(dol, perilType) => setDolOnClaim(dol, scan.id, perilType)}
                       onSelectDol={(dol) => setSelectedDol(dol)}
                       onViewRadar={(date) => fetchRadar(date)}
                       loadingRadar={loadingRadar}
@@ -1400,7 +1403,7 @@ function SavedScanCard({
   scan: SavedScan;
   currentDol: string | null;
   settingDol: string | null;
-  onSetDol: (dol: string) => void;
+  onSetDol: (dol: string, perilType?: string) => void;
   onSelectDol: (dol: string) => void;
   onViewRadar: (date: string) => void;
   loadingRadar: boolean;
@@ -1495,7 +1498,7 @@ function SavedScanCard({
                           ? "bg-emerald-600 hover:bg-emerald-600"
                           : "bg-blue-600 hover:bg-blue-700"
                       }`}
-                      onClick={() => onSetDol(c.date)}
+                      onClick={() => onSetDol(c.date, c.perilType || peril)}
                       disabled={!!settingDol || !!isActive}
                     >
                       {settingDol === c.date ? (
@@ -1524,7 +1527,7 @@ function SavedScanCard({
             <Button
               size="sm"
               className="h-7 bg-blue-600 px-2 text-xs hover:bg-blue-700"
-              onClick={() => onSetDol(scan.dol!.split("T")[0])}
+              onClick={() => onSetDol(scan.dol!.split("T")[0], peril)}
               disabled={!!settingDol}
             >
               Set as DOL

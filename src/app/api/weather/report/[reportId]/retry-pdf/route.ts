@@ -229,7 +229,7 @@ export const POST = withAuth(
       // 7. Render PDF
       logger.info("[RETRY_PDF] ▶ Rendering PDF");
       const renderStart = Date.now();
-      const pdfBuffer = renderWeatherReportPDF(viewModel);
+      const pdfBuffer = await renderWeatherReportPDF(viewModel);
       logger.info("[RETRY_PDF] ✅ PDF rendered", {
         bytes: pdfBuffer.length,
         durationMs: Date.now() - renderStart,

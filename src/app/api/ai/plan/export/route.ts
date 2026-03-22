@@ -5,6 +5,7 @@ import { z } from "zod";
 
 import { logger } from "@/lib/logger";
 import { drawBrandedHeader, drawPageFooter, fetchBrandingData } from "@/lib/pdf/brandedHeader";
+import { drawCoverPage, fetchPropertyMapBase64, type CoverPageData } from "@/lib/pdf/coverPage";
 import { checkRateLimit } from "@/lib/rate-limit";
 
 const planExportSchema = z.object({
@@ -69,6 +70,38 @@ export async function POST(req: NextRequest) {
     if (clientName) (branding as any).clientName = clientName;
     if (clientAddress) (branding as any).clientAddress = clientAddress;
     if (claimNumber) (branding as any).claimNumber = claimNumber;
+
+    // ── COVER PAGE ──
+    try {
+      const mapBase64 = clientAddress ? await fetchPropertyMapBase64(clientAddress) : undefined;
+
+      const coverData: CoverPageData = {
+        reportTitle: title || "Professional Project Plan",
+        reportCategory: claimNumber ? "insurance" : "retail",
+        companyName: branding.companyName,
+        companyLicense: branding.companyLicense,
+        companyPhone: branding.companyPhone,
+        companyEmail: branding.companyEmail,
+        companyWebsite: branding.companyWebsite,
+        logoUrl: branding.logoUrl,
+        headshotUrl: branding.headshotUrl,
+        employeeName: branding.employeeName,
+        employeeTitle: branding.employeeTitle,
+        employeePhone: branding.employeePhone,
+        brandColor: branding.brandColor,
+        accentColor: branding.accentColor,
+        propertyAddress: clientAddress,
+        propertyMapBase64: mapBase64,
+        insuredName: clientName,
+        claimNumber,
+        reportDate: new Date(),
+      };
+
+      await drawCoverPage(doc, coverData);
+      doc.addPage();
+    } catch (coverErr) {
+      logger.warn("[PLAN_EXPORT] Cover page failed, continuing:", coverErr);
+    }
 
     // ── Branded Header ──
     let y = await drawBrandedHeader(doc, branding as any, {

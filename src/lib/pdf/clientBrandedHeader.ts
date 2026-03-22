@@ -26,9 +26,11 @@ export interface ClientBrandingData {
   companyLicense?: string;
   logoUrl?: string;
   brandColor: string;
+  accentColor?: string;
   employeeName?: string;
   employeeTitle?: string;
   employeeEmail?: string;
+  employeePhone?: string;
   headshotUrl?: string;
 }
 
@@ -58,9 +60,11 @@ export async function fetchClientBranding(): Promise<ClientBrandingData> {
       companyLicense: data.companyLicense || undefined,
       logoUrl: data.logoUrl || undefined,
       brandColor: data.brandColor || "#1e40af",
+      accentColor: data.accentColor || undefined,
       employeeName: data.employeeName || undefined,
       employeeTitle: data.employeeTitle || undefined,
       employeeEmail: data.employeeEmail || undefined,
+      employeePhone: data.employeePhone || undefined,
       headshotUrl: data.headshotUrl || undefined,
     };
   } catch {

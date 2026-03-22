@@ -107,7 +107,12 @@ export interface CompanyBranding {
   logoUrl: string;
   logoBase64?: string;
   primaryColor: string;
+  accentColor?: string;
   address: string;
+  headshotUrl?: string;
+  employeeName?: string;
+  employeeTitle?: string;
+  employeePhone?: string;
 }
 
 export interface LocationData {
@@ -835,6 +840,11 @@ export interface BuildViewModelInput {
   companyLogoUrl?: string;
   companyAddress?: string;
   primaryColor?: string;
+  accentColor?: string;
+  headshotUrl?: string;
+  employeeName?: string;
+  employeeTitle?: string;
+  employeePhone?: string;
 
   weatherConditions: Array<{
     datetime: string;
@@ -1019,7 +1029,12 @@ export async function buildWeatherPdfViewModel(
       license: input.companyLicense || "",
       logoUrl: input.companyLogoUrl || "",
       primaryColor: input.primaryColor || "#1e40af",
+      accentColor: input.accentColor || "#FFC838",
       address: input.companyAddress || "",
+      headshotUrl: input.headshotUrl,
+      employeeName: input.employeeName,
+      employeeTitle: input.employeeTitle,
+      employeePhone: input.employeePhone,
     },
     claim: {
       claimNumber: input.claimNumber || "Not Provided",

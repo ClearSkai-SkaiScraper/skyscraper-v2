@@ -22,6 +22,7 @@
 import { jsPDF } from "jspdf";
 
 import { logger } from "@/lib/logger";
+import { drawCoverPage, fetchPropertyMapBase64, type CoverPageData } from "@/lib/pdf/coverPage";
 import type { WeatherPdfViewModel } from "@/lib/weather/weatherPdfViewModel";
 
 // Re-export for route compat
@@ -57,7 +58,7 @@ interface RGB {
 // Main Renderer
 // ─────────────────────────────────────────────────────────────────────────────
 
-export function renderWeatherReportPDF(viewModel: WeatherPdfViewModel): Buffer {
+export async function renderWeatherReportPDF(viewModel: WeatherPdfViewModel): Promise<Buffer> {
   logger.info("[WEATHER_PDF] Rendering v2 PDF", {
     reportId: viewModel.reportId,
     anchorDate: viewModel.anchorDate,
@@ -109,6 +110,48 @@ export function renderWeatherReportPDF(viewModel: WeatherPdfViewModel): Buffer {
       return yPos; // skip section, continue
     }
   };
+
+  // 0. COVER PAGE (full first page)
+  try {
+    // Use existing propertyMapBase64 from view model, or fetch if we have address
+    let propertyMapBase64 = viewModel.propertyMapBase64;
+    if (!propertyMapBase64 && viewModel.claim.propertyAddress) {
+      propertyMapBase64 = await fetchPropertyMapBase64(viewModel.claim.propertyAddress);
+    }
+
+    const coverData: CoverPageData = {
+      reportTitle: "Weather & Loss Justification Report",
+      reportSubtitle: "Certified Storm Damage Assessment",
+      reportCategory: "insurance",
+      companyName: viewModel.branding.companyName,
+      companyLicense: viewModel.branding.license || undefined,
+      companyPhone: viewModel.branding.phone || undefined,
+      companyEmail: viewModel.branding.email || undefined,
+      companyWebsite: viewModel.branding.website || undefined,
+      logoUrl: viewModel.branding.logoUrl || undefined,
+      headshotUrl: viewModel.branding.headshotUrl,
+      employeeName: viewModel.branding.employeeName,
+      employeeTitle: viewModel.branding.employeeTitle,
+      employeePhone: viewModel.branding.employeePhone || viewModel.branding.phone || undefined,
+      brandColor: viewModel.branding.primaryColor || "#1e40af",
+      accentColor: viewModel.branding.accentColor || "#FFC838",
+      propertyAddress: viewModel.claim.propertyAddress,
+      propertyMapBase64,
+      insuredName: viewModel.claim.insuredName,
+      carrierName: viewModel.claim.carrier,
+      claimNumber: viewModel.claim.claimNumber,
+      policyNumber: viewModel.claim.policyNumber,
+      dateOfLoss: viewModel.claim.dateOfLoss,
+    };
+
+    await drawCoverPage(doc, coverData);
+    doc.addPage();
+    yPos = margin;
+    logger.info("[WEATHER_PDF] Cover page rendered successfully");
+  } catch (coverErr) {
+    logger.error("[WEATHER_PDF] Cover page failed (continuing without):", coverErr);
+    // Continue without cover page — the report content still renders fine
+  }
 
   // 1. BRANDED HEADER
   yPos = safeRender("header", () =>

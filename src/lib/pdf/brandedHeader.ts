@@ -34,6 +34,7 @@ export interface BrandingData {
   companyLicense?: string;
   logoUrl?: string;
   brandColor: string; // hex e.g. "#1e40af"
+  accentColor?: string;
 
   // Employee / User
   employeeName?: string;
@@ -80,6 +81,7 @@ export async function fetchBrandingData(orgId: string, userId?: string): Promise
           license: true,
           logoUrl: true,
           colorPrimary: true,
+          colorAccent: true,
           teamPhotoUrl: true,
         },
       })
@@ -152,6 +154,7 @@ export async function fetchBrandingData(orgId: string, userId?: string): Promise
       companyLicense: branding?.license || undefined,
       logoUrl: branding?.logoUrl || undefined,
       brandColor: branding?.colorPrimary || "#1e40af",
+      accentColor: branding?.colorAccent || undefined,
       employeeName,
       employeeTitle: userInfo.title,
       employeePhone: userInfo.phone || undefined,

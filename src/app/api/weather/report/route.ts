@@ -284,6 +284,8 @@ export const POST = withAuth(async (req: NextRequest, { userId, orgId }) => {
       license: undefined as string | undefined,
       logoUrl: undefined as string | undefined,
       primaryColor: "#1e40af",
+      accentColor: "#FFC838" as string | undefined,
+      headshotUrl: undefined as string | undefined,
     };
 
     if (orgId) {
@@ -298,6 +300,8 @@ export const POST = withAuth(async (req: NextRequest, { userId, orgId }) => {
           license: defaults.license || undefined,
           logoUrl: defaults.logo || undefined,
           primaryColor: defaults.primaryColor,
+          accentColor: branding?.colorAccent || "#FFC838",
+          headshotUrl: branding?.teamPhotoUrl || undefined,
         };
         logger.info("[Weather API] Loaded org branding", {
           orgId,
@@ -522,6 +526,9 @@ export const POST = withAuth(async (req: NextRequest, { userId, orgId }) => {
             companyLicense: brandingData.license,
             companyLogoUrl: brandingData.logoUrl,
             primaryColor: brandingData.primaryColor,
+            accentColor: brandingData.accentColor,
+            headshotUrl: brandingData.headshotUrl,
+            employeeName: generatedBy,
             weatherConditions: weatherConditions.map((wc) => ({
               datetime: wc.datetime,
               tempmax: wc.tempmax,
@@ -596,7 +603,7 @@ export const POST = withAuth(async (req: NextRequest, { userId, orgId }) => {
         try {
           logger.info("[Weather API] ▶ Step 8b: Rendering PDF via jsPDF");
           const renderStart = Date.now();
-          pdfBuffer = renderWeatherReportPDF(viewModel);
+          pdfBuffer = await renderWeatherReportPDF(viewModel);
           logger.info("[Weather API] ✅ Step 8b complete: PDF rendered", {
             pdfBytes: pdfBuffer.length,
             durationMs: Date.now() - renderStart,
@@ -613,7 +620,7 @@ export const POST = withAuth(async (req: NextRequest, { userId, orgId }) => {
             viewModel.radarFrames = [];
             viewModel.hasRadarImagery = false;
             const reRenderStart = Date.now();
-            pdfBuffer = renderWeatherReportPDF(viewModel);
+            pdfBuffer = await renderWeatherReportPDF(viewModel);
             logger.info("[Weather API] ✅ Step 8b re-render complete (no radar)", {
               pdfBytes: pdfBuffer.length,
               durationMs: Date.now() - reRenderStart,

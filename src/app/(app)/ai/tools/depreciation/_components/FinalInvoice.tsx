@@ -20,6 +20,8 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { fetchClientBranding } from "@/lib/pdf/clientBrandedHeader";
+import { drawClientCoverPage, type ClientCoverPageData } from "@/lib/pdf/clientCoverPage";
 
 interface LineItem {
   id: string;
@@ -133,6 +135,46 @@ export function FinalInvoice({
       const pageHeight = pdf.internal.pageSize.getHeight();
       const imgWidth = pageWidth - 20; // 10mm margins
       const imgHeight = (canvas.height * imgWidth) / canvas.width;
+
+      // ── COVER PAGE ──
+      try {
+        const branding = await fetchClientBranding();
+        const fullAddr = [
+          propertyAddress,
+          [propertyCity, propertyState, propertyZip].filter(Boolean).join(", "),
+        ]
+          .filter(Boolean)
+          .join(", ");
+
+        const coverData: ClientCoverPageData = {
+          reportTitle: "Depreciation Recovery Invoice",
+          reportSubtitle: `Invoice #${invoiceNum}`,
+          reportCategory: carrier ? "insurance" : "retail",
+          companyName: branding.companyName || contractorName,
+          companyLicense: branding.companyLicense || contractorLicense,
+          companyPhone: branding.companyPhone || contractorPhone,
+          companyEmail: branding.companyEmail || contractorEmail,
+          companyWebsite: branding.companyWebsite,
+          logoUrl: branding.logoUrl,
+          headshotUrl: branding.headshotUrl,
+          employeeName: branding.employeeName,
+          employeeTitle: branding.employeeTitle,
+          employeePhone: branding.employeePhone || branding.companyPhone,
+          brandColor: branding.brandColor,
+          accentColor: branding.accentColor,
+          propertyAddress: fullAddr || undefined,
+          insuredName: propertyOwner,
+          carrierName: carrier,
+          claimNumber,
+          policyNumber,
+          reportDate: new Date(),
+        };
+
+        await drawClientCoverPage(pdf, coverData);
+        pdf.addPage(); // content pages follow
+      } catch (coverErr) {
+        console.warn("[FinalInvoice] Cover page failed:", coverErr);
+      }
 
       let yOffset = 10;
       let remainingHeight = imgHeight;
