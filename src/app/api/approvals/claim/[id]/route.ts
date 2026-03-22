@@ -8,7 +8,7 @@ import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 
 export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
-  const { userId } = await auth();
+  const { userId, orgId } = await auth();
   if (!userId) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
@@ -16,24 +16,36 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
   const claimId = params.id;
 
   try {
-    // Verify access (pro or client)
-    const proUser = await prisma.users.findFirst({
-      where: { clerkUserId: userId },
-      select: { orgId: true },
-    });
-
-    if (proUser) {
-      // Pro user - verify claim ownership
-      const claim = await prisma.claims.findUnique({
-        where: { id: claimId },
-        select: { orgId: true },
+    // B-18: Verify access — use org-scoped query to avoid timing side-channel
+    if (orgId) {
+      // Pro user — verify claim belongs to org directly (no TOCTOU)
+      const claim = await prisma.claims.findFirst({
+        where: { id: claimId, orgId },
+        select: { claimNumber: true },
       });
 
-      if (!claim || claim.orgId !== proUser.orgId) {
+      if (!claim) {
         return NextResponse.json({ error: "Forbidden" }, { status: 403 });
       }
+
+      // Get job for this claim using claim_number
+      const job = await prisma.crm_jobs.findFirst({
+        where: { claim_number: claim.claimNumber },
+        select: { id: true },
+      });
+
+      if (!job) {
+        return NextResponse.json({ approvals: [] });
+      }
+
+      const approvals = await prisma.carrier_approvals.findMany({
+        where: { job_id: job.id },
+        orderBy: { created_at: "desc" },
+      });
+
+      return NextResponse.json({ approvals });
     } else {
-      // Client user - verify claim access via email
+      // Client user — verify claim access via email
       const user = await currentUser();
       const userEmail = user?.emailAddresses?.[0]?.emailAddress;
       if (!userEmail) {
@@ -41,43 +53,38 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
       }
 
       const clientAccess = await prisma.client_access.findFirst({
-        where: {
-          email: userEmail,
-          claimId,
-        },
+        where: { email: userEmail, claimId },
       });
 
       if (!clientAccess) {
         return NextResponse.json({ error: "Forbidden" }, { status: 403 });
       }
+
+      const claim = await prisma.claims.findUnique({
+        where: { id: claimId },
+        select: { claimNumber: true },
+      });
+
+      if (!claim) {
+        return NextResponse.json({ approvals: [] });
+      }
+
+      const job = await prisma.crm_jobs.findFirst({
+        where: { claim_number: claim.claimNumber },
+        select: { id: true },
+      });
+
+      if (!job) {
+        return NextResponse.json({ approvals: [] });
+      }
+
+      const approvals = await prisma.carrier_approvals.findMany({
+        where: { job_id: job.id },
+        orderBy: { created_at: "desc" },
+      });
+
+      return NextResponse.json({ approvals });
     }
-
-    // Get job for this claim (crm_jobs uses claim_number, not claim_id)
-    // First we need to get the claim's claim_number
-    const claim = await prisma.claims.findUnique({
-      where: { id: claimId },
-      select: { claimNumber: true },
-    });
-
-    if (!claim) {
-      return NextResponse.json({ approvals: [] });
-    }
-
-    const job = await prisma.crm_jobs.findFirst({
-      where: { claim_number: claim.claimNumber },
-      select: { id: true },
-    });
-
-    if (!job) {
-      return NextResponse.json({ approvals: [] });
-    }
-
-    const approvals = await prisma.carrier_approvals.findMany({
-      where: { job_id: job.id },
-      orderBy: { created_at: "desc" },
-    });
-
-    return NextResponse.json({ approvals });
   } catch (error) {
     logger.error("[APPROVALS_LIST]", error);
     return NextResponse.json({ error: "Failed to fetch approvals" }, { status: 500 });

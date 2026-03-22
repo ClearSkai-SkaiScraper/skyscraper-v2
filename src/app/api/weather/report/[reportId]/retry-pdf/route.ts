@@ -161,7 +161,9 @@ export const POST = withAuth(
           select: { name: true, email: true },
         });
         generatedBy = user?.name || user?.email || undefined;
-      } catch {}
+      } catch (userLookupErr) {
+        logger.warn("[RETRY_PDF] User name lookup failed (non-critical):", userLookupErr);
+      }
 
       // 6. Build view model
       logger.info("[RETRY_PDF] ▶ Building view model");

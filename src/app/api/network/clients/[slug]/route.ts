@@ -14,14 +14,20 @@ interface Params {
 
 /**
  * GET /api/network/clients/[slug]
- * Returns a single client network by slug (public or authenticated)
+ * B-16: Now requires authentication + org ownership check
  */
 export async function GET(req: NextRequest, { params }: Params) {
+  const authData = await auth();
+  const { userId, orgId } = authData;
+  if (!userId || !orgId) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
   const { slug } = params;
 
   try {
-    const client = await prisma.client_networks.findUnique({
-      where: { slug },
+    const client = await prisma.client_networks.findFirst({
+      where: { slug, orgId },
     });
 
     if (!client) {
@@ -64,16 +70,13 @@ export async function PATCH(req: NextRequest, { params }: Params) {
     const body = await req.json();
     const { name } = body;
 
-    const client = await prisma.client_networks.findUnique({
-      where: { slug },
+    // B-16: Use findFirst with orgId directly — no TOCTOU
+    const client = await prisma.client_networks.findFirst({
+      where: { slug, orgId },
     });
 
     if (!client) {
       return NextResponse.json({ error: "Client network not found" }, { status: 404 });
-    }
-
-    if (client.orgId !== orgId) {
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
     const updated = await prisma.client_networks.update({

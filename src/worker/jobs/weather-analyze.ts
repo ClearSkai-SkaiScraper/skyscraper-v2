@@ -51,7 +51,7 @@ export async function jobWeatherAnalyze(payload: WeatherPayload, job: PgBossJob)
       fullResponse: weatherData.raw,
     };
 
-    // Insert weather result
+    // Insert weather result (A-02: upsert to prevent duplicates on retry)
     const insertQuery = `
       INSERT INTO weather_results (
         property_lat,
@@ -62,6 +62,9 @@ export async function jobWeatherAnalyze(payload: WeatherPayload, job: PgBossJob)
         summary
       )
       VALUES ($1, $2, $3::date, $4::date, $5::jsonb, $6::jsonb)
+      ON CONFLICT (property_lat, property_lng, date_from, date_to) DO UPDATE SET
+        raw = EXCLUDED.raw,
+        summary = EXCLUDED.summary
       RETURNING id, summary;
     `;
 

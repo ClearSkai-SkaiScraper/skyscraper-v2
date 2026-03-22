@@ -53,10 +53,14 @@ export async function jobProposalGenerate(
     // Placeholder download URL
     const downloadUrl = `https://skaiscrape.com/downloads/proposals/${job.id}.pdf`;
 
-    // Insert proposal record
+    // Insert proposal record (A-03: upsert to prevent duplicates on retry)
     const insertQuery = `
       INSERT INTO proposals_v2 (lead_id, org_id, title, status, data, download_url)
       VALUES ($1, $2, $3, 'ready', $4::jsonb, $5)
+      ON CONFLICT (lead_id, org_id, title) DO UPDATE SET
+        status = 'ready',
+        data = EXCLUDED.data,
+        download_url = EXCLUDED.download_url
       RETURNING id, download_url;
     `;
 

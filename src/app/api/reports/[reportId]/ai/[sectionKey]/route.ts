@@ -41,6 +41,14 @@ export const GET = withAuth(async (req: NextRequest, { orgId }, routeParams) => 
     const { reportId, sectionKey: rawKey } = await routeParams.params;
     const sectionKey = rawKey as AISectionKey;
 
+    // B-04: Verify report belongs to caller's org (cross-tenant fix)
+    const reportOwnership = await prisma.ai_reports
+      .findFirst({ where: { id: reportId, orgId }, select: { id: true } })
+      .catch(() => null);
+    if (!reportOwnership) {
+      return NextResponse.json({ error: "Report not found" }, { status: 404 });
+    }
+
     const state = await getAISection(reportId, sectionKey);
 
     if (!state) {
@@ -50,10 +58,7 @@ export const GET = withAuth(async (req: NextRequest, { orgId }, routeParams) => 
     return NextResponse.json(state);
   } catch (error) {
     logger.error("[AI Section API]", error);
-    return NextResponse.json(
-      { error: "Failed to get section" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Failed to get section" }, { status: 500 });
   }
 });
 
@@ -68,9 +73,9 @@ export const POST = withAuth(async (req: NextRequest, { orgId, userId }, routePa
       return NextResponse.json({ error: "Unknown section key" }, { status: 400 });
     }
 
-    // Check if report exists (but skip creation to avoid schema mismatch)
+    // B-04: Check if report exists AND belongs to caller's org (cross-tenant fix)
     const report = await prisma.ai_reports
-      .findUnique({ where: { id: reportId }, select: { id: true } })
+      .findFirst({ where: { id: reportId, orgId }, select: { id: true } })
       .catch(() => null);
     if (!report) {
       logger.debug(`[AI Section] No existing report ${reportId}, generating suggestion anyway`);

@@ -21,12 +21,14 @@ export const DELETE = withAuth(async (req: NextRequest, { orgId }) => {
       return NextResponse.json({ error: "Template not found" }, { status: 404 });
     }
 
-    // Delete template
-    await prisma.report_templates
-      .deleteMany({
-        where: { id, org_id: orgId },
-      })
-      .catch(() => {});
+    // Delete template — WP-02: properly handle errors instead of swallowing
+    const deleteResult = await prisma.report_templates.deleteMany({
+      where: { id, org_id: orgId },
+    });
+
+    if (deleteResult.count === 0) {
+      logger.warn("[REPORT_TEMPLATES] Delete returned 0 rows", { id, orgId });
+    }
 
     return NextResponse.json({ success: true });
   } catch (err) {

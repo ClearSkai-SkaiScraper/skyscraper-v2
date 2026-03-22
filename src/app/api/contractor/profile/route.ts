@@ -347,6 +347,17 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Organization ID is required" }, { status: 400 });
     }
 
+    // B-07: Verify user belongs to the specified org (never trust body.orgId alone)
+    const userMembership = await prisma.user_organizations.findFirst({
+      where: { userId: authUserId, organizationId: body.orgId },
+    });
+    if (!userMembership) {
+      return NextResponse.json(
+        { error: "You are not a member of this organization" },
+        { status: 403 }
+      );
+    }
+
     // Check if company already exists for this org (via member)
     const existingMember = await prisma.tradesCompanyMember.findFirst({
       where: { orgId: body.orgId },
@@ -472,6 +483,17 @@ export async function PUT(req: NextRequest) {
 
     if (!body.orgId) {
       return NextResponse.json({ error: "Organization ID is required" }, { status: 400 });
+    }
+
+    // B-07: Verify user belongs to the specified org (never trust body.orgId alone)
+    const userMembership = await prisma.user_organizations.findFirst({
+      where: { userId: authUserId, organizationId: body.orgId },
+    });
+    if (!userMembership) {
+      return NextResponse.json(
+        { error: "You are not a member of this organization" },
+        { status: 403 }
+      );
     }
 
     // Find existing company (via member with orgId)

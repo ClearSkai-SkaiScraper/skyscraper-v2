@@ -1,15 +1,15 @@
 /**
  * Damage Analysis Worker Job
- * 
+ *
  * Processes uploaded photos using OpenAI Vision API to detect damage.
  * Stores findings in photo_findings table.
  */
 
 import { type Job as PgBossJob } from "pg-boss";
-import { q, qOne } from "../../lib/db/index.js";
-import { getSignedReadUrl, extractStoragePath } from "../helpers/storage.js";
-import { analyzeImage } from "../../lib/ai/openai-vision.js";
 import type { DamageReport } from "../../lib/ai/damage-schema.js";
+import { analyzeImage } from "../../lib/ai/openai-vision.js";
+import { q, qOne } from "../../lib/db/index.js";
+import { extractStoragePath, getSignedReadUrl } from "../helpers/storage.js";
 
 // =============================================================================
 // TYPES
@@ -50,10 +50,7 @@ export async function jobDamageAnalyze(
 
   try {
     // Update proposal status to "running"
-    await q(
-      `SELECT proposals_set_status($1::uuid, $2, NULL)`,
-      [proposalId, "running"]
-    );
+    await q(`SELECT proposals_set_status($1::uuid, $2, NULL)`, [proposalId, "running"]);
 
     // Process each photo
     let successCount = 0;
@@ -90,7 +87,7 @@ export async function jobDamageAnalyze(
           itemCount: report.items.length,
         });
 
-        // Insert finding into database
+        // Insert finding into database (A-01: upsert to prevent duplicates on retry)
         await q(
           `INSERT INTO photo_findings (
             proposal_id,
@@ -108,7 +105,14 @@ export async function jobDamageAnalyze(
             $5,
             $6,
             NOW()
-          )`,
+          )
+          ON CONFLICT (proposal_id, photo_id) DO UPDATE SET
+            model = EXCLUDED.model,
+            findings = EXCLUDED.findings,
+            severity = EXCLUDED.severity,
+            confidence = EXCLUDED.confidence,
+            created_at = NOW()
+          `,
           [
             proposalId,
             photoId,
@@ -142,10 +146,7 @@ export async function jobDamageAnalyze(
     // Update proposal status
     if (errorCount === 0) {
       // All photos analyzed successfully
-      await q(
-        `SELECT proposals_set_status($1::uuid, $2, NULL)`,
-        [proposalId, "complete"]
-      );
+      await q(`SELECT proposals_set_status($1::uuid, $2, NULL)`, [proposalId, "complete"]);
 
       // Record success event
       await q(
@@ -164,10 +165,7 @@ export async function jobDamageAnalyze(
       // Some photos failed
       const errorMessage = `${successCount} of ${photoIds.length} photos analyzed. ${errorCount} failed.`;
 
-      await q(
-        `SELECT proposals_set_status($1::uuid, $2, $3)`,
-        [proposalId, "error", errorMessage]
-      );
+      await q(`SELECT proposals_set_status($1::uuid, $2, $3)`, [proposalId, "error", errorMessage]);
 
       // Record partial success event
       await q(
@@ -187,10 +185,7 @@ export async function jobDamageAnalyze(
     console.error(`Fatal error in damage analysis job:`, error);
 
     // Update proposal status to error
-    await q(
-      `SELECT proposals_set_status($1::uuid, $2, $3)`,
-      [proposalId, "error", error.message]
-    );
+    await q(`SELECT proposals_set_status($1::uuid, $2, $3)`, [proposalId, "error", error.message]);
 
     // Record error event
     await q(

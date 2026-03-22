@@ -36,6 +36,16 @@ export async function POST(req: Request) {
       return NextResponse.json({ ok: false, error: "TEMPLATE_NOT_FOUND" }, { status: 404 });
     }
 
+    // B-06: Verify template is accessible to this org (marketplace OR org-owned)
+    if (!template.isMarketplace) {
+      const orgAccess = await prisma.orgTemplate.findFirst({
+        where: { orgId: auth.orgId, templateId },
+      });
+      if (!orgAccess) {
+        return NextResponse.json({ ok: false, error: "TEMPLATE_ACCESS_DENIED" }, { status: 403 });
+      }
+    }
+
     const sectionsStr = JSON.stringify(template.sections ?? []);
     const missingPlaceholders = REQUIRED_PLACEHOLDERS.filter((p) => !sectionsStr.includes(p));
 

@@ -21,6 +21,7 @@ import { ClaimNotFoundError } from "@/components/errors/ErrorStates";
 import { TabErrorBoundary } from "@/components/errors/TabErrorBoundary";
 import { EvidenceGapWidget } from "@/components/intelligence/EvidenceGapWidget";
 import { IntelligenceErrorBoundary } from "@/components/intelligence/IntelligenceErrorBoundary";
+import { SimilarClaimsPanel } from "@/components/intelligence/SimilarClaimsPanel";
 import { CloseoutChecklist } from "@/components/jobs/CloseoutChecklist";
 import { JobValueBox } from "@/components/jobs/JobValueBox";
 import { RequestCloseoutButton } from "@/components/jobs/RequestCloseoutButton";
@@ -28,7 +29,7 @@ import { ClaimWorkspaceSkeleton } from "@/components/loading/LoadingStates";
 import { SimulationComparison } from "@/components/simulation/SimulationComparison";
 import { retryQueue } from "@/lib/client/retryQueue";
 import { logger } from "@/lib/logger";
-import { getWorkflowStatusInfo, mapToWorkflowStatus,WORKFLOW_STATUSES } from "@/lib/statusMapping";
+import { getWorkflowStatusInfo, mapToWorkflowStatus, WORKFLOW_STATUSES } from "@/lib/statusMapping";
 
 import { CarrierExportButton } from "../_components/CarrierExportButton";
 import { ClaimsSidebar } from "../_components/ClaimsSidebar";
@@ -860,9 +861,12 @@ export default function OverviewPage() {
           </div>
         </SectionCard>
 
-        {/* 6. Intelligence Layer — Evidence Gaps + Carrier Playbook + Autopilot + Simulation */}
+        {/* 6. Intelligence Layer — Evidence Gaps + Carrier Playbook + Autopilot + Simulation + Similar Claims */}
         <SectionCard title="Intelligence">
           <div className="space-y-4">
+            <IntelligenceErrorBoundary compact>
+              <SimilarClaimsPanel claimId={claimId} />
+            </IntelligenceErrorBoundary>
             <IntelligenceErrorBoundary compact>
               <EvidenceGapWidget claimId={claimId} />
             </IntelligenceErrorBoundary>

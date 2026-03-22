@@ -12,8 +12,8 @@ export * from "./router";
 // ============================================
 
 // Main orchestrator
-export type { OrchestratorInput, OrchestratorOutput } from "./orchestrator/orchestrateClaim";
 export { orchestrateClaim, shouldTakeAction } from "./orchestrator/orchestrateClaim";
+export type { OrchestratorInput, OrchestratorOutput } from "./orchestrator/orchestrateClaim";
 
 // Intelligence types
 export * from "./types";
@@ -40,9 +40,18 @@ export { getNextActionsForClaim } from "./planner/claimPlanner";
 // Feedback
 export { getAgentActions, getClaimActions, logAIAction } from "./feedback/logAction";
 
-// Similarity
+// Similarity & Intelligence
+export {
+  embedClaim,
+  embedOrgClaims,
+  findSimilarClaims,
+  findSimilarClaimsByText,
+  getEmbeddingStatus,
+} from "./intelligence/claimSimilarity";
+
+// Legacy compatibility aliases
 export { createOrUpdateClaimEmbedding, generateMissingEmbeddings } from "./similarity/embedClaim";
-export { findSimilarClaims, getSimilarClaimsWithDetails } from "./similarity/querySimilarClaims";
+export { getSimilarClaimsWithDetails } from "./similarity/querySimilarClaims";
 
 // Explanations
 export {

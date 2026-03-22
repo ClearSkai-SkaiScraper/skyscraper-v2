@@ -133,6 +133,7 @@ export async function listFiles(bucket: string, path?: string) {
 
 /**
  * Helper: Get public URL for a file
+ * @deprecated Use getSignedUrl() instead — public URLs bypass auth (F-02)
  *
  * @param bucket - Bucket name
  * @param path - File path within bucket
@@ -144,4 +145,35 @@ export function getPublicUrl(bucket: string, path: string) {
   }
 
   return client.storage.from(bucket).getPublicUrl(path);
+}
+
+/**
+ * F-02: Get multiple signed URLs in batch.
+ *
+ * @param bucket - Bucket name
+ * @param paths - Array of file paths
+ * @param expiresIn - Expiration in seconds (default 3600)
+ * @returns Array of { path, signedUrl } objects
+ */
+export async function getSignedUrls(
+  bucket: string,
+  paths: string[],
+  expiresIn: number = 3600
+): Promise<Array<{ path: string; signedUrl: string | null }>> {
+  const client = getStorageClient();
+  if (!client) return paths.map((p) => ({ path: p, signedUrl: null }));
+
+  const { data, error } = await client.storage.from(bucket).createSignedUrls(paths, expiresIn);
+
+  if (error) {
+    logger.error(
+      `[Storage] Batch signed URL creation failed for bucket=${bucket}: ${error.message}`
+    );
+    return paths.map((p) => ({ path: p, signedUrl: null }));
+  }
+
+  return (data ?? []).map((d) => ({
+    path: d.path ?? "",
+    signedUrl: d.signedUrl ?? null,
+  }));
 }

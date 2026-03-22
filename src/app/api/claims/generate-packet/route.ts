@@ -9,6 +9,7 @@ import { withAuth } from "@/lib/auth/withAuth";
 import { generateClaimPacket } from "@/lib/claims/generator";
 import { ClaimPacketData, PacketVersion } from "@/lib/claims/templates";
 import { logger } from "@/lib/logger";
+import prisma from "@/lib/prisma";
 
 /**
  * POST /api/claims/generate-packet
@@ -17,11 +18,12 @@ import { logger } from "@/lib/logger";
 export const POST = withAuth(async (req: NextRequest, { orgId, userId }) => {
   try {
     const body = await req.json();
-    const { data, version, format, includeWeatherPage } = body as {
+    const { data, version, format, includeWeatherPage, claimId } = body as {
       data: ClaimPacketData;
       version: PacketVersion;
       format: "pdf" | "docx";
       includeWeatherPage?: boolean;
+      claimId?: string;
     };
 
     if (!data || !version || !format) {
@@ -29,6 +31,17 @@ export const POST = withAuth(async (req: NextRequest, { orgId, userId }) => {
         { error: "Missing required fields: data, version, format" },
         { status: 400 }
       );
+    }
+
+    // B-17: Verify claim belongs to caller's org if claimId is provided
+    if (claimId) {
+      const claim = await prisma.claims.findFirst({
+        where: { id: claimId, orgId },
+        select: { id: true },
+      });
+      if (!claim) {
+        return NextResponse.json({ error: "Claim not found or access denied" }, { status: 404 });
+      }
     }
 
     logger.info(`[API:CLAIM_PACKET] Generating ${version} packet for user ${userId}`);
@@ -59,9 +72,6 @@ export const POST = withAuth(async (req: NextRequest, { orgId, userId }) => {
     Sentry.captureException(error, {
       tags: { component: "claim-packet-api", orgId },
     });
-    return NextResponse.json(
-      { error: "Failed to generate claim packet" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Failed to generate claim packet" }, { status: 500 });
   }
 });

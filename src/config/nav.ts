@@ -11,7 +11,14 @@ export type NavItem = {
 
 export const CORE_NAV: NavItem[] = [
   // AI Hub (aggregated landing for AI features)
-  { href: "/ai/hub", label: "AI Hub", icon: "Sparkles", match: /^\/ai\/hub$/ },
+  { href: "/ai", label: "AI Hub", icon: "Sparkles", match: /^\/ai$/ },
+  // Visual Intelligence Dashboard — embedding coverage, similarity, pattern detection
+  {
+    href: "/intelligence/dashboard",
+    label: "Visual Intelligence",
+    icon: "Brain",
+    match: /^\/intelligence\/dashboard(\/.*)?$/,
+  },
   // AI Smart Actions Engine
   {
     href: "/ai/smart-actions",
@@ -98,8 +105,7 @@ export const CORE_NAV: NavItem[] = [
     icon: "Video",
     match: /^\/ai\/video-reports(\/.*)?$/,
   },
-  // AI Agent Tools
-  { href: "/rebuttal", label: "Rebuttal Builder", icon: "FileText", match: /^\/rebuttal(\/.*)?$/ },
+  // AI Agent Tools — rebuttal moved to /ai/tools/rebuttal above
   {
     href: "/ai/claims-analysis",
     label: "Claims Analysis",
@@ -199,13 +205,13 @@ export const CORE_NAV: NavItem[] = [
   },
   // Unified maps hub route (previously /map and /maps duplicated)
   { href: "/maps", label: "Maps", icon: "Map", match: /^\/maps(\/.*)?$/ },
-  { href: "/routes", label: "Routes", icon: "Route", match: /^\/routes(\/.*)?$/ },
+  // Routes — consolidated under /route-optimization and /maps/routes
   { href: "/teams", label: "Teams", icon: "UserSquare2", match: /^\/teams(\/.*)?$/ },
   {
-    href: "/supplement",
+    href: "/supplements",
     label: "Supplement Builder",
     icon: "ClipboardList",
-    match: /^\/supplement(\/.*)?$/,
+    match: /^\/supplements(\/.*)?\/\$/,
   },
   // Smart Documents — e-sign, templates, document sending
   {
@@ -228,10 +234,10 @@ export const CORE_NAV: NavItem[] = [
     match: /^\/depreciation(\/.*)?$/,
   },
   {
-    href: "/route-optimizer",
+    href: "/route-optimization",
     label: "Route Optimizer",
     icon: "Route",
-    match: /^\/route-optimizer(\/.*)?$/,
+    match: /^\/route-optimization(\/.*)?\/\$/,
   },
   // Material Intelligence is placeholder; gate to admin until features shipped
   {
@@ -338,11 +344,11 @@ export const CONTEXT_NAV: Record<string, NavItem[]> = {
   "/claims": [
     { href: "/claims/new", label: "New Claim" },
     { href: "/claims/reports", label: "Reports" },
-    { href: "/claims/rebuttal-builder", label: "Rebuttal Builder" },
+    { href: "/ai/tools/rebuttal", label: "Rebuttal Builder" },
   ],
   "/ai": [
     { href: "/ai/claims-analysis", label: "Claims Analysis" },
-    { href: "/ai/bad-faith-detector", label: "Bad Faith Detector" },
+    { href: "/ai/bad-faith", label: "Bad Faith Detector" },
     { href: "/ai/damage-builder", label: "Damage Builder" },
     { href: "/ai/video-reports", label: "Video Reports" },
   ],
@@ -350,9 +356,9 @@ export const CONTEXT_NAV: Record<string, NavItem[]> = {
     { href: "/reports/claims", label: "Claims PDF" },
     { href: "/reports/retail", label: "Retail Proposal Builder" },
   ],
-  "/trades-network": [
-    { href: "/trades-network/feed", label: "Trades Feed" },
-    { href: "/trades-network/metrics", label: "My Metrics" },
+  "/trades": [
+    { href: "/trades/feed", label: "Trades Feed" },
+    { href: "/trades/metrics", label: "My Metrics" },
   ],
   "/vendor-network": [
     { href: "/vendor-network", label: "Browse" },

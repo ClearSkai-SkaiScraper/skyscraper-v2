@@ -11,12 +11,13 @@ export const revalidate = 0;
 
 import { NextRequest, NextResponse } from "next/server";
 
-import { type AiBillingContext,createAiConfig, withAiBilling } from "@/lib/ai/withAiBilling";
+import { type AiBillingContext, createAiConfig, withAiBilling } from "@/lib/ai/withAiBilling";
 import {
   requireActiveSubscription,
   SubscriptionRequiredError,
 } from "@/lib/billing/requireActiveSubscription";
 import { logger } from "@/lib/logger";
+import prisma from "@/lib/prisma";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { runSchema, validateAIRequest } from "@/lib/validation/aiSchemas";
 import { validateQuota } from "@/modules/ai/core/tokens";
@@ -65,6 +66,17 @@ async function POST_INNER(req: NextRequest, ctx: AiBillingContext) {
       );
     }
     const { reportId, engine, sectionKey, context } = validation.data;
+
+    // B-15: Verify reportId belongs to caller's org before processing
+    if (reportId && orgId) {
+      const report = await prisma.ai_reports.findFirst({
+        where: { id: reportId, orgId },
+        select: { id: true },
+      });
+      if (!report) {
+        return NextResponse.json({ error: "Report not found or access denied" }, { status: 404 });
+      }
+    }
 
     // Map engine to token bucket
     const bucketMap: Record<string, AITokenBucket> = {

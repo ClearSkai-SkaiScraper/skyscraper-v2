@@ -4,6 +4,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { analyzeImage } from "@/lib/ai/openai-vision";
 import { logger } from "@/lib/logger";
 import { getRateLimitIdentifier, rateLimiters } from "@/lib/rate-limit";
+import { safeOrgContext } from "@/lib/safeOrgContext";
 
 export const dynamic = "force-dynamic";
 
@@ -13,6 +14,10 @@ export async function POST(request: NextRequest) {
     if (!user) {
       return NextResponse.json({ error: "Authentication required" }, { status: 401 });
     }
+
+    // B-10: Resolve org context for usage tracking and billing
+    const orgCtx = await safeOrgContext();
+    const orgId = orgCtx.ok ? orgCtx.orgId : null;
 
     // Rate limit AI photo analysis (expensive operation)
     const identifier = getRateLimitIdentifier(user.id, request);

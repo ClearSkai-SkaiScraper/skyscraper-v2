@@ -1037,6 +1037,11 @@ model Org {
   storm_clusters            storm_clusters[]
   carrier_playbooks         carrier_playbooks[]
 
+  // Visual Intelligence relations
+  claim_embeddings      claim_embeddings[]
+  photo_embeddings      photo_embeddings[]
+  intelligence_insights intelligence_insights[]
+
   @@index([stripeCustomerId])
   @@index([subscriptionStatus])
   @@index([trialEndsAt])
@@ -2481,6 +2486,10 @@ model claims {
   claim_detections           claim_detections[]
   claim_simulations          claim_simulations[]
   simulation_history         simulation_history[]
+
+  // Visual Intelligence relations
+  claim_embedding  claim_embeddings?
+  photo_embeddings photo_embeddings[]
 
   externalId     String?
   externalSource String?
@@ -7444,4 +7453,73 @@ model DominusChatMessage {
   @@index([userId, createdAt])
   @@index([orgId, createdAt])
   @@index([claimId, createdAt])
+}
+
+// ═══════════════════════════════════════════════════════════════
+// VISUAL INTELLIGENCE LAYER — Embedding & Similarity Infrastructure
+// ═══════════════════════════════════════════════════════════════
+
+/// Stores text-based claim embeddings for similarity search.
+/// Uses pgvector with HNSW index for fast approximate nearest neighbor queries.
+/// Always filter by orgId for tenant isolation.
+model claim_embeddings {
+  id         String                      @id
+  claimId    String                      @unique
+  orgId      String
+  embedding  Unsupported("vector(1536)")
+  textHash   String // SHA-256 of source text for change detection
+  sourceText String?                     @db.Text
+  metadata   Json?                       @default("{}")
+  createdAt  DateTime                    @default(now()) @db.Timestamptz
+  updatedAt  DateTime                    @default(now()) @db.Timestamptz
+
+  claim claims @relation(fields: [claimId], references: [id], onDelete: Cascade)
+  org   Org    @relation(fields: [orgId], references: [id], onDelete: Cascade)
+
+  @@index([orgId])
+  @@index([updatedAt])
+}
+
+/// Stores visual embeddings for claim photos.
+/// Powers photo similarity search, damage clustering, and deduplication.
+model photo_embeddings {
+  id         String                      @id
+  photoUrl   String
+  orgId      String
+  claimId    String?
+  embedding  Unsupported("vector(1536)")
+  damageType String?
+  severity   String?
+  confidence Float?
+  caption    String?                     @db.Text
+  metadata   Json?                       @default("{}")
+  createdAt  DateTime                    @default(now()) @db.Timestamptz
+
+  org   Org     @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  claim claims? @relation(fields: [claimId], references: [id], onDelete: SetNull)
+
+  @@index([orgId])
+  @@index([claimId])
+}
+
+/// Cached AI-generated intelligence findings.
+/// Powers the intelligence dashboard, notifications, and pattern alerts.
+model intelligence_insights {
+  id           String    @id
+  orgId        String
+  type         String // 'similar_claims', 'missing_items', 'anomaly', 'pattern', 'cluster'
+  title        String
+  description  String?   @db.Text
+  severity     String    @default("info") // 'info', 'warning', 'critical', 'opportunity'
+  data         Json?     @default("{}")
+  claimIds     String[]  @default([])
+  stormEventId String?
+  isRead       Boolean   @default(false)
+  expiresAt    DateTime? @db.Timestamptz
+  createdAt    DateTime  @default(now()) @db.Timestamptz
+
+  org Org @relation(fields: [orgId], references: [id], onDelete: Cascade)
+
+  @@index([orgId])
+  @@index([orgId, type])
 }

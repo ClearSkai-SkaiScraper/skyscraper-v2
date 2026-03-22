@@ -2,6 +2,7 @@ import crypto from "crypto";
 import { z } from "zod";
 
 import { delFlagCache, getFlagCache, logCacheEvent, setFlagCache } from "@/lib/flagCache";
+import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 
 // ============================================================================
@@ -55,7 +56,9 @@ export const targetingSchema = z
 async function incrementUsage(key: string, orgId?: string | null) {
   try {
     await prisma.$executeRaw`INSERT INTO app.feature_flag_usage (key, org_id, date, hits) VALUES (${key}, ${orgId || null}, CURRENT_DATE, 1) ON CONFLICT (key, org_id, date) DO UPDATE SET hits = app.feature_flag_usage.hits + 1`;
-  } catch {}
+  } catch (e) {
+    logger.warn("[flags] usage increment failed:", e);
+  }
 }
 
 // Returns org-specific override if present, else global (NULL org_id) record
@@ -77,7 +80,9 @@ function shouldTargetUser(targeting: any, userId: string, orgId?: string | null)
     const val = t.data;
     if (val.userIds && Array.isArray(val.userIds)) return val.userIds.includes(userId);
     if (val.orgIds && Array.isArray(val.orgIds) && orgId) return val.orgIds.includes(orgId);
-  } catch {}
+  } catch (e) {
+    logger.warn("[flags] targeting parse failed:", e);
+  }
   return true; // default allow if malformed
 }
 
@@ -96,7 +101,9 @@ export async function evaluateFlag(
     try {
       rows =
         await prisma.$queryRaw`SELECT id, enabled FROM app.feature_flags WHERE key = ${key} AND (org_id = ${orgId || null} OR org_id IS NULL) ORDER BY CASE WHEN org_id = ${orgId || null} THEN 0 ELSE 1 END LIMIT 1`;
-    } catch {}
+    } catch (e2) {
+      logger.warn("[flags] flag query fallback also failed:", e2);
+    }
   }
   const row = rows[0];
   // Provide defaults when columns are absent.
@@ -165,7 +172,8 @@ export async function setFlag(
   try {
     await prisma.$executeRaw`INSERT INTO app.feature_flags (key, enabled, org_id, last_access_at, rollout_percent, targeting) VALUES (${key}, ${enabled}, ${orgId || null}, NOW(), ${rolloutPercent}, ${validTargeting ? JSON.stringify(validTargeting) : null}) ON CONFLICT (key, org_id) DO UPDATE SET enabled = EXCLUDED.enabled, last_access_at = NOW(), rollout_percent = EXCLUDED.rollout_percent, targeting = EXCLUDED.targeting`;
     legacyFlagMeta.delete(`${orgId || "global"}:${key}`);
-  } catch {
+  } catch (e) {
+    logger.warn("[flags] setFlag full insert failed, trying legacy:", e);
     await prisma.$executeRaw`INSERT INTO app.feature_flags (key, enabled, org_id, last_access_at) VALUES (${key}, ${enabled}, ${orgId || null}, NOW()) ON CONFLICT (key, org_id) DO UPDATE SET enabled = EXCLUDED.enabled, last_access_at = NOW()`;
     legacyFlagMeta.set(`${orgId || "global"}:${key}`, {
       rolloutPercent,

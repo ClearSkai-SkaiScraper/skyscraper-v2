@@ -75,7 +75,12 @@ const CONNECTION_TYPES = [
   },
 ];
 
-export default async function CompanyConnectionsPage() {
+export default async function CompanyConnectionsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ q?: string }>;
+}) {
+  const { q: searchQuery } = await searchParams;
   const user = await currentUser();
   if (!user) redirect("/sign-in");
 
@@ -197,6 +202,29 @@ export default async function CompanyConnectionsPage() {
 
   const totalConnections = connections.length + clientCount;
 
+  // Apply search filter if query provided
+  const lowerQ = searchQuery?.toLowerCase() || "";
+  const filteredConnections = lowerQ
+    ? connections.filter(
+        (c) =>
+          c.name?.toLowerCase().includes(lowerQ) ||
+          c.email?.toLowerCase().includes(lowerQ) ||
+          c.phone?.includes(lowerQ) ||
+          c.city?.toLowerCase().includes(lowerQ) ||
+          c.specialties?.some((s: string) => s.toLowerCase().includes(lowerQ))
+      )
+    : connections;
+  const filteredClients = lowerQ
+    ? clientContacts.filter(
+        (c) =>
+          c.name?.toLowerCase().includes(lowerQ) ||
+          c.email?.toLowerCase().includes(lowerQ) ||
+          c.phone?.includes(lowerQ) ||
+          c.companyName?.toLowerCase().includes(lowerQ) ||
+          c.city?.toLowerCase().includes(lowerQ)
+      )
+    : clientContacts;
+
   return (
     <PageContainer maxWidth="6xl">
       <PageHero
@@ -258,10 +286,15 @@ export default async function CompanyConnectionsPage() {
 
       {/* Search */}
       <div className="mb-6">
-        <div className="relative max-w-md">
+        <form method="GET" className="relative max-w-md">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-          <Input placeholder="Search connections..." className="pl-10" />
-        </div>
+          <Input
+            name="q"
+            defaultValue={searchQuery || ""}
+            placeholder="Search connections..."
+            className="pl-10"
+          />
+        </form>
       </div>
 
       {/* Tabs */}
@@ -280,18 +313,27 @@ export default async function CompanyConnectionsPage() {
 
         {/* All Connections */}
         <TabsContent value="all" className="space-y-4">
-          {totalConnections === 0 ? (
-            <EmptyState />
+          {filteredConnections.length === 0 && filteredClients.length === 0 ? (
+            searchQuery ? (
+              <div className="rounded-xl border-2 border-dashed border-slate-300 bg-slate-50 p-8 text-center dark:border-slate-700 dark:bg-slate-800/50">
+                <Search className="mx-auto mb-4 h-12 w-12 text-slate-400" />
+                <h3 className="mb-2 text-lg font-semibold">
+                  No results for &ldquo;{searchQuery}&rdquo;
+                </h3>
+                <p className="text-muted-foreground">Try a different search term.</p>
+              </div>
+            ) : (
+              <EmptyState />
+            )
           ) : (
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-              {connections.map((connection) => (
+              {filteredConnections.map((connection) => (
                 <ConnectionCard key={connection.id} connection={connection} />
               ))}
-              {/* Show first few clients inline, link to see all */}
-              {clientContacts.slice(0, 3).map((client) => (
+              {filteredClients.slice(0, searchQuery ? 100 : 3).map((client) => (
                 <ClientCard key={client.id} client={client} />
               ))}
-              {clientCount > 3 && (
+              {!searchQuery && clientCount > 3 && (
                 <Link
                   href="/contacts"
                   className="flex items-center justify-center rounded-xl border-2 border-dashed border-slate-300 p-6 text-center transition hover:border-blue-500 hover:bg-blue-50 dark:border-slate-600 dark:hover:bg-blue-900/20"
@@ -310,7 +352,7 @@ export default async function CompanyConnectionsPage() {
         {/* Vendors */}
         <TabsContent value="vendor" className="space-y-4">
           <ConnectionList
-            connections={connections.filter((c) => c.type === "vendor")}
+            connections={filteredConnections.filter((c) => c.type === "vendor")}
             emptyMessage="No vendors yet. Add material suppliers and providers."
           />
         </TabsContent>
@@ -318,7 +360,7 @@ export default async function CompanyConnectionsPage() {
         {/* Subcontractors */}
         <TabsContent value="subcontractor" className="space-y-4">
           <ConnectionList
-            connections={connections.filter((c) => c.type === "subcontractor")}
+            connections={filteredConnections.filter((c) => c.type === "subcontractor")}
             emptyMessage="No subcontractors yet. Add trades you hire for jobs."
           />
         </TabsContent>
@@ -326,7 +368,7 @@ export default async function CompanyConnectionsPage() {
         {/* Contractors */}
         <TabsContent value="contractor" className="space-y-4">
           <ConnectionList
-            connections={connections.filter((c) => c.type === "contractor")}
+            connections={filteredConnections.filter((c) => c.type === "contractor")}
             emptyMessage="No contractor connections yet. Browse the network to connect."
           />
         </TabsContent>
@@ -349,7 +391,7 @@ export default async function CompanyConnectionsPage() {
             </div>
           ) : (
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-              {clientContacts.map((client) => (
+              {filteredClients.map((client) => (
                 <ClientCard key={client.id} client={client} />
               ))}
             </div>

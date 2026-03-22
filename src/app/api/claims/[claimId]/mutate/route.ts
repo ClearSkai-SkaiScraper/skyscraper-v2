@@ -254,7 +254,9 @@ async function handleUpdate(
   try {
     const { WebhookService } = await import("@/lib/webhook-service");
     await WebhookService.sendClaimUpdated(claimId, updateData, orgId);
-  } catch {}
+  } catch (webhookErr) {
+    logger.warn("[CLAIM_MUTATE] Webhook send failed (non-critical):", webhookErr);
+  }
 
   return NextResponse.json({
     success: true,
@@ -290,7 +292,9 @@ async function handleUpdateStatus(
   try {
     const { WebhookService } = await import("@/lib/webhook-service");
     await WebhookService.sendClaimUpdated(claimId, { status: newStatus }, orgId);
-  } catch {}
+  } catch (webhookErr) {
+    logger.warn("[CLAIM_STATUS_CHANGE] Webhook send failed (non-critical):", webhookErr);
+  }
 
   // Send CLAIM_STATUS_CHANGE notification to org members
   try {

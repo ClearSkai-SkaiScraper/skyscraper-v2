@@ -214,7 +214,12 @@ async function getJobsByCategory(orgId: string) {
   }
 }
 
-export default async function PipelinePage() {
+export default async function PipelinePage({
+  searchParams,
+}: {
+  searchParams: Promise<{ q?: string }>;
+}) {
+  const { q: searchQuery } = await searchParams;
   let orgId: string | null = null;
   let jobs: any[] = [];
   let stats: any[] = [];
@@ -237,11 +242,23 @@ export default async function PipelinePage() {
   }
 
   // Group jobs by category (includes claims)
+  // Apply search filter if query provided
+  const lowerQ = searchQuery?.toLowerCase() || "";
+  const filteredJobs = lowerQ
+    ? jobs.filter(
+        (j) =>
+          j.title?.toLowerCase().includes(lowerQ) ||
+          j.insuredName?.toLowerCase().includes(lowerQ) ||
+          j.address?.toLowerCase().includes(lowerQ) ||
+          j.claimNumber?.toLowerCase().includes(lowerQ)
+      )
+    : jobs;
+
   const jobsByCategory = {
-    claim: jobs.filter((j) => j.jobCategory === "claim"),
-    repair: jobs.filter((j) => j.jobCategory === "repair"),
-    out_of_pocket: jobs.filter((j) => j.jobCategory === "out_of_pocket"),
-    financed: jobs.filter((j) => j.jobCategory === "financed"),
+    claim: filteredJobs.filter((j) => j.jobCategory === "claim"),
+    repair: filteredJobs.filter((j) => j.jobCategory === "repair"),
+    out_of_pocket: filteredJobs.filter((j) => j.jobCategory === "out_of_pocket"),
+    financed: filteredJobs.filter((j) => j.jobCategory === "financed"),
   };
 
   // Calculate totals per category
@@ -303,19 +320,21 @@ export default async function PipelinePage() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="flex gap-2">
+            <form method="GET" className="flex gap-2">
               <div className="relative flex-1">
                 <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
                 <input
                   type="text"
+                  name="q"
+                  defaultValue={searchQuery || ""}
                   placeholder="Search jobs..."
-                  className="w-full rounded-lg border bg-white py-2 pl-10 pr-4 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full rounded-lg border bg-white py-2 pl-10 pr-4 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-slate-700 dark:bg-slate-800"
                 />
               </div>
-              <Button variant="outline" size="sm">
+              <Button variant="outline" size="sm" type="submit">
                 <Filter className="h-4 w-4" />
               </Button>
-            </div>
+            </form>
           </CardContent>
         </Card>
 

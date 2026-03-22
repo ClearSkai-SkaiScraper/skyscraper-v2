@@ -31,6 +31,16 @@ export async function POST(_: Request, ctx: { params: Promise<{ templateId: stri
     if (!template)
       return NextResponse.json({ ok: false, error: "TEMPLATE_NOT_FOUND" }, { status: 404 });
 
+    // B-05: Verify template is accessible to this org (marketplace OR org-owned)
+    if (!template.isMarketplace) {
+      const orgAccess = await prisma.orgTemplate.findFirst({
+        where: { orgId: auth.orgId, templateId },
+      });
+      if (!orgAccess) {
+        return NextResponse.json({ ok: false, error: "TEMPLATE_ACCESS_DENIED" }, { status: 403 });
+      }
+    }
+
     // Sample data for marketplace previews (safe + complete)
     const sampleData = {
       company: {

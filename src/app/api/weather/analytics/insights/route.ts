@@ -22,9 +22,11 @@ export async function POST(req: NextRequest) {
     const userId = ctx.userId as string;
     const orgId = ctx.orgId;
 
-    // Gather all weather reports for this user
+    // B-03: Gather all weather reports for this org/user (org-scoped)
     const reports = await prisma.weather_reports.findMany({
-      where: { createdById: userId },
+      where: orgId
+        ? { OR: [{ createdById: userId }, { claims: { orgId } }] }
+        : { createdById: userId },
       orderBy: { createdAt: "desc" },
       take: 200,
       select: {
@@ -45,9 +47,24 @@ export async function POST(req: NextRequest) {
     });
 
     // Gather weather events
+    // B-03: Scope by org's property IDs to prevent cross-tenant data leakage
     let recentEvents: any[] = [];
     try {
+      let propertyFilter: any = {};
+      if (orgId) {
+        const orgClaims = await prisma.claims.findMany({
+          where: { orgId },
+          select: { propertyId: true },
+        });
+        const orgPropertyIds = orgClaims.map((c: any) => c.propertyId).filter(Boolean) as string[];
+        if (orgPropertyIds.length > 0) {
+          propertyFilter = { propertyId: { in: orgPropertyIds } };
+        } else {
+          propertyFilter = { propertyId: "__none__" }; // No properties = no events
+        }
+      }
       recentEvents = await prisma.weather_events.findMany({
+        where: propertyFilter,
         orderBy: { timeUtc: "desc" },
         take: 50,
         select: {

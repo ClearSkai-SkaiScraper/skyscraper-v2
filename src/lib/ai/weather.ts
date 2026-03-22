@@ -67,51 +67,54 @@ export async function runQuickDol(input: QuickDolInput): Promise<QuickDolResult>
   }
 
   try {
-    const completion = await openai.chat.completions.create({
-      model: "gpt-4o",
-      messages: [
-        {
-          role: "system",
-          content: QUICK_DOL_PROMPT,
-        },
-        {
-          role: "user",
-          content: JSON.stringify(userPayload),
-        },
-      ],
-      response_format: {
-        type: "json_schema",
-        json_schema: {
-          name: "QuickDolResult",
-          strict: true,
-          schema: {
-            type: "object",
-            properties: {
-              peril: { type: "string" },
-              bestGuess: {
-                type: "string",
-                description: "Best guess date or empty string if unknown",
-              },
-              candidates: {
-                type: "array",
-                items: {
-                  type: "object",
-                  properties: {
-                    date: { type: "string" },
-                    score: { type: "number" },
-                    reason: { type: "string" },
+    const completion = await openai.chat.completions.create(
+      {
+        model: "gpt-4o",
+        messages: [
+          {
+            role: "system",
+            content: QUICK_DOL_PROMPT,
+          },
+          {
+            role: "user",
+            content: JSON.stringify(userPayload),
+          },
+        ],
+        response_format: {
+          type: "json_schema",
+          json_schema: {
+            name: "QuickDolResult",
+            strict: true,
+            schema: {
+              type: "object",
+              properties: {
+                peril: { type: "string" },
+                bestGuess: {
+                  type: "string",
+                  description: "Best guess date or empty string if unknown",
+                },
+                candidates: {
+                  type: "array",
+                  items: {
+                    type: "object",
+                    properties: {
+                      date: { type: "string" },
+                      score: { type: "number" },
+                      reason: { type: "string" },
+                    },
+                    required: ["date", "score", "reason"],
+                    additionalProperties: false,
                   },
-                  required: ["date", "score", "reason"],
-                  additionalProperties: false,
                 },
               },
-            },
-            required: ["peril", "bestGuess", "candidates"],
-            additionalProperties: false,
-          } as const,
+              required: ["peril", "bestGuess", "candidates"],
+              additionalProperties: false,
+            } as const,
+          },
         },
       },
-    }, { signal: AbortSignal.timeout(45000) });
+      { signal: AbortSignal.timeout(45000) }
+    );
 
     const raw = completion.choices[0]?.message?.content || "{}";
     logger.info("[runQuickDol] GPT-4o response received", {

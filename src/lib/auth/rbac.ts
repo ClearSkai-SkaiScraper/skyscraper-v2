@@ -265,7 +265,9 @@ export async function getCurrentUserRole(): Promise<{
             select: { organizationId: true },
           });
           if (membership) effectiveOrgId = membership.organizationId;
-        } catch {}
+        } catch (membershipErr) {
+          logger.warn("[RBAC] Membership fallback lookup failed:", membershipErr);
+        }
       }
       if (userId && effectiveOrgId) {
         // Upsert style: attempt update; ignore if fails

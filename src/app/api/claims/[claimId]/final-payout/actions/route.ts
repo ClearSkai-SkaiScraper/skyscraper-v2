@@ -362,7 +362,9 @@ async function handleSubmit(
   try {
     const { WebhookService } = await import("@/lib/webhook-service");
     await WebhookService.sendClaimUpdated(claimId, { status: "submitted_for_payout" }, orgId);
-  } catch {}
+  } catch (webhookErr) {
+    logger.warn("[FINAL_PAYOUT] Webhook send failed (non-critical):", webhookErr);
+  }
 
   return NextResponse.json({
     success: true,

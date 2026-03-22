@@ -2,7 +2,6 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
-import { auth } from "@clerk/nextjs/server";
 import { z } from "zod";
 
 import { compose, withRateLimit, withSentryApi } from "@/lib/api/wrappers";
@@ -112,32 +111,15 @@ const basePOST = async (request: Request) => {
 
     const { orgId, userId, needsInitialization } = await getCurrentUserPermissions();
 
-    // Strict validation - require orgId
-    let effectiveOrgId = orgId;
-    if (!effectiveOrgId) {
-      const { userId: clerkUserId } = await auth();
-      if (clerkUserId) {
-        const dbUser = await prisma.users.findUnique({
-          where: { clerkUserId },
-          select: { id: true },
-        });
-        if (dbUser) {
-          // Delegate corrected to match Prisma naming (UserOrganization)
-          const link = await prisma.user_organizations.findFirst({
-            where: { userId: dbUser.id },
-            select: { organizationId: true },
-          });
-          if (link?.organizationId) effectiveOrgId = link.organizationId as string;
-        }
-      }
-    }
-    if (!effectiveOrgId) {
-      logger.error("[POST /api/leads] No orgId resolved after fallback");
+    // B-12: Strict — require orgId from session. Do NOT fall back to bare auth() pick-first-org.
+    if (!orgId) {
+      logger.error("[POST /api/leads] No orgId resolved from session");
       return Response.json(
-        { error: "Organization not found. Please contact support.", code: "NO_ORG" },
+        { error: "Organization not found. Please select an organization.", code: "NO_ORG" },
         { status: 403 }
       );
     }
+    const effectiveOrgId = orgId;
 
     if (needsInitialization) {
       return Response.json(

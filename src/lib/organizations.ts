@@ -1,6 +1,7 @@
 import { auth } from "@clerk/nextjs/server";
 import { randomUUID } from "crypto";
 
+import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 
 export class MissingOrganizationError extends Error {
@@ -62,7 +63,9 @@ export async function bootstrapNewOrgForUser(args: {
           role: "ADMIN",
         } as any,
       });
-    } catch {}
+    } catch (e) {
+      logger.warn("[organizations] membership creation failed (may already exist):", e);
+    }
   }
 
   // Seed dependent singletons if missing (idempotent)
@@ -80,7 +83,9 @@ export async function bootstrapNewOrgForUser(args: {
         },
       });
     }
-  } catch {}
+  } catch (e) {
+    logger.warn("[organizations] billing seed failed:", e);
+  }
 
   // Seed branding defaults (idempotent: only if missing)
   try {
@@ -97,7 +102,9 @@ export async function bootstrapNewOrgForUser(args: {
         },
       });
     }
-  } catch {}
+  } catch (e) {
+    logger.warn("[organizations] branding seed failed:", e);
+  }
 
   return { Org, wasCreated };
 }

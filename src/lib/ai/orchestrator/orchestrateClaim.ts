@@ -19,11 +19,11 @@ import prisma from "@/lib/prisma";
 
 import { buildExplanation } from "../explanations/generateExplanation";
 import { logAIAction } from "../feedback/logAction";
+import { findSimilarClaims } from "../intelligence/claimSimilarity";
 import { getNegotiationSuggestions } from "../negotiation/strategyEngine";
 import { getNextActionsForClaim } from "../planner/claimPlanner";
 import { getAllowedNextStates, getCurrentClaimState } from "../planner/stateMachine";
 import { evaluateClaimRules } from "../rules/evaluateRules";
-import { findSimilarClaims } from "../similarity/querySimilarClaims";
 import {
   ClaimIntelligence,
   ExplanationPayload,
@@ -88,8 +88,8 @@ export async function orchestrateClaim(input: OrchestratorInput): Promise<Orches
   });
   logger.debug(`🎯 Generated ${nextActions.length} action suggestions`);
 
-  // 5. Find similar claims
-  const similarClaims = await findSimilarClaims(input.claimId, 5);
+  // 5. Find similar claims (uses pgvector cosine distance)
+  const similarClaims = await findSimilarClaims(input.claimId, input.orgId, 5);
   logger.debug(`🔍 Found ${similarClaims.length} similar claims`);
 
   // 6. Calculate intelligence metrics

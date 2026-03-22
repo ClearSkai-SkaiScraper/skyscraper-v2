@@ -64,6 +64,7 @@ export async function GET(req: NextRequest) {
     }
 
     // ── Weather Reports Summary ──
+    // B-03: Scope by org — show reports linked to org's claims OR created by this user
     let reports: Array<{
       id: string;
       address: string;
@@ -82,7 +83,9 @@ export async function GET(req: NextRequest) {
     }> = [];
     try {
       reports = await prisma.weather_reports.findMany({
-        where: { createdById: userId },
+        where: orgId
+          ? { OR: [{ createdById: userId }, { claims: { orgId } }] }
+          : { createdById: userId },
         orderBy: { createdAt: "desc" },
         take: 200,
         select: {
@@ -107,6 +110,23 @@ export async function GET(req: NextRequest) {
     }
 
     // ── Weather Events Summary ──
+    // B-03: Scope weather_events by org's property IDs to prevent cross-tenant data leakage
+    let orgPropertyIds: string[] = [];
+    if (orgId) {
+      try {
+        const orgClaims = await prisma.claims.findMany({
+          where: { orgId },
+          select: { propertyId: true },
+        });
+        orgPropertyIds = orgClaims.map((c: any) => c.propertyId).filter(Boolean) as string[];
+      } catch {
+        // Non-fatal
+      }
+    }
+    const eventFilter =
+      orgPropertyIds.length > 0
+        ? { propertyId: { in: orgPropertyIds } }
+        : { propertyId: "__none__" }; // No properties = no events (safe default)
     let totalEvents = 0;
     let hailEvents = 0;
     let windEvents = 0;
@@ -114,13 +134,17 @@ export async function GET(req: NextRequest) {
     let floodEvents = 0;
     try {
       [totalEvents, hailEvents, windEvents, tornadoEvents, floodEvents] = await Promise.all([
-        prisma.weather_events.count(),
-        prisma.weather_events.count({ where: { type: { in: ["hail", "HAIL"] } } }),
+        prisma.weather_events.count({ where: eventFilter }),
+        prisma.weather_events.count({ where: { ...eventFilter, type: { in: ["hail", "HAIL"] } } }),
         prisma.weather_events.count({
-          where: { type: { in: ["wind", "WIND", "thunderstorm_wind"] } },
+          where: { ...eventFilter, type: { in: ["wind", "WIND", "thunderstorm_wind"] } },
         }),
-        prisma.weather_events.count({ where: { type: { in: ["tornado", "TORNADO"] } } }),
-        prisma.weather_events.count({ where: { type: { in: ["flood", "FLOOD", "flash_flood"] } } }),
+        prisma.weather_events.count({
+          where: { ...eventFilter, type: { in: ["tornado", "TORNADO"] } },
+        }),
+        prisma.weather_events.count({
+          where: { ...eventFilter, type: { in: ["flood", "FLOOD", "flash_flood"] } },
+        }),
       ]);
     } catch {
       // Events table may be empty

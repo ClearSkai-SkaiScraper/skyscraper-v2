@@ -111,7 +111,7 @@ CRITICAL EDITING RULES:
           model: "gpt-image-1",
           image: imageFile,
           prompt: editPrompt.slice(0, 32000),
-          size: "1024x1024",
+          size: "1536x1024",
           quality: "high",
           input_fidelity: "high",
         });
@@ -214,7 +214,7 @@ The building must have the IDENTICAL footprint, proportions, and surrounding env
             ],
           },
         ],
-        max_tokens: 700,
+        max_tokens: 1200,
       });
 
       const enhancedPrompt = descriptionResponse.choices[0]?.message?.content || aiPrompt;
@@ -237,7 +237,7 @@ PHOTOREALISM REQUIREMENTS - THIS MUST LOOK LIKE A REAL PHOTOGRAPH:
 
 ABSOLUTELY NOT: illustration, digital art, render, 3D model, CGI, drawing, painting, artistic interpretation, stylized, concept art, cartoon, anime, graphic design. This must be indistinguishable from an actual photograph taken by a professional real estate photographer.`,
         n: 1,
-        size: "1024x1024",
+        size: "1792x1024",
         quality: "hd",
         style: "natural",
       });

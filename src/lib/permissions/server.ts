@@ -59,7 +59,9 @@ export async function resolveUserRole(): Promise<{
       if (ownerEmail === "buildingwithdamienray@gmail.com") {
         return { userId, orgId: effectiveOrgId, role: "owner" };
       }
-    } catch {}
+    } catch (ownerCheckErr) {
+      logger.warn("[PERMISSIONS] Owner override check failed:", ownerCheckErr);
+    }
 
     // Check user_organizations for role
     const userOrg = await prisma.user_organizations.findFirst({

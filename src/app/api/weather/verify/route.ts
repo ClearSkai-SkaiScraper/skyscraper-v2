@@ -40,17 +40,17 @@ async function handlePOST(req: NextRequest) {
   }
 
   const body = await req.json();
-  const { lat, lon, daysBack = 120, orgId, propertyId, claimId } = body;
+  const { lat, lon, daysBack = 120, propertyId, claimId } = body;
 
-  // Use DB-backed orgId from auth, fall back to body orgId only if needed
-  const finalOrgId = dbOrgId || orgId;
+  // B-11: ALWAYS use session orgId — NEVER trust body.orgId
+  const finalOrgId = dbOrgId;
 
   if (!lat || !lon) {
     return errors.badRequest("Latitude and longitude are required.");
   }
 
   if (!finalOrgId) {
-    return errors.badRequest("Organization ID is required.");
+    return errors.badRequest("Organization ID is required. Please select an organization.");
   }
 
   // Fetch branding from database

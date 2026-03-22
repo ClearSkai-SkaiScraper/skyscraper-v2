@@ -13,16 +13,21 @@ type RouteContext = {
 // DELETE /api/notifications/:id - Delete a notification
 export async function DELETE(req: NextRequest, context: RouteContext) {
   try {
-    const { userId } = await auth();
+    const { userId, orgId } = await auth();
     if (!userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const { id } = await context.params;
 
-    // Verify ownership — use findFirst with userId guard to prevent IDOR
+    // B-14: Verify ownership with both userId AND orgId guard
+    const whereClause: Record<string, unknown> = { id, userId };
+    if (orgId) {
+      whereClause.orgId = orgId;
+    }
+
     const existing = await prisma.notification.findFirst({
-      where: { id, userId },
+      where: whereClause,
       select: { id: true },
     });
 

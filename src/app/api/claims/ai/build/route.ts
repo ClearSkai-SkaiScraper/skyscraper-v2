@@ -1,21 +1,17 @@
 export const dynamic = "force-dynamic";
 
-import { logger } from "@/lib/logger";
-import { auth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 
+import { isAuthError, requireAuth } from "@/lib/auth/requireAuth";
+import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 
 export async function POST(req: Request) {
   try {
-    // Auth check
-    const { userId } = await auth();
-    if (!userId) {
-      return NextResponse.json(
-        { ok: false, error: "Unauthorized" },
-        { status: 401 }
-      );
-    }
+    // Auth check — DB-backed org resolution (B-01: cross-tenant fix)
+    const auth = await requireAuth();
+    if (isAuthError(auth)) return auth;
+    const { userId, orgId } = auth;
 
     const { claimId, damageLabels, weather } = await req.json();
 
@@ -26,9 +22,9 @@ export async function POST(req: Request) {
       );
     }
 
-    // Verify claim exists
-    const claim = await prisma.claims.findUnique({
-      where: { id: claimId },
+    // Verify claim exists AND belongs to caller's org (B-01: cross-tenant fix)
+    const claim = await prisma.claims.findFirst({
+      where: { id: claimId, orgId },
       select: { id: true, orgId: true },
     });
 
