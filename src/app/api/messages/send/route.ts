@@ -51,8 +51,9 @@ export async function POST(req: Request) {
       const clerkUser = await currentUser();
       const email = clerkUser?.emailAddresses?.[0]?.emailAddress;
       if (email) {
+        // B-23: Scope client lookup to thread's org to prevent cross-tenant binding
         client = await prisma.client.findFirst({
-          where: { email, userId: null },
+          where: { email, userId: null, orgId: thread.orgId },
           select: { id: true },
         });
         if (client) {

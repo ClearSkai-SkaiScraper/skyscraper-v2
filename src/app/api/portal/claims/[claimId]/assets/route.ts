@@ -186,6 +186,42 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ cla
       data: { publicUrl },
     } = supabase.storage.from("portal-uploads").getPublicUrl(data.path);
 
+    // B-29: Create file_assets record for audit trail and asset management
+    const claim = await prisma.claims.findFirst({
+      where: { id: claimId },
+      select: { orgId: true, leads: { select: { id: true } } },
+    });
+
+    if (claim?.orgId) {
+      try {
+        await prisma.file_assets.create({
+          data: {
+            id: crypto.randomUUID(),
+            orgId: claim.orgId,
+            ownerId: userId,
+            claimId,
+            leadId: claim.leads?.id || null,
+            filename: file.name,
+            mimeType: file.type,
+            sizeBytes: file.size,
+            storageKey: storagePath,
+            bucket: "portal-uploads",
+            publicUrl,
+            category,
+            note: caption || null,
+            source: "portal",
+            visibleToClient: true,
+            updatedAt: new Date(),
+          },
+        });
+      } catch (assetErr) {
+        logger.warn("[Portal Claims Assets] file_assets record failed", {
+          claimId,
+          error: String(assetErr),
+        });
+      }
+    }
+
     logger.info(`[Portal Claims Assets] Uploaded: ${storagePath}`);
 
     return NextResponse.json({

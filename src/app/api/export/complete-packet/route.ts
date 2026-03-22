@@ -89,6 +89,11 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
+    // B-22: Require orgId — never export data without tenant scoping
+    if (!user.orgId) {
+      return NextResponse.json({ error: "Organization context required" }, { status: 403 });
+    }
+
     // Fetch org branding for packet header
     const orgBranding = user.orgId
       ? await prisma.org_branding.findFirst({ where: { orgId: user.orgId } })

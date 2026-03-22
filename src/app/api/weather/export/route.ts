@@ -6,6 +6,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { withAuth } from "@/lib/auth/withAuth";
 import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
+import { checkRateLimit } from "@/lib/rate-limit";
 import { buildWeatherPacket } from "@/lib/weather/buildWeatherPacket";
 
 /**
@@ -21,7 +22,13 @@ import { buildWeatherPacket } from "@/lib/weather/buildWeatherPacket";
  * Body: { reportId, format }
  * Returns: { success, packet }
  */
-export const POST = withAuth(async (req: NextRequest, { orgId }) => {
+export const POST = withAuth(async (req: NextRequest, { orgId, userId }) => {
+  // B-26: Rate limit weather exports
+  const rl = await checkRateLimit(userId, "API");
+  if (!rl.success) {
+    return NextResponse.json({ error: "Rate limit exceeded" }, { status: 429 });
+  }
+
   try {
     const body = await req.json();
     const { reportId, format } = body;

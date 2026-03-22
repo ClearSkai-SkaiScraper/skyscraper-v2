@@ -15,6 +15,10 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 
 import { EditableField } from "@/components/claims/EditableField";
+import {
+  UniversalContactCard,
+  type UniversalContact,
+} from "@/components/contacts/UniversalContactCard";
 import { ClaimNotFoundError } from "@/components/errors/ErrorStates";
 import { TabErrorBoundary } from "@/components/errors/TabErrorBoundary";
 import { CloseoutChecklist } from "@/components/jobs/CloseoutChecklist";
@@ -180,6 +184,7 @@ export default function OverviewPage() {
   const [error, setError] = useState<string | null>(null);
   const [pendingSaves, setPendingSaves] = useState<Set<string>>(new Set());
   const [generatingWeather, setGeneratingWeather] = useState(false);
+  const [attachedClient, setAttachedClient] = useState<UniversalContact | null>(null);
   const [teamMembers, setTeamMembers] = useState<
     Array<{
       id: string;
@@ -308,8 +313,40 @@ export default function OverviewPage() {
     }
   }, [claimId, claim?.title]);
 
+  // Fetch attached client for contact card
+  const fetchAttachedClient = useCallback(async () => {
+    try {
+      const res = await fetch(`/api/claims/${claimId}/connected-client`);
+      if (res.ok) {
+        const data = await res.json();
+        if (data.client) {
+          setAttachedClient({
+            id: data.client.id || `claim-${claimId}`,
+            firstName: data.client.firstName,
+            lastName: data.client.lastName,
+            name:
+              data.client.name ||
+              [data.client.firstName, data.client.lastName].filter(Boolean).join(" ") ||
+              null,
+            email: data.client.email,
+            phone: data.client.phone,
+            contactType: "client",
+            claimId,
+            isConnected: !!data.client.portalClientId,
+            portalClientId: data.client.portalClientId || undefined,
+          });
+        } else {
+          setAttachedClient(null);
+        }
+      }
+    } catch (error) {
+      logger.error("[ClaimOverview] Failed to fetch attached client:", error);
+    }
+  }, [claimId]);
+
   useEffect(() => {
     fetchData();
+    fetchAttachedClient();
     // Fetch team members for inspector dropdown
     fetch("/api/team/members")
       .then((r) => (r.ok ? r.json() : { members: [] }))
@@ -323,7 +360,7 @@ export default function OverviewPage() {
         }
       })
       .catch(() => {});
-  }, [claimId]);
+  }, [claimId, fetchAttachedClient]);
 
   const fetchData = async () => {
     try {
@@ -471,6 +508,24 @@ export default function OverviewPage() {
     <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
       {/* Main Content - Left 2 columns */}
       <div className="space-y-6 lg:col-span-2">
+        {/* Quick Contact Card — thin Call / Text / Email / Message bar */}
+        {attachedClient && (attachedClient.phone || attachedClient.email) && (
+          <UniversalContactCard contact={attachedClient} compact />
+        )}
+        {/* Fallback: show contact card from claim fields if no attached client */}
+        {!attachedClient && (claim.insured_name || claim.homeowner_email) && (
+          <UniversalContactCard
+            contact={{
+              id: claim.contactId || `claim-${claimId}`,
+              name: claim.insured_name,
+              email: claim.homeowner_email,
+              contactType: "homeowner",
+              claimId,
+            }}
+            compact
+          />
+        )}
+
         {/* 1. Connected Client — first so user sees who's attached */}
         <TabErrorBoundary tabName="Client Management">
           <SectionCard title="Connected Client">
@@ -774,61 +829,61 @@ export default function OverviewPage() {
 
         {/* 5. Actions — on the bottom */}
         <SectionCard title="Actions">
-          <div className="space-y-4">
+          <div className="space-y-5">
             {/* AI Generation Actions */}
             <div>
-              <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                 Generate
               </p>
-              <div className="flex flex-wrap gap-3">
+              <div className="flex flex-wrap gap-2.5">
                 <Link
                   href={`/claims/${claimId}/supplement`}
-                  className="inline-flex items-center gap-2 rounded-lg bg-yellow-600 px-4 py-2 text-sm font-semibold text-white shadow transition-colors hover:bg-yellow-700 focus:outline-none focus:ring-2 focus:ring-yellow-400 dark:bg-yellow-700 dark:hover:bg-yellow-800"
+                  className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-yellow-500 to-amber-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-all hover:shadow-md hover:brightness-110"
                 >
                   <Layers className="h-4 w-4" />
-                  Generate Supplement
+                  Supplement
                 </Link>
                 <Link
                   href={`/claims/rebuttal-builder?claimId=${claimId}`}
-                  className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow transition-colors hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-400 dark:bg-blue-700 dark:hover:bg-blue-800"
+                  className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-blue-500 to-blue-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-all hover:shadow-md hover:brightness-110"
                 >
                   <FileText className="h-4 w-4" />
-                  Generate Rebuttal
+                  Rebuttal
                 </Link>
                 <CarrierExportButton claimId={claimId} carrier={claim.carrier} />
                 <button
                   type="button"
                   onClick={handleWeatherVerification}
                   disabled={generatingWeather}
-                  className="inline-flex items-center gap-2 rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white shadow transition-colors hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-400 disabled:opacity-50 dark:bg-emerald-700 dark:hover:bg-emerald-800"
+                  className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-all hover:shadow-md hover:brightness-110 disabled:opacity-50"
                 >
                   <CloudLightning className="h-4 w-4" />
-                  {generatingWeather ? "Scanning Weather…" : "Weather Verification"}
+                  {generatingWeather ? "Scanning…" : "Weather Verify"}
                 </button>
                 <GenerateReportButton
                   claimId={claimId}
                   variant="outline"
-                  className="inline-flex items-center gap-2 border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-800 shadow-sm hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:hover:bg-slate-800"
+                  className="inline-flex items-center gap-2 rounded-xl border-slate-300 bg-white px-4 py-2.5 text-sm font-semibold text-slate-800 shadow-sm hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:hover:bg-slate-800"
                 />
               </div>
             </div>
 
             {/* Build Documents */}
             <div>
-              <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                 Build Documents
               </p>
-              <div className="flex flex-wrap gap-3">
+              <div className="flex flex-wrap gap-2.5">
                 <Link
                   href={`/claims-ready-folder/${claimId}`}
-                  className="inline-flex items-center gap-2 rounded-lg border border-blue-200 bg-blue-50 px-4 py-2 text-sm font-semibold text-blue-700 shadow-sm transition-colors hover:bg-blue-100 dark:border-blue-800 dark:bg-blue-950 dark:text-blue-300 dark:hover:bg-blue-900"
+                  className="inline-flex items-center gap-2 rounded-xl border border-blue-200/80 bg-blue-50/80 px-4 py-2.5 text-sm font-semibold text-blue-700 shadow-sm transition-all hover:bg-blue-100 dark:border-blue-800 dark:bg-blue-950/60 dark:text-blue-300 dark:hover:bg-blue-900"
                 >
                   <ClipboardCheck className="h-4 w-4" />
                   Claim Packet
                 </Link>
                 <Link
                   href={`/reports/contractor-packet?claimId=${claimId}`}
-                  className="inline-flex items-center gap-2 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-2 text-sm font-semibold text-emerald-700 shadow-sm transition-colors hover:bg-emerald-100 dark:border-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 dark:hover:bg-emerald-900"
+                  className="inline-flex items-center gap-2 rounded-xl border border-emerald-200/80 bg-emerald-50/80 px-4 py-2.5 text-sm font-semibold text-emerald-700 shadow-sm transition-all hover:bg-emerald-100 dark:border-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300 dark:hover:bg-emerald-900"
                 >
                   <PenLine className="h-4 w-4" />
                   Bid Package
@@ -837,8 +892,8 @@ export default function OverviewPage() {
             </div>
 
             {/* Closeout */}
-            <div className="border-t border-slate-200 pt-4 dark:border-slate-700">
-              <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+            <div className="border-t border-slate-200/60 pt-4 dark:border-slate-700/60">
+              <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                 Lifecycle
               </p>
               <RequestCloseoutButton

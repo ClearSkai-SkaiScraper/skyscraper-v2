@@ -16,6 +16,7 @@ import { randomUUID } from "crypto";
 import { NextRequest, NextResponse } from "next/server";
 
 import { logger } from "@/lib/logger";
+import prisma from "@/lib/prisma";
 
 // Max file size: 10MB
 const MAX_SIZE = 25 * 1024 * 1024; // 25MB for attachments
@@ -103,6 +104,36 @@ export async function POST(req: NextRequest) {
         const {
           data: { publicUrl },
         } = supabase.storage.from("uploads").getPublicUrl(path);
+
+        // B-30: Create file_assets record for message attachments
+        const user = await prisma.users.findFirst({
+          where: { clerkUserId: userId },
+          select: { orgId: true },
+        });
+        if (user?.orgId) {
+          try {
+            await prisma.file_assets.create({
+              data: {
+                id: randomUUID(),
+                orgId: user.orgId,
+                ownerId: userId,
+                filename: file.name,
+                mimeType: file.type,
+                sizeBytes: file.size,
+                storageKey: path,
+                bucket: "uploads",
+                publicUrl,
+                category: "message-attachment",
+                source: "user",
+                updatedAt: new Date(),
+              },
+            });
+          } catch (assetErr) {
+            logger.warn("[message-attachment] file_assets record failed", {
+              error: String(assetErr),
+            });
+          }
+        }
 
         return NextResponse.json({ url: publicUrl, path: data.path });
       }

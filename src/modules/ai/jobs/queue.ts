@@ -8,6 +8,8 @@ import { runEngine } from "../core/registry";
 import type { AIJob, AISectionKey } from "../types";
 import { saveAISection } from "./persist";
 
+import { logger } from "@/lib/logger";
+
 // In-memory job store (replace with Redis in production)
 const jobs = new Map<string, AIJob>();
 
@@ -35,7 +37,7 @@ export async function enqueue(params: {
 
   // Execute job async (no await)
   executeJob(jobId, params).catch((error) => {
-    console.error(`[AI Queue] Job ${jobId} failed:`, error);
+    logger.error(`[AI Queue] Job ${jobId} failed`, { error: String(error) });
     const failedJob = jobs.get(jobId);
     if (failedJob) {
       failedJob.status = "failed";

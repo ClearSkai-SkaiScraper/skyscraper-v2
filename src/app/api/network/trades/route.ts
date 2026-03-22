@@ -19,7 +19,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  // DB-first org resolution fallback (trades-network-only users may not have Clerk orgId)
+  // B-21: DB-first org resolution — never fall back to companyId (cross-tenant risk)
   if (!orgId) {
     const user = await prisma.users.findFirst({
       where: { clerkUserId: userId },
@@ -30,12 +30,13 @@ export async function GET(req: NextRequest) {
   if (!orgId) {
     const membership = await prisma.tradesCompanyMember.findFirst({
       where: { userId },
-      select: { companyId: true, orgId: true },
+      select: { orgId: true },
     });
-    orgId = membership?.orgId || membership?.companyId || null;
+    orgId = membership?.orgId || null;
   }
 
   if (!orgId) {
+    logger.warn("[GET /api/network/trades] No orgId resolved", { userId });
     return NextResponse.json({ trades: [] });
   }
 

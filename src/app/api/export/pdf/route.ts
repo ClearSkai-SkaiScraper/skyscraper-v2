@@ -8,11 +8,11 @@
 
 import { auth } from "@clerk/nextjs/server";
 import * as Sentry from "@sentry/nextjs";
-import { createClient } from "@supabase/supabase-js";
 import { NextRequest, NextResponse } from "next/server";
 
 import { logger } from "@/lib/logger";
 import { exportToPdf, isLibreOfficeAvailable } from "@/lib/pdf/hybridExport";
+import { checkRateLimit } from "@/lib/rate-limit";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -23,6 +23,12 @@ export async function POST(req: NextRequest) {
     const { userId } = await auth();
     if (!userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    // B-24: Rate limit PDF exports (CPU-intensive)
+    const rl = await checkRateLimit(userId, "API");
+    if (!rl.success) {
+      return NextResponse.json({ error: "Rate limit exceeded" }, { status: 429 });
     }
 
     // Parse request body
@@ -51,15 +57,15 @@ export async function POST(req: NextRequest) {
     // Fetch branding (non-fatal if fails)
     let branding: any = null;
     try {
-      const brandingRes = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL || ''}/api/me/branding`, {
-        headers: { Cookie: req.headers.get('cookie') || '' },
-        cache: 'no-store'
+      const brandingRes = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL || ""}/api/me/branding`, {
+        headers: { Cookie: req.headers.get("cookie") || "" },
+        cache: "no-store",
       });
       if (brandingRes.ok) {
         branding = await brandingRes.json();
       }
     } catch (e) {
-      logger.warn('[PDF_EXPORT] Branding fetch failed, continuing without branding');
+      logger.warn("[PDF_EXPORT] Branding fetch failed, continuing without branding");
     }
 
     const enrichedData = { ...data, branding };
@@ -107,9 +113,6 @@ export async function GET() {
     });
   } catch (error) {
     logger.error("[PDF_EXPORT] Capability check failed:", error);
-    return NextResponse.json(
-      { error: "Capability check failed" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Capability check failed" }, { status: 500 });
   }
 }

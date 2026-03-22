@@ -102,16 +102,20 @@ export async function queueReport(params: QueueReportParams): Promise<string> {
 
 /**
  * Get the status of a queued report
+ * B-28: Requires orgId to prevent cross-tenant status leaks
  */
-export async function getReportStatus(reportId: string): Promise<{
+export async function getReportStatus(
+  reportId: string,
+  orgId?: string
+): Promise<{
   status: ReportQueueStatus;
   pdfUrl: string | null;
   error: string | null;
   attempts: number;
   progress: number; // 0-100
 } | null> {
-  const report = await prisma.ai_reports.findUnique({
-    where: { id: reportId },
+  const report = await prisma.ai_reports.findFirst({
+    where: { id: reportId, ...(orgId ? { orgId } : {}) },
     select: {
       status: true,
       content: true,

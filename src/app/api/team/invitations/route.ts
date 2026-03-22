@@ -79,7 +79,14 @@ export const POST = withManager(async (req: NextRequest, { userId, orgId }) => {
       SELECT id FROM team_invitations 
       WHERE org_id = ${orgId} AND email = ${normalizedEmail} AND status = 'pending'
       LIMIT 1
-    `.catch(() => []);
+    `.catch((err) => {
+      logger.warn("[TEAM_INVITATIONS] Failed to check existing invite", {
+        orgId,
+        email: normalizedEmail,
+        error: String(err),
+      });
+      return [];
+    });
 
     if (existingInvite.length > 0) {
       return NextResponse.json(
@@ -184,7 +191,13 @@ export const GET = withManager(async (req: NextRequest, { userId, orgId }) => {
       FROM team_invitations
       WHERE org_id = ${orgId} AND status = 'pending' AND expires_at > NOW()
       ORDER BY created_at DESC
-    `.catch(() => []);
+    `.catch((err) => {
+      logger.warn("[TEAM_INVITATIONS] Failed to fetch pending invitations", {
+        orgId,
+        error: String(err),
+      });
+      return [];
+    });
 
     const formattedInvitations = invitations.map((inv) => ({
       id: inv.id,

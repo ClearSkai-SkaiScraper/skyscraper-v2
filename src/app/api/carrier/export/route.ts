@@ -11,6 +11,7 @@ import { NextRequest, NextResponse } from "next/server";
 
 import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
+import { checkRateLimit } from "@/lib/rate-limit";
 import { safeOrgContext } from "@/lib/safeOrgContext";
 
 export async function POST(req: NextRequest) {
@@ -18,6 +19,12 @@ export async function POST(req: NextRequest) {
     const ctx = await safeOrgContext();
     if (!ctx.ok || !ctx.orgId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    // B-25: Rate limit carrier exports
+    const rl = await checkRateLimit(ctx.userId || "anon", "API");
+    if (!rl.success) {
+      return NextResponse.json({ error: "Rate limit exceeded" }, { status: 429 });
     }
 
     const body = await req.json();

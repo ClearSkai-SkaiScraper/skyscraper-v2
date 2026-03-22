@@ -16,6 +16,7 @@ import type { ClaimFolder, FolderSection } from "@/lib/claims-folder/folderSchem
 import { FOLDER_SECTIONS } from "@/lib/claims-folder/folderSchema";
 import { generatePDFDocument, renderPDFBytes } from "@/lib/claims-folder/pdfBundler";
 import { logger } from "@/lib/logger";
+import { checkRateLimit } from "@/lib/rate-limit";
 
 const ExportRequestSchema = z.object({
   claimId: z.string().min(1),
@@ -26,7 +27,13 @@ const ExportRequestSchema = z.object({
 export async function POST(request: NextRequest) {
   const auth = await requireAuth();
   if (isAuthError(auth)) return auth;
-  const { orgId } = auth;
+  const { orgId, userId } = auth;
+
+  // B-27: Rate limit claims folder exports
+  const rl = await checkRateLimit(userId, "API");
+  if (!rl.success) {
+    return NextResponse.json({ error: "Rate limit exceeded" }, { status: 429 });
+  }
 
   try {
     const body = await request.json();

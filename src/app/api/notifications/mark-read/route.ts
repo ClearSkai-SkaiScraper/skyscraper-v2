@@ -76,8 +76,11 @@ export async function POST(req: NextRequest) {
                 await prisma.message.update({ where: { id: msgId }, data: { read: true } });
               }
             }
-          } catch {
-            /* ignore if not found */
+          } catch (err) {
+            logger.warn("[NOTIFICATIONS_MARK_READ] msg mark-read failed", {
+              msgId,
+              error: String(err),
+            });
           }
           return NextResponse.json({ success: true });
         }
@@ -90,8 +93,11 @@ export async function POST(req: NextRequest) {
               where: { id: tnId, recipientId: userId },
               data: { isRead: true, readAt: new Date() },
             });
-          } catch {
-            /* ignore if not found */
+          } catch (err) {
+            logger.warn("[NOTIFICATIONS_MARK_READ] trade notif mark-read failed", {
+              tnId,
+              error: String(err),
+            });
           }
           return NextResponse.json({ success: true });
         }
@@ -137,8 +143,11 @@ export async function POST(req: NextRequest) {
                 await prisma.message.update({ where: { id: msgId }, data: { read: true } });
               }
             }
-          } catch {
-            /* ignore if not found */
+          } catch (err) {
+            logger.warn("[NOTIFICATIONS_MARK_READ] pro msg mark-read failed", {
+              msgId,
+              error: String(err),
+            });
           }
           return NextResponse.json({ success: true });
         }
@@ -151,8 +160,11 @@ export async function POST(req: NextRequest) {
               where: { id: tnId, recipientId: userId },
               data: { isRead: true, readAt: new Date() },
             });
-          } catch {
-            /* ignore if not found */
+          } catch (err) {
+            logger.warn("[NOTIFICATIONS_MARK_READ] pro trade notif mark-read failed", {
+              tnId,
+              error: String(err),
+            });
           }
           return NextResponse.json({ success: true });
         }

@@ -34,6 +34,7 @@ import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 import { getWorkflowStatusInfo, mapToWorkflowStatus } from "@/lib/statusMapping";
 
+import { ClientConnectionDropdown } from "./ClientConnectionDropdown";
 import { EditableInfoCardsWrapper } from "./EditableInfoCards";
 import { RetailJobClient } from "./RetailJobClient";
 
@@ -469,6 +470,9 @@ export default async function RetailJobWorkspacePage({
                   jobSource={job.source}
                   followUpDate={job.followUpDate}
                 />
+
+                {/* Client Network Connection */}
+                <ClientConnectionDropdown jobId={job.id} contactId={contact?.id || null} />
 
                 {/* Closeout Lifecycle */}
                 <Card>
