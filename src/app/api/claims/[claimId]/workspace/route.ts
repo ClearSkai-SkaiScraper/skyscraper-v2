@@ -31,6 +31,7 @@ interface WorkspaceData {
     policyNumber: string | null;
     insured_name: string | null;
     homeownerEmail: string | null;
+    homeownerPhone: string | null;
     adjusterName: string | null;
     adjusterPhone: string | null;
     adjusterEmail: string | null;
@@ -159,6 +160,7 @@ export async function GET(request: NextRequest, { params }: { params: { claimId:
           policyNumber: "POL-DEMO-123",
           insured_name: "John Smith",
           homeownerEmail: "john.smith@example.com",
+          homeownerPhone: "(555) 010-1234",
           adjusterName: "Alex Adjuster",
           adjusterPhone: "(555) 010-2000",
           adjusterEmail: "alex.adjuster@example.com",
@@ -269,7 +271,13 @@ export async function GET(request: NextRequest, { params }: { params: { claimId:
           ? prismaModel("properties")
               .findUnique({
                 where: { id: claim.propertyId },
-                select: { street: true, city: true, state: true, zipCode: true },
+                select: {
+                  street: true,
+                  city: true,
+                  state: true,
+                  zipCode: true,
+                  contacts: { select: { phone: true } },
+                },
               })
               .catch(() => null)
           : Promise.resolve(null),
@@ -301,6 +309,7 @@ export async function GET(request: NextRequest, { params }: { params: { claimId:
         policyNumber: claim.policy_number || null,
         insured_name: claim.insured_name || null,
         homeownerEmail: claim.homeowner_email || claim.homeownerEmail || null,
+        homeownerPhone: (property as any)?.contacts?.phone || null,
         adjusterName: claim.adjusterName || null,
         adjusterPhone: claim.adjusterPhone || null,
         adjusterEmail: claim.adjusterEmail || null,

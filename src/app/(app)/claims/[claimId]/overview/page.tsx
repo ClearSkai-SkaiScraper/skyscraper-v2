@@ -54,6 +54,7 @@ interface ClaimData {
   lifecycleStage: string | null;
   insured_name: string | null;
   homeowner_email: string | null;
+  homeowner_phone: string | null;
   carrier: string | null;
   policy_number: string | null;
   adjusterName: string | null;
@@ -413,6 +414,7 @@ export default function OverviewPage() {
             lifecycleStage: null,
             insured_name: claimInfo.insured_name || null,
             homeowner_email: claimInfo.homeowner_email || claimInfo.homeownerEmail || null,
+            homeowner_phone: claimInfo.homeowner_phone || claimInfo.homeownerPhone || null,
             carrier: claimInfo.carrier ?? null,
             policy_number: claimInfo.policyNumber ?? null,
             adjusterName: claimInfo.adjusterName || null,
@@ -630,6 +632,15 @@ export default function OverviewPage() {
                 type="email"
                 placeholder="client@example.com"
               />
+              {/* Phone is read-only since it comes from the contact relationship */}
+              <div>
+                <label className="text-xs font-medium text-muted-foreground">Phone</label>
+                <div className="mt-1 rounded-lg px-3 py-2 text-sm text-foreground">
+                  {claim.homeowner_phone || (
+                    <span className="italic text-muted-foreground">No phone on file</span>
+                  )}
+                </div>
+              </div>
               <EditableField
                 label="Insurance Carrier"
                 value={claim.carrier}

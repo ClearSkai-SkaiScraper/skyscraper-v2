@@ -116,11 +116,16 @@ interface DynamicItem {
 // ── Pitch options — value is the actual pitch string the API expects ────────
 const ROOF_PITCHES = [
   { label: "Flat (2/12)", value: "2/12" },
-  { label: "Low (4/12)", value: "4/12" },
+  { label: "Low (3/12)", value: "3/12" },
+  { label: "Low-Moderate (4/12)", value: "4/12" },
+  { label: "Moderate (5/12)", value: "5/12" },
   { label: "Standard (6/12)", value: "6/12" },
-  { label: "Moderate (8/12)", value: "8/12" },
-  { label: "Steep (10/12)", value: "10/12" },
-  { label: "Very Steep (12/12)", value: "12/12" },
+  { label: "Standard-Steep (7/12)", value: "7/12" },
+  { label: "Steep (8/12)", value: "8/12" },
+  { label: "Steep (9/12)", value: "9/12" },
+  { label: "Very Steep (10/12)", value: "10/12" },
+  { label: "Very Steep (11/12)", value: "11/12" },
+  { label: "Extreme (12/12)", value: "12/12" },
 ];
 
 // ── Shingle types — value matches ShingleSpec.type ─────────────────────────
