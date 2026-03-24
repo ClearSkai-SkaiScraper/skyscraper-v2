@@ -3,13 +3,17 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 
 import { getOpenAI } from "@/lib/ai/client";
+import { getTenant } from "@/lib/auth/tenant";
 import { logger } from "@/lib/logger";
 import { getRateLimitIdentifier, rateLimiters } from "@/lib/rate-limit";
 
 const claimAssistantSchema = z.object({
-  message: z.string().min(1),
-  claimId: z.string().optional(),
-  history: z.array(z.object({ role: z.string(), content: z.string() })).optional(),
+  message: z.string().min(1).max(4000),
+  claimId: z.string().max(200).optional(),
+  history: z
+    .array(z.object({ role: z.enum(["user", "assistant"]), content: z.string().max(4000) }))
+    .max(20)
+    .optional(),
 });
 
 // Force Node.js runtime for OpenAI SDK
@@ -18,10 +22,15 @@ export const dynamic = "force-dynamic";
 
 export async function POST(request: NextRequest) {
   try {
-    // ── Auth check (required) ──
+    // ── Auth + Tenant check (required) ──
     const { userId } = await auth();
     if (!userId) {
       return NextResponse.json({ error: "Authentication required" }, { status: 401 });
+    }
+
+    const orgId = await getTenant();
+    if (!orgId) {
+      return NextResponse.json({ error: "Organization required" }, { status: 403 });
     }
 
     // Rate limit AI requests

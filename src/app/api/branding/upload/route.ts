@@ -9,6 +9,7 @@ import { createClient } from "@supabase/supabase-js";
 import { NextRequest, NextResponse } from "next/server";
 
 import { logger } from "@/lib/logger";
+import { getActiveOrgContext } from "@/lib/org/getActiveOrgContext";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -30,13 +31,17 @@ function getSupabaseAdmin() {
 
 export async function POST(request: NextRequest) {
   try {
-    const authResult = await auth();
-    const userId = authResult?.userId;
-    const orgId = authResult?.orgId;
-
+    const { userId } = await auth();
     if (!userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
+
+    // Resolve org from DB membership — not from Clerk's orgId (which is spoofable)
+    const orgCtx = await getActiveOrgContext({ required: true });
+    if (!orgCtx.ok || !orgCtx.orgId) {
+      return NextResponse.json({ error: "Organization required" }, { status: 403 });
+    }
+    const orgId = orgCtx.orgId;
 
     const formData = await request.formData();
     const file = formData.get("file") as File;
@@ -76,9 +81,8 @@ export async function POST(request: NextRequest) {
         const ext = file.name.split(".").pop() || "jpg";
         const timestamp = Date.now();
         const uuid = crypto.randomUUID();
-        const safeOrgId = orgId || userId;
         const prefix = type === "team" ? "team" : "logo";
-        const filename = `${safeOrgId}/${prefix}-${timestamp}-${uuid}.${ext}`;
+        const filename = `${orgId}/${prefix}-${timestamp}-${uuid}.${ext}`;
 
         // Ensure bucket exists
         const { data: buckets } = await supabase.storage.listBuckets();
@@ -130,9 +134,8 @@ export async function POST(request: NextRequest) {
         const ext = file.name.split(".").pop() || "jpg";
         const timestamp = Date.now();
         const uuid = crypto.randomUUID();
-        const safeOrgId = orgId || userId;
         const prefix = type === "team" ? "team" : "logo";
-        const firebasePath = `branding/${safeOrgId}/${prefix}-${timestamp}-${uuid}.${ext}`;
+        const firebasePath = `branding/${orgId}/${prefix}-${timestamp}-${uuid}.${ext}`;
 
         const storageRef = ref(firebaseStorage, firebasePath);
         const uint8Array = new Uint8Array(buffer);
@@ -142,7 +145,7 @@ export async function POST(request: NextRequest) {
           customMetadata: {
             originalName: file.name,
             uploadedAt: new Date().toISOString(),
-            orgId: safeOrgId || "",
+            orgId: orgId,
           },
         });
 

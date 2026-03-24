@@ -11,7 +11,7 @@ export async function POST(req: Request) {
   try {
     const auth = await requireAuth();
     if (isAuthError(auth)) return auth;
-    const { userId } = auth;
+    const { userId, orgId } = auth;
 
     const { reportId } = await req.json();
 

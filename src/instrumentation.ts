@@ -47,7 +47,25 @@ export async function register() {
   }
 
   // ═══════════════════════════════════════════════════════════════════════
-  // 3. Sentry Initialization (Server & Edge - deferred to config files)
+  // 3. Environment Variable Validation (fail-fast in production)
+  // ═══════════════════════════════════════════════════════════════════════
+  if (hasProcess && !process.env.BUILD_PHASE) {
+    try {
+      const { assertRequiredEnv } = await import("@/lib/validateEnv");
+      assertRequiredEnv();
+    } catch (err) {
+      // In production, this is fatal — surface clearly
+      if (process.env.NODE_ENV === "production") {
+        console.error("❌ Environment validation failed:", err);
+        throw err;
+      }
+      // In dev/preview, warn but continue
+      console.warn("⚠️  Environment validation warning:", (err as Error)?.message ?? err);
+    }
+  }
+
+  // ═══════════════════════════════════════════════════════════════════════
+  // 4. Sentry Initialization (Server & Edge - deferred to config files)
   // ═══════════════════════════════════════════════════════════════════════
   // Sentry is initialized via sentry.server.config.ts and sentry.edge.config.ts
   // This hook ensures Node version checks + fetch guards run first

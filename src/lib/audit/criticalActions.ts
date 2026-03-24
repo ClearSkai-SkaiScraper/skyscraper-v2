@@ -16,6 +16,7 @@ import prisma from "@/lib/prisma";
 export type CriticalActionType =
   | "INVITE_SENT"
   | "INVITE_ACCEPTED"
+  | "INVITE_REVOKED"
   | "ORG_SELECTED"
   | "ORG_CREATED"
   | "WEATHER_REPORT_REQUESTED"
@@ -27,14 +28,24 @@ export type CriticalActionType =
   | "COMPANY_SETTINGS_UPDATED"
   | "CLAIM_CREATED"
   | "CLAIM_ARCHIVED"
+  | "CLAIM_DELETED"
   | "LEAD_CREATED"
   | "LEAD_ARCHIVED"
   | "PROJECT_ARCHIVED"
   | "REPORT_GENERATED"
   | "PDF_DOWNLOADED"
+  | "EXPORT_GENERATED"
   | "USER_REPAIRED"
   | "MEMBERSHIP_CLEARED"
-  | "ACTIVE_ORG_CLEARED";
+  | "ACTIVE_ORG_CLEARED"
+  | "ROLE_CHANGED"
+  | "MEMBER_REMOVED"
+  | "SUBSCRIPTION_CHANGED"
+  | "BILLING_UPDATED"
+  | "API_KEY_CREATED"
+  | "API_KEY_REVOKED"
+  | "DATA_EXPORTED"
+  | "BULK_DELETE";
 
 interface AuditMeta {
   [key: string]: string | number | boolean | null | undefined;

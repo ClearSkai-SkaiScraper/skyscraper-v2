@@ -4,6 +4,7 @@ export const revalidate = 0;
 
 import { auth } from "@clerk/nextjs/server";
 import { NextRequest } from "next/server";
+import { z } from "zod";
 
 import { getVisibleUserIds } from "@/lib/auth/managerScope";
 import { logger } from "@/lib/logger";
@@ -12,6 +13,22 @@ import { getCurrentUserPermissions, requirePermission } from "@/lib/permissions"
 import prisma from "@/lib/prisma";
 
 // Prisma singleton imported from @/lib/db/prisma
+
+const createTaskSchema = z.object({
+  title: z.string().trim().min(1, "Title is required").max(500),
+  description: z.string().trim().max(5000).nullish(),
+  type: z.string().trim().max(100).nullish(),
+  projectId: z.string().trim().max(200).nullish(),
+  assigneeId: z.string().trim().max(200).nullish(),
+  dueAt: z.string().nullish(),
+  priority: z.enum(["LOW", "MEDIUM", "HIGH", "URGENT"]).default("MEDIUM"),
+  status: z.enum(["TODO", "IN_PROGRESS", "DONE", "CANCELLED"]).default("TODO"),
+  contactId: z.string().trim().max(200).nullish(),
+  leadId: z.string().trim().max(200).nullish(),
+  claimId: z.string().trim().max(200).nullish(),
+  inspectionId: z.string().trim().max(200).nullish(),
+  notes: z.string().trim().max(5000).nullish(),
+});
 
 export async function GET(request: NextRequest) {
   try {
@@ -119,6 +136,13 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
+    const parsed = createTaskSchema.safeParse(body);
+    if (!parsed.success) {
+      return Response.json(
+        { error: "Validation failed", details: parsed.error.flatten().fieldErrors },
+        { status: 400 }
+      );
+    }
     const {
       title,
       description,
@@ -126,18 +150,14 @@ export async function POST(request: NextRequest) {
       projectId,
       assigneeId,
       dueAt,
-      priority = "MEDIUM",
-      status = "TODO",
+      priority,
+      status,
       contactId,
       leadId,
       claimId,
       inspectionId,
       notes,
-    } = body;
-
-    if (!title) {
-      return Response.json({ error: "Title is required" }, { status: 400 });
-    }
+    } = parsed.data;
 
     const task = await prisma.tasks.create({
       data: {

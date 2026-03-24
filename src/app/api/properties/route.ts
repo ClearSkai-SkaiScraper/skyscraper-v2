@@ -1,19 +1,14 @@
 export const dynamic = "force-dynamic";
 
-import { currentUser } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 
+import { getTenant } from "@/lib/auth/tenant";
 import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 
 export async function GET() {
   try {
-    const user = await currentUser();
-    if (!user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    const orgId = user.publicMetadata?.orgId as string | undefined;
+    const orgId = await getTenant();
     if (!orgId) {
       return NextResponse.json({ error: "Organization not found" }, { status: 403 });
     }
