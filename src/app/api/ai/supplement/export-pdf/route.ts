@@ -192,7 +192,7 @@ export async function POST(req: NextRequest) {
           .type-badge {
             display: inline-block;
             background: #dbeafe;
-            color: #1e40af;
+            color: #117CFF;
             padding: 6px 12px;
             border-radius: 4px;
             font-size: 12px;

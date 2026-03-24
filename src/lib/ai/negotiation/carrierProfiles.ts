@@ -91,7 +91,7 @@ export async function upsertCarrierStrategy(
   }
 ) {
   // Stub: Log the intent but don't persist
-  console.log(`[carrierProfiles] Would upsert strategy for ${carrier}:`, {
+  logger.debug(`[CARRIER_PROFILES] Stub: Would upsert strategy for ${carrier}`, {
     pattern: data.pattern,
     utilityBoost: data.utilityBoost,
   });

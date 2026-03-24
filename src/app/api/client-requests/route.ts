@@ -8,7 +8,15 @@ import prisma from "@/lib/prisma";
 
 export async function POST(request: Request) {
   try {
-    const { userId } = await auth();
+    const { userId, orgId } = await auth();
+
+    if (!userId) {
+      return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
+    }
+
+    if (!orgId) {
+      return NextResponse.json({ success: false, error: "Organization required" }, { status: 400 });
+    }
 
     const body = await request.json();
     const { subject, description, priority, clientId } = body;
@@ -29,8 +37,8 @@ export async function POST(request: Request) {
         priority: (priority?.toUpperCase() || "MEDIUM") as any,
         status: "TODO" as any,
         type: "CLIENT_REQUEST",
-        orgId: clientId || "unknown", // Will need proper org linking
-        notes: `Client request submitted via portal`,
+        orgId,
+        notes: `Client request submitted via portal${clientId ? ` (clientId: ${clientId})` : ""}`,
         updatedAt: new Date(),
       },
     });

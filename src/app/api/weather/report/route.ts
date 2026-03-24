@@ -12,6 +12,7 @@ import {
   SubscriptionRequiredError,
 } from "@/lib/billing/requireActiveSubscription";
 import { getBrandingForOrg, getBrandingWithDefaults } from "@/lib/branding/fetchBranding";
+import { BRAND_PRIMARY } from "@/lib/constants/branding";
 import { logger } from "@/lib/logger";
 import { renderWeatherReportPDF } from "@/lib/pdf/weather-report-pdf";
 import prisma from "@/lib/prisma";
@@ -222,8 +223,8 @@ export const POST = withAuth(async (req: NextRequest, { userId, orgId }) => {
 
     if (claimId) {
       try {
-        const claim = await prisma.claims.findUnique({
-          where: { id: claimId },
+        const claim = await prisma.claims.findFirst({
+          where: { id: claimId, orgId },
           select: {
             claimNumber: true,
             insured_name: true,
@@ -283,7 +284,7 @@ export const POST = withAuth(async (req: NextRequest, { userId, orgId }) => {
       website: undefined as string | undefined,
       license: undefined as string | undefined,
       logoUrl: undefined as string | undefined,
-      primaryColor: "#1e40af",
+      primaryColor: BRAND_PRIMARY,
       accentColor: "#FFC838" as string | undefined,
       headshotUrl: undefined as string | undefined,
     };

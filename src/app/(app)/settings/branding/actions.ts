@@ -3,6 +3,7 @@
 import { revalidatePath, revalidateTag } from "next/cache";
 import { redirect } from "next/navigation";
 
+import { BRAND_ACCENT, BRAND_PRIMARY } from "@/lib/constants/branding";
 import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 import { safeOrgContext } from "@/lib/safeOrgContext";
@@ -69,7 +70,7 @@ export async function saveBranding(formData: FormData) {
         phone: phone ?? undefined,
         email: email ?? undefined,
         website: website ?? undefined,
-        colorPrimary: colorPrimary || "#117CFF",
+        colorPrimary: colorPrimary || BRAND_PRIMARY,
         colorAccent: colorAccent || "#FFC838",
         logoUrl: logoUrl ?? undefined,
         teamPhotoUrl: teamPhotoUrl ?? undefined,
@@ -84,8 +85,8 @@ export async function saveBranding(formData: FormData) {
         phone: phone ?? null,
         email: email ?? null,
         website: website ?? null,
-        colorPrimary: colorPrimary ?? "#117CFF",
-        colorAccent: colorAccent ?? "#FFC838",
+        colorPrimary: colorPrimary ?? BRAND_PRIMARY,
+        colorAccent: colorAccent ?? BRAND_ACCENT,
         logoUrl: logoUrl ?? null,
         teamPhotoUrl: teamPhotoUrl ?? null,
         updatedAt: new Date(),

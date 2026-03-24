@@ -130,8 +130,8 @@ export async function saveClaimEmbeddings(params: {
   metadata?: Record<string, any>;
 }): Promise<{ chunksCreated: number; chunkIds: string[] }> {
   // claimsMemoryChunk model doesn't exist in schema
-  console.log(
-    `[saveClaimEmbeddings] Would save embeddings for "${params.title}" in claim ${params.claimId}`
+  logger.debug(
+    `[EMBEDDINGS] Stub: Would save embeddings for "${params.title}" in claim ${params.claimId}`
   );
   return { chunksCreated: 0, chunkIds: [] };
 }

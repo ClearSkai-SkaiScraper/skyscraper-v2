@@ -9,6 +9,8 @@
  * TODO: Create ai_actions migration when ready to persist action history.
  */
 
+import { logger } from "@/lib/logger";
+
 export interface LogAIActionParams {
   claimId: string;
   agentId: string;
@@ -42,8 +44,8 @@ export async function logAIAction(params: LogAIActionParams): Promise<AIAction> 
     created_at: new Date(),
   };
 
-  console.log(
-    `[AI Action] ${params.actionType} for claim ${params.claimId} by agent ${params.agentId}`
+  logger.info(
+    `[AI_ACTION] ${params.actionType} for claim ${params.claimId} by agent ${params.agentId}`
   );
   return action;
 }

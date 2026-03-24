@@ -11,6 +11,7 @@
 
 import { NextResponse } from "next/server";
 
+import { verifyCronSecret } from "@/lib/cron/verifyCronSecret";
 import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 
@@ -18,13 +19,9 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 export async function GET(req: Request) {
-  // Verify cron secret (Vercel sets this automatically for cron jobs)
-  const authHeader = req.headers.get("authorization");
-  const cronSecret = process.env.CRON_SECRET;
-
-  if (cronSecret && authHeader !== `Bearer ${cronSecret}`) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  // 🔒 SECURITY FIX: Use verifyCronSecret (fail-closed when CRON_SECRET is unset)
+  const authError = verifyCronSecret(req);
+  if (authError) return authError;
 
   const results: Record<string, number> = {};
 

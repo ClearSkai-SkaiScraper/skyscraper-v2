@@ -6,6 +6,7 @@ import { auth, currentUser } from "@clerk/nextjs/server";
 import { jsPDF } from "jspdf";
 import { NextRequest, NextResponse } from "next/server";
 
+import { BRAND_PRIMARY } from "@/lib/constants/branding";
 import { logger } from "@/lib/logger";
 import { drawBrandedHeader, drawPageFooter, fetchBrandingData } from "@/lib/pdf/brandedHeader";
 import { checkRateLimit } from "@/lib/rate-limit";
@@ -76,7 +77,7 @@ export async function POST(req: NextRequest) {
       ? await fetchBrandingData(orgId, user.id)
       : {
           companyName: "SkaiScraper",
-          brandColor: "#1e40af",
+          brandColor: BRAND_PRIMARY,
           employeeName: `${user.firstName || ""} ${user.lastName || ""}`.trim(),
         };
 

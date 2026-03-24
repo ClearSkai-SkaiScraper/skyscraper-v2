@@ -14,7 +14,7 @@ import LeadsSettingsClient from "./LeadsSettingsClient";
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "Leads Settings | PreLoss Vision",
+  title: "Leads Settings | SkaiScraper",
   description: "Configure lead pipeline routing and automation.",
 };
 

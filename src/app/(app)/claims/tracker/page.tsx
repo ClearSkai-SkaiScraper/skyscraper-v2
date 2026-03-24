@@ -14,7 +14,7 @@ export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
 export const metadata: Metadata = {
-  title: "Claims Pipeline Tracker | PreLoss Vision",
+  title: "Claims Pipeline Tracker | SkaiScraper",
   description: "Visual pipeline view of all insurance claims",
 };
 

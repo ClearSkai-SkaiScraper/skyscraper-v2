@@ -209,8 +209,8 @@ export async function reconstructClaimTimeline(claimId: string): Promise<Reconst
     discrepancies
   );
 
-  console.log(
-    `[Reconstructor] ✅ Reconstruction complete: ${realTimeline.length} events, quality ${scoreQuality}/100`
+  logger.info(
+    `[RECONSTRUCTOR] Reconstruction complete: ${realTimeline.length} events, quality ${scoreQuality}/100`
   );
 
   return {

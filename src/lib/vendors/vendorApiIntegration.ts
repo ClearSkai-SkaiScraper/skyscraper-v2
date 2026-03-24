@@ -99,7 +99,7 @@ export async function submitVendorOrder(order: VendorOrder): Promise<VendorOrder
     };
   }
 
-  console.log(`[VendorAPI] Submitting order to ${config.name}:`, {
+  logger.info(`[VENDOR_API] Submitting order to ${config.name}`, {
     orderId: order.orderId,
     items: order.items.length,
     deliveryAddress: order.deliveryAddress,

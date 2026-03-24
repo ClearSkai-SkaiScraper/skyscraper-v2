@@ -12,6 +12,7 @@
  *   drawPageFooterClient(doc, { companyName: branding.companyName });
  */
 
+import { BRAND_PRIMARY } from "@/lib/constants/branding";
 import type { jsPDF } from "jspdf";
 
 // ============================================================================
@@ -59,7 +60,7 @@ export async function fetchClientBranding(): Promise<ClientBrandingData> {
       companyWebsite: data.companyWebsite || undefined,
       companyLicense: data.companyLicense || undefined,
       logoUrl: data.logoUrl || undefined,
-      brandColor: data.brandColor || "#1e40af",
+      brandColor: data.brandColor || BRAND_PRIMARY,
       accentColor: data.accentColor || undefined,
       employeeName: data.employeeName || undefined,
       employeeTitle: data.employeeTitle || undefined,
@@ -68,7 +69,7 @@ export async function fetchClientBranding(): Promise<ClientBrandingData> {
       headshotUrl: data.headshotUrl || undefined,
     };
   } catch {
-    return { companyName: "Your Company", brandColor: "#1e40af" };
+    return { companyName: "Your Company", brandColor: BRAND_PRIMARY };
   }
 }
 
@@ -78,7 +79,7 @@ export async function fetchClientBranding(): Promise<ClientBrandingData> {
 
 function hexToRgb(hex: string): [number, number, number] {
   const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-  if (!result) return [30, 64, 175];
+  if (!result) return [17, 124, 255]; // BRAND_PRIMARY fallback
   return [parseInt(result[1], 16), parseInt(result[2], 16), parseInt(result[3], 16)];
 }
 

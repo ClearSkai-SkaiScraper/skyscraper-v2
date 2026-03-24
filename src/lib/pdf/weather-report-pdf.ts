@@ -21,6 +21,7 @@
 
 import { jsPDF } from "jspdf";
 
+import { BRAND_PRIMARY, BRAND_PRIMARY_RGB } from "@/lib/constants/branding";
 import { logger } from "@/lib/logger";
 import { drawCoverPage, fetchPropertyMapBase64, type CoverPageData } from "@/lib/pdf/coverPage";
 import type { WeatherPdfViewModel } from "@/lib/weather/weatherPdfViewModel";
@@ -34,7 +35,7 @@ export type { WeatherPdfViewModel };
 // ─────────────────────────────────────────────────────────────────────────────
 
 const COLORS = {
-  primary: { r: 30, g: 64, b: 175 },
+  primary: { r: BRAND_PRIMARY_RGB[0], g: BRAND_PRIMARY_RGB[1], b: BRAND_PRIMARY_RGB[2] },
   secondary: { r: 59, g: 130, b: 246 },
   danger: { r: 220, g: 38, b: 38 },
   success: { r: 5, g: 150, b: 105 },
@@ -97,7 +98,7 @@ export async function renderWeatherReportPDF(viewModel: WeatherPdfViewModel): Pr
   const margin = 18;
   const contentWidth = pageWidth - margin * 2;
 
-  const brandColor = hexToRgb(viewModel.branding.primaryColor || "#1e40af") || COLORS.primary;
+  const brandColor = hexToRgb(viewModel.branding.primaryColor || BRAND_PRIMARY) || COLORS.primary;
 
   let yPos = margin;
 
@@ -133,7 +134,7 @@ export async function renderWeatherReportPDF(viewModel: WeatherPdfViewModel): Pr
       employeeName: viewModel.branding.employeeName,
       employeeTitle: viewModel.branding.employeeTitle,
       employeePhone: viewModel.branding.employeePhone || viewModel.branding.phone || undefined,
-      brandColor: viewModel.branding.primaryColor || "#1e40af",
+      brandColor: viewModel.branding.primaryColor || BRAND_PRIMARY,
       accentColor: viewModel.branding.accentColor || "#FFC838",
       propertyAddress: viewModel.claim.propertyAddress,
       propertyMapBase64,

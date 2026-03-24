@@ -34,7 +34,7 @@ interface ClaimHtmlParams {
 export async function buildClaimHtml({
   claimId,
   materials,
-  orgName = "PreLoss Vision",
+  orgName = "SkaiScraper",
   generatedAt = new Date(),
 }: ClaimHtmlParams): Promise<string> {
   const rows = materials
@@ -206,12 +206,12 @@ export async function buildClaimHtml({
   </table>
 
   <div class="footer">
-    <p>Generated on ${generatedAt.toLocaleDateString("en-US", { 
-      year: "numeric", 
-      month: "long", 
+    <p>Generated on ${generatedAt.toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "long",
       day: "numeric",
       hour: "2-digit",
-      minute: "2-digit"
+      minute: "2-digit",
     })}</p>
     <p class="footer-note">
       This report includes specification sheets and warranty references when available.

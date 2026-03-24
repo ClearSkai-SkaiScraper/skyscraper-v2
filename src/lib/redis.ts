@@ -32,7 +32,7 @@ function createEnterpriseClientSafely(): Redis | null {
     enableReadyCheck: true,
   });
   enterpriseClient.on("error", (err) => {
-    console.error("[Redis] Error", err.message);
+    console.error("[REDIS] Connection error", { error: err.message });
   });
   return enterpriseClient;
 }
@@ -45,7 +45,7 @@ export function getRedis(): Redis | null {
 // Strict mode enforcement: returns JSON error response when Redis truly required.
 export function requireRedisOrJson() {
   // Feature flag: if REDIS_STRICT_MODE !== '1', downgrade strict requirement (optional behavior)
-  const strictEnabled = process.env.REDIS_STRICT_MODE === '1';
+  const strictEnabled = process.env.REDIS_STRICT_MODE === "1";
   const redis = getRedis();
   if (!strictEnabled) {
     // Strict mode off – treat absent redis as optional
@@ -64,13 +64,21 @@ export function requireRedisOrJson() {
 }
 
 // maybeCache: generic caching wrapper (enterprise Redis). Upstash variant lives separately.
-export async function maybeCache<T>(key: string, producer: () => Promise<T> | T, ttlSeconds = 300): Promise<T> {
+export async function maybeCache<T>(
+  key: string,
+  producer: () => Promise<T> | T,
+  ttlSeconds = 300
+): Promise<T> {
   const redis = getRedis();
   try {
     if (redis) {
       const cached = await redis.get(key);
       if (cached) {
-        try { return JSON.parse(cached) as T; } catch { /* ignore parse errors */ }
+        try {
+          return JSON.parse(cached) as T;
+        } catch {
+          /* ignore parse errors */
+        }
       }
       const value = await producer();
       await redis.set(key, JSON.stringify(value), "EX", ttlSeconds);
@@ -91,7 +99,11 @@ export async function maybeRateLimit(identifier: string, limit: number, windowSe
     const key = `rate:${identifier}:${bucket}`;
     const count = await redis.incr(key);
     if (count === 1) await redis.expire(key, windowSeconds);
-    return { allowed: count <= limit, remaining: Math.max(0, limit - count), reset: Date.now() + windowSeconds * 1000 };
+    return {
+      allowed: count <= limit,
+      remaining: Math.max(0, limit - count),
+      reset: Date.now() + windowSeconds * 1000,
+    };
   } catch {
     return { allowed: true, remaining: limit, reset: Date.now() + windowSeconds * 1000 };
   }
@@ -106,10 +118,14 @@ export async function safeFetchWithCache(url: string, init: RequestInit = {}, tt
     return parseResponse(res);
   }
   const key = `fetch:${hash(url + JSON.stringify({ headers: init.headers || {}, method }))}`;
-  return maybeCache(key, async () => {
-    const res = await fetch(url, init);
-    return parseResponse(res);
-  }, ttlSeconds);
+  return maybeCache(
+    key,
+    async () => {
+      const res = await fetch(url, init);
+      return parseResponse(res);
+    },
+    ttlSeconds
+  );
 }
 
 function hash(input: string) {
@@ -126,7 +142,12 @@ async function parseResponse(res: Response) {
 export async function invalidateCache(key: string) {
   const redis = getRedis();
   if (!redis) return false;
-  try { await redis.del(key); return true; } catch { return false; }
+  try {
+    await redis.del(key);
+    return true;
+  } catch {
+    return false;
+  }
 }
 
 // Legacy helpers retained (now safe):
@@ -159,7 +180,11 @@ export async function ensureRedisConnected() {
   const redis = getRedis();
   if (!redis) return false;
   if ((redis as any).status === "wait") {
-    try { await (redis as any).connect(); } catch { /* ignore */ }
+    try {
+      await (redis as any).connect();
+    } catch {
+      /* ignore */
+    }
   }
   return (redis as any).status === "ready";
 }

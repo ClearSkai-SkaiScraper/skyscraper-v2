@@ -1,3 +1,5 @@
+import { BRAND_ACCENT, BRAND_NAVY, BRAND_SECONDARY } from "@/lib/constants/branding";
+
 export const CLEARSKAI_BRANDING = {
   orgId: "00000000-0000-0000-0000-000000000000",
   name: "ClearSkai Technologies, LLC",
@@ -12,9 +14,9 @@ export const CLEARSKAI_BRANDING = {
   tagline: "Moving Blue Collar into the Future",
   serviceArea: "Phoenix Metro, Prescott, Flagstaff, Northern Arizona",
   colors: {
-    primary: "#0A1A2F",
-    secondary: "#0EA5E9",
-    accent: "#FFC838",
+    primary: BRAND_NAVY,
+    secondary: BRAND_SECONDARY,
+    accent: BRAND_ACCENT,
   },
   logos: {
     logo: "/branding/clearskai/logo.svg",

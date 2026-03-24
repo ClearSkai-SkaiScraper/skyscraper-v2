@@ -14,10 +14,10 @@ import {
   Th,
 } from "@/components/ui/ContentCard";
 import { StatCard } from "@/components/ui/MetricCard";
+import { hasMinimumRole } from "@/lib/auth/rbac";
 import { guarded } from "@/lib/buildPhase";
 import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
-import { hasMinimumRole, type Role } from "@/lib/rbac";
 import { safeOrgContext } from "@/lib/safeOrgContext";
 
 import MortgageCheckForm from "./MortgageCheckForm";
@@ -47,7 +47,7 @@ export default async function MortgageChecksPage() {
   }
 
   // RBAC: Mortgage check data requires PM (manager) role or above
-  if (!ctx.role || !hasMinimumRole(ctx.role as Role, "PM")) {
+  if (!ctx.role || !hasMinimumRole(ctx.role, "manager")) {
     return (
       <PageContainer>
         <PageHero

@@ -27,6 +27,7 @@ import { PageSectionCard } from "@/components/layout/PageSectionCard";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { logger } from "@/lib/logger";
+import { markdownBoldToHtml } from "@/lib/sanitize";
 
 /* ------------------------------------------------------------------ */
 /*  Types                                                              */
@@ -689,10 +690,7 @@ export default function WeatherAnalyticsPage() {
                       key={i}
                       className="rounded-lg border border-slate-100 bg-slate-50 px-4 py-3 text-sm text-slate-700"
                       dangerouslySetInnerHTML={{
-                        __html: insight.replace(
-                          /\*\*(.*?)\*\*/g,
-                          '<strong class="text-slate-900">$1</strong>'
-                        ),
+                        __html: markdownBoldToHtml(insight),
                       }}
                     />
                   ))}

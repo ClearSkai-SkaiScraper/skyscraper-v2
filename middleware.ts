@@ -339,13 +339,12 @@ export default clerkMiddleware((auth, req) => {
       return NextResponse.json({ error: "Internal server error" }, { status: 500 });
     }
 
-    // For app page routes: fail OPEN — let the page-level safeOrgContext() handle auth.
-    // This prevents the intermittent "blue sign-in screen flash" when Clerk auth
-    // experiences a transient hiccup during client-side navigation.
-    const res = NextResponse.next();
-    res.headers.set("x-auth-mode", "middleware-error-passthrough");
-    res.headers.set("x-pathname", pathname);
-    return res;
+    // 🔒 SECURITY FIX: Fail CLOSED for protected app routes.
+    // Previously failed open which could expose protected pages during Clerk hiccups.
+    // Redirect to sign-in instead of letting unauthenticated requests through.
+    const signInFallback = new URL("/sign-in", req.url);
+    signInFallback.searchParams.set("redirect_url", pathname);
+    return NextResponse.redirect(signInFallback);
   }
 });
 

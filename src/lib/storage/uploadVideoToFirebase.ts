@@ -1,6 +1,6 @@
 // lib/storage/uploadVideoToFirebase.ts
 
-import { getDownloadURL,ref, uploadBytes } from "firebase/storage";
+import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
 
 import { storage } from "./firebaseClient";
 
@@ -21,7 +21,7 @@ export async function uploadVideoToFirebase(
     const url = await getDownloadURL(storageRef);
     return url;
   } catch (err: any) {
-    console.error("Firebase Video Upload Error:", err.message);
+    console.error("[FIREBASE_VIDEO] Upload error", { error: err.message });
     throw new Error("Failed to upload video to Firebase");
   }
 }

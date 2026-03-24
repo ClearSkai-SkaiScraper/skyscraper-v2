@@ -11,6 +11,7 @@
  * @module lib/weather/weatherPdfViewModel
  */
 
+import { BRAND_PRIMARY } from "@/lib/constants/branding";
 import { logger } from "@/lib/logger";
 
 import type { EffectiveDolContext } from "./effectiveDolContext";
@@ -1028,7 +1029,7 @@ export async function buildWeatherPdfViewModel(
       website: input.companyWebsite || "",
       license: input.companyLicense || "",
       logoUrl: input.companyLogoUrl || "",
-      primaryColor: input.primaryColor || "#1e40af",
+      primaryColor: input.primaryColor || BRAND_PRIMARY,
       accentColor: input.accentColor || "#FFC838",
       address: input.companyAddress || "",
       headshotUrl: input.headshotUrl,

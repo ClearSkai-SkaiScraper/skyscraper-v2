@@ -27,13 +27,12 @@ const nextConfig = {
   },
   // Vercel optimizations: Limit CPU usage to prevent timeouts
   experimental: {
-    // Prisma & Sharp external packages
-    serverComponentsExternalPackages: ["@prisma/client", "sharp"],
-    // Required for instrumentation.ts and instrumentation.edge.ts
+    // Prisma & Sharp external packages (moved from serverComponentsExternalPackages)
+    // Note: serverComponentsExternalPackages is now top-level in Next 15+
     instrumentationHook: true,
   },
-  // Enable SWC minification (faster than Terser)
-  swcMinify: true,
+  // External packages for server components (Next 15+ top-level config)
+  serverExternalPackages: ["@prisma/client", "sharp"],
   async redirects() {
     return [
       // Auth redirects (canonical Clerk routes)

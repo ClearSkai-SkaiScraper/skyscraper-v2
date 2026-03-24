@@ -66,7 +66,7 @@ export interface PreviewContext {
 const SKAI_DEMO_ORG: PreviewOrganization = {
   name: "Skai Roofing & Restoration",
   logoUrl: null, // Use default logo from public assets
-  primaryColor: "#0EA5E9", // Sky blue
+  primaryColor: "#117CFF", // SkaiScraper brand blue
   address: "1234 Innovation Drive",
   city: "Phoenix",
   state: "AZ",

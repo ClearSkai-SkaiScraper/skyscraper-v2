@@ -5,7 +5,7 @@
  * Used by the main middleware.ts and API routes.
  */
 
-import { type NextRequest,NextResponse } from "next/server";
+import { type NextRequest, NextResponse } from "next/server";
 
 /**
  * Routes that should redirect based on user type
@@ -108,17 +108,17 @@ export function createIdentityRedirect(
 
   // Pro trying to access client routes -> redirect to pro dashboard
   if (userType === "pro" && isClientRoute(pathname)) {
-    console.log(
-      `[IDENTITY_ROUTING] Pro user accessing client route ${pathname}, redirecting to /dashboard`
-    );
+    console.info(`[IDENTITY_ROUTING] Pro user accessing client route, redirecting to /dashboard`, {
+      pathname,
+    });
     return NextResponse.redirect(new URL("/dashboard", req.url));
   }
 
   // Client trying to access pro routes -> redirect to client portal
   if (userType === "client" && isProRoute(pathname)) {
-    console.log(
-      `[IDENTITY_ROUTING] Client user accessing pro route ${pathname}, redirecting to /portal`
-    );
+    console.info(`[IDENTITY_ROUTING] Client user accessing pro route, redirecting to /portal`, {
+      pathname,
+    });
     return NextResponse.redirect(new URL("/portal", req.url));
   }
 

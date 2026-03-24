@@ -22,7 +22,7 @@ export interface CreateExportParams {
  */
 export async function createExportRecord(params: CreateExportParams) {
   // reportExport model doesn't exist in schema
-  console.log("✅ EXPORT_RECORD_SKIPPED (model not available):", {
+  logger.debug("[EXPORT_REGISTRY] Record skipped (model not available)", {
     type: params.type,
     claimId: params.claimId,
   });

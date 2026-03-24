@@ -7,10 +7,12 @@
  * so that it appears on the Reports History page.
  *
  * The table was created via raw SQL migration (20251119_report_history.sql) and is NOT
- * in the Prisma schema, so we use $queryRawUnsafe.
+ * in the Prisma schema, so we use $queryRaw with Prisma.sql tagged templates.
  *
  * Schema: id, org_id, user_id, type, source_id, title, file_url, metadata, created_at
  */
+
+import { Prisma } from "@prisma/client";
 
 import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
@@ -51,18 +53,11 @@ export async function saveReportHistory(input: SaveReportHistoryInput): Promise<
   const { orgId, userId, type, title, sourceId, fileUrl, metadata } = input;
   try {
     const id = crypto.randomUUID();
-    await prisma.$queryRawUnsafe(
-      `INSERT INTO report_history (id, org_id, user_id, type, source_id, title, file_url, metadata, created_at)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8::jsonb, NOW())
-       ON CONFLICT DO NOTHING`,
-      id,
-      orgId,
-      userId,
-      type,
-      sourceId ?? null,
-      title,
-      fileUrl ?? null,
-      metadata ? JSON.stringify(metadata) : null
+    const metaJson = metadata ? JSON.stringify(metadata) : null;
+    await prisma.$queryRaw(
+      Prisma.sql`INSERT INTO report_history (id, org_id, user_id, type, source_id, title, file_url, metadata, created_at)
+       VALUES (${id}, ${orgId}, ${userId}, ${type}, ${sourceId ?? null}, ${title}, ${fileUrl ?? null}, ${metaJson}::jsonb, NOW())
+       ON CONFLICT DO NOTHING`
     );
     logger.info("[REPORT_HISTORY] Saved", { type, title, orgId, sourceId });
     return id;

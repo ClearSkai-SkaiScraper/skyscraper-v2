@@ -109,6 +109,13 @@ export async function getClaimDetailsByParam(orgId: string, claimParam: string) 
           propertyId: true,
           estimatedJobValue: true,
           jobValueStatus: true,
+          // ✅ HARDENING FIX: These fields exist in schema - select them
+          insured_name: true,
+          lifecycle_stage: true,
+          policy_number: true,
+          homeownerEmail: true,
+          homeowner_email: true,
+          coverPhotoUrl: true,
         },
       })
       .catch(() => null);
@@ -140,9 +147,11 @@ export async function getClaimDetailsByParam(orgId: string, claimParam: string) 
           .catch(() => null)
       : null;
 
-    // Derive insured_name and homeownerEmail from contact
-    const insured_name = contact ? `${contact.firstName} ${contact.lastName}`.trim() : null;
-    const homeownerEmail = contact?.email ?? null;
+    // Derive insured_name from DB or fall back to contact
+    const insuredName =
+      claim.insured_name || (contact ? `${contact.firstName} ${contact.lastName}`.trim() : null);
+    // Prefer homeowner_email (snake_case canonical), fall back to homeownerEmail (camelCase legacy)
+    const resolvedEmail = claim.homeowner_email || claim.homeownerEmail || contact?.email || null;
 
     return {
       id: claim.id,
@@ -167,13 +176,13 @@ export async function getClaimDetailsByParam(orgId: string, claimParam: string) 
       createdAt: claim.createdAt,
       updatedAt: claim.updatedAt,
       propertyId: claim.propertyId,
-      // Derived fields for compatibility
-      insured_name,
-      homeownerEmail,
-      policyNumber: null, // Not in schema - add if needed
-      coverPhotoUrl: null, // Not in schema - add if needed
-      coverPhotoId: null, // Not in schema - add if needed
-      lifecycle_stage: "FILED", // Default
+      // ✅ HARDENING FIX: Use actual DB values instead of hardcoded null
+      insured_name: insuredName,
+      homeownerEmail: resolvedEmail,
+      policyNumber: claim.policy_number || null,
+      coverPhotoUrl: claim.coverPhotoUrl || null,
+      coverPhotoId: null, // No coverPhotoId column yet
+      lifecycle_stage: claim.lifecycle_stage || "FILED",
       property: property
         ? { address: `${property.street}, ${property.city}, ${property.state} ${property.zipCode}` }
         : null,

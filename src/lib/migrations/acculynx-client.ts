@@ -12,6 +12,8 @@
 
 import "server-only";
 
+import { logger } from "@/lib/logger";
+
 // ---------------------------------------------------------------------------
 // Types
 // ---------------------------------------------------------------------------
@@ -114,8 +116,8 @@ export class AccuLynxClient {
         // Rate-limited — back off
         if (res.status === 429) {
           const retryAfter = parseInt(res.headers.get("Retry-After") || "5", 10);
-          console.warn(
-            `[AccuLynx] Rate limited (429). Waiting ${retryAfter}s (attempt ${attempt}/${MAX_RETRIES})`
+          logger.warn(
+            `[ACCULYNX] Rate limited (429). Waiting ${retryAfter}s (attempt ${attempt}/${MAX_RETRIES})`
           );
           await sleep(retryAfter * 1000);
           continue;

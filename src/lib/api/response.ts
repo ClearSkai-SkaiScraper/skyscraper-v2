@@ -4,6 +4,8 @@
 
 import { NextResponse } from "next/server";
 
+import { logger } from "@/lib/logger";
+
 export type ApiSuccessResponse<T = any> = {
   ok: true;
   data: T;
@@ -66,7 +68,7 @@ export function withErrorHandler<T extends any[]>(
     try {
       return await handler(...args);
     } catch (error: any) {
-      console.error(`[${routeName}] Unhandled error:`, {
+      logger.error(`[${routeName}] Unhandled error`, {
         message: error?.message,
         stack: error?.stack?.split("\n").slice(0, 3).join("\n"),
       });

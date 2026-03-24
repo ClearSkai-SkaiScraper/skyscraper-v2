@@ -18,6 +18,7 @@
 
 import { jsPDF } from "jspdf";
 
+import { BRAND_PRIMARY } from "@/lib/constants/branding";
 import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 
@@ -33,7 +34,7 @@ export interface BrandingData {
   companyWebsite?: string;
   companyLicense?: string;
   logoUrl?: string;
-  brandColor: string; // hex e.g. "#1e40af"
+  brandColor: string; // hex e.g. "#117CFF"
   accentColor?: string;
 
   // Employee / User
@@ -153,7 +154,7 @@ export async function fetchBrandingData(orgId: string, userId?: string): Promise
       companyWebsite: branding?.website || undefined,
       companyLicense: branding?.license || undefined,
       logoUrl: branding?.logoUrl || undefined,
-      brandColor: branding?.colorPrimary || "#1e40af",
+      brandColor: branding?.colorPrimary || BRAND_PRIMARY,
       accentColor: branding?.colorAccent || undefined,
       employeeName,
       employeeTitle: userInfo.title,
@@ -165,7 +166,7 @@ export async function fetchBrandingData(orgId: string, userId?: string): Promise
     logger.error("[PDF_BRANDING] Failed to fetch branding data", error);
     return {
       companyName: "SkaiScraper",
-      brandColor: "#1e40af",
+      brandColor: BRAND_PRIMARY,
     };
   }
 }

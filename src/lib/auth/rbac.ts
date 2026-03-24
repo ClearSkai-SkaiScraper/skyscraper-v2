@@ -169,12 +169,15 @@ export async function getCurrentUserRole(): Promise<{
       return null;
     }
 
-    // 🔐 Platform owner override (ensures universal admin access even if DB not initialized)
+    // 🔐 Platform owner override (env-driven, never hardcoded)
     try {
-      const ownerEmail =
-        (sessionClaims as any)?.email || (sessionClaims as any)?.primaryEmailAddress;
-      if (ownerEmail === "buildingwithdamienray@gmail.com") {
-        return { userId, orgId: effectiveOrgId, role: "admin" };
+      const platformOwnerEmail = process.env.PLATFORM_OWNER_EMAIL;
+      if (platformOwnerEmail) {
+        const ownerEmail =
+          (sessionClaims as any)?.email || (sessionClaims as any)?.primaryEmailAddress;
+        if (ownerEmail === platformOwnerEmail) {
+          return { userId, orgId: effectiveOrgId, role: "admin" };
+        }
       }
     } catch (e) {
       // Non-fatal; continue with normal resolution
@@ -218,8 +221,8 @@ export async function getCurrentUserRole(): Promise<{
       } else if (userOrg?.role === "VIEWER") {
         determinedRole = "viewer";
       } else {
-        // Default to admin for any user with an org (they likely created it)
-        determinedRole = "admin";
+        // Default to member — admin must be explicitly assigned
+        determinedRole = "member";
       }
 
       // Auto-update user_organizations role for future queries (lazy initialization)
@@ -253,45 +256,29 @@ export async function getCurrentUserRole(): Promise<{
     };
   } catch (error) {
     logger.error("[RBAC] Failed to get current user role:", error);
-    // 🚨 FINAL MASTER PROMPT #65: Critical fallback
-    // If normal lookup fails (transient deployment / replication lag), force-create an ADMIN membership
-    try {
-      const { userId, orgId } = await auth();
-      let effectiveOrgId = orgId || null;
-      if (userId && !effectiveOrgId) {
-        try {
-          const membership = await prisma.user_organizations.findFirst({
-            where: { userId: userId },
-            select: { organizationId: true },
-          });
-          if (membership) effectiveOrgId = membership.organizationId;
-        } catch (membershipErr) {
-          logger.warn("[RBAC] Membership fallback lookup failed:", membershipErr);
-        }
-      }
-      if (userId && effectiveOrgId) {
-        // Upsert style: attempt update; ignore if fails
-        try {
-          await prisma.user_organizations.updateMany({
-            where: {
-              userId: userId,
-              organizationId: effectiveOrgId,
-            },
-            data: {
-              role: "ADMIN",
-            },
-          });
-        } catch (updateErr) {
-          // Ignore errors - not critical
-        }
-        logger.warn(`CRITICAL: Auto-assigned ADMIN role to new user ${userId}.`);
-        return { userId, orgId: effectiveOrgId, role: "admin" };
-      }
-    } catch (fallbackErr) {
-      logger.error("[RBAC] Fallback admin assignment failed", fallbackErr);
-    }
+    // � SECURITY FIX: Never auto-grant admin on transient errors.
+    // The previous behavior would grant ADMIN on any DB error, which is a
+    // privilege escalation vulnerability during transient outages.
+    // Callers must handle null (unauthenticated) gracefully.
     return null;
   }
+}
+
+/**
+ * Synchronous check: does `userRole` meet or exceed `minimumRole`?
+ * Use in page components where you already have the role string from context.
+ *
+ * Replaces: hasMinimumRole() from deprecated @/lib/rbac (System A).
+ */
+export function hasMinimumRole(
+  userRole: string | null | undefined,
+  minimumRole: TeamRole
+): boolean {
+  if (!userRole) return false;
+  const normalized = userRole.toLowerCase() as TeamRole;
+  const level = ROLE_LEVELS[normalized];
+  if (level === undefined) return false;
+  return level >= ROLE_LEVELS[minimumRole];
 }
 
 /**

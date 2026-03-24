@@ -1,3 +1,14 @@
+/**
+ * @deprecated ⚠️ SYSTEM C — DEPRECATED
+ * Use `@/lib/auth/rbac` (System B) instead. This file uses "verb:noun"
+ * permission format (view:claims, create:reports) which conflicts with
+ * the canonical "noun:verb" format (claims:create, reports:view) in System B.
+ *
+ * Remaining importers to migrate:
+ * - src/app/api/claims/[claimId]/permissions/route.ts
+ *
+ * @see src/lib/auth/rbac.ts — the canonical System B
+ */
 import { auth } from "@clerk/nextjs/server";
 
 import { getTenant } from "@/lib/auth/tenant";

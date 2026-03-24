@@ -56,7 +56,7 @@ export async function logClaimsIntegrity(
     timestamp: new Date().toISOString(),
   };
 
-  console.warn(
+  logger.warn(
     `[CLAIMS_DIAG] ${source} | OrgId: ${orgId} | DB: ${dbHost} | Claims: ${claimsCount} | Time: ${log.timestamp}`
   );
 

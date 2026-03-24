@@ -19,6 +19,12 @@ export const revalidate = 0;
 
 const stripe = getStripeClient()!;
 
+// Validate webhook secret at module load — crash early if missing
+if (!process.env.STRIPE_WEBHOOK_SECRET && process.env.BUILD_PHASE !== "1") {
+  throw new Error("STRIPE_WEBHOOK_SECRET environment variable is required");
+}
+const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET ?? "";
+
 // Durable idempotency check using database
 async function saveEventId(eventId: string, eventType: string): Promise<boolean> {
   try {
@@ -56,7 +62,7 @@ export async function POST(req: Request) {
   let event: Stripe.Event;
 
   try {
-    event = stripe.webhooks.constructEvent(raw, sig, process.env.STRIPE_WEBHOOK_SECRET!);
+    event = stripe.webhooks.constructEvent(raw, sig, webhookSecret);
   } catch (err) {
     logger.error("Stripe signature verify failed", err?.message);
     Sentry.captureException(err, {
@@ -488,6 +494,81 @@ export async function POST(req: Request) {
         break;
       }
 
+      case "charge.refunded": {
+        const charge = event.data.object as Stripe.Charge;
+        const customerId =
+          typeof charge.customer === "string" ? charge.customer : charge.customer?.id;
+
+        if (customerId) {
+          const org = await prisma.org.findFirst({
+            where: { stripeCustomerId: customerId },
+          });
+
+          if (org) {
+            logger.info(
+              `[CHARGE:REFUNDED] Org ${org.id}: charge ${charge.id} refunded $${(charge.amount_refunded / 100).toFixed(2)}`
+            );
+            Sentry.captureMessage(
+              `Stripe refund processed: $${(charge.amount_refunded / 100).toFixed(2)}`,
+              {
+                level: "info",
+                tags: { component: "stripe-webhook", orgId: org.id },
+                extra: { chargeId: charge.id, amount: charge.amount_refunded },
+              }
+            );
+          }
+        }
+        break;
+      }
+
+      case "charge.dispute.created": {
+        const dispute = event.data.object as Stripe.Dispute;
+        const chargeId = typeof dispute.charge === "string" ? dispute.charge : dispute.charge?.id;
+
+        logger.error(
+          `[CHARGE:DISPUTE] Dispute ${dispute.id} created for charge ${chargeId}, reason: ${dispute.reason}, amount: $${(dispute.amount / 100).toFixed(2)}`
+        );
+        Sentry.captureMessage(`⚠️ Stripe dispute created: ${dispute.reason}`, {
+          level: "error",
+          tags: { component: "stripe-webhook-dispute" },
+          extra: {
+            disputeId: dispute.id,
+            chargeId,
+            reason: dispute.reason,
+            amount: dispute.amount,
+          },
+        });
+        break;
+      }
+
+      case "customer.deleted": {
+        const customer = event.data.object as Stripe.Customer;
+
+        const org = await prisma.org.findFirst({
+          where: { stripeCustomerId: customer.id },
+        });
+
+        if (org) {
+          await prisma.org.update({
+            where: { id: org.id },
+            data: {
+              subscriptionStatus: "canceled",
+              stripeCustomerId: null,
+              stripeSubscriptionId: null,
+            },
+          });
+
+          logger.warn(
+            `[CUSTOMER:DELETED] Customer ${customer.id} deleted — Org ${org.id} subscription cleared`
+          );
+          Sentry.captureMessage(`Stripe customer deleted — org subscription cleared`, {
+            level: "warning",
+            tags: { component: "stripe-webhook", orgId: org.id },
+          });
+        }
+        break;
+      }
+
       default:
         logger.debug(`[EMAIL:UNHANDLED] Event type: ${event.type}`);
         break;
@@ -498,7 +579,25 @@ export async function POST(req: Request) {
       rateLimit: { remaining: rl.remaining, limit: rl.limit, reset: rl.reset },
     });
   } catch (e) {
-    logger.error("Webhook error:", e);
-    return NextResponse.json({ error: "Webhook handler failed" }, { status: 500 });
+    const isRetryable =
+      e instanceof Error &&
+      (e.message.includes("ECONNREFUSED") ||
+        e.message.includes("ETIMEDOUT") ||
+        e.message.includes("database") ||
+        e.message.includes("prisma") ||
+        e.message.includes("P2024")); // Prisma connection pool timeout
+
+    logger.error(`[WEBHOOK:${isRetryable ? "RETRYABLE" : "FATAL"}] ${event.type}`, e);
+    Sentry.captureException(e, {
+      tags: { component: "stripe-webhook", retryable: String(isRetryable), eventType: event.type },
+      extra: { eventId: event.id },
+    });
+
+    // 500 = Stripe retries (good for transient errors)
+    // 200 = swallow permanently (bad data we can't fix on retry)
+    return NextResponse.json(
+      { error: "Webhook handler failed" },
+      { status: isRetryable ? 500 : 200 }
+    );
   }
 }

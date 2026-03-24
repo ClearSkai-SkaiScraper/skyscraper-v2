@@ -1,3 +1,20 @@
+/**
+ * @deprecated ⚠️ SYSTEM A — DEPRECATED
+ * Use `@/lib/auth/rbac` (System B) instead. This file uses uppercase role names
+ * (OWNER, ADMIN, PM) which conflict with the canonical lowercase roles
+ * (admin, manager, member, viewer) in System B.
+ *
+ * System B is the canonical RBAC system with:
+ * - 23 permissions, HOF wrappers (withRoleCheck, withPermissionCheck)
+ * - Correct role resolution from team_members table
+ * - Platform owner detection via PLATFORM_OWNER_EMAIL env var
+ *
+ * Remaining importers to migrate:
+ * - src/components/rbac/RoleBadge.tsx
+ * - src/app/api/rbac/me/route.ts
+ *
+ * @see src/lib/auth/rbac.ts — the canonical System B
+ */
 // RBAC Middleware - Role-Based Access Control
 // Phase G Priority 3: Complete RBAC Implementation
 // Enforces role hierarchy: OWNER > ADMIN > PM > FIELD_TECH > OFFICE_STAFF > CLIENT

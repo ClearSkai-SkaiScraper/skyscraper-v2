@@ -15,7 +15,7 @@ export async function getClaimTimelineEventsSafe(claimId: string) {
       logger.warn("[timeline] claim_timeline_events table missing; returning empty list.");
       return [];
     }
-    console.error("[timeline] Unexpected error loading events:", msg);
+    logger.error("[TIMELINE] Unexpected error loading events", { error: msg });
     return [];
   }
 }

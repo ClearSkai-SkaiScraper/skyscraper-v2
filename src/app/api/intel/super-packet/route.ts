@@ -26,6 +26,7 @@ import type { Prisma } from "@prisma/client";
 import { NextResponse } from "next/server";
 
 import { withAuth } from "@/lib/auth/withAuth";
+import { AZ_DEFAULT_TAX_RATE } from "@/lib/constants/taxRates";
 import { runAIFinancialAnalysis } from "@/lib/intel/financial/ai";
 import { calculateFinancialAnalysis } from "@/lib/intel/financial/engine";
 import { buildMasterReportPayload } from "@/lib/intel/master/buildMasterPayload";
@@ -93,7 +94,7 @@ export const POST = withAuth(async (req, { orgId, userId }) => {
         total: s.total,
         createdAt: s.createdAt,
       })),
-      localTaxRate: 0.089,
+      localTaxRate: AZ_DEFAULT_TAX_RATE,
       deductible: 1000,
       pricingZone: property ? `${property.city}-${property.state}`.toUpperCase() : "UNKNOWN",
     });
@@ -106,7 +107,7 @@ export const POST = withAuth(async (req, { orgId, userId }) => {
         total: s.total,
         createdAt: s.createdAt,
       })),
-      localTaxRate: 0.089,
+      localTaxRate: AZ_DEFAULT_TAX_RATE,
       deductible: 1000,
       pricingZone: property ? `${property.city}-${property.state}`.toUpperCase() : "UNKNOWN",
       weatherData:

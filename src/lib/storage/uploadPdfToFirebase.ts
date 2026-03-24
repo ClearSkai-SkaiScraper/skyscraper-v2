@@ -1,5 +1,5 @@
 // lib/storage/uploadPdfToFirebase.ts
-import { getDownloadURL,ref, uploadBytes } from "firebase/storage";
+import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
 
 import { storage } from "./firebaseClient";
 
@@ -20,7 +20,7 @@ export async function uploadPdfToFirebase(
     const url = await getDownloadURL(storageRef);
     return url;
   } catch (err: any) {
-    console.error("Firebase PDF Upload Error:", err.message);
+    console.error("[FIREBASE_PDF] Upload error", { error: err.message });
     throw new Error("Failed to upload PDF to Firebase");
   }
 }

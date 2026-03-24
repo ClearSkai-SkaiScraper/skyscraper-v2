@@ -49,8 +49,8 @@ export function autoMatchLineItems(
   items: Array<{ description: string; code?: string }>,
   categories: string[]
 ): Array<{ item: any; match: string | null; confidence: number }> {
-  console.log(
-    `[AutoMatcher] Stub: Would auto-match ${items.length} items to ${categories.length} categories`
+  logger.debug(
+    `[AUTO_MATCHER] Stub: Would auto-match ${items.length} items to ${categories.length} categories`
   );
   return items.map((item) => ({ item, match: null, confidence: 0 }));
 }

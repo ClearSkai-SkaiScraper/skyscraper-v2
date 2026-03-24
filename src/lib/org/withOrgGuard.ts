@@ -70,8 +70,8 @@ export function withOrgGuard(handler: GuardedHandler, opts?: { requiredRole?: st
         const requiredRank = ROLE_RANK[opts.requiredRole.toUpperCase()] ?? 99;
 
         if (userRank < requiredRank) {
-          console.warn(
-            `[OrgGuard] ${method} ${path} — FORBIDDEN: ${role} < ${opts.requiredRole} (user=${userId})`
+          logger.warn(
+            `[ORG_GUARD] ${method} ${path} — FORBIDDEN: ${role} < ${opts.requiredRole} (user=${userId})`
           );
           return NextResponse.json(
             { ok: false, error: "Insufficient permissions" },

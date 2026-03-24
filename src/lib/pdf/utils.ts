@@ -20,6 +20,10 @@ export interface PDFMetadata {
 
 /**
  * Get organization branding for PDF generation
+ *
+ * @deprecated Use getOrgBrandingForPdf(orgId) from "@/lib/branding/getOrgBranding" instead.
+ * That function queries both org_branding AND Org tables via Prisma ORM
+ * (not raw SQL) and returns canonical defaults from constants.
  */
 export async function getOrgBranding(db: any, orgId: string): Promise<PDFBranding> {
   const result = (await db.$queryRaw`SELECT name, "brandLogoUrl", "pdfHeaderText", "pdfFooterText" 

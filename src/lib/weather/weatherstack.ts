@@ -52,14 +52,14 @@ async function fetchFromVisualCrossing(location: string): Promise<DashboardWeath
 
     if (!res.ok) {
       const errorText = await res.text();
-      console.error("[VISUALCROSSING] HTTP error:", res.status, errorText);
+      logger.error("[VISUALCROSSING] HTTP error", { status: res.status, errorText });
       return null;
     }
 
     const json: any = await res.json();
 
     if (!json.currentConditions) {
-      console.error("[VISUALCROSSING] Unexpected response structure:", json);
+      logger.error("[VISUALCROSSING] Unexpected response structure", { json });
       return null;
     }
 
@@ -79,7 +79,7 @@ async function fetchFromVisualCrossing(location: string): Promise<DashboardWeath
       updatedAt: new Date().toISOString(),
     };
 
-    console.log(
+    logger.info(
       `[VISUALCROSSING] Success: ${weatherData.location} - ${weatherData.temperature}°F - ${weatherData.condition}`
     );
 
@@ -114,19 +114,19 @@ async function fetchFromWeatherstack(location: string): Promise<DashboardWeather
 
     if (!res.ok) {
       const errorText = await res.text();
-      console.error("[WEATHERSTACK] HTTP error:", res.status, errorText);
+      logger.error("[WEATHERSTACK] HTTP error", { status: res.status, errorText });
       return null;
     }
 
     const json: any = await res.json();
 
     if (json.error) {
-      console.error("[WEATHERSTACK] API error:", json.error);
+      logger.error("[WEATHERSTACK] API error", { error: json.error });
       return null;
     }
 
     if (!json.location || !json.current) {
-      console.error("[WEATHERSTACK] Unexpected response structure:", json);
+      logger.error("[WEATHERSTACK] Unexpected response structure", { json });
       return null;
     }
 
@@ -149,7 +149,7 @@ async function fetchFromWeatherstack(location: string): Promise<DashboardWeather
       updatedAt: loc.localtime || new Date().toISOString(),
     };
 
-    console.log(
+    logger.info(
       `[WEATHERSTACK] Success: ${weatherData.location} - ${weatherData.temperature}°F - ${weatherData.condition}`
     );
 

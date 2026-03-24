@@ -1,5 +1,5 @@
 -- =========================================
--- PreLoss Vision Database Health Check
+-- SkaiScraper Database Health Check
 -- Generated: November 17, 2025
 -- =========================================
 

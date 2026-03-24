@@ -32,10 +32,9 @@ export async function validateAndRetry<T>({
       }
 
       // Schema validation failed
-      console.warn(
-        `Validation failed (attempt ${attempt + 1}/${retries + 1}):`,
-        parsed.error.issues
-      );
+      logger.warn(`[AI_VALIDATE] Validation failed (attempt ${attempt + 1}/${retries + 1})`, {
+        issues: parsed.error.issues,
+      });
 
       if (onError) {
         onError(parsed.error, attempt);

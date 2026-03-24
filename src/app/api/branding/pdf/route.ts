@@ -5,6 +5,7 @@ export const revalidate = 0;
 import { auth } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
 
+import { BRAND_PRIMARY } from "@/lib/constants/branding";
 import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 import { safeOrgContext } from "@/lib/safeOrgContext";
@@ -30,7 +31,7 @@ export async function GET(_req: NextRequest) {
     if (!orgId) {
       return NextResponse.json({
         companyName: "Your Company",
-        brandColor: "#1e40af",
+        brandColor: BRAND_PRIMARY,
       });
     }
 
@@ -104,7 +105,7 @@ export async function GET(_req: NextRequest) {
       companyWebsite: branding?.website || undefined,
       companyLicense: branding?.license || undefined,
       logoUrl: branding?.logoUrl || undefined,
-      brandColor: branding?.colorPrimary || "#1e40af",
+      brandColor: branding?.colorPrimary || BRAND_PRIMARY,
       accentColor: branding?.colorAccent || undefined,
       employeeName,
       employeeTitle,

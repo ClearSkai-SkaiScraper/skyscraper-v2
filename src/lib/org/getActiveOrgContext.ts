@@ -159,7 +159,7 @@ async function ensureOrgPrimitives(
     }
   } catch (err: any) {
     // Non-fatal - log but don't fail
-    console.error("[getActiveOrgContext] ensureOrgPrimitives failed (non-fatal):", err.message);
+    logger.error("[ORG_CONTEXT] ensureOrgPrimitives failed (non-fatal)", { error: err.message });
   }
 }
 
@@ -325,11 +325,10 @@ export async function getActiveOrgContext(
     const validMembership = memberships.find((m) => m.organizationId && m.Org);
 
     if (validMembership) {
-      console.log(
-        "[getActiveOrgContext] Found user_organizations membership:",
-        validMembership.organizationId
-      );
-      console.log("[ORG RESOLUTION]", {
+      logger.info("[ORG_RESOLUTION] Found user_organizations membership", {
+        orgId: validMembership.organizationId,
+      });
+      logger.debug("[ORG_RESOLUTION]", {
         userId,
         clerkOrgId: validMembership.Org?.clerkOrgId ?? null,
         resolvedOrgId: validMembership.organizationId,
@@ -355,7 +354,7 @@ export async function getActiveOrgContext(
     // Clean up orphaned memberships (membership exists but org was deleted)
     const orphanedMemberships = memberships.filter((m) => m.organizationId && !m.Org);
     if (orphanedMemberships.length > 0) {
-      console.warn("[getActiveOrgContext] Cleaning up orphaned memberships:", {
+      logger.warn("[ORG_CONTEXT] Cleaning up orphaned memberships", {
         userId,
         orphanedCount: orphanedMemberships.length,
         orphanedOrgIds: orphanedMemberships.map((m) => m.organizationId),

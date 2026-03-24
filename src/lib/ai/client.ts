@@ -19,6 +19,7 @@ import OpenAI from "openai";
 
 import { aiCircuitBreaker, CircuitBreakerOpenError } from "@/lib/ai/circuitBreaker";
 import { aiCostGuard } from "@/lib/ai/costGuard";
+import { logger } from "@/lib/logger";
 
 // ============================================================================
 // CLIENT INITIALIZATION (Lazy Singleton)
@@ -225,7 +226,7 @@ export async function callOpenAI<T = unknown>(opts: AiCallOptions<T>): Promise<A
       }
 
       // Log success
-      console.log("[AI SUCCESS]", {
+      logger.info("[AI_SUCCESS]", {
         tag,
         model,
         tokensUsed,
@@ -245,7 +246,7 @@ export async function callOpenAI<T = unknown>(opts: AiCallOptions<T>): Promise<A
             tokensUsed,
           };
         } catch (parseError) {
-          console.error("[AI PARSE ERROR]", {
+          logger.error("[AI_PARSE_ERROR]", {
             tag,
             model,
             raw: raw.substring(0, 200),
@@ -276,7 +277,7 @@ export async function callOpenAI<T = unknown>(opts: AiCallOptions<T>): Promise<A
       // Handle timeout
       if (apiError.name === "AbortError" || apiError.code === "ECONNABORTED") {
         aiCircuitBreaker.recordFailure(apiError);
-        console.error("[AI TIMEOUT]", {
+        logger.error("[AI_TIMEOUT]", {
           tag,
           model,
           timeoutMs,
@@ -293,7 +294,7 @@ export async function callOpenAI<T = unknown>(opts: AiCallOptions<T>): Promise<A
 
       // Handle API errors
       aiCircuitBreaker.recordFailure(apiError);
-      console.error("[AI API ERROR]", {
+      logger.error("[AI_API_ERROR]", {
         tag,
         model,
         error: apiError.message || apiError,
@@ -310,7 +311,7 @@ export async function callOpenAI<T = unknown>(opts: AiCallOptions<T>): Promise<A
     }
   } catch (error: any) {
     // Handle configuration errors
-    console.error("[AI CONFIG ERROR]", {
+    logger.error("[AI_CONFIG_ERROR]", {
       tag,
       error: error.message || error,
       ...context,

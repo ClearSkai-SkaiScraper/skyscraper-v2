@@ -20,7 +20,8 @@ import Replicate from "replicate";
 import sharp from "sharp";
 
 import { getOpenAI } from "@/lib/ai/client";
-import { type BrandingData,fetchBrandingData } from "@/lib/pdf/brandedHeader";
+import { BRAND_PRIMARY } from "@/lib/constants/branding";
+import { type BrandingData, fetchBrandingData } from "@/lib/pdf/brandedHeader";
 
 const openai = getOpenAI();
 const replicate = new Replicate({ auth: process.env.REPLICATE_API_TOKEN });
@@ -356,7 +357,7 @@ export async function generateBATFPresentation(reportData: {
 
   // PAGE 1: BRANDED COVER
   // ── Brand color bar at top ──
-  const brandHex = branding?.brandColor || "#1e40af";
+  const brandHex = branding?.brandColor || BRAND_PRIMARY;
   const hexResult = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(brandHex);
   const [br, bg, bb] = hexResult
     ? [parseInt(hexResult[1], 16), parseInt(hexResult[2], 16), parseInt(hexResult[3], 16)]
@@ -654,7 +655,7 @@ export async function runBATFPipeline(
   // Step 5: Fetch branding + generate presentation PDF
   const branding = await fetchBrandingData(orgId).catch(() => ({
     companyName: "SkaiScraper",
-    brandColor: "#1e40af",
+    brandColor: BRAND_PRIMARY,
   }));
 
   const presentationPdf = await generateBATFPresentation({

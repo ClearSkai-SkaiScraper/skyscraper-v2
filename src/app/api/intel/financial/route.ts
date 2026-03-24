@@ -18,6 +18,7 @@ import { NextRequest, NextResponse } from "next/server";
 
 import { getOrgClaimOrThrow, OrgScopeError } from "@/lib/auth/orgScope";
 import { withAuth } from "@/lib/auth/withAuth";
+import { AZ_DEFAULT_TAX_RATE } from "@/lib/constants/taxRates";
 import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 
@@ -62,7 +63,7 @@ export const POST = withAuth(async (req: NextRequest, { orgId }) => {
     );
 
     const underpayment = Math.max(0, estimatedValue - approvedValue);
-    const taxRate = 0.089;
+    const taxRate = AZ_DEFAULT_TAX_RATE;
     const carrierTax = approvedValue * taxRate;
     const contractorTax = estimatedValue * taxRate;
 

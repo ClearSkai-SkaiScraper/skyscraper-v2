@@ -409,7 +409,7 @@ export async function batchParseDocuments(
       if (result.status === "fulfilled") {
         results.push(result.value);
       } else {
-        console.error("Document parsing failed:", result.reason);
+        logger.error("[DOCUMENT_PROCESSING] Document parsing failed", { reason: result.reason });
       }
     }
 
@@ -432,7 +432,7 @@ export async function storeParsedDocument(
   try {
     // TODO: Add ParsedDocument model to Prisma schema if needed
     // For now, log the parsed document data
-    console.log(`📄 Storing parsed document: ${documentId}`, {
+    logger.debug(`[DOCUMENT_PROCESSING] Storing parsed document: ${documentId}`, {
       type: parsed.type,
       confidence: parsed.confidence,
       extractedDataKeys: Object.keys(parsed.extractedData),

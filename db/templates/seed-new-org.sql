@@ -28,7 +28,7 @@ INSERT INTO leads (
   gen_random_uuid(),
   '{{ORG_ID}}'::uuid,
   '{{USER_ID}}'::uuid,
-  'Welcome to PreLoss Vision! 👋',
+  'Welcome to SkaiScraper! 👋',
   'hello@preloss.com',
   '555-0100',
   'new',

@@ -237,7 +237,7 @@ export default async function CompanyBrandingPreview() {
       <div
         className="rounded-xl p-4 text-center"
         style={{
-          background: `linear-gradient(135deg, ${branding?.colorPrimary || "#1e40af"}, ${branding?.colorAccent || "#3b82f6"})`,
+          background: `linear-gradient(135deg, ${branding?.colorPrimary || "#117CFF"}, ${branding?.colorAccent || "#FFC838"})`,
         }}
       >
         <p className="text-sm font-medium text-white/90">

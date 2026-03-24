@@ -66,7 +66,7 @@ const styles = StyleSheet.create({
   stateInfoLabel: {
     fontSize: 8,
     fontFamily: "Helvetica-Bold",
-    color: "#1E40AF",
+    color: "#117CFF",
     width: 100,
   },
   stateInfoValue: {
@@ -88,7 +88,7 @@ const styles = StyleSheet.create({
   },
   badgeIce: {
     backgroundColor: "#DBEAFE",
-    color: "#1E40AF",
+    color: "#117CFF",
   },
   badgeSeismic: {
     backgroundColor: "#FEF3C7",

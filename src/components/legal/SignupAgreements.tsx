@@ -11,6 +11,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { logger } from "@/lib/logger";
+import { sanitizeHtml } from "@/lib/sanitize";
 
 interface AgreementDocument {
   id: string;
@@ -212,7 +213,7 @@ export function SignupAgreements({ userType, onComplete, redirectTo }: SignupAgr
                       <div className="border-t border-slate-100 bg-slate-50/50 p-4">
                         <div
                           className="prose prose-sm prose-slate max-w-none text-slate-700"
-                          dangerouslySetInnerHTML={{ __html: doc.content }}
+                          dangerouslySetInnerHTML={{ __html: sanitizeHtml(doc.content) }}
                         />
                       </div>
                     )}

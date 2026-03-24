@@ -1,5 +1,7 @@
 import { supabase } from "@/integrations/supabase/client";
 
+import { logger } from "@/lib/logger";
+
 export type StorageAdapter = "mock" | "supabase" | "s3";
 
 interface UploadResult {
@@ -214,10 +216,9 @@ export async function bucketReady(): Promise<boolean> {
     await bucket.getMetadata(); // Will throw if bucket not found or inaccessible
     return true;
   } catch (error) {
-    console.warn(
-      "Storage bucket check failed:",
-      error instanceof Error ? error.message : String(error)
-    );
+    logger.warn("[STORAGE] Bucket check failed", {
+      error: error instanceof Error ? error.message : String(error),
+    });
     return false;
   }
 }
@@ -259,10 +260,9 @@ export async function assertStorageReady(): Promise<{
       bucket: bucket.name || process.env.FIREBASE_STORAGE_BUCKET,
     };
   } catch (error) {
-    console.warn(
-      "Storage readiness check failed:",
-      error instanceof Error ? error.message : String(error)
-    );
+    logger.warn("[STORAGE] Readiness check failed", {
+      error: error instanceof Error ? error.message : String(error),
+    });
     return { enabled, ready: false };
   }
 }

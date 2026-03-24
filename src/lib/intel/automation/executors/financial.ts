@@ -79,8 +79,8 @@ export async function executeFinancialAnalysis(claimId: string, orgId: string) {
     },
   });
 
-  console.log(
-    `[SKAI] Financial Analysis Complete - Underpayment: $${mathResult.totals.underpayment}`
+  logger.info(
+    `[SKAI_FINANCIAL] Analysis Complete - Underpayment: $${mathResult.totals.underpayment}`
   );
 
   return {

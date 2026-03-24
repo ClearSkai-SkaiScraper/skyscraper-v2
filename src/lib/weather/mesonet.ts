@@ -66,7 +66,7 @@ export async function fetchMesonetReports(opts: {
     try {
       data = JSON.parse(text);
     } catch (parseError) {
-      console.error("Mesonet JSON parse error:", parseError, "Response:", text.substring(0, 200));
+      logger.error("[MESONET] JSON parse error", { parseError, response: text.substring(0, 200) });
       return [];
     }
 

@@ -6,9 +6,27 @@ import { auth } from "@clerk/nextjs/server";
 import { nanoid } from "nanoid";
 import { NextResponse } from "next/server";
 
+import { z } from "zod";
+
 import { logger } from "@/lib/logger";
 import { getActiveOrgContext } from "@/lib/org/getActiveOrgContext";
 import prisma from "@/lib/prisma";
+
+const brandingSchema = z.object({
+  company_name: z.string().trim().max(200).nullish(),
+  companyName: z.string().trim().max(200).nullish(),
+  phone: z.string().trim().max(30).nullish(),
+  email: z.union([z.string().trim().email(), z.literal("")]).nullish(),
+  license_no: z.string().trim().max(100).nullish(),
+  license: z.string().trim().max(100).nullish(),
+  brand_color: z.string().trim().max(20).nullish(),
+  colorPrimary: z.string().trim().max(20).nullish(),
+  accent_color: z.string().trim().max(20).nullish(),
+  colorAccent: z.string().trim().max(20).nullish(),
+  logo_url: z.string().trim().max(2000).nullish(),
+  logoUrl: z.string().trim().max(2000).nullish(),
+  website: z.string().trim().max(500).nullish(),
+});
 
 export async function GET() {
   const { userId } = await auth();
@@ -48,7 +66,15 @@ export async function POST(req: Request) {
     }
 
     const dbOrgId = orgCtx.orgId;
-    const body = await req.json();
+    const raw = await req.json();
+    const parsed = brandingSchema.safeParse(raw);
+    if (!parsed.success) {
+      return NextResponse.json(
+        { error: "Invalid request body", details: parsed.error.flatten().fieldErrors },
+        { status: 400 }
+      );
+    }
+    const body = parsed.data;
 
     // Backward-compatible lookup: check both DB UUID and Clerk orgId
     const orgIdCandidates = [dbOrgId, orgCtx.clerkOrgId].filter(

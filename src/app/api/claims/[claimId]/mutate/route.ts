@@ -32,8 +32,8 @@ import crypto from "crypto";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 
+import { canInviteClients } from "@/lib/auth/claimAccess";
 import { getOrgClaimOrThrow, OrgScopeError } from "@/lib/auth/orgScope";
-import { canInviteClients } from "@/lib/auth/permissions";
 import { withAuth } from "@/lib/auth/withAuth";
 import { sendEmail, TEMPLATES } from "@/lib/email/resend";
 import { logger } from "@/lib/logger";
@@ -179,7 +179,7 @@ export const POST = withAuth(
           return handleInvite(claimId, orgId, userId, payload);
 
         case "invite_client":
-          return handleInviteClient(claimId, userId, payload);
+          return handleInviteClient(claimId, orgId, userId, payload);
 
         case "attach_contact":
           return handleAttachContact(claimId, orgId, payload);
@@ -405,6 +405,7 @@ async function handleInvite(
 
 async function handleInviteClient(
   claimId: string,
+  orgId: string,
   userId: string,
   payload: Extract<ActionPayload, { action: "invite_client" }>
 ) {
@@ -442,15 +443,10 @@ async function handleInviteClient(
   });
 
   // Get org branding
-  const claim = await prisma.claims.findUnique({
-    where: { id: claimId },
-    select: { orgId: true },
-  });
-
   let companyName = "SkaiScraper";
-  if (claim?.orgId) {
+  if (orgId) {
     const branding = await prisma.org_branding.findFirst({
-      where: { orgId: claim.orgId },
+      where: { orgId },
       select: { companyName: true },
     });
     if (branding?.companyName) companyName = branding.companyName;

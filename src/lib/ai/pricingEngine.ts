@@ -1,6 +1,6 @@
 /**
  * PHASE 40: Pricing Engine
- * 
+ *
  * Applies real-world pricing to line items including:
  * - Base pricing
  * - Waste factor
@@ -104,10 +104,10 @@ export function calculateLineItemTotal(
 
     // Calculate base subtotal
     let unitPrice = pricing.unitPrice;
-    
+
     // Apply region multiplier
     unitPrice = applyRegion(unitPrice, profile.regionFactor);
-    
+
     // Apply labor factor
     unitPrice = applyLabor(unitPrice, profile.laborFactor);
 
@@ -141,9 +141,7 @@ export function calculateLineItemTotal(
 /**
  * Calculate totals for all priced items
  */
-export function calculateEstimateTotals(
-  pricedItems: PricedLineItem[]
-): EstimateTotals {
+export function calculateEstimateTotals(pricedItems: PricedLineItem[]): EstimateTotals {
   const totals = pricedItems.reduce(
     (acc, item) => ({
       subtotal: acc.subtotal + item.subtotal,
@@ -197,38 +195,11 @@ export function priceScope(
 }
 
 /**
- * City-level tax rates for Arizona
+ * Re-export canonical tax rates from shared constants.
+ * @see src/lib/constants/taxRates.ts — single source of truth
  */
-export const ARIZONA_TAX_RATES: Record<string, number> = {
-  // Phoenix Metro
-  phoenix: 0.089, // 8.9%
-  scottsdale: 0.0855, // 8.55%
-  tempe: 0.088, // 8.8%
-  mesa: 0.092, // 9.2%
-  chandler: 0.088, // 8.8%
-  gilbert: 0.082, // 8.2%
-  glendale: 0.0905, // 9.05%
-  peoria: 0.0895, // 8.95%
-  surprise: 0.088, // 8.8%
-  
-  // Tucson Area
-  tucson: 0.087, // 8.7%
-  
-  // Northern Arizona
-  flagstaff: 0.0916, // 9.16%
-  prescott: 0.0918, // 9.18%
-  "prescott valley": 0.0918, // 9.18%
-  "chino valley": 0.0835, // 8.35%
-  sedona: 0.0895, // 8.95%
-  
-  // Default
-  default: 0.089, // 8.9% AZ state average
-};
-
-/**
- * Get tax rate for a city
- */
-export function getTaxRateForCity(city: string): number {
-  const normalized = city.toLowerCase().trim();
-  return ARIZONA_TAX_RATES[normalized] || ARIZONA_TAX_RATES.default;
-}
+export {
+  AZ_CITY_TAX_RATES as ARIZONA_TAX_RATES,
+  AZ_DEFAULT_TAX_RATE,
+  getTaxRateForCity,
+} from "@/lib/constants/taxRates";

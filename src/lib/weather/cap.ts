@@ -60,7 +60,7 @@ export async function fetchCAPAlerts(opts: {
       const data: CAPResponse = JSON.parse(text);
       return data.features || [];
     } catch (parseError) {
-      console.error("CAP JSON parse error:", parseError, "Response:", text.substring(0, 200));
+      logger.error("[CAP] JSON parse error", { parseError, response: text.substring(0, 200) });
       return [];
     }
   } catch (error) {

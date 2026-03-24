@@ -100,8 +100,8 @@ export async function orchestrateClaim(input: OrchestratorInput): Promise<Orches
     currentState: currentState || "INTAKE",
   });
 
-  console.log(
-    `🤖 Intelligence: ${Math.round((intelligence.approvalLikelihood || 0) * 100)}% approval likelihood`
+  logger.info(
+    `[ORCHESTRATE] Intelligence: ${Math.round((intelligence.approvalLikelihood || 0) * 100)}% approval likelihood`
   );
 
   // 7. Generate explanation for top action

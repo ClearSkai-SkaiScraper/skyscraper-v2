@@ -2,7 +2,12 @@
  * Multi-Tenant Branding Theme Resolver
  *
  * Resolves organization-specific theme customizations
+ *
+ * @deprecated For server-side branding, use getOrgBranding(orgId)
+ * from "@/lib/branding/getOrgBranding" instead.
  */
+
+import { BRAND_PRIMARY } from "@/lib/constants/branding";
 
 export interface BrandTheme {
   primaryGradient: string;
@@ -13,7 +18,7 @@ export interface BrandTheme {
 
 const defaultTheme: BrandTheme = {
   primaryGradient: "from-blue-600 to-indigo-600",
-  accentColor: "#4f46e5",
+  accentColor: BRAND_PRIMARY,
 };
 
 const themeVariants: Record<string, BrandTheme> = {

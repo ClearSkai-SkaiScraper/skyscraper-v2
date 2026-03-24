@@ -1,5 +1,7 @@
 import crypto from "crypto";
 
+import { Prisma } from "@prisma/client";
+
 import prisma from "@/lib/prisma";
 
 export function hashToken(token: string) {
@@ -15,16 +17,15 @@ export async function issueToken(orgId: string, scopes: string[]) {
 
 export async function validateToken(raw: string, requiredScopes: string[]) {
   const token_hash = hashToken(raw);
-  const rows: any[] = await prisma.$queryRawUnsafe(
-    "SELECT id, org_id, scopes FROM app.api_tokens WHERE token_hash = $1 LIMIT 1",
-    token_hash
+  // 🔒 SECURITY FIX: Use $queryRaw tagged template instead of $queryRawUnsafe
+  const rows: any[] = await prisma.$queryRaw(
+    Prisma.sql`SELECT id, org_id, scopes FROM app.api_tokens WHERE token_hash = ${token_hash} LIMIT 1`
   );
   const token = rows[0];
   if (!token) return null;
   if (!requiredScopes.every((s) => token.scopes.includes(s))) return null;
-  await prisma.$executeRawUnsafe(
-    "UPDATE app.api_tokens SET last_used_at = NOW() WHERE id = $1::uuid",
-    token.id
+  await prisma.$executeRaw(
+    Prisma.sql`UPDATE app.api_tokens SET last_used_at = NOW() WHERE id = ${token.id}::uuid`
   );
   return token.org_id as string;
 }

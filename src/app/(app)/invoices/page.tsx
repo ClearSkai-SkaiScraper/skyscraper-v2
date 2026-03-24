@@ -17,10 +17,10 @@ import {
   Th,
 } from "@/components/ui/ContentCard";
 import { StatCard } from "@/components/ui/MetricCard";
+import { hasMinimumRole } from "@/lib/auth/rbac";
 import { guarded } from "@/lib/buildPhase";
 import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
-import { hasMinimumRole, type Role } from "@/lib/rbac";
 import { safeOrgContext } from "@/lib/safeOrgContext";
 
 export const dynamic = "force-dynamic";
@@ -42,7 +42,7 @@ export default async function InvoicesPage() {
   }
 
   // RBAC: Invoice data requires at least OFFICE_STAFF role
-  if (!ctx.role || !hasMinimumRole(ctx.role as Role, "OFFICE_STAFF")) {
+  if (!ctx.role || !hasMinimumRole(ctx.role, "member")) {
     return (
       <PageContainer>
         <PageHero

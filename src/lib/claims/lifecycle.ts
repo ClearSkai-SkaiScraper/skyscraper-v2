@@ -5,6 +5,7 @@
 
 import { ClaimLifecycleStage } from "@prisma/client";
 
+import { AZ_DEFAULT_TAX_RATE } from "@/lib/constants/taxRates";
 import prisma from "@/lib/prisma";
 
 // Valid state transitions map
@@ -141,7 +142,8 @@ export async function buildDepreciationDraft(claim_id: string) {
     depreciationCents += depAmount;
   }
 
-  const taxRate = 0.08; // Example 8% tax
+  // TODO: resolve city-level rate from claim address when available
+  const taxRate = AZ_DEFAULT_TAX_RATE;
   const taxCents = Math.round((subtotalCents - depreciationCents) * taxRate);
   const totalDueCents = subtotalCents - depreciationCents + taxCents;
 

@@ -140,6 +140,14 @@ const LEAD_SOURCES = [
 ];
 
 export async function POST(req: NextRequest) {
+  // Block demo seeding in production
+  if (process.env.NODE_ENV === "production" && process.env.ALLOW_DEMO_SEED !== "true") {
+    return NextResponse.json(
+      { error: "Demo seeding is not available in production" },
+      { status: 403 }
+    );
+  }
+
   const authResult = await requireApiAuth();
   if (authResult instanceof NextResponse) return authResult;
   const { orgId, userId } = authResult;
@@ -284,6 +292,14 @@ export async function POST(req: NextRequest) {
  * DELETE — Remove all demo seed data for the org
  */
 export async function DELETE(req: NextRequest) {
+  // Block demo deletion in production
+  if (process.env.NODE_ENV === "production" && process.env.ALLOW_DEMO_SEED !== "true") {
+    return NextResponse.json(
+      { error: "Demo operations are not available in production" },
+      { status: 403 }
+    );
+  }
+
   const authResult = await requireApiAuth();
   if (authResult instanceof NextResponse) return authResult;
   const { orgId } = authResult;

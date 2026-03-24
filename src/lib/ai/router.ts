@@ -157,7 +157,7 @@ function registerModules() {
         logger.warn(`[AI Router] ⚠ ${moduleName}: no exported functions found`);
       }
     } catch (err: any) {
-      console.error(`[AI Router] ✗ ${moduleName}:`, err.message);
+      logger.error(`[AI_ROUTER] Failed to register ${moduleName}: ${err?.message ?? err}`);
 
       // Still register module as failed
       moduleIndex.set(moduleName, {

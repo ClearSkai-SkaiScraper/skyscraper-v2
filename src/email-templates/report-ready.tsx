@@ -8,9 +8,9 @@ import {
   Body,
   Button,
   Container,
+  Html as EmailHtml,
   Head,
   Hr,
-  Html as EmailHtml,
   Link,
   Preview,
   Section,
@@ -28,7 +28,7 @@ type Props = {
 export default function ReportReadyEmail({
   shareUrl,
   pdfUrl,
-  company = "PreLoss Vision",
+  company = "SkaiScraper",
   recipientName,
 }: Props) {
   const preview = "Your report is ready to review and accept.";

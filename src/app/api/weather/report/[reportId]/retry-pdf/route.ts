@@ -5,6 +5,7 @@ import { NextRequest, NextResponse } from "next/server";
 
 import { withAuth } from "@/lib/auth/withAuth";
 import { getBrandingForOrg, getBrandingWithDefaults } from "@/lib/branding/fetchBranding";
+import { BRAND_PRIMARY } from "@/lib/constants/branding";
 import { logger } from "@/lib/logger";
 import { renderWeatherReportPDF } from "@/lib/pdf/weather-report-pdf";
 import prisma from "@/lib/prisma";
@@ -135,7 +136,7 @@ export const POST = withAuth(
         website: undefined as string | undefined,
         license: undefined as string | undefined,
         logoUrl: undefined as string | undefined,
-        primaryColor: "#1e40af",
+        primaryColor: BRAND_PRIMARY,
       };
       try {
         const branding = await getBrandingForOrg(orgId);

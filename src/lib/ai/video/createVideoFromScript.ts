@@ -15,9 +15,7 @@ import type { VideoScript } from "./types";
  */
 export async function createVideoFromScript(script: VideoScript): Promise<Buffer> {
   logger.debug(`[Video Generation] Starting for ${script.kind}: ${script.title}`);
-  console.log(
-    `[Video Generation] Duration: ${script.durationSeconds}s, Scenes: ${script.scenes.length}`
-  );
+  logger.debug(`[VIDEO_GEN] Duration: ${script.durationSeconds}s, Scenes: ${script.scenes.length}`);
 
   const combinedPrompt = script.scenes
     .map(
@@ -32,7 +30,7 @@ export async function createVideoFromScript(script: VideoScript): Promise<Buffer
       logger.debug("[Video Generation] Attempting OpenAI Sora...");
       return await generateWithOpenAI(script, combinedPrompt);
     } catch (error: any) {
-      console.error("[Video Generation] OpenAI failed:", error.message);
+      logger.error("[VIDEO_GEN] OpenAI failed", { error: error.message });
       // Fall through to next provider
     }
   }
@@ -43,7 +41,7 @@ export async function createVideoFromScript(script: VideoScript): Promise<Buffer
       logger.debug("[Video Generation] Attempting Synthesia...");
       return await generateWithSynthesia(script, combinedPrompt);
     } catch (error: any) {
-      console.error("[Video Generation] Synthesia failed:", error.message);
+      logger.error("[VIDEO_GEN] Synthesia failed", { error: error.message });
       // Fall through to placeholder
     }
   }

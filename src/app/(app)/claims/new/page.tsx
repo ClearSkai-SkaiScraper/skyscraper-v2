@@ -9,7 +9,7 @@ import { getCurrentUserPermissions } from "@/lib/permissions";
 import { ClaimIntakeWizard } from "./ClaimIntakeWizard";
 
 export const metadata: Metadata = {
-  title: "New Claim | PreLoss Vision",
+  title: "New Claim | SkaiScraper",
   description: "Create a new insurance claim",
 };
 

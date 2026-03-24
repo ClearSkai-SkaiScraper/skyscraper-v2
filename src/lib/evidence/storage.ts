@@ -128,7 +128,7 @@ export async function getEvidenceSignedUrl(
   if (!skipCache) {
     const { setCachedEvidenceUrl } = await import("./evidenceUrlCache");
     setCachedEvidenceUrl(storagePath, signedUrl, expiresIn).catch((err) =>
-      console.error("[getEvidenceSignedUrl] Cache set failed (non-fatal):", err)
+      logger.error("[EVIDENCE_CACHE] Cache set failed (non-fatal)", { error: err })
     );
   }
 
@@ -171,9 +171,9 @@ export async function getBatchSignedUrls(
     return {};
   }
 
-  console.log(
-    `[getBatchSignedUrls] Generating ${storagePaths.length} signed URLs (skipCache: ${skipCache})`
-  );
+  logger.debug(`[EVIDENCE_BATCH_URLS] Generating ${storagePaths.length} signed URLs`, {
+    skipCache,
+  });
   const startTime = Date.now();
 
   const results: Record<string, string> = {};
@@ -188,8 +188,8 @@ export async function getBatchSignedUrls(
     Object.assign(results, found);
     pathsToGenerate = missing;
 
-    console.log(
-      `[getBatchSignedUrls] Cache: ${Object.keys(found).length} hits, ${missing.length} misses`
+    logger.debug(
+      `[EVIDENCE_BATCH_URLS] Cache: ${Object.keys(found).length} hits, ${missing.length} misses`
     );
   }
 
@@ -217,8 +217,8 @@ export async function getBatchSignedUrls(
   const cacheHitRate = skipCache
     ? 0
     : ((storagePaths.length - pathsToGenerate.length) / storagePaths.length) * 100;
-  console.log(
-    `[getBatchSignedUrls] ✅ Generated ${Object.keys(results).length} URLs in ${duration}ms (${Math.round(duration / storagePaths.length)}ms avg, ${Math.round(cacheHitRate)}% cache hit rate)`
+  logger.info(
+    `[EVIDENCE_BATCH_URLS] Generated ${Object.keys(results).length} URLs in ${duration}ms (${Math.round(duration / storagePaths.length)}ms avg, ${Math.round(cacheHitRate)}% cache hit rate)`
   );
 
   return results;

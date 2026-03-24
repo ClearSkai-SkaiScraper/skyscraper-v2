@@ -17,7 +17,7 @@ export interface EmailData {
 export async function sendEmail(emailData: EmailData): Promise<boolean> {
   try {
     // TODO: Integrate with your email provider (SendGrid, AWS SES, etc.)
-    console.log("📧 Email would be sent:", {
+    logger.debug("📧 [EMAIL] Would be sent", {
       to: emailData.to,
       subject: emailData.subject,
       template: emailData.template,

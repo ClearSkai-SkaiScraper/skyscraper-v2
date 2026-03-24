@@ -126,6 +126,7 @@ export const useWizardStore = create<WizardState>()(
     }),
     {
       name: "wizard-storage",
+      version: 1,
       partialize: (state) => ({
         currentStep: state.currentStep,
         jobData: state.jobData,

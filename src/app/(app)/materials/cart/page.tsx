@@ -1,5 +1,6 @@
 "use client";
 
+import { AZ_DEFAULT_TAX_RATE } from "@/lib/constants/taxRates";
 import { useUser } from "@clerk/nextjs";
 import {
   AlertCircle,
@@ -78,7 +79,8 @@ export default function MaterialsCartPage() {
 
   // Calculate totals
   const subtotal = items.reduce((sum, item) => sum + item.unitPrice * item.quantity, 0);
-  const taxRate = 0.056; // Arizona sales tax
+  // TODO: resolve city from org branding or claim address for precise rate
+  const taxRate = AZ_DEFAULT_TAX_RATE;
   const tax = subtotal * taxRate;
   const shipping = subtotal > 500 ? 0 : 75; // Free shipping over $500
   const total = subtotal + tax + shipping;

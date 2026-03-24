@@ -157,9 +157,9 @@ export async function loadBrandingWithFallback(): Promise<Branding> {
 /** Apply to document :root so Tailwind/inline styles can reference */
 export function applyBrandTheme(b?: Branding | null) {
   const root = document.documentElement;
-  const p = b?.primary_color ?? "#0f172a";
-  const s = b?.secondary_color ?? "#334155";
-  const a = b?.accent_color ?? "#2563eb";
+  const p = b?.primary_color ?? "#117CFF";
+  const s = b?.secondary_color ?? "#0A1A2F";
+  const a = b?.accent_color ?? "#FFC838";
   root.style.setProperty("--brand-primary", p);
   root.style.setProperty("--brand-secondary", s);
   root.style.setProperty("--brand-accent", a);

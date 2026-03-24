@@ -1,9 +1,24 @@
 import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
 
 import { generateContactSlug } from "@/lib/generateContactSlug";
 import { logger } from "@/lib/logger";
 import { getActiveOrgContext } from "@/lib/org/getActiveOrgContext";
 import prisma from "@/lib/prisma";
+
+const scheduleJobSchema = z.object({
+  title: z.string().trim().min(1, "Title is required"),
+  type: z.string().trim().min(1, "Job type is required"),
+  scheduledDate: z.string().trim().min(1, "Scheduled date is required"),
+  startTime: z.string().trim().nullish(),
+  endTime: z.string().trim().nullish(),
+  address: z.string().trim().nullish(),
+  claimId: z.string().trim().nullish(),
+  propertyId: z.string().trim().nullish(),
+  assignedTo: z.string().trim().nullish(),
+  crewSize: z.union([z.string(), z.number()]).nullish(),
+  notes: z.string().trim().max(5000).nullish(),
+});
 
 export const dynamic = "force-dynamic";
 
@@ -128,7 +143,14 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: ctx.error || ctx.reason }, { status: 401 });
     }
 
-    const body = await request.json();
+    const raw = await request.json();
+    const parsed = scheduleJobSchema.safeParse(raw);
+    if (!parsed.success) {
+      return NextResponse.json(
+        { error: "Invalid request body", details: parsed.error.flatten().fieldErrors },
+        { status: 400 }
+      );
+    }
     const {
       title,
       type,
@@ -141,21 +163,13 @@ export async function POST(request: NextRequest) {
       assignedTo,
       crewSize,
       notes,
-    } = body;
-
-    // Validate required fields
-    if (!title || !type || !scheduledDate) {
-      return NextResponse.json(
-        { error: "Title, type, and scheduled date are required" },
-        { status: 400 }
-      );
-    }
+    } = parsed.data;
 
     // If no propertyId provided, try to get from claim or create placeholder
     let resolvedPropertyId = propertyId;
     if (!resolvedPropertyId && claimId) {
-      const claim = await prisma.claims.findUnique({
-        where: { id: claimId },
+      const claim = await prisma.claims.findFirst({
+        where: { id: claimId, orgId: ctx.orgId },
         select: { propertyId: true },
       });
       resolvedPropertyId = claim?.propertyId;
@@ -226,7 +240,7 @@ export async function POST(request: NextRequest) {
         scheduledEnd: endTime ? new Date(endTime) : undefined,
         claimId: claimId || undefined,
         foreman: assignedTo || undefined,
-        crewSize: crewSize ? parseInt(crewSize) : undefined,
+        crewSize: crewSize != null ? Number(crewSize) : undefined,
         description: notes || undefined,
         updatedAt: new Date(),
       },

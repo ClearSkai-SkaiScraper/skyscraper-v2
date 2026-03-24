@@ -1,5 +1,5 @@
 -- ================================================================================================
--- PRELOSS VISION DATABASE HEALTH CHECK
+-- SKAISCRAPER DATABASE HEALTH CHECK
 -- ================================================================================================
 -- This script validates the database schema, checks for orphaned records, validates relations,
 -- and ensures data integrity across all tables.

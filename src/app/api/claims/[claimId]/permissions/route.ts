@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
+import { getClaimPermissions } from "@/lib/auth/claimAccess";
 import { getOrgClaimOrThrow, OrgScopeError } from "@/lib/auth/orgScope";
-import { getClaimPermissions } from "@/lib/auth/permissions";
 import { isAuthError, requireAuth } from "@/lib/auth/requireAuth";
 import { logger } from "@/lib/logger";
 
@@ -35,9 +35,6 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ clai
       return NextResponse.json({ error: "Claim not found" }, { status: 404 });
     }
     logger.error("[permissions] Error:", error);
-    return NextResponse.json(
-      { error: "Failed to fetch permissions" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Failed to fetch permissions" }, { status: 500 });
   }
 }

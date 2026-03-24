@@ -125,7 +125,7 @@ export async function q<T extends Row = Row>(text: string, params?: any[]): Prom
     const result = await pgPool.query<T>(text as any, params as any);
     return result.rows;
   } catch (error) {
-    console.error("Database query failed:", { text, params, error });
+    logger.error("[DB_QUERY] Database query failed", { text, params, error });
     throw error;
   }
 }
@@ -168,7 +168,7 @@ export async function qExec(text: string, params?: any[]): Promise<number> {
     const result = await pgPool.query(text, params);
     return result.rowCount || 0;
   } catch (error) {
-    console.error("Database exec failed:", { text, params, error });
+    logger.error("[DB_EXEC] Database exec failed", { text, params, error });
     throw error;
   }
 }

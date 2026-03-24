@@ -242,8 +242,8 @@ async function handleSendCertificate(
   payload: Extract<ActionPayload, { action: "send_certificate" }>
 ) {
   // Get claim and org branding
-  const claim = await prisma.claims.findUnique({
-    where: { id: claimId },
+  const claim = await prisma.claims.findFirst({
+    where: { id: claimId, orgId },
     select: { claimNumber: true },
   });
 
@@ -351,8 +351,8 @@ async function handleSubmit(
   });
 
   // Update claim status
-  await prisma.claims.update({
-    where: { id: claimId },
+  await prisma.claims.updateMany({
+    where: { id: claimId, orgId },
     data: {
       lifecycle_stage: "DEPRECIATION",
     },

@@ -66,7 +66,7 @@ export async function runSkaiAutomations(
     }
 
     logger.debug(`[SKAI] Found ${triggers.length} triggers:`);
-    triggers.forEach((t) => console.log(`  - ${t.type} (${t.severity}): ${t.reason}`));
+    triggers.forEach((t) => logger.debug(`  - ${t.type} (${t.severity}): ${t.reason}`));
 
     // Save triggers to database
     await saveTriggers(claimId, orgId, triggers);

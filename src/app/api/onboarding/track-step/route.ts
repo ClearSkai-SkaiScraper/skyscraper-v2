@@ -5,6 +5,7 @@ export const dynamic = "force-dynamic";
  * Tracks onboarding wizard progress server-side.
  * Body: { step: number, complete?: boolean, metadata?: Record<string, unknown> }
  */
+import { Prisma } from "@prisma/client";
 import { NextResponse } from "next/server";
 
 import { requireApiAuth } from "@/lib/auth/apiAuth";
@@ -36,15 +37,12 @@ export async function POST(req: Request) {
       .catch((e: any) => {
         // Fields may not exist yet — fall back to raw SQL
         logger.debug("[TRACK_STEP] Prisma update failed, trying raw SQL:", e.message);
-        return prisma.$executeRawUnsafe(
-          `UPDATE organizations SET
-          onboarding_step = COALESCE($1, onboarding_step),
-          onboarding_complete = COALESCE($2, onboarding_complete),
+        return prisma.$executeRaw(
+          Prisma.sql`UPDATE organizations SET
+          onboarding_step = COALESCE(${step > 0 ? step : null}, onboarding_step),
+          onboarding_complete = COALESCE(${complete || null}, onboarding_complete),
           updated_at = NOW()
-        WHERE id = $3`,
-          step > 0 ? step : null,
-          complete || null,
-          orgId
+        WHERE id = ${orgId}`
         );
       });
 

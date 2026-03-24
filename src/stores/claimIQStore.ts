@@ -463,6 +463,7 @@ export const useClaimIQStore = create<ClaimIQStore>()(
     }),
     {
       name: "claimiq-store",
+      version: 1,
       // Only persist UI preferences and section generation history
       partialize: (state) => ({
         sectionStates: state.sectionStates,

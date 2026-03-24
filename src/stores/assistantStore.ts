@@ -112,6 +112,7 @@ export const useAssistantStore = create<AssistantStore>()(
     }),
     {
       name: "skai-assistant-storage",
+      version: 1,
       partialize: (state) => ({
         mode: state.mode,
         isEnabled: state.isEnabled,

@@ -7,9 +7,9 @@ import { logger } from "@/lib/logger";
 const isStorageEnabled = process.env.STORAGE_ENABLED === "true";
 const hasRequiredEnvs = Boolean(
   process.env.FIREBASE_PROJECT_ID &&
-    process.env.FIREBASE_CLIENT_EMAIL &&
-    process.env.FIREBASE_PRIVATE_KEY &&
-    process.env.FIREBASE_STORAGE_BUCKET
+  process.env.FIREBASE_CLIENT_EMAIL &&
+  process.env.FIREBASE_PRIVATE_KEY &&
+  process.env.FIREBASE_STORAGE_BUCKET
 );
 
 // Initialize Firebase Admin only if storage is enabled and configured
@@ -33,10 +33,9 @@ if (isStorageEnabled && hasRequiredEnvs) {
 
     storage = getStorage(firebaseAdmin).bucket(bucketName);
   } catch (error) {
-    console.warn(
-      "Firebase Admin initialization failed:",
-      error instanceof Error ? error.message : String(error)
-    );
+    logger.warn("[FIREBASE_ADMIN] Initialization failed", {
+      error: error instanceof Error ? error.message : String(error),
+    });
     // Continue with null storage - degraded mode
   }
 } else {
@@ -45,5 +44,4 @@ if (isStorageEnabled && hasRequiredEnvs) {
 }
 
 // Export stubs that won't crash the app if storage is disabled
-export { firebaseAdmin };
-export { storage };
+export { firebaseAdmin, storage };

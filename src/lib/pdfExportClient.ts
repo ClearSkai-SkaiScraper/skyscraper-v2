@@ -61,7 +61,7 @@ export async function inlineImage(url: string): Promise<string> {
     imageCache.set(url, data);
     return data;
   } catch (error) {
-    console.error("Failed to inline image:", url, error);
+    console.error("[PDF_EXPORT] Failed to inline image", { url, error });
     return url; // fallback to original URL
   }
 }

@@ -13,20 +13,27 @@ export const panelGhost = "panel-ghost p-4";
 
 // Component styles
 export const badge = "badge";
-export const chip = "chip bg-[var(--surface-2)] border border-[color:var(--border)] text-[color:var(--text)]";
+export const chip =
+  "chip bg-[var(--surface-2)] border border-[color:var(--border)] text-[color:var(--text)]";
 
-export const glass = "bg-[var(--surface-glass)] backdrop-blur-xl border border-[color:var(--border)]";
+export const glass =
+  "bg-[var(--surface-glass)] backdrop-blur-xl border border-[color:var(--border)]";
 export const card = `${panel} rounded-2xl shadow-[var(--card-shadow)] hover:border-[color:var(--border-bright)] transition-all duration-300`;
-export const btn = "rounded-xl px-3 py-2 border border-[color:var(--border)] bg-[var(--surface-2)] hover:bg-[var(--surface-1)] transition-colors";
-export const btnPrimary = "px-4 py-2.5 rounded-xl bg-gradient-to-r from-[var(--primary)] to-[var(--accent)] text-white font-medium shadow-[var(--glow)] hover:scale-[1.02] transition-all duration-200";
-export const btnSecondary = "px-4 py-2.5 rounded-xl bg-[var(--surface-2)] border border-[color:var(--border)] text-[color:var(--text)] hover:bg-[var(--surface-1)] hover:border-[color:var(--border-bright)] transition-all duration-200";
+export const btn =
+  "rounded-xl px-3 py-2 border border-[color:var(--border)] bg-[var(--surface-2)] hover:bg-[var(--surface-1)] transition-colors";
+export const btnPrimary =
+  "px-4 py-2.5 rounded-xl bg-gradient-to-r from-[var(--primary)] to-[var(--accent)] text-white font-medium shadow-[var(--glow)] hover:scale-[1.02] transition-all duration-200";
+export const btnSecondary =
+  "px-4 py-2.5 rounded-xl bg-[var(--surface-2)] border border-[color:var(--border)] text-[color:var(--text)] hover:bg-[var(--surface-1)] hover:border-[color:var(--border-bright)] transition-all duration-200";
 export const glow = "shadow-[var(--glow)]";
 export const textMuted = "text-[color:var(--muted)]";
 export const textPrimary = "text-[color:var(--primary)]";
 export const textBase = "text-[color:var(--text)]";
 export const heading = "text-xl font-semibold text-[color:var(--text)]";
-export const chipPrimary = "bg-[var(--primary-weak)] text-[color:var(--primary)] border border-[color:var(--border)] rounded-full px-3 py-1";
-export const activeTab = "bg-gradient-to-r from-[var(--primary)] to-[var(--accent)] text-white font-semibold rounded-full px-4 py-2 shadow-[var(--glow)]";
+export const chipPrimary =
+  "bg-[var(--primary-weak)] text-[color:var(--primary)] border border-[color:var(--border)] rounded-full px-3 py-1";
+export const activeTab =
+  "bg-gradient-to-r from-[var(--primary)] to-[var(--accent)] text-white font-semibold rounded-full px-4 py-2 shadow-[var(--glow)]";
 
 // === ORIGINAL THEME SYSTEM ===
 
@@ -54,9 +61,9 @@ export async function applyOrgTheme() {
   if (data && typeof data === "object") {
     const branding = data as Partial<OrgBranding>;
     const root = document.documentElement;
-    root.style.setProperty("--brand-primary", (branding.theme_primary as string) || "#0ea5e9");
-    root.style.setProperty("--brand-secondary", (branding.theme_secondary as string) || "#111827");
-    root.style.setProperty("--brand-accent", (branding.theme_accent as string) || "#22c55e");
+    root.style.setProperty("--brand-primary", (branding.theme_primary as string) || "#117CFF");
+    root.style.setProperty("--brand-secondary", (branding.theme_secondary as string) || "#0A1A2F");
+    root.style.setProperty("--brand-accent", (branding.theme_accent as string) || "#FFC838");
 
     // Expose layout preferences globally for easy access (minimal typed shim)
     (window as unknown as { __orgBranding?: OrgBranding }).__orgBranding = branding as OrgBranding;

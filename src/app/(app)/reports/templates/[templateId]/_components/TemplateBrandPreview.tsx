@@ -20,19 +20,19 @@ export function TemplateBrandPreview({ template, onBrandingUpdate }: TemplateBra
     const defaults = template.defaults as any;
     brandingConfig = defaults?.branding || {
       logoUrl: null,
-      primaryColor: "#1e40af",
+      primaryColor: "#117CFF",
       secondaryColor: "#64748b",
     };
   } catch {
     brandingConfig = {
       logoUrl: null,
-      primaryColor: "#1e40af",
+      primaryColor: "#117CFF",
       secondaryColor: "#64748b",
     };
   }
 
   const [logoUrl, setLogoUrl] = useState(brandingConfig.logoUrl || "");
-  const [primaryColor, setPrimaryColor] = useState(brandingConfig.primaryColor || "#1e40af");
+  const [primaryColor, setPrimaryColor] = useState(brandingConfig.primaryColor || "#117CFF");
   const [secondaryColor, setSecondaryColor] = useState(brandingConfig.secondaryColor || "#64748b");
 
   const handleApplyBranding = () => {
@@ -85,7 +85,7 @@ export function TemplateBrandPreview({ template, onBrandingUpdate }: TemplateBra
               type="text"
               value={primaryColor}
               onChange={(e) => setPrimaryColor(e.target.value)}
-              placeholder="#1e40af"
+              placeholder="#117CFF"
             />
           </div>
         </div>

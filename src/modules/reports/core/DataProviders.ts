@@ -5,6 +5,7 @@
 // Called from the export route after looking up the report's claimId.
 // ============================================================================
 
+import { BRAND_ACCENT, BRAND_PRIMARY } from "@/lib/constants/branding";
 import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 
@@ -34,8 +35,8 @@ export async function fetchReportBranding(orgId: string): Promise<BrandingConfig
 
   return {
     companyName: branding?.companyName || org?.name || "Unknown Company",
-    brandColor: branding?.colorPrimary || "#117CFF",
-    accentColor: branding?.colorAccent || "#FFC838",
+    brandColor: branding?.colorPrimary || BRAND_PRIMARY,
+    accentColor: branding?.colorAccent || BRAND_ACCENT,
     logoUrl: branding?.logoUrl || org?.brandLogoUrl || undefined,
     licenseNumber: branding?.license || undefined,
     website: branding?.website || undefined,

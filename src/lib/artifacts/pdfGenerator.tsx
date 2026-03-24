@@ -52,7 +52,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 24,
     fontWeight: "bold",
-    color: "#1e40af",
+    color: "#117CFF",
     marginBottom: 8,
   },
   subtitle: {
@@ -74,7 +74,7 @@ const styles = StyleSheet.create({
   statusText: {
     fontSize: 10,
     fontWeight: "bold",
-    color: "#1e40af",
+    color: "#117CFF",
   },
   content: {
     marginBottom: 40,

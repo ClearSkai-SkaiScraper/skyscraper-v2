@@ -19,8 +19,14 @@ export const dynamic = "force-dynamic";
 import { auth, currentUser } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 
+import { z } from "zod";
+
 import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
+
+const bootstrapSchema = z.object({
+  orgName: z.string().trim().min(1).max(100).optional(),
+});
 
 export async function POST(req: Request) {
   try {
@@ -64,12 +70,13 @@ export async function POST(req: Request) {
       // Non-fatal: table may not exist
     }
 
-    // Parse optional org name from request body
+    // Parse optional org name from request body (validated with Zod)
     let customOrgName: string | undefined;
     try {
-      const body = await req.json();
-      if (body?.orgName && typeof body.orgName === "string") {
-        customOrgName = body.orgName.trim();
+      const raw = await req.json();
+      const parsed = bootstrapSchema.safeParse(raw);
+      if (parsed.success && parsed.data.orgName) {
+        customOrgName = parsed.data.orgName;
       }
     } catch {
       // Body may be empty — that's fine

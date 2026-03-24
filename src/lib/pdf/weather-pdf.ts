@@ -57,7 +57,7 @@ export interface WeatherPdfInput {
 // ─────────────────────────────────────────────────────────────────────────────
 
 const COLORS = {
-  primary: { r: 30, g: 64, b: 175 }, // #1e40af - Blue
+  primary: { r: 17, g: 124, b: 255 }, // #117CFF - BRAND_PRIMARY
   danger: { r: 220, g: 38, b: 38 }, // #dc2626 - Red
   success: { r: 5, g: 150, b: 105 }, // #059669 - Green
   warning: { r: 245, g: 158, b: 11 }, // #f59e0b - Amber

@@ -24,6 +24,7 @@ import {
   parseScope,
 } from "@/lib/ai/estimatorEngine";
 import { priceScope, PricingProfile } from "@/lib/ai/pricingEngine";
+import { AZ_DEFAULT_TAX_RATE } from "@/lib/constants/taxRates";
 import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 import { checkRateLimit, getRateLimitError } from "@/lib/ratelimit";
@@ -119,7 +120,7 @@ export async function POST(request: NextRequest) {
         data: {
           id: crypto.randomUUID(),
           orgId,
-          taxRate: 0.089, // 8.9% default for AZ
+          taxRate: AZ_DEFAULT_TAX_RATE,
           opPercent: 0.2, // 20% O&P
           wasteFactor: 0.15, // 15% waste
           laborFactor: 1.0,

@@ -78,9 +78,9 @@ async function getClerkUserTypeDirect(clerkUserId: string): Promise<"pro" | "cli
 async function getUserTypeDirectSQL(clerkUserId: string): Promise<"pro" | "client" | null> {
   try {
     const { default: prisma } = await import("@/lib/prisma");
-    const result = await prisma.$queryRawUnsafe<{ userType: string }[]>(
-      `SELECT "userType" FROM app.user_registry WHERE "clerkUserId" = $1 LIMIT 1`,
-      clerkUserId
+    const { Prisma } = await import("@prisma/client");
+    const result = await prisma.$queryRaw<{ userType: string }[]>(
+      Prisma.sql`SELECT "userType" FROM app.user_registry WHERE "clerkUserId" = ${clerkUserId} LIMIT 1`
     );
     if (result?.[0]?.userType === "pro" || result?.[0]?.userType === "client") {
       return result[0].userType as "pro" | "client";
@@ -147,15 +147,14 @@ export default async function AfterSignInPage({
     // Also update user_registry so L4/L5 resolution stays consistent
     try {
       const { default: prisma } = await import("@/lib/prisma");
-      await prisma.$executeRawUnsafe(
-        `INSERT INTO app.user_registry ("clerkUserId", "userType", "isActive", "onboardingComplete", "displayName", email, "avatarUrl", "createdAt", "updatedAt")
-         VALUES ($1, $2, true, false, $3, $4, $5, NOW(), NOW())
-         ON CONFLICT ("clerkUserId") DO UPDATE SET "userType" = $2, "updatedAt" = NOW()`,
-        user.id,
-        resolvedType,
-        `${user.firstName || ""} ${user.lastName || ""}`.trim() || null,
-        user.emailAddresses?.[0]?.emailAddress || null,
-        user.imageUrl || null
+      const { Prisma } = await import("@prisma/client");
+      const displayName = `${user.firstName || ""} ${user.lastName || ""}`.trim() || null;
+      const email = user.emailAddresses?.[0]?.emailAddress || null;
+      const avatarUrl = user.imageUrl || null;
+      await prisma.$executeRaw(
+        Prisma.sql`INSERT INTO app.user_registry ("clerkUserId", "userType", "isActive", "onboardingComplete", "displayName", email, "avatarUrl", "createdAt", "updatedAt")
+         VALUES (${user.id}, ${resolvedType}, true, false, ${displayName}, ${email}, ${avatarUrl}, NOW(), NOW())
+         ON CONFLICT ("clerkUserId") DO UPDATE SET "userType" = ${resolvedType}, "updatedAt" = NOW()`
       );
     } catch (regError) {
       logger.error("[AFTER-SIGN-IN] DB registry update err:", regError);
@@ -247,15 +246,14 @@ export default async function AfterSignInPage({
 
   try {
     const { default: prisma } = await import("@/lib/prisma");
-    await prisma.$executeRawUnsafe(
-      `INSERT INTO app.user_registry ("clerkUserId", "userType", "isActive", "onboardingComplete", "displayName", email, "avatarUrl", "createdAt", "updatedAt")
-       VALUES ($1, $2, true, false, $3, $4, $5, NOW(), NOW())
-       ON CONFLICT ("clerkUserId") DO NOTHING`,
-      user.id,
-      newType,
-      `${user.firstName || ""} ${user.lastName || ""}`.trim() || null,
-      user.emailAddresses?.[0]?.emailAddress || null,
-      user.imageUrl || null
+    const { Prisma } = await import("@prisma/client");
+    const displayName = `${user.firstName || ""} ${user.lastName || ""}`.trim() || null;
+    const email = user.emailAddresses?.[0]?.emailAddress || null;
+    const avatarUrl = user.imageUrl || null;
+    await prisma.$executeRaw(
+      Prisma.sql`INSERT INTO app.user_registry ("clerkUserId", "userType", "isActive", "onboardingComplete", "displayName", email, "avatarUrl", "createdAt", "updatedAt")
+       VALUES (${user.id}, ${newType}, true, false, ${displayName}, ${email}, ${avatarUrl}, NOW(), NOW())
+       ON CONFLICT ("clerkUserId") DO NOTHING`
     );
   } catch (regError) {
     logger.error("[AFTER-SIGN-IN] DB reg err", { error: regError });

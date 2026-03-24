@@ -3,26 +3,45 @@ export const dynamic = "force-dynamic";
 import { auth } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
 
+import { z } from "zod";
+
 import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
+import { checkRateLimit } from "@/lib/rate-limit";
+
+const bodySchema = z.object({
+  claimId: z.string().trim().min(1, "Claim ID is required"),
+});
 
 export async function POST(request: NextRequest) {
   try {
     const { userId, orgId } = await auth();
-    if (!userId) {
+    if (!userId || !orgId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const body = await request.json();
-    const { claimId } = body;
-
-    if (!claimId) {
-      return NextResponse.json({ error: "Claim ID is required" }, { status: 400 });
+    // Rate limit: AI tier
+    const rl = await checkRateLimit(userId, "AI");
+    if (!rl.success) {
+      return NextResponse.json(
+        { error: "Rate limit exceeded. Please try again later." },
+        { status: 429 }
+      );
     }
 
-    // Fetch claim with policy info and related data
-    const claim = await prisma.claims.findUnique({
-      where: { id: claimId },
+    const raw = await request.json();
+    const parsed = bodySchema.safeParse(raw);
+    if (!parsed.success) {
+      return NextResponse.json(
+        { error: "Invalid request body", details: parsed.error.flatten().fieldErrors },
+        { status: 400 }
+      );
+    }
+    const { claimId } = parsed.data;
+
+    // Fetch claim with policy info and related data — MUST scope by orgId
+    const claim = await prisma.claims.findFirst({
+      where: { id: claimId, orgId },
       include: {
         properties: true,
         estimates: true,

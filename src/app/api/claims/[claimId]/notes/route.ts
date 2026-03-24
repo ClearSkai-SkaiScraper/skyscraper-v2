@@ -18,10 +18,17 @@ export const dynamic = "force-dynamic";
 import crypto from "crypto";
 import { NextRequest, NextResponse } from "next/server";
 
+import { z } from "zod";
+
 import { getOrgClaimOrThrow, OrgScopeError } from "@/lib/auth/orgScope";
 import { withAuth } from "@/lib/auth/withAuth";
 import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
+
+const noteSchema = z.object({
+  content: z.string().trim().min(1, "Content is required").max(10000, "Content too long"),
+  isClientVisible: z.boolean().optional().default(false),
+});
 
 /**
  * GET /api/claims/[claimId]/notes
@@ -65,10 +72,7 @@ export const GET = withAuth(
         return NextResponse.json({ error: "Claim not found" }, { status: 404 });
       }
       logger.error("[Notes GET] Error:", error);
-      return NextResponse.json(
-        { error: "Failed to fetch notes" },
-        { status: 500 }
-      );
+      return NextResponse.json({ error: "Failed to fetch notes" }, { status: 500 });
     }
   }
 );
@@ -87,12 +91,15 @@ export const POST = withAuth(
       const { claimId } = await routeParams.params;
       await getOrgClaimOrThrow(orgId, claimId);
 
-      const body = await req.json();
-      const { content, isClientVisible } = body;
-
-      if (!content?.trim()) {
-        return NextResponse.json({ error: "Content is required" }, { status: 400 });
+      const raw = await req.json();
+      const parsed = noteSchema.safeParse(raw);
+      if (!parsed.success) {
+        return NextResponse.json(
+          { error: "Invalid request body", details: parsed.error.flatten().fieldErrors },
+          { status: 400 }
+        );
       }
+      const { content, isClientVisible } = parsed.data;
 
       const note = await prisma.claim_timeline_events.create({
         data: {
@@ -125,10 +132,7 @@ export const POST = withAuth(
         return NextResponse.json({ error: "Claim not found" }, { status: 404 });
       }
       logger.error("[Notes POST] Error:", error);
-      return NextResponse.json(
-        { error: "Failed to add note" },
-        { status: 500 }
-      );
+      return NextResponse.json({ error: "Failed to add note" }, { status: 500 });
     }
   }
 );

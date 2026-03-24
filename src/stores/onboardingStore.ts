@@ -139,10 +139,18 @@ export const useOnboardingStore = create<OnboardingState>()(
     }),
     {
       name: "onboarding-storage",
+      version: 1,
       partialize: (state) => ({
         hasCompletedOnboarding: state.hasCompletedOnboarding,
-        dismissedAt: state.dismissedAt,
+        // Serialize Date to ISO string for reliable JSON round-trips
+        dismissedAt: state.dismissedAt ? state.dismissedAt.toISOString() : null,
       }),
+      // Rehydrate ISO string back to Date
+      onRehydrateStorage: () => (state) => {
+        if (state?.dismissedAt && typeof state.dismissedAt === "string") {
+          state.dismissedAt = new Date(state.dismissedAt);
+        }
+      },
     }
   )
 );

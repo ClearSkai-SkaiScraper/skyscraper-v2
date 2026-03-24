@@ -62,7 +62,7 @@ export async function sendEmail(notification: EmailNotification): Promise<boolea
 
   try {
     await resend.emails.send({
-      from: notification.from || "PreLoss Vision <notifications@preloss.com>",
+      from: notification.from || "SkaiScraper <notifications@skaiscrape.com>",
       to: notification.to,
       subject: notification.subject,
       html: notification.html,
@@ -155,7 +155,7 @@ export async function sendMaintenanceReminder(
           <a href="https://app.preloss.com/maintenance" class="button">View Details</a>
         </div>
         <div class="footer">
-          <p>This is an automated reminder from PreLoss Vision</p>
+          <p>This is an automated reminder from SkaiScraper</p>
           <p>If you have questions, please contact your property manager</p>
         </div>
       </div>

@@ -11,6 +11,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { CONDITION_OPTIONS, MATERIAL_OPTIONS, PITCH_OPTIONS } from "@/lib/constants/roofing";
 
 export interface Step4Data {
   roofAge?: string;
@@ -64,14 +65,11 @@ export function Step4_RoofDetails({ data, onChange }: Step4Props) {
               <SelectValue placeholder="Select material" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="asphalt-3tab">Asphalt 3-Tab</SelectItem>
-              <SelectItem value="asphalt-architectural">Asphalt Architectural</SelectItem>
-              <SelectItem value="metal">Metal</SelectItem>
-              <SelectItem value="tile">Tile</SelectItem>
-              <SelectItem value="slate">Slate</SelectItem>
-              <SelectItem value="wood">Wood Shake</SelectItem>
-              <SelectItem value="tpo">TPO</SelectItem>
-              <SelectItem value="epdm">EPDM</SelectItem>
+              {MATERIAL_OPTIONS.map((m) => (
+                <SelectItem key={m.value} value={m.value}>
+                  {m.label}
+                </SelectItem>
+              ))}
             </SelectContent>
           </Select>
         </div>
@@ -90,12 +88,21 @@ export function Step4_RoofDetails({ data, onChange }: Step4Props) {
 
         <div className="space-y-2">
           <Label htmlFor="roofPitch">Roof Pitch</Label>
-          <Input
-            id="roofPitch"
+          <Select
             value={data.roofPitch || ""}
-            onChange={(e) => updateField("roofPitch", e.target.value)}
-            placeholder="e.g., 6/12, 8/12"
-          />
+            onValueChange={(value) => updateField("roofPitch", value)}
+          >
+            <SelectTrigger>
+              <SelectValue placeholder="Select pitch" />
+            </SelectTrigger>
+            <SelectContent>
+              {PITCH_OPTIONS.map((p) => (
+                <SelectItem key={p.value} value={p.value}>
+                  {p.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
 
         <div className="space-y-2">
@@ -120,10 +127,11 @@ export function Step4_RoofDetails({ data, onChange }: Step4Props) {
               <SelectValue placeholder="Select condition" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="excellent">Excellent</SelectItem>
-              <SelectItem value="good">Good</SelectItem>
-              <SelectItem value="fair">Fair</SelectItem>
-              <SelectItem value="poor">Poor</SelectItem>
+              {CONDITION_OPTIONS.map((c) => (
+                <SelectItem key={c.value} value={c.value}>
+                  {c.label}
+                </SelectItem>
+              ))}
             </SelectContent>
           </Select>
         </div>

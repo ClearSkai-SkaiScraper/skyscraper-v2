@@ -192,7 +192,7 @@ async function POST_INNER(req: NextRequest, ctx: { userId: string; orgId: string
           .type-badge {
             display: inline-block;
             background: #dbeafe;
-            color: #1e40af;
+            color: #117CFF;
             padding: 6px 12px;
             border-radius: 4px;
             font-size: 11px;

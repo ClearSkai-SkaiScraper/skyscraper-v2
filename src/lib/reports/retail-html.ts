@@ -3,6 +3,8 @@
  * Generates formatted HTML for retail estimate PDF reports
  */
 
+import { AZ_DEFAULT_TAX_RATE } from "@/lib/constants/taxRates";
+
 interface RetailEstimateItem {
   id: string;
   quantity: number;
@@ -43,17 +45,17 @@ export async function buildRetailHtml({
   items,
   customerName = "Customer",
   customerAddress,
-  orgName = "PreLoss Vision",
+  orgName = "SkaiScraper",
   generatedAt = new Date(),
 }: RetailHtmlParams): Promise<string> {
   let subtotal = 0;
-  
+
   const rows = items
     .map((item) => {
       const unitPrice = item.unitPrice ?? 0;
       const lineTotal = item.lineTotal ?? unitPrice * item.quantity;
       subtotal += lineTotal;
-      
+
       return `
     <tr>
       <td>${item.product?.name ?? "Unknown Product"}</td>
@@ -65,7 +67,7 @@ export async function buildRetailHtml({
     })
     .join("");
 
-  const tax = Math.round(subtotal * 0.0825); // 8.25% tax example
+  const tax = Math.round(subtotal * AZ_DEFAULT_TAX_RATE); // canonical AZ default
   const total = subtotal + tax;
 
   return `
@@ -276,10 +278,10 @@ export async function buildRetailHtml({
     </div>
     <div class="header-right">
       <div class="estimate-id">EST-${estimateId.slice(0, 8).toUpperCase()}</div>
-      <p class="date">${generatedAt.toLocaleDateString("en-US", { 
-        year: "numeric", 
-        month: "long", 
-        day: "numeric"
+      <p class="date">${generatedAt.toLocaleDateString("en-US", {
+        year: "numeric",
+        month: "long",
+        day: "numeric",
       })}</p>
     </div>
   </div>

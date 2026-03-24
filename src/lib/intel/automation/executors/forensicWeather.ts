@@ -108,8 +108,8 @@ export async function executeForensicWeather(claimId: string, orgId: string) {
     },
   });
 
-  console.log(
-    `[SKAI] Forensic Weather Generated - Correlation: ${forensic.damageCorrelation?.overallCorrelation || 0}`
+  logger.info(
+    `[SKAI_WEATHER] Forensic Weather Generated - Correlation: ${forensic.damageCorrelation?.overallCorrelation || 0}`
   );
 
   return {

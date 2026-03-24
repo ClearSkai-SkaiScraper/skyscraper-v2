@@ -1,23 +1,31 @@
 // Role Badge Component - Display user role with icon and color
-// Phase G Priority 3: Complete RBAC Implementation
-// Usage: <RoleBadge role="ADMIN" />
+// Uses System B canonical roles (lowercase)
+// Usage: <RoleBadge role="admin" />
 
-import { Briefcase, Crown, FileText, HardHat, Shield, User } from "lucide-react";
+import { Briefcase, Crown, Eye, User } from "lucide-react";
 
-import { type Role } from "@/lib/rbac";
+import { type TeamRole } from "@/lib/auth/rbac";
 
 interface RoleBadgeProps {
-  role: Role;
+  role: TeamRole | string;
   size?: "sm" | "md" | "lg";
 }
 
-const roleConfig: Record<Role, { icon: any; color: string; label: string }> = {
-  OWNER: { icon: Crown, color: "purple", label: "Owner" },
-  ADMIN: { icon: Shield, color: "blue", label: "Admin" },
-  PM: { icon: Briefcase, color: "green", label: "Project Manager" },
-  FIELD_TECH: { icon: HardHat, color: "orange", label: "Field Tech" },
-  OFFICE_STAFF: { icon: FileText, color: "slate", label: "Office Staff" },
-  CLIENT: { icon: User, color: "gray", label: "Client" },
+const roleConfig: Record<TeamRole, { icon: any; color: string; label: string }> = {
+  admin: { icon: Crown, color: "purple", label: "Admin" },
+  manager: { icon: Briefcase, color: "green", label: "Manager" },
+  member: { icon: User, color: "blue", label: "Member" },
+  viewer: { icon: Eye, color: "slate", label: "Viewer" },
+};
+
+/** Map legacy uppercase roles to System B */
+const LEGACY_ROLE_MAP: Record<string, TeamRole> = {
+  OWNER: "admin",
+  ADMIN: "admin",
+  PM: "manager",
+  FIELD_TECH: "member",
+  OFFICE_STAFF: "member",
+  CLIENT: "viewer",
 };
 
 const sizeClasses = {
@@ -33,7 +41,11 @@ const iconSizes = {
 };
 
 export function RoleBadge({ role, size = "md" }: RoleBadgeProps) {
-  const config = roleConfig[role];
+  // Normalize: accept both System A (uppercase) and System B (lowercase) roles
+  const normalizedRole: TeamRole = (
+    role in roleConfig ? role : LEGACY_ROLE_MAP[role] || "member"
+  ) as TeamRole;
+  const config = roleConfig[normalizedRole];
   const Icon = config.icon;
 
   return (

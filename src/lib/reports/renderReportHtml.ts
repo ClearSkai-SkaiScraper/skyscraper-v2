@@ -353,7 +353,7 @@ export function renderReportHtml(
     }
 
     .weather-summary h3 {
-      color: #1e40af;
+      color: #117CFF;
       margin-top: 0;
     }
 

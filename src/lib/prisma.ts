@@ -94,7 +94,7 @@ export async function ensurePrismaConnection(): Promise<boolean> {
     await prismaClient.$connect();
     return true;
   } catch (err) {
-    console.error("[PRISMA] Connection warmup failed:", err);
+    console.error("[PRISMA] Connection warmup failed", { error: err });
     // Attempt to disconnect and reconnect once
     try {
       await prismaClient.$disconnect();

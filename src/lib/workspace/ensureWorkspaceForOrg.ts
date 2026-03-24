@@ -62,8 +62,8 @@ export async function ensureWorkspaceForOrg(options: EnsureWorkspaceOptions): Pr
           data: { organizationId: orgId },
         });
       }
-      console.log(
-        `[ensureWorkspace] Fixed ${orphanedMemberships.length} orphaned memberships for org ${orgId}`
+      logger.info(
+        `[WORKSPACE] Fixed ${orphanedMemberships.length} orphaned memberships for org ${orgId}`
       );
     }
 

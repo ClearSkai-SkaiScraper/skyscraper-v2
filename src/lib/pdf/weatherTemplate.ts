@@ -8,7 +8,7 @@ import puppeteer from "puppeteer-core";
 
 import { logger } from "@/lib/logger";
 import { uploadBufferToFirebase } from "@/lib/storage/firebase-admin";
-import type { DOLResult, PropertyContext,ScoredEvent } from "@/types/weather";
+import type { DOLResult, PropertyContext, ScoredEvent } from "@/types/weather";
 
 interface PDFRenderOptions {
   dol: DOLResult;
@@ -98,7 +98,7 @@ export async function renderWeatherPDF(opts: PDFRenderOptions): Promise<string> 
       "application/pdf"
     );
 
-    console.log("[PDF] Weather PDF generated", {
+    logger.info("[PDF_WEATHER] Weather PDF generated", {
       userId,
       orgId,
       fileSize: pdfBuffer.byteLength,

@@ -13,6 +13,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { withAuth } from "@/lib/auth/withAuth";
 import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
+import { checkRateLimit } from "@/lib/rate-limit";
 import { runReportBuilder } from "@/lib/report-engine/ai";
 import { buildPayloadWithAddons } from "@/lib/report-engine/buildMasterPayload";
 import { getAISection } from "@/modules/ai/jobs/persist";
@@ -65,6 +66,15 @@ export const GET = withAuth(async (req: NextRequest, { orgId }, routeParams) => 
 // POST: Generate AI suggestion for section (retail wizard support)
 export const POST = withAuth(async (req: NextRequest, { orgId, userId }, routeParams) => {
   try {
+    // Rate limit: AI tier
+    const rl = await checkRateLimit(userId, "AI");
+    if (!rl.success) {
+      return NextResponse.json(
+        { error: "Rate limit exceeded. Please try again later." },
+        { status: 429 }
+      );
+    }
+
     const { reportId, sectionKey: rawKey } = await routeParams.params;
     const key = rawKey as string;
 

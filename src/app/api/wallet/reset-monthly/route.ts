@@ -4,6 +4,7 @@ export const revalidate = 0;
 
 import { NextResponse } from "next/server";
 
+import { verifyCronSecret } from "@/lib/cron/verifyCronSecret";
 import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 
@@ -28,13 +29,9 @@ export async function POST(req: Request) {
 
 async function handleReset(req: Request) {
   try {
-    // Verify cron secret to prevent unauthorized calls
-    const authHeader = req.headers.get("authorization");
-    const cronSecret = process.env.CRON_SECRET;
-
-    if (cronSecret && authHeader !== `Bearer ${cronSecret}`) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    // 🔒 SECURITY FIX: Use verifyCronSecret (fail-closed when CRON_SECRET is unset)
+    const authError = verifyCronSecret(req);
+    if (authError) return authError;
 
     logger.info("[WALLET_RESET] Monthly token reset cron fired (token system currently disabled)");
 

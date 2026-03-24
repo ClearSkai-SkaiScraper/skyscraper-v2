@@ -19,6 +19,12 @@ import {
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Textarea } from "@/components/ui/textarea";
+import {
+  CONDITION_OPTIONS,
+  MATERIAL_OPTIONS,
+  PITCH_OPTIONS,
+  type RoofCondition,
+} from "@/lib/constants/roofing";
 import { logger } from "@/lib/logger";
 
 interface InspectionData {
@@ -30,7 +36,7 @@ interface InspectionData {
   layers: number;
   slopeCount: number;
   softMetalsPresent: boolean;
-  overallCondition: "good" | "fair" | "poor" | "critical";
+  overallCondition: RoofCondition;
   accessPoints: string[];
   accessoriesImpacted: string[];
   notes: string;
@@ -199,12 +205,11 @@ export default function InspectionOverviewPage() {
                   <SelectValue placeholder="Select type" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="asphalt-shingle">Asphalt Shingle</SelectItem>
-                  <SelectItem value="metal">Metal</SelectItem>
-                  <SelectItem value="tile">Tile</SelectItem>
-                  <SelectItem value="flat">Flat/Low Slope</SelectItem>
-                  <SelectItem value="wood-shake">Wood Shake</SelectItem>
-                  <SelectItem value="slate">Slate</SelectItem>
+                  {MATERIAL_OPTIONS.map((m) => (
+                    <SelectItem key={m.value} value={m.value}>
+                      {m.label}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
@@ -218,11 +223,11 @@ export default function InspectionOverviewPage() {
                   <SelectValue placeholder="Select pitch" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="flat">Flat (0-2:12)</SelectItem>
-                  <SelectItem value="low">Low (3-4:12)</SelectItem>
-                  <SelectItem value="standard">Standard (5-7:12)</SelectItem>
-                  <SelectItem value="steep">Steep (8-10:12)</SelectItem>
-                  <SelectItem value="very-steep">Very Steep (11+:12)</SelectItem>
+                  {PITCH_OPTIONS.map((p) => (
+                    <SelectItem key={p.value} value={p.value}>
+                      {p.label}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
@@ -276,10 +281,11 @@ export default function InspectionOverviewPage() {
                   <SelectValue placeholder="Select condition" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="good">Good</SelectItem>
-                  <SelectItem value="fair">Fair</SelectItem>
-                  <SelectItem value="poor">Poor</SelectItem>
-                  <SelectItem value="critical">Critical</SelectItem>
+                  {CONDITION_OPTIONS.map((c) => (
+                    <SelectItem key={c.value} value={c.value}>
+                      {c.label}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>

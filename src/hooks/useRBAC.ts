@@ -1,14 +1,16 @@
 // RBAC Hook - Client-side role checking
-// Phase G Priority 3: Complete RBAC Implementation
+// Consumes /api/rbac/me which returns System B canonical roles (lowercase)
 // Usage: const { role, can } = useRBAC(); if (can("claims:delete")) { ... }
 
 "use client";
 
-import { useUser } from "@clerk/nextjs";
 import { logger } from "@/lib/logger";
+import { useUser } from "@clerk/nextjs";
 import { useEffect, useState } from "react";
 
-export type Role = "OWNER" | "ADMIN" | "PM" | "FIELD_TECH" | "OFFICE_STAFF" | "CLIENT";
+/** System B canonical roles (lowercase) */
+export type Role = "admin" | "manager" | "member" | "viewer";
+
 export type Permission =
   | "claims:create"
   | "claims:edit"
@@ -28,7 +30,7 @@ export type Permission =
   | "org:settings";
 
 const rolePermissions: Record<Role, Permission[]> = {
-  OWNER: [
+  admin: [
     "claims:create",
     "claims:edit",
     "claims:delete",
@@ -46,22 +48,7 @@ const rolePermissions: Record<Role, Permission[]> = {
     "billing:manage",
     "org:settings",
   ],
-  ADMIN: [
-    "claims:create",
-    "claims:edit",
-    "claims:delete",
-    "claims:view",
-    "supplements:create",
-    "supplements:approve",
-    "supplements:view",
-    "reports:create",
-    "reports:view",
-    "files:upload",
-    "files:delete",
-    "team:invite",
-    "team:manage",
-  ],
-  PM: [
+  manager: [
     "claims:create",
     "claims:edit",
     "claims:view",
@@ -72,9 +59,15 @@ const rolePermissions: Record<Role, Permission[]> = {
     "files:upload",
     "files:delete",
   ],
-  FIELD_TECH: ["claims:view", "supplements:view", "reports:view", "files:upload"],
-  OFFICE_STAFF: ["claims:view", "supplements:view", "reports:view", "files:upload"],
-  CLIENT: ["claims:view", "files:upload"],
+  member: ["claims:view", "supplements:view", "reports:view", "files:upload"],
+  viewer: ["claims:view", "reports:view"],
+};
+
+const roleHierarchy: Record<Role, number> = {
+  admin: 4,
+  manager: 3,
+  member: 2,
+  viewer: 1,
 };
 
 interface RBACContext {
@@ -124,18 +117,9 @@ export function useRBAC(): RBACContext {
     return permissions.includes(permission);
   };
 
-  const roleHierarchy: Record<Role, number> = {
-    OWNER: 100,
-    ADMIN: 80,
-    PM: 60,
-    FIELD_TECH: 40,
-    OFFICE_STAFF: 20,
-    CLIENT: 10,
-  };
-
   const isMinimumRole = (minimumRole: Role): boolean => {
     if (!role) return false;
-    return roleHierarchy[role] >= roleHierarchy[minimumRole];
+    return (roleHierarchy[role] ?? 0) >= (roleHierarchy[minimumRole] ?? 0);
   };
 
   return {

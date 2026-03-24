@@ -94,13 +94,15 @@ export interface CoverPageData {
   reportDate?: Date; // Defaults to now
 }
 
+import { BRAND_PRIMARY_RGB } from "@/lib/constants/branding";
+
 // ============================================================================
 // Helpers
 // ============================================================================
 
 function hexToRgb(hex: string): [number, number, number] {
   const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-  if (!result) return [17, 124, 255]; // Default #117CFF
+  if (!result) return BRAND_PRIMARY_RGB;
   return [parseInt(result[1], 16), parseInt(result[2], 16), parseInt(result[3], 16)];
 }
 
@@ -185,7 +187,9 @@ export async function drawCoverPage(doc: jsPDF, data: CoverPageData): Promise<vo
   const brand = hexToRgb(data.brandColor);
   const brandLight = lightenRgb(brand, 0.92);
   const brandDark = darkenRgb(brand);
-  const accent = data.accentColor ? hexToRgb(data.accentColor) : [255, 200, 56] as [number, number, number];
+  const accent = data.accentColor
+    ? hexToRgb(data.accentColor)
+    : ([255, 200, 56] as [number, number, number]);
   const reportDate = formatDate(data.reportDate || new Date());
   const isInsurance = data.reportCategory === "insurance";
 

@@ -30,7 +30,7 @@ export function JobValueBox({
   onUpdate,
 }: JobValueBoxProps) {
   const { isMinimumRole, loading: rbacLoading } = useRBAC();
-  const isManager = !rbacLoading && isMinimumRole("PM");
+  const isManager = !rbacLoading && isMinimumRole("manager");
 
   const [editValue, setEditValue] = useState(
     estimatedJobValue != null ? (estimatedJobValue / 100).toFixed(2) : ""

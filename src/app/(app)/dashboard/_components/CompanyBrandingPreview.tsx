@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 
 import { Button } from "@/components/ui/button";
+import { BRAND_ACCENT, BRAND_PRIMARY } from "@/lib/constants/branding";
 import { logger } from "@/lib/logger";
 
 interface BrandingData {
@@ -60,7 +61,7 @@ export default function CompanyBrandingPreview() {
       <div
         className="absolute left-0 right-0 top-0 h-1"
         style={{
-          background: `linear-gradient(to right, ${branding?.colorPrimary || "#117CFF"}, ${branding?.colorAccent || "#FFC838"})`,
+          background: `linear-gradient(to right, ${branding?.colorPrimary || BRAND_PRIMARY}, ${branding?.colorAccent || BRAND_ACCENT})`,
         }}
       />
 
@@ -185,14 +186,14 @@ export default function CompanyBrandingPreview() {
             <div className="flex items-center gap-2">
               <div
                 className="h-6 w-6 rounded-full border border-slate-200 shadow-inner dark:border-slate-700"
-                style={{ backgroundColor: branding?.colorPrimary || "#117CFF" }}
+                style={{ backgroundColor: branding?.colorPrimary || BRAND_PRIMARY }}
               />
               <span className="text-xs text-slate-500">Primary</span>
             </div>
             <div className="flex items-center gap-2">
               <div
                 className="h-6 w-6 rounded-full border border-slate-200 shadow-inner dark:border-slate-700"
-                style={{ backgroundColor: branding?.colorAccent || "#FFC838" }}
+                style={{ backgroundColor: branding?.colorAccent || BRAND_ACCENT }}
               />
               <span className="text-xs text-slate-500">Accent</span>
             </div>

@@ -54,6 +54,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 
 import { hasTrackedEvent, PRODUCT_EVENTS, trackProductEvent } from "@/lib/analytics/track";
+import { BRAND_ACCENT, BRAND_PRIMARY } from "@/lib/constants/branding";
 import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 import { safeOrgContext } from "@/lib/safeOrgContext";
@@ -142,8 +143,8 @@ export async function POST(req: Request) {
       phone: phone || null,
       email: email || null,
       website: website || null,
-      colorPrimary: colorPrimary || "#117CFF",
-      colorAccent: colorAccent || "#FFC838",
+      colorPrimary: colorPrimary || BRAND_PRIMARY,
+      colorAccent: colorAccent || BRAND_ACCENT,
       logoUrl: logoUrl || null,
       teamPhotoUrl: teamPhotoUrl || null,
       companyAddress: companyAddress || null,

@@ -1,5 +1,7 @@
 import { PrismaClientKnownRequestError } from "@prisma/client/runtime/library";
 
+import { logger } from "@/lib/logger";
+
 export type PortalDbIssue = "DB_UNAVAILABLE" | "SCHEMA_OUT_OF_DATE" | "UNKNOWN";
 export type PortalDbResult<T> =
   | { ok: true; data: T }
@@ -27,7 +29,7 @@ export async function safePortalQuery<T>(fn: () => Promise<T>): Promise<PortalDb
     return { ok: true, data };
   } catch (error: any) {
     const classification = classifyPrismaError(error);
-    console.error("[PORTAL][DB]", {
+    logger.error("[PORTAL_DB]", {
       reason: classification.reason,
       message: classification.message,
     });

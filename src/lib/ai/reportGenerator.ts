@@ -118,7 +118,7 @@ export async function generateReportSection(
     try {
       parsedContent = JSON.parse(responseContent);
     } catch (parseError) {
-      console.error("[ReportGen] Failed to parse JSON:", responseContent);
+      logger.error("[REPORT_GEN] Failed to parse JSON", { responseContent });
       throw new Error("Invalid JSON response from AI");
     }
 
@@ -129,9 +129,7 @@ export async function generateReportSection(
 
     const tokensUsed = completion.usage?.total_tokens || 0;
 
-    console.log(
-      `[ReportGen] ✓ Section generated: ${sectionConfig.sectionKey} (${tokensUsed} tokens)`
-    );
+    logger.info(`[REPORT_GEN] Section generated: ${sectionConfig.sectionKey}`, { tokensUsed });
 
     return {
       sectionKey: sectionConfig.sectionKey,
@@ -142,10 +140,9 @@ export async function generateReportSection(
       tokensUsed,
     };
   } catch (error: any) {
-    console.error(
-      `[ReportGen] Error generating section ${sectionConfig.sectionKey}:`,
-      error.message
-    );
+    logger.error(`[REPORT_GEN] Error generating section ${sectionConfig.sectionKey}`, {
+      error: error.message,
+    });
 
     // Capture to Sentry (no prompts/completions)
     if (typeof window === "undefined") {
@@ -238,11 +235,13 @@ export async function generateFullReport(
       generatedSections.push(generatedSection);
       totalTokens += generatedSection.tokensUsed;
 
-      console.log(
-        `[ReportGen] Progress: ${generatedSections.length}/${sections.filter((s) => s.enabled).length} sections`
+      logger.debug(
+        `[REPORT_GEN] Progress: ${generatedSections.length}/${sections.filter((s) => s.enabled).length} sections`
       );
     } catch (error: any) {
-      console.error(`[ReportGen] Failed to generate section ${sectionKey}:`, error.message);
+      logger.error(`[REPORT_GEN] Failed to generate section ${sectionKey}`, {
+        error: error.message,
+      });
       // Continue with other sections even if one fails
     }
   }

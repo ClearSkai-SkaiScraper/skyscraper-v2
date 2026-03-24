@@ -112,8 +112,8 @@ export async function ensureDemoDataForOrg(
     // Check if ANY leads exist - if so, don't seed anything
     const existingLeads = await prisma.leads.count({ where: { orgId } });
     if (existingLeads > 0) {
-      console.log(
-        `[DEMO_SEED] ⛔ Org ${orgId} already has ${existingLeads} leads - SKIPPING all demo seeding`
+      logger.debug(
+        `[DEMO_SEED] Org ${orgId} already has ${existingLeads} leads - SKIPPING all demo seeding`
       );
       return {
         seeded: false,
@@ -125,8 +125,8 @@ export async function ensureDemoDataForOrg(
     // Check if ANY claims exist
     const existingClaims = await prisma.claims.count({ where: { orgId } });
     if (existingClaims > 0) {
-      console.log(
-        `[DEMO_SEED] ⛔ Org ${orgId} already has ${existingClaims} claims - SKIPPING all demo seeding`
+      logger.debug(
+        `[DEMO_SEED] Org ${orgId} already has ${existingClaims} claims - SKIPPING all demo seeding`
       );
       return {
         seeded: false,
@@ -144,7 +144,7 @@ export async function ensureDemoDataForOrg(
       counts: { leads: 0, claims: 0, trades: 0, messages: 0 },
     };
   } catch (error: any) {
-    console.error("[DEMO_SEED] ❌ Fatal error:", error?.message || error);
+    logger.error("[DEMO_SEED] Fatal error", { error: error?.message || error });
     return {
       seeded: false,
       reason: `Error: ${error?.message || "Unknown error"}`,
@@ -577,7 +577,7 @@ async function createDemoClaims(
     }
   } catch (error: any) {
     logger.error("[DEMO_SEED] ❌ Fatal error in createDemoClaims:", error);
-    console.error("[DEMO_SEED] Seed status:", JSON.stringify(status, null, 2));
+    logger.error("[DEMO_SEED] Seed status", { status });
   }
 
   return { claims, status };

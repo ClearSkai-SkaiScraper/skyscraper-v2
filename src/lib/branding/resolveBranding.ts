@@ -1,3 +1,7 @@
+/**
+ * @deprecated Use getOrgBranding(orgId) from "@/lib/branding/getOrgBranding" instead.
+ * This function uses snake_case field names inconsistent with the canonical interface.
+ */
 type Branding = {
   company_name: string;
   brand_color: string;

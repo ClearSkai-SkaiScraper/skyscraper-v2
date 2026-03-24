@@ -69,8 +69,8 @@ export async function logAIPerformance(metrics: AIPerformanceMetrics): Promise<v
       },
     });
 
-    console.log(
-      `[AI Perf] Logged: ${metrics.routeName} | ${metrics.durationMs}ms | ${metrics.cacheHit ? "CACHED" : "MISS"} | $${costUsd.toFixed(4)}`
+    logger.info(
+      `[AI_PERF] Logged: ${metrics.routeName} | ${metrics.durationMs}ms | ${metrics.cacheHit ? "CACHED" : "MISS"} | $${costUsd.toFixed(4)}`
     );
   } catch (error) {
     logger.error("[AI Perf] Error logging performance:", error);

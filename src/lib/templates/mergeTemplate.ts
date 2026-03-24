@@ -309,8 +309,8 @@ export async function createCompanyTemplateFromMarketplace(
       },
     });
 
-    console.log(
-      `Created company template ${companyTemplate.id} from marketplace template ${marketplaceTemplateId}`
+    logger.info(
+      `[TEMPLATE_MERGE] Created company template ${companyTemplate.id} from marketplace template ${marketplaceTemplateId}`
     );
     return companyTemplate.id;
   } catch (error) {

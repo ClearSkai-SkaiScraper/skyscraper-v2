@@ -2,6 +2,7 @@
 // BRANDING PROVIDER - Fetch & Apply Org Branding
 // ============================================================================
 
+import { BRAND_ACCENT, BRAND_PRIMARY, PLATFORM_NAME } from "@/lib/constants/branding";
 import prisma from "@/lib/prisma";
 
 import type { BrandingConfig } from "../types";
@@ -28,9 +29,9 @@ export async function fetchOrgBranding(orgId: string, ownerId: string): Promise<
 
   return {
     logoUrl: branding.logoUrl || undefined,
-    brandColor: branding.colorPrimary || "#1e40af",
-    accentColor: branding.colorAccent || "#3b82f6",
-    companyName: branding.companyName || "SkaiScraper",
+    brandColor: branding.colorPrimary || BRAND_PRIMARY,
+    accentColor: branding.colorAccent || BRAND_ACCENT,
+    companyName: branding.companyName || PLATFORM_NAME,
     licenseNumber: branding.license || undefined,
     website: branding.website || undefined,
     phone: branding.phone || "",
@@ -44,9 +45,9 @@ export async function fetchOrgBranding(orgId: string, ownerId: string): Promise<
  */
 export function getDefaultBranding(): BrandingConfig {
   return {
-    brandColor: "#1e40af",
-    accentColor: "#3b82f6",
-    companyName: "SkaiScraper",
+    brandColor: BRAND_PRIMARY,
+    accentColor: BRAND_ACCENT,
+    companyName: PLATFORM_NAME,
     phone: "(555) 123-4567",
     email: "support@skaiscrape.com",
   };

@@ -87,7 +87,7 @@ export async function safeServerAction<T>(
     return { success: true, data };
   } catch (error) {
     const message = error instanceof Error ? error.message : "Unknown error occurred";
-    console.error("[safeServerAction] Error:", message);
+    logger.error("[SAFE_SERVER_ACTION] Error", { message });
     return { success: false, error: message };
   }
 }

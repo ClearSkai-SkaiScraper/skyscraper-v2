@@ -72,24 +72,9 @@ interface PricingData {
   }>;
 }
 
-// Arizona cities with their tax rates
-const AZ_CITIES = [
-  { value: "Phoenix", label: "Phoenix", rate: 8.9 },
-  { value: "Prescott", label: "Prescott", rate: 9.18 },
-  { value: "Chino Valley", label: "Chino Valley", rate: 8.35 },
-  { value: "Prescott Valley", label: "Prescott Valley", rate: 9.18 },
-  { value: "Sedona", label: "Sedona", rate: 9.18 },
-  { value: "Cottonwood", label: "Cottonwood", rate: 9.43 },
-  { value: "Verde Valley", label: "Verde Valley", rate: 8.6 },
-  { value: "Flagstaff", label: "Flagstaff", rate: 9.18 },
-  { value: "Tucson", label: "Tucson", rate: 8.7 },
-  { value: "Mesa", label: "Mesa", rate: 8.05 },
-  { value: "Scottsdale", label: "Scottsdale", rate: 7.65 },
-  { value: "Tempe", label: "Tempe", rate: 8.05 },
-  { value: "Chandler", label: "Chandler", rate: 7.8 },
-  { value: "Glendale", label: "Glendale", rate: 8.6 },
-  { value: "Gilbert", label: "Gilbert", rate: 7.8 },
-];
+// Use canonical tax rates from shared constants
+import { getCityTaxOptions } from "@/lib/constants/taxRates";
+const AZ_CITIES = getCityTaxOptions();
 
 export function EstimateExportPanel({ leadId, claimId }: EstimateExportPanelProps) {
   const [isExporting, setIsExporting] = useState(false);

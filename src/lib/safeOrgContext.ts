@@ -99,7 +99,7 @@ export async function safeOrgContext(): Promise<SafeOrgContext> {
         });
 
         if (!org) {
-          console.warn("[safeOrgContext] Membership points to missing org row", {
+          logger.warn("[SAFE_ORG_CONTEXT] Membership points to missing org row", {
             userId,
             organizationId: m.organizationId,
           });
@@ -135,8 +135,8 @@ export async function safeOrgContext(): Promise<SafeOrgContext> {
 
       // If we had memberships but none pointed to a valid org row,
       // treat this as a corrupted state and fall through to self-healing
-      console.warn(
-        "[safeOrgContext] Memberships found but no valid Org rows; will attempt auto-onboard",
+      logger.warn(
+        "[SAFE_ORG_CONTEXT] Memberships found but no valid Org rows; will attempt auto-onboard",
         { userId }
       );
     }
@@ -149,8 +149,8 @@ export async function safeOrgContext(): Promise<SafeOrgContext> {
       });
 
       if (legacyUser?.orgId) {
-        console.warn(
-          "[safeOrgContext] Fallback activated: using users.orgId linkage (missing UserOrganization row)"
+        logger.warn(
+          "[SAFE_ORG_CONTEXT] Fallback activated: using users.orgId linkage (missing UserOrganization row)"
         );
 
         // 🛡️ HARDEN: Ensure workspace primitives exist (idempotent, non-blocking)
@@ -251,7 +251,7 @@ export async function safeOrgContext(): Promise<SafeOrgContext> {
     }
 
     // Auto-onboarding failed (should be rare)
-    console.error("[safeOrgContext] Auto-onboarding failed for user:", userId);
+    logger.error("[SAFE_ORG_CONTEXT] Auto-onboarding failed for user", { userId });
     return {
       status: "noMembership",
       userId,
@@ -263,7 +263,7 @@ export async function safeOrgContext(): Promise<SafeOrgContext> {
       organizationId: null,
     };
   } catch (e: any) {
-    console.error("[safeOrgContext] membership lookup failed", { error: e?.message, userId });
+    logger.error("[SAFE_ORG_CONTEXT] Membership lookup failed", { error: e?.message, userId });
     return {
       status: "error",
       userId,

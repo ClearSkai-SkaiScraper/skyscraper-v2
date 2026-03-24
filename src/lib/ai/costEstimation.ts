@@ -115,7 +115,7 @@ export async function generateCostEstimate(request: EstimateRequest): Promise<Co
           },
         });
       } catch (logError) {
-        console.error("Failed to log AI action:", logError);
+        logger.error("[COST_ESTIMATION] Failed to log AI action", { error: logError });
         // Don't fail the estimation if logging fails
       }
     }

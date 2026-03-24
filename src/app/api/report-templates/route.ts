@@ -5,6 +5,7 @@ import { Prisma } from "@prisma/client";
 import { NextRequest, NextResponse } from "next/server";
 
 import { withAuth } from "@/lib/auth/withAuth";
+import { BRAND_PRIMARY } from "@/lib/constants/branding";
 import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 import { REPORT_SECTIONS } from "@/lib/reports/templateSections";
@@ -88,7 +89,7 @@ export const POST = withAuth(async (req: NextRequest, { orgId, userId }) => {
         defaults: {
           brandingConfig: {
             logoUrl: null,
-            primaryColor: "#1e40af",
+            primaryColor: BRAND_PRIMARY,
             secondaryColor: "#64748b",
           },
         },

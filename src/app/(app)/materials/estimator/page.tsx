@@ -50,6 +50,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { PITCH_OPTIONS } from "@/lib/constants/roofing";
 import {
   drawBrandedHeaderClient,
   drawPageFooterClient,
@@ -113,20 +114,8 @@ interface DynamicItem {
   qty: string;
 }
 
-// ── Pitch options — value is the actual pitch string the API expects ────────
-const ROOF_PITCHES = [
-  { label: "Flat (2/12)", value: "2/12" },
-  { label: "Low (3/12)", value: "3/12" },
-  { label: "Low-Moderate (4/12)", value: "4/12" },
-  { label: "Moderate (5/12)", value: "5/12" },
-  { label: "Standard (6/12)", value: "6/12" },
-  { label: "Standard-Steep (7/12)", value: "7/12" },
-  { label: "Steep (8/12)", value: "8/12" },
-  { label: "Steep (9/12)", value: "9/12" },
-  { label: "Very Steep (10/12)", value: "10/12" },
-  { label: "Very Steep (11/12)", value: "11/12" },
-  { label: "Extreme (12/12)", value: "12/12" },
-];
+// ── Pitch options — sourced from canonical @/lib/constants/roofing ──────────
+const ROOF_PITCH_SELECT_OPTIONS = PITCH_OPTIONS;
 
 // ── Shingle types — value matches ShingleSpec.type ─────────────────────────
 const SHINGLE_TYPES = [
@@ -1405,7 +1394,7 @@ export default function MaterialEstimatorPage() {
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        {ROOF_PITCHES.map((p) => (
+                        {ROOF_PITCH_SELECT_OPTIONS.map((p) => (
                           <SelectItem key={p.value} value={p.value}>
                             {p.label}
                           </SelectItem>

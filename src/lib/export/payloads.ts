@@ -166,8 +166,8 @@ export function buildAdjusterPacketPayload(
   adjusterInfo: Record<string, any>,
   options?: { includePhotos?: boolean; includeDocs?: boolean }
 ): ExportPayload {
-  console.log(
-    `[ExportPayloads] Building adjuster packet for claim ${claim.id || claim.claimNumber}`
+  logger.debug(
+    `[EXPORT_PAYLOADS] Building adjuster packet for claim ${claim.id || claim.claimNumber}`
   );
   return {
     type: "adjuster_packet",

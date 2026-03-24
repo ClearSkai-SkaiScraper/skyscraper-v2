@@ -64,7 +64,7 @@ export async function triggerWebhooks(
     // Log results
     results.forEach((result, index) => {
       if (result.status === "rejected") {
-        console.error(`Webhook ${webhooks[index].id} failed:`, result.reason);
+        logger.error(`[WEBHOOKS] Webhook ${webhooks[index].id} failed`, { reason: result.reason });
       }
     });
   } catch (error) {
@@ -122,7 +122,7 @@ async function deliverWebhook(webhook: any, payload: WebhookPayload): Promise<vo
       return; // Success - exit
     } catch (error) {
       lastError = error as Error;
-      console.error(`Webhook ${webhook.id} attempt ${attempt} failed:`, error);
+      logger.error(`[WEBHOOKS] Webhook ${webhook.id} attempt ${attempt} failed`, { error });
 
       // Wait before retry (exponential backoff)
       if (attempt < maxRetries) {

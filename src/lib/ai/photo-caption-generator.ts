@@ -149,7 +149,7 @@ export async function generatePhotoCaptionsBatch(
     if (result.status === "fulfilled") {
       return result.value;
     } else {
-      console.error(`[PHOTO_CAPTION_ERROR] Photo ${index}:`, result.reason);
+      logger.error(`[PHOTO_CAPTION_ERROR] Photo ${index}`, { reason: result.reason });
       // Return fallback
       return {
         materialType: inputs[index].claimContext.materialDetail,

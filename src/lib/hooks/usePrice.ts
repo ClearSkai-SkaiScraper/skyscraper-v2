@@ -16,20 +16,17 @@ export interface PriceData {
  * @param market - Market region (default: "US")
  * @returns Price data or null if unavailable
  */
-export async function fetchPrice(
-  productId: string,
-  market = "US"
-): Promise<PriceData | null> {
+export async function fetchPrice(productId: string, market = "US"): Promise<PriceData | null> {
   try {
     const res = await fetch(
       `/api/pricing?productId=${encodeURIComponent(productId)}&market=${encodeURIComponent(market)}`
     );
-    
+
     if (!res.ok) {
-      console.error("Failed to fetch price:", res.statusText);
+      logger.error("[PRICE_FETCH] Failed to fetch price", { status: res.statusText });
       return null;
     }
-    
+
     return await res.json();
   } catch (error) {
     logger.error("Error fetching price:", error);

@@ -5,6 +5,7 @@
  * Support for charts, tables, photos, branding
  */
 
+import { BRAND_PRIMARY } from "@/lib/constants/branding";
 import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 
@@ -310,13 +311,13 @@ async function getOrgBranding(orgId: string) {
     return {
       name: branding?.companyName || org?.name || "SkaiScraper",
       logo: branding?.logoUrl || org?.brandLogoUrl || null,
-      primaryColor: branding?.colorPrimary || "#1e40af",
+      primaryColor: branding?.colorPrimary || BRAND_PRIMARY,
     };
   } catch {
     return {
       name: "SkaiScraper",
       logo: null,
-      primaryColor: "#1e40af",
+      primaryColor: BRAND_PRIMARY,
     };
   }
 }
@@ -332,12 +333,9 @@ async function generatePDF(data: {
 }): Promise<string> {
   // TODO: Integrate with PDF library (react-pdf, pdfkit, puppeteer)
 
-  console.log(`
-📄 Generating PDF Report
-Title: ${data.title}
-Sections: ${data.sections.length}
-Branding: ${data.branding.name}
-  `);
+  logger.debug(
+    `[PDF_GEN] Generating PDF Report | Title: ${data.title} | Sections: ${data.sections.length} | Branding: ${data.branding.name}`
+  );
 
   // Mock URL - in production, upload to S3 and return URL
   return `https://storage.example.com/reports/${Date.now()}.pdf`;
