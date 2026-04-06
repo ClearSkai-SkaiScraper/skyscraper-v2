@@ -10,6 +10,7 @@
 ## Executive Summary
 
 Session 7 resolved both RED blockers from the boardroom scorecard:
+
 1. **Error Boundaries:** 0 → 100% coverage (81 new `error.tsx` files + shared component)
 2. **API Tenant Isolation:** 5 RED routes fixed (branding upload, properties, tasks, claim assistant, weather share)
 
@@ -22,6 +23,7 @@ Session 7 resolved both RED blockers from the boardroom scorecard:
 **Problem:** 137/145 page routes had NO error boundary. Any unhandled throw = white screen of death.
 
 **Solution:**
+
 - Created `src/components/shared/route-error-boundary.tsx` — reusable error UI with:
   - Sentry integration (`captureException` with tags + digest)
   - Branded error card (dark mode compatible)
@@ -35,14 +37,14 @@ Session 7 resolved both RED blockers from the boardroom scorecard:
 
 ### 2. API Auth/Org Guard Fixes — 5 RED Routes Fixed ✅
 
-| Route | Issue | Fix |
-|-------|-------|-----|
-| `api/branding/upload` | orgId from Clerk `auth()` directly — spoofable | Switched to `getActiveOrgContext()` (DB-resolved) |
-| `api/branding/upload` | `safeOrgId = orgId \|\| userId` fallback | Removed fallback — orgId now guaranteed |
-| `api/properties` | orgId from `user.publicMetadata.orgId` — spoofable | Switched to `getTenant()` (DB-resolved) |
-| `api/tasks` | No Zod validation on POST body | Added `createTaskSchema` with enums for priority/status |
-| `api/ai/claim-assistant` | No orgId at all, no prompt size limits | Added `getTenant()`, constrained message/history sizes, role enum |
-| `api/weather/share` | Only extracted userId, not orgId | Now extracts orgId from `requireAuth()` for org-scoped access |
+| Route                    | Issue                                              | Fix                                                               |
+| ------------------------ | -------------------------------------------------- | ----------------------------------------------------------------- |
+| `api/branding/upload`    | orgId from Clerk `auth()` directly — spoofable     | Switched to `getActiveOrgContext()` (DB-resolved)                 |
+| `api/branding/upload`    | `safeOrgId = orgId \|\| userId` fallback           | Removed fallback — orgId now guaranteed                           |
+| `api/properties`         | orgId from `user.publicMetadata.orgId` — spoofable | Switched to `getTenant()` (DB-resolved)                           |
+| `api/tasks`              | No Zod validation on POST body                     | Added `createTaskSchema` with enums for priority/status           |
+| `api/ai/claim-assistant` | No orgId at all, no prompt size limits             | Added `getTenant()`, constrained message/history sizes, role enum |
+| `api/weather/share`      | Only extracted userId, not orgId                   | Now extracts orgId from `requireAuth()` for org-scoped access     |
 
 ### 3. Env Startup Validation — Wired Into Instrumentation ✅
 
@@ -54,6 +56,7 @@ Session 7 resolved both RED blockers from the boardroom scorecard:
 ### 4. Audit Event Types — Expanded ✅
 
 Added 10 new `CriticalActionType` entries to `src/lib/audit/criticalActions.ts`:
+
 - `INVITE_REVOKED`, `CLAIM_DELETED`, `EXPORT_GENERATED`
 - `ROLE_CHANGED`, `MEMBER_REMOVED`
 - `SUBSCRIPTION_CHANGED`, `BILLING_UPDATED`
@@ -63,6 +66,7 @@ Added 10 new `CriticalActionType` entries to `src/lib/audit/criticalActions.ts`:
 ### 5. Tenant Isolation Audit — Documented ✅
 
 Full sweep results:
+
 - **4 P0 gaps** found → 3 fixed in code, 1 (weather_reports) has no orgId column (ownership via createdById)
 - **7 P1 gaps** documented (sub-queries under guarded routes)
 - **25 P2 gaps** documented (guard-then-act pattern — functional but lacks defense-in-depth)
@@ -72,31 +76,34 @@ Full sweep results:
 
 ## Boardroom Scorecard — UPDATED
 
-| Area | Before | After | Change |
-|------|--------|-------|--------|
-| Error Handling | 🔴 F | 🟢 A | 81 error boundaries added |
-| Tenant Isolation | 🟡 C+ | 🟢 B+ | 5 RED routes fixed |
-| API Validation | 🟡 C | 🟡 B- | Tasks + Claim Assistant now Zod-validated |
-| Auth & RBAC | 🟢 A | 🟢 A | Maintained |
-| Type Safety | 🟢 A | 🟢 A | 0 errors |
-| Build Pipeline | 🟢 A | 🟢 A | Maintained |
-| Observability | 🟡 B- | 🟡 B | Env validation at startup |
-| Test Coverage | 🔴 F | 🔴 F | Unchanged (future sprint) |
-| **Overall** | 🟡 NOT READY | 🟡 CONDITIONAL | **1 RED blocker remains (tests)** |
+| Area             | Before       | After          | Change                                    |
+| ---------------- | ------------ | -------------- | ----------------------------------------- |
+| Error Handling   | 🔴 F         | 🟢 A           | 81 error boundaries added                 |
+| Tenant Isolation | 🟡 C+        | 🟢 B+          | 5 RED routes fixed                        |
+| API Validation   | 🟡 C         | 🟡 B-          | Tasks + Claim Assistant now Zod-validated |
+| Auth & RBAC      | 🟢 A         | 🟢 A           | Maintained                                |
+| Type Safety      | 🟢 A         | 🟢 A           | 0 errors                                  |
+| Build Pipeline   | 🟢 A         | 🟢 A           | Maintained                                |
+| Observability    | 🟡 B-        | 🟡 B           | Env validation at startup                 |
+| Test Coverage    | 🔴 F         | 🔴 F           | Unchanged (future sprint)                 |
+| **Overall**      | 🟡 NOT READY | 🟡 CONDITIONAL | **1 RED blocker remains (tests)**         |
 
 ---
 
 ## Remaining Work
 
 ### Immediate (Next Session)
+
 - [ ] Loading/empty/error UX standardization
 - [ ] CI skeleton tests for smoke coverage
 
 ### Near-Term
+
 - [ ] P1 sub-query orgId additions (7 routes)
 - [ ] P2 guard-then-act defense-in-depth (25 routes)
 - [ ] Remaining Zod schema additions (~40% of routes)
 
 ### Enterprise Gate
+
 - [ ] Meaningful test coverage (Vitest unit + Playwright smoke)
 - [ ] CI gate: tests must pass before deploy

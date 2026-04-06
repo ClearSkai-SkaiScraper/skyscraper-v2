@@ -85,12 +85,37 @@ export async function getClaim(claimId: string, orgId?: string): Promise<GetClai
 
     if (!claim) {
       logger.warn("[getClaim] CLAIM NOT FOUND", { claimId, orgId: resolvedOrgId });
+
+      // ── ENHANCED DIAGNOSTICS: Check if claim exists in ANY org ──────────
+      const claimInAnyOrg = await prisma.claims.findFirst({
+        where: {
+          OR: [{ id: claimId }, { claimNumber: claimId }],
+        },
+        select: { id: true, claimNumber: true, orgId: true, title: true },
+      });
+
+      if (claimInAnyOrg) {
+        logger.error("[getClaim] ⚠️ TENANT MISMATCH DETECTED!", {
+          requestedClaimId: claimId,
+          claimActualOrgId: claimInAnyOrg.orgId,
+          userResolvedOrgId: resolvedOrgId,
+          claimNumber: claimInAnyOrg.claimNumber,
+          hint: "Claim exists but in a different org. User may have multiple orgs or org resolution is wrong.",
+        });
+      } else {
+        logger.warn("[getClaim] Claim does not exist in ANY org", { claimId });
+      }
+
       const availableClaims = await prisma.claims.findMany({
         where: { orgId: resolvedOrgId },
         select: { id: true, claimNumber: true, title: true },
         take: 10,
       });
-      logger.debug("[getClaim] Available claims", { count: availableClaims.length });
+      logger.debug("[getClaim] Available claims in user's org", {
+        count: availableClaims.length,
+        orgId: resolvedOrgId,
+        samples: availableClaims.slice(0, 3).map((c) => c.id),
+      });
       return { ok: false, reason: "NOT_FOUND" };
     }
 

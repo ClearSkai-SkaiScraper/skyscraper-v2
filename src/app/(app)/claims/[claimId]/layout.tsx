@@ -243,9 +243,20 @@ export default async function ClaimLayout({ children, params }: ClaimLayoutProps
                 {claimId.includes("-")
                   ? claimId.startsWith("CL-")
                     ? "Claim Number"
-                    : "UUID/CUID"
+                    : claimId.startsWith("claim-from-lead")
+                      ? "Lead-Converted Claim"
+                      : "UUID/CUID"
                   : "Unknown"}
               </p>
+            </div>
+            <div className="mt-3 rounded bg-amber-50 p-2 text-xs text-amber-800">
+              <strong>Common causes:</strong>
+              <ul className="mt-1 list-inside list-disc">
+                <li>Claim was created in a different organization</li>
+                <li>Organization membership was reset/changed</li>
+                <li>Claim was deleted</li>
+                <li>Link is from an old session</li>
+              </ul>
             </div>
           </div>
 
@@ -262,14 +273,14 @@ export default async function ClaimLayout({ children, params }: ClaimLayoutProps
                 target="_blank"
                 className="flex-1 rounded-lg border border-slate-300 px-4 py-2 text-center text-slate-700 hover:bg-slate-50"
               >
-                Check Diagnostics
+                Check Org
               </a>
               <a
-                href="/api/__truth"
+                href={`/api/__truth?testClaim=${encodeURIComponent(claimId)}`}
                 target="_blank"
                 className="flex-1 rounded-lg border border-slate-300 px-4 py-2 text-center text-slate-700 hover:bg-slate-50"
               >
-                Check Auth
+                Test Access
               </a>
             </div>
           </div>

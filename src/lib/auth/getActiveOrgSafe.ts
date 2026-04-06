@@ -243,62 +243,14 @@ export async function getActiveOrgSafe(opts?: {
 
     logger.debug(`[ORG_SAFE] userId: ${userId} clerkOrgId: ${clerkOrgId || "null"}`);
 
-    // STRATEGY 1: If Clerk orgId exists, find/create DB org with that clerkOrgId
-    if (clerkOrgId) {
-      try {
-        let org: { id: string; name: string; clerkOrgId: string | null } | null =
-          await prisma.org.findFirst({
-            where: { clerkOrgId },
-            select: { id: true, name: true, clerkOrgId: true },
-          });
+    // ═══════════════════════════════════════════════════════════════════════
+    // CRITICAL FIX: ALWAYS check DB membership FIRST, then fall back to Clerk
+    // This ensures consistency with resolveOrg() and prevents org mismatch
+    // when claims are created via API (using resolveOrg) but viewed via pages
+    // (using getActiveOrgSafe).
+    // ═══════════════════════════════════════════════════════════════════════
 
-        if (org) {
-          logger.debug("[ORG_SAFE] ✅ Found org via Clerk orgId:", org.id);
-          return {
-            ok: true,
-            org: { ...org, clerkOrgId: org.clerkOrgId ?? "" },
-            userId,
-            source: "CLERK_ORG",
-          } as ActiveOrgResult;
-        }
-
-        // Clerk org exists but not in DB — check for pending invites FIRST
-        if (allowAutoCreate) {
-          const hasPendingInvite = await checkPendingInvites(userId);
-          if (hasPendingInvite) {
-            logger.info("[ORG_SAFE] User has pending invite — skipping auto-create");
-            return {
-              ok: false,
-              reason: "CREATE_FAILED" as const,
-              error: "User has pending invitation — must accept before org creation",
-              userId,
-            };
-          }
-
-          logger.debug("[ORG_SAFE] Clerk org not in DB, creating...");
-          org = await tryCreateOrgMinimal({
-            name: "My Organization",
-            clerkOrgId: clerkOrgId!,
-            userId,
-          });
-
-          return {
-            ok: true,
-            org: org!,
-            userId,
-            source: "AUTO_CREATED",
-          };
-        }
-      } catch (error: unknown) {
-        logger.error(
-          "[ORG_SAFE] Error with Clerk org strategy:",
-          error instanceof Error ? error.message : String(error)
-        );
-        // Fall through to membership strategy
-      }
-    }
-
-    // STRATEGY 2: Find org via DB membership (DB is source of truth)
+    // STRATEGY 1 (PRIORITY): Find org via DB membership (DB is source of truth)
     try {
       const prismaDynamic = prisma as unknown as PrismaWithUserOrgs;
       const canUseUserOrganizations =
@@ -384,6 +336,60 @@ export async function getActiveOrgSafe(opts?: {
         "[ORG_SAFE] Error querying membership:",
         error instanceof Error ? error.message : String(error)
       );
+    }
+
+    // STRATEGY 2 (FALLBACK): If Clerk orgId exists and no DB membership, find/create DB org
+    if (clerkOrgId) {
+      try {
+        let org: { id: string; name: string; clerkOrgId: string | null } | null =
+          await prisma.org.findFirst({
+            where: { clerkOrgId },
+            select: { id: true, name: true, clerkOrgId: true },
+          });
+
+        if (org) {
+          logger.debug("[ORG_SAFE] ✅ Found org via Clerk orgId (no DB membership):", org.id);
+          return {
+            ok: true,
+            org: { ...org, clerkOrgId: org.clerkOrgId ?? "" },
+            userId,
+            source: "CLERK_ORG",
+          } as ActiveOrgResult;
+        }
+
+        // Clerk org exists but not in DB — check for pending invites FIRST
+        if (allowAutoCreate) {
+          const hasPendingInvite = await checkPendingInvites(userId);
+          if (hasPendingInvite) {
+            logger.info("[ORG_SAFE] User has pending invite — skipping auto-create");
+            return {
+              ok: false,
+              reason: "CREATE_FAILED" as const,
+              error: "User has pending invitation — must accept before org creation",
+              userId,
+            };
+          }
+
+          logger.debug("[ORG_SAFE] Clerk org not in DB, creating...");
+          org = await tryCreateOrgMinimal({
+            name: "My Organization",
+            clerkOrgId: clerkOrgId!,
+            userId,
+          });
+
+          return {
+            ok: true,
+            org: org!,
+            userId,
+            source: "AUTO_CREATED",
+          };
+        }
+      } catch (error: unknown) {
+        logger.error(
+          "[ORG_SAFE] Error with Clerk org strategy:",
+          error instanceof Error ? error.message : String(error)
+        );
+      }
     }
 
     // STRATEGY 3: No org found - check pending invites, then auto-create if allowed
