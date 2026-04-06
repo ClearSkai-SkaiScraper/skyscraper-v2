@@ -159,6 +159,14 @@ export const POST = withManager(async (req: NextRequest, { orgId, userId }) => {
     const invoice = subscription.latest_invoice as any;
     const clientSecret = invoice?.payment_intent?.client_secret || null;
 
+    logger.info("[SUBSCRIPTION_CREATED]", {
+      orgId,
+      userId,
+      subscriptionId: subscription.id,
+      seatCount,
+      status: subscription.status,
+    });
+
     return NextResponse.json({
       subscriptionId: subscription.id,
       clientSecret,

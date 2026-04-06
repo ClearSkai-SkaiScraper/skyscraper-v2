@@ -9,15 +9,36 @@ export const revalidate = 0;
  */
 
 import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
 
 import { withManager } from "@/lib/auth/withAuth";
 import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 
+const cancelSchema = z.object({
+  reason: z
+    .enum([
+      "too_expensive",
+      "not_enough_features",
+      "switched_to_competitor",
+      "no_longer_needed",
+      "other",
+    ])
+    .optional(),
+  feedback: z.string().max(2000).optional(),
+});
+
 export const POST = withManager(async (req: NextRequest, { orgId, userId }) => {
   try {
-    const body = await req.json();
-    const { reason, feedback } = body;
+    const raw = await req.json();
+    const parsed = cancelSchema.safeParse(raw);
+    if (!parsed.success) {
+      return NextResponse.json(
+        { error: "Invalid input", details: parsed.error.flatten().fieldErrors },
+        { status: 400 }
+      );
+    }
+    const { reason, feedback } = parsed.data;
 
     // Store cancellation feedback in org metadata
     await prisma.org.update({

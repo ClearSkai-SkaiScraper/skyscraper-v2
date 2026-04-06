@@ -11,6 +11,7 @@ import { withOrgScope } from "@/lib/auth/tenant";
 import { logInfo, timeExecution } from "@/lib/log";
 import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
+import { withRequestContext } from "@/lib/requestContext";
 import { listClaims } from "@/lib/services/claimsService";
 
 export const dynamic = "force-dynamic";
@@ -61,6 +62,7 @@ const createClaimSchema = z
  */
 export const POST = withOrgScope(async (req, { userId, orgId }) => {
   try {
+    await withRequestContext();
     // Ensure membership-derived orgId is present (defensive check)
     if (!orgId) {
       const { userId: clerkUserId } = await auth();

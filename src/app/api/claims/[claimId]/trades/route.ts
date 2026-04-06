@@ -16,11 +16,25 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
 
 import { getOrgClaimOrThrow, OrgScopeError } from "@/lib/auth/orgScope";
 import { withAuth } from "@/lib/auth/withAuth";
 import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
+
+const createTradeSchema = z.object({
+  tradeName: z.string().min(1, "Trade name is required").max(200),
+  tradeType: z.string().max(100).optional().default("Other"),
+  contactName: z.string().max(200).optional(),
+  phone: z.string().max(30).optional(),
+  email: z.string().email().optional().or(z.literal("")),
+  estimatedCost: z.union([z.number(), z.string()]).optional(),
+});
+
+const deleteTradeSchema = z.object({
+  tradeId: z.string().min(1, "tradeId is required"),
+});
 
 /**
  * GET /api/claims/[claimId]/trades
@@ -79,12 +93,15 @@ export const POST = withAuth(
       const { claimId } = await routeParams.params;
       await getOrgClaimOrThrow(orgId, claimId);
 
-      const body = await req.json();
-      const { tradeName, tradeType, contactName, phone, email, estimatedCost } = body;
-
-      if (!tradeName?.trim()) {
-        return NextResponse.json({ error: "Trade name is required" }, { status: 400 });
+      const raw = await req.json();
+      const parsed = createTradeSchema.safeParse(raw);
+      if (!parsed.success) {
+        return NextResponse.json(
+          { error: "Invalid input", details: parsed.error.flatten().fieldErrors },
+          { status: 400 }
+        );
       }
+      const { tradeName, tradeType, contactName, phone, email, estimatedCost } = parsed.data;
 
       const costValue = estimatedCost ? Math.round(Number(estimatedCost)) : null;
 
@@ -137,12 +154,15 @@ export const DELETE = withAuth(
       const { claimId } = await routeParams.params;
       await getOrgClaimOrThrow(orgId, claimId);
 
-      const body = await req.json();
-      const { tradeId } = body;
-
-      if (!tradeId) {
-        return NextResponse.json({ error: "tradeId is required" }, { status: 400 });
+      const raw = await req.json();
+      const parsed = deleteTradeSchema.safeParse(raw);
+      if (!parsed.success) {
+        return NextResponse.json(
+          { error: "Invalid input", details: parsed.error.flatten().fieldErrors },
+          { status: 400 }
+        );
       }
+      const { tradeId } = parsed.data;
 
       await prisma.claim_trade_assignments.deleteMany({
         where: { id: tradeId, claim_id: claimId, org_id: orgId },

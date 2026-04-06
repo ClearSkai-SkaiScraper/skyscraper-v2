@@ -3,10 +3,20 @@ export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
 import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
 
 import { withAuth } from "@/lib/auth/withAuth";
 import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
+
+const createMessageSchema = z.object({
+  threadId: z.string().max(200).optional(),
+  subject: z.string().min(1).max(500).optional(),
+  body: z.string().min(1, "Message body is required").max(10_000),
+  recipientType: z.enum(["pro", "client", "trade"]).optional(),
+  recipientId: z.string().max(200).optional(),
+  isPortalThread: z.boolean().optional().default(false),
+});
 
 /**
  * GET /api/claims/[claimId]/messages
@@ -63,7 +73,14 @@ export const GET = withAuth(
 export const POST = withAuth(
   async (req: NextRequest, { userId, orgId }, routeParams: { params: { claimId: string } }) => {
     try {
-      const body = await req.json();
+      const raw = await req.json();
+      const parsed = createMessageSchema.safeParse(raw);
+      if (!parsed.success) {
+        return NextResponse.json(
+          { error: "Invalid input", details: parsed.error.flatten().fieldErrors },
+          { status: 400 }
+        );
+      }
       const {
         threadId,
         subject,
@@ -71,11 +88,7 @@ export const POST = withAuth(
         recipientType,
         recipientId,
         isPortalThread,
-      } = body;
-
-      if (!messageBody?.trim()) {
-        return NextResponse.json({ error: "Message body is required" }, { status: 400 });
-      }
+      } = parsed.data;
 
       // Verify claim belongs to org
       const claim = await prisma.claims.findFirst({

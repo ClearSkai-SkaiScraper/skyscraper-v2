@@ -15,6 +15,7 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
 
 import { getOrgClaimOrThrow, OrgScopeError } from "@/lib/auth/orgScope";
 import { withAuth } from "@/lib/auth/withAuth";
@@ -22,6 +23,34 @@ import { onClaimUpdated } from "@/lib/claimiq/readiness-hooks";
 import { logger } from "@/lib/logger";
 import { notifyManagersOfSubmission } from "@/lib/notifications/notifyManagers";
 import prisma from "@/lib/prisma";
+
+const claimUpdateSchema = z
+  .object({
+    title: z.string().max(500).optional(),
+    description: z.string().max(10_000).optional(),
+    status: z.string().max(50).optional(),
+    claimNumber: z.string().max(100).optional(),
+    damageType: z.string().max(100).optional(),
+    insured_name: z.string().max(200).optional(),
+    homeowner_email: z.string().email().optional().or(z.literal("")),
+    carrier: z.string().max(200).optional(),
+    policy_number: z.string().max(100).optional(),
+    adjusterName: z.string().max(200).optional(),
+    adjusterPhone: z.string().max(30).optional(),
+    adjusterEmail: z.string().email().optional().or(z.literal("")),
+    signingStatus: z.string().max(50).optional(),
+    estimatedJobValue: z.number().optional(),
+    jobValueStatus: z.enum(["draft", "submitted", "approved", "rejected"]).optional(),
+    jobValueApprovalNotes: z.string().max(2000).optional(),
+    dateOfLoss: z.string().optional().nullable(),
+    dateOfInspection: z.string().optional().nullable(),
+    propertyAddress: z.string().max(500).optional(),
+    propertyStreet: z.string().max(300).optional(),
+    propertyCity: z.string().max(200).optional(),
+    propertyState: z.string().max(100).optional(),
+    propertyZip: z.string().max(20).optional(),
+  })
+  .passthrough(); // Allow extra fields for forward-compat
 
 export const PATCH = withAuth(
   async (
@@ -35,7 +64,15 @@ export const PATCH = withAuth(
       // Verify claim belongs to org
       await getOrgClaimOrThrow(orgId, claimId);
 
-      const body = await req.json();
+      const raw = await req.json();
+      const parsed = claimUpdateSchema.safeParse(raw);
+      if (!parsed.success) {
+        return NextResponse.json(
+          { error: "Invalid input", details: parsed.error.flatten().fieldErrors },
+          { status: 400 }
+        );
+      }
+      const body = parsed.data;
 
       // Build update data from body fields
       const updateData: Record<string, any> = {};

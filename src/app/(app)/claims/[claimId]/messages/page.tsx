@@ -1,12 +1,14 @@
 // src/app/(app)/claims/[claimId]/messages/page.tsx
 "use client";
 
-import { Loader2, MessageCircle, Send } from "lucide-react";
+import { Loader2, Send } from "lucide-react";
 import { useParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
 import { logger } from "@/lib/logger";
 import { inputBase, textareaBase } from "@/lib/ui/inputStyles";
+
+import { NoMessagesEmpty } from "@/components/ui/EmptyStatePresets";
 
 import SectionCard from "../_components/SectionCard";
 
@@ -97,15 +99,7 @@ export default function MessagesPage() {
         <div className="space-y-4">
           {/* Messages List */}
           {allMessages.length === 0 ? (
-            <div className="py-16 text-center">
-              <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full border border-slate-200 bg-slate-50 dark:border-slate-700 dark:bg-slate-800">
-                <MessageCircle className="h-8 w-8 text-slate-400 dark:text-slate-500" />
-              </div>
-              <p className="mb-2 text-slate-700 dark:text-slate-300">No messages yet</p>
-              <p className="text-sm text-slate-500 dark:text-slate-400">
-                Messages sent here sync with your client portal
-              </p>
-            </div>
+            <NoMessagesEmpty description="Messages sent here sync with your client portal." />
           ) : (
             <div className="max-h-96 space-y-3 overflow-y-auto rounded-lg border border-slate-200 bg-white p-4 dark:border-slate-700 dark:bg-slate-900">
               {allMessages.map((msg) => (

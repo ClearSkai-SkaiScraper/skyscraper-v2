@@ -16,11 +16,30 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
 
 import { getOrgClaimOrThrow, OrgScopeError } from "@/lib/auth/orgScope";
 import { withAuth } from "@/lib/auth/withAuth";
 import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
+
+const scopeLineItemSchema = z.object({
+  id: z.string().max(200).optional(),
+  category: z.string().max(100).optional().default("Other"),
+  code: z.string().max(50).optional().default(""),
+  description: z.string().max(1000).optional().default(""),
+  quantity: z.number().min(0).max(999_999).optional().default(1),
+  unit: z.string().max(20).optional().default("EA"),
+  unitPrice: z.number().min(0).max(999_999_99).optional().default(0),
+  total: z.number().min(0).max(999_999_99).optional().default(0),
+  ocpApproved: z.boolean().optional().default(false),
+  disputed: z.boolean().optional().default(false),
+  sortOrder: z.number().optional().default(0),
+});
+
+const scopeSaveSchema = z.object({
+  lineItems: z.array(scopeLineItemSchema).max(500),
+});
 
 /**
  * GET /api/claims/[claimId]/scope
@@ -112,12 +131,15 @@ export const POST = withAuth(
       // Verify claim belongs to org
       await getOrgClaimOrThrow(orgId, claimId);
 
-      const body = await req.json();
-      const { lineItems } = body;
-
-      if (!Array.isArray(lineItems)) {
-        return NextResponse.json({ error: "lineItems must be an array" }, { status: 400 });
+      const raw = await req.json();
+      const parsed = scopeSaveSchema.safeParse(raw);
+      if (!parsed.success) {
+        return NextResponse.json(
+          { error: "Invalid input", details: parsed.error.flatten().fieldErrors },
+          { status: 400 }
+        );
       }
+      const { lineItems } = parsed.data;
 
       // Upsert estimate, then upsert line items
       const estimateId = `est_${claimId}`;

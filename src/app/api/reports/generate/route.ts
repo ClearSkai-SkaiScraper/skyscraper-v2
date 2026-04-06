@@ -19,6 +19,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { withAuth } from "@/lib/auth/withAuth";
 import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
+import { withRequestContext } from "@/lib/requestContext";
 import { uploadPdf } from "@/lib/storage/uploadPdf";
 import { validateBody } from "@/lib/validation/middleware";
 import { generateReportSchema } from "@/lib/validation/report-schemas";
@@ -34,6 +35,7 @@ import type { ReportContext, SectionKey } from "@/modules/reports/types";
 
 export const POST = withAuth(async (req: NextRequest, { orgId, userId }) => {
   try {
+    await withRequestContext();
     const body = await validateBody(req, generateReportSchema);
     if (body instanceof NextResponse) return body;
     const { claimId, orgTemplateId, template, sections, addOns, inputs, aiNotes } = body;
@@ -225,6 +227,13 @@ export const POST = withAuth(async (req: NextRequest, { orgId, userId }) => {
         data: { pdfUrl, updatedAt: new Date() },
       });
     }
+
+    logger.info("[REPORT_GENERATED]", {
+      reportId: report.id,
+      orgId,
+      userId,
+      hasPdf: !!pdfUrl,
+    });
 
     return NextResponse.json({
       ok: true,

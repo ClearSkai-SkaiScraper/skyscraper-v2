@@ -3,6 +3,7 @@ export const maxDuration = 120; // PDF generation + radar image downloads can be
 
 import { randomUUID } from "crypto";
 import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
 
 import { runWeatherReport, WeatherReportInput } from "@/lib/ai/weather";
 import { logCriticalAction } from "@/lib/audit/criticalActions";
@@ -195,13 +196,26 @@ export const POST = withAuth(async (req: NextRequest, { userId, orgId }) => {
       );
     }
 
-    const body = (await req.json()) as WeatherReportInput & {
-      claim_id?: string | null;
-    };
+    const weatherReportSchema = z
+      .object({
+        address: z.string().min(1, "Address is required").max(500),
+        dol: z.string().min(1, "Date of loss is required").max(50),
+        claimId: z.string().max(200).optional().nullable(),
+        claim_id: z.string().max(200).optional().nullable(),
+        mode: z.string().max(50).optional(),
+        lat: z.number().optional(),
+        lng: z.number().optional(),
+      })
+      .passthrough();
 
-    if (!body.address || !body.dol) {
-      return NextResponse.json({ error: "address and dol are required." }, { status: 400 });
+    const parsed = weatherReportSchema.safeParse(await req.json());
+    if (!parsed.success) {
+      return NextResponse.json(
+        { error: "Invalid input", details: parsed.error.flatten().fieldErrors },
+        { status: 400 }
+      );
     }
+    const body = parsed.data as WeatherReportInput & { claim_id?: string | null };
 
     const claimId = body.claimId ?? body.claim_id ?? null;
 

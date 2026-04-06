@@ -20,6 +20,7 @@ import RecordActions from "@/components/RecordActions";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { NoClaimsEmpty } from "@/components/ui/EmptyStatePresets";
 import { logger } from "@/lib/logger";
 import { getOrg } from "@/lib/org/getOrg";
 import prisma from "@/lib/prisma";
@@ -64,23 +65,6 @@ function ErrorCard({ message }: { message: string }) {
         </div>
       </div>
     </div>
-  );
-}
-function EmptyState() {
-  return (
-    <Card className="p-12 text-center">
-      <FileText className="mx-auto h-12 w-12 text-slate-300" />
-      <h3 className="mt-4 text-lg font-semibold">No claims yet</h3>
-      <p className="mt-2 text-sm text-slate-500">
-        Create your first claim to start tracking insurance jobs
-      </p>
-      <Button asChild className="mt-4 bg-blue-600 hover:bg-blue-700">
-        <Link href="/claims/new">
-          <Plus className="mr-2 h-4 w-4" />
-          New Claim
-        </Link>
-      </Button>
-    </Card>
   );
 }
 
@@ -304,7 +288,7 @@ export default async function ClaimsPage({ searchParams }: { searchParams: Claim
       </Card>
 
       {claims.length === 0 ? (
-        <EmptyState />
+        <NoClaimsEmpty />
       ) : (
         <div className="space-y-4">
           <h2 className="text-lg font-semibold">Recent Claims</h2>

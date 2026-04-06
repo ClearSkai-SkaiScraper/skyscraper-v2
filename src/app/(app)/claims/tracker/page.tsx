@@ -7,6 +7,7 @@ import { Suspense } from "react";
 
 import ClaimsPipeline from "@/components/claims/ClaimsPipeline";
 import { Button } from "@/components/ui/button";
+import { NoClaimsEmpty } from "@/components/ui/EmptyStatePresets";
 import { getTenant } from "@/lib/auth/tenant";
 import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
@@ -224,19 +225,7 @@ export default async function ClaimsTrackerPage() {
           <ClaimsPipeline claims={claims as any} />
         </Suspense>
 
-        {claims.length === 0 && (
-          <div className="flex flex-col items-center justify-center py-12 text-center">
-            <p className="mb-4 text-slate-400">
-              No claims yet. Create your first claim to get started.
-            </p>
-            <Button asChild>
-              <Link href="/claims/new">
-                <Plus className="h-4 w-4" />
-                New Claim
-              </Link>
-            </Button>
-          </div>
-        )}
+        {claims.length === 0 && <NoClaimsEmpty />}
       </div>
     </div>
   );

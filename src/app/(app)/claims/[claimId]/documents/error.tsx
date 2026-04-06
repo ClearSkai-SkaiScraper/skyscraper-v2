@@ -2,4 +2,4 @@
 
 import { makeSectionError } from "@/components/errors/makeSectionError";
 
-export default makeSectionError("claims", "Claims");
+export default makeSectionError("documents", "Documents");

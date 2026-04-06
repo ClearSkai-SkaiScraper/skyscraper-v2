@@ -1,10 +1,18 @@
 export const dynamic = "force-dynamic";
 import { NextResponse } from "next/server";
 import { Resend } from "resend";
+import { z } from "zod";
 
 import { isAuthError, requireAuth } from "@/lib/auth/requireAuth";
 import { logger } from "@/lib/observability/logger";
 import prisma from "@/lib/prisma";
+
+const sendToAdjusterSchema = z.object({
+  adjusterEmail: z.string().email("Invalid adjuster email").optional(),
+  includeDepreciation: z.boolean().optional().default(false),
+  includeSupplement: z.boolean().optional().default(false),
+  message: z.string().max(5000, "Message too long").optional().default(""),
+});
 
 let _resend: Resend | null = null;
 
@@ -21,7 +29,15 @@ export async function POST(req: Request, { params }: { params: { claimId: string
   const { orgId, userId } = auth;
 
   try {
-    const { adjusterEmail, includeDepreciation, includeSupplement, message } = await req.json();
+    const raw = await req.json();
+    const parsed = sendToAdjusterSchema.safeParse(raw);
+    if (!parsed.success) {
+      return NextResponse.json(
+        { error: "Invalid input", details: parsed.error.flatten().fieldErrors },
+        { status: 400 }
+      );
+    }
+    const { adjusterEmail, includeDepreciation, includeSupplement, message } = parsed.data;
     const claimId = params.claimId;
 
     // Fetch claim — org-scoped
@@ -55,7 +71,7 @@ export async function POST(req: Request, { params }: { params: { claimId: string
           <p style="margin: 5px 0;"><strong>Date of Loss:</strong> ${new Date(claim.dateOfLoss).toLocaleDateString()}</p>
           <p style="margin: 5px 0;"><strong>Carrier:</strong> ${claim.carrier || "N/A"}</p>
         </div>
-        ${message ? `<p><strong>Additional Notes:</strong></p><p>${message}</p>` : ""}
+        ${message ? `<p><strong>Additional Notes:</strong></p><p>${message.replace(/</g, "&lt;").replace(/>/g, "&gt;")}</p>` : ""}
         <p style="margin-top: 30px; color: #666; font-size: 12px;">
           This email was sent from SkaiScraper - Roofing Claims Management Platform
         </p>

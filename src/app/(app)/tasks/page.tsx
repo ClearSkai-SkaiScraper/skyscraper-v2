@@ -12,6 +12,7 @@ import { PageHero } from "@/components/layout/PageHero";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { GenericTableEmpty, NoClaimsEmpty } from "@/components/ui/EmptyStatePresets";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -427,16 +428,13 @@ export default function TasksPage() {
           <Loader2 className="h-8 w-8 animate-spin" />
         </div>
       ) : tasks.length === 0 ? (
-        <Card className="p-12 text-center">
-          <Target className="mx-auto mb-4 h-16 w-16 text-muted-foreground" />
-          <h3 className="mb-2 text-xl font-semibold">No Tasks Yet</h3>
-          <p className="mb-6 text-muted-foreground">
-            Tasks will appear here when you accept SkaiPDF recommendations or create them manually.
-          </p>
-          <Button asChild>
-            <Link href="/claims">View Claims</Link>
-          </Button>
-        </Card>
+        <NoClaimsEmpty
+          icon={Target}
+          title="No Tasks Yet"
+          description="Tasks will appear here when you accept SkaiPDF recommendations or create them manually."
+          ctaLabel="View Claims"
+          ctaHref="/claims"
+        />
       ) : (
         <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
           {/* TO DO COLUMN */}
@@ -451,9 +449,7 @@ export default function TasksPage() {
                 <TaskCard key={task.id} task={task} />
               ))}
               {tasksByStatus.todo.length === 0 && (
-                <Card className="p-6 text-center text-sm text-muted-foreground">
-                  No tasks to do
-                </Card>
+                <GenericTableEmpty title="No tasks to do" size="sm" />
               )}
             </div>
           </div>
@@ -470,9 +466,7 @@ export default function TasksPage() {
                 <TaskCard key={task.id} task={task} />
               ))}
               {tasksByStatus.in_progress.length === 0 && (
-                <Card className="p-6 text-center text-sm text-muted-foreground">
-                  No tasks in progress
-                </Card>
+                <GenericTableEmpty title="No tasks in progress" size="sm" />
               )}
             </div>
           </div>
@@ -489,9 +483,7 @@ export default function TasksPage() {
                 <TaskCard key={task.id} task={task} />
               ))}
               {tasksByStatus.done.length === 0 && (
-                <Card className="p-6 text-center text-sm text-muted-foreground">
-                  No completed tasks
-                </Card>
+                <GenericTableEmpty title="No completed tasks" size="sm" />
               )}
             </div>
           </div>

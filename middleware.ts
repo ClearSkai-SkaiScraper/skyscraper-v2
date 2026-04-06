@@ -142,9 +142,19 @@ export default clerkMiddleware((auth, req) => {
     // This is the #1 cause of "Sign In Required" showing for authenticated users
     const { userId } = auth();
 
-    const res = NextResponse.next();
+    // ── Correlation ID — propagate or generate per-request ───────────
+    const requestId = req.headers.get("x-request-id") || crypto.randomUUID();
+    const requestHeaders = new Headers(req.headers);
+    requestHeaders.set("x-request-id", requestId);
+
+    const res = NextResponse.next({
+      request: { headers: requestHeaders },
+    });
+    res.headers.set("x-request-id", requestId);
+
     const pathname = req.nextUrl.pathname;
     const search = req.nextUrl.search || "";
+
     // HARDENED: Beta bypass only available in non-production environments
     const betaMode =
       process.env.NODE_ENV !== "production" && process.env.NEXT_PUBLIC_BETA_MODE !== "false";

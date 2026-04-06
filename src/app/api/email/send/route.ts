@@ -8,10 +8,18 @@
 export const dynamic = "force-dynamic";
 
 import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
 
 import { logger } from "@/lib/logger";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { safeOrgContext } from "@/lib/safeOrgContext";
+
+const emailSendSchema = z.object({
+  to: z.union([z.string().email(), z.array(z.string().email()).min(1).max(50)]),
+  subject: z.string().min(1, "Subject is required").max(500),
+  text: z.string().max(50_000).optional(),
+  html: z.string().max(200_000).optional(),
+});
 
 export async function POST(req: NextRequest) {
   try {
@@ -26,12 +34,15 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Rate limit exceeded" }, { status: 429 });
     }
 
-    const body = await req.json();
-    const { to, subject, text, html } = body;
-
-    if (!to || !subject) {
-      return NextResponse.json({ error: "to and subject are required" }, { status: 400 });
+    const raw = await req.json();
+    const parsed = emailSendSchema.safeParse(raw);
+    if (!parsed.success) {
+      return NextResponse.json(
+        { error: "Invalid input", details: parsed.error.flatten().fieldErrors },
+        { status: 400 }
+      );
     }
+    const { to, subject, text, html } = parsed.data;
 
     // Use Resend if configured
     const resendKey = process.env.RESEND_API_KEY;
@@ -49,9 +60,8 @@ export async function POST(req: NextRequest) {
       from: fromAddress,
       to: Array.isArray(to) ? to : [to],
       subject,
-      text: text || undefined,
-      html: html || undefined,
-    });
+      ...(html ? { html } : { text: text || "" }),
+    } as Parameters<typeof resend.emails.send>[0]);
 
     logger.info("[EMAIL_SEND] Email sent", {
       orgId: ctx.orgId,

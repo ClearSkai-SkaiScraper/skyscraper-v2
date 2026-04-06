@@ -1,6 +1,7 @@
 import { Metadata } from "next";
 
 import { PageHero } from "@/components/layout/PageHero";
+import { NoWeatherReportsEmpty } from "@/components/ui/EmptyStatePresets";
 import { getTenant } from "@/lib/auth/tenant";
 import prisma from "@/lib/prisma";
 
@@ -62,9 +63,7 @@ export default async function WeatherHubPage() {
       <div className="rounded-xl border bg-white/80 p-6 shadow-sm backdrop-blur-sm dark:bg-slate-900/60">
         <h2 className="mb-4 text-lg font-semibold">Recent Weather Reports</h2>
         {reports.length === 0 ? (
-          <p className="text-sm text-muted-foreground">
-            No weather reports yet. Generate your first report from a claim&apos;s weather tab.
-          </p>
+          <NoWeatherReportsEmpty ctaLabel="Generate from a Claim" ctaHref="/claims" />
         ) : (
           <div className="space-y-2">
             {reports.map((report: any) => (

@@ -2,10 +2,15 @@ export const dynamic = "force-dynamic";
 
 import { randomUUID } from "crypto";
 import { NextResponse } from "next/server";
+import { z } from "zod";
 
 import { isAuthError, requireAuth } from "@/lib/auth/requireAuth";
 import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
+
+const weatherShareSchema = z.object({
+  reportId: z.string().min(1, "reportId is required").max(200),
+});
 
 export async function POST(req: Request) {
   try {
@@ -13,11 +18,15 @@ export async function POST(req: Request) {
     if (isAuthError(auth)) return auth;
     const { userId, orgId } = auth;
 
-    const { reportId } = await req.json();
-
-    if (!reportId) {
-      return NextResponse.json({ error: "reportId required" }, { status: 400 });
+    const raw = await req.json();
+    const parsed = weatherShareSchema.safeParse(raw);
+    if (!parsed.success) {
+      return NextResponse.json(
+        { error: "Invalid input", details: parsed.error.flatten().fieldErrors },
+        { status: 400 }
+      );
     }
+    const { reportId } = parsed.data;
 
     // Verify user owns this report (createdById maps to internal user ID)
     // First get internal user ID

@@ -13,6 +13,7 @@ import { PageHero } from "@/components/layout/PageHero";
 import { PageSectionCard } from "@/components/layout/PageSectionCard";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { NoClaimsEmpty } from "@/components/ui/EmptyStatePresets";
 import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 import { safeOrgContext } from "@/lib/safeOrgContext";
@@ -169,16 +170,12 @@ export default async function ClaimsReadyPage() {
       {/* Claims List */}
       {readyClaims.length === 0 ? (
         <PageSectionCard>
-          <div className="py-12 text-center">
-            <FolderCheck className="mx-auto h-12 w-12 text-slate-300" />
-            <h3 className="mt-4 text-lg font-semibold">No claims ready yet</h3>
-            <p className="mt-2 text-sm text-slate-500">
-              Claims will appear here once they&apos;re approved or marked as complete.
-            </p>
-            <Button asChild className="mt-4">
-              <Link href="/claims">View All Claims</Link>
-            </Button>
-          </div>
+          <NoClaimsEmpty
+            title="No claims ready yet"
+            description="Claims will appear here once they're approved or marked as complete."
+            ctaLabel="View All Claims"
+            ctaHref="/claims"
+          />
         </PageSectionCard>
       ) : (
         <PageSectionCard
