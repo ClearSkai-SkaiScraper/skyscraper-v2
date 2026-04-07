@@ -82,11 +82,11 @@ const envSchema = z.object({
 
   // ── Resend (Email) ──
   RESEND_API_KEY: z.string().min(1).optional(),
-  EMAIL_FROM: z.string().email().optional(),
+  EMAIL_FROM: z.string().optional(), // Relaxed: validated at runtime when actually sending email
 
   // ── Firebase ──
   FIREBASE_PROJECT_ID: z.string().optional(),
-  FIREBASE_CLIENT_EMAIL: z.string().email().optional(),
+  FIREBASE_CLIENT_EMAIL: z.string().optional(), // Relaxed: validated at runtime when Firebase is used
   FIREBASE_PRIVATE_KEY: z.string().optional(),
   FIREBASE_STORAGE_BUCKET: z.string().optional(),
   NEXT_PUBLIC_FIREBASE_API_KEY: z.string().optional(),
