@@ -73,16 +73,17 @@ function ErrorCard({ message }: { message: string }) {
 }
 
 export default async function ClaimsPage({ searchParams }: ClaimsPageProps) {
-  const organizationId = await getTenant();
-  const params = await searchParams;
+  try {
+    const organizationId = await getTenant();
+    const params = await searchParams;
 
-  if (!organizationId) {
-    return (
-      <ErrorCard message="Unable to resolve your organization. Please sign out and sign back in, or contact support." />
-    );
-  }
+    if (!organizationId) {
+      return (
+        <ErrorCard message="Unable to resolve your organization. Please sign out and sign back in, or contact support." />
+      );
+    }
 
-  const page = Math.max(1, parseInt(params.page || "1", 10) || 1);
+    const page = Math.max(1, parseInt(params?.page || "1", 10) || 1);
   const limit = 20;
   const offset = (page - 1) * limit;
   const where: any = { orgId: organizationId };
@@ -405,5 +406,29 @@ export default async function ClaimsPage({ searchParams }: ClaimsPageProps) {
         </div>
       )}
     </PageContainer>
-  );
+    );
+  } catch (outerError: unknown) {
+    // CRITICAL: Re-throw Next.js redirect errors — they use thrown errors internally
+    if (
+      outerError instanceof Error &&
+      "digest" in outerError &&
+      typeof (outerError as any).digest === "string" &&
+      (outerError as any).digest.startsWith("NEXT_REDIRECT")
+    ) {
+      throw outerError;
+    }
+
+    const errMsg =
+      outerError instanceof Error ? outerError.message : String(outerError);
+    logger.error("[ClaimsPage] UNHANDLED CRASH", {
+      error: errMsg,
+      stack: outerError instanceof Error ? outerError.stack : undefined,
+    });
+
+    return (
+      <ErrorCard
+        message={`Claims failed to load: ${errMsg}. Please try refreshing the page.`}
+      />
+    );
+  }
 }
