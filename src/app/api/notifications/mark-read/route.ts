@@ -10,6 +10,7 @@ import { z } from "zod";
 import { db } from "@/lib/db";
 import { logger } from "@/lib/logger";
 import { markAllAsRead, markAsRead } from "@/lib/notifications";
+import { resolveOrgSafe } from "@/lib/org/resolveOrg";
 import prisma from "@/lib/prisma";
 
 const markReadSchema = z.object({
@@ -110,6 +111,7 @@ export const POST = withAuth(async (req: NextRequest, { userId }) => {
     } else {
       // Pro user - use raw SQL notifications table
       if (shouldMarkAll) {
+        // Mark all raw notifications as read
         await db.query(
           `INSERT INTO notifications_reads (notification_id, clerk_user_id)
            SELECT n.id, $1 FROM notifications n
@@ -119,10 +121,45 @@ export const POST = withAuth(async (req: NextRequest, { userId }) => {
            ON CONFLICT DO NOTHING`,
           [userId]
         );
+        // Also mark all ProjectNotifications as read for this org
+        const orgCtx = await resolveOrgSafe();
+        if (orgCtx?.orgId) {
+          await prisma.projectNotification.updateMany({
+            where: { orgId: orgCtx.orgId, read: false },
+            data: { read: true, readAt: new Date() },
+          });
+        }
+        // Also mark all trade notifications as read
+        const recipientIds = [userId];
+        if (orgCtx?.orgId) recipientIds.push(orgCtx.orgId);
+        const membership = await prisma.tradesCompanyMember
+          .findUnique({ where: { userId }, select: { companyId: true } })
+          .catch(() => null);
+        if (membership?.companyId) recipientIds.push(membership.companyId);
+        await prisma.tradeNotification.updateMany({
+          where: { recipientId: { in: recipientIds }, isRead: false },
+          data: { isRead: true, readAt: new Date() },
+        });
         return NextResponse.json({ success: true });
       }
 
       if (notifId) {
+        // Handle ProjectNotification marks (pn- prefix)
+        if (notifId.startsWith("pn-")) {
+          const pnId = notifId.replace("pn-", "");
+          try {
+            await prisma.projectNotification.update({
+              where: { id: pnId },
+              data: { read: true, readAt: new Date() },
+            });
+          } catch (err) {
+            logger.warn("[NOTIFICATIONS_MARK_READ] pro pn mark-read failed", {
+              pnId,
+              error: String(err),
+            });
+          }
+          return NextResponse.json({ success: true });
+        }
         // Handle message notifications (msg- prefix)
         if (notifId.startsWith("msg-")) {
           const msgId = notifId.replace("msg-", "");
@@ -152,9 +189,16 @@ export const POST = withAuth(async (req: NextRequest, { userId }) => {
         if (notifId.startsWith("tn-")) {
           const tnId = notifId.replace("tn-", "");
           try {
-            // Ownership check: only mark if recipient matches the caller
+            // Match by any of the user's recipient identifiers (userId, orgId, companyId)
+            const recipientIds = [userId];
+            const orgCtx = await resolveOrgSafe();
+            if (orgCtx?.orgId) recipientIds.push(orgCtx.orgId);
+            const membership = await prisma.tradesCompanyMember
+              .findUnique({ where: { userId }, select: { companyId: true } })
+              .catch(() => null);
+            if (membership?.companyId) recipientIds.push(membership.companyId);
             await prisma.tradeNotification.updateMany({
-              where: { id: tnId, recipientId: userId },
+              where: { id: tnId, recipientId: { in: recipientIds } },
               data: { isRead: true, readAt: new Date() },
             });
           } catch (err) {

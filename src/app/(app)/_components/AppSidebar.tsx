@@ -129,6 +129,7 @@ const navSections: NavSection[] = [
     items: [
       { label: "My Profile & Company", href: "/trades/profile" },
       { label: "Company Settings", href: "/settings" },
+      { label: "Team Leaderboard", href: "/leaderboard" },
       { label: "Team & Company Seats", href: "/teams" },
       { label: "Company Hierarchy", href: "/teams/hierarchy" },
       { label: "Notifications", href: "/notifications" },

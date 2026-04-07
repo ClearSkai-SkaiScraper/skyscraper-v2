@@ -133,6 +133,7 @@ const navSections: NavSection[] = [
       { label: "Work Requests", href: "/network/work-requests", icon: ClipboardList },
       { label: "Job Board", href: "/trades/jobs", icon: Briefcase },
       { label: "Vendor Intelligence", href: "/vendor-network", icon: Building2 },
+      { label: "Team Leaderboard", href: "/leaderboard", icon: BarChart3 },
       { label: "Company Settings", href: "/settings", icon: Settings },
       { label: "Team & Company Seats", href: "/teams", icon: Users },
     ],

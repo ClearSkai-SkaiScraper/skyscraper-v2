@@ -21,8 +21,8 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { NoClaimsEmpty } from "@/components/ui/EmptyStatePresets";
+import { getTenant } from "@/lib/auth/tenant";
 import { logger } from "@/lib/logger";
-import { getOrg } from "@/lib/org/getOrg";
 import prisma from "@/lib/prisma";
 
 export const dynamic = "force-dynamic";
@@ -39,6 +39,10 @@ type ClaimsSearchParams = {
   search?: string;
   page?: string;
 };
+
+interface ClaimsPageProps {
+  searchParams: Promise<ClaimsSearchParams>;
+}
 
 const CLAIM_STATUSES = [
   { id: "new", label: "New", icon: Plus, color: "bg-blue-500" },
@@ -68,51 +72,25 @@ function ErrorCard({ message }: { message: string }) {
   );
 }
 
-export default async function ClaimsPage({ searchParams }: { searchParams: ClaimsSearchParams }) {
-  // Use getOrg with mode: "required" - redirects to /sign-in or /onboarding if no org
-  let orgResult;
-  try {
-    orgResult = await getOrg({ mode: "required" });
-  } catch (error: unknown) {
-    // CRITICAL: Re-throw NEXT_REDIRECT — Next.js uses thrown errors for redirects
-    if (
-      error instanceof Error &&
-      "digest" in error &&
-      String((error as any).digest).startsWith("NEXT_REDIRECT")
-    ) {
-      throw error;
-    }
-    logger.error("[ClaimsPage] getOrg failed", {
-      error: error instanceof Error ? error.message : String(error),
-    });
-    return (
-      <ErrorCard message="Session loading error — please refresh the page or sign in again." />
-    );
-  }
+export default async function ClaimsPage({ searchParams }: ClaimsPageProps) {
+  const organizationId = await getTenant();
+  const params = await searchParams;
 
-  // If we get here, org is guaranteed (otherwise would have redirected)
-  if (!orgResult.ok) {
-    // Resilient: show user-friendly error instead of throwing
-    logger.error("[ClaimsPage] getOrg returned not-ok without redirecting", {
-      reason: orgResult.reason,
-    });
+  if (!organizationId) {
     return (
       <ErrorCard message="Unable to resolve your organization. Please sign out and sign back in, or contact support." />
     );
   }
 
-  const userId = orgResult.userId;
-  const organizationId = orgResult.orgId;
-
-  const page = Math.max(1, parseInt(searchParams.page || "1", 10) || 1);
+  const page = Math.max(1, parseInt(params.page || "1", 10) || 1);
   const limit = 20;
   const offset = (page - 1) * limit;
   const where: any = { orgId: organizationId };
-  if (searchParams.stage) where.status = searchParams.stage.toLowerCase();
-  if (searchParams.search) {
+  if (params.stage) where.status = params.stage.toLowerCase();
+  if (params.search) {
     where.OR = [
-      { claimNumber: { contains: searchParams.search, mode: "insensitive" } },
-      { title: { contains: searchParams.search, mode: "insensitive" } },
+      { claimNumber: { contains: params.search, mode: "insensitive" } },
+      { title: { contains: params.search, mode: "insensitive" } },
     ];
   }
   let claims: any[] = [];
@@ -147,7 +125,6 @@ export default async function ClaimsPage({ searchParams }: { searchParams: Claim
     logger.error("[ClaimsPage] Prisma query failed", {
       error: error?.message || error,
       organizationId,
-      userId,
       stack: error?.stack,
     });
     errorMessage = error?.message || "Database query failed";
@@ -268,7 +245,7 @@ export default async function ClaimsPage({ searchParams }: { searchParams: Claim
       <Card className="mb-6">
         <CardContent className="p-4">
           <form action="/claims" className="flex gap-4">
-            {searchParams.stage && <input type="hidden" name="stage" value={searchParams.stage} />}
+            {params.stage && <input type="hidden" name="stage" value={params.stage} />}
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
               <input
@@ -276,7 +253,7 @@ export default async function ClaimsPage({ searchParams }: { searchParams: Claim
                 name="search"
                 placeholder="Search by claim # or title..."
                 className="w-full rounded-lg border bg-white py-2 pl-10 pr-4 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-slate-900"
-                defaultValue={searchParams.search || ""}
+                defaultValue={params.search || ""}
               />
             </div>
             <Button type="submit" variant="outline">
@@ -406,7 +383,7 @@ export default async function ClaimsPage({ searchParams }: { searchParams: Claim
         <div className="mt-6 flex items-center justify-center gap-2">
           {page > 1 && (
             <Link
-              href={`/claims?page=${page - 1}${searchParams.stage ? `&stage=${searchParams.stage}` : ""}${searchParams.search ? `&search=${encodeURIComponent(searchParams.search)}` : ""}`}
+              href={`/claims?page=${page - 1}${params.stage ? `&stage=${params.stage}` : ""}${params.search ? `&search=${encodeURIComponent(params.search)}` : ""}`}
             >
               <Button variant="outline" size="sm">
                 ← Previous
@@ -418,7 +395,7 @@ export default async function ClaimsPage({ searchParams }: { searchParams: Claim
           </span>
           {page < totalPages && (
             <Link
-              href={`/claims?page=${page + 1}${searchParams.stage ? `&stage=${searchParams.stage}` : ""}${searchParams.search ? `&search=${encodeURIComponent(searchParams.search)}` : ""}`}
+              href={`/claims?page=${page + 1}${params.stage ? `&stage=${params.stage}` : ""}${params.search ? `&search=${encodeURIComponent(params.search)}` : ""}`}
             >
               <Button variant="outline" size="sm">
                 Next →

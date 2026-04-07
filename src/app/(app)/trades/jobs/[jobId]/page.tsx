@@ -78,54 +78,97 @@ export default async function TradesJobDetailPage({
     })
     .catch(() => null);
 
-  // Fetch the job request with client info
-  const job = await prisma.clientWorkRequest.findUnique({
-    where: { id: jobId },
-    include: {
-      Client: {
-        select: {
-          id: true,
-          name: true,
-          firstName: true,
-          lastName: true,
-          city: true,
-          state: true,
-          avatarUrl: true,
-          category: true,
+  // Fetch the job request — try clientWorkRequest first, then jobs table
+  const workRequest = await prisma.clientWorkRequest
+    .findUnique({
+      where: { id: jobId },
+      include: {
+        Client: {
+          select: {
+            id: true,
+            name: true,
+            firstName: true,
+            lastName: true,
+            city: true,
+            state: true,
+            avatarUrl: true,
+            category: true,
+          },
+        },
+        ClientJobResponse: {
+          where: proProfile?.id ? { contractorId: proProfile.id } : { contractorId: "none" },
+          select: {
+            id: true,
+            status: true,
+            message: true,
+            estimatedPrice: true,
+            estimatedTimeline: true,
+            createdAt: true,
+          },
+        },
+        ClientJobDocument: {
+          select: {
+            id: true,
+            title: true,
+            type: true,
+            url: true,
+          },
+          take: 10,
         },
       },
-      ClientJobResponse: {
-        where: proProfile?.id ? { contractorId: proProfile.id } : { contractorId: "none" },
-        select: {
-          id: true,
-          status: true,
-          message: true,
-          estimatedPrice: true,
-          estimatedTimeline: true,
-          createdAt: true,
-        },
-      },
-      ClientJobDocument: {
-        select: {
-          id: true,
-          title: true,
-          type: true,
-          url: true,
-        },
-        take: 10,
-      },
-    },
-  });
+    })
+    .catch(() => null);
+
+  // Fallback: check the jobs table (job board lists from jobs table)
+  const orgJob = !workRequest
+    ? await prisma.jobs
+        .findUnique({
+          where: { id: jobId },
+          include: {
+            properties: {
+              select: { street: true, city: true, state: true },
+            },
+            Org: { select: { name: true } },
+          },
+        })
+        .catch(() => null)
+    : null;
+
+  // Normalize into a single shape
+  const job = workRequest
+    ? workRequest
+    : orgJob
+      ? {
+          ...orgJob,
+          urgency: orgJob.priority || "normal",
+          category: orgJob.jobType || "General",
+          budget: orgJob.estimatedCost ? `$${orgJob.estimatedCost.toLocaleString()}` : null,
+          timeline: null as string | null,
+          summary: null as string | null,
+          serviceArea: null as string | null,
+          preferredDate: null as Date | null,
+          viewCount: 0,
+          responseCount: 0,
+          requirements: [] as string[],
+          lookingFor: [] as string[],
+          propertyPhotos: [] as string[],
+          city: orgJob.properties?.city || null,
+          state: orgJob.properties?.state || null,
+          Client: null as any,
+          ClientJobResponse: [] as any[],
+          ClientJobDocument: [] as any[],
+        }
+      : null;
 
   if (!job) notFound();
 
   const urgency = URGENCY_CONFIG[job.urgency] || URGENCY_CONFIG.normal;
-  const hasResponded = job.ClientJobResponse.length > 0;
-  const myResponse = job.ClientJobResponse[0];
+  const hasResponded = (job.ClientJobResponse ?? []).length > 0;
+  const myResponse = (job.ClientJobResponse ?? [])[0];
   const clientName =
     job.Client?.firstName && job.Client?.lastName
       ? `${job.Client.firstName} ${job.Client.lastName[0]}.`
-      : job.Client?.name || "Homeowner";
+      : job.Client?.name || (orgJob ? orgJob.Org?.name : null) || "Homeowner";
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-amber-50/20 p-4 lg:p-8">
@@ -252,14 +295,14 @@ export default async function TradesJobDetailPage({
 
             {/* Requirements & Looking For */}
             <div className="mb-8 grid gap-6 md:grid-cols-2">
-              {job.requirements.length > 0 && (
+              {(job.requirements ?? []).length > 0 && (
                 <div>
                   <h3 className="mb-3 flex items-center gap-2 font-semibold">
                     <Shield className="h-5 w-5 text-blue-500" />
                     Requirements
                   </h3>
                   <ul className="space-y-2">
-                    {job.requirements.map((req, i) => (
+                    {(job.requirements ?? []).map((req, i) => (
                       <li key={i} className="flex items-start gap-2 text-sm">
                         <CheckCircle className="mt-0.5 h-4 w-4 flex-shrink-0 text-blue-500" />
                         {req}
@@ -268,14 +311,14 @@ export default async function TradesJobDetailPage({
                   </ul>
                 </div>
               )}
-              {job.lookingFor.length > 0 && (
+              {(job.lookingFor ?? []).length > 0 && (
                 <div>
                   <h3 className="mb-3 flex items-center gap-2 font-semibold">
                     <Tag className="h-5 w-5 text-green-500" />
                     Looking For
                   </h3>
                   <div className="flex flex-wrap gap-2">
-                    {job.lookingFor.map((item, i) => (
+                    {(job.lookingFor ?? []).map((item, i) => (
                       <Badge key={i} variant="outline">
                         {item}
                       </Badge>
@@ -286,11 +329,11 @@ export default async function TradesJobDetailPage({
             </div>
 
             {/* Property Photos */}
-            {job.propertyPhotos && job.propertyPhotos.length > 0 && (
+            {(job.propertyPhotos ?? []).length > 0 && (
               <div className="mb-8">
                 <h2 className="mb-3 text-xl font-semibold">Property Photos</h2>
                 <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
-                  {job.propertyPhotos.map((photo, i) => (
+                  {(job.propertyPhotos ?? []).map((photo, i) => (
                     <div
                       key={i}
                       className="relative aspect-[4/3] overflow-hidden rounded-xl border"
@@ -308,11 +351,11 @@ export default async function TradesJobDetailPage({
             )}
 
             {/* Documents */}
-            {job.ClientJobDocument.length > 0 && (
+            {(job.ClientJobDocument ?? []).length > 0 && (
               <div className="mb-8">
                 <h2 className="mb-3 text-xl font-semibold">Attached Documents</h2>
                 <div className="space-y-2">
-                  {job.ClientJobDocument.map((doc) => (
+                  {(job.ClientJobDocument ?? []).map((doc) => (
                     <a
                       key={doc.id}
                       href={doc.url}
