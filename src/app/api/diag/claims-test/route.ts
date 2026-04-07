@@ -25,25 +25,32 @@ export async function GET() {
     const count = await prisma.claims.count({ where: { orgId } });
     steps.step2_count = count;
 
-    // Step 3: Fetch claims (same query as page)
+    // Step 3: Fetch claims (same safe select as page)
     steps.step3_start = Date.now();
     const claims = await prisma.claims.findMany({
       where: { orgId },
-      include: {
-        properties: true,
-        activities: { orderBy: { createdAt: "desc" }, take: 1 },
+      select: {
+        id: true,
+        title: true,
+        claimNumber: true,
+        status: true,
+        estimatedValue: true,
+        insured_name: true,
+        createdAt: true,
+        properties: { select: { street: true, city: true, state: true } },
       },
       orderBy: { createdAt: "desc" },
       take: 5,
     });
     steps.step3_fetched = claims.length;
     steps.step3_firstId = claims[0]?.id ?? null;
+    steps.step3_firstTitle = claims[0]?.title ?? null;
 
-    // Step 4: Stats query (same as page)
+    // Step 4: Stats query
     steps.step4_start = Date.now();
     const stats = await prisma.claims.findMany({
       where: { orgId },
-      select: { status: true, estimatedValue: true, signingStatus: true },
+      select: { status: true, estimatedValue: true },
     });
     steps.step4_statsCount = stats.length;
 
