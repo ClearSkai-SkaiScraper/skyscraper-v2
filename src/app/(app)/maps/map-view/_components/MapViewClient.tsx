@@ -287,7 +287,7 @@ export default function MapViewClient({ markers, initialCenter }: MapViewClientP
 
     let cancelled = false;
 
-    (async () => {
+    void (async () => {
       try {
         const mapboxgl = (await import("mapbox-gl")).default;
         if (cancelled) return;
@@ -450,7 +450,7 @@ export default function MapViewClient({ markers, initialCenter }: MapViewClientP
                 value={addressSearch}
                 onChange={(e) => {
                   setAddressSearch(e.target.value);
-                  searchAddressForMap(e.target.value);
+                  void searchAddressForMap(e.target.value);
                 }}
                 placeholder="Enter an address..."
                 className="h-8 pl-8 pr-8 text-xs"

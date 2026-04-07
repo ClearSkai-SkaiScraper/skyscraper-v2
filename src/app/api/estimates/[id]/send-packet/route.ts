@@ -1,23 +1,18 @@
 export const dynamic = "force-dynamic";
 
 // src/app/api/estimates/[id]/send-packet/route.ts
-import { auth } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
 
+import { withAuth } from "@/lib/auth/withAuth";
 import { getDelegate } from "@/lib/db/modelAliases";
 import { sendPacketEmail } from "@/lib/email/sendPacketEmail";
 import type { SendPacketRequestBody } from "@/lib/email/types";
 import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 
-type RouteParams = { params: { id: string } };
-
-export async function POST(req: NextRequest, { params }: RouteParams) {
+export const POST = withAuth(async (req: NextRequest, { orgId, userId }, routeParams) => {
+  const { id: estimateId } = await routeParams.params;
   try {
-    const { userId, orgId } = await auth();
-    if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-
-    const estimateId = params.id;
     const body: SendPacketRequestBody = await req.json();
     const { to, cc, subject, message, recipientType } = body;
 
@@ -32,7 +27,7 @@ export async function POST(req: NextRequest, { params }: RouteParams) {
     const estimates = await prisma.estimates.findFirst({
       where: {
         id: estimateId,
-        orgId: orgId ?? undefined,
+        orgId,
       },
       include: {
         claims: true,
@@ -81,7 +76,7 @@ export async function POST(req: NextRequest, { params }: RouteParams) {
     await getDelegate("claimTimelineEvent").create({
       data: {
         claim_id: estimates.claims.id,
-        orgId: orgId ?? estimates.claims.orgId,
+        orgId,
         actorId: userId,
         actorType: "user",
         type: "email_sent",
@@ -106,4 +101,4 @@ export async function POST(req: NextRequest, { params }: RouteParams) {
     logger.error("Error sending estimates email:", err);
     return NextResponse.json({ error: "Failed to send email" }, { status: 500 });
   }
-}
+});

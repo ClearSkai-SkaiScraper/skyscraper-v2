@@ -54,7 +54,7 @@ export default function AdjusterCoverLetterPage() {
   }, [claimId]);
 
   useEffect(() => {
-    fetchData();
+    void fetchData();
   }, [fetchData]);
 
   const handleSave = async () => {

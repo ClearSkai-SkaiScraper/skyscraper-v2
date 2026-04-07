@@ -107,7 +107,7 @@ export default function DamageGridsPage() {
   }, [claimId]);
 
   useEffect(() => {
-    fetchData();
+    void fetchData();
   }, [fetchData]);
 
   const handleSave = async () => {

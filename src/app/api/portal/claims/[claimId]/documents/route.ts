@@ -1,5 +1,6 @@
 import { auth, currentUser } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
 
 import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
@@ -132,12 +133,21 @@ export async function POST(req: NextRequest, context: RouteContext) {
       return NextResponse.json({ error: "Claim not found" }, { status: 404 });
     }
 
-    const body = await req.json();
-    const { url, filename, mimeType } = body;
+    const documentSchema = z.object({
+      url: z.string().url("Valid document URL is required"),
+      filename: z.string().max(255).optional(),
+      mimeType: z.string().max(100).optional(),
+    });
 
-    if (!url) {
-      return NextResponse.json({ error: "Document URL is required" }, { status: 400 });
+    const body = await req.json();
+    const parsed = documentSchema.safeParse(body);
+    if (!parsed.success) {
+      return NextResponse.json(
+        { error: parsed.error.issues[0]?.message || "Invalid input" },
+        { status: 400 }
+      );
     }
+    const { url, filename, mimeType } = parsed.data;
 
     // Create file_assets record
     const doc = await prisma.file_assets.create({

@@ -1,26 +1,16 @@
-import { currentUser } from "@clerk/nextjs/server";
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 
 import { analyzeImage } from "@/lib/ai/openai-vision";
+import { withAuth } from "@/lib/auth/withAuth";
 import { logger } from "@/lib/logger";
 import { getRateLimitIdentifier, rateLimiters } from "@/lib/rate-limit";
-import { safeOrgContext } from "@/lib/safeOrgContext";
 
 export const dynamic = "force-dynamic";
 
-export async function POST(request: NextRequest) {
+export const POST = withAuth(async (request, { userId, orgId }) => {
   try {
-    const user = await currentUser();
-    if (!user) {
-      return NextResponse.json({ error: "Authentication required" }, { status: 401 });
-    }
-
-    // B-10: Resolve org context for usage tracking and billing
-    const orgCtx = await safeOrgContext();
-    const orgId = orgCtx.ok ? orgCtx.orgId : null;
-
     // Rate limit AI photo analysis (expensive operation)
-    const identifier = getRateLimitIdentifier(user.id, request);
+    const identifier = getRateLimitIdentifier(userId, request);
     const allowed = await rateLimiters.ai.check(5, identifier);
     if (!allowed) {
       return NextResponse.json({ error: "Rate limit exceeded" }, { status: 429 });
@@ -67,17 +57,17 @@ export async function POST(request: NextRequest) {
       analysis: photoAnalysis,
       rawReport: damageReport, // Include raw report for debugging
     });
-  } catch (error) {
+  } catch (error: unknown) {
     logger.error("[AI Analyze Photo] Error:", error);
     return NextResponse.json(
       {
         error: "Failed to analyze photo",
-        message: "Unknown error",
+        message: error instanceof Error ? error.message : "Unknown error",
       },
       { status: 500 }
     );
   }
-}
+});
 
 /**
  * Determine overall severity from damage report

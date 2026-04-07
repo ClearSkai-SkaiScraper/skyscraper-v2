@@ -59,7 +59,7 @@ export default function KPIDashboardClient({ embedded = false }: { embedded?: bo
   const [timeRange, setTimeRange] = useState<"7d" | "30d" | "90d" | "all">("30d");
 
   useEffect(() => {
-    fetchKPIs();
+    void fetchKPIs();
   }, [timeRange]);
 
   async function fetchKPIs() {

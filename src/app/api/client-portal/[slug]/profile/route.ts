@@ -9,20 +9,16 @@ export const dynamic = "force-dynamic";
  * Uses the Client model (not client_networks) for profile management.
  */
 
-import { auth, currentUser } from "@clerk/nextjs/server";
-import { NextRequest, NextResponse } from "next/server";
+import { currentUser } from "@clerk/nextjs/server";
+import { NextResponse } from "next/server";
 
+import { withAuth } from "@/lib/auth/withAuth";
 import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 
-export async function GET(request: NextRequest, { params }: { params: { slug: string } }) {
+export const GET = withAuth(async (request, { userId, orgId }, routeParams) => {
   try {
-    const { userId } = await auth();
-    if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    const { slug } = params;
+    const { slug } = await routeParams.params;
 
     // Get calling user's email for ownership verification
     const user = await currentUser();
@@ -81,16 +77,11 @@ export async function GET(request: NextRequest, { params }: { params: { slug: st
     logger.error("[Client Profile GET] Error:", error);
     return NextResponse.json({ error: "Failed to fetch profile" }, { status: 500 });
   }
-}
+});
 
-export async function POST(request: NextRequest, { params }: { params: { slug: string } }) {
+export const POST = withAuth(async (request, { userId, orgId }, routeParams) => {
   try {
-    const { userId } = await auth();
-    if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    const { slug } = params;
+    const { slug } = await routeParams.params;
     const body = await request.json();
 
     const {
@@ -158,4 +149,4 @@ export async function POST(request: NextRequest, { params }: { params: { slug: s
     logger.error("[Client Profile POST] Error:", error);
     return NextResponse.json({ error: "Failed to update profile" }, { status: 500 });
   }
-}
+});

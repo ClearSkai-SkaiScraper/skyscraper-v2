@@ -1,34 +1,43 @@
-import { PutObjectCommand,S3Client } from "@aws-sdk/client-s3";
+import { PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
 import crypto from "crypto";
 import fs from "fs/promises";
 import path from "path";
 import puppeteer from "puppeteer";
 
+import { config } from "@/lib/config";
 import { logger } from "@/lib/logger";
+
+interface RenderOptions {
+  [key: string]: unknown;
+}
+
+interface RenderContext {
+  [key: string]: unknown;
+}
 
 type RenderPayload = {
   jobId: string;
   projectId: string;
-  types?: string[]; // slots like 'A','B1'...
-  options?: Record<string, any>;
-  renderContext?: any;
+  types?: string[];
+  options?: RenderOptions;
+  renderContext?: RenderContext;
 };
 
 async function uploadToS3(buffer: Buffer, key: string) {
-  const bucket = process.env.REPORTS_BUCKET || process.env.S3_BUCKET;
-  const region = process.env.AWS_REGION || "us-east-1";
+  const bucket = config.REPORTS_BUCKET || config.S3_BUCKET;
+  const region = config.AWS_REGION || "us-east-1";
   if (!bucket) {
     throw new Error("S3 bucket not configured (REPORTS_BUCKET)");
   }
 
-  const s3Endpoint = process.env.S3_ENDPOINT; // optional (MinIO)
+  const s3Endpoint = config.S3_ENDPOINT;
   const client = new S3Client({
     region,
     endpoint: s3Endpoint || undefined,
-    credentials: process.env.AWS_ACCESS_KEY_ID
+    credentials: config.AWS_ACCESS_KEY_ID
       ? {
-          accessKeyId: process.env.AWS_ACCESS_KEY_ID!,
-          secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY!,
+          accessKeyId: config.AWS_ACCESS_KEY_ID,
+          secretAccessKey: config.AWS_SECRET_ACCESS_KEY ?? "",
         }
       : undefined,
     forcePathStyle: !!s3Endpoint,
@@ -52,7 +61,7 @@ async function uploadToS3(buffer: Buffer, key: string) {
 }
 
 export async function renderPdfJob(payload: RenderPayload) {
-  const { jobId, projectId, types = ["A"], renderContext = {}, options = {} } = payload;
+  const { jobId, projectId, types = ["A"], renderContext = {}, options: _options = {} } = payload;
   const outputs: Record<string, string> = {};
 
   const browser = await puppeteer.launch({ args: ["--no-sandbox", "--disable-setuid-sandbox"] });
@@ -61,13 +70,13 @@ export async function renderPdfJob(payload: RenderPayload) {
 
     for (const t of types) {
       const encoded = Buffer.from(JSON.stringify(renderContext)).toString("base64");
-      const renderUrl = `${process.env.INTERNAL_RENDER_BASE || "http://127.0.0.1:3000"}/internal-render?page=${encodeURIComponent(t)}&jobId=${encodeURIComponent(jobId)}&renderContext=${encodeURIComponent(encoded)}`;
+      const renderUrl = `${config.INTERNAL_RENDER_BASE || "http://127.0.0.1:3000"}/internal-render?page=${encodeURIComponent(t)}&jobId=${encodeURIComponent(jobId)}&renderContext=${encodeURIComponent(encoded)}`;
 
       await page.goto(renderUrl, { waitUntil: "networkidle0" });
       // wait for client flag (internal-render sets this)
       try {
         await page.waitForFunction("window.__SKAISCRAPER_RENDER_READY === true", { timeout: 5000 });
-      } catch (e) {
+      } catch {
         // proceed anyway after a short delay
         await page.waitForTimeout(200);
       }
@@ -79,7 +88,7 @@ export async function renderPdfJob(payload: RenderPayload) {
       });
 
       // checksum of render context
-      const checksum = crypto
+      const _checksum = crypto
         .createHash("sha256")
         .update(JSON.stringify(renderContext || {}))
         .digest("hex");
@@ -93,7 +102,7 @@ export async function renderPdfJob(payload: RenderPayload) {
 
       // attempt S3 upload if configured
       let publicUrl = `file://${outPath}`;
-      if (process.env.REPORTS_BUCKET || process.env.S3_BUCKET) {
+      if (config.REPORTS_BUCKET || config.S3_BUCKET) {
         const key = `${projectId}/${jobId}/${filename}`;
         try {
           publicUrl = await uploadToS3(pdfBuffer, key);
@@ -112,4 +121,5 @@ export async function renderPdfJob(payload: RenderPayload) {
   }
 }
 
-export default { renderPdfJob };
+const renderEngineExports = { renderPdfJob };
+export default renderEngineExports;

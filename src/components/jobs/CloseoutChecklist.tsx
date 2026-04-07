@@ -45,7 +45,7 @@ export function CloseoutChecklist({ entityId, entityType }: CloseoutChecklistPro
   const [saving, setSaving] = useState<string | null>(null);
 
   useEffect(() => {
-    fetchChecklist();
+    void fetchChecklist();
   }, [entityId]);
 
   async function fetchChecklist() {

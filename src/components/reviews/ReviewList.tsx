@@ -34,7 +34,7 @@ export function ReviewList({ contractorId, limit = 10 }: ReviewListProps) {
   const [selectedPhoto, setSelectedPhoto] = useState<string | null>(null);
 
   useEffect(() => {
-    loadReviews();
+    void loadReviews();
   }, [page]);
 
   async function loadReviews() {

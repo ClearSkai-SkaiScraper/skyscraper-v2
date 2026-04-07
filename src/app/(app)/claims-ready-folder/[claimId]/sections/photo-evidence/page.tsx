@@ -63,7 +63,7 @@ export default function PhotoEvidencePage() {
   }, [claimId]);
 
   useEffect(() => {
-    fetchPhotos();
+    void fetchPhotos();
   }, [fetchPhotos]);
 
   const openLightbox = (photo: Photo, index: number) => {

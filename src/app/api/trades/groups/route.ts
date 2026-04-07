@@ -13,6 +13,8 @@ export const dynamic = "force-dynamic";
 import { auth } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
 
+import { withAuth } from "@/lib/auth/withAuth";
+
 import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 
@@ -158,13 +160,8 @@ export async function GET(req: NextRequest) {
 }
 
 // POST - Create a new group
-export async function POST(req: NextRequest) {
+export const POST = withAuth(async (req: NextRequest, { userId }) => {
   try {
-    const { userId } = await auth();
-    if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
     const body = await req.json();
     const { name, description, category, privacy, rules, coverImage, iconImage } = body;
 
@@ -206,20 +203,15 @@ export async function POST(req: NextRequest) {
     });
 
     return NextResponse.json({ group }, { status: 201 });
-  } catch (error) {
+  } catch (error: unknown) {
     logger.error("POST /api/trades/groups error:", error);
     return NextResponse.json({ error: "Failed to create group" }, { status: 500 });
   }
-}
+});
 
 // PATCH - Update a group
-export async function PATCH(req: NextRequest) {
+export const PATCH = withAuth(async (req: NextRequest, { userId }) => {
   try {
-    const { userId } = await auth();
-    if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
     const body = await req.json();
     const { groupId, name, description, category, privacy, rules, coverImage, iconImage } = body;
 
@@ -251,20 +243,15 @@ export async function PATCH(req: NextRequest) {
     });
 
     return NextResponse.json({ group });
-  } catch (error) {
+  } catch (error: unknown) {
     logger.error("PATCH /api/trades/groups error:", error);
     return NextResponse.json({ error: "Failed to update group" }, { status: 500 });
   }
-}
+});
 
 // DELETE - Delete a group
-export async function DELETE(req: NextRequest) {
+export const DELETE = withAuth(async (req: NextRequest, { userId }) => {
   try {
-    const { userId } = await auth();
-    if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
     const { searchParams } = new URL(req.url);
     const groupId = searchParams.get("id");
 
@@ -292,8 +279,8 @@ export async function DELETE(req: NextRequest) {
     });
 
     return NextResponse.json({ success: true });
-  } catch (error) {
+  } catch (error: unknown) {
     logger.error("DELETE /api/trades/groups error:", error);
     return NextResponse.json({ error: "Failed to delete group" }, { status: 500 });
   }
-}
+});

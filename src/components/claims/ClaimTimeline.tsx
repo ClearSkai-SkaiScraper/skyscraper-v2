@@ -108,7 +108,7 @@ export function ClaimTimeline({
 
   useEffect(() => {
     if (!propEvents && claimId) {
-      fetchTimelineEvents();
+      void fetchTimelineEvents();
     }
   }, [claimId, propEvents]);
 

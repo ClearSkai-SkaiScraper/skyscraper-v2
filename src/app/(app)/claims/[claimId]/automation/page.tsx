@@ -38,7 +38,7 @@ export default function ClaimAutomationPage({ params }: AutomationPageProps) {
   };
 
   useEffect(() => {
-    fetchIntelligence();
+    void fetchIntelligence();
   }, [params.claimId]);
 
   const handleDismissAlert = async (alertId: string) => {
@@ -49,7 +49,7 @@ export default function ClaimAutomationPage({ params }: AutomationPageProps) {
         body: JSON.stringify({ alertId }),
       });
       toast.success("Alert dismissed");
-      fetchIntelligence();
+      void fetchIntelligence();
     } catch (error) {
       toast.error("Failed to dismiss alert");
     }
@@ -63,7 +63,7 @@ export default function ClaimAutomationPage({ params }: AutomationPageProps) {
         body: JSON.stringify({ recommendationId }),
       });
       toast.success("Recommendation accepted");
-      fetchIntelligence();
+      void fetchIntelligence();
     } catch (error) {
       toast.error("Failed to accept recommendation");
     }
@@ -76,7 +76,7 @@ export default function ClaimAutomationPage({ params }: AutomationPageProps) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ recommendationId }),
       });
-      fetchIntelligence();
+      void fetchIntelligence();
     } catch (error) {
       toast.error("Failed to dismiss recommendation");
     }
@@ -90,7 +90,7 @@ export default function ClaimAutomationPage({ params }: AutomationPageProps) {
         body: JSON.stringify({ taskId }),
       });
       toast.success("Task completed!");
-      fetchIntelligence();
+      void fetchIntelligence();
     } catch (error) {
       toast.error("Failed to complete task");
     }

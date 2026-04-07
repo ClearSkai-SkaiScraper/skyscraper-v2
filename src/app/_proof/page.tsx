@@ -52,7 +52,7 @@ export default function ProofPage() {
         setLoading(false);
       }
     }
-    load();
+    void load();
   }, []);
 
   if (loading) {

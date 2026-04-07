@@ -10,8 +10,9 @@ export const dynamic = "force-dynamic";
  * Handles connection requests between trades professionals (friend-like system)
  */
 
-import { auth } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
+
+import { withAuth } from "@/lib/auth/withAuth";
 
 import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
@@ -23,13 +24,8 @@ import { connectionActionSchema, connectionRequestSchema } from "@/lib/validatio
 const tradesConnectionModel = prisma.tradesConnection as any;
 
 // GET - Get all connections for current user
-export async function GET(req: NextRequest) {
+export const GET = withAuth(async (req: NextRequest, { userId }) => {
   try {
-    const { userId } = await auth();
-    if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
     const { searchParams } = new URL(req.url);
     const status = searchParams.get("status") || "accepted";
 
@@ -74,20 +70,15 @@ export async function GET(req: NextRequest) {
     });
 
     return NextResponse.json({ connections: connectionsWithProfiles });
-  } catch (error) {
+  } catch (error: unknown) {
     logger.error("GET /api/trades/connections error:", error);
     return NextResponse.json({ error: "Failed to fetch connections" }, { status: 500 });
   }
-}
+});
 
 // POST - Send a connection request
-export async function POST(req: NextRequest) {
+export const POST = withAuth(async (req: NextRequest, { userId }) => {
   try {
-    const { userId } = await auth();
-    if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
     const body = await validateBody(req, connectionRequestSchema);
     if (isValidationError(body)) return body;
     const { addresseeId, message } = body;
@@ -124,20 +115,15 @@ export async function POST(req: NextRequest) {
     });
 
     return NextResponse.json({ connection }, { status: 201 });
-  } catch (error) {
+  } catch (error: unknown) {
     logger.error("POST /api/trades/connections error:", error);
     return NextResponse.json({ error: "Failed to create connection" }, { status: 500 });
   }
-}
+});
 
 // PATCH - Accept/decline a connection request
-export async function PATCH(req: NextRequest) {
+export const PATCH = withAuth(async (req: NextRequest, { userId }) => {
   try {
-    const { userId } = await auth();
-    if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
     const body = await validateBody(req, connectionActionSchema);
     if (isValidationError(body)) return body;
     const { connectionId, action } = body;
@@ -169,20 +155,15 @@ export async function PATCH(req: NextRequest) {
     });
 
     return NextResponse.json({ connection: updated });
-  } catch (error) {
+  } catch (error: unknown) {
     logger.error("PATCH /api/trades/connections error:", error);
     return NextResponse.json({ error: "Failed to update connection" }, { status: 500 });
   }
-}
+});
 
 // DELETE - Remove a connection
-export async function DELETE(req: NextRequest) {
+export const DELETE = withAuth(async (req: NextRequest, { userId }) => {
   try {
-    const { userId } = await auth();
-    if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
     const { searchParams } = new URL(req.url);
     const connectionId = searchParams.get("id");
 
@@ -212,8 +193,8 @@ export async function DELETE(req: NextRequest) {
     });
 
     return NextResponse.json({ success: true });
-  } catch (error) {
+  } catch (error: unknown) {
     logger.error("DELETE /api/trades/connections error:", error);
     return NextResponse.json({ error: "Failed to delete connection" }, { status: 500 });
   }
-}
+});

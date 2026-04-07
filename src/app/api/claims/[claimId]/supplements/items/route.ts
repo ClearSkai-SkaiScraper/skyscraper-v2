@@ -4,6 +4,7 @@ import { z } from "zod";
 import { getOrgClaimOrThrow, OrgScopeError } from "@/lib/auth/orgScope";
 import { isAuthError, requireAuth } from "@/lib/auth/requireAuth";
 import { getDelegate } from "@/lib/db/modelAliases";
+import { logger } from "@/lib/logger";
 
 const supplementItemSchema = z.object({
   description: z.string().min(1, "Description required").max(500),
@@ -24,6 +25,7 @@ export async function GET(req: Request, { params }: { params: { claimId: string 
   const auth = await requireAuth();
   if (isAuthError(auth)) return auth;
   const { orgId } = auth;
+  logger.info("[SUPPLEMENTS_LIST]", { orgId, claimId: params.claimId });
 
   try {
     // Verify claim belongs to this org
@@ -47,6 +49,7 @@ export async function POST(req: Request, { params }: { params: { claimId: string
   const auth = await requireAuth();
   if (isAuthError(auth)) return auth;
   const { orgId } = auth;
+  logger.info("[SUPPLEMENTS_CREATE]", { orgId, claimId: params.claimId });
 
   try {
     // Verify claim belongs to this org

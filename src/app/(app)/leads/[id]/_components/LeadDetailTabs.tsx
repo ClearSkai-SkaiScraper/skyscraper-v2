@@ -55,7 +55,7 @@ export default function LeadDetailTabs({ leadId }: { leadId: string }) {
     setLoading(true);
     const controller = new AbortController();
 
-    (async () => {
+    void (async () => {
       try {
         if (activeTab === "notes") {
           const res = await fetch(`/api/leads/${leadId}/notes`, {

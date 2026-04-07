@@ -128,7 +128,7 @@ export default function ClaimsPipeline({ claims = [] }: { claims: ClaimCard[] })
 
   const handleAcceptAiSuggestion = () => {
     if (aiSuggestion && pendingDrop) {
-      updateClaimStatus(pendingDrop.claimId, aiSuggestion.suggestedStatus as ClaimStage);
+      void updateClaimStatus(pendingDrop.claimId, aiSuggestion.suggestedStatus as ClaimStage);
       setShowAiModal(false);
       setAiSuggestion(null);
       setPendingDrop(null);
@@ -137,7 +137,7 @@ export default function ClaimsPipeline({ claims = [] }: { claims: ClaimCard[] })
 
   const handleRejectAiSuggestion = () => {
     if (pendingDrop) {
-      updateClaimStatus(pendingDrop.claimId, pendingDrop.stage);
+      void updateClaimStatus(pendingDrop.claimId, pendingDrop.stage);
       setShowAiModal(false);
       setAiSuggestion(null);
       setPendingDrop(null);
@@ -160,7 +160,7 @@ export default function ClaimsPipeline({ claims = [] }: { claims: ClaimCard[] })
               onDragLeave={() => setDragOverStage(null)}
               onDrop={(e) => {
                 e.preventDefault();
-                if (dragging) handleDrop(stage.key, dragging);
+                if (dragging) void handleDrop(stage.key, dragging);
               }}
             >
               <div

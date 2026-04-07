@@ -6,6 +6,106 @@ import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 
 // ============================================================================
+// KILL SWITCHES (Global, runtime-controlled)
+// Consolidated from former feature-flags.ts
+// ============================================================================
+
+/** Check if maintenance mode is enabled — blocks all write operations */
+export function isMaintenanceModeEnabled(): boolean {
+  return (
+    process.env.NEXT_PUBLIC_MAINTENANCE_MODE === "true" || process.env.MAINTENANCE_MODE === "true"
+  );
+}
+
+/** Check if AI tools are enabled */
+export function areAIToolsEnabled(): boolean {
+  return process.env.NEXT_PUBLIC_AI_TOOLS_ENABLED !== "false";
+}
+
+/** Check if uploads are enabled */
+export function areUploadsEnabled(): boolean {
+  return process.env.NEXT_PUBLIC_UPLOADS_ENABLED !== "false";
+}
+
+/** Check if new user sign-ups are enabled */
+export function areSignUpsEnabled(): boolean {
+  return process.env.NEXT_PUBLIC_SIGNUPS_ENABLED !== "false";
+}
+
+/** Get maintenance mode message */
+export function getMaintenanceMessage(): string {
+  return (
+    process.env.NEXT_PUBLIC_MAINTENANCE_MESSAGE ||
+    "We're performing scheduled maintenance. The platform will be back shortly."
+  );
+}
+
+/** Assert feature is enabled or throw error */
+export function assertFeatureEnabled(
+  featureName: string,
+  enabled: boolean,
+  message?: string
+): void {
+  if (!enabled) {
+    throw new Error(message || `Feature "${featureName}" is currently disabled`);
+  }
+}
+
+/** Global kill switch — disable all new features (emergency rollback) */
+export function getEmergencyMode(): boolean {
+  return process.env.EMERGENCY_MODE === "true";
+}
+
+// ============================================================================
+// SERVICE FLAGS (Static, compile-time detection)
+// Consolidated from former featureFlags.ts
+// ============================================================================
+
+/** Static service-availability flags (evaluated once at module load) */
+export const ServiceFlags = {
+  OPENAI_ENABLED: !!process.env.OPENAI_API_KEY,
+  MOCKUPS_ENABLED: !!process.env.OPENAI_API_KEY && process.env.FEATURE_MOCKUPS !== "false",
+  AI_ASSISTANT_ENABLED:
+    !!process.env.OPENAI_API_KEY && process.env.FEATURE_AI_ASSISTANT !== "false",
+  PDF_GENERATION_ENABLED: process.env.FEATURE_PDF_GENERATION !== "false",
+  PUPPETEER_ENABLED: process.env.FEATURE_PUPPETEER !== "false",
+  SUPABASE_ENABLED: !!(
+    process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY
+  ),
+  PDF_RENDER_TIMEOUT: parseInt(process.env.PDF_RENDER_TIMEOUT || "25000"),
+  AI_REQUEST_TIMEOUT: parseInt(process.env.AI_REQUEST_TIMEOUT || "30000"),
+} as const;
+
+/** @deprecated Use ServiceFlags instead */
+export const FeatureFlags = ServiceFlags;
+
+/** Get service flag status for debugging */
+export function getServiceFlagStatus() {
+  return {
+    openai: ServiceFlags.OPENAI_ENABLED,
+    mockups: ServiceFlags.MOCKUPS_ENABLED,
+    aiAssistant: ServiceFlags.AI_ASSISTANT_ENABLED,
+    pdfGeneration: ServiceFlags.PDF_GENERATION_ENABLED,
+    puppeteer: ServiceFlags.PUPPETEER_ENABLED,
+    supabase: ServiceFlags.SUPABASE_ENABLED,
+    timeouts: {
+      pdfRender: ServiceFlags.PDF_RENDER_TIMEOUT,
+      aiRequest: ServiceFlags.AI_REQUEST_TIMEOUT,
+    },
+  };
+}
+
+/** Feature not available response */
+export function featureDisabledResponse(feature: string, reason?: string) {
+  return {
+    ok: false,
+    error: "FEATURE_DISABLED",
+    message: `${feature} is currently unavailable${reason ? `: ${reason}` : ""}`,
+    featureFlag: feature,
+  };
+}
+
+// ============================================================================
 // DEMO MODE FLAGS (Tuesday Demo - Feature Flag Based)
 // ============================================================================
 
@@ -117,7 +217,7 @@ export async function evaluateFlag(
     const cached = await getFlagCache(cacheKey);
     if (cached !== null) {
       logCacheEvent("hit", cacheKey);
-      incrementUsage(key, orgId || null);
+      void incrementUsage(key, orgId || null);
       return cached === "1";
     }
     logCacheEvent("miss", cacheKey);
@@ -131,7 +231,7 @@ export async function evaluateFlag(
       if (!shouldTargetUser(row.targeting, userId, orgId || null)) enabled = false;
     }
   }
-  incrementUsage(key, orgId || null);
+  void incrementUsage(key, orgId || null);
   if (row?.id) {
     prisma.$executeRaw`UPDATE app.feature_flags SET last_access_at = NOW() WHERE id = ${row.id}::uuid`.catch(
       () => {}

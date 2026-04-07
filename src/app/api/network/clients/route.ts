@@ -1,7 +1,8 @@
 export const dynamic = "force-dynamic";
 
-import { auth } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
+
+import { withAuth } from "@/lib/auth/withAuth";
 
 import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
@@ -16,13 +17,7 @@ function newId(): string {
  * GET /api/network/clients
  * Returns all client networks for the authenticated org
  */
-export async function GET(req: NextRequest) {
-  const authData = await auth();
-  const { userId, orgId } = authData;
-  if (!userId || !orgId) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
-
+export const GET = withAuth(async (req: NextRequest, { orgId }) => {
   try {
     const clients = await prisma.client_networks.findMany({
       where: { orgId },
@@ -72,19 +67,13 @@ export async function GET(req: NextRequest) {
     logger.error("[GET /api/network/clients]", error);
     return NextResponse.json({ error: "Failed to fetch client networks" }, { status: 500 });
   }
-}
+});
 
 /**
  * POST /api/network/clients
  * Creates a new client network
  */
-export async function POST(req: NextRequest) {
-  const authData = await auth();
-  const { userId, orgId } = authData;
-  if (!userId || !orgId) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
-
+export const POST = withAuth(async (req: NextRequest, { orgId }) => {
   try {
     const body = await req.json();
     const { name, slug, contacts } = body;
@@ -145,4 +134,4 @@ export async function POST(req: NextRequest) {
     logger.error("[POST /api/network/clients]", error);
     return NextResponse.json({ error: "Failed to create client network" }, { status: 500 });
   }
-}
+});

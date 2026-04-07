@@ -11,6 +11,7 @@ export const dynamic = "force-dynamic";
 import { NextRequest } from "next/server";
 
 import { apiError, apiOk } from "@/lib/apiError";
+import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 import { safeOrgContext } from "@/lib/safeOrgContext";
 
@@ -23,6 +24,7 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
     const ctx = await safeOrgContext();
     if (ctx.status !== "ok" || !ctx.orgId)
       return apiError(401, "UNAUTHORIZED", "Authentication required");
+    logger.info("[PERMIT_DOCS_LIST]", { permitId: id, orgId: ctx.orgId });
 
     // Verify permit belongs to org
     const permit = await prisma.permits.findFirst({
@@ -56,6 +58,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     const ctx = await safeOrgContext();
     if (ctx.status !== "ok" || !ctx.orgId)
       return apiError(401, "UNAUTHORIZED", "Authentication required");
+    logger.info("[PERMIT_DOCS_CREATE]", { permitId: id, orgId: ctx.orgId });
 
     const body = await req.json().catch(() => null);
     if (!body) return apiError(400, "INVALID_BODY", "Invalid JSON");
@@ -131,6 +134,7 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
     const ctx = await safeOrgContext();
     if (ctx.status !== "ok" || !ctx.orgId)
       return apiError(401, "UNAUTHORIZED", "Authentication required");
+    logger.info("[PERMIT_DOCS_DELETE]", { permitId: id, orgId: ctx.orgId });
 
     const url = new URL(req.url);
     const docId = url.searchParams.get("docId");

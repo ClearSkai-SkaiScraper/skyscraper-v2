@@ -760,7 +760,6 @@ export default function Builder() {
                 "toc",
                 "customer-details",
                 "retail-proposal",
-                "photo-evidence",
                 "scope-matrix",
                 "material-selections",
                 "payment-schedule",
@@ -852,29 +851,10 @@ export default function Builder() {
                 <Button
                   onClick={() => handleRunAI()}
                   disabled={runningAI}
-                  className="gap-2 bg-purple-600 hover:bg-purple-700"
+                  className="gap-2 bg-blue-600 hover:bg-blue-700"
                 >
                   <Zap className="h-5 w-5" />
                   {runningAI ? "Running AI..." : "Run All AI"}
-                </Button>
-
-                {/* Quick DOL Pull Button */}
-                <Button
-                  onClick={() => void handleQuickDolPull()}
-                  disabled={weatherStatus === "loading" || !selection.resolvedClaimId}
-                  className="gap-2 bg-cyan-600 hover:bg-cyan-700"
-                  title={
-                    !selection.resolvedClaimId
-                      ? "Select a claim first"
-                      : "Fetch weather data for this claim"
-                  }
-                >
-                  <CloudSun className="h-5 w-5" />
-                  {weatherStatus === "loading"
-                    ? "Pulling Weather..."
-                    : weatherStatus === "ready"
-                      ? "✓ Weather Ready"
-                      : "Quick DOL Pull"}
                 </Button>
 
                 {/* Material Estimate Button */}
@@ -883,7 +863,7 @@ export default function Builder() {
                   disabled={
                     materialStatus === "loading" || (!selection.resolvedClaimId && !selection.jobId)
                   }
-                  className="gap-2 bg-amber-600 hover:bg-amber-700"
+                  className="gap-2 bg-blue-600 hover:bg-blue-700"
                   title={
                     !selection.resolvedClaimId && !selection.jobId
                       ? "Select a claim or job first"
@@ -904,7 +884,7 @@ export default function Builder() {
                   disabled={
                     mockupStatus === "loading" || (!selection.resolvedClaimId && !selection.jobId)
                   }
-                  className="gap-2 bg-indigo-600 hover:bg-indigo-700"
+                  className="gap-2 bg-blue-600 hover:bg-blue-700"
                   title={
                     !selection.resolvedClaimId && !selection.jobId
                       ? "Select a claim or job first"
@@ -958,13 +938,6 @@ export default function Builder() {
                       className="w-full justify-start rounded-none hover:bg-gray-100"
                     >
                       Damage Builder
-                    </Button>
-                    <Button
-                      onClick={() => handleRunAI("weather")}
-                      variant="ghost"
-                      className="w-full justify-start rounded-none hover:bg-gray-100"
-                    >
-                      Weather Verification
                     </Button>
                     <Button
                       onClick={() => handleRunAI("codes")}

@@ -72,7 +72,7 @@ export default function PublicTemplatePreviewPage() {
         logger.error("[TEMPLATE_PREVIEW] Failed to fetch templates list:", err);
       }
     }
-    fetchAllTemplates();
+    void fetchAllTemplates();
   }, []);
 
   useEffect(() => {
@@ -144,7 +144,7 @@ export default function PublicTemplatePreviewPage() {
         setLoading(false);
       }
     }
-    fetchTemplate();
+    void fetchTemplate();
   }, [templateId]);
 
   // Calculate prev/next templates

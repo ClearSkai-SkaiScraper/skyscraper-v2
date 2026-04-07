@@ -37,7 +37,7 @@ export default function ExecutiveSummaryPage() {
   }, [claimId]);
 
   useEffect(() => {
-    fetchSummary();
+    void fetchSummary();
   }, [fetchSummary]);
 
   const handleGenerate = async () => {

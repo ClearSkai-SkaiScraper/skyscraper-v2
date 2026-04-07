@@ -1,8 +1,10 @@
 export const dynamic = "force-dynamic";
 
 // MODULE 2: Notifications - Mark as read (supports both client and pro)
-import { auth, currentUser } from "@clerk/nextjs/server";
+import { currentUser } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
+
+import { withAuth } from "@/lib/auth/withAuth";
 import { z } from "zod";
 
 import { db } from "@/lib/db";
@@ -17,12 +19,7 @@ const markReadSchema = z.object({
   all: z.boolean().optional(), // Legacy support
 });
 
-export async function POST(req: NextRequest) {
-  const { userId } = await auth();
-  if (!userId) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
-
+export const POST = withAuth(async (req: NextRequest, { userId }) => {
   try {
     const body = await req.json();
     const parsed = markReadSchema.safeParse(body);
@@ -181,8 +178,8 @@ export async function POST(req: NextRequest) {
       { error: "Must provide 'notificationId' or 'markAllAsRead: true'" },
       { status: 400 }
     );
-  } catch (error) {
+  } catch (error: unknown) {
     logger.error("[NOTIFICATIONS_MARK_READ]", error);
     return NextResponse.json({ error: "Failed to mark as read" }, { status: 500 });
   }
-}
+});

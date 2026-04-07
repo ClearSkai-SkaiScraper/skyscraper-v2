@@ -64,7 +64,7 @@ export default function FinancialReportsPage() {
 
   useEffect(() => {
     if (isLoaded && isSignedIn) {
-      fetchReport(dateRange);
+      void fetchReport(dateRange);
     }
   }, [isLoaded, isSignedIn, dateRange, fetchReport]);
 

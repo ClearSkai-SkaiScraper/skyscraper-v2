@@ -111,7 +111,7 @@ export default function CarrierExportsPage() {
       }
     }
 
-    fetchClaims();
+    void fetchClaims();
   }, [isSignedIn, orgId]);
 
   // Auto-select carrier when claim is selected (from claim data or URL param)

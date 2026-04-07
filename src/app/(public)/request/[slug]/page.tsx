@@ -68,7 +68,7 @@ export default function RequestServicePage({ params }: { params: { slug: string 
         setLoading(false);
       }
     }
-    load();
+    void load();
   }, [slug]);
 
   async function submitRequest() {

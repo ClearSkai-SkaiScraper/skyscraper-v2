@@ -163,7 +163,7 @@ export default function PortalClaimDetailPage() {
 
   useEffect(() => {
     if (!userId) return;
-    loadClaimData();
+    void loadClaimData();
   }, [userId, loadClaimData]);
 
   async function handleUploadPhoto(file: File) {

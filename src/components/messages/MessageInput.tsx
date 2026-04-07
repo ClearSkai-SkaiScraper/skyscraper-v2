@@ -66,7 +66,7 @@ export default function MessageInput({ threadId, onMessageSent }: MessageInputPr
           onKeyDown={(e) => {
             if (e.key === "Enter" && !e.shiftKey) {
               e.preventDefault();
-              handleSubmit(e);
+              void handleSubmit(e);
             }
           }}
         />

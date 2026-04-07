@@ -24,7 +24,7 @@ export default function ProductionVerificationPage() {
   });
 
   useEffect(() => {
-    runVerificationChecks();
+    void runVerificationChecks();
   }, []);
 
   const runVerificationChecks = async () => {

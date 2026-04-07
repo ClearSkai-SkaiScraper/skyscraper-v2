@@ -106,7 +106,7 @@ export function AIControlPanel({
 
   // Fetch existing analysis on mount
   useEffect(() => {
-    fetchAnalysis();
+    void fetchAnalysis();
   }, [claimId]);
 
   const fetchAnalysis = async () => {
@@ -215,7 +215,7 @@ export function AIControlPanel({
       }
     };
 
-    checkPhotos();
+    void checkPhotos();
   }, [claimId]);
 
   const generateReport = async () => {
@@ -446,7 +446,7 @@ export function AIControlPanel({
             <button
               onClick={(e) => {
                 e.stopPropagation();
-                generateReport();
+                void generateReport();
               }}
               disabled={generatingReport || !photoCheckComplete || photoCount === 0}
               title={photoCount === 0 ? "Upload photos first" : "Generate basic PDF report"}
@@ -467,7 +467,7 @@ export function AIControlPanel({
             <button
               onClick={(e) => {
                 e.stopPropagation();
-                generateEnhancedReport();
+                void generateEnhancedReport();
               }}
               disabled={generatingEnhanced || !photoCheckComplete || photoCount === 0}
               title={
@@ -492,7 +492,7 @@ export function AIControlPanel({
             <button
               onClick={(e) => {
                 e.stopPropagation();
-                runAllEnabled();
+                void runAllEnabled();
               }}
               disabled={loading}
               className="flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-blue-700 disabled:opacity-50"

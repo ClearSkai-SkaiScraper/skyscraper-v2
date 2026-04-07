@@ -81,7 +81,7 @@ export function JobVendorAttachPanel({ claimId, jobId }: Props) {
   }, [claimId, jobId]);
 
   useEffect(() => {
-    fetchAttached();
+    void fetchAttached();
   }, [fetchAttached]);
 
   const searchVendors = useCallback(async () => {
@@ -122,7 +122,7 @@ export function JobVendorAttachPanel({ claimId, jobId }: Props) {
         setShowSearch(false);
         setSearchQuery("");
         setSearchResults([]);
-        fetchAttached();
+        void fetchAttached();
       } else {
         toast.error(data.error || "Attach failed");
       }

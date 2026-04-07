@@ -8,8 +8,9 @@
  * This is a public-ish API (requires auth but not company membership)
  */
 
-import { auth } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
+
+import { withAuth } from "@/lib/auth/withAuth";
 
 import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
@@ -17,13 +18,8 @@ import prisma from "@/lib/prisma";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-export async function GET(request: NextRequest) {
+export const GET = withAuth(async (request: NextRequest, { userId }) => {
   try {
-    const { userId } = await auth();
-    if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
     const { searchParams } = new URL(request.url);
     const query = searchParams.get("q")?.toLowerCase() || "";
 
@@ -96,8 +92,8 @@ export async function GET(request: NextRequest) {
         memberCount: c._count?.members ?? 0,
       })),
     });
-  } catch (error) {
+  } catch (error: unknown) {
     logger.error("Error searching companies:", error);
     return NextResponse.json({ error: "Failed to search companies" }, { status: 500 });
   }
-}
+});

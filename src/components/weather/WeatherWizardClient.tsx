@@ -66,7 +66,7 @@ export function WeatherWizardClient({ initialClaimId }: WeatherWizardClientProps
         setLoadingClaims(false);
       }
     }
-    loadClaims();
+    void loadClaims();
   }, []);
 
   // Auto-fill when claim is selected

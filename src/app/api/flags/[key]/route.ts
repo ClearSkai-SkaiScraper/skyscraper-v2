@@ -36,7 +36,7 @@ export const GET = withSentryApi(async (req, { params }: { params: { key: string
   } catch (err) {
     const errMsg = err instanceof Error ? err.message : String(err);
     const errStack = err instanceof Error ? err.stack : undefined;
-    logger.error("Flag GET error", { key: params.key, err: errMsg, stack: errStack });
+    logger.error("[FLAGS_EVALUATE]", { key: params.key, error: errMsg, stack: errStack });
     return NextResponse.json({ error: "Internal server error", detail: errMsg }, { status: 500 });
   }
 });

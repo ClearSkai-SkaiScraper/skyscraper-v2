@@ -38,7 +38,7 @@ export function ClientAttachSection({
   // Fetch current attached client
   useEffect(() => {
     if (currentClientId) {
-      fetchAttachedClient(currentClientId);
+      void fetchAttachedClient(currentClientId);
     }
   }, [currentClientId]);
 

@@ -24,7 +24,7 @@ export default function ResetAccountPage() {
 
   useEffect(() => {
     // Check current state on load
-    checkStatus();
+    void checkStatus();
   }, []);
 
   async function checkStatus() {

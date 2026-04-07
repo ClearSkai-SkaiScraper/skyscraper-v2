@@ -1,18 +1,13 @@
 export const dynamic = "force-dynamic";
 
-import { auth } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
 
+import { withAuth } from "@/lib/auth/withAuth";
 import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 
-export async function POST(request: NextRequest) {
+export const POST = withAuth(async (request: NextRequest, { orgId, userId }) => {
   try {
-    const { userId, orgId } = await auth();
-    if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
     const body = await request.json();
     const { claimId } = body;
 
@@ -225,4 +220,4 @@ export async function POST(request: NextRequest) {
     logger.error("[risk-scoring] Error:", error);
     return NextResponse.json({ error: "Failed to calculate risk score" }, { status: 500 });
   }
-}
+});

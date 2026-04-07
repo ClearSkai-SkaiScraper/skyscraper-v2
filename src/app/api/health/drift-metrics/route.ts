@@ -1,15 +1,16 @@
-import { NextResponse } from 'next/server';
+import { NextResponse } from "next/server";
 
-import { getDriftMetrics, resetDriftMetrics } from '@/lib/monitoring/driftMetrics';
+import { getDriftMetrics, resetDriftMetrics } from "@/lib/monitoring/driftMetrics";
+import { logger } from "@/lib/logger";
 
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
 export async function GET(request: Request) {
   const url = new URL(request.url);
-  const reset = url.searchParams.get('reset');
-  if (reset === '1') {
+  const reset = url.searchParams.get("reset");
+  if (reset === "1") {
     resetDriftMetrics();
   }
-  return NextResponse.json({ status: 'ok', drift: getDriftMetrics() });
+  return NextResponse.json({ status: "ok", drift: getDriftMetrics() });
 }

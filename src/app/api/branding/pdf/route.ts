@@ -2,13 +2,12 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
-import { auth } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
 
+import { withAuth } from "@/lib/auth/withAuth";
 import { BRAND_PRIMARY } from "@/lib/constants/branding";
 import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
-import { safeOrgContext } from "@/lib/safeOrgContext";
 
 /**
  * GET /api/branding/pdf
@@ -18,23 +17,8 @@ import { safeOrgContext } from "@/lib/safeOrgContext";
  * tables into a single payload matching the BrandingData interface used
  * by the branded header system.
  */
-export async function GET(_req: NextRequest) {
+export const GET = withAuth(async (req: NextRequest, { orgId, userId: clerkUserId }) => {
   try {
-    const { userId: clerkUserId } = await auth();
-    if (!clerkUserId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    const orgCtx = await safeOrgContext();
-    const orgId = orgCtx.ok ? orgCtx.orgId : null;
-
-    if (!orgId) {
-      return NextResponse.json({
-        companyName: "Your Company",
-        brandColor: BRAND_PRIMARY,
-      });
-    }
-
     // Fetch org branding
     const org = await prisma.org.findUnique({
       where: { id: orgId },
@@ -117,4 +101,4 @@ export async function GET(_req: NextRequest) {
     logger.error("[branding/pdf] Error:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
-}
+});

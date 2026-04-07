@@ -4,6 +4,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 
 import { isAuthError, requireAuth } from "@/lib/auth/requireAuth";
+import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 
 export const runtime = "nodejs";
@@ -30,6 +31,7 @@ export async function POST(req: Request) {
   try {
     const body = await req.json();
     const { templateId } = ValidateTemplateSchema.parse(body);
+    logger.info("[TEMPLATES_VALIDATE]", { templateId, orgId: auth.orgId });
 
     const template = await prisma.template.findUnique({ where: { id: templateId } });
     if (!template) {
@@ -65,6 +67,7 @@ export async function POST(req: Request) {
       missingPlaceholders,
     });
   } catch (e) {
+    logger.error("[TEMPLATES_VALIDATE]", { error: e?.message ?? "UNKNOWN_ERROR" });
     return NextResponse.json({ ok: false, error: e?.message ?? "UNKNOWN_ERROR" }, { status: 500 });
   }
 }

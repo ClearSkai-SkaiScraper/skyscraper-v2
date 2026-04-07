@@ -2,14 +2,13 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
-import { auth } from "@clerk/nextjs/server";
 import { nanoid } from "nanoid";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
 import { z } from "zod";
 
+import { withAuth } from "@/lib/auth/withAuth";
 import { logger } from "@/lib/logger";
-import { getActiveOrgContext } from "@/lib/org/getActiveOrgContext";
 import prisma from "@/lib/prisma";
 
 const brandingSchema = z.object({
@@ -28,18 +27,14 @@ const brandingSchema = z.object({
   website: z.string().trim().max(500).nullish(),
 });
 
-export async function GET() {
-  const { userId } = await auth();
-  if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-
+export const GET = withAuth(async (req: NextRequest, { orgId }) => {
   try {
-    const orgCtx = await getActiveOrgContext({ required: true });
-    if (!orgCtx.ok) {
-      return NextResponse.json({ branding: null });
-    }
-
     // Backward-compatible lookup: check both DB UUID and Clerk orgId
-    const orgIdCandidates = [orgCtx.orgId, orgCtx.clerkOrgId].filter(
+    const org = await prisma.org.findUnique({
+      where: { id: orgId },
+      select: { clerkOrgId: true },
+    });
+    const orgIdCandidates = [orgId, org?.clerkOrgId].filter(
       (v): v is string => typeof v === "string" && v.length > 0
     );
 
@@ -53,19 +48,16 @@ export async function GET() {
     logger.error("[Branding GET] Error:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
-}
+});
 
-export async function POST(req: Request) {
-  const { userId } = await auth();
-  if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-
+export const POST = withAuth(async (req: NextRequest, { orgId, userId }) => {
   try {
-    const orgCtx = await getActiveOrgContext({ required: true });
-    if (!orgCtx.ok) {
-      return NextResponse.json({ error: "No organization" }, { status: 400 });
-    }
+    // Look up clerkOrgId for backward-compatible lookup
+    const org = await prisma.org.findUnique({
+      where: { id: orgId },
+      select: { clerkOrgId: true },
+    });
 
-    const dbOrgId = orgCtx.orgId;
     const raw = await req.json();
     const parsed = brandingSchema.safeParse(raw);
     if (!parsed.success) {
@@ -77,7 +69,7 @@ export async function POST(req: Request) {
     const body = parsed.data;
 
     // Backward-compatible lookup: check both DB UUID and Clerk orgId
-    const orgIdCandidates = [dbOrgId, orgCtx.clerkOrgId].filter(
+    const orgIdCandidates = [orgId, org?.clerkOrgId].filter(
       (v): v is string => typeof v === "string" && v.length > 0
     );
 
@@ -88,12 +80,12 @@ export async function POST(req: Request) {
 
     if (existing) {
       // Migrate legacy record to DB UUID if needed
-      const needsMigration = existing.orgId !== dbOrgId;
+      const needsMigration = existing.orgId !== orgId;
 
       const updated = await prisma.org_branding.update({
         where: { id: existing.id },
         data: {
-          orgId: needsMigration ? dbOrgId : undefined,
+          orgId: needsMigration ? orgId : undefined,
           companyName: body.company_name ?? body.companyName ?? existing.companyName,
           phone: body.phone ?? existing.phone,
           email: body.email ?? existing.email,
@@ -110,7 +102,7 @@ export async function POST(req: Request) {
       const created = await prisma.org_branding.create({
         data: {
           id: nanoid(),
-          orgId: dbOrgId,
+          orgId,
           ownerId: userId,
           companyName: body.company_name ?? body.companyName ?? null,
           phone: body.phone ?? null,
@@ -129,4 +121,4 @@ export async function POST(req: Request) {
     logger.error("[Branding POST] Error:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
-}
+});

@@ -7,7 +7,8 @@
 
 import "server-only";
 
-import { auth } from "@clerk/nextjs/server";
+import { withAuth } from "@/lib/auth/withAuth";
+import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 
 import { logger } from "@/lib/logger";
@@ -23,13 +24,8 @@ function getSupabaseEnv() {
   return { url, key };
 }
 
-export async function GET() {
+export const GET = withAuth(async (_req: NextRequest, { userId }) => {
   try {
-    const { userId } = await auth();
-    if (!userId) {
-      return NextResponse.json({ ok: false, reason: "UNAUTHENTICATED" }, { status: 401 });
-    }
-
     if (process.env.FEATURE_AUTOSAVE === "false") {
       return NextResponse.json({ ok: false, reason: "FEATURE_DISABLED" }, { status: 200 });
     }
@@ -76,8 +72,12 @@ export async function GET() {
     });
   } catch (err) {
     return NextResponse.json(
-      { ok: false, reason: "UNEXPECTED", detail: err?.message ?? "Unknown error" },
+      {
+        ok: false,
+        reason: "UNEXPECTED",
+        detail: err instanceof Error ? err.message : "Unknown error",
+      },
       { status: 200 }
     );
   }
-}
+});

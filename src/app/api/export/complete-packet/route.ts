@@ -7,12 +7,12 @@
 
 export const dynamic = "force-dynamic";
 
-import { auth } from "@clerk/nextjs/server";
 import { createClient } from "@supabase/supabase-js";
 import JSZip from "jszip";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 
+import { withAuth } from "@/lib/auth/withAuth";
 import { logger } from "@/lib/observability/logger";
 import prisma from "@/lib/prisma";
 import { checkRateLimit, getRateLimitError } from "@/lib/ratelimit";
@@ -40,15 +40,9 @@ const CompletePacketSchema = z.object({
   leadId: z.string().min(1, "Lead ID is required"),
 });
 
-export async function POST(req: NextRequest) {
+export const POST = withAuth(async (req: NextRequest, { orgId, userId }) => {
   try {
-    // 1. Authenticate
-    const { userId } = await auth();
-    if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    // 2. Rate limiting
+    // 1. Rate limiting
     const rateLimit = await checkRateLimit(userId, "API");
     if (!rateLimit.success) {
       return NextResponse.json(
@@ -63,7 +57,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // 3. Parse and validate request
+    // 2. Parse and validate request
     const body = await req.json();
     const parsed = CompletePacketSchema.safeParse(body);
 
@@ -79,31 +73,14 @@ export async function POST(req: NextRequest) {
 
     const { leadId } = parsed.data;
 
-    // 4. Get user info
-    const user = await prisma.users.findUnique({
-      where: { clerkUserId: userId },
-      select: { id: true, orgId: true },
-    });
-
-    if (!user) {
-      return NextResponse.json({ error: "User not found" }, { status: 404 });
-    }
-
-    // B-22: Require orgId — never export data without tenant scoping
-    if (!user.orgId) {
-      return NextResponse.json({ error: "Organization context required" }, { status: 403 });
-    }
-
     // Fetch org branding for packet header
-    const orgBranding = user.orgId
-      ? await prisma.org_branding.findFirst({ where: { orgId: user.orgId } })
-      : null;
+    const orgBranding = await prisma.org_branding.findFirst({ where: { orgId } });
     const companyName = orgBranding?.companyName || "SkaiScraper Pro";
 
     // Fetch claim data
     const claims: any[] = await prisma.$queryRaw`
       SELECT * FROM "ClaimWriter" 
-      WHERE "leadId" = ${leadId} AND "orgId" = ${user.orgId}
+      WHERE "leadId" = ${leadId} AND "orgId" = ${orgId}
       ORDER BY "createdAt" DESC 
       LIMIT 1
     `;
@@ -112,7 +89,7 @@ export async function POST(req: NextRequest) {
     // Fetch estimate data
     const estimates: any[] = await prisma.$queryRaw`
       SELECT * FROM "EstimateExport" 
-      WHERE "leadId" = ${leadId} AND "orgId" = ${user.orgId}
+      WHERE "leadId" = ${leadId} AND "orgId" = ${orgId}
       ORDER BY "createdAt" DESC 
       LIMIT 1
     `;
@@ -220,7 +197,7 @@ https://skaiscrape.com`
     await track("complete_packet_downloaded", {
       props: {
         leadId,
-        orgId: user.orgId,
+        orgId,
         tokensUsed: 5,
         hasClaim: !!claim,
         hasEstimate: !!estimate,
@@ -239,4 +216,4 @@ https://skaiscrape.com`
     logger.error("[CompletePacket] Error:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
-}
+});

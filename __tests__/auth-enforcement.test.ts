@@ -155,10 +155,10 @@ describe("notifications/[id] — no enumeration", () => {
     expect(src).toContain("404");
   });
 
-  it("has mandatory orgId check (returns 403 for missing org)", () => {
+  it("has mandatory orgId check via withAuth HOF", () => {
     const src = readRoute("notifications/[id]/route.ts");
-    // S1-04: orgId is mandatory — 403 for missing org context
-    expect(src).toContain('"Organization context required"');
+    // S1-04: orgId is mandatory — withAuth guarantees orgId from DB membership
+    expect(src).toContain("withAuth");
   });
 
   it("uses findFirst with userId instead of findUnique", () => {

@@ -59,7 +59,7 @@ export default function DenialResponsePanel({ claimId }: { claimId: string }) {
   );
 
   useEffect(() => {
-    fetchDenialResponse();
+    void fetchDenialResponse();
   }, [claimId]);
 
   const fetchDenialResponse = async () => {
@@ -129,7 +129,7 @@ export default function DenialResponsePanel({ claimId }: { claimId: string }) {
   });
 
   const copyToClipboard = (text: string) => {
-    navigator.clipboard.writeText(text);
+    void navigator.clipboard.writeText(text);
     alert("Copied to clipboard!");
   };
 

@@ -121,7 +121,7 @@ export default function VendorDetailPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (slug) fetchVendor();
+    if (slug) void fetchVendor();
   }, [slug]);
 
   const fetchVendor = async () => {

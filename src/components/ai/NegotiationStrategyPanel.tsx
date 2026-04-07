@@ -60,7 +60,7 @@ export function NegotiationStrategyPanel({
       }
     }
 
-    fetchStrategy();
+    void fetchStrategy();
   }, [claimId]);
 
   const getRiskColor = (riskLevel: string) => {

@@ -1,9 +1,8 @@
-import { auth } from "@clerk/nextjs/server";
-import { NextRequest, NextResponse } from "next/server";
+import { withAuth } from "@/lib/auth/withAuth";
+import { NextResponse } from "next/server";
 import { z } from "zod";
 
 import { logger } from "@/lib/logger";
-import { getActiveOrgContext } from "@/lib/org/getActiveOrgContext";
 import prisma from "@/lib/prisma";
 
 /**
@@ -18,21 +17,8 @@ const requestSchema = z.object({
   modes: z.array(z.string()).min(1, "At least one analysis mode required"),
 });
 
-export async function POST(req: NextRequest) {
+export const POST = withAuth(async (req, { userId, orgId }) => {
   try {
-    const { userId } = await auth();
-
-    if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    // Get org context (REQUIRED for data isolation)
-    const orgResult = await getActiveOrgContext();
-    if (!orgResult.ok) {
-      return NextResponse.json({ error: "Organization context required" }, { status: 403 });
-    }
-    const orgId = orgResult.orgId;
-
     // Parse and validate request body
     let body;
     try {
@@ -138,14 +124,14 @@ export async function POST(req: NextRequest) {
     };
 
     return NextResponse.json(analysisResults);
-  } catch (error) {
+  } catch (error: unknown) {
     logger.error("[POST /api/agents/claims-analysis] Unexpected error:", error);
     return NextResponse.json(
       { error: "An unexpected error occurred during analysis" },
       { status: 500 }
     );
   }
-}
+});
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";

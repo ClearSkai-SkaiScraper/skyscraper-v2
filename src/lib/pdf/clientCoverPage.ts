@@ -75,7 +75,7 @@ function lightenRgb(rgb: [number, number, number], factor = 0.85): [number, numb
   ];
 }
 
-function darkenRgb(rgb: [number, number, number], factor = 0.15): [number, number, number] {
+function _darkenRgb(rgb: [number, number, number], factor = 0.15): [number, number, number] {
   return [
     Math.round(rgb[0] * (1 - factor)),
     Math.round(rgb[1] * (1 - factor)),
@@ -390,17 +390,23 @@ export async function fetchPropertyMapClient(address: string): Promise<string | 
       `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(address)}&count=1&language=en&format=json`
     );
     if (!geoRes.ok) return undefined;
-    const geoData = await geoRes.json();
+    const geoData = (await geoRes.json()) as {
+      results?: Array<{ latitude: number; longitude: number }>;
+    };
     const result = geoData?.results?.[0];
     if (!result) return undefined;
 
     const { latitude: lat, longitude: lng } = result;
 
     // Build map URL — use Mapbox if token available, else OSM
+    // Access NEXT_PUBLIC_ vars which are inlined at build time
     const mapboxToken =
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (window as any).__NEXT_DATA__?.props?.pageProps?.mapboxToken ||
-      process.env.NEXT_PUBLIC_MAPBOX_TOKEN;
+      typeof window !== "undefined"
+        ? ((window as { __NEXT_DATA__?: { props?: { pageProps?: { mapboxToken?: string } } } })
+            .__NEXT_DATA__?.props?.pageProps?.mapboxToken ??
+          // NEXT_PUBLIC_ vars are safe to access directly as they're replaced at build time
+          (globalThis as { NEXT_PUBLIC_MAPBOX_TOKEN?: string }).NEXT_PUBLIC_MAPBOX_TOKEN)
+        : undefined;
 
     let mapUrl: string;
     if (mapboxToken) {

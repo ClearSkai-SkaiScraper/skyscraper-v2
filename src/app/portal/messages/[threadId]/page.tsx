@@ -31,7 +31,7 @@ export default function ThreadDetailPage() {
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   useEffect(() => {
-    fetchThreads();
+    void fetchThreads();
     return () => {
       if (pollRef.current) clearInterval(pollRef.current);
     };
@@ -39,12 +39,12 @@ export default function ThreadDetailPage() {
 
   useEffect(() => {
     if (threadId) {
-      fetchThread(threadId);
+      void fetchThread(threadId);
 
       // Poll for new messages every 4 seconds
       if (pollRef.current) clearInterval(pollRef.current);
       pollRef.current = setInterval(() => {
-        fetchThread(threadId, true);
+        void fetchThread(threadId, true);
       }, 4000);
     }
 
@@ -84,8 +84,8 @@ export default function ThreadDetailPage() {
 
   const handleMessageSent = () => {
     if (selectedThreadId) {
-      fetchThread(selectedThreadId);
-      fetchThreads();
+      void fetchThread(selectedThreadId);
+      void fetchThreads();
     }
   };
 

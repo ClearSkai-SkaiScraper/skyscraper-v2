@@ -111,7 +111,7 @@ export default function TradesOnboardingPage() {
         logger.error("Failed to load profile:", error);
       }
     }
-    loadProfile();
+    void loadProfile();
   }, []);
 
   const handleAvatarSelect = (e: React.ChangeEvent<HTMLInputElement>) => {

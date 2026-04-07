@@ -74,7 +74,7 @@ export default function EditContactPage() {
         setLoading(false);
       }
     }
-    load();
+    void load();
   }, [contactId]);
 
   const handleSave = async () => {

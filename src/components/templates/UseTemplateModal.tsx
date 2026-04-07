@@ -39,7 +39,7 @@ export function UseTemplateModal({
 
   // Load claims on mount
   useState(() => {
-    loadClaims();
+    void loadClaims();
   });
 
   async function loadClaims() {

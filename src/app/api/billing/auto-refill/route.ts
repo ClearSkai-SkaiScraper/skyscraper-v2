@@ -1,5 +1,6 @@
 export const dynamic = "force-dynamic";
 import { NextRequest, NextResponse } from "next/server";
+import { logger } from "@/lib/logger";
 
 // Token system removed — flat $80/month pricing.
 // This route is kept as a stub to prevent 404s from cached clients.

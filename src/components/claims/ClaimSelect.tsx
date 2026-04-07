@@ -92,7 +92,7 @@ export function ClaimSelect({
         setLoading(false);
       }
     }
-    fetchClaims();
+    void fetchClaims();
   }, [isExternalClaims, externalClaims]);
 
   const getClaimLabel = (claim: Claim) => {

@@ -57,6 +57,8 @@ const AUTH_PATTERNS = [
   "clerkMiddleware",
   "verifyToken",
   "getToken",
+  "withAuth",
+  "withOrgScope",
 ];
 
 /* ------------------------------------------------------------------ */

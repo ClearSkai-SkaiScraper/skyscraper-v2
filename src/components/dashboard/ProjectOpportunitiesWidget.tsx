@@ -152,7 +152,7 @@ export function ProjectOpportunitiesWidget() {
       setOpportunities(MOCK_OPPORTUNITIES);
       setIsLoading(false);
     };
-    loadOpportunities();
+    void loadOpportunities();
   }, []);
 
   return (

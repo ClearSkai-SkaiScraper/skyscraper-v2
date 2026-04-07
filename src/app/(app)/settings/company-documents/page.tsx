@@ -48,7 +48,7 @@ export default function CompanyDocumentsPage() {
   const [description, setDescription] = useState("");
 
   useEffect(() => {
-    loadTemplates();
+    void loadTemplates();
   }, []);
 
   async function loadTemplates() {
@@ -87,7 +87,7 @@ export default function CompanyDocumentsPage() {
         setFile(null);
         setTitle("");
         setDescription("");
-        loadTemplates();
+        void loadTemplates();
       } else {
         alert(data.message || "Upload failed");
       }

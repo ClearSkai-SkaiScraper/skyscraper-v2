@@ -1,6 +1,7 @@
 export const dynamic = "force-dynamic";
 import { NextRequest, NextResponse } from "next/server";
 
+import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 
 export const runtime = "nodejs";
@@ -8,6 +9,7 @@ export const runtime = "nodejs";
 export async function GET(request: NextRequest, { params }: { params: { templateId: string } }) {
   try {
     const { templateId } = params;
+    logger.info("[TEMPLATES_PUBLIC_GET]", { templateId });
 
     const template = await prisma.template.findUnique({
       where: { id: templateId },
@@ -45,6 +47,7 @@ export async function GET(request: NextRequest, { params }: { params: { template
       },
     });
   } catch (error) {
+    logger.error("[TEMPLATES_PUBLIC_GET]", { error });
     return NextResponse.json(
       {
         ok: false,

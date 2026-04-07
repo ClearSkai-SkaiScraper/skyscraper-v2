@@ -129,7 +129,7 @@ export default function RetailWizard({
       }
     };
 
-    checkForDraft();
+    void checkForDraft();
   }, [user?.id, resumedPacketId]);
 
   /**

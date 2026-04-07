@@ -11,6 +11,7 @@ export const dynamic = "force-dynamic";
 
 import { auth } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
 
 import { logger } from "@/lib/logger";
 import { getClientFromAuth } from "@/lib/portal/getClientFromAuth";
@@ -225,12 +226,33 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Client not found" }, { status: 404 });
     }
 
-    const body = await req.json();
+    const jobCreateSchema = z.object({
+      title: z.string().min(1, "Job title is required").max(200),
+      description: z.string().max(5000).optional(),
+      type: z.string().max(50).optional(),
+      tradeType: z.string().max(100).optional(),
+      urgency: z.enum(["low", "normal", "urgent"]).optional(),
+      status: z.string().max(50).optional(),
+      address: z.string().max(500).optional(),
+      city: z.string().max(100).optional(),
+      state: z.string().max(50).optional(),
+      zip: z.string().max(20).optional(),
+      budget: z.string().max(50).optional(),
+      claimNumber: z.string().max(100).optional(),
+      insuranceCompany: z.string().max(200).optional(),
+      adjusterName: z.string().max(200).optional(),
+      adjusterPhone: z.string().max(30).optional(),
+    });
 
-    // Validate required fields
-    if (!body.title?.trim()) {
-      return NextResponse.json({ error: "Job title is required" }, { status: 400 });
+    const rawBody = await req.json();
+    const parsed = jobCreateSchema.safeParse(rawBody);
+    if (!parsed.success) {
+      return NextResponse.json(
+        { error: parsed.error.issues[0]?.message || "Invalid input" },
+        { status: 400 }
+      );
     }
+    const body = parsed.data;
 
     // Try new ClientJob model first
     const useNewModel = await useClientJobModel();
@@ -479,12 +501,25 @@ export async function PATCH(req: NextRequest) {
       return NextResponse.json({ error: "Client not found" }, { status: 404 });
     }
 
-    const body = await req.json();
-    const { jobId, ...updateData } = body;
+    const jobUpdateSchema = z.object({
+      jobId: z.string().min(1, "Job ID is required"),
+      title: z.string().max(200).optional(),
+      description: z.string().max(5000).optional(),
+      tradeType: z.string().max(100).optional(),
+      status: z.string().max(50).optional(),
+      budget: z.string().max(50).optional(),
+      urgency: z.enum(["low", "normal", "urgent"]).optional(),
+    });
 
-    if (!jobId) {
-      return NextResponse.json({ error: "Job ID is required" }, { status: 400 });
+    const rawBody = await req.json();
+    const parsed = jobUpdateSchema.safeParse(rawBody);
+    if (!parsed.success) {
+      return NextResponse.json(
+        { error: parsed.error.issues[0]?.message || "Invalid input" },
+        { status: 400 }
+      );
     }
+    const { jobId, ...updateData } = parsed.data;
 
     // Verify the client has access to this claim via claimClientLink
     const hasAccess = await prisma.claimClientLink.findFirst({

@@ -71,7 +71,7 @@ export function SubmitWorkRequestModal({ isOpen, onClose, slug }: SubmitWorkRequ
   // Load saved pros on open
   useEffect(() => {
     if (isOpen) {
-      loadSavedPros();
+      void loadSavedPros();
     }
   }, [isOpen]);
 

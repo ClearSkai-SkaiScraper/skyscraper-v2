@@ -50,7 +50,7 @@ export function ReceiptUploadClient() {
   }, []);
 
   useEffect(() => {
-    fetchReceipts();
+    void fetchReceipts();
   }, [fetchReceipts]);
 
   const submitReceipt = async () => {
@@ -78,7 +78,7 @@ export function ReceiptUploadClient() {
         setTotalAmount("");
         setClaimId("");
         setShowUpload(false);
-        fetchReceipts();
+        void fetchReceipts();
       } else {
         toast.error(data.error || "Upload failed");
       }

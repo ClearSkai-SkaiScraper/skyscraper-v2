@@ -68,7 +68,7 @@ export default function CodeCompliancePage() {
   }, [claimId]);
 
   useEffect(() => {
-    fetchData();
+    void fetchData();
   }, [fetchData]);
 
   const filteredCodes =

@@ -4,9 +4,10 @@
  * Works for both pro and client users
  */
 
-import { auth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 
+import { withAuth } from "@/lib/auth/withAuth";
+import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 
 export const dynamic = "force-dynamic";
@@ -63,11 +64,9 @@ function computePresence(lastSeen: Date | null): {
   };
 }
 
-export async function GET(_req: Request, { params }: { params: Promise<{ userId: string }> }) {
-  const { userId: callerUserId } = await auth();
-  if (!callerUserId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-
-  const { userId: targetUserId } = await params;
+export const GET = withAuth(async (req, { userId: callerUserId, orgId }, routeParams) => {
+  const { userId: targetUserId } = await routeParams.params;
+  logger.info("[PRESENCE_LOOKUP]", { callerUserId, targetUserId });
 
   // Parallel lookup: pro member + client
   const [member, client] = await Promise.allSettled([
@@ -122,4 +121,4 @@ export async function GET(_req: Request, { params }: { params: Promise<{ userId:
     ...presence,
     lastSeenAt: lastSeen,
   });
-}
+});

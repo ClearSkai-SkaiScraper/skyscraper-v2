@@ -55,7 +55,7 @@ export function useAutoInit() {
     };
 
     // Initialize on mount
-    initUser();
+    void initUser();
   }, [userId, isLoaded]); // Only depend on userId and isLoaded
 
   return { initialized, loading, error };

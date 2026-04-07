@@ -41,7 +41,7 @@ export function ExecutiveSummaryEditor({ claimId, initialData }: ExecutiveSummar
 
   useEffect(() => {
     if (debouncedData && lastSaved !== null) {
-      saveData();
+      void saveData();
     }
   }, [debouncedData]);
 

@@ -1,7 +1,7 @@
 export const dynamic = "force-dynamic";
 
-import { auth } from "@clerk/nextjs/server";
-import { NextRequest, NextResponse } from "next/server";
+import { withAuth } from "@/lib/auth/withAuth";
+import { NextResponse } from "next/server";
 
 import { z } from "zod";
 
@@ -13,13 +13,8 @@ const bodySchema = z.object({
   claimId: z.string().trim().min(1, "Claim ID is required"),
 });
 
-export async function POST(request: NextRequest) {
+export const POST = withAuth(async (request, { userId, orgId }) => {
   try {
-    const { userId, orgId } = await auth();
-    if (!userId || !orgId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
     // Rate limit: AI tier
     const rl = await checkRateLimit(userId, "AI");
     if (!rl.success) {
@@ -142,8 +137,8 @@ export async function POST(request: NextRequest) {
     };
 
     return NextResponse.json(result);
-  } catch (error) {
+  } catch (error: unknown) {
     logger.error("[policy-coverage] Error:", error);
     return NextResponse.json({ error: "Failed to analyze policy coverage" }, { status: 500 });
   }
-}
+});

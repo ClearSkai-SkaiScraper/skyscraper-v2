@@ -25,7 +25,7 @@ function SuccessContent() {
   useEffect(() => {
     if (params.sessionId) {
       // Verify the session and track the success
-      verifySession(params.sessionId);
+      void verifySession(params.sessionId);
     } else {
       setLoading(false);
     }

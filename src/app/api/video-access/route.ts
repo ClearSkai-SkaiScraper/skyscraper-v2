@@ -7,23 +7,17 @@
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
-import { auth } from "@clerk/nextjs/server";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
+import { withAuth } from "@/lib/auth/withAuth";
 import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 import { canUseRealVideo, getVideoAccessMessage } from "@/lib/video/access";
 
-export async function GET() {
+export const GET = withAuth(async (req: NextRequest, { orgId }) => {
   try {
-    const { userId, orgId } = await auth();
-
-    if (!userId || !orgId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
     const Org = await prisma.org.findUnique({
-      where: { clerkOrgId: orgId },
+      where: { id: orgId },
       select: {
         videoEnabled: true,
         videoPlanTier: true,
@@ -35,7 +29,6 @@ export async function GET() {
     }
 
     const hasRealVideo = canUseRealVideo(Org.videoPlanTier);
-
     const message = getVideoAccessMessage(Org.videoPlanTier);
 
     return NextResponse.json({
@@ -48,4 +41,4 @@ export async function GET() {
     logger.error("[Video Access API] Error:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
-}
+});

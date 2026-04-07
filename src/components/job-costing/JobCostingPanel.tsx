@@ -43,7 +43,7 @@ export function JobCostingPanel({ jobId }: JobCostingPanelProps) {
   });
 
   useEffect(() => {
-    fetchJobCost();
+    void fetchJobCost();
   }, [jobId]);
 
   const fetchJobCost = async () => {

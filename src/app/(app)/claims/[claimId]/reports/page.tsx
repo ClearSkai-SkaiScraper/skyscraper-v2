@@ -29,7 +29,7 @@ export default function ClaimReportsPage({ params }: { params: { claimId: string
   const [error, setError] = useState("");
 
   useEffect(() => {
-    fetchReports();
+    void fetchReports();
   }, [params.claimId]);
 
   async function fetchReports() {
@@ -59,7 +59,7 @@ export default function ClaimReportsPage({ params }: { params: { claimId: string
       if (!res.ok) throw new Error("Failed to delete report");
 
       // Refresh list
-      fetchReports();
+      void fetchReports();
     } catch (err) {
       alert(`Error: ${err instanceof Error ? err.message : "Failed to delete report"}`);
     }

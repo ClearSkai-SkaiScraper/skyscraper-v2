@@ -6,10 +6,10 @@
 // Returns: PDF blob
 // ============================================================================
 
-import { auth } from "@clerk/nextjs/server";
 import * as Sentry from "@sentry/nextjs";
 import { NextRequest, NextResponse } from "next/server";
 
+import { withAuth } from "@/lib/auth/withAuth";
 import { logger } from "@/lib/logger";
 import { exportToPdf, isLibreOfficeAvailable } from "@/lib/pdf/hybridExport";
 import { checkRateLimit } from "@/lib/rate-limit";
@@ -17,14 +17,8 @@ import { checkRateLimit } from "@/lib/rate-limit";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-export async function POST(req: NextRequest) {
+export const POST = withAuth(async (req: NextRequest, { userId }) => {
   try {
-    // Auth check
-    const { userId } = await auth();
-    if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
     // B-24: Rate limit PDF exports (CPU-intensive)
     const rl = await checkRateLimit(userId, "API");
     if (!rl.success) {
@@ -94,7 +88,7 @@ export async function POST(req: NextRequest) {
     });
     return NextResponse.json({ error: "PDF export failed" }, { status: 500 });
   }
-}
+});
 
 /**
  * GET endpoint to check PDF export capabilities

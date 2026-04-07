@@ -85,7 +85,7 @@ export function ClaimsSidebar({ claimId, claim, onFieldUpdate }: ClaimsSidebarPr
   }, [claimId]);
 
   useEffect(() => {
-    fetchClient();
+    void fetchClient();
   }, [fetchClient]);
 
   // Re-fetch client when the page regains focus (e.g. after connecting a client)

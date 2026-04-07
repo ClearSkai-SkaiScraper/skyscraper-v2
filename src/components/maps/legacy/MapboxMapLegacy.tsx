@@ -81,6 +81,55 @@ export default function MapboxMap({ properties }: MapboxMapProps) {
     };
   }, []);
 
+  // Add markers when map loads
+  useEffect(() => {
+    if (!map.current || !mapLoaded || properties.length === 0) return;
+
+    // Clear existing markers
+    const existingMarkers = document.querySelectorAll(".mapboxgl-marker");
+    existingMarkers.forEach((marker) => marker.remove());
+
+    // Add new markers
+    properties.forEach((property) => {
+      const markerColor =
+        property.damage > 70 ? "#ef4444" : property.damage > 40 ? "#eab308" : "#22c55e";
+
+      const el = document.createElement("div");
+      el.className = "custom-marker";
+      el.style.width = "32px";
+      el.style.height = "32px";
+      el.style.borderRadius = "50%";
+      el.style.backgroundColor = markerColor;
+      el.style.border = "3px solid white";
+      el.style.boxShadow = "0 2px 8px rgba(0,0,0,0.3)";
+      el.style.cursor = "pointer";
+
+      const popup = new mapboxgl.Popup({ offset: 25 }).setHTML(
+        `
+          <div style="padding: 8px;">
+            <strong style="font-size: 14px;">${property.address}</strong>
+            <p style="margin: 4px 0; font-size: 12px;">Damage: ${property.damage}%</p>
+            <span style="font-size: 11px; color: #666;">${property.status}</span>
+          </div>
+        `
+      );
+
+      new mapboxgl.Marker(el)
+        .setLngLat([property.lon, property.lat])
+        .setPopup(popup)
+        .addTo(map.current!);
+    });
+
+    // Fit map to show all markers
+    if (properties.length > 0) {
+      const bounds = new mapboxgl.LngLatBounds();
+      properties.forEach((property) => {
+        bounds.extend([property.lon, property.lat]);
+      });
+      map.current.fitBounds(bounds, { padding: 50 });
+    }
+  }, [mapLoaded, properties]);
+
   // Render error state with graceful fallback
   if (error) {
     return (
@@ -149,55 +198,6 @@ export default function MapboxMap({ properties }: MapboxMapProps) {
       </div>
     );
   }
-
-  // Add markers when map loads
-  useEffect(() => {
-    if (!map.current || !mapLoaded || properties.length === 0) return;
-
-    // Clear existing markers
-    const existingMarkers = document.querySelectorAll(".mapboxgl-marker");
-    existingMarkers.forEach((marker) => marker.remove());
-
-    // Add new markers
-    properties.forEach((property) => {
-      const markerColor =
-        property.damage > 70 ? "#ef4444" : property.damage > 40 ? "#eab308" : "#22c55e";
-
-      const el = document.createElement("div");
-      el.className = "custom-marker";
-      el.style.width = "32px";
-      el.style.height = "32px";
-      el.style.borderRadius = "50%";
-      el.style.backgroundColor = markerColor;
-      el.style.border = "3px solid white";
-      el.style.boxShadow = "0 2px 8px rgba(0,0,0,0.3)";
-      el.style.cursor = "pointer";
-
-      const popup = new mapboxgl.Popup({ offset: 25 }).setHTML(
-        `
-          <div style="padding: 8px;">
-            <strong style="font-size: 14px;">${property.address}</strong>
-            <p style="margin: 4px 0; font-size: 12px;">Damage: ${property.damage}%</p>
-            <span style="font-size: 11px; color: #666;">${property.status}</span>
-          </div>
-        `
-      );
-
-      new mapboxgl.Marker(el)
-        .setLngLat([property.lon, property.lat])
-        .setPopup(popup)
-        .addTo(map.current!);
-    });
-
-    // Fit map to show all markers
-    if (properties.length > 0) {
-      const bounds = new mapboxgl.LngLatBounds();
-      properties.forEach((property) => {
-        bounds.extend([property.lon, property.lat]);
-      });
-      map.current.fitBounds(bounds, { padding: 50 });
-    }
-  }, [mapLoaded, properties]);
 
   if (error) {
     return (

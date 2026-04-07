@@ -5,30 +5,21 @@
  * Generates supplement document with delta analysis as GeneratedDocument
  */
 
-import { auth } from "@clerk/nextjs/server";
 import { renderToStream } from "@react-pdf/renderer";
 import { NextRequest, NextResponse } from "next/server";
 
 import { generateSupplement } from "@/lib/ai/generateSupplement";
+import { withAuth } from "@/lib/auth/withAuth";
 import { db } from "@/lib/db";
 import { computeDelta, computeTotalDelta, ScopeLineItem } from "@/lib/delta/computeDelta";
 import { createGeneratedDocument, updateDocumentStatus } from "@/lib/documents/manager";
 import { logger } from "@/lib/logger";
-import { getActiveOrg } from "@/lib/org/getActiveOrg";
 import { SupplementPDFDocument } from "@/lib/pdf/supplementRenderer";
 import { getOrgBranding } from "@/lib/pdf/utils";
 
-export async function POST(req: NextRequest, context: { params: Promise<{ claimId: string }> }) {
+export const POST = withAuth(async (req: NextRequest, { orgId, userId }, routeParams) => {
   try {
-    const { userId } = await auth();
-    if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    const activeOrg = await getActiveOrg();
-    const orgId = activeOrg.id;
-
-    const { claimId } = await context.params;
+    const { claimId } = await routeParams.params;
     const body = await req.json();
     const {
       adjusterScope,
@@ -120,7 +111,7 @@ export async function POST(req: NextRequest, context: { params: Promise<{ claimI
     logger.error("Supplement generation error:", error);
     return NextResponse.json({ error: "Failed to generate supplement" }, { status: 500 });
   }
-}
+});
 
 /**
  * Async supplement generation worker

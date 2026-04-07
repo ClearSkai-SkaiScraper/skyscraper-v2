@@ -72,7 +72,7 @@ export function useTypingIndicator(
     const currentEntries = entriesRef.current;
     return () => {
       clearInterval(cleanupInterval);
-      supabase.removeChannel(channel);
+      void supabase.removeChannel(channel);
       channelRef.current = null;
       currentEntries.clear();
       setTypingUsers([]);
@@ -105,7 +105,7 @@ export function useTypingIndicator(
     // Clear any pending stop-timer so it doesn't fire prematurely
     if (debounceRef.current) clearTimeout(debounceRef.current);
 
-    channelRef.current.send({
+    void channelRef.current.send({
       type: "broadcast",
       event: "typing",
       payload: { userId: currentUserId, ts: Date.now() } satisfies TypingEntry,

@@ -2,24 +2,20 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
-import { auth } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
 
+import { withAuth } from "@/lib/auth/withAuth";
 import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 
-export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
-  const { userId } = await auth();
-  if (!userId) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
-
+export const GET = withAuth(async (req: NextRequest, { orgId, userId }, routeParams) => {
+  const { id } = await routeParams.params;
   try {
     // Verify user has access to this company via membership
     const membership = await prisma.tradesCompanyMember.findFirst({
       where: {
         userId,
-        companyId: params.id,
+        companyId: id,
       },
     });
 
@@ -28,7 +24,7 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
     }
 
     const trade = await prisma.tradesCompany.findUnique({
-      where: { id: params.id },
+      where: { id },
     });
 
     if (!trade) {
@@ -40,20 +36,16 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
     logger.error("[TRADE_GET]", error);
     return NextResponse.json({ error: "Failed to fetch trade" }, { status: 500 });
   }
-}
+});
 
-export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
-  const { userId } = await auth();
-  if (!userId) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
-
+export const PATCH = withAuth(async (req: NextRequest, { orgId, userId }, routeParams) => {
+  const { id } = await routeParams.params;
   try {
     // Verify user has edit access to this company
     const membership = await prisma.tradesCompanyMember.findFirst({
       where: {
         userId,
-        companyId: params.id,
+        companyId: id,
         OR: [{ isOwner: true }, { canEditCompany: true }],
       },
     });
@@ -70,7 +62,7 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
     }
 
     const trade = await prisma.tradesCompany.update({
-      where: { id: params.id },
+      where: { id },
       data: {
         name,
         licenseNumber,
@@ -85,20 +77,16 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
     logger.error("[TRADE_UPDATE]", error);
     return NextResponse.json({ error: "Failed to update trade" }, { status: 500 });
   }
-}
+});
 
-export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
-  const { userId } = await auth();
-  if (!userId) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
-
+export const DELETE = withAuth(async (req: NextRequest, { orgId, userId }, routeParams) => {
+  const { id } = await routeParams.params;
   try {
     // Verify user is owner of this company
     const membership = await prisma.tradesCompanyMember.findFirst({
       where: {
         userId,
-        companyId: params.id,
+        companyId: id,
         isOwner: true,
       },
     });
@@ -110,16 +98,16 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
     // SAFETY: Detach all members FIRST so they aren't lost
     // (Even with SET NULL FK, be explicit to prevent data loss)
     const detached = await prisma.tradesCompanyMember.updateMany({
-      where: { companyId: params.id },
+      where: { companyId: id },
       data: { companyId: null },
     });
 
     logger.info(
-      `[TRADE_DELETE] ⚠️ Detached ${detached.count} members from company ${params.id} before deletion`
+      `[TRADE_DELETE] \u26a0\ufe0f Detached ${detached.count} members from company ${id} before deletion`
     );
 
     await prisma.tradesCompany.delete({
-      where: { id: params.id },
+      where: { id },
     });
 
     return NextResponse.json({ success: true });
@@ -127,4 +115,4 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
     logger.error("[TRADE_DELETE]", error);
     return NextResponse.json({ error: "Failed to delete trade" }, { status: 500 });
   }
-}
+});

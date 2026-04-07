@@ -73,7 +73,7 @@ export function TradesSearchBar() {
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setQuery(value);
-    search(value);
+    void search(value);
   };
 
   const clearSearch = () => {

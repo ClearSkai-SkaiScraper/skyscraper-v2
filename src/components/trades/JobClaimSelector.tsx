@@ -112,7 +112,7 @@ export function JobClaimSelector({
       setLoading(false);
     }
 
-    fetchAll();
+    void fetchAll();
   }, [claimsOnly]);
 
   function mapJobCategory(cat?: string): "retail" | "financed" | "repair" | "lead" {

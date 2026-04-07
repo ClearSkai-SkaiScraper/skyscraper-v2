@@ -56,7 +56,7 @@ export default function OnSiteSigningPage() {
       return;
     }
 
-    loadEnvelope();
+    void loadEnvelope();
   }, [envelopeId]);
 
   async function loadEnvelope() {

@@ -26,6 +26,12 @@ const envSchema = z.object({
   NODE_ENV: z.enum(["development", "production", "test"]).default("development"),
   DATABASE_URL: z.string().url().optional(), // Optional during build
   DIRECT_URL: z.string().url().optional(),
+  DIRECT_DATABASE_URL: z.string().url().optional(),
+  APP_URL: z.string().url().optional(),
+  NEXT_PUBLIC_APP_URL: z.string().url().optional(),
+  NEXT_PUBLIC_SITE_URL: z.string().url().optional(),
+  PORT: z.coerce.number().default(3000),
+  ENVIRONMENT: z.string().optional(),
 
   // ── Supabase ──
   SUPABASE_URL: z.string().url().optional(),
@@ -33,27 +39,41 @@ const envSchema = z.object({
   SUPABASE_SERVICE_ROLE_KEY: z.string().min(1).optional(),
   SUPABASE_ANON_KEY: z.string().min(1).optional(),
   NEXT_PUBLIC_SUPABASE_ANON_KEY: z.string().min(1).optional(),
+  SUPABASE_STORAGE_BUCKET_BRANDING: z.string().optional(),
+  SUPABASE_STORAGE_BUCKET_EXPORTS: z.string().optional(),
+  SUPABASE_STORAGE_BUCKET_TEMPLATES: z.string().optional(),
+  SUPABASE_STORAGE_BUCKET_UPLOADS: z.string().optional(),
+  STORAGE_BUCKET: z.string().optional(),
+  BRANDING_BUCKET: z.string().optional(),
 
   // ── Clerk Auth ──
   CLERK_SECRET_KEY: z.string().min(1).optional(),
   NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: z.string().min(1).optional(),
+  CLERK_SIGN_IN_URL: z.string().optional(),
+  CLERK_SIGN_UP_URL: z.string().optional(),
 
   // ── OpenAI ──
   OPENAI_API_KEY: z.string().min(1).optional(),
+
+  // ── Replicate (AI Vision) ──
+  REPLICATE_API_TOKEN: z.string().min(1).optional(),
 
   // ── Stripe ──
   STRIPE_SECRET_KEY: z.string().min(1).optional(),
   STRIPE_WEBHOOK_SECRET: z.string().min(1).optional(),
   NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: z.string().min(1).optional(),
+  NEXT_PUBLIC_SUBSCRIPTIONS_OPEN_AT: z.string().optional(),
 
   // ── Weather APIs ──
   WEATHERSTACK_API_KEY: z.string().min(1).optional(),
   VISUAL_CROSSING_API_KEY: z.string().min(1).optional(),
+  VISUALCROSSING_API_KEY: z.string().min(1).optional(), // Alias
   TOMORROW_IO_API_KEY: z.string().min(1).optional(),
 
   // ── Mapbox ──
   MAPBOX_ACCESS_TOKEN: z.string().min(1).optional(),
   NEXT_PUBLIC_MAPBOX_TOKEN: z.string().min(1).optional(),
+  NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN: z.string().min(1).optional(),
 
   // ── Twilio ──
   TWILIO_ACCOUNT_SID: z.string().min(1).optional(),
@@ -62,6 +82,25 @@ const envSchema = z.object({
 
   // ── Resend (Email) ──
   RESEND_API_KEY: z.string().min(1).optional(),
+  EMAIL_FROM: z.string().email().optional(),
+
+  // ── Firebase ──
+  FIREBASE_PROJECT_ID: z.string().optional(),
+  FIREBASE_CLIENT_EMAIL: z.string().email().optional(),
+  FIREBASE_PRIVATE_KEY: z.string().optional(),
+  FIREBASE_STORAGE_BUCKET: z.string().optional(),
+  NEXT_PUBLIC_FIREBASE_API_KEY: z.string().optional(),
+  NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN: z.string().optional(),
+  NEXT_PUBLIC_FIREBASE_PROJECT_ID: z.string().optional(),
+  NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET: z.string().optional(),
+  NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID: z.string().optional(),
+  NEXT_PUBLIC_FIREBASE_APP_ID: z.string().optional(),
+  NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID: z.string().optional(),
+
+  // ── UploadThing ──
+  UPLOADTHING_SECRET: z.string().optional(),
+  UPLOADTHING_APP_ID: z.string().optional(),
+  UPLOADTHING_TOKEN: z.string().optional(),
 
   // ── Sentry ──
   SENTRY_DSN: z.string().url().optional(),
@@ -75,10 +114,34 @@ const envSchema = z.object({
   ENABLE_AI_FEATURES: z.coerce.boolean().default(true),
   ENABLE_WEATHER_REPORTS: z.coerce.boolean().default(true),
   ENABLE_CLIENT_PORTAL: z.coerce.boolean().default(true),
+  VIDEO_REAL_ENABLED: z.coerce.boolean().default(false),
+
+  // ── AWS / S3 ──
+  AWS_ACCESS_KEY_ID: z.string().min(1).optional(),
+  AWS_SECRET_ACCESS_KEY: z.string().min(1).optional(),
+  AWS_REGION: z.string().default("us-east-1"),
+  S3_ACCESS_KEY_ID: z.string().optional(),
+  S3_SECRET_ACCESS_KEY: z.string().optional(),
+  S3_BUCKET: z.string().min(1).optional(),
+  S3_ENDPOINT: z.string().url().optional(),
+  S3_REGION: z.string().optional(),
+  S3_FORCE_PATH_STYLE: z.coerce.boolean().default(false),
+  S3_PRESIGN_EXPIRES: z.coerce.number().default(3600),
+  REPORTS_BUCKET: z.string().min(1).optional(),
+  INTERNAL_RENDER_BASE: z.string().url().optional(),
+
+  // ── PDF Generation ──
+  PDF_COST_CENTS: z.coerce.number().default(10),
+  PDF_DEV_KEY: z.string().optional(),
+
+  // ── Testing / Dev ──
+  TEST_ORG: z.string().optional(),
+  INSPECTION_NOTES: z.string().optional(),
 
   // ── Build Phase ──
   BUILD_PHASE: z.coerce.boolean().default(false),
   VERCEL: z.coerce.boolean().default(false),
+  VERCEL_OIDC_TOKEN: z.string().optional(),
 });
 
 // ─────────────────────────────────────────────────────────────────────────────

@@ -57,7 +57,7 @@ function LegacyVendorsPage() {
   const [showCategoryDropdown, setShowCategoryDropdown] = useState(false);
 
   useEffect(() => {
-    fetchVendors();
+    void fetchVendors();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedCategory]);
 

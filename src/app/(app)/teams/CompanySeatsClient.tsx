@@ -173,7 +173,7 @@ export default function CompanySeatsClient({ members, orgId }: CompanySeatsClien
       setSuccess(
         `Subscription created! ${seats} seat${seats > 1 ? "s" : ""} \u00d7 $${PRICE_PER_SEAT}/mo = $${seats * PRICE_PER_SEAT}/mo`
       );
-      mutate("/api/billing/seats");
+      void mutate("/api/billing/seats");
       setSeatInput(null);
     } catch (err) {
       setError(err.message || "Failed to create subscription.");
@@ -204,7 +204,7 @@ export default function CompanySeatsClient({ members, orgId }: CompanySeatsClien
       setSuccess(
         `Seats updated: ${currentSeats} \u2192 ${seatInput}. ${seatInput > currentSeats ? "Prorated charge applied." : "Prorated credit applied."}`
       );
-      mutate("/api/billing/seats");
+      void mutate("/api/billing/seats");
       setSeatInput(null);
     } catch (err) {
       setError(err.message || "Failed to update seats.");
@@ -256,7 +256,7 @@ export default function CompanySeatsClient({ members, orgId }: CompanySeatsClien
               ? {
                   label: "Copy Link",
                   onClick: () => {
-                    navigator.clipboard.writeText(data.inviteLink);
+                    void navigator.clipboard.writeText(data.inviteLink);
                     toast.success("Link copied!");
                   },
                 }
@@ -313,7 +313,7 @@ export default function CompanySeatsClient({ members, orgId }: CompanySeatsClien
               ? {
                   label: "Copy Link",
                   onClick: () => {
-                    navigator.clipboard.writeText(data.inviteLink);
+                    void navigator.clipboard.writeText(data.inviteLink);
                     toast.success("Link copied!");
                   },
                 }

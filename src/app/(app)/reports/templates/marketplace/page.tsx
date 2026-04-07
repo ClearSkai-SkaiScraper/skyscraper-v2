@@ -203,7 +203,7 @@ export default function MarketplacePage() {
         setLoading(false);
       }
     }
-    fetchTemplates();
+    void fetchTemplates();
   }, []);
 
   // ── Filtering ──────────────────────────────────────────────

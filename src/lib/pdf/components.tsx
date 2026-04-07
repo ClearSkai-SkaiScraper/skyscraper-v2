@@ -5,6 +5,7 @@
  * Use these instead of raw React-PDF components for consistency.
  */
 
+/* eslint-disable jsx-a11y/alt-text -- react-pdf Image component doesn't support alt prop */
 import { Image, Page, Text, View } from "@react-pdf/renderer";
 import { ReactNode } from "react";
 
@@ -338,7 +339,7 @@ interface TableColumn {
 
 interface TableProps {
   columns: TableColumn[];
-  data: Record<string, any>[];
+  data: Record<string, string | number | null | undefined>[];
   striped?: boolean;
 }
 

@@ -130,7 +130,7 @@ export function UnifiedClaimIntelligencePanel({
   }, [claimId]);
 
   useEffect(() => {
-    fetchAll();
+    void fetchAll();
   }, [fetchAll]);
 
   if (loading) {

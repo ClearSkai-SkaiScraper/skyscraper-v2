@@ -174,7 +174,7 @@ export function useAIStream(options: UseAIStreamOptions = {}): UseAIStreamReturn
           
           setTimeout(() => {
             if (!abortedRef.current) {
-              startStream(url, body);
+              void startStream(url, body);
             }
           }, delay);
         } else {

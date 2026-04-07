@@ -99,7 +99,7 @@ export function useOrgContext(): UseOrgContextResult {
   }, [authLoaded, isSignedIn]);
 
   useEffect(() => {
-    fetchOrg();
+    void fetchOrg();
   }, [fetchOrg]);
 
   return {

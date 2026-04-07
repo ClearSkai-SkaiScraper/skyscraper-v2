@@ -9,11 +9,11 @@
  * Phantom stubs: tradesCompanyEmployee, tradesJoinRequest, tradesSeatInvite.
  */
 
-import { auth } from "@clerk/nextjs/server";
 import crypto from "crypto";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 
+import { withAuth } from "@/lib/auth/withAuth";
 import { logger } from "@/lib/observability/logger";
 import prisma from "@/lib/prisma";
 
@@ -62,13 +62,8 @@ const ActionSchema = z.discriminatedUnion("action", [
 
 type ActionInput = z.infer<typeof ActionSchema>;
 
-export async function POST(req: NextRequest) {
+export const POST = withAuth(async (req: NextRequest, { userId }) => {
   try {
-    const { userId } = await auth();
-    if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
     const body = await req.json();
     const parsed = ActionSchema.safeParse(body);
 
@@ -126,7 +121,7 @@ export async function POST(req: NextRequest) {
     logger.error("[Trades Company Actions] Error:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
-}
+});
 
 async function handleUpdateCover(
   companyId: string,

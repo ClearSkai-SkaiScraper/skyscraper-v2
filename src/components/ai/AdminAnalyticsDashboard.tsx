@@ -62,7 +62,7 @@ export function AdminAnalyticsDashboard({
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    fetchAnalytics();
+    void fetchAnalytics();
   }, [orgId, timeRange]);
 
   const fetchAnalytics = async () => {

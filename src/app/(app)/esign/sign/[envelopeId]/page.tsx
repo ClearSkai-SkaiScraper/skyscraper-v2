@@ -48,7 +48,7 @@ function RemoteSigningContent() {
       setLoading(false);
       return;
     }
-    loadEnvelope();
+    void loadEnvelope();
   }, [envelopeId, token]);
 
   async function loadEnvelope() {

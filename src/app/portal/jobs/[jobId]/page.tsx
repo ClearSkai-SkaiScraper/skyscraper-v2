@@ -118,7 +118,7 @@ export default function JobDetailPage() {
 
   useEffect(() => {
     if (jobId) {
-      loadJobData();
+      void loadJobData();
     }
   }, [jobId, loadJobData]);
 

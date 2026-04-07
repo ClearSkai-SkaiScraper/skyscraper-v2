@@ -1,8 +1,8 @@
 export const dynamic = "force-dynamic";
 
-import { auth } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
 
+import { withAuth } from "@/lib/auth/withAuth";
 import { logger } from "@/lib/logger";
 
 import prisma from "@/lib/prisma";
@@ -13,13 +13,8 @@ import prisma from "@/lib/prisma";
  * Query params:
  *   type: "claims" | "team" | "summary"
  */
-export async function GET(req: NextRequest) {
+export const GET = withAuth(async (req: NextRequest, { orgId }) => {
   try {
-    const { userId, orgId } = await auth();
-    if (!userId || !orgId) {
-      return NextResponse.json({ ok: false, error: "Unauthorized" }, { status: 401 });
-    }
-
     const type = req.nextUrl.searchParams.get("type") || "summary";
     const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
 
@@ -97,4 +92,4 @@ export async function GET(req: NextRequest) {
     logger.error("[ANALYTICS_EXPORT_FAILED]", { error });
     return NextResponse.json({ ok: false, error: "Failed to export analytics" }, { status: 500 });
   }
-}
+});

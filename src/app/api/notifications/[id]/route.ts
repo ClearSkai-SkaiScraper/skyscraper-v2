@@ -1,8 +1,8 @@
 export const dynamic = "force-dynamic";
 
-import { auth } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
 
+import { withAuth } from "@/lib/auth/withAuth";
 import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 
@@ -11,20 +11,11 @@ type RouteContext = {
 };
 
 // DELETE /api/notifications/:id - Delete a notification
-export async function DELETE(req: NextRequest, context: RouteContext) {
+export const DELETE = withAuth(async (req: NextRequest, { userId, orgId }, routeParams) => {
   try {
-    const { userId, orgId } = await auth();
-    if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-    // S1-04: orgId is MANDATORY — no conditional bypass
-    if (!orgId) {
-      return NextResponse.json({ error: "Organization context required" }, { status: 403 });
-    }
+    const { id } = await routeParams.params;
 
-    const { id } = await context.params;
-
-    // B-14 + S1-04: Verify ownership with BOTH userId AND orgId (mandatory)
+    // Verify ownership with BOTH userId AND orgId (mandatory)
     const existing = await prisma.notification.findFirst({
       where: { id, userId, orgId },
       select: { id: true },
@@ -44,4 +35,4 @@ export async function DELETE(req: NextRequest, context: RouteContext) {
     logger.error("Error deleting notification:", error);
     return NextResponse.json({ error: "Failed to delete notification" }, { status: 500 });
   }
-}
+});

@@ -69,11 +69,13 @@ export default function NewHoaNoticePage() {
         <Button variant="ghost" size="icon" onClick={() => router.back()}>
           <ArrowLeft className="h-5 w-5" />
         </Button>
-        <PageHero
-          section="jobs"
-          title="Create HOA Notice Pack"
-          subtitle="Generate community storm intelligence package"
-        />
+        <div className="flex-1">
+          <PageHero
+            section="jobs"
+            title="Create HOA Notice Pack"
+            subtitle="Generate community storm intelligence package"
+          />
+        </div>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">

@@ -1,11 +1,10 @@
 export const dynamic = "force-dynamic";
 
-import { auth } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 
+import { withAuth } from "@/lib/auth/withAuth";
 import { logger } from "@/lib/logger";
-
 import prisma from "@/lib/prisma";
 import { checkRateLimit } from "@/lib/rate-limit";
 
@@ -26,13 +25,8 @@ const bugReportSchema = z.object({
 });
 
 /** POST /api/support/bug-report — Create a bug report / support ticket */
-export async function POST(req: NextRequest) {
+export const POST = withAuth(async (req: NextRequest, { userId, orgId }) => {
   try {
-    const { userId, orgId } = await auth();
-    if (!userId) {
-      return NextResponse.json({ ok: false, error: "Unauthorized" }, { status: 401 });
-    }
-
     const rl = await checkRateLimit(userId, "PUBLIC");
     if (!rl.success) {
       return NextResponse.json({ ok: false, error: "Too many requests" }, { status: 429 });
@@ -53,7 +47,7 @@ export async function POST(req: NextRequest) {
       data: {
         id: `ticket-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`,
         userId,
-        orgId: orgId || "unknown",
+        orgId,
         type: "support_ticket",
         title: `Support: ${type} (${severity})`,
         userName: "User",
@@ -76,4 +70,4 @@ export async function POST(req: NextRequest) {
     logger.error("[SUPPORT_TICKET_FAILED]", { error });
     return NextResponse.json({ ok: false, error: "Failed to create ticket" }, { status: 500 });
   }
-}
+});

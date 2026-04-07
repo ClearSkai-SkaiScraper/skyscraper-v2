@@ -186,7 +186,7 @@ export default function ClaimsWizard({
       }
     };
 
-    checkForDraft();
+    void checkForDraft();
   }, [user?.id, resumedReportId]);
 
   /**

@@ -271,7 +271,7 @@ export default function MigrationWizardPage() {
       setStep("import");
 
       // Start polling for status
-      pollMigrationStatus(data.job.jobId);
+      void pollMigrationStatus(data.job.jobId);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Network error");
     } finally {
@@ -302,7 +302,7 @@ export default function MigrationWizardPage() {
       }
     };
 
-    poll();
+    void poll();
   }, []);
 
   // ─── Control Actions ─────────────────────────────────────────────────────
@@ -314,7 +314,7 @@ export default function MigrationWizardPage() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ action: "pause" }),
     });
-    pollMigrationStatus(migrationStatus.jobId);
+    void pollMigrationStatus(migrationStatus.jobId);
   };
 
   const handleResume = async () => {
@@ -324,7 +324,7 @@ export default function MigrationWizardPage() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ action: "resume" }),
     });
-    pollMigrationStatus(migrationStatus.jobId);
+    void pollMigrationStatus(migrationStatus.jobId);
   };
 
   const handleCancel = async () => {
@@ -334,7 +334,7 @@ export default function MigrationWizardPage() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ action: "cancel" }),
     });
-    pollMigrationStatus(migrationStatus.jobId);
+    void pollMigrationStatus(migrationStatus.jobId);
   };
 
   const handleRollback = async () => {

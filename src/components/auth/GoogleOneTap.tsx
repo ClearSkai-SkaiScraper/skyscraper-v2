@@ -15,7 +15,7 @@ export default function GoogleOneTap() {
 
   useEffect(() => {
     // Check if user is already authenticated
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    void supabase.auth.getSession().then(({ data: { session } }) => {
       setIsAuthenticated(!!session);
     });
 

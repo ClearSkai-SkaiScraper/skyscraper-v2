@@ -228,7 +228,7 @@ export default function LeadCard({ lead, subscription }: LeadCardProps) {
               </button>
               <button
                 onClick={() => {
-                  handleClaim();
+                  void handleClaim();
                   setShowPaymentModal(false);
                 }}
                 disabled={claiming}

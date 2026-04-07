@@ -53,7 +53,7 @@ export default function StormImpactPanel({ leadId }: { leadId: string }) {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    fetchStormReport();
+    void fetchStormReport();
   }, [leadId]);
 
   const fetchStormReport = async () => {
@@ -124,7 +124,7 @@ export default function StormImpactPanel({ leadId }: { leadId: string }) {
 
   const copyPublicLink = () => {
     if (stormReport?.publicUrl) {
-      navigator.clipboard.writeText(stormReport.publicUrl);
+      void navigator.clipboard.writeText(stormReport.publicUrl);
       alert("Public link copied to clipboard!");
     }
   };

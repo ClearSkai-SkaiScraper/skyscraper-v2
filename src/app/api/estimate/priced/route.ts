@@ -13,7 +13,6 @@ export const dynamic = "force-dynamic";
  * - O&P
  */
 
-import { auth } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 
@@ -24,6 +23,7 @@ import {
   parseScope,
 } from "@/lib/ai/estimatorEngine";
 import { priceScope, PricingProfile } from "@/lib/ai/pricingEngine";
+import { withAuth } from "@/lib/auth/withAuth";
 import { AZ_DEFAULT_TAX_RATE } from "@/lib/constants/taxRates";
 import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
@@ -41,15 +41,9 @@ const EstimatePricedSchema = z.object({
   overheadProfit: z.number().min(0).max(1).optional(),
 });
 
-export async function POST(request: NextRequest) {
+export const POST = withAuth(async (req: NextRequest, { orgId, userId }) => {
   try {
-    // 1. Authenticate
-    const { userId } = await auth();
-    if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    // 2. Rate limiting
+    // 1. Rate limiting
     const rateLimit = await checkRateLimit(userId, "API");
     if (!rateLimit.success) {
       return NextResponse.json(
@@ -64,8 +58,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // 3. Parse and validate request
-    const body = await request.json();
+    // 2. Parse and validate request
+    const body = await req.json();
     const parsed = EstimatePricedSchema.safeParse(body);
 
     if (!parsed.success) {
@@ -81,19 +75,7 @@ export async function POST(request: NextRequest) {
     const { leadId, city, taxRate, wasteFactor, regionMultiplier, laborBurden, overheadProfit } =
       parsed.data;
 
-    // 3. Get user's org
-    const user = await prisma.users.findUnique({
-      where: { clerkUserId: userId },
-      select: { orgId: true },
-    });
-
-    if (!user?.orgId) {
-      return NextResponse.json({ error: "User organization not found" }, { status: 404 });
-    }
-
-    const orgId = user.orgId;
-
-    // 4. Load lead
+    // 3. Load lead
     const lead = await prisma.leads.findFirst({
       where: {
         id: leadId,
@@ -230,7 +212,7 @@ export async function POST(request: NextRequest) {
     await track("estimate_priced", {
       props: {
         leadId,
-        orgId: user.orgId,
+        orgId,
         city: city || "unknown",
         taxRate: pricingProfile.taxRate,
         totalAmount: totals.total,
@@ -272,4 +254,4 @@ export async function POST(request: NextRequest) {
       { status: 500 }
     );
   }
-}
+});

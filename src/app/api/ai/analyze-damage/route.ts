@@ -1,9 +1,8 @@
 export const dynamic = "force-dynamic";
 
-import { currentUser } from "@clerk/nextjs/server";
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 
-import { getTenant } from "@/lib/auth/tenant";
+import { withAuth } from "@/lib/auth/withAuth";
 import {
   requireActiveSubscription,
   SubscriptionRequiredError,
@@ -18,16 +17,10 @@ const RETRY_DELAY = 1000; // 1 second
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
-export async function POST(request: NextRequest) {
+export const POST = withAuth(async (request, { orgId, userId }) => {
   const startTime = Date.now();
 
   try {
-    const orgId = await getTenant();
-    if (!orgId) {
-      logger.error("[AI_VISION] ❌ Unauthorized - no orgId");
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
     // ── Billing guard ──
     try {
       await requireActiveSubscription(orgId);
@@ -42,8 +35,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Rate limiting check (10 requests per minute for AI endpoints)
-    const clerkUser = await currentUser();
-    const identifier = getRateLimitIdentifier(clerkUser?.id || null, request);
+    const identifier = getRateLimitIdentifier(userId, request);
     const allowed = await rateLimiters.ai.check(10, identifier);
 
     if (!allowed) {
@@ -182,17 +174,17 @@ export async function POST(request: NextRequest) {
     };
 
     return NextResponse.json(response);
-  } catch (error) {
+  } catch (error: unknown) {
     const processingTime = Date.now() - startTime;
     logger.error(`[AI_VISION] Error after ${processingTime}ms:`, error);
 
     return NextResponse.json(
       {
         error: "Failed to analyze image",
-        details: "Unknown error",
+        details: error instanceof Error ? error.message : "Unknown error",
         processingTimeMs: processingTime,
       },
       { status: 500 }
     );
   }
-}
+});

@@ -123,10 +123,6 @@ export default function IntelligenceWizardPage({ params }: PageProps) {
     }
   }, [isLoaded, isSignedIn, router]);
 
-  if (!isLoaded || !isSignedIn) {
-    return <div className="flex h-screen items-center justify-center">Loading...</div>;
-  }
-
   const claimId = params.id;
 
   const [step, setStep] = useState(1);
@@ -137,6 +133,30 @@ export default function IntelligenceWizardPage({ params }: PageProps) {
   const [generating, setGenerating] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [selectedTemplateId, setSelectedTemplateId] = useState<string | null>(null);
+  const [claimData, setClaimData] = useState<{
+    property_address?: string;
+    loss_type?: string;
+  } | null>(null);
+
+  // Fetch claim data for report generation
+  useEffect(() => {
+    async function fetchClaim() {
+      try {
+        const res = await fetch(`/api/claims/${claimId}`);
+        if (res.ok) {
+          const data = await res.json();
+          setClaimData(data);
+        }
+      } catch (e) {
+        logger.warn("Could not fetch claim data for intelligence page", e);
+      }
+    }
+    if (claimId) void fetchClaim();
+  }, [claimId]);
+
+  if (!isLoaded || !isSignedIn) {
+    return <div className="flex h-screen items-center justify-center">Loading...</div>;
+  }
 
   function handleReportTypeChange(type: ReportType) {
     setReportType(type);
@@ -176,9 +196,9 @@ export default function IntelligenceWizardPage({ params }: PageProps) {
           reportType,
           audience: audienceMap[reportType],
           addonPayload: features,
-          address: "Property Address", // TODO: Get from claim
+          address: claimData?.property_address || "Property Address",
           roofType: undefined,
-          lossType: undefined,
+          lossType: claimData?.loss_type || undefined,
         }),
       });
 

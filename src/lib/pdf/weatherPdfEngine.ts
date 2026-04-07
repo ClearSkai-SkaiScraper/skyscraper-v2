@@ -2,7 +2,7 @@
 // 🔥 WEATHER PDF ENGINE — CARRIER-GRADE, COURT-READY METEOROLOGICAL REPORTS
 // Built with pdf-lib for bulletproof, serverless-safe PDF generation
 
-import { PDFDocument, PDFFont,PDFPage, rgb, StandardFonts } from "pdf-lib";
+import { PDFDocument, PDFFont, PDFPage, rgb, StandardFonts } from "pdf-lib";
 
 interface WeatherPacket {
   title?: string;
@@ -187,7 +187,9 @@ export async function buildWeatherPDF(packet: WeatherPacket): Promise<Uint8Array
 
   // LITIGATION NOTES (PA packets)
   if (packet.litigationNotes && packet.litigationNotes.length > 0) {
-    const litigationText = packet.litigationNotes.map((note, i) => `${i + 1}. ${note}`).join("\n\n");
+    const litigationText = packet.litigationNotes
+      .map((note, i) => `${i + 1}. ${note}`)
+      .join("\n\n");
     ctx.y = drawSection(ctx, "Litigation Support Notes", litigationText);
   }
 
@@ -248,7 +250,7 @@ function drawHeader(ctx: PDFContext, packet: WeatherPacket): number {
  * Draw metadata (address, date, severity, confidence)
  */
 function drawMetadata(ctx: PDFContext, packet: WeatherPacket): number {
-  const { page, font, bold } = ctx;
+  const { page, font, bold: _bold } = ctx;
   let y = ctx.y - 20;
 
   const metadata: string[] = [];
@@ -424,7 +426,7 @@ function formatComponentAnalysis(components: WeatherPacket["componentAnalysis"])
  */
 function wrapText(text: string, width: number): string[] {
   if (!text) return [];
-  
+
   const words = text.split(" ");
   const lines: string[] = [];
   let line = "";
@@ -454,7 +456,7 @@ function wrapText(text: string, width: number): string[] {
       }
     }
   }
-  
+
   if (line.trim().length > 0) {
     lines.push(line.trim());
   }

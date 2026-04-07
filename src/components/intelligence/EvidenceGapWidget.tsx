@@ -124,7 +124,7 @@ export function EvidenceGapWidget({ claimId, compact = false, className }: Props
   }, [claimId]);
 
   useEffect(() => {
-    fetchGaps();
+    void fetchGaps();
   }, [fetchGaps]);
 
   /* Loading state */

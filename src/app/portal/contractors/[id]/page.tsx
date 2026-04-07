@@ -106,7 +106,7 @@ export default function ContractorProfilePage() {
     }
 
     if (contractorId) {
-      loadProfile();
+      void loadProfile();
     }
   }, [contractorId]);
 

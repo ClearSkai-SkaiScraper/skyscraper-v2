@@ -42,7 +42,7 @@ export default function ClaimDocumentsPage() {
   const [error, setError] = useState("");
 
   useEffect(() => {
-    if (claimId) fetchDocuments();
+    if (claimId) void fetchDocuments();
   }, [claimId]);
 
   async function fetchDocuments() {

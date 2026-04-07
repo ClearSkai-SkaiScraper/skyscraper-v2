@@ -72,7 +72,7 @@ export default function TableOfContentsPage() {
   }, [claimId]);
 
   useEffect(() => {
-    fetchStatuses();
+    void fetchStatuses();
   }, [fetchStatuses]);
 
   if (loading) {

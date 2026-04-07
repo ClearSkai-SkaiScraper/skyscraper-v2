@@ -46,7 +46,7 @@ export default function PropertyMap() {
         setLoading(false);
       }
     }
-    fetchMapData();
+    void fetchMapData();
   }, []);
   
   const handlePropertyClick = async (prop: MapProperty) => {

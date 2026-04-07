@@ -34,7 +34,7 @@ export default function TradesCompaniesPage() {
   const [selectedSpecialty, setSelectedSpecialty] = useState<string | null>(null);
 
   useEffect(() => {
-    fetchCompanies();
+    void fetchCompanies();
   }, [selectedSpecialty]);
 
   const fetchCompanies = async () => {

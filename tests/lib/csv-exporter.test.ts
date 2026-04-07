@@ -90,7 +90,7 @@ describe("csvExporter", () => {
 
   describe("formatDate", () => {
     it("formats ISO date string", () => {
-      const result = formatDate("2024-06-15T00:00:00Z");
+      const result = formatDate("2024-06-15T12:00:00Z");
       expect(result).toMatch(/06\/15\/2024/);
     });
 

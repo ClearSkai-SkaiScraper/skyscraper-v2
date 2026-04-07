@@ -184,7 +184,7 @@ export default function CommunityHubPage() {
         // Silently fall back to Clerk avatar
       }
     }
-    fetchProfileAvatar();
+    void fetchProfileAvatar();
   }, []);
 
   // Resolved avatar: prefer DB uploaded photo, fall back to Clerk
@@ -251,7 +251,7 @@ export default function CommunityHubPage() {
         setShowMentions(true);
         setMentionSearch(query);
         mentionAnchorRef.current = atIndex;
-        searchMentions(query);
+        void searchMentions(query);
         return;
       }
     }
@@ -366,14 +366,14 @@ export default function CommunityHubPage() {
 
   // Fetch data on mount
   useEffect(() => {
-    fetchAllData();
+    void fetchAllData();
   }, [fetchAllData]);
 
   // Refetch when trade filter changes
   useEffect(() => {
     if (!loading) {
-      fetchPosts();
-      fetchTrendingPros();
+      void fetchPosts();
+      void fetchTrendingPros();
     }
   }, [tradeFilter, loading, fetchPosts, fetchTrendingPros]);
 
@@ -404,7 +404,7 @@ export default function CommunityHubPage() {
   useEffect(() => {
     const timer = setTimeout(() => {
       if (newPostContent) {
-        checkContent(newPostContent);
+        void checkContent(newPostContent);
       }
     }, 500);
     return () => clearTimeout(timer);

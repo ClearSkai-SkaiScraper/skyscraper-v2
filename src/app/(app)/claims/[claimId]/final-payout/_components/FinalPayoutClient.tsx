@@ -359,7 +359,7 @@ export function FinalPayoutClient({ claim, orgId, userId }: FinalPayoutClientPro
       }
     };
 
-    fetchPayoutData();
+    void fetchPayoutData();
   }, [claim.id]);
 
   // Calculate totals

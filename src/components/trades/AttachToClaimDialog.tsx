@@ -54,7 +54,7 @@ export function AttachToClaimDialog({
   // Load existing claims when dialog opens
   useState(() => {
     if (open && mode === "existing" && claims.length === 0) {
-      loadClaims();
+      void loadClaims();
     }
   });
 

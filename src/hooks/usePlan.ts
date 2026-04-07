@@ -85,7 +85,7 @@ export function usePlan(): UsePlanReturn {
       }
     }
 
-    fetchPlan();
+    void fetchPlan();
     return () => {
       cancelled = true;
     };

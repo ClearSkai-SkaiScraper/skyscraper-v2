@@ -9,7 +9,7 @@ export default function useClientSubscription() {
 
   useEffect(() => {
     let mounted = true;
-    (async () => {
+    void (async () => {
       try {
         const {
           data: { user },

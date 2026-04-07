@@ -1,4 +1,5 @@
-import { Document, Image,Page, StyleSheet, Text, View } from "@react-pdf/renderer";
+/* eslint-disable jsx-a11y/alt-text -- react-pdf Image component doesn't support alt prop */
+import { Document, Image, Page, StyleSheet, Text, View } from "@react-pdf/renderer";
 import React from "react";
 
 // ============================================================================
@@ -102,7 +103,7 @@ export interface ContractorPacketPDFData {
   generatedAt: string;
   sectionContents: Array<{
     sectionKey: string;
-    content: any;
+    content: Record<string, unknown> | string | null;
   }>;
   orgName?: string;
   brandLogoUrl?: string;
@@ -132,7 +133,7 @@ export const ContractorPacketPDFDocument: React.FC<{
       .join(" ");
   };
 
-  const renderSectionContent = (content: any): string => {
+  const renderSectionContent = (content: Record<string, unknown> | string | null): string => {
     if (typeof content === "string") {
       return content;
     }

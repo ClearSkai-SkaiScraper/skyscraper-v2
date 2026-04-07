@@ -45,11 +45,11 @@ export default function MessagesClient({ userId, orgId }: MessagesClientProps) {
   }, [selectedThread]);
 
   useEffect(() => {
-    fetchThreads();
+    void fetchThreads();
 
     // Poll threads list every 8 seconds for new conversations
     pollThreadsRef.current = setInterval(() => {
-      fetchThreads(true);
+      void fetchThreads(true);
     }, 8000);
 
     return () => {
@@ -121,12 +121,12 @@ export default function MessagesClient({ userId, orgId }: MessagesClientProps) {
   };
 
   const handleSelectThread = (threadId: string) => {
-    fetchThread(threadId);
+    void fetchThread(threadId);
 
     // Start polling messages for the selected thread every 4 seconds
     if (pollMessagesRef.current) clearInterval(pollMessagesRef.current);
     pollMessagesRef.current = setInterval(() => {
-      fetchThread(threadId, true);
+      void fetchThread(threadId, true);
     }, 4000);
   };
 
@@ -134,8 +134,8 @@ export default function MessagesClient({ userId, orgId }: MessagesClientProps) {
     if (selectedThread) {
       // User just sent a message — scroll to bottom to see it
       isNearBottomRef.current = true;
-      fetchThread(selectedThread.id);
-      fetchThreads();
+      void fetchThread(selectedThread.id);
+      void fetchThreads();
     }
   };
 
@@ -356,7 +356,7 @@ export default function MessagesClient({ userId, orgId }: MessagesClientProps) {
         initialBody={draftPreset?.body}
         initialRecipientType={draftPreset?.recipientType}
         onSuccess={() => {
-          fetchThreads();
+          void fetchThreads();
         }}
       />
     </div>

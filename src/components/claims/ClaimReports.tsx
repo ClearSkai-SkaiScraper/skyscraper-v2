@@ -43,7 +43,7 @@ export function ClaimReports({ claimId }: ClaimReportsProps) {
       }
     }
 
-    fetchReports();
+    void fetchReports();
   }, [claimId]);
 
   const getReportIcon = (type: string) => {

@@ -1,35 +1,33 @@
 export const dynamic = "force-dynamic";
 
-import { auth } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
 
+import { withAuth } from "@/lib/auth/withAuth";
 import { logger } from "@/lib/logger";
-
 import prisma from "@/lib/prisma";
 
 /**
  * GET /api/pilot/stats — Aggregated pilot analytics
  * Returns activation rates, retention metrics, feature usage, feedback sentiment
+ *
+ * Session 9: Migrated from auth() → withAuth to get DB-backed orgId.
+ * Previously used `orgId || undefined` which removed the tenant filter
+ * entirely when orgId was null — cross-tenant data leak.
  */
-export async function GET(req: NextRequest) {
+const handleStats = withAuth(async (req: NextRequest, { orgId }) => {
   try {
-    const { userId, orgId } = await auth();
-    if (!userId) {
-      return NextResponse.json({ ok: false, error: "Unauthorized" }, { status: 401 });
-    }
-
     const now = new Date();
     const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
     const fourteenDaysAgo = new Date(now.getTime() - 14 * 24 * 60 * 60 * 1000);
     const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
 
-    // Parallel queries for efficiency
+    // Parallel queries for efficiency — orgId is ALWAYS set (DB-backed via withAuth)
     const [totalFeedback, recentFeedback, weeklyActiveEvents, activationEvents, featureEvents] =
       await Promise.all([
         // Total feedback count
         prisma.activities.count({
           where: {
-            orgId: orgId || undefined,
+            orgId,
             type: { in: ["pilot_feedback", "feedback_submitted"] },
           },
         }),
@@ -37,7 +35,7 @@ export async function GET(req: NextRequest) {
         // Recent feedback with ratings
         prisma.activities.findMany({
           where: {
-            orgId: orgId || undefined,
+            orgId,
             type: { in: ["pilot_feedback", "feedback_submitted"] },
           },
           orderBy: { createdAt: "desc" },
@@ -47,7 +45,7 @@ export async function GET(req: NextRequest) {
         // Weekly active events (logins, page views)
         prisma.activities.count({
           where: {
-            orgId: orgId || undefined,
+            orgId,
             createdAt: { gte: sevenDaysAgo },
           },
         }),
@@ -55,7 +53,7 @@ export async function GET(req: NextRequest) {
         // Activation milestone events
         prisma.activities.findMany({
           where: {
-            orgId: orgId || undefined,
+            orgId,
             type: { startsWith: "activation:" },
           },
         }),
@@ -64,7 +62,7 @@ export async function GET(req: NextRequest) {
         prisma.activities.groupBy({
           by: ["type"],
           where: {
-            orgId: orgId || undefined,
+            orgId,
             type: { startsWith: "feature:" },
             createdAt: { gte: thirtyDaysAgo },
           },
@@ -129,4 +127,6 @@ export async function GET(req: NextRequest) {
       { status: 500 }
     );
   }
-}
+});
+
+export const GET = handleStats;

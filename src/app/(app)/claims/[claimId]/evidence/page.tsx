@@ -18,6 +18,10 @@ import type { EvidenceAsset } from "./_components/EvidenceGrid";
 import { EvidenceGrid } from "./_components/EvidenceGrid";
 import { EvidenceUpload } from "./_components/EvidenceUpload";
 
+// 🔥 CRITICAL: Force dynamic rendering - data is user/org specific
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 interface EvidencePageProps {
   params: { claimId: string };
 }

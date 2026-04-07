@@ -448,7 +448,7 @@ export default function BadFaithDetectorPage() {
               onDrop={(e) => {
                 e.preventDefault();
                 e.stopPropagation();
-                handleFileUpload(e.dataTransfer.files);
+                void handleFileUpload(e.dataTransfer.files);
               }}
             >
               <Paperclip className="mb-1 h-6 w-6 text-slate-400 group-hover:text-sky-500" />

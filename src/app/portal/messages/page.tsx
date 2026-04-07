@@ -69,7 +69,7 @@ export default function ClientMessagesPage() {
   }, [messages]);
 
   useEffect(() => {
-    fetchThreads();
+    void fetchThreads();
     // Poll threads every 8 seconds
     pollThreadsRef.current = setInterval(() => fetchThreads(true), 8000);
     return () => {
@@ -86,7 +86,7 @@ export default function ClientMessagesPage() {
         (t: any) => t.tradePartnerId === pendingContractor || t.proId === pendingContractor
       );
       if (existingThread) {
-        fetchThread(existingThread.id);
+        void fetchThread(existingThread.id);
       } else {
         // Open new message modal with contractor pre-selected
         setShowNewMessageModal(true);
@@ -128,7 +128,7 @@ export default function ClientMessagesPage() {
   };
 
   const handleSelectThread = (threadId: string) => {
-    fetchThread(threadId);
+    void fetchThread(threadId);
     // Poll messages every 4 seconds
     if (pollMsgsRef.current) clearInterval(pollMsgsRef.current);
     pollMsgsRef.current = setInterval(() => fetchThread(threadId, true), 4000);
@@ -136,8 +136,8 @@ export default function ClientMessagesPage() {
 
   const handleMessageSent = () => {
     if (selectedThread) {
-      fetchThread(selectedThread.id);
-      fetchThreads();
+      void fetchThread(selectedThread.id);
+      void fetchThreads();
     }
   };
 
@@ -149,7 +149,7 @@ export default function ClientMessagesPage() {
         setSelectedThread(null);
         setMessages([]);
         setShowArchiveConfirm(null);
-        fetchThreads();
+        void fetchThreads();
       } else {
         toast.error("Failed to archive conversation");
       }
@@ -509,7 +509,7 @@ export default function ClientMessagesPage() {
         onClose={() => setShowNewMessageModal(false)}
         onSuccess={() => {
           setShowNewMessageModal(false);
-          fetchThreads();
+          void fetchThreads();
         }}
         defaultProId={contractorParam}
       />

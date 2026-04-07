@@ -1,7 +1,8 @@
 export const dynamic = "force-dynamic";
 
-import { auth } from "@clerk/nextjs/server";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
+
+import { withAuth } from "@/lib/auth/withAuth";
 
 import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
@@ -10,14 +11,8 @@ import prisma from "@/lib/prisma";
  * GET /api/invitations
  * List all client invitations (ClientProConnection records) sent by the current pro's company
  */
-export async function GET() {
+export const GET = withAuth(async (req: NextRequest, { userId }) => {
   try {
-    const { userId } = await auth();
-
-    if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
     // Get the pro's company
     const member = await prisma.tradesCompanyMember.findFirst({
       where: { userId },
@@ -64,8 +59,8 @@ export async function GET() {
     }));
 
     return NextResponse.json({ invitations });
-  } catch (error) {
+  } catch (error: unknown) {
     logger.error("Error fetching invitations:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
-}
+});

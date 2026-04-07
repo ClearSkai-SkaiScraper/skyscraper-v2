@@ -91,7 +91,7 @@ export default function AIMetricsDashboard() {
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
-    fetchMetrics();
+    void fetchMetrics();
   }, []);
 
   useEffect(() => {

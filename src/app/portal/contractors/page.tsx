@@ -48,7 +48,7 @@ export default function ContractorsPage() {
   const [activeTab, setActiveTab] = useState("connected");
 
   useEffect(() => {
-    loadPros();
+    void loadPros();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 

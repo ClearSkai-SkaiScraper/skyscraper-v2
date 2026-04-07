@@ -7,6 +7,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 
 import { requireAuth } from "@/lib/auth/requireAuth";
+import { logger } from "@/lib/logger";
 
 const ShareCreateSchema = z.object({
   resourceType: z.enum(["report", "export"]),

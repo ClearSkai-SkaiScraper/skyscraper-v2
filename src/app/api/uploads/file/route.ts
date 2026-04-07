@@ -5,12 +5,11 @@
  * Uploads to Supabase storage and returns the public URL.
  */
 
-import { auth } from "@clerk/nextjs/server";
 import { createClient } from "@supabase/supabase-js";
 import { NextRequest, NextResponse } from "next/server";
 
+import { withAuth } from "@/lib/auth/withAuth";
 import { logger } from "@/lib/logger";
-import { resolveOrg } from "@/lib/org/resolveOrg";
 import prisma from "@/lib/prisma";
 
 export const runtime = "nodejs";
@@ -23,21 +22,8 @@ function getSupabaseAdmin() {
   return createClient(url, key, { auth: { persistSession: false } });
 }
 
-export async function POST(req: NextRequest) {
+export const POST = withAuth(async (req: NextRequest, { userId, orgId }) => {
   try {
-    const { userId } = await auth();
-    if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    let orgId: string | null = null;
-    try {
-      const ctx = await resolveOrg();
-      orgId = ctx.orgId;
-    } catch {
-      // fallback to userId
-    }
-
     const supabase = getSupabaseAdmin();
     if (!supabase) {
       return NextResponse.json({ error: "Storage not configured" }, { status: 500 });
@@ -168,4 +154,4 @@ export async function POST(req: NextRequest) {
     logger.error("[File Upload] Error:", error);
     return NextResponse.json({ error: "Upload failed" }, { status: 500 });
   }
-}
+});

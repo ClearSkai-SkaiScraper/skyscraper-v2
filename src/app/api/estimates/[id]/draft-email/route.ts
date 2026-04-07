@@ -1,22 +1,17 @@
 export const dynamic = "force-dynamic";
 
 // src/app/api/estimates/[id]/draft-email/route.ts
-import { auth } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
 
+import { withAuth } from "@/lib/auth/withAuth";
 import { draftPacketEmail } from "@/lib/email/draftPacketEmail";
 import type { PacketRecipientType } from "@/lib/email/types";
 import { buildEstimatePacketPayload } from "@/lib/export/payloads";
 import { logger } from "@/lib/logger";
 
-type RouteParams = { params: { id: string } };
-
-export async function POST(req: NextRequest, { params }: RouteParams) {
+export const POST = withAuth(async (req: NextRequest, { orgId, userId }, routeParams) => {
+  const { id: estimateId } = await routeParams.params;
   try {
-    const { userId, orgId } = await auth();
-    if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-
-    const estimateId = params.id;
     const body = await req.json();
     const recipientType: PacketRecipientType = body.recipientType || "adjuster";
 
@@ -46,4 +41,4 @@ export async function POST(req: NextRequest, { params }: RouteParams) {
     logger.error("Error drafting estimates email:", err);
     return NextResponse.json({ error: "Failed to draft email" }, { status: 500 });
   }
-}
+});

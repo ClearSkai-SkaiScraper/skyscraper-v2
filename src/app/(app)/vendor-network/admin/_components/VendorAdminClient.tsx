@@ -98,7 +98,7 @@ export function VendorAdminClient() {
         toast.success(
           `${field === "isFeatured" ? "Featured" : "Verified"} ${!current ? "enabled" : "disabled"}`
         );
-        fetchVendors();
+        void fetchVendors();
       }
     } catch {
       toast.error("Update failed");
@@ -122,7 +122,7 @@ export function VendorAdminClient() {
         toast.success(`${form.name} created!`);
         setForm(EMPTY_FORM);
         setShowCreate(false);
-        fetchVendors();
+        void fetchVendors();
       } else {
         toast.error(data.error || "Create failed");
       }

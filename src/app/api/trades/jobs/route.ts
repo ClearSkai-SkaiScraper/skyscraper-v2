@@ -8,8 +8,9 @@ export const dynamic = "force-dynamic";
  * their insurance restoration work.
  */
 
-import { auth } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
+
+import { withAuth } from "@/lib/auth/withAuth";
 
 import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
@@ -23,13 +24,8 @@ import prisma from "@/lib/prisma";
  *   page: number
  *   limit: number
  */
-export async function GET(request: NextRequest) {
+export const GET = withAuth(async (request: NextRequest, { userId, orgId }) => {
   try {
-    const { userId, orgId } = await auth();
-    if (!userId || !orgId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
     const { searchParams } = new URL(request.url);
     const statusFilter = searchParams.get("status") || "all";
     const page = parseInt(searchParams.get("page") || "1");
@@ -186,8 +182,8 @@ export async function GET(request: NextRequest) {
       limit,
       totalPages: Math.ceil(totalCount / limit),
     });
-  } catch (error) {
+  } catch (error: unknown) {
     logger.error("[Trades Jobs GET] Error:", error);
     return NextResponse.json({ error: "Failed to list jobs" }, { status: 500 });
   }
-}
+});

@@ -6,21 +6,17 @@
  * DELETE /api/trades/posts — Delete a post
  */
 
-import { auth } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
+
+import { withAuth } from "@/lib/auth/withAuth";
 
 import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 
 export const dynamic = "force-dynamic";
 
-export async function GET(req: NextRequest) {
+export const GET = withAuth(async (req: NextRequest, { userId }) => {
   try {
-    const { userId } = await auth();
-    if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
     const { searchParams } = new URL(req.url);
     const companyId = searchParams.get("companyId");
     const profileId = searchParams.get("profileId");
@@ -90,19 +86,14 @@ export async function GET(req: NextRequest) {
     }));
 
     return NextResponse.json({ posts: formattedPosts });
-  } catch (error) {
+  } catch (error: unknown) {
     logger.error("[GET /api/trades/posts]", error);
     return NextResponse.json({ error: "Failed to fetch posts" }, { status: 500 });
   }
-}
+});
 
-export async function POST(req: NextRequest) {
+export const POST = withAuth(async (req: NextRequest, { userId }) => {
   try {
-    const { userId } = await auth();
-    if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
     let companyId: string | null = null;
 
     // Get the user's company
@@ -143,19 +134,14 @@ export async function POST(req: NextRequest) {
     });
 
     return NextResponse.json({ post }, { status: 201 });
-  } catch (error) {
+  } catch (error: unknown) {
     logger.error("[POST /api/trades/posts]", error);
     return NextResponse.json({ error: "Failed to create post" }, { status: 500 });
   }
-}
+});
 
-export async function DELETE(req: NextRequest) {
+export const DELETE = withAuth(async (req: NextRequest, { userId }) => {
   try {
-    const { userId } = await auth();
-    if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
     const { searchParams } = new URL(req.url);
     const postId = searchParams.get("postId");
 
@@ -182,8 +168,8 @@ export async function DELETE(req: NextRequest) {
     });
 
     return NextResponse.json({ success: true });
-  } catch (error) {
+  } catch (error: unknown) {
     logger.error("[DELETE /api/trades/posts]", error);
     return NextResponse.json({ error: "Failed to delete post" }, { status: 500 });
   }
-}
+});

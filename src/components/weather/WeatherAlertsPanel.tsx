@@ -106,7 +106,7 @@ export function WeatherAlertsPanel() {
   };
 
   useEffect(() => {
-    fetchAlerts();
+    void fetchAlerts();
     // Refresh every 10 minutes
     const interval = setInterval(fetchAlerts, 10 * 60 * 1000);
     return () => clearInterval(interval);

@@ -65,7 +65,7 @@ export default function EditClaimPage({ params }: { params: { claimId: string } 
       }
     };
 
-    fetchClaim();
+    void fetchClaim();
   }, [params.claimId]);
 
   const handleSubmit = async (e: React.FormEvent) => {

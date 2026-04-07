@@ -162,7 +162,7 @@ export async function POST(request: Request) {
       createdUser,
     });
   } catch (error) {
-    logger.error("User/Org init error:", error);
+    logger.error("[ME_INIT]", { error, userId });
     return NextResponse.json(
       { ok: false, error: "Failed to initialize user and Org" },
       { status: 500 }

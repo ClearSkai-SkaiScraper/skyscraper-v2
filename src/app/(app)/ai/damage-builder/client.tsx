@@ -195,7 +195,7 @@ export default function DamageBuilderClient({ leadId, jobId }: DamageBuilderClie
       }
     };
 
-    processFiles();
+    void processFiles();
   }
 
   function removePhoto(id: string) {

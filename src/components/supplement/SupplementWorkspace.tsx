@@ -95,7 +95,7 @@ export default function SupplementWorkspace({ claimId, claimNumber }: Supplement
   }, [claimId]);
 
   useEffect(() => {
-    fetchSupplements();
+    void fetchSupplements();
   }, [fetchSupplements]);
 
   const filtered = useMemo(

@@ -1,7 +1,6 @@
-import { auth } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
 
-import { requireTenant } from "@/lib/auth/tenant";
+import { withAuth } from "@/lib/auth/withAuth";
 import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 
@@ -13,16 +12,9 @@ export const dynamic = "force-dynamic";
  * Get client profile for pro view in leads/network
  * Allows pros to view their connected client's profile
  */
-export async function GET(req: NextRequest, { params }: { params: Promise<{ slug: string }> }) {
-  const { userId } = await auth();
-
-  if (!userId) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
-
+export const GET = withAuth(async (req: NextRequest, { orgId }, routeParams) => {
   try {
-    const orgId = await requireTenant();
-    const { slug: clientId } = await params;
+    const { slug: clientId } = await routeParams.params;
 
     // Get client from various sources
     // 1. Check contacts table (CRM contacts)
@@ -127,4 +119,4 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ slug
     logger.error("[GET /api/network/clients/[slug]/profile] Error:", error);
     return NextResponse.json({ error: "Failed to fetch client" }, { status: 500 });
   }
-}
+});

@@ -190,7 +190,7 @@ export default function DigitalSignaturesPage() {
   }, [claimId]);
 
   useEffect(() => {
-    fetchSignatures();
+    void fetchSignatures();
   }, [fetchSignatures]);
 
   /* Add signer ------------------------------------------------------ */

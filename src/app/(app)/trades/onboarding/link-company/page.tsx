@@ -23,7 +23,7 @@ export default function LinkCompanyPage() {
   const [onboardingStatus, setOnboardingStatus] = useState<any>(null);
 
   useEffect(() => {
-    checkStatus();
+    void checkStatus();
   }, []);
 
   const checkStatus = async () => {

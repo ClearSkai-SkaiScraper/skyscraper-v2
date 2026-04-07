@@ -138,7 +138,7 @@ export function SmartTemplateSelector({
 
   useEffect(() => {
     if (style && showRecommendation) {
-      fetchRecommendations(style);
+      void fetchRecommendations(style);
     }
   }, [style, showRecommendation, fetchRecommendations]);
 

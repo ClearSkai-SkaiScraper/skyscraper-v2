@@ -40,7 +40,7 @@ export default function HoaNoticesPage() {
   const [searchQuery, setSearchQuery] = useState("");
 
   useEffect(() => {
-    fetchNotices();
+    void fetchNotices();
   }, []);
 
   const fetchNotices = async () => {

@@ -1,24 +1,14 @@
-import { auth } from "@clerk/nextjs/server";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
+import { withAuth } from "@/lib/auth/withAuth";
 import { LEGAL_DOCUMENTS } from "@/lib/legal/config";
 import { logger } from "@/lib/logger";
-import { ensureOrgForUser } from "@/lib/org/ensureOrgForUser";
 import prisma from "@/lib/prisma";
 
 export const dynamic = "force-dynamic";
 
-export async function GET() {
+export const GET = withAuth(async (req: NextRequest, { userId, orgId }) => {
   try {
-    const { userId } = await auth();
-
-    if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    // Get org context
-    const { orgId } = await ensureOrgForUser();
-
     // Get all required documents
     const allDocs = LEGAL_DOCUMENTS.filter((doc) => doc.required);
 
@@ -48,8 +38,8 @@ export async function GET() {
         latestVersion: doc.latestVersion,
       })),
     });
-  } catch (error) {
+  } catch (error: unknown) {
     logger.error("[Legal Pending] Error:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
-}
+});

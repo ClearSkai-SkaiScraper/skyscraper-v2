@@ -86,7 +86,7 @@ export function StormAlertPanel({ refreshInterval = 0, compact = false, classNam
   }, []);
 
   useEffect(() => {
-    fetchAlerts();
+    void fetchAlerts();
   }, [fetchAlerts]);
 
   useEffect(() => {

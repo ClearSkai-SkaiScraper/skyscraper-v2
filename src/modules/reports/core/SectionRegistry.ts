@@ -44,12 +44,12 @@ export const SECTION_REGISTRY: Record<SectionKey, Section> = {
     requiredDataKeys: ["metadata", "executiveSummary"],
     renderFn: placeholderRender("Executive Summary"),
   },
-  // weather-verification: Re-added for Claims-Ready Folder compatibility
+  // weather-verification: DISABLED per Sprint 28 - removed from Bid Package
   "weather-verification": {
     key: "weather-verification",
     title: "Weather Verification",
     icon: "Cloud",
-    enabled: true,
+    enabled: false,
     order: 11,
     requiredDataKeys: ["weather"],
     renderFn: placeholderRender("Weather Verification"),
@@ -67,7 +67,7 @@ export const SECTION_REGISTRY: Record<SectionKey, Section> = {
     key: "photo-evidence",
     title: "Photo Evidence",
     icon: "Camera",
-    enabled: true,
+    enabled: false, // DISABLED: Removed from Bid Package per Sprint 28
     order: 5,
     requiredDataKeys: ["photos"],
     renderFn: placeholderRender("Photo Evidence"),

@@ -8,6 +8,7 @@ export const dynamic = "force-dynamic";
 import { NextRequest } from "next/server";
 
 import { apiError, apiOk } from "@/lib/apiError";
+import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 import { safeOrgContext } from "@/lib/safeOrgContext";
 
@@ -17,6 +18,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
 
   const { id } = await params;
   const body = await req.json();
+  logger.info("[WORK_ORDERS_PATCH]", { id, orgId: ctx.orgId });
 
   const existing = await prisma.jobs.findFirst({
     where: { id, orgId: ctx.orgId, jobType: "work_order" },
@@ -49,6 +51,7 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
   if (ctx.status !== "ok" || !ctx.orgId) return apiError(401, "AUTH", "Not authenticated");
 
   const { id } = await params;
+  logger.info("[WORK_ORDERS_DELETE]", { id, orgId: ctx.orgId });
   const existing = await prisma.jobs.findFirst({
     where: { id, orgId: ctx.orgId, jobType: "work_order" },
   });

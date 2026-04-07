@@ -86,7 +86,7 @@ export function SimulationComparison({ claimId, className }: Props) {
   }, [claimId]);
 
   useEffect(() => {
-    fetchHistory();
+    void fetchHistory();
   }, [fetchHistory]);
 
   if (loading) {

@@ -20,7 +20,7 @@ export default function AcceptInviteClient({ token }: AcceptInviteClientProps) {
   const router = useRouter();
 
   useEffect(() => {
-    acceptInvite();
+    void acceptInvite();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 

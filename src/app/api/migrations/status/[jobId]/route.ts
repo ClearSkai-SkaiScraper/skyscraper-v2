@@ -4,10 +4,10 @@
  * POST /api/migrations/status/[jobId] — Control (pause, resume, cancel, rollback)
  */
 
-import { auth } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 
+import { withAuth } from "@/lib/auth/withAuth";
 import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 
@@ -18,16 +18,8 @@ export const dynamic = "force-dynamic";
  * GET /api/migrations/status/[jobId]
  * Get detailed migration report including item-level breakdown
  */
-export async function GET(
-  _request: NextRequest,
-  { params }: { params: Promise<{ jobId: string }> }
-) {
-  const { jobId } = await params;
-  const { userId, orgId } = await auth();
-
-  if (!userId || !orgId) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+export const GET = withAuth(async (_request: NextRequest, { orgId, userId }, routeParams) => {
+  const { jobId } = await routeParams.params;
 
   try {
     const job = await prisma.migration_jobs.findFirst({
@@ -93,7 +85,7 @@ export async function GET(
     logger.error("[Migration Report] Error:", error);
     return NextResponse.json({ error: "Failed to fetch migration details" }, { status: 500 });
   }
-}
+});
 
 /**
  * POST /api/migrations/status/[jobId]
@@ -103,16 +95,8 @@ const ActionSchema = z.object({
   action: z.enum(["pause", "resume", "cancel", "rollback"]),
 });
 
-export async function POST(
-  request: NextRequest,
-  { params }: { params: Promise<{ jobId: string }> }
-) {
-  const { jobId } = await params;
-  const { userId, orgId } = await auth();
-
-  if (!userId || !orgId) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+export const POST = withAuth(async (request: NextRequest, { orgId, userId }, routeParams) => {
+  const { jobId } = await routeParams.params;
 
   let body;
   try {
@@ -260,7 +244,7 @@ export async function POST(
     logger.error("[Migration Control] Error:", error);
     return NextResponse.json({ error: "Operation failed" }, { status: 500 });
   }
-}
+});
 
 function formatDuration(seconds: number): string {
   if (seconds < 60) return `${seconds}s`;

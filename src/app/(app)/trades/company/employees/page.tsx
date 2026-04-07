@@ -92,7 +92,7 @@ export default function ManageEmployeesPage() {
   );
 
   useEffect(() => {
-    loadEmployees();
+    void loadEmployees();
   }, []);
 
   const loadEmployees = async () => {
@@ -140,7 +140,7 @@ export default function ManageEmployeesPage() {
       }
 
       toast.success(!currentIsAdmin ? "Admin access granted" : "Admin access revoked");
-      loadEmployees();
+      void loadEmployees();
     } catch (error) {
       toast.error(error.message || "Failed to update permissions");
     } finally {
@@ -166,7 +166,7 @@ export default function ManageEmployeesPage() {
       }
 
       toast.success(!currentCanEdit ? "Edit access granted" : "Edit access revoked");
-      loadEmployees();
+      void loadEmployees();
     } catch (error) {
       toast.error(error.message || "Failed to update permissions");
     } finally {
@@ -272,7 +272,7 @@ export default function ManageEmployeesPage() {
 
       toast.success(`${name} removed from company`);
       setDeleteTarget(null);
-      loadEmployees();
+      void loadEmployees();
     } catch (error) {
       toast.error(error.message || "Failed to remove employee");
     } finally {

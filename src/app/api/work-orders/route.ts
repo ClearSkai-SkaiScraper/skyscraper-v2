@@ -5,10 +5,11 @@ export const dynamic = "force-dynamic";
  * GET  — List work orders for org
  * POST — Create a new work order
  */
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest } from "next/server";
 import { z } from "zod";
 
 import { apiError, apiOk } from "@/lib/apiError";
+import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 import { safeOrgContext } from "@/lib/safeOrgContext";
 
@@ -29,6 +30,7 @@ const createSchema = z.object({
 export async function GET(req: NextRequest) {
   const ctx = await safeOrgContext();
   if (ctx.status !== "ok" || !ctx.orgId) return apiError(401, "AUTH", "Not authenticated");
+  logger.info("[WORK_ORDERS_LIST]", { orgId: ctx.orgId });
 
   const { searchParams } = new URL(req.url);
   const status = searchParams.get("status");
@@ -61,6 +63,7 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   const ctx = await safeOrgContext();
   if (ctx.status !== "ok" || !ctx.orgId) return apiError(401, "AUTH", "Not authenticated");
+  logger.info("[WORK_ORDERS_CREATE]", { orgId: ctx.orgId });
 
   const body = await req.json();
   const parsed = createSchema.safeParse(body);

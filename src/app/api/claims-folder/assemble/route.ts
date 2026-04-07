@@ -6,7 +6,7 @@ export const dynamic = "force-dynamic";
  * Assembles a complete claims-ready folder from a claim ID
  */
 
-import { auth } from "@clerk/nextjs/server";
+import { withAuth } from "@/lib/auth/withAuth";
 import { NextRequest, NextResponse } from "next/server";
 
 import { assembleClaimFolder } from "@/lib/claims-folder/folderAssembler";
@@ -380,12 +380,7 @@ function buildDemoFolder(claimId: string): Record<string, unknown> {
   };
 }
 
-export async function POST(request: NextRequest) {
-  const { userId } = await auth();
-  if (!userId) {
-    return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
-  }
-
+export const POST = withAuth(async (request: NextRequest, { userId }) => {
   try {
     const body = await request.json();
 
@@ -444,4 +439,4 @@ export async function POST(request: NextRequest) {
     logger.error("Error in claims folder assembly:", error);
     return NextResponse.json({ success: false, error: "Internal server error" }, { status: 500 });
   }
-}
+});

@@ -6,6 +6,7 @@ import { NextResponse } from "next/server";
 import { withRateLimit } from "@/lib/api/wrappers";
 import { getApiToken } from "@/lib/apiTokens";
 import { setFlag } from "@/lib/flags";
+import { logger } from "@/lib/logger";
 import { withSentryApi } from "@/lib/monitoring/sentryApi";
 import { requireAdmin } from "@/lib/security/roles";
 
@@ -40,6 +41,7 @@ export const PATCH = withSentryApi(
         : Math.max(0, Math.min(100, parseInt(body.rolloutPercent)));
     const targeting = body.targeting || null;
     try {
+      logger.info("[FLAGS_CONFIG]", { key: params.key, enabled, orgId, rolloutPercent });
       const saved = await setFlag(params.key, enabled, orgId, rolloutPercent, targeting);
       return NextResponse.json(saved);
     } catch (err) {

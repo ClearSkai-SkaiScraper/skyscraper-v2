@@ -1,8 +1,8 @@
 export const dynamic = "force-dynamic";
 
-import { auth } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
 
+import { withAuth } from "@/lib/auth/withAuth";
 import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 
@@ -12,18 +12,12 @@ function newId(): string {
   );
 }
 
-interface Params {
-  params: {
-    slug: string;
-  };
-}
-
 /**
  * GET /api/network/clients/[slug]/activity
  * Returns activity feed for a client network
  */
-export async function GET(req: NextRequest, { params }: Params) {
-  const { slug } = params;
+export const GET = withAuth(async (req: NextRequest, { orgId }, routeParams) => {
+  const { slug } = await routeParams.params;
 
   try {
     const client = await prisma.client_networks.findUnique({
@@ -46,17 +40,14 @@ export async function GET(req: NextRequest, { params }: Params) {
     logger.error(`[GET /api/network/clients/${slug}/activity]`, error);
     return NextResponse.json({ error: "Failed to fetch activity" }, { status: 500 });
   }
-}
+});
 
 /**
  * POST /api/network/clients/[slug]/activity
  * Creates a new activity entry
  */
-export async function POST(req: NextRequest, { params }: Params) {
-  const authData = await auth();
-  const { userId, orgId } = authData;
-
-  const { slug } = params;
+export const POST = withAuth(async (req: NextRequest, { orgId, userId }, routeParams) => {
+  const { slug } = await routeParams.params;
 
   try {
     const body = await req.json();
@@ -74,8 +65,8 @@ export async function POST(req: NextRequest, { params }: Params) {
       return NextResponse.json({ error: "Client network not found" }, { status: 404 });
     }
 
-    // If authenticated, verify ownership
-    if (userId && orgId && client.orgId !== orgId) {
+    // Verify ownership
+    if (client.orgId !== orgId) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
@@ -83,8 +74,8 @@ export async function POST(req: NextRequest, { params }: Params) {
       data: {
         id: newId(),
         clientNetworkId: client.id,
-        actorType: actorType || (userId ? "pro" : "system"),
-        actorId: userId || null,
+        actorType: actorType || "pro",
+        actorId: userId,
         type,
         message: message ?? null,
       },
@@ -95,4 +86,4 @@ export async function POST(req: NextRequest, { params }: Params) {
     logger.error(`[POST /api/network/clients/${slug}/activity]`, error);
     return NextResponse.json({ error: "Failed to create activity" }, { status: 500 });
   }
-}
+});

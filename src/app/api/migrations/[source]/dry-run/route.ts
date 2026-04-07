@@ -10,10 +10,10 @@
  * - Field mapping preview
  */
 
-import { auth } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 
+import { withAuth } from "@/lib/auth/withAuth";
 import { logger } from "@/lib/logger";
 import { AccuLynxClient } from "@/lib/migrations/acculynx-client";
 import type { MigrationSource } from "@/lib/migrations/base-engine";
@@ -87,20 +87,12 @@ interface SampleMapping {
   internal: Record<string, any>;
 }
 
-export async function POST(
-  request: NextRequest,
-  { params }: { params: Promise<{ source: string }> }
-) {
-  const { source } = await params;
+export const POST = withAuth(async (request: NextRequest, { orgId, userId }, routeParams) => {
+  const { source } = await routeParams.params;
   const upperSource = source.toUpperCase() as MigrationSource;
 
   if (!SUPPORTED_SOURCES.includes(upperSource)) {
     return NextResponse.json({ error: `Unsupported migration source: ${source}` }, { status: 400 });
-  }
-
-  const { userId, orgId } = await auth();
-  if (!userId || !orgId) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   let body;
@@ -130,7 +122,7 @@ export async function POST(
     logger.error(`[Migration Dry-Run] ${upperSource} error:`, error);
     return NextResponse.json({ error: "Dry run failed" }, { status: 500 });
   }
-}
+});
 
 async function runDryRun(
   source: MigrationSource,

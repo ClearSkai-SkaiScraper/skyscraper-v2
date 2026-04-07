@@ -81,7 +81,7 @@ export default function ClaimFinancialPage() {
   }
 
   useEffect(() => {
-    runAnalysis();
+    void runAnalysis();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [claimId]);
 

@@ -70,7 +70,7 @@ export function useClaims(): UseClaimsResult {
   }, []);
 
   useEffect(() => {
-    refresh();
+    void refresh();
   }, [refresh]);
 
   return useMemo(

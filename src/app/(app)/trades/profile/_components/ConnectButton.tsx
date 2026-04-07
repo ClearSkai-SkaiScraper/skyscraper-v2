@@ -40,7 +40,7 @@ export default function ConnectButton({ userId }: ConnectButtonProps) {
         setChecking(false);
       }
     }
-    checkStatus();
+    void checkStatus();
   }, [userId]);
 
   async function handleConnect() {

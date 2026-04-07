@@ -54,7 +54,7 @@ export default function ContractorSummaryPage() {
   }, [claimId]);
 
   useEffect(() => {
-    fetchData();
+    void fetchData();
   }, [fetchData]);
 
   const handleSave = async () => {

@@ -149,8 +149,8 @@ export default function TradesMessagesPage() {
   }, [messages]);
 
   useEffect(() => {
-    fetchThreads();
-    fetchConnectedClients();
+    void fetchThreads();
+    void fetchConnectedClients();
     // Fetch current user's ID so message alignment works
     fetch("/api/auth/me")
       .then((r) => (r.ok ? r.json() : null))
@@ -433,7 +433,7 @@ export default function TradesMessagesPage() {
               }))
             );
           }
-          fetchThreads();
+          void fetchThreads();
         }
       } else {
         // Legacy trades messages
@@ -447,7 +447,7 @@ export default function TradesMessagesPage() {
           }),
         });
         if (res.ok) {
-          fetchThreads();
+          void fetchThreads();
         }
       }
     } catch (error) {
@@ -608,7 +608,7 @@ export default function TradesMessagesPage() {
                           <DropdownMenuItem
                             onClick={() => {
                               setDeleteTarget(selectedThread);
-                              handleArchiveThread();
+                              void handleArchiveThread();
                             }}
                             className="gap-2"
                           >

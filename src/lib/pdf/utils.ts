@@ -18,6 +18,12 @@ export interface PDFMetadata {
   producer: string;
 }
 
+// Type for database adapters - supports both Prisma and raw query styles
+type DbAdapter = {
+  $queryRaw?<T = unknown>(query: TemplateStringsArray, ...values: unknown[]): Promise<T>;
+  query?: (text: string, params?: unknown[]) => Promise<{ rows: unknown[] }>;
+};
+
 /**
  * Get organization branding for PDF generation
  *
@@ -25,25 +31,57 @@ export interface PDFMetadata {
  * That function queries both org_branding AND Org tables via Prisma ORM
  * (not raw SQL) and returns canonical defaults from constants.
  */
-export async function getOrgBranding(db: any, orgId: string): Promise<PDFBranding> {
-  const result = (await db.$queryRaw`SELECT name, "brandLogoUrl", "pdfHeaderText", "pdfFooterText" 
-     FROM "Org" WHERE id = ${orgId} LIMIT 1`) as Array<{
-    name: string;
-    brandLogoUrl: string | null;
-    pdfHeaderText: string | null;
-    pdfFooterText: string | null;
-  }>;
+export async function getOrgBranding(db: DbAdapter, orgId: string): Promise<PDFBranding> {
+  // Support Prisma $queryRaw style
+  if (db.$queryRaw) {
+    const result =
+      (await db.$queryRaw`SELECT name, "brandLogoUrl", "pdfHeaderText", "pdfFooterText" 
+       FROM "Org" WHERE id = ${orgId} LIMIT 1`) as Array<{
+        name: string;
+        brandLogoUrl: string | null;
+        pdfHeaderText: string | null;
+        pdfFooterText: string | null;
+      }>;
 
-  if (!result || result.length === 0) {
-    return {};
+    if (!result || result.length === 0) {
+      return {};
+    }
+
+    return {
+      orgName: result[0].name,
+      brandLogoUrl: result[0].brandLogoUrl ?? undefined,
+      pdfHeaderText: result[0].pdfHeaderText ?? undefined,
+      pdfFooterText: result[0].pdfFooterText ?? undefined,
+    };
   }
 
-  return {
-    orgName: result[0].name,
-    brandLogoUrl: result[0].brandLogoUrl ?? undefined,
-    pdfHeaderText: result[0].pdfHeaderText ?? undefined,
-    pdfFooterText: result[0].pdfFooterText ?? undefined,
-  };
+  // Fallback to raw query style (db.query)
+  if (db.query) {
+    const result = await db.query(
+      `SELECT name, "brandLogoUrl", "pdfHeaderText", "pdfFooterText" FROM "Org" WHERE id = $1 LIMIT 1`,
+      [orgId]
+    );
+    const rows = result.rows as Array<{
+      name: string;
+      brandLogoUrl: string | null;
+      pdfHeaderText: string | null;
+      pdfFooterText: string | null;
+    }>;
+
+    if (!rows || rows.length === 0) {
+      return {};
+    }
+
+    return {
+      orgName: rows[0].name,
+      brandLogoUrl: rows[0].brandLogoUrl ?? undefined,
+      pdfHeaderText: rows[0].pdfHeaderText ?? undefined,
+      pdfFooterText: rows[0].pdfFooterText ?? undefined,
+    };
+  }
+
+  // No valid query method available
+  return {};
 }
 
 /**
@@ -97,7 +135,7 @@ export function formatSectionTitle(key: string): string {
 /**
  * Render content safely for PDF
  */
-export function renderContentSafely(content: any): string {
+export function renderContentSafely(content: unknown): string {
   if (typeof content === "string") {
     return content;
   }

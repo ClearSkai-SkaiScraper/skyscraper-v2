@@ -1,8 +1,8 @@
 "use client";
 
+import { useTheme } from "next-themes";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useTheme } from "next-themes";
 import { useEffect, useState } from "react";
 
 import { RemoteViewSelector } from "@/components/remote-view/RemoteViewSelector";
@@ -118,6 +118,7 @@ const navSections: NavSection[] = [
     items: [
       { label: "Trades Network Hub", href: "/trades" },
       { label: "Connections & Contacts", href: "/company/connections" },
+      { label: "Work Requests", href: "/network/work-requests" },
       { label: "Job Board", href: "/trades/jobs" },
       { label: "Vendor Intelligence", href: "/vendor-network" },
       { label: "Invitations", href: "/invitations" },
@@ -174,7 +175,14 @@ export function AppSidebar() {
     upcomingAppointments: number;
     unreadNotifications: number;
     pendingInvitations: number;
-  }>({ unreadMessages: 0, upcomingAppointments: 0, unreadNotifications: 0, pendingInvitations: 0 });
+    pendingWorkRequests: number;
+  }>({
+    unreadMessages: 0,
+    upcomingAppointments: 0,
+    unreadNotifications: 0,
+    pendingInvitations: 0,
+    pendingWorkRequests: 0,
+  });
 
   useEffect(() => {
     const fetchBadges = async () => {
@@ -201,6 +209,7 @@ export function AppSidebar() {
     if (href === "/invitations") return badges.pendingInvitations || null;
     if (href === "/invitations/analytics") return badges.pendingInvitations || null;
     if (href === "/notifications") return badges.unreadNotifications || null;
+    if (href === "/network/work-requests") return badges.pendingWorkRequests || null;
     return null;
   };
 

@@ -1,10 +1,9 @@
 // src/app/api/claims/[claimId]/workspace/route.ts
-import { auth } from "@clerk/nextjs/server";
+import { withAuth } from "@/lib/auth/withAuth";
 import { nanoid } from "nanoid";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 
-import { getResolvedOrgResult } from "@/lib/auth/getResolvedOrgId";
 import { resolveClaim } from "@/lib/claims/resolveClaim";
 import { prismaModel } from "@/lib/db/prismaModel";
 import { logger } from "@/lib/logger";
@@ -121,87 +120,25 @@ async function ensureOrgDemoClaim(orgId: string) {
   return { claimId, claimNumber: demoClaimNumber };
 }
 
-export async function GET(request: NextRequest, { params }: { params: { claimId: string } }) {
+export const GET = withAuth(async (req: NextRequest, { orgId, userId, role }, routeParams) => {
   try {
-    const { claimId } = params;
+    const { claimId } = await routeParams.params;
 
-    // Demo alias: if signed-in and org resolvable -> create/reuse real claim and redirect.
-    // Otherwise return a read-only demo payload.
+    // Demo alias: create/reuse real claim and redirect
     if (claimId === "test") {
-      const { userId } = await auth();
-      if (userId) {
-        const orgResult = await getResolvedOrgResult();
-        if (orgResult.ok) {
-          const ensured = await ensureOrgDemoClaim(orgResult.orgId);
-          return NextResponse.json({
-            redirect: true,
-            canonicalUrl: `/claims/${ensured.claimId}/overview`,
-            reason: "DEMO_ALIAS",
-          });
-        }
-      }
-
-      const demoNow = new Date();
-      const demoData: WorkspaceData = {
-        claim: {
-          id: "test",
-          claimNumber: "CLM-DEMO-001",
-          title: "John Smith — Demo Claim",
-          status: "active",
-          damageType: "STORM",
-          propertyAddress: "123 Demo St, Phoenix, AZ 85001",
-          propertyStreet: "123 Demo St",
-          propertyCity: "Phoenix",
-          propertyState: "AZ",
-          propertyZip: "85001",
-          lossDate: "2025-12-01",
-          inspectionDate: null,
-          carrier: "Demo Carrier",
-          policyNumber: "POL-DEMO-123",
-          insured_name: "John Smith",
-          homeownerEmail: "john.smith@example.com",
-          homeownerPhone: "(555) 010-1234",
-          adjusterName: "Alex Adjuster",
-          adjusterPhone: "(555) 010-2000",
-          adjusterEmail: "alex.adjuster@example.com",
-          propertyId: null,
-          contactId: null,
-          createdAt: demoNow.toISOString(),
-          updatedAt: demoNow.toISOString(),
-          signingStatus: "pending",
-          estimatedJobValue: null,
-          jobValueStatus: "draft",
-          jobValueApprovedBy: null,
-          jobValueApprovalNotes: null,
-        },
-        organization: { id: "demo-org", name: "Raven Demo", role: "ADMIN" },
-        stats: { evidenceCount: 8, documentsCount: 2, reportCount: 1, timelineEventCount: 3 },
-        permissions: { canEdit: false, canDelete: false, canGenerateReports: false },
-      };
-      return NextResponse.json({ success: true, data: demoData });
+      const ensured = await ensureOrgDemoClaim(orgId);
+      return NextResponse.json({
+        redirect: true,
+        canonicalUrl: `/claims/${ensured.claimId}/overview`,
+        reason: "DEMO_ALIAS",
+      });
     }
 
-    // Non-demo: require auth and resolve org
-    const { userId } = await auth();
-    if (!userId)
-      return NextResponse.json({ error: "Unauthorized", code: "UNAUTHORIZED" }, { status: 401 });
-
-    const orgResult = await getResolvedOrgResult();
-    if (!orgResult.ok) {
-      return NextResponse.json(
-        { error: "Organization not found", code: "ORG_NOT_FOUND", details: orgResult.reason },
-        { status: 404 }
-      );
-    }
-    const orgId = orgResult.orgId;
-
-    // Get org details safely — don't throw if membership table is missing a row
+    // Get org name — orgId and role provided by withAuth
     let orgName = "My Organization";
-    let role = "ADMIN";
     try {
       const activeOrg = await getActiveOrg();
       orgName = activeOrg.name;
-      role = activeOrg.role;
     } catch (orgErr) {
       // Membership may not exist yet — fall back to defaults
       logger.warn("[workspace-api] getActiveOrg fallback:", (orgErr as Error)?.message);
@@ -349,4 +286,4 @@ export async function GET(request: NextRequest, { params }: { params: { claimId:
       { status: 500 }
     );
   }
-}
+});

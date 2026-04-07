@@ -5,6 +5,7 @@ import { NextResponse } from "next/server";
 
 import { LEGAL_DOCUMENTS } from "@/lib/legal/config";
 import prisma from "@/lib/prisma";
+import { logger } from "@/lib/logger";
 
 export async function GET() {
   const user = await currentUser();

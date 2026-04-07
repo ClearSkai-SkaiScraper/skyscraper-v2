@@ -1,9 +1,8 @@
-import { auth } from "@clerk/nextjs/server";
-import { NextRequest, NextResponse } from "next/server";
+import { withAuth } from "@/lib/auth/withAuth";
+import { NextResponse } from "next/server";
 import { z } from "zod";
 
 import { getOpenAI } from "@/lib/ai/client";
-import { getTenant } from "@/lib/auth/tenant";
 import { logger } from "@/lib/logger";
 import { getRateLimitIdentifier, rateLimiters } from "@/lib/rate-limit";
 
@@ -20,19 +19,8 @@ const claimAssistantSchema = z.object({
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-export async function POST(request: NextRequest) {
+export const POST = withAuth(async (request, { userId, orgId }) => {
   try {
-    // ── Auth + Tenant check (required) ──
-    const { userId } = await auth();
-    if (!userId) {
-      return NextResponse.json({ error: "Authentication required" }, { status: 401 });
-    }
-
-    const orgId = await getTenant();
-    if (!orgId) {
-      return NextResponse.json({ error: "Organization required" }, { status: 403 });
-    }
-
     // Rate limit AI requests
     const identifier = getRateLimitIdentifier(userId, request);
     const allowed = await rateLimiters.ai.check(10, identifier);
@@ -93,17 +81,19 @@ Provide actionable, specific advice. Use markdown formatting for clarity. Keep r
       response,
       timestamp: new Date().toISOString(),
     });
-  } catch (error) {
-    logger.error("[claim-assistant] Error", { error: error?.message || error });
+  } catch (error: unknown) {
+    logger.error("[claim-assistant] Error", {
+      error: error instanceof Error ? error.message : String(error),
+    });
 
     // Return more specific error messages
-    if (error?.code === "insufficient_quota") {
+    if (error instanceof Error && (error as any).code === "insufficient_quota") {
       return NextResponse.json(
         { error: "AI service quota exceeded. Please contact support." },
         { status: 503 }
       );
     }
-    if (error?.code === "invalid_api_key") {
+    if (error instanceof Error && (error as any).code === "invalid_api_key") {
       return NextResponse.json({ error: "AI service configuration error." }, { status: 503 });
     }
 
@@ -112,4 +102,4 @@ Provide actionable, specific advice. Use markdown formatting for clarity. Keep r
       { status: 500 }
     );
   }
-}
+});

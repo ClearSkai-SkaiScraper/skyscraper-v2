@@ -145,7 +145,7 @@ export function MaterialOrdersClient({ orgId, userId }: MaterialOrdersClientProp
   });
 
   useEffect(() => {
-    fetchOrders();
+    void fetchOrders();
   }, [filter]);
 
   const fetchOrders = async () => {
@@ -323,7 +323,7 @@ export function MaterialOrdersClient({ orgId, userId }: MaterialOrdersClientProp
       if (res.ok) {
         toast.success("Order created successfully");
         setIsNewOrderDialogOpen(false);
-        fetchOrders();
+        void fetchOrders();
         // Reset form
         setNewOrder({
           vendor: "",
@@ -352,7 +352,7 @@ export function MaterialOrdersClient({ orgId, userId }: MaterialOrdersClientProp
 
       if (res.ok) {
         toast.success("Order submitted to vendor");
-        fetchOrders();
+        void fetchOrders();
       } else {
         toast.error("Failed to submit order");
       }

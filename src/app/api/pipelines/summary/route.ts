@@ -1,5 +1,6 @@
-import { auth } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
+
+import { withAuth } from "@/lib/auth/withAuth";
 
 import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
@@ -33,25 +34,8 @@ interface PipelineSummary {
   }[];
 }
 
-export async function GET(request: NextRequest) {
+export const GET = withAuth(async (req: NextRequest, { orgId }) => {
   try {
-    const { userId } = await auth();
-    if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    // Get user's organization
-    const user = await prisma.users.findUnique({
-      where: { clerkUserId: userId },
-      include: { Org: true },
-    });
-
-    if (!user?.orgId) {
-      return NextResponse.json({ error: "No organization found" }, { status: 404 });
-    }
-
-    const orgId = user.orgId;
-
     // Get all leads for the organization
     const leads = await prisma.leads.findMany({
       where: { orgId },
@@ -186,8 +170,8 @@ export async function GET(request: NextRequest) {
     };
 
     return NextResponse.json(summary);
-  } catch (error) {
+  } catch (error: unknown) {
     logger.error("Error fetching pipeline summary:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
-}
+});

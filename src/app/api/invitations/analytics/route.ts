@@ -1,20 +1,15 @@
 export const dynamic = "force-dynamic";
 
-import { auth } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
+
+import { withAuth } from "@/lib/auth/withAuth";
 
 import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 
-export async function GET(request: NextRequest) {
+export const GET = withAuth(async (req: NextRequest, { userId }) => {
   try {
-    const { userId } = await auth();
-
-    if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    const { searchParams } = new URL(request.url);
+    const { searchParams } = new URL(req.url);
     const period = searchParams.get("period") || "30d";
 
     // Calculate date range based on period
@@ -117,8 +112,8 @@ export async function GET(request: NextRequest) {
       stats,
       timeline,
     });
-  } catch (error) {
+  } catch (error: unknown) {
     logger.error("Error fetching invitation analytics:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
-}
+});

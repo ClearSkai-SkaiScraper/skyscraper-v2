@@ -58,7 +58,7 @@ export function AdjusterCombobox({
   // Load adjusters when dropdown opens
   useEffect(() => {
     if (open) {
-      fetchAdjusters(query);
+      void fetchAdjusters(query);
     }
   }, [open]);
 

@@ -124,7 +124,7 @@ export default function PublicProfilePage({ params }: { params: { id: string } }
         setLoading(false);
       }
     }
-    loadProfile();
+    void loadProfile();
   }, [params.id]);
 
   if (loading) {

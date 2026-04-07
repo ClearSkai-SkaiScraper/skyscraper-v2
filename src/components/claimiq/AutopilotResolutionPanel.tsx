@@ -173,7 +173,7 @@ export function AutopilotResolutionPanel({ claimId, className }: Props) {
   }, [claimId]);
 
   useEffect(() => {
-    fetchPlan();
+    void fetchPlan();
   }, [fetchPlan]);
 
   if (loading) {

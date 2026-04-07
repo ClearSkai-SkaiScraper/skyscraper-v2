@@ -229,7 +229,7 @@ export function ReportBuilderPanel({
   }, [claimId]);
 
   useEffect(() => {
-    if (claimId) fetchRecent();
+    if (claimId) void fetchRecent();
   }, [claimId, fetchRecent]);
 
   // ── Toggle sections ──
@@ -290,7 +290,7 @@ export function ReportBuilderPanel({
         setResultUrl(data.fileUrl || data.url || null);
         setGenerationStatus("success");
         toast.success("Report generated successfully!");
-        fetchRecent(); // Refresh the list
+        void fetchRecent(); // Refresh the list
       }
     } catch (error: any) {
       setGenerationStatus("error");

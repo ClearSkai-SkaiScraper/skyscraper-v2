@@ -1,19 +1,14 @@
 export const dynamic = "force-dynamic";
 
-import { auth } from "@clerk/nextjs/server";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
+import { withAuth } from "@/lib/auth/withAuth";
 import { correlateDamageWithWeather } from "@/lib/intel/correlation/damage-weather";
 import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 
-export async function POST(req: Request) {
+export const POST = withAuth(async (req: NextRequest, { orgId, userId }) => {
   try {
-    const { userId, orgId } = await auth();
-    if (!userId || !orgId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
     const { claimId } = await req.json();
 
     if (!claimId) {
@@ -107,8 +102,8 @@ export async function POST(req: Request) {
   } catch (err) {
     logger.error("CORRELATION ERROR:", err);
     return NextResponse.json(
-      { error: err?.message || "Correlation analysis failed" },
+      { error: err instanceof Error ? err.message : "Correlation analysis failed" },
       { status: 500 }
     );
   }
-}
+});

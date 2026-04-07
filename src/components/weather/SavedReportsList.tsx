@@ -35,7 +35,7 @@ export function SavedReportsList({ claimId, leadId, onViewReport }: SavedReports
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    fetchReports();
+    void fetchReports();
   }, [claimId, leadId]);
 
   const fetchReports = async () => {

@@ -48,7 +48,7 @@ export function UpgradeCTA({
       setHidden(true);
       return;
     }
-    checkPlan();
+    void checkPlan();
   }, []);
 
   if (hidden) return null;

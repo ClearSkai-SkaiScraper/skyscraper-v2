@@ -67,7 +67,7 @@ export function MetricsClient() {
       }
     }
 
-    fetchMetrics();
+    void fetchMetrics();
   }, [orgId, days]);
 
   if (loading) {

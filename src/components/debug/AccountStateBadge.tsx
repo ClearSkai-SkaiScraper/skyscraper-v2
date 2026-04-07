@@ -150,7 +150,7 @@ export function AccountStateBadge({ showTooltip = true, className }: Props) {
       setState("active_member");
     }
 
-    checkState();
+    void checkState();
   }, [userLoaded, orgLoaded, membershipsLoaded, isSignedIn, user, organization, userMemberships]);
 
   const config = STATE_CONFIG[state];

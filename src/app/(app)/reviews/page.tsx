@@ -59,7 +59,7 @@ function CustomerReviewsPage() {
   }, []);
 
   useEffect(() => {
-    fetchReviews();
+    void fetchReviews();
   }, [fetchReviews]);
 
   const [showReviewWidget, setShowReviewWidget] = useState(false);

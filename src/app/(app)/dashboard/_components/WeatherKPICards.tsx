@@ -57,7 +57,7 @@ export default function WeatherKPICards() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    (async () => {
+    void (async () => {
       try {
         const res = await fetch("/api/dashboard/weather-kpis", { credentials: "include" });
         if (!res.ok) {

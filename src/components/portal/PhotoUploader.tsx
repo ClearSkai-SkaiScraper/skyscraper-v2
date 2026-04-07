@@ -95,7 +95,7 @@ export default function PhotoUploader({
       setDragActive(false);
 
       if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
-        handleUpload(e.dataTransfer.files);
+        void handleUpload(e.dataTransfer.files);
       }
     },
     [handleUpload]

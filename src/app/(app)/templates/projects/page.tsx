@@ -27,9 +27,6 @@ export default function ProjectTemplatesPage() {
     }
   }, [isLoaded, isSignedIn, router]);
 
-  if (!isLoaded || !isSignedIn) {
-    return <div className="flex h-screen items-center justify-center">Loading...</div>;
-  }
   const [templates] = useState<ProjectTemplate[]>([
     {
       id: "1",
@@ -62,6 +59,10 @@ export default function ProjectTemplatesPage() {
       popular: false,
     },
   ]);
+
+  if (!isLoaded || !isSignedIn) {
+    return <div className="flex h-screen items-center justify-center">Loading...</div>;
+  }
 
   return (
     <div className="space-y-6 p-8">

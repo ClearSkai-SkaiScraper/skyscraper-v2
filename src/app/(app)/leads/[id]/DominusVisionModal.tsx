@@ -35,7 +35,7 @@ Notes:
 ${image.notes}
     `.trim();
 
-    navigator.clipboard.writeText(text);
+    void navigator.clipboard.writeText(text);
     toast.success("Analysis copied to clipboard");
   };
 

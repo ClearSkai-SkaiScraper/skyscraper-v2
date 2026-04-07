@@ -94,14 +94,14 @@ export default function UnifiedNotificationBell({
   }, [apiBase, maxVisible]);
 
   useEffect(() => {
-    fetchNotifications();
+    void fetchNotifications();
     const interval = setInterval(fetchNotifications, pollInterval);
     return () => clearInterval(interval);
   }, [fetchNotifications, pollInterval]);
 
   // Re-fetch when popover opens
   useEffect(() => {
-    if (open) fetchNotifications();
+    if (open) void fetchNotifications();
   }, [open, fetchNotifications]);
 
   const markAsRead = async (notificationId: string) => {
@@ -138,14 +138,14 @@ export default function UnifiedNotificationBell({
   };
 
   const handleNotificationClick = (notif: Notification) => {
-    if (!notif.read) markAsRead(notif.id);
+    if (!notif.read) void markAsRead(notif.id);
     setOpen(false);
     if (notif.url) router.push(notif.url);
   };
 
   const handleOpenChange = (nextOpen: boolean) => {
     if (!nextOpen && autoMarkRead && unreadCount > 0) {
-      markAllAsRead();
+      void markAllAsRead();
     }
     setOpen(nextOpen);
   };

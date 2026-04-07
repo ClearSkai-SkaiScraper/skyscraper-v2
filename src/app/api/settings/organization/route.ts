@@ -1,10 +1,9 @@
-import { currentUser } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 
+import { withAuth } from "@/lib/auth/withAuth";
 import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
-import { safeOrgContext } from "@/lib/safeOrgContext";
 
 const orgSettingsSchema = z.object({
   name: z.string().optional(),
@@ -16,15 +15,10 @@ export const dynamic = "force-dynamic";
  * GET /api/settings/organization
  * Fetch organization settings
  */
-export async function GET() {
+export const GET = withAuth(async (req: NextRequest, { orgId }) => {
   try {
-    const orgCtx = await safeOrgContext();
-    if (!orgCtx.orgId) {
-      return NextResponse.json({ error: "No organization" }, { status: 400 });
-    }
-
     const org = await prisma.org.findUnique({
-      where: { id: orgCtx.orgId },
+      where: { id: orgId },
       select: { name: true, planKey: true },
     });
 
@@ -37,25 +31,15 @@ export async function GET() {
     logger.error("[API] GET /api/settings/organization error:", error);
     return NextResponse.json({ error: "Failed to fetch org settings" }, { status: 500 });
   }
-}
+});
 
 /**
  * POST /api/settings/organization
  * Save organization name and settings
  */
-export async function POST(request: NextRequest) {
+export const POST = withAuth(async (req: NextRequest, { orgId }) => {
   try {
-    const user = await currentUser();
-    if (!user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    const orgCtx = await safeOrgContext();
-    if (!orgCtx.orgId) {
-      return NextResponse.json({ error: "No organization" }, { status: 400 });
-    }
-
-    const raw = await request.json();
+    const raw = await req.json();
     const parsed = orgSettingsSchema.safeParse(raw);
     if (!parsed.success) {
       return NextResponse.json(
@@ -67,7 +51,7 @@ export async function POST(request: NextRequest) {
 
     if (name && typeof name === "string" && name.trim().length > 0) {
       await prisma.org.update({
-        where: { id: orgCtx.orgId },
+        where: { id: orgId },
         data: {
           name: name.trim(),
           updatedAt: new Date(),
@@ -80,4 +64,4 @@ export async function POST(request: NextRequest) {
     logger.error("[API] POST /api/settings/organization error:", error);
     return NextResponse.json({ error: "Failed to save org settings" }, { status: 500 });
   }
-}
+});

@@ -188,8 +188,10 @@ export default function CreateInvoicePage() {
 
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Invoice Details */}
-        <div className="rounded-2xl border border-[color:var(--border)] bg-[var(--surface-glass)] p-6 backdrop-blur-xl">
-          <h2 className="mb-4 text-lg font-semibold text-[color:var(--text)]">Invoice Details</h2>
+        <div className="rounded-2xl border border-slate-200 bg-white/80 p-6 shadow-sm backdrop-blur-xl dark:border-slate-700 dark:bg-slate-900/80">
+          <h2 className="mb-4 text-lg font-semibold text-slate-900 dark:text-white">
+            Invoice Details
+          </h2>
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <div>
               <label className="mb-1 block text-sm font-medium text-slate-600 dark:text-slate-300">
@@ -199,7 +201,7 @@ export default function CreateInvoicePage() {
                 value={jobId}
                 onChange={(e) => setJobId(e.target.value)}
                 placeholder="Paste job ID from CRM"
-                className="w-full rounded-xl border border-[color:var(--border)] bg-[var(--surface-2)] px-4 py-3 text-[color:var(--text)] placeholder-slate-400 focus:border-[var(--primary)] focus:outline-none"
+                className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-slate-900 placeholder-slate-400 focus:border-blue-500 focus:outline-none dark:border-slate-600 dark:bg-slate-800 dark:text-white"
               />
             </div>
             <div>
@@ -209,7 +211,7 @@ export default function CreateInvoicePage() {
               <select
                 value={kind}
                 onChange={(e) => setKind(e.target.value)}
-                className="w-full rounded-xl border border-[color:var(--border)] bg-[var(--surface-2)] px-4 py-3 text-[color:var(--text)] focus:border-[var(--primary)] focus:outline-none"
+                className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-slate-900 focus:border-blue-500 focus:outline-none dark:border-slate-600 dark:bg-slate-800 dark:text-white"
               >
                 <option value="standard">Standard</option>
                 <option value="progress">Progress Billing</option>
@@ -226,7 +228,7 @@ export default function CreateInvoicePage() {
                 type="date"
                 value={dueDate}
                 onChange={(e) => setDueDate(e.target.value)}
-                className="w-full rounded-xl border border-[color:var(--border)] bg-[var(--surface-2)] px-4 py-3 text-[color:var(--text)] focus:border-[var(--primary)] focus:outline-none"
+                className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-slate-900 focus:border-blue-500 focus:outline-none dark:border-slate-600 dark:bg-slate-800 dark:text-white"
               />
             </div>
             <div>
@@ -238,15 +240,15 @@ export default function CreateInvoicePage() {
                 value={customerEmail}
                 onChange={(e) => setCustomerEmail(e.target.value)}
                 placeholder="customer@example.com"
-                className="w-full rounded-xl border border-[color:var(--border)] bg-[var(--surface-2)] px-4 py-3 text-[color:var(--text)] placeholder-slate-400 focus:border-[var(--primary)] focus:outline-none"
+                className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-slate-900 placeholder-slate-400 focus:border-blue-500 focus:outline-none dark:border-slate-600 dark:bg-slate-800 dark:text-white"
               />
             </div>
           </div>
         </div>
 
         {/* Line Items */}
-        <div className="rounded-2xl border border-[color:var(--border)] bg-[var(--surface-glass)] p-6 backdrop-blur-xl">
-          <h2 className="mb-4 text-lg font-semibold text-[color:var(--text)]">Line Items</h2>
+        <div className="rounded-2xl border border-slate-200 bg-white/80 p-6 shadow-sm backdrop-blur-xl dark:border-slate-700 dark:bg-slate-900/80">
+          <h2 className="mb-4 text-lg font-semibold text-slate-900 dark:text-white">Line Items</h2>
           <div className="space-y-3">
             {items.map((item, i) => (
               <div key={i} className="flex items-end gap-3">
@@ -258,7 +260,7 @@ export default function CreateInvoicePage() {
                     value={item.description}
                     onChange={(e) => updateItem(i, "description", e.target.value)}
                     placeholder="Roof replacement - labor"
-                    className="w-full rounded-lg border border-[color:var(--border)] bg-[var(--surface-2)] px-3 py-2 text-sm text-[color:var(--text)] placeholder-slate-400"
+                    className="w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 placeholder-slate-400 dark:border-slate-600 dark:bg-slate-800 dark:text-white"
                   />
                 </div>
                 <div className="w-20">
@@ -268,7 +270,7 @@ export default function CreateInvoicePage() {
                     value={item.quantity}
                     onChange={(e) => updateItem(i, "quantity", Number(e.target.value))}
                     min={0}
-                    className="w-full rounded-lg border border-[color:var(--border)] bg-[var(--surface-2)] px-3 py-2 text-sm text-[color:var(--text)]"
+                    className="w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 dark:border-slate-600 dark:bg-slate-800 dark:text-white"
                   />
                 </div>
                 <div className="w-32">
@@ -281,10 +283,10 @@ export default function CreateInvoicePage() {
                     value={item.unitPrice}
                     onChange={(e) => updateItem(i, "unitPrice", Number(e.target.value))}
                     min={0}
-                    className="w-full rounded-lg border border-[color:var(--border)] bg-[var(--surface-2)] px-3 py-2 text-sm text-[color:var(--text)]"
+                    className="w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 dark:border-slate-600 dark:bg-slate-800 dark:text-white"
                   />
                 </div>
-                <div className="w-28 py-2 text-right font-mono text-sm text-[color:var(--text)]">
+                <div className="w-28 py-2 text-right font-mono text-sm text-slate-900 dark:text-white">
                   {fmt(item.quantity * item.unitPrice)}
                 </div>
                 {items.length > 1 && (
@@ -302,17 +304,17 @@ export default function CreateInvoicePage() {
           <button
             type="button"
             onClick={addItem}
-            className="mt-4 flex items-center gap-2 rounded-lg border border-dashed border-[color:var(--border)] px-4 py-2 text-sm text-slate-500 transition-colors hover:border-[var(--primary)] hover:text-[var(--primary)]"
+            className="mt-4 flex items-center gap-2 rounded-lg border border-dashed border-slate-300 px-4 py-2 text-sm text-slate-500 transition-colors hover:border-blue-500 hover:text-blue-500 dark:border-slate-600"
           >
             <Plus className="h-4 w-4" /> Add Line Item
           </button>
         </div>
 
         {/* Material Receipts / Photos */}
-        <div className="rounded-2xl border border-[color:var(--border)] bg-[var(--surface-glass)] p-6 backdrop-blur-xl">
+        <div className="rounded-2xl border border-slate-200 bg-white/80 p-6 shadow-sm backdrop-blur-xl dark:border-slate-700 dark:bg-slate-900/80">
           <div className="mb-1 flex items-center gap-2">
-            <Camera className="h-5 w-5 text-[var(--primary)]" />
-            <h2 className="text-lg font-semibold text-[color:var(--text)]">
+            <Camera className="h-5 w-5 text-blue-500" />
+            <h2 className="text-lg font-semibold text-slate-900 dark:text-white">
               Material Receipts &amp; Photos
             </h2>
           </div>
@@ -330,12 +332,12 @@ export default function CreateInvoicePage() {
             onClick={() => receiptInputRef.current?.click()}
             className={`cursor-pointer rounded-xl border-2 border-dashed p-8 text-center transition-all ${
               dragActive
-                ? "border-[var(--primary)] bg-blue-50/50 dark:bg-blue-950/20"
-                : "border-[color:var(--border)] hover:border-[var(--primary)] hover:bg-[var(--surface-1)]"
+                ? "border-blue-500 bg-blue-50/50 dark:bg-blue-950/20"
+                : "border-slate-300 hover:border-blue-500 hover:bg-slate-50 dark:border-slate-600 dark:hover:bg-slate-800/50"
             }`}
           >
             <Upload className="mx-auto mb-3 h-8 w-8 text-slate-400" />
-            <p className="text-sm font-medium text-[color:var(--text)]">
+            <p className="text-sm font-medium text-slate-900 dark:text-white">
               Drag &amp; drop receipts here, or click to browse
             </p>
             <p className="mt-1 text-xs text-slate-400">
@@ -357,7 +359,7 @@ export default function CreateInvoicePage() {
               {receipts.map((receipt) => (
                 <div
                   key={receipt.id}
-                  className="group relative overflow-hidden rounded-xl border border-[color:var(--border)] bg-[var(--surface-2)]"
+                  className="group relative overflow-hidden rounded-xl border border-slate-200 bg-slate-50 dark:border-slate-600 dark:bg-slate-800"
                 >
                   {receipt.preview ? (
                     <img
@@ -395,7 +397,7 @@ export default function CreateInvoicePage() {
         </div>
 
         {/* Totals */}
-        <div className="rounded-2xl border border-[color:var(--border)] bg-[var(--surface-glass)] p-6 backdrop-blur-xl">
+        <div className="rounded-2xl border border-slate-200 bg-white/80 p-6 shadow-sm backdrop-blur-xl dark:border-slate-700 dark:bg-slate-900/80">
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <div className="space-y-3">
               <div>
@@ -409,7 +411,7 @@ export default function CreateInvoicePage() {
                   onChange={(e) => setTaxRate(Number(e.target.value))}
                   min={0}
                   max={100}
-                  className="w-full rounded-xl border border-[color:var(--border)] bg-[var(--surface-2)] px-4 py-3 text-[color:var(--text)] focus:border-[var(--primary)] focus:outline-none"
+                  className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-slate-900 focus:border-blue-500 focus:outline-none dark:border-slate-600 dark:bg-slate-800 dark:text-white"
                 />
               </div>
               <div>
@@ -422,7 +424,7 @@ export default function CreateInvoicePage() {
                   value={discount}
                   onChange={(e) => setDiscount(Number(e.target.value))}
                   min={0}
-                  className="w-full rounded-xl border border-[color:var(--border)] bg-[var(--surface-2)] px-4 py-3 text-[color:var(--text)] focus:border-[var(--primary)] focus:outline-none"
+                  className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-slate-900 focus:border-blue-500 focus:outline-none dark:border-slate-600 dark:bg-slate-800 dark:text-white"
                 />
               </div>
               <div>
@@ -434,12 +436,12 @@ export default function CreateInvoicePage() {
                   onChange={(e) => setNotes(e.target.value)}
                   rows={3}
                   placeholder="Payment terms, additional notes..."
-                  className="w-full rounded-xl border border-[color:var(--border)] bg-[var(--surface-2)] px-4 py-3 text-[color:var(--text)] placeholder-slate-400 focus:border-[var(--primary)] focus:outline-none"
+                  className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-slate-900 placeholder-slate-400 focus:border-blue-500 focus:outline-none dark:border-slate-600 dark:bg-slate-800 dark:text-white"
                 />
               </div>
             </div>
             <div className="flex flex-col justify-end">
-              <div className="space-y-2 rounded-xl bg-[var(--surface-2)] p-4">
+              <div className="space-y-2 rounded-xl bg-slate-50 p-4 dark:bg-slate-800">
                 <div className="flex justify-between text-sm text-slate-600 dark:text-slate-300">
                   <span>Subtotal</span>
                   <span className="font-mono">{fmt(subtotal)}</span>
@@ -454,8 +456,8 @@ export default function CreateInvoicePage() {
                     <span className="font-mono">−{fmt(discount)}</span>
                   </div>
                 )}
-                <div className="border-t border-[color:var(--border)] pt-2">
-                  <div className="flex justify-between text-lg font-bold text-[color:var(--text)]">
+                <div className="border-t border-slate-200 pt-2 dark:border-slate-700">
+                  <div className="flex justify-between text-lg font-bold text-slate-900 dark:text-white">
                     <span>Total</span>
                     <span className="font-mono">{fmt(total)}</span>
                   </div>
@@ -470,14 +472,14 @@ export default function CreateInvoicePage() {
           <button
             type="button"
             onClick={() => router.back()}
-            className="rounded-xl border border-[color:var(--border)] px-6 py-3 font-medium text-[color:var(--text)] transition-colors hover:bg-[var(--surface-1)]"
+            className="rounded-xl border border-slate-200 px-6 py-3 font-medium text-slate-700 transition-colors hover:bg-slate-50 dark:border-slate-600 dark:text-slate-300 dark:hover:bg-slate-800"
           >
             Cancel
           </button>
           <button
             type="submit"
             disabled={loading}
-            className="rounded-xl bg-gradient-to-r from-[var(--primary)] to-[var(--accent)] px-8 py-3 font-semibold text-white shadow-[var(--glow)] transition hover:scale-[1.02] disabled:opacity-50"
+            className="rounded-xl bg-blue-600 px-8 py-3 font-semibold text-white shadow-lg shadow-blue-500/25 transition hover:scale-[1.02] hover:bg-blue-700 disabled:opacity-50"
           >
             {loading ? "Creating..." : "Create Invoice"}
           </button>

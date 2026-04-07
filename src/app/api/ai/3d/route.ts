@@ -12,11 +12,11 @@ export const dynamic = "force-dynamic";
  * - Point cloud processing
  */
 
-import { auth } from "@clerk/nextjs/server";
+import { withAuth } from "@/lib/auth/withAuth";
 import { NextRequest, NextResponse } from "next/server";
 
 import { AICoreRouter } from "@/lib/ai/router";
-import { type AiBillingContext,createAiConfig, withAiBilling } from "@/lib/ai/withAiBilling";
+import { type AiBillingContext, createAiConfig, withAiBilling } from "@/lib/ai/withAiBilling";
 import {
   requireActiveSubscription,
   SubscriptionRequiredError,
@@ -99,14 +99,8 @@ async function POST_INNER(request: NextRequest, ctx: AiBillingContext) {
  *
  * Returns available 3D vision capabilities
  */
-export async function GET() {
+export const GET = withAuth(async (_req, { userId }) => {
   try {
-    const { userId } = await auth();
-
-    if (!userId) {
-      return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
-    }
-
     return NextResponse.json({
       success: true,
       module: "3d",
@@ -130,7 +124,7 @@ export async function GET() {
   } catch (error) {
     return NextResponse.json({ success: false, error: "Internal server error" }, { status: 500 });
   }
-}
+});
 
 export const POST = withAiBilling(
   createAiConfig("3d_reconstruction", { costPerRequest: 50, planRequired: "pro" }),

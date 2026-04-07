@@ -73,7 +73,7 @@ export function TradesFeed({ isAuthenticated }: TradesFeedProps) {
   );
 
   useEffect(() => {
-    loadPosts();
+    void loadPosts();
   }, []);
 
   const loadPosts = async () => {
@@ -134,7 +134,7 @@ export function TradesFeed({ isAuthenticated }: TradesFeedProps) {
         setShowMentions(true);
         setMentionSearch(query);
         mentionAnchorRef.current = atIndex;
-        searchMentions(query);
+        void searchMentions(query);
         return;
       }
     }
@@ -223,7 +223,7 @@ export function TradesFeed({ isAuthenticated }: TradesFeedProps) {
                   onKeyDown={(e) => {
                     if ((e.metaKey || e.ctrlKey) && e.key === "Enter") {
                       e.preventDefault();
-                      handleCreatePost();
+                      void handleCreatePost();
                     }
                   }}
                   placeholder="Share a project update, tag a @pro, or post an opportunity..."

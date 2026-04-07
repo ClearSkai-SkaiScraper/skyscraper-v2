@@ -25,7 +25,7 @@ export function CompletionChecklist({ claimId, onStatusChange }: CompletionCheck
   });
 
   useEffect(() => {
-    fetchStatus();
+    void fetchStatus();
   }, [claimId]);
 
   const fetchStatus = async () => {

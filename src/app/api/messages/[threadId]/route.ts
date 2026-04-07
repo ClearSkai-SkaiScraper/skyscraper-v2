@@ -1,6 +1,6 @@
 export const dynamic = "force-dynamic";
 
-import { auth } from "@clerk/nextjs/server";
+import { withAuth } from "@/lib/auth/withAuth";
 import { NextRequest, NextResponse } from "next/server";
 
 import { logger } from "@/lib/logger";
@@ -9,19 +9,10 @@ import { safeOrgContext } from "@/lib/safeOrgContext";
 import { sendMessageSchema, threadActionSchema } from "@/lib/validation/message-schemas";
 import { validateBody } from "@/lib/validation/middleware";
 
-type RouteContext = {
-  params: Promise<{ threadId: string }>;
-};
-
 // GET /api/messages/:threadId - Get thread detail with messages
-export async function GET(req: NextRequest, context: RouteContext) {
+export const GET = withAuth(async (req: NextRequest, { orgId, userId }, routeParams) => {
   try {
-    const { userId } = await auth();
-    if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    const { threadId } = await context.params;
+    const { threadId } = await routeParams.params;
 
     // Pre-check: try to resolve user's org context for tenant-scoped lookup
     let orgFilter: string | undefined;
@@ -183,17 +174,12 @@ export async function GET(req: NextRequest, context: RouteContext) {
     logger.error("Error fetching Message:", error);
     return NextResponse.json({ error: "Failed to fetch messages" }, { status: 500 });
   }
-}
+});
 
 // POST /api/messages/:threadId - Send a message in a thread
-export async function POST(req: NextRequest, context: RouteContext) {
+export const POST = withAuth(async (req: NextRequest, { orgId, userId }, routeParams) => {
   try {
-    const { userId } = await auth();
-    if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    const { threadId } = await context.params;
+    const { threadId } = await routeParams.params;
     const body = await validateBody(req, sendMessageSchema);
     if (body instanceof NextResponse) return body;
     const { content, attachments } = body;
@@ -321,17 +307,12 @@ export async function POST(req: NextRequest, context: RouteContext) {
     logger.error("Error sending message:", error);
     return NextResponse.json({ error: "Failed to send message" }, { status: 500 });
   }
-}
+});
 
 // DELETE /api/messages/:threadId - Delete a thread and all its messages
-export async function DELETE(req: NextRequest, context: RouteContext) {
+export const DELETE = withAuth(async (req: NextRequest, { orgId, userId }, routeParams) => {
   try {
-    const { userId } = await auth();
-    if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    const { threadId } = await context.params;
+    const { threadId } = await routeParams.params;
 
     const thread = await prisma.messageThread.findUnique({
       where: { id: threadId },
@@ -388,17 +369,12 @@ export async function DELETE(req: NextRequest, context: RouteContext) {
     logger.error("Error deleting thread:", error);
     return NextResponse.json({ error: "Failed to delete thread" }, { status: 500 });
   }
-}
+});
 
 // PATCH /api/messages/:threadId - Archive or unarchive a thread
-export async function PATCH(req: NextRequest, context: RouteContext) {
+export const PATCH = withAuth(async (req: NextRequest, { orgId, userId }, routeParams) => {
   try {
-    const { userId } = await auth();
-    if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    const { threadId } = await context.params;
+    const { threadId } = await routeParams.params;
     const body = await validateBody(req, threadActionSchema);
     if (body instanceof NextResponse) return body;
     const { action } = body;
@@ -496,4 +472,4 @@ export async function PATCH(req: NextRequest, context: RouteContext) {
     logger.error("Error updating thread:", error);
     return NextResponse.json({ error: "Failed to update thread" }, { status: 500 });
   }
-}
+});

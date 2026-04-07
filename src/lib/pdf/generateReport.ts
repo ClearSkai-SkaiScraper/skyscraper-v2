@@ -63,7 +63,7 @@ export function generateInsuranceReport(
   const license = branding?.license ?? "";
 
   // Apply branding colors
-  const { primaryRgb, secondaryRgb } = applyBrandingToJsPDF(doc, {
+  const { primaryRgb, secondaryRgb: _secondaryRgb } = applyBrandingToJsPDF(doc, {
     logo,
     businessName,
     phone,
@@ -190,7 +190,7 @@ export function generateInsuranceReport(
 
   doc.setFontSize(10);
   doc.setFont("helvetica", "normal");
-  const summaryLines = doc.splitTextToSize(report.executiveSummary, 170);
+  const summaryLines = doc.splitTextToSize(report.executiveSummary, 170) as string[];
   doc.text(summaryLines, 20, yPos);
   yPos += summaryLines.length * 6 + 10;
 
@@ -213,7 +213,7 @@ export function generateInsuranceReport(
 
   doc.setTextColor(0, 0, 0);
 
-  report.damageAssessment.forEach((item, index) => {
+  report.damageAssessment.forEach((item, _index) => {
     if (yPos > 250) {
       doc.addPage();
       yPos = 20;
@@ -231,7 +231,7 @@ export function generateInsuranceReport(
     yPos += 6;
 
     doc.setTextColor(0, 0, 0);
-    const findingsLines = doc.splitTextToSize(item.findings, 170);
+    const findingsLines = doc.splitTextToSize(item.findings, 170) as string[];
     doc.text(findingsLines, 20, yPos);
     yPos += findingsLines.length * 6 + 8;
   });
@@ -310,7 +310,7 @@ export function generateInsuranceReport(
   if (report.costEstimate.breakdown) {
     doc.setFontSize(10);
     doc.setFont("helvetica", "normal");
-    const breakdownLines = doc.splitTextToSize(report.costEstimate.breakdown, 170);
+    const breakdownLines = doc.splitTextToSize(report.costEstimate.breakdown, 170) as string[];
     doc.text(breakdownLines, 20, yPos);
     yPos += breakdownLines.length * 6;
   }
@@ -408,7 +408,7 @@ export function generateRetailReport(
   const website = branding?.website ?? "";
   const license = branding?.license ?? "";
 
-  const { primaryRgb, secondaryRgb } = applyBrandingToJsPDF(doc, {
+  const { primaryRgb, secondaryRgb: _secondaryRgb } = applyBrandingToJsPDF(doc, {
     logo,
     businessName,
     phone,
@@ -546,9 +546,9 @@ export function generateRetailReport(
   doc.setFontSize(10);
   doc.setFont("helvetica", "normal");
   doc.setTextColor(0, 0, 0);
-  const summaryLines = doc.splitTextToSize(report.executiveSummary, 170);
-  doc.text(summaryLines, 20, yPos);
-  yPos += summaryLines.length * 6 + 15;
+  const summaryLines2 = doc.splitTextToSize(report.executiveSummary, 170) as string[];
+  doc.text(summaryLines2, 20, yPos);
+  yPos += summaryLines2.length * 6 + 15;
 
   // === WHAT WE FOUND ===
   if (yPos > 240) {
@@ -576,9 +576,9 @@ export function generateRetailReport(
 
     doc.setFontSize(10);
     doc.setFont("helvetica", "normal");
-    const findingsLines = doc.splitTextToSize(item.findings, 170);
-    doc.text(findingsLines, 20, yPos);
-    yPos += findingsLines.length * 6 + 8;
+    const findingsLines2 = doc.splitTextToSize(item.findings, 170) as string[];
+    doc.text(findingsLines2, 20, yPos);
+    yPos += findingsLines2.length * 6 + 8;
   });
 
   // === MATERIALS & PRICING ===
@@ -680,7 +680,7 @@ export function generateRetailReport(
     doc.setFont("helvetica", "bold");
     doc.text(stepNum, 20, yPos);
     doc.setFont("helvetica", "normal");
-    const recLines = doc.splitTextToSize(rec, 160);
+    const recLines = doc.splitTextToSize(rec, 160) as string[];
     doc.text(recLines, 30, yPos);
     yPos += recLines.length * 6 + 3;
   });

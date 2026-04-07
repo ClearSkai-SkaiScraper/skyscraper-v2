@@ -75,7 +75,7 @@ export default function ScopeEditorHub() {
         setLoading(false);
       }
     }
-    fetchClaims();
+    void fetchClaims();
   }, []);
 
   useEffect(() => {

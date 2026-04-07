@@ -60,7 +60,7 @@ export default function NotificationsPage() {
   }, []);
 
   useEffect(() => {
-    fetchAll();
+    void fetchAll();
   }, [fetchAll]);
 
   const markRead = async (id: string) => {
@@ -93,7 +93,7 @@ export default function NotificationsPage() {
 
   const refresh = () => {
     setRefreshing(true);
-    fetchAll();
+    void fetchAll();
   };
 
   const timeAgo = (date: string) => {

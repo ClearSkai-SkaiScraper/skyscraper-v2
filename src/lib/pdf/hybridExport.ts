@@ -12,12 +12,15 @@ import { exec } from "child_process";
 import { readFile, unlink, writeFile } from "fs/promises";
 import { tmpdir } from "os";
 import { join } from "path";
-import { PDFDocument, rgb, StandardFonts } from "pdf-lib";
+import { PDFDocument, type PDFFont, rgb as pdfRgb, StandardFonts } from "pdf-lib";
 import { promisify } from "util";
 
 import { logger } from "@/lib/logger";
 
 const execAsync = promisify(exec);
+
+// Wrapper to handle pdf-lib's rgb return type
+const rgb = (r: number, g: number, b: number) => pdfRgb(r, g, b);
 
 // ========== LIBREOFFICE DETECTION ==========
 
@@ -53,7 +56,7 @@ export async function convertDocxToPdfWithLibreOffice(docxBuffer: Buffer): Promi
     // --outdir: Where to write PDF
     const command = `soffice --headless --convert-to pdf --outdir "${outputDir}" "${inputPath}"`;
 
-    const { stdout, stderr } = await execAsync(command, {
+    const { stdout: _stdout, stderr } = await execAsync(command, {
       timeout: 30000, // 30s timeout
     });
 
@@ -67,20 +70,22 @@ export async function convertDocxToPdfWithLibreOffice(docxBuffer: Buffer): Promi
 
     // Cleanup temp files
     await unlink(inputPath).catch((e) =>
-      logger.debug(`[LibreOffice] Cleanup failed: ${e?.message}`)
+      logger.debug(`[LibreOffice] Cleanup failed: ${(e as Error)?.message}`)
     );
-    await unlink(pdfPath).catch((e) => logger.debug(`[LibreOffice] Cleanup failed: ${e?.message}`));
+    await unlink(pdfPath).catch((e) =>
+      logger.debug(`[LibreOffice] Cleanup failed: ${(e as Error)?.message}`)
+    );
 
     return pdfBuffer;
-  } catch (error: any) {
-    logger.error(`[LibreOffice] Conversion failed: ${error.message}`);
+  } catch (error) {
+    logger.error(`[LibreOffice] Conversion failed: ${(error as Error).message}`);
     Sentry.captureException(error, {
       tags: { component: "libreoffice-export" },
     });
 
     // Cleanup on error
     await unlink(inputPath).catch((e) =>
-      logger.debug(`[LibreOffice] Cleanup failed: ${e?.message}`)
+      logger.debug(`[LibreOffice] Cleanup failed: ${(e as Error)?.message}`)
     );
 
     return null;
@@ -89,9 +94,36 @@ export async function convertDocxToPdfWithLibreOffice(docxBuffer: Buffer): Promi
 
 // ========== PDF-LIB FALLBACK ==========
 
+interface BrandingData {
+  companyName?: string;
+  logoUrl?: string;
+}
+
+interface PacketDataContent {
+  propertyAddress?: string;
+  insured_name?: string;
+  branding?: BrandingData;
+  roofType?: string;
+  materialChoice?: string;
+  financingAvailable?: boolean;
+  financingPartners?: string[];
+  companyBio?: string;
+  claimNumber?: string;
+  dateOfLoss?: string;
+  carrier?: string;
+  adjusterName?: string;
+  damageType?: string;
+  rcv?: number;
+  acv?: number;
+  underpayment?: number;
+  weatherEvents?: string[];
+  supplements?: Array<{ description: string; amount: number }>;
+  [key: string]: unknown;
+}
+
 export type PacketData = {
   mode: "retail" | "claims";
-  data: Record<string, any>;
+  data: PacketDataContent;
 };
 
 /**
@@ -124,7 +156,7 @@ export async function generatePdfWithPdfLib(packetData: PacketData): Promise<Buf
 
   // Property Address
   if (data.propertyAddress || data.insured_name) {
-    const subtitle = data.propertyAddress || data.insured_name;
+    const subtitle = data.propertyAddress ?? data.insured_name ?? "";
     const subtitleSize = 14;
     const subtitleWidth = timesRoman.widthOfTextAtSize(subtitle, subtitleSize);
 
@@ -169,7 +201,7 @@ export async function generatePdfWithPdfLib(packetData: PacketData): Promise<Buf
         color: rgb(0.3, 0.3, 0.3),
       });
     } catch (e) {
-      logger.warn("[PDF_EXPORT] Branding draw skipped:", (e as any)?.message);
+      logger.warn("[PDF_EXPORT] Branding draw skipped:", (e as Error)?.message);
     }
   }
 
@@ -190,12 +222,12 @@ export async function generatePdfWithPdfLib(packetData: PacketData): Promise<Buf
  */
 async function addRetailContentPages(
   pdfDoc: PDFDocument,
-  data: Record<string, any>,
-  font: any,
-  boldFont: any
+  data: PacketDataContent,
+  font: PDFFont,
+  boldFont: PDFFont
 ): Promise<void> {
   const page = pdfDoc.addPage([612, 792]);
-  const { width, height } = page.getSize();
+  const { height } = page.getSize();
   let yPos = height - 50;
 
   // Step 1: Client & Property
@@ -238,7 +270,7 @@ async function addRetailContentPages(
   // Step 2: Materials & Upgrades
   if (data.roofType || data.materialChoice) {
     if (yPos < 100) {
-      const newPage = pdfDoc.addPage([612, 792]);
+      pdfDoc.addPage([612, 792]);
       yPos = height - 50;
     }
 
@@ -277,7 +309,7 @@ async function addRetailContentPages(
   // Step 3: Financing
   if (data.financingAvailable) {
     if (yPos < 100) {
-      const newPage = pdfDoc.addPage([612, 792]);
+      pdfDoc.addPage([612, 792]);
       yPos = height - 50;
     }
 
@@ -314,7 +346,7 @@ async function addRetailContentPages(
   // Step 4: Why Choose Us
   if (data.companyBio) {
     if (yPos < 150) {
-      const newPage = pdfDoc.addPage([612, 792]);
+      pdfDoc.addPage([612, 792]);
       yPos = height - 50;
     }
 
@@ -356,12 +388,12 @@ async function addRetailContentPages(
  */
 async function addClaimsContentPages(
   pdfDoc: PDFDocument,
-  data: Record<string, any>,
-  font: any,
-  boldFont: any
+  data: PacketDataContent,
+  font: PDFFont,
+  boldFont: PDFFont
 ): Promise<void> {
   const page = pdfDoc.addPage([612, 792]);
-  const { width, height } = page.getSize();
+  const { height } = page.getSize();
   let yPos = height - 50;
 
   // Step 1: Carrier & Claim Info
@@ -401,7 +433,7 @@ async function addClaimsContentPages(
   // Step 2: Insured & Property
   if (data.insured_name || data.propertyAddress) {
     if (yPos < 100) {
-      const newPage = pdfDoc.addPage([612, 792]);
+      pdfDoc.addPage([612, 792]);
       yPos = height - 50;
     }
 
@@ -478,7 +510,7 @@ function wrapText(text: string, maxChars: number): string[] {
 
 export type HybridExportOptions = {
   mode: "retail" | "claims";
-  data: Record<string, any>;
+  data: PacketDataContent;
   docxBuffer?: Buffer; // Optional: if you have a DOCX already
 };
 

@@ -76,7 +76,7 @@ export default function WeatherReportsPage() {
       }
     }
 
-    loadClaimsLite();
+    void loadClaimsLite();
     return () => {
       cancelled = true;
     };

@@ -28,7 +28,8 @@ import "server-only";
 
 import { NextRequest, NextResponse } from "next/server";
 
-import { isAuthError, requireAuth,type RequireAuthOptions } from "@/lib/auth/requireAuth";
+import { isAuthError, requireAuth, type RequireAuthOptions } from "@/lib/auth/requireAuth";
+import { setRequestContext } from "@/lib/requestContext";
 
 type ResolvedAuth = {
   orgId: string;
@@ -65,6 +66,10 @@ type AuthenticatedHandler = (
  */
 export function withAuth(handler: AuthenticatedHandler, options?: RequireAuthOptions) {
   return async (req: NextRequest, params?: any): Promise<NextResponse | Response> => {
+    // Session 9: Propagate correlation ID from middleware to all wrapped routes
+    const requestId = req.headers.get("x-request-id");
+    if (requestId) setRequestContext(requestId);
+
     const auth = await requireAuth(options);
     if (isAuthError(auth)) return auth;
 

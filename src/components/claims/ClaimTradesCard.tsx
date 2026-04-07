@@ -47,12 +47,12 @@ export function ClaimTradesCard({ claimId }: ClaimTradesCardProps) {
   const [isOpen, setIsOpen] = useState(false);
 
   useEffect(() => {
-    fetchLinkedTrades();
+    void fetchLinkedTrades();
   }, [claimId]);
 
   useEffect(() => {
     if (isOpen) {
-      fetchAvailableTrades();
+      void fetchAvailableTrades();
     }
   }, [isOpen]);
 
@@ -94,7 +94,7 @@ export function ClaimTradesCard({ claimId }: ClaimTradesCardProps) {
         toast.success("Success", {
         description: "Trade partner linked to claim",
       });
-        fetchLinkedTrades();
+        void fetchLinkedTrades();
         setIsOpen(false);
       } else {
         const data = await response.json();
@@ -117,7 +117,7 @@ export function ClaimTradesCard({ claimId }: ClaimTradesCardProps) {
         toast.success("Success", {
         description: "Trade partner removed from claim",
       });
-        fetchLinkedTrades();
+        void fetchLinkedTrades();
       } else {
         throw new Error("Failed to unlink");
       }

@@ -42,7 +42,7 @@ export const POST = withManager(async (req: NextRequest, { orgId, userId }) => {
 
     return NextResponse.json({ url: portalUrl });
   } catch (error) {
-    logger.error("Portal session error:", error);
+    logger.error("[BILLING_PORTAL]", { error });
     return NextResponse.json({ error: "Failed to create portal session" }, { status: 500 });
   }
 });

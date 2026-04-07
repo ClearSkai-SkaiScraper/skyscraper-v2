@@ -5,21 +5,17 @@ export const dynamic = "force-dynamic";
  * Handle push notification subscription management
  */
 
-import { auth } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
+
+import { withAuth } from "@/lib/auth/withAuth";
 
 import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 import { pushNotificationService } from "@/lib/services/push-notification-service";
 
 // GET /api/notifications/push - Get push notification status
-export async function GET(req: NextRequest) {
+export const GET = withAuth(async (req: NextRequest, { userId }) => {
   try {
-    const { userId } = await auth();
-    if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
     // Get internal user ID
     const user = await prisma.users.findUnique({
       where: { clerkUserId: userId },
@@ -45,20 +41,15 @@ export async function GET(req: NextRequest) {
       logger.debug("Push subscriptions table may not exist:", error);
       return NextResponse.json({ subscribed: false, subscriptions: [] });
     }
-  } catch (error) {
+  } catch (error: unknown) {
     logger.error("Error getting push status:", error);
     return NextResponse.json({ error: "Failed to get push status" }, { status: 500 });
   }
-}
+});
 
 // POST /api/notifications/push - Subscribe to push notifications
-export async function POST(req: NextRequest) {
+export const POST = withAuth(async (req: NextRequest, { userId }) => {
   try {
-    const { userId } = await auth();
-    if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
     const body = await req.json();
     const { subscription, deviceInfo } = body;
 
@@ -83,20 +74,15 @@ export async function POST(req: NextRequest) {
       logger.error("Error subscribing to push (table may not exist):", error);
       return NextResponse.json({ success: true });
     }
-  } catch (error) {
+  } catch (error: unknown) {
     logger.error("Error subscribing to push:", error);
     return NextResponse.json({ error: "Failed to subscribe" }, { status: 500 });
   }
-}
+});
 
 // DELETE /api/notifications/push - Unsubscribe from push notifications
-export async function DELETE(req: NextRequest) {
+export const DELETE = withAuth(async (req: NextRequest, { userId }) => {
   try {
-    const { userId } = await auth();
-    if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
     const body = await req.json();
     const { endpoint } = body;
 
@@ -111,8 +97,8 @@ export async function DELETE(req: NextRequest) {
       logger.error("Error unsubscribing from push:", error);
       return NextResponse.json({ success: true });
     }
-  } catch (error) {
+  } catch (error: unknown) {
     logger.error("Error unsubscribing from push:", error);
     return NextResponse.json({ error: "Failed to unsubscribe" }, { status: 500 });
   }
-}
+});

@@ -55,7 +55,7 @@ export function ConnectionInviteBanner({
         setLoading(false);
       }
     };
-    check();
+    void check();
   }, [threadId, initialStatus]);
 
   // Don't show banner if already connected or no connection info available

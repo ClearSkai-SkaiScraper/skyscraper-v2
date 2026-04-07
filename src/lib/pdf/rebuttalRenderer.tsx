@@ -7,8 +7,8 @@
  * MIGRATED: Now uses shared PDF components from pdfConfig.ts and components.tsx
  */
 
+/* eslint-disable jsx-a11y/alt-text -- react-pdf Image component doesn't support alt prop */
 import { Document, Image, Text, View } from "@react-pdf/renderer";
-import React from "react";
 
 import {
   BulletList,

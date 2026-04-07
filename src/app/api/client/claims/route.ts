@@ -1,8 +1,8 @@
 export const dynamic = "force-dynamic";
 
-import { auth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 
+import { withAuth } from "@/lib/auth/withAuth";
 import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 
@@ -10,14 +10,8 @@ import prisma from "@/lib/prisma";
  * GET /api/client/claims
  * Get all claims a client is connected to
  */
-export async function GET() {
+export const GET = withAuth(async (req, { userId, orgId }) => {
   try {
-    const { userId } = await auth();
-
-    if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
     // Find all CONNECTED claim links for this client
     // Scoped by userId (clientUserId) — no cross-tenant risk
     const links = await prisma.claimClientLink.findMany({
@@ -68,4 +62,4 @@ export async function GET() {
     logger.error("[CLIENT_CLAIMS_ERROR]", error);
     return NextResponse.json({ error: "Failed to fetch claims" }, { status: 500 });
   }
-}
+});

@@ -107,7 +107,7 @@ export default function BidOpportunitiesPage() {
   });
 
   useEffect(() => {
-    fetchProjects();
+    void fetchProjects();
   }, []);
 
   async function fetchProjects() {
@@ -206,7 +206,7 @@ export default function BidOpportunitiesPage() {
       if (res.ok) {
         toast.success("Bid submitted successfully! The client will be notified.");
         setBidModalOpen(false);
-        fetchProjects(); // Refresh to update bid counts
+        void fetchProjects(); // Refresh to update bid counts
       } else {
         const err = await res.json();
         toast.error(err.error || "Failed to submit bid");

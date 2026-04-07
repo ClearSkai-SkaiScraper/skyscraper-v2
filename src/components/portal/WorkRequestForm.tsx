@@ -85,7 +85,7 @@ export default function WorkRequestForm({
         logger.error("Failed to load my pros:", err);
       }
     }
-    loadMyPros();
+    void loadMyPros();
   }, [preselectedProId]);
 
   const [formData, setFormData] = useState({

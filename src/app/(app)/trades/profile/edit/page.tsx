@@ -276,7 +276,7 @@ export default function EditProfilePage() {
       }
     };
 
-    loadProfile();
+    void loadProfile();
   }, [router]);
 
   const handleHeadshotSelect = (e: React.ChangeEvent<HTMLInputElement>) => {

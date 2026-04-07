@@ -1,16 +1,16 @@
 // lib/pdf/full-claim-packet.ts
 /**
  * 🔥 MEGA-PDF COMPOSER
- * 
+ *
  * Builds the complete claim packet PDF with conditional sections based on mode:
- * 
+ *
  * QUICK (2-4 pages):
  * - Cover page
  * - Executive summary
  * - Financial overview
  * - Damage overview
  * - Basic weather summary
- * 
+ *
  * STANDARD (8-15 pages):
  * - Everything in QUICK
  * - Full financial audit
@@ -18,7 +18,7 @@
  * - Supplement opportunities
  * - Scope corrections
  * - Detailed damage assessment
- * 
+ *
  * NUCLEAR (20-40 pages):
  * - Everything in STANDARD
  * - Forensic weather analysis
@@ -28,9 +28,15 @@
  * - Photo evidence gallery (if available)
  */
 
-import { PDFDocument, PDFPage, rgb, StandardFonts } from "pdf-lib";
+import { PDFDocument, type PDFFont, PDFPage, rgb as pdfRgb, StandardFonts } from "pdf-lib";
 
 import type { PacketMode } from "@/app/api/intel/super-packet/route";
+import type { FinancialAnalysisResult } from "@/lib/intel/financial/engine";
+import type { ClaimsPacketResult } from "@/lib/intel/reports/claims-packet";
+import type { ForensicWeatherResult } from "@/lib/intel/reports/forensic-weather";
+
+// Wrapper to handle pdf-lib's rgb return type
+const rgb = (r: number, g: number, b: number) => pdfRgb(r, g, b);
 
 interface ClaimInfo {
   claimNumber: string;
@@ -41,9 +47,10 @@ interface ClaimInfo {
   adjuster: string;
 }
 
+// Financial data types - mathResult and aiResult can both be FinancialAnalysisResult
 interface FinancialsData {
-  mathResult: any;
-  aiResult: any;
+  mathResult: FinancialAnalysisResult | null;
+  aiResult: FinancialAnalysisResult | null;
 }
 
 interface DamageData {
@@ -65,8 +72,8 @@ interface BuildPacketInput {
   mode: PacketMode;
   claim: ClaimInfo;
   financials: FinancialsData;
-  claimsPacket?: any;
-  forensicWeather?: any;
+  claimsPacket?: ClaimsPacketResult | null;
+  forensicWeather?: ForensicWeatherResult | null;
   damage: DamageData;
   weather: WeatherData;
   supplements: SupplementItem[];
@@ -79,7 +86,8 @@ export async function buildFullClaimPacketPDF(input: BuildPacketInput): Promise<
   const helvetica = await pdfDoc.embedFont(StandardFonts.Helvetica);
   const helveticaBold = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
 
-  const { mode, claim, financials, claimsPacket, forensicWeather, damage, weather, supplements } = input;
+  const { mode, claim, financials, claimsPacket, forensicWeather, damage, weather, supplements } =
+    input;
 
   // ========================================
   // COVER PAGE (ALL MODES)
@@ -138,13 +146,23 @@ export async function buildFullClaimPacketPDF(input: BuildPacketInput): Promise<
     // Full Financial Audit
     if (claimsPacket?.financialFindings) {
       const auditPage = pdfDoc.addPage();
-      await addFinancialAudit(auditPage, claimsPacket.financialFindings, timesRomanBold, timesRoman);
+      await addFinancialAudit(
+        auditPage,
+        claimsPacket.financialFindings,
+        timesRomanBold,
+        timesRoman
+      );
     }
 
     // Code Requirements
     if (claimsPacket?.codeRequirements) {
       const codePage = pdfDoc.addPage();
-      await addCodeRequirements(codePage, claimsPacket.codeRequirements, timesRomanBold, timesRoman);
+      await addCodeRequirements(
+        codePage,
+        claimsPacket.codeRequirements,
+        timesRomanBold,
+        timesRoman
+      );
     }
 
     // Supplement Opportunities
@@ -156,7 +174,12 @@ export async function buildFullClaimPacketPDF(input: BuildPacketInput): Promise<
     // Scope Corrections
     if (claimsPacket?.scopeCorrections) {
       const scopePage = pdfDoc.addPage();
-      await addScopeCorrections(scopePage, claimsPacket.scopeCorrections, timesRomanBold, timesRoman);
+      await addScopeCorrections(
+        scopePage,
+        claimsPacket.scopeCorrections,
+        timesRomanBold,
+        timesRoman
+      );
     }
   }
 
@@ -186,9 +209,14 @@ export async function buildFullClaimPacketPDF(input: BuildPacketInput): Promise<
     }
 
     // Expert Opinion
-    if (forensicWeather.expertOpinion) {
+    if (forensicWeather.legalSummary?.expertOpinion) {
       const expertPage = pdfDoc.addPage();
-      await addExpertOpinion(expertPage, forensicWeather.expertOpinion, timesRomanBold, timesRoman);
+      await addExpertOpinion(
+        expertPage,
+        forensicWeather.legalSummary.expertOpinion,
+        timesRomanBold,
+        timesRoman
+      );
     }
   }
 
@@ -210,8 +238,8 @@ async function addCoverPage(
   page: PDFPage,
   claim: ClaimInfo,
   mode: PacketMode,
-  boldFont: any,
-  regularFont: any
+  boldFont: PDFFont,
+  regularFont: PDFFont
 ) {
   const { width, height } = page.getSize();
 
@@ -225,7 +253,12 @@ async function addCoverPage(
   });
 
   // Mode Badge
-  const modeText = mode === "NUCLEAR" ? "⚡ NUCLEAR MODE" : mode === "STANDARD" ? "📋 STANDARD" : "⚡ QUICK STRIKE";
+  const modeText =
+    mode === "NUCLEAR"
+      ? "⚡ NUCLEAR MODE"
+      : mode === "STANDARD"
+        ? "📋 STANDARD"
+        : "⚡ QUICK STRIKE";
   page.drawText(modeText, {
     x: 50,
     y: height - 140,
@@ -275,7 +308,12 @@ async function addCoverPage(
   });
 }
 
-async function addTableOfContents(page: PDFPage, mode: PacketMode, boldFont: any, regularFont: any) {
+async function addTableOfContents(
+  page: PDFPage,
+  mode: PacketMode,
+  boldFont: PDFFont,
+  regularFont: PDFFont
+) {
   const { height } = page.getSize();
 
   page.drawText("TABLE OF CONTENTS", {
@@ -327,11 +365,11 @@ async function addTableOfContents(page: PDFPage, mode: PacketMode, boldFont: any
 async function addExecutiveSummary(
   page: PDFPage,
   claim: ClaimInfo,
-  mathResult: any,
+  mathResult: FinancialAnalysisResult | null,
   damage: DamageData,
   weather: WeatherData,
-  boldFont: any,
-  regularFont: any
+  boldFont: PDFFont,
+  regularFont: PDFFont
 ) {
   const { height } = page.getSize();
 
@@ -343,10 +381,11 @@ async function addExecutiveSummary(
     color: rgb(0.1, 0.1, 0.1),
   });
 
-  const underpayment = mathResult?.underpayment || 0;
-  const underpaymentText = underpayment > 0 
-    ? `Identified Underpayment: $${underpayment.toLocaleString()}`
-    : "No underpayment detected";
+  const underpayment = mathResult?.totals?.underpayment || 0;
+  const underpaymentText =
+    underpayment > 0
+      ? `Identified Underpayment: $${underpayment.toLocaleString()}`
+      : "No underpayment detected";
 
   const summary = [
     `Claim: ${claim.claimNumber}`,
@@ -375,10 +414,10 @@ async function addExecutiveSummary(
 
 async function addFinancialOverview(
   page: PDFPage,
-  mathResult: any,
-  aiResult: any,
-  boldFont: any,
-  regularFont: any
+  mathResult: FinancialAnalysisResult | null,
+  aiResult: FinancialAnalysisResult | null,
+  boldFont: PDFFont,
+  regularFont: PDFFont
 ) {
   const { height } = page.getSize();
 
@@ -391,13 +430,15 @@ async function addFinancialOverview(
   });
 
   const lines = [
-    `Carrier RCV: $${mathResult?.carrier?.rcv?.toLocaleString() || "N/A"}`,
-    `Carrier ACV: $${mathResult?.carrier?.acv?.toLocaleString() || "N/A"}`,
-    `Contractor RCV: $${mathResult?.contractor?.rcv?.toLocaleString() || "N/A"}`,
-    `Underpayment: $${mathResult?.underpayment?.toLocaleString() || "0"}`,
+    `Carrier RCV: $${mathResult?.totals?.rcvCarrier?.toLocaleString() || "N/A"}`,
+    `Carrier ACV: $${mathResult?.totals?.acvCarrier?.toLocaleString() || "N/A"}`,
+    `Contractor RCV: $${mathResult?.totals?.rcvContractor?.toLocaleString() || "N/A"}`,
+    `Underpayment: $${mathResult?.totals?.underpayment?.toLocaleString() || "0"}`,
     "",
     "AI Analysis Summary:",
-    aiResult?.analysis?.substring(0, 400) || "Analysis pending...",
+    aiResult?.summary?.substring(0, 400) ||
+      mathResult?.summary?.substring(0, 400) ||
+      "Analysis pending...",
   ];
 
   let yPos = height - 150;
@@ -414,7 +455,12 @@ async function addFinancialOverview(
   }
 }
 
-async function addDamageOverview(page: PDFPage, damage: DamageData, boldFont: any, regularFont: any) {
+async function addDamageOverview(
+  page: PDFPage,
+  damage: DamageData,
+  boldFont: PDFFont,
+  regularFont: PDFFont
+) {
   const { height } = page.getSize();
 
   page.drawText("DAMAGE ASSESSMENT", {
@@ -425,12 +471,7 @@ async function addDamageOverview(page: PDFPage, damage: DamageData, boldFont: an
     color: rgb(0.1, 0.1, 0.1),
   });
 
-  const lines = [
-    `Primary Peril: ${damage.primaryPeril}`,
-    "",
-    "Summary:",
-    damage.summary,
-  ];
+  const lines = [`Primary Peril: ${damage.primaryPeril}`, "", "Summary:", damage.summary];
 
   let yPos = height - 150;
   for (const line of lines) {
@@ -446,7 +487,12 @@ async function addDamageOverview(page: PDFPage, damage: DamageData, boldFont: an
   }
 }
 
-async function addWeatherSummary(page: PDFPage, weather: WeatherData, boldFont: any, regularFont: any) {
+async function addWeatherSummary(
+  page: PDFPage,
+  weather: WeatherData,
+  boldFont: PDFFont,
+  regularFont: PDFFont
+) {
   const { height } = page.getSize();
 
   page.drawText("WEATHER SUMMARY", {
@@ -457,12 +503,7 @@ async function addWeatherSummary(page: PDFPage, weather: WeatherData, boldFont: 
     color: rgb(0.1, 0.1, 0.1),
   });
 
-  const lines = [
-    `Hail Size: ${weather.hailSize}`,
-    "",
-    "Event Summary:",
-    weather.summary,
-  ];
+  const lines = [`Hail Size: ${weather.hailSize}`, "", "Event Summary:", weather.summary];
 
   let yPos = height - 150;
   for (const line of lines) {
@@ -479,7 +520,12 @@ async function addWeatherSummary(page: PDFPage, weather: WeatherData, boldFont: 
 }
 
 // STANDARD MODE sections
-async function addFinancialAudit(page: PDFPage, findings: any, boldFont: any, regularFont: any) {
+async function addFinancialAudit(
+  page: PDFPage,
+  _findings: ClaimsPacketResult["financialFindings"],
+  boldFont: PDFFont,
+  regularFont: PDFFont
+) {
   const { height } = page.getSize();
 
   page.drawText("FINANCIAL AUDIT", {
@@ -499,7 +545,12 @@ async function addFinancialAudit(page: PDFPage, findings: any, boldFont: any, re
   });
 }
 
-async function addCodeRequirements(page: PDFPage, codes: any, boldFont: any, regularFont: any) {
+async function addCodeRequirements(
+  page: PDFPage,
+  _codes: ClaimsPacketResult["codeRequirements"],
+  boldFont: PDFFont,
+  regularFont: PDFFont
+) {
   const { height } = page.getSize();
 
   page.drawText("CODE REQUIREMENTS", {
@@ -522,8 +573,8 @@ async function addCodeRequirements(page: PDFPage, codes: any, boldFont: any, reg
 async function addSupplementOpportunities(
   page: PDFPage,
   supplements: SupplementItem[],
-  boldFont: any,
-  regularFont: any
+  boldFont: PDFFont,
+  regularFont: PDFFont
 ) {
   const { height } = page.getSize();
 
@@ -549,7 +600,12 @@ async function addSupplementOpportunities(
   }
 }
 
-async function addScopeCorrections(page: PDFPage, scope: any, boldFont: any, regularFont: any) {
+async function addScopeCorrections(
+  page: PDFPage,
+  _scope: ClaimsPacketResult["scopeCorrections"],
+  boldFont: PDFFont,
+  regularFont: PDFFont
+) {
   const { height } = page.getSize();
 
   page.drawText("SCOPE CORRECTIONS", {
@@ -570,7 +626,12 @@ async function addScopeCorrections(page: PDFPage, scope: any, boldFont: any, reg
 }
 
 // NUCLEAR MODE sections
-async function addForensicWeatherAnalysis(page: PDFPage, forensic: any, boldFont: any, regularFont: any) {
+async function addForensicWeatherAnalysis(
+  page: PDFPage,
+  forensic: ForensicWeatherResult,
+  boldFont: PDFFont,
+  regularFont: PDFFont
+) {
   const { height } = page.getSize();
 
   page.drawText("FORENSIC WEATHER ANALYSIS", {
@@ -581,10 +642,11 @@ async function addForensicWeatherAnalysis(page: PDFPage, forensic: any, boldFont
     color: rgb(0.8, 0.2, 0.2),
   });
 
-  const summary = forensic.meteorologicalAnalysis?.substring(0, 400) || "Expert weather analysis...";
-  
+  const summary =
+    forensic.eventTimeline?.summary?.substring(0, 400) || "Expert weather analysis...";
+
   let yPos = height - 150;
-  const lines = summary.split('\n');
+  const lines = summary.split("\n");
   for (const line of lines) {
     page.drawText(line, {
       x: 50,
@@ -599,7 +661,12 @@ async function addForensicWeatherAnalysis(page: PDFPage, forensic: any, boldFont
   }
 }
 
-async function addDamageCorrelationMatrix(page: PDFPage, correlation: any, boldFont: any, regularFont: any) {
+async function addDamageCorrelationMatrix(
+  page: PDFPage,
+  correlation: ForensicWeatherResult["damageCorrelation"],
+  boldFont: PDFFont,
+  regularFont: PDFFont
+) {
   const { height } = page.getSize();
 
   page.drawText("DAMAGE CORRELATION MATRIX", {
@@ -618,7 +685,7 @@ async function addDamageCorrelationMatrix(page: PDFPage, correlation: any, boldF
     color: rgb(0.8, 0.2, 0.2),
   });
 
-  const score = correlation.overallCorrelation || 0;
+  const score = correlation?.overallCorrelation || 0;
   page.drawText(`Overall Correlation Score: ${(score * 100).toFixed(1)}%`, {
     x: 50,
     y: height - 170,
@@ -627,7 +694,7 @@ async function addDamageCorrelationMatrix(page: PDFPage, correlation: any, boldF
     color: rgb(0.2, 0.2, 0.2),
   });
 
-  page.drawText(correlation.summary || "Damage patterns match weather event timeline...", {
+  page.drawText(correlation?.summary || "Damage patterns match weather event timeline...", {
     x: 50,
     y: height - 200,
     size: 11,
@@ -637,7 +704,12 @@ async function addDamageCorrelationMatrix(page: PDFPage, correlation: any, boldF
   });
 }
 
-async function addLegalSummary(page: PDFPage, legal: any, boldFont: any, regularFont: any) {
+async function addLegalSummary(
+  page: PDFPage,
+  legal: ForensicWeatherResult["legalSummary"],
+  boldFont: PDFFont,
+  regularFont: PDFFont
+) {
   const { height } = page.getSize();
 
   page.drawText("LEGAL SUMMARY", {
@@ -648,10 +720,10 @@ async function addLegalSummary(page: PDFPage, legal: any, boldFont: any, regular
     color: rgb(0.1, 0.1, 0.1),
   });
 
-  const summary = legal.summary?.substring(0, 500) || "Legal analysis and citations...";
-  
+  const summary = legal.conclusionStatement?.substring(0, 500) || "Legal analysis and citations...";
+
   let yPos = height - 150;
-  const lines = summary.split('\n');
+  const lines = summary.split("\n");
   for (const line of lines) {
     page.drawText(line, {
       x: 50,
@@ -666,7 +738,12 @@ async function addLegalSummary(page: PDFPage, legal: any, boldFont: any, regular
   }
 }
 
-async function addExpertOpinion(page: PDFPage, expert: any, boldFont: any, regularFont: any) {
+async function addExpertOpinion(
+  page: PDFPage,
+  expert: string,
+  boldFont: PDFFont,
+  regularFont: PDFFont
+) {
   const { height } = page.getSize();
 
   page.drawText("EXPERT OPINION", {
@@ -677,10 +754,10 @@ async function addExpertOpinion(page: PDFPage, expert: any, boldFont: any, regul
     color: rgb(0.1, 0.1, 0.1),
   });
 
-  const opinion = expert.opinion?.substring(0, 500) || "Expert meteorologist opinion...";
-  
+  const opinion = expert?.substring(0, 500) || "Expert meteorologist opinion...";
+
   let yPos = height - 150;
-  const lines = opinion.split('\n');
+  const lines = opinion.split("\n");
   for (const line of lines) {
     page.drawText(line, {
       x: 50,
@@ -695,7 +772,12 @@ async function addExpertOpinion(page: PDFPage, expert: any, boldFont: any, regul
   }
 }
 
-async function addFinalPage(page: PDFPage, claim: ClaimInfo, boldFont: any, regularFont: any) {
+async function addFinalPage(
+  page: PDFPage,
+  claim: ClaimInfo,
+  boldFont: PDFFont,
+  regularFont: PDFFont
+) {
   const { height } = page.getSize();
 
   page.drawText("NEXT STEPS", {

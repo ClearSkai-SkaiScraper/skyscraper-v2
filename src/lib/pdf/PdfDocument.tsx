@@ -3,8 +3,8 @@
  * React-PDF base document structure
  */
 
-import { Document, Font,Image, Page, StyleSheet, Text, View } from "@react-pdf/renderer";
-import React from "react";
+/* eslint-disable jsx-a11y/alt-text -- react-pdf Image component doesn't support alt prop */
+import { Document, Font, Image, Page, StyleSheet, Text, View } from "@react-pdf/renderer";
 
 // Register fonts
 Font.register({
@@ -73,7 +73,7 @@ export interface PdfDocumentProps {
   title: string;
   sections: Array<{
     key: string;
-    content: any;
+    content: string | { paragraphs?: string[] } | Record<string, unknown>;
   }>;
   branding?: {
     logoUrl?: string;
@@ -100,7 +100,7 @@ export function PdfDocument({ title, sections, branding }: PdfDocumentProps) {
           {branding?.companyName && <Text style={styles.subtitle}>{branding.companyName}</Text>}
         </View>
 
-        {sections.map((section, index) => (
+        {sections.map((section, _index) => (
           <View key={section.key} style={styles.section}>
             <Text style={styles.sectionTitle}>{section.key.replace(/_/g, " ").toUpperCase()}</Text>
             {renderSectionContent(section.content)}
@@ -117,13 +117,17 @@ export function PdfDocument({ title, sections, branding }: PdfDocumentProps) {
   );
 }
 
-function renderSectionContent(content: any) {
+type SectionContent = string | { paragraphs?: string[] } | Record<string, unknown>;
+
+function renderSectionContent(content: SectionContent) {
   if (typeof content === "string") {
     return <Text style={styles.text}>{content}</Text>;
   }
 
-  if (content.paragraphs) {
-    return content.paragraphs.map((p: string, i: number) => (
+  // Type guard for paragraphs
+  const contentObj = content as { paragraphs?: string[] };
+  if (Array.isArray(contentObj.paragraphs)) {
+    return contentObj.paragraphs.map((p: string, i: number) => (
       <Text key={i} style={styles.text}>
         {p}
       </Text>

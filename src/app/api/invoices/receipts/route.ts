@@ -8,20 +8,16 @@ export const dynamic = "force-dynamic";
  * MVP: logs receipt metadata; a dedicated receipt table can be added later.
  */
 
-import { auth } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
+
+import { withAuth } from "@/lib/auth/withAuth";
 
 import { logger } from "@/lib/logger";
 
 export const runtime = "nodejs";
 
-export async function POST(req: NextRequest) {
+export const POST = withAuth(async (req: NextRequest, { userId }) => {
   try {
-    const { userId } = await auth();
-    if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
     const formData = await req.formData();
     const invoiceId = formData.get("invoiceId") as string;
 
@@ -66,8 +62,8 @@ export async function POST(req: NextRequest) {
       count: receiptEntries.length,
       receipts: receiptEntries,
     });
-  } catch (error) {
+  } catch (error: unknown) {
     logger.error("[Invoices] Receipt upload error:", error);
     return NextResponse.json({ error: "Failed to process receipts" }, { status: 500 });
   }
-}
+});

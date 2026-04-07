@@ -83,7 +83,7 @@ export function CompanyLeaderboard() {
         setLoading(false);
       }
     };
-    fetchLeaderboard();
+    void fetchLeaderboard();
   }, [period, sourceFilter]);
 
   // Sorted + max value for progress bars

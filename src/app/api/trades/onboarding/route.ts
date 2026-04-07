@@ -12,11 +12,11 @@ export const dynamic = "force-dynamic";
  * 4. Enable admin to create company page
  */
 
-import { auth, currentUser } from "@clerk/nextjs/server";
+import { currentUser } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 
-import { getResolvedOrgId } from "@/lib/auth/getResolvedOrgId";
+import { withAuth } from "@/lib/auth/withAuth";
 import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 
@@ -25,14 +25,8 @@ const onboardingSchema = z.object({
   data: z.record(z.any()).optional().default({}),
 });
 
-export async function POST(req: NextRequest) {
+export const POST = withAuth(async (req: NextRequest, { userId, orgId }) => {
   try {
-    const { userId } = await auth();
-    if (!userId) {
-      logger.error("[Trades Onboarding] No userId from auth()");
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
     logger.debug("[Trades Onboarding] Processing for userId:", userId);
 
     const raw = await req.json();
@@ -200,13 +194,7 @@ export async function POST(req: NextRequest) {
       } = data;
 
       // Resolve orgId but never block profile creation if helper fails
-      let orgId: string;
-      try {
-        orgId = await getResolvedOrgId();
-      } catch (error) {
-        logger.error("[Trades Onboarding] getResolvedOrgId failed, falling back to userId:", error);
-        orgId = userId;
-      }
+      // orgId is already available from withAuth context
 
       // Ensure we always have a non-empty email for required column
       let finalEmail: string = typeof email === "string" ? email : "";
@@ -302,13 +290,13 @@ export async function POST(req: NextRequest) {
                 coverPhoto: coverPhoto || null,
               },
             });
-      } catch (prismaError) {
+      } catch (prismaError: unknown) {
         logger.error("[Trades Onboarding] Prisma error:", prismaError);
         return NextResponse.json(
           {
             error: "Database error while saving profile",
-            details: prismaError.message,
-            code: prismaError.code,
+            details: prismaError instanceof Error ? prismaError.message : "Unknown error",
+            code: (prismaError as any)?.code,
           },
           { status: 500 }
         );
@@ -453,14 +441,7 @@ export async function POST(req: NextRequest) {
         yearsInBusiness,
       } = data;
 
-      // Get orgId - may be undefined if user has no org yet
-      let orgId: string | undefined;
-      try {
-        orgId = await getResolvedOrgId();
-      } catch {
-        // User may not have an org yet - that's okay for company creation
-        orgId = undefined;
-      }
+      // orgId available from withAuth context
 
       // Get employee profile
       const employee = await prisma.tradesCompanyMember.findFirst({
@@ -550,7 +531,7 @@ export async function POST(req: NextRequest) {
       },
       { status: 400 }
     );
-  } catch (error) {
+  } catch (error: unknown) {
     logger.error("[Trades Onboarding Error]", error);
     return NextResponse.json(
       {
@@ -560,19 +541,14 @@ export async function POST(req: NextRequest) {
       { status: 500 }
     );
   }
-}
+});
 
 /**
  * GET /api/trades/onboarding
  * Get current onboarding status for logged-in user
  */
-export async function GET() {
+export const GET = withAuth(async (req: NextRequest, { userId }) => {
   try {
-    const { userId } = await auth();
-    if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
     // Get employee profile
     const employee = await prisma.tradesCompanyMember.findFirst({
       where: { userId },
@@ -632,7 +608,7 @@ export async function GET() {
       onboardingComplete: false,
       nextStep: "link_company",
     });
-  } catch (error) {
+  } catch (error: unknown) {
     logger.error("[Trades Onboarding Status Error]", error);
     return NextResponse.json(
       {
@@ -642,4 +618,4 @@ export async function GET() {
       { status: 500 }
     );
   }
-}
+});

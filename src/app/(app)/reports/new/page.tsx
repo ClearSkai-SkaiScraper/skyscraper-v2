@@ -63,7 +63,7 @@ export default function NewReportPage() {
         setLoadingClaims(false);
       }
     }
-    fetchClaims();
+    void fetchClaims();
   }, []);
 
   // ✅ PHASE R: Load preset callback

@@ -63,7 +63,7 @@ export function ClaimIntelligencePanel({ claimId }: Props) {
     }
 
     if (claimId) {
-      fetchData();
+      void fetchData();
     }
 
     return () => {

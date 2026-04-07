@@ -428,7 +428,7 @@ export default function MaterialEstimatorPage() {
   }, []);
 
   useEffect(() => {
-    loadEstimates();
+    void loadEstimates();
   }, [loadEstimates]);
 
   // ── Handle scope of work file upload ────────────────────────────────────
@@ -1270,7 +1270,7 @@ export default function MaterialEstimatorPage() {
                     e.preventDefault();
                     e.currentTarget.classList.remove("border-orange-400", "bg-orange-50/30");
                     const file = e.dataTransfer.files[0];
-                    if (file) handleScopeUpload(file);
+                    if (file) void handleScopeUpload(file);
                   }}
                 >
                   <input
@@ -1280,7 +1280,7 @@ export default function MaterialEstimatorPage() {
                     className="hidden"
                     onChange={(e) => {
                       const file = e.target.files?.[0];
-                      if (file) handleScopeUpload(file);
+                      if (file) void handleScopeUpload(file);
                     }}
                   />
                   {scopeParsing ? (

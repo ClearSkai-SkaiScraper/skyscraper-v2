@@ -33,7 +33,7 @@ export default function RecentActivity({ activities: propActivities }: RecentAct
 
   useEffect(() => {
     if (!propActivities) {
-      fetchActivities();
+      void fetchActivities();
     }
   }, [propActivities]);
 

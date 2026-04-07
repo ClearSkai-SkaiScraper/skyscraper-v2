@@ -116,7 +116,7 @@ export default function CompanyMapClient({ locations }: { locations: PropertyLoc
       };
     }
 
-    loadMapbox();
+    void loadMapbox();
   }, [locations, mapInitialized]);
 
   function getMarkerColor(status?: string) {

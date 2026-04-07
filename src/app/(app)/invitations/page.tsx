@@ -142,8 +142,8 @@ export default function InvitationsPage() {
   }, []);
 
   useEffect(() => {
-    loadInvitations();
-    loadReceived();
+    void loadInvitations();
+    void loadReceived();
   }, [loadInvitations, loadReceived]);
 
   /* ------------------------------ actions --------------------------------- */
@@ -212,7 +212,7 @@ export default function InvitationsPage() {
       setFirstName("");
       setLastName("");
       setMessage("");
-      loadInvitations();
+      void loadInvitations();
     } catch (error) {
       logger.error("Error sending invitation:", error);
       toast.error("Failed to send invitation");
@@ -247,7 +247,7 @@ export default function InvitationsPage() {
       setShowBulkDialog(false);
       setBulkEmails("");
       setBulkMessage("");
-      loadInvitations();
+      void loadInvitations();
     } catch (error) {
       logger.error("Error sending bulk invitations:", error);
       toast.error("Failed to send invitations");
@@ -261,7 +261,7 @@ export default function InvitationsPage() {
       });
       if (!response.ok) throw new Error("Failed to resend invitation");
       toast.success("Invitation resent successfully!");
-      loadInvitations();
+      void loadInvitations();
     } catch (error) {
       logger.error("Error resending invitation:", error);
       toast.error("Failed to resend invitation");
@@ -327,7 +327,7 @@ export default function InvitationsPage() {
 
   const shareInviteLink = async () => {
     if (!navigator.share) {
-      copyInviteLink();
+      void copyInviteLink();
       return;
     }
     try {
@@ -337,7 +337,7 @@ export default function InvitationsPage() {
         url: generateInviteLink(),
       });
     } catch {
-      copyInviteLink();
+      void copyInviteLink();
     }
   };
 

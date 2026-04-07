@@ -41,7 +41,7 @@ export default function HoaNoticeDetailPage() {
   const [sending, setSending] = useState(false);
 
   useEffect(() => {
-    fetchNotice();
+    void fetchNotice();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [noticeId]);
 
@@ -65,7 +65,7 @@ export default function HoaNoticeDetailPage() {
       await fetch(`/api/hoa/notices/${noticeId}/send`, {
         method: "POST",
       });
-      fetchNotice();
+      void fetchNotice();
     } catch (error) {
       logger.error("Error sending notice:", error);
     } finally {

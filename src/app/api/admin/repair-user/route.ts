@@ -18,7 +18,7 @@ import { clerkClient } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
 
 import { logCriticalAction } from "@/lib/audit/criticalActions";
-import { checkRole } from "@/lib/auth/rbac";
+import { withAdmin } from "@/lib/auth/withAuth";
 import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 
@@ -32,15 +32,8 @@ interface RepairAction {
   targetUserId?: string; // If not provided, repairs current user
 }
 
-export async function POST(req: NextRequest) {
+export const POST = withAdmin(async (req: NextRequest, { orgId, userId: adminUserId }) => {
   try {
-    // Require admin role
-    const { hasAccess, userId: adminUserId, orgId } = await checkRole("admin");
-
-    if (!hasAccess || !adminUserId) {
-      return NextResponse.json({ error: "Admin access required" }, { status: 403 });
-    }
-
     const body = (await req.json()) as RepairAction;
     const { action, targetUserId } = body;
 
@@ -217,21 +210,15 @@ export async function POST(req: NextRequest) {
       { status: 500 }
     );
   }
-}
+});
 
 /**
  * GET /api/admin/repair-user?userId=xxx
  *
  * Diagnose user state without making changes
  */
-export async function GET(req: NextRequest) {
+export const GET = withAdmin(async (req: NextRequest, { userId: adminUserId }) => {
   try {
-    const { hasAccess, userId: adminUserId } = await checkRole("admin");
-
-    if (!hasAccess || !adminUserId) {
-      return NextResponse.json({ error: "Admin access required" }, { status: 403 });
-    }
-
     const searchParams = req.nextUrl.searchParams;
     const targetUserId = searchParams.get("userId") || adminUserId;
 
@@ -281,4 +268,4 @@ export async function GET(req: NextRequest) {
       { status: 500 }
     );
   }
-}
+});

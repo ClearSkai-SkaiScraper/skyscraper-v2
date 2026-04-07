@@ -61,7 +61,7 @@ export default function GettingStartedPage() {
       }
     }
 
-    fetchProgress();
+    void fetchProgress();
     // Refresh every 5 seconds to detect changes
     const interval = setInterval(fetchProgress, 5000);
     return () => clearInterval(interval);

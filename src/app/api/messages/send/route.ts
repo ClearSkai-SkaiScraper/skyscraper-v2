@@ -1,10 +1,11 @@
 export const dynamic = "force-dynamic";
 
-import { auth, currentUser } from "@clerk/nextjs/server";
+import { currentUser } from "@clerk/nextjs/server";
 import { randomUUID } from "crypto";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 
+import { withAuth } from "@/lib/auth/withAuth";
 import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 
@@ -14,13 +15,8 @@ const sendMessageSchema = z.object({
   attachments: z.array(z.string().url()).optional().default([]),
 });
 
-export async function POST(req: Request) {
+export const POST = withAuth(async (req: NextRequest, { orgId, userId }) => {
   try {
-    const { userId } = await auth();
-    if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
     const body = await req.json();
     const validated = sendMessageSchema.parse(body);
 
@@ -207,4 +203,4 @@ export async function POST(req: Request) {
     }
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
-}
+});

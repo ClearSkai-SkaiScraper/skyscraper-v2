@@ -99,6 +99,12 @@ vi.mock("@/lib/prisma", () => ({
       return 1;
     }),
     $queryRawUnsafe: vi.fn(async () => mockPrismaQueryRawReturn),
+    // Source uses Prisma.sql tagged templates with $executeRaw / $queryRaw
+    $executeRaw: vi.fn(async (...args: any[]) => {
+      mockPrismaExecuteRawCalls.push(args);
+      return 1;
+    }),
+    $queryRaw: vi.fn(async () => mockPrismaQueryRawReturn),
   },
 }));
 
@@ -107,6 +113,17 @@ vi.mock("@/lib/prisma", () => ({
 /* ------------------------------------------------------------------ */
 vi.mock("@/lib/identity", () => ({
   getUserIdentity: vi.fn(async () => null),
+}));
+
+/* ------------------------------------------------------------------ */
+/*  Mock: @prisma/client (Prisma.sql tagged template)                  */
+/* ------------------------------------------------------------------ */
+vi.mock("@prisma/client", () => ({
+  Prisma: {
+    sql(strings: TemplateStringsArray, ...values: unknown[]) {
+      return { strings: [...strings], values };
+    },
+  },
 }));
 
 /* ------------------------------------------------------------------ */
@@ -275,12 +292,13 @@ describe("after-sign-in page routing", () => {
 
       await callAfterSignIn({ mode: "client" });
 
-      // Should have called $executeRawUnsafe to upsert user_registry
+      // Should have called $executeRaw to upsert user_registry
       expect(mockPrismaExecuteRawCalls.length).toBeGreaterThan(0);
       const call = mockPrismaExecuteRawCalls[0];
-      // Second param is the userType
-      expect(call[1]).toBe("user_test_123"); // clerkUserId
-      expect(call[2]).toBe("client"); // userType
+      // $executeRaw receives a Prisma.sql tagged template with .values array
+      const taggedResult = call[0];
+      expect(taggedResult.values).toContain("user_test_123"); // clerkUserId
+      expect(taggedResult.values).toContain("client"); // userType
     });
   });
 
@@ -472,7 +490,7 @@ describe("after-sign-in page routing", () => {
 
       await callAfterSignIn({ mode: "pro" });
 
-      // Mode override block does the DB upsert
+      // Mode override block does the DB upsert via $executeRaw
       expect(mockPrismaExecuteRawCalls.length).toBeGreaterThan(0);
     });
   });

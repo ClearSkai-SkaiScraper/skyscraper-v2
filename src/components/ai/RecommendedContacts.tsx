@@ -34,7 +34,7 @@ export default function RecommendedContacts() {
       }
     }
 
-    fetchRecommendations();
+    void fetchRecommendations();
   }, []);
 
   if (loading) {

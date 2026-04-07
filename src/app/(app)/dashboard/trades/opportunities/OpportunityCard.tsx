@@ -28,7 +28,7 @@ export default function OpportunityCard() {
   const [jobs, setJobs] = useState<JobOpportunity[]>([]);
 
   useEffect(() => {
-    loadOpportunities();
+    void loadOpportunities();
   }, []);
 
   async function loadOpportunities() {

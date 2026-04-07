@@ -45,7 +45,7 @@ export default function TimelinePage() {
   const [deleteTarget, setDeleteTarget] = useState<{ id: string; label?: string } | null>(null);
 
   useEffect(() => {
-    fetchTimeline();
+    void fetchTimeline();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [claimId]);
 
@@ -86,7 +86,7 @@ export default function TimelinePage() {
 
       setFormData({ title: "", description: "", eventType: "other" });
       setShowForm(false);
-      fetchTimeline();
+      void fetchTimeline();
     } catch (error) {
       logger.error("Failed to add event:", error);
       alert("Failed to add event");
@@ -112,7 +112,7 @@ export default function TimelinePage() {
         alert("❌ Failed to delete event. Please try again.");
         return;
       }
-      fetchTimeline();
+      void fetchTimeline();
     } catch (error) {
       logger.error("Failed to delete event:", error);
       alert("Failed to delete event");

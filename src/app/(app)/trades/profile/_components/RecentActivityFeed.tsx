@@ -80,7 +80,7 @@ export default function RecentActivityFeed() {
   }, []);
 
   useEffect(() => {
-    fetchActivity();
+    void fetchActivity();
     const interval = setInterval(() => fetchActivity(), 30_000);
     return () => clearInterval(interval);
   }, [fetchActivity]);

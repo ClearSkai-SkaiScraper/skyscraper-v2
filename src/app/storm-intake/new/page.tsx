@@ -29,7 +29,7 @@ export default function NewStormIntakePage() {
       }
     };
 
-    createIntake();
+    void createIntake();
   }, [router]);
 
   if (error) {

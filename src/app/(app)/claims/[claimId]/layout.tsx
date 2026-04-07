@@ -9,6 +9,12 @@ import { resolveClaim } from "@/lib/claims/resolveClaim";
 import { logger } from "@/lib/logger";
 import { getOrg, isDemoRoute } from "@/lib/org/getOrg";
 
+// 🔥 CRITICAL FIX: Disable RSC caching - claim data MUST be fresh per-request
+// Without this, Next.js may cache the "NOT_FOUND" response and return it even
+// when the claim exists, causing "claim not found" errors on valid claims.
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 import { ClaimHeaderActions } from "./_components/ClaimHeaderActions";
 import ClaimTabs from "./_components/ClaimTabs";
 import { getClaim } from "./loader";

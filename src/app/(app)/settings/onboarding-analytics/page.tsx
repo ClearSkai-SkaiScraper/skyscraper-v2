@@ -88,7 +88,7 @@ export default function OnboardingAnalyticsPage() {
   }, []);
 
   useEffect(() => {
-    fetchMetrics();
+    void fetchMetrics();
   }, [fetchMetrics]);
 
   if (loading) {

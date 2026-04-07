@@ -36,7 +36,7 @@ export function ShareButton({ reportId }: ShareButtonProps) {
 
   const copyToClipboard = () => {
     if (shareUrl) {
-      navigator.clipboard.writeText(shareUrl);
+      void navigator.clipboard.writeText(shareUrl);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     }

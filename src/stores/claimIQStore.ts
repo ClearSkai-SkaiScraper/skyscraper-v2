@@ -252,13 +252,13 @@ export const useClaimIQStore = create<ClaimIQStore>()(
         if (existing) clearInterval(existing);
 
         // Fetch immediately
-        get().fetchReadiness(claimId);
+        void get().fetchReadiness(claimId);
 
         // Set up polling interval (default 30s)
         const interval = setInterval(() => {
           // Only poll if we're still on the same claim
           if (get().activeClaimId === claimId) {
-            get().fetchReadiness(claimId);
+            void get().fetchReadiness(claimId);
           } else {
             // Claim changed — stop polling
             clearInterval(interval);

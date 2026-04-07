@@ -1,29 +1,17 @@
 export const dynamic = "force-dynamic";
 
-import { auth } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
 
+import { withAuth } from "@/lib/auth/withAuth";
 import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
-
-interface Params {
-  params: {
-    slug: string;
-  };
-}
 
 /**
  * GET /api/network/clients/[slug]
  * B-16: Now requires authentication + org ownership check
  */
-export async function GET(req: NextRequest, { params }: Params) {
-  const authData = await auth();
-  const { userId, orgId } = authData;
-  if (!userId || !orgId) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
-
-  const { slug } = params;
+export const GET = withAuth(async (req: NextRequest, { orgId }, routeParams) => {
+  const { slug } = await routeParams.params;
 
   try {
     const client = await prisma.client_networks.findFirst({
@@ -51,20 +39,14 @@ export async function GET(req: NextRequest, { params }: Params) {
     logger.error(`[GET /api/network/clients/${slug}]`, error);
     return NextResponse.json({ error: "Failed to fetch client network" }, { status: 500 });
   }
-}
+});
 
 /**
  * PATCH /api/network/clients/[slug]
  * Updates a client network (authenticated only)
  */
-export async function PATCH(req: NextRequest, { params }: Params) {
-  const authData = await auth();
-  const { userId, orgId } = authData;
-  if (!userId || !orgId) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
-
-  const { slug } = params;
+export const PATCH = withAuth(async (req: NextRequest, { orgId }, routeParams) => {
+  const { slug } = await routeParams.params;
 
   try {
     const body = await req.json();
@@ -94,4 +76,4 @@ export async function PATCH(req: NextRequest, { params }: Params) {
     logger.error(`[PATCH /api/network/clients/${slug}]`, error);
     return NextResponse.json({ error: "Failed to update client network" }, { status: 500 });
   }
-}
+});

@@ -29,7 +29,7 @@ export function useBranding() {
       }
     }
 
-    fetchBranding();
+    void fetchBranding();
   }, []);
 
   return { branding, loading };

@@ -96,7 +96,7 @@ export function AIJobScanner() {
   };
 
   useEffect(() => {
-    fetchRecommendations();
+    void fetchRecommendations();
     // Refresh every 5 minutes
     const interval = setInterval(fetchRecommendations, 5 * 60 * 1000);
     return () => clearInterval(interval);

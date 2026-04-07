@@ -119,7 +119,7 @@ export default function VendorConnect() {
   }
 
   useEffect(() => {
-    loadVendors();
+    void loadVendors();
   }, []);
 
   if (loading) {

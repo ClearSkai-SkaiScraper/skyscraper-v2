@@ -87,8 +87,8 @@ export function DecisionPanel({ claimId }: DecisionPanelProps) {
   const [viewingDispute, setViewingDispute] = useState<DisputePackage | null>(null);
 
   useEffect(() => {
-    fetchDecisionPlan();
-    fetchDisputePackages();
+    void fetchDecisionPlan();
+    void fetchDisputePackages();
   }, [claimId]);
 
   const fetchDecisionPlan = async () => {

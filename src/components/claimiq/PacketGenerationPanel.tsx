@@ -115,7 +115,7 @@ export function PacketGenerationPanel({ claimId, className }: PacketGenerationPa
       if (data.success) {
         setResponse(data);
         completePacketGeneration();
-        refreshAfterChange(claimId, "packet_generation");
+        void refreshAfterChange(claimId, "packet_generation");
       } else {
         setError(data.error || "Generation failed");
         failPacketGeneration(data.error || "Failed");

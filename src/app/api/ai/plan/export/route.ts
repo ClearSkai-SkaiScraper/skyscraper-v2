@@ -1,9 +1,8 @@
-import { auth, currentUser } from "@clerk/nextjs/server";
 import { jsPDF } from "jspdf";
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { z } from "zod";
 
-import { BRAND_PRIMARY } from "@/lib/constants/branding";
+import { withAuth } from "@/lib/auth/withAuth";
 import { logger } from "@/lib/logger";
 import { drawBrandedHeader, drawPageFooter, fetchBrandingData } from "@/lib/pdf/brandedHeader";
 import { drawCoverPage, fetchPropertyMapBase64, type CoverPageData } from "@/lib/pdf/coverPage";
@@ -24,23 +23,16 @@ export const dynamic = "force-dynamic";
  * POST /api/ai/plan/export
  * Converts a markdown project plan to a professional branded PDF
  */
-export async function POST(req: NextRequest) {
+export const POST = withAuth(async (req, { userId, orgId }) => {
   try {
-    const user = await currentUser();
-    if (!user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
     // Rate limit: AI tier
-    const rl = await checkRateLimit(user.id, "AI");
+    const rl = await checkRateLimit(userId, "AI");
     if (!rl.success) {
       return NextResponse.json(
         { error: "rate_limit_exceeded", message: "Too many requests. Please wait." },
         { status: 429 }
       );
     }
-
-    const { orgId } = await auth();
 
     const body = await req.json();
     const parsed = planExportSchema.safeParse(body);
@@ -59,13 +51,7 @@ export async function POST(req: NextRequest) {
     const contentWidth = pageWidth - margin * 2;
 
     // ── Fetch company branding from org_branding table ──
-    const branding = orgId
-      ? await fetchBrandingData(orgId, user.id)
-      : {
-          companyName: "SkaiScraper",
-          brandColor: BRAND_PRIMARY,
-          employeeName: `${user.firstName || ""} ${user.lastName || ""}`.trim(),
-        };
+    const branding = await fetchBrandingData(orgId, userId);
 
     // Attach optional client info
     if (clientName) (branding as any).clientName = clientName;
@@ -272,8 +258,8 @@ export async function POST(req: NextRequest) {
         "Content-Length": String(pdfBuffer.length),
       },
     });
-  } catch (error) {
+  } catch (error: unknown) {
     logger.error("Plan PDF export failed:", error);
     return NextResponse.json({ error: "Failed to export PDF" }, { status: 500 });
   }
-}
+});

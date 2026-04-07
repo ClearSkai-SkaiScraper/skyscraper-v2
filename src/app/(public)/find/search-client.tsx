@@ -51,7 +51,7 @@ export default function ContractorsSearchPage({
 
   useEffect(() => {
     if (initialZip || initialTrade) {
-      search();
+      void search();
     }
   }, []);
 

@@ -60,7 +60,7 @@ export default function IntelligenceDashboardPage() {
   }, []);
 
   useEffect(() => {
-    fetchStatus();
+    void fetchStatus();
   }, [fetchStatus]);
 
   const runBatchEmbedding = async (batchSize: number = 50) => {

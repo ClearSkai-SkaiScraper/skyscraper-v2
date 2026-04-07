@@ -202,7 +202,7 @@ export default function SmartDocsPage() {
   }, []);
 
   useEffect(() => {
-    fetchEnvelopes();
+    void fetchEnvelopes();
     // Fetch clients for the selector
     fetch("/api/contacts?limit=100")
       .then((res) => res.json())
@@ -217,7 +217,7 @@ export default function SmartDocsPage() {
       })
       .catch(() => {});
     // Fetch jobs/claims for the job selector
-    Promise.all([
+    void Promise.all([
       fetch("/api/leads?limit=50")
         .then((r) => r.json())
         .catch(() => ({ data: [] })),
@@ -606,7 +606,7 @@ export default function SmartDocsPage() {
               size="icon"
               onClick={() => {
                 setLoading(true);
-                fetchEnvelopes();
+                void fetchEnvelopes();
               }}
             >
               <RefreshCw className="h-4 w-4" />

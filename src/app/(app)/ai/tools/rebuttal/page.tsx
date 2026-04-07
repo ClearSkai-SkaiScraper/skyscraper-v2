@@ -300,7 +300,7 @@ export default function RebuttalBuilderPage() {
                     onDrop={(e) => {
                       e.preventDefault();
                       e.stopPropagation();
-                      handleFileUpload(e.dataTransfer.files);
+                      void handleFileUpload(e.dataTransfer.files);
                     }}
                   >
                     <Paperclip className="mb-2 h-8 w-8 text-slate-400 group-hover:text-sky-500" />

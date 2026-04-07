@@ -84,8 +84,8 @@ export default function FeedPage() {
   const mentionAnchorRef = useRef<number>(0);
 
   useEffect(() => {
-    fetchActivity();
-    fetchSocialPosts();
+    void fetchActivity();
+    void fetchSocialPosts();
   }, []);
 
   async function fetchActivity() {
@@ -190,7 +190,7 @@ export default function FeedPage() {
         setShowMentions(true);
         setMentionSearch(query);
         mentionAnchorRef.current = atIndex;
-        searchMentions(query);
+        void searchMentions(query);
         return;
       }
     }

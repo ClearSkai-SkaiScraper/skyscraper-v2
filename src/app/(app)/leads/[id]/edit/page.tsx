@@ -30,10 +30,6 @@ export default function EditLeadPage({ params }: { params: { id: string } }) {
     }
   }, [isLoaded, isSignedIn, router]);
 
-  if (!isLoaded || !isSignedIn) {
-    return <div className="flex h-screen items-center justify-center">Loading...</div>;
-  }
-
   const [isLoading, setIsLoading] = useState(false);
   const [isFetching, setIsFetching] = useState(true);
 
@@ -77,8 +73,12 @@ export default function EditLeadPage({ params }: { params: { id: string } }) {
       }
     };
 
-    fetchLead();
+    void fetchLead();
   }, [params.id]);
+
+  if (!isLoaded || !isSignedIn) {
+    return <div className="flex h-screen items-center justify-center">Loading...</div>;
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

@@ -23,7 +23,7 @@ export async function GET() {
       await prisma.$queryRaw`SELECT 1`;
       databaseOk = true;
     } catch (error) {
-      logger.error("[health] Database check failed:", error);
+      logger.error("[HEALTH_CHECK] Database check failed", { error });
     }
 
     // Redis check (real ping when configured)
@@ -41,7 +41,7 @@ export async function GET() {
         redisOk = true;
       }
     } catch (error) {
-      logger.error("[health] Redis ping failed:", error);
+      logger.error("[HEALTH_CHECK] Redis ping failed", { error });
       redisOk = false;
     }
 

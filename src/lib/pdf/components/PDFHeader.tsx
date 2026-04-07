@@ -3,6 +3,8 @@
  * Helper functions for injecting branding into PDF documents
  */
 
+import type { jsPDF } from "jspdf";
+
 export type PDFBrandingConfig = {
   logo: string | null;
   businessName: string;
@@ -68,9 +70,12 @@ export function generatePDFFooter(
 /**
  * Apply branding colors to jsPDF document
  */
-export function applyBrandingToJsPDF(doc: any, config: PDFBrandingConfig) {
+export function applyBrandingToJsPDF(
+  doc: jsPDF & { __branding?: PDFBrandingConfig },
+  config: PDFBrandingConfig
+) {
   // Store branding colors for use throughout document
-  (doc as any).__branding = config;
+  doc.__branding = config;
 
   return {
     primaryRgb: hexToRgb(config.primaryColor),

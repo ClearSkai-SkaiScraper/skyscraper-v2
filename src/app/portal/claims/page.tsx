@@ -31,7 +31,7 @@ export default function ClaimsListPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetchClaims();
+    void fetchClaims();
   }, []);
 
   async function fetchClaims() {

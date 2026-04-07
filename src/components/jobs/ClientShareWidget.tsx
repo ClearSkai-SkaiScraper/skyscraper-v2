@@ -42,7 +42,7 @@ export function ClientShareWidget({
 
   useEffect(() => {
     if (clientId) {
-      fetchDocuments();
+      void fetchDocuments();
     }
   }, [clientId, jobId]);
 
@@ -126,7 +126,7 @@ export function ClientShareWidget({
 
   const copyInviteLink = () => {
     if (inviteLink) {
-      navigator.clipboard.writeText(inviteLink);
+      void navigator.clipboard.writeText(inviteLink);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     }

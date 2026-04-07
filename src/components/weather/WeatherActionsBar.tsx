@@ -50,7 +50,7 @@ export default function ReportActionsBar({ reportId }: any) {
       body: JSON.stringify({ reportId }),
     });
     const data = await res.json();
-    navigator.clipboard.writeText(data.url);
+    void navigator.clipboard.writeText(data.url);
     alert("Public share link copied to clipboard!");
   }
 

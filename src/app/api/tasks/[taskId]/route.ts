@@ -1,9 +1,9 @@
 export const dynamic = "force-dynamic";
 
-import { auth } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 
+import { withAuth } from "@/lib/auth/withAuth";
 import { getDelegate } from "@/lib/db/modelAliases";
 import { logger } from "@/lib/logger";
 import { sendTemplatedNotification } from "@/lib/notifications/templates";
@@ -22,13 +22,8 @@ const UpdateTaskSchema = z.object({
  * PUT /api/tasks/[taskId]
  * Update task status, assignee, due date, etc.
  */
-export async function PUT(req: NextRequest, { params }: { params: Promise<{ taskId: string }> }) {
+export const PUT = withAuth(async (req: NextRequest, { userId, orgId }, routeParams) => {
   try {
-    const { userId, orgId } = await auth();
-    if (!userId || !orgId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
     const rl = await checkRateLimit(userId, "API");
     if (!rl.success) {
       return NextResponse.json(
@@ -37,7 +32,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ task
       );
     }
 
-    const { taskId } = await params;
+    const { taskId } = await routeParams.params;
     const body = await req.json();
     const input = UpdateTaskSchema.parse(body);
 
@@ -112,7 +107,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ task
   } catch (error) {
     logger.error("[Task Update] PUT error:", error);
 
-    if (error.name === "ZodError") {
+    if (error instanceof z.ZodError) {
       return NextResponse.json(
         { error: "Invalid request data", details: error.errors },
         { status: 400 }
@@ -121,23 +116,15 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ task
 
     return NextResponse.json({ error: "Failed to update task" }, { status: 500 });
   }
-}
+});
 
 /**
  * DELETE /api/tasks/[taskId]
  * Delete a task
  */
-export async function DELETE(
-  req: NextRequest,
-  { params }: { params: Promise<{ taskId: string }> }
-) {
+export const DELETE = withAuth(async (req: NextRequest, { userId, orgId }, routeParams) => {
   try {
-    const { userId, orgId } = await auth();
-    if (!userId || !orgId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    const { taskId } = await params;
+    const { taskId } = await routeParams.params;
 
     // Atomic org-scoped delete
     const result = await prisma.tasks.deleteMany({
@@ -152,4 +139,4 @@ export async function DELETE(
     logger.error("[Task Delete] DELETE error:", error);
     return NextResponse.json({ error: "Failed to delete task" }, { status: 500 });
   }
-}
+});

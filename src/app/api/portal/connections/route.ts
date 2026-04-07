@@ -8,6 +8,7 @@ export const dynamic = "force-dynamic";
 
 import { auth, currentUser } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
 
 import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
@@ -25,12 +26,19 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const body = await req.json();
-    const { proId } = body;
+    const connectionSchema = z.object({
+      proId: z.string().min(1, "Pro ID is required"),
+    });
 
-    if (!proId) {
-      return NextResponse.json({ error: "Pro ID is required" }, { status: 400 });
+    const body = await req.json();
+    const parsed = connectionSchema.safeParse(body);
+    if (!parsed.success) {
+      return NextResponse.json(
+        { error: parsed.error.issues[0]?.message || "Invalid input" },
+        { status: 400 }
+      );
     }
+    const { proId } = parsed.data;
 
     // proId might be a tradesCompanyMember.id or tradesCompany.id
     // First try to find the tradesCompanyMember, then get their company

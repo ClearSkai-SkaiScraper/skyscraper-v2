@@ -31,8 +31,8 @@ export function ClaimAIReports({ claimId }: ClaimAIReportsProps) {
   );
 
   useEffect(() => {
-    fetchReports();
-    fetchPDFs();
+    void fetchReports();
+    void fetchPDFs();
   }, [claimId]);
 
   const fetchReports = async () => {

@@ -154,7 +154,7 @@ export default function ClaimsReadyFolderPage() {
         setLoading(false);
       }
     }
-    fetchClaims();
+    void fetchClaims();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -253,7 +253,7 @@ export default function ClaimsReadyFolderPage() {
       }
     }
 
-    fetchClaimData();
+    void fetchClaimData();
   }, [selectedClaimId]);
 
   const handleGenerateFolder = async () => {

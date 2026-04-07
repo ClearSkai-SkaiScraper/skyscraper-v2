@@ -27,7 +27,7 @@ export default function ClaimMaterialForensics({ claimId, data: initialData }: C
   // Fetch existing forensic data
   useEffect(() => {
     if (!initialData) {
-      fetchForensicData();
+      void fetchForensicData();
     }
   }, [claimId]);
 

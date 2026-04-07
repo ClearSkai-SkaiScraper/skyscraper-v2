@@ -28,7 +28,7 @@ export default function InvitePage() {
     }
 
     // User is signed in, accept the invitation
-    acceptInvitation();
+    void acceptInvitation();
   }, [isLoaded, isSignedIn, token]);
 
   async function acceptInvitation() {

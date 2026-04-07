@@ -19,7 +19,7 @@ export function CompletionStatusPanel({ claimId }: CompletionStatusPanelProps) {
   const [analyzing, setAnalyzing] = useState(false);
 
   useEffect(() => {
-    fetchData();
+    void fetchData();
   }, [claimId]);
 
   const fetchData = async () => {

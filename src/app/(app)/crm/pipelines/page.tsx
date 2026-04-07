@@ -54,7 +54,7 @@ export default function PipelinesPage() {
 
   useEffect(() => {
     if (isLoaded && isSignedIn) {
-      fetchPipelineSummary();
+      void fetchPipelineSummary();
     }
   }, [isLoaded, isSignedIn]);
 

@@ -82,7 +82,7 @@ export function StormFootprintMap({ claimId, className }: StormFootprintMapProps
   }, [claimId]);
 
   useEffect(() => {
-    fetchData();
+    void fetchData();
   }, [fetchData]);
 
   if (loading) {

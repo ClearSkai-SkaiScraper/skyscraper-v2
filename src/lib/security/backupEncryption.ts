@@ -258,7 +258,7 @@ export function scheduleBackups(
   };
 
   // Run initial backup
-  runBackup();
+  void runBackup();
 
   // Schedule recurring backups
   return setInterval(runBackup, interval);

@@ -236,7 +236,7 @@ export default function GoNoGoPage() {
   }, []);
 
   useEffect(() => {
-    runChecks();
+    void runChecks();
   }, [runChecks]);
 
   const passCount = checks.filter((c) => c.status === "pass").length;

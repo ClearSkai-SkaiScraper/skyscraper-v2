@@ -29,7 +29,7 @@ export default function CompanyBrandingPreview() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    (async () => {
+    void (async () => {
       try {
         const res = await fetch("/api/branding/get");
         const data = await res.json();

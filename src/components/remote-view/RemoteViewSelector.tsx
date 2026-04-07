@@ -103,7 +103,7 @@ export function RemoteViewSelector() {
       open={open}
       onOpenChange={(v) => {
         setOpen(v);
-        if (v) fetchTeam();
+        if (v) void fetchTeam();
       }}
     >
       <DialogTrigger asChild>

@@ -851,7 +851,7 @@ export function AppointmentsClient({
                       <button
                         onClick={() => {
                           if (confirm("Cancel this appointment?"))
-                            handleStatusUpdate(apt.id, "CANCELLED");
+                            void handleStatusUpdate(apt.id, "CANCELLED");
                         }}
                         className="rounded-lg border border-slate-200 p-2 text-slate-400 transition hover:border-red-300 hover:text-red-500 dark:border-white/10"
                       >

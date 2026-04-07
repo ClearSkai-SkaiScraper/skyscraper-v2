@@ -81,7 +81,7 @@ export function AIResultsPanel({
   };
 
   useEffect(() => {
-    fetchAnalysis();
+    void fetchAnalysis();
 
     if (autoRefresh) {
       const interval = setInterval(fetchAnalysis, refreshInterval);

@@ -55,7 +55,7 @@ export function AdminRulesPanel({ orgId }: AdminRulesPanelProps) {
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
 
   useEffect(() => {
-    fetchRules();
+    void fetchRules();
   }, [orgId]);
 
   const fetchRules = async () => {

@@ -150,7 +150,14 @@ export default function TimelineNotesSection({
         createdBy: event.createdBy ?? undefined,
       }));
 
-      const blob = await exportTimelineToPDF(claimData, timelineForPdf, notes);
+      // Map notes to TimelineNote format expected by PDF export
+      const notesForPdf = notes.map((n) => ({
+        createdAt: n.createdAt,
+        noteType: n.noteType ?? undefined,
+        note: n.body ?? "",
+      }));
+
+      const blob = await exportTimelineToPDF(claimData, timelineForPdf, notesForPdf);
       downloadPDF(blob, `claim-${claimId}-timeline.pdf`);
     } catch (error) {
       logger.error("Failed to export timeline:", error);

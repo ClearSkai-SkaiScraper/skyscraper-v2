@@ -130,7 +130,7 @@ export default function PdfBuilderPage() {
       });
 
     // Fetch jobs (leads with retail job categories)
-    fetch("/api/jobs")
+    void fetch("/api/jobs")
       .then((res) => res.json())
       .then((data) => {
         if (data.jobs) {
@@ -170,7 +170,7 @@ export default function PdfBuilderPage() {
       .finally(() => setLoadingTemplates(false));
 
     // Fetch recent PDFs (GeneratedArtifacts)
-    fetch("/api/reports/recent?limit=10")
+    void fetch("/api/reports/recent?limit=10")
       .then((res) => res.json())
       .then((data) => {
         if (data.ok) {

@@ -356,7 +356,7 @@ export function recordMetric(
 
   // Flush if buffer is full
   if (metricsBuffer.length >= METRICS_BUFFER_SIZE) {
-    flushMetrics();
+    void flushMetrics();
   }
 }
 

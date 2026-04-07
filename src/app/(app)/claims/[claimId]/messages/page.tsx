@@ -38,7 +38,7 @@ export default function MessagesPage() {
   const messageEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    fetchMessages();
+    void fetchMessages();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [claimId]);
 

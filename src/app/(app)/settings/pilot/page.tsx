@@ -186,7 +186,7 @@ export default function PilotDashboardPage() {
   }, []);
 
   useEffect(() => {
-    fetchStats();
+    void fetchStats();
   }, [fetchStats]);
 
   if (loading) {

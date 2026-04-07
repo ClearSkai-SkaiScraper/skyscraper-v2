@@ -158,7 +158,7 @@ export default function ClientOnboardingPage() {
       }
     }
     if (isLoaded && user) {
-      checkProfile();
+      void checkProfile();
     }
   }, [isLoaded, user, router]);
 

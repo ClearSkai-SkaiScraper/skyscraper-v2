@@ -1,5 +1,5 @@
-import { auth } from "@clerk/nextjs/server";
-import { NextRequest, NextResponse } from "next/server";
+import { withAuth } from "@/lib/auth/withAuth";
+import { NextResponse } from "next/server";
 
 import { getOpenAI } from "@/lib/ai/client";
 import { logger } from "@/lib/logger";
@@ -10,14 +10,8 @@ import { retailAssistantSchema, validateAIRequest } from "@/lib/validation/aiSch
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-export async function POST(request: NextRequest) {
+export const POST = withAuth(async (request, { userId, orgId }) => {
   try {
-    // Auth check — must be logged in
-    const { userId, orgId } = await auth();
-    if (!userId) {
-      return NextResponse.json({ error: "Authentication required" }, { status: 401 });
-    }
-
     // Rate limit AI requests
     const identifier = getRateLimitIdentifier(userId, request);
     const allowed = await rateLimiters.ai.check(10, identifier);
@@ -82,8 +76,8 @@ Provide actionable, specific advice. Use markdown formatting for clarity. Keep r
       response,
       timestamp: new Date().toISOString(),
     });
-  } catch (error) {
+  } catch (error: unknown) {
     logger.error("Retail Assistant Error:", error);
     return NextResponse.json({ error: "Failed to process request" }, { status: 500 });
   }
-}
+});

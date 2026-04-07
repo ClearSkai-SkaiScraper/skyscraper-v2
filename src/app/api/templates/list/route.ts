@@ -1,29 +1,13 @@
 export const dynamic = "force-dynamic";
 
-import { auth } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
 
+import { withAuth } from "@/lib/auth/withAuth";
 import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 
-export async function GET(req: NextRequest) {
+export const GET = withAuth(async (req: NextRequest, { orgId }) => {
   try {
-    const { userId } = await auth();
-    if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    // Get user's orgId
-    const user = await prisma.users.findFirst({
-      where: { clerkUserId: userId },
-      select: { orgId: true },
-    });
-
-    if (!user?.orgId) {
-      return NextResponse.json({ error: "No organization found" }, { status: 404 });
-    }
-
-    const orgId = user.orgId;
     const { searchParams } = new URL(req.url);
     const type = searchParams.get("type"); // "proposal", "insurance", "contractor", etc.
 
@@ -66,4 +50,4 @@ export async function GET(req: NextRequest) {
     // Return empty array instead of error for graceful degradation
     return NextResponse.json([]);
   }
-}
+});

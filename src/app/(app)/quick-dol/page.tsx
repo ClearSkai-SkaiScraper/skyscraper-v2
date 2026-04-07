@@ -43,7 +43,7 @@ export default function QuickDOLPage() {
       }
     }
 
-    loadClaimsLite();
+    void loadClaimsLite();
     return () => {
       cancelled = true;
     };

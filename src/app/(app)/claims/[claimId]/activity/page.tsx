@@ -24,6 +24,10 @@ import { getClaimActivity } from "@/lib/claims/activityLog";
 import prisma from "@/lib/prisma";
 import { safeOrgContext } from "@/lib/safeOrgContext";
 
+// 🔥 CRITICAL: Force dynamic rendering - data is user/org specific
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 interface ActivityPageProps {
   params: { claimId: string };
 }

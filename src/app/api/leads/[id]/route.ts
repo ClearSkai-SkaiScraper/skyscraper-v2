@@ -233,7 +233,7 @@ const basePATCH = async (request: Request, { params }: { params: { id: string } 
 
     // Notify managers when a job value is submitted for approval
     if (jobValueStatus === "submitted" && estimatedJobValue) {
-      notifyManagersOfSubmission({
+      void notifyManagersOfSubmission({
         orgId: orgId!,
         submittedByUserId: userId || "system",
         entityType: "lead",

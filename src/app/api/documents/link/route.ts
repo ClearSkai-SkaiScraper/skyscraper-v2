@@ -16,6 +16,7 @@ import { NextRequest } from "next/server";
 import { apiError, apiOk } from "@/lib/apiError";
 import prisma from "@/lib/prisma";
 import { safeOrgContext } from "@/lib/safeOrgContext";
+import { logger } from "@/lib/logger";
 
 // ---------------------------------------------------------------------------
 // GET — List document links for a job or claim

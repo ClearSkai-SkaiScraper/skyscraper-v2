@@ -53,7 +53,7 @@ export function ClientClaimView({ claimId }: ClientClaimViewProps) {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    loadClaimData();
+    void loadClaimData();
   }, [claimId]);
 
   const loadClaimData = async () => {

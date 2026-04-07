@@ -5,6 +5,7 @@ import { NextResponse } from "next/server";
 
 import { pool } from "@/lib/db";
 import { toPlainJSON } from "@/lib/serialize";
+import { logger } from "@/lib/logger";
 
 export async function GET() {
   // 🚑 DEV BYPASS: Skip network metrics in local dev to avoid TLS errors

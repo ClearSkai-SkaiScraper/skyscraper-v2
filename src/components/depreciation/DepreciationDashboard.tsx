@@ -50,7 +50,7 @@ export default function DepreciationDashboard({ claimId }: DepreciationDashboard
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    fetchSummary();
+    void fetchSummary();
   }, [claimId]);
 
   const fetchSummary = async () => {

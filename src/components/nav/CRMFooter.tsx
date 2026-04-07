@@ -50,7 +50,7 @@ export function CRMFooter() {
       }
     }
 
-    fetchBranding();
+    void fetchBranding();
   }, []);
 
   if (loading) {

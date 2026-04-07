@@ -108,8 +108,10 @@ function drawEllipse(
 ): void {
   // Approximate ellipse with 4 bezier curves
   const kappa = 0.5522848;
-  const ox = rx * kappa;
-  const oy = ry * kappa;
+  // Note: ox/oy would be used for proper bezier ellipse approximation
+  // but we're using circle approximation for simplicity
+  const _ox = rx * kappa;
+  const _oy = ry * kappa;
 
   // Since pdf-lib doesn't have native ellipse, draw 4 arcs
   // For simplicity, draw as a circle with the average radius
@@ -209,13 +211,13 @@ export async function createAnnotatedPhotoPdf(
   const pdfDoc = await PDFDocument.create();
 
   // Embed the image
-  let image;
+  let image: Awaited<ReturnType<typeof pdfDoc.embedJpg>>;
   try {
     image = await pdfDoc.embedJpg(photoBytes);
   } catch {
     try {
       image = await pdfDoc.embedPng(photoBytes);
-    } catch (e) {
+    } catch {
       throw new Error("Unsupported image format. Use JPG or PNG.");
     }
   }
@@ -223,9 +225,11 @@ export async function createAnnotatedPhotoPdf(
   // Create page with image dimensions (max 8.5x11 at 72 DPI)
   const maxWidth = 612;
   const maxHeight = 792;
-  const scale = Math.min(maxWidth / image.width, maxHeight / image.height, 1);
-  const width = image.width * scale;
-  const height = image.height * scale;
+  const imgWidth = image.width as number;
+  const imgHeight = image.height as number;
+  const scale = Math.min(maxWidth / imgWidth, maxHeight / imgHeight, 1);
+  const width = imgWidth * scale;
+  const height = imgHeight * scale;
 
   const page = pdfDoc.addPage([width, height + 150]); // Extra space for legend
 

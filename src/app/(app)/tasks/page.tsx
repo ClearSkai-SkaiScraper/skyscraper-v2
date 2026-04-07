@@ -93,7 +93,7 @@ export default function TasksPage() {
         setLoading(false);
       }
     };
-    fetchTasks();
+    void fetchTasks();
   }, []);
 
   if (!isLoaded || !isSignedIn) {

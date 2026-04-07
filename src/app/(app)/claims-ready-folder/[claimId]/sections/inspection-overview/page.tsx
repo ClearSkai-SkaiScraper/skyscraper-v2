@@ -67,7 +67,7 @@ export default function InspectionOverviewPage() {
   }, [claimId]);
 
   useEffect(() => {
-    fetchData();
+    void fetchData();
   }, [fetchData]);
 
   const handleSave = async () => {

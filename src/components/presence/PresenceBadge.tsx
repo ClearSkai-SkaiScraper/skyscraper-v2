@@ -95,7 +95,7 @@ export default function PresenceBadge({
       }
     }
 
-    fetchPresence();
+    void fetchPresence();
 
     // Re-check every 60 seconds
     const interval = setInterval(fetchPresence, 60_000);

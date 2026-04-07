@@ -99,7 +99,7 @@ export function usePushNotifications() {
       });
     }
 
-    init();
+    void init();
   }, [checkSupport, checkSubscription]);
 
   // Request notification permission

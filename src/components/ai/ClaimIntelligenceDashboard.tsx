@@ -45,7 +45,7 @@ export function ClaimIntelligenceDashboard({ claimId }: ClaimIntelligenceDashboa
       }
     }
 
-    fetchIntelligence();
+    void fetchIntelligence();
   }, [claimId]);
 
   if (loading) {

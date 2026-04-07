@@ -35,7 +35,7 @@ export default function RequestSuccessPage({ params }: { params: { slug: string 
         logger.error(err);
       }
     }
-    load();
+    void load();
   }, [slug]);
 
   async function addToTradeTeam() {

@@ -1,12 +1,11 @@
-import { currentUser } from "@clerk/nextjs/server";
 import * as Sentry from "@sentry/nextjs";
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 
 import { ensureOpenAI } from "@/lib/ai/client";
 import { aiFail, aiOk } from "@/lib/api/aiResponse";
+import { withAuth } from "@/lib/auth/withAuth";
 import { logger } from "@/lib/logger";
 import { getRateLimitIdentifier, rateLimiters } from "@/lib/rate-limit";
-import { safeOrgContext } from "@/lib/safeOrgContext";
 import { convertHeicToJpeg, isHeicImage } from "@/modules/photos/utils/heic";
 
 // Force Node.js runtime for sharp/native modules
@@ -33,18 +32,9 @@ interface AnalysisResult {
   summary: string;
 }
 
-export async function POST(req: NextRequest) {
+export const POST = withAuth(async (req, { userId, orgId }) => {
   try {
-    const user = await currentUser();
-    if (!user) {
-      return NextResponse.json(aiFail("Unauthorized", "UNAUTH"), { status: 401 });
-    }
-
-    // B-09: Resolve org context for usage tracking and billing
-    const orgCtx = await safeOrgContext();
-    const orgId = orgCtx.ok ? orgCtx.orgId : null;
-
-    const identifier = getRateLimitIdentifier(user.id, req);
+    const identifier = getRateLimitIdentifier(userId, req);
     const allowed = await rateLimiters.ai.check(5, identifier);
     if (!allowed) {
       return NextResponse.json(
@@ -226,12 +216,12 @@ Always respond with valid JSON matching the requested schema.`,
         photoCount: convertedPhotos.length,
       })
     );
-  } catch (error) {
+  } catch (error: unknown) {
     logger.error("Damage analysis error:", error);
     Sentry.captureException(error);
     return NextResponse.json(aiFail("Analysis failed", "ANALYSIS_ERROR"), { status: 500 });
   }
-}
+});
 
 function buildAnalysisPrompt(
   includeCodeCompliance: boolean,

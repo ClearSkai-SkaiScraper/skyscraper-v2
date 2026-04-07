@@ -2,6 +2,7 @@ export const dynamic = "force-dynamic";
 import { NextRequest, NextResponse } from "next/server";
 
 import { withAuth } from "@/lib/auth/withAuth";
+import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 
 /**
@@ -12,6 +13,7 @@ export const POST = withAuth(async (req: NextRequest, { orgId }, routeParams) =>
   const { id: leadId } = routeParams?.params ?? {};
   const body = await req.json();
   const { jobCategory } = body;
+  logger.info("[LEADS_ROUTE]", { leadId, jobCategory, orgId });
 
   if (!jobCategory) {
     return NextResponse.json({ error: "jobCategory is required" }, { status: 400 });

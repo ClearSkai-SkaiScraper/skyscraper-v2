@@ -49,7 +49,7 @@ export default function ClaimChecklistPage() {
   }, [claimId]);
 
   useEffect(() => {
-    fetchData();
+    void fetchData();
   }, [fetchData]);
 
   if (loading) {

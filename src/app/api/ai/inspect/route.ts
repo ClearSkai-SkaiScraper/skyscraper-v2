@@ -4,9 +4,10 @@ export const revalidate = 0;
 
 // src/app/api/ai/inspect/route.ts
 import { currentUser } from "@clerk/nextjs/server";
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 
 import { getOpenAI } from "@/lib/ai/client";
+import { withAuth } from "@/lib/auth/withAuth";
 import {
   requireActiveSubscription,
   SubscriptionRequiredError,
@@ -15,17 +16,12 @@ import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 import { checkRateLimit } from "@/lib/rate-limit";
 
-export async function POST(request: NextRequest) {
+export const POST = withAuth(async (request, { userId, orgId }) => {
   try {
     const openai = getOpenAI();
 
+    // Get user details for inspection record
     const user = await currentUser();
-    if (!user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    // Get user's org ID
-    const orgId = (user.publicMetadata?.orgId as string) || user.id;
 
     // ── Billing guard ──
     try {
@@ -41,7 +37,7 @@ export async function POST(request: NextRequest) {
     }
 
     // ── Rate limit ──
-    const rl = await checkRateLimit(user.id, "AI");
+    const rl = await checkRateLimit(userId, "AI");
     if (!rl.success) {
       return NextResponse.json(
         {
@@ -143,8 +139,8 @@ Format your response as a structured analysis with clear sections. Be specific a
           data: {
             orgId,
             propertyId,
-            inspectorId: user.id,
-            inspectorName: user.firstName || "AI Inspector",
+            inspectorId: userId,
+            inspectorName: user?.firstName || "AI Inspector",
             title: "AI Damage Assessment",
             type: "ai_damage_assessment",
             status: "completed",
@@ -174,8 +170,8 @@ Format your response as a structured analysis with clear sections. Be specific a
         processingTime: Date.now(),
       },
     });
-  } catch (error) {
+  } catch (error: unknown) {
     logger.error("AI Inspect Error:", error);
     return NextResponse.json({ error: "Failed to analyze image" }, { status: 500 });
   }
-}
+});

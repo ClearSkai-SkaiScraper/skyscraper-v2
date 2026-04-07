@@ -80,7 +80,7 @@ export default function MyJobsPage() {
   const [showWorkRequestModal, setShowWorkRequestModal] = useState(false);
 
   useEffect(() => {
-    fetchData();
+    void fetchData();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 

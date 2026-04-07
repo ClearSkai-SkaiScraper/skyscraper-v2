@@ -92,7 +92,7 @@ export function ClaimIQDashboard({ claimId, compact = false, className }: ClaimI
 
   // Initial fetch + auto-poll every 30s for live readiness updates
   useEffect(() => {
-    fetchReadiness();
+    void fetchReadiness();
     const interval = setInterval(() => fetchReadiness(true), 30_000);
     return () => clearInterval(interval);
   }, [fetchReadiness]);

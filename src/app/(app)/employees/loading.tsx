@@ -1,5 +1,5 @@
-import { TableSkeleton } from "@/components/skeletons";
+import PageSkeleton from "@/components/ui/page-skeleton";
 
-export default function EmployeesLoading() {
-  return <TableSkeleton rows={8} cols={5} />;
+export default function Loading() {
+  return <PageSkeleton variant="list" />;
 }

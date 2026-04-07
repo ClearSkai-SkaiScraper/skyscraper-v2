@@ -58,7 +58,7 @@ export default function PublicDirectoryPage() {
 
   // Auto-detect location on mount
   useEffect(() => {
-    detectLocation();
+    void detectLocation();
   }, []);
 
   // Detect user's location using browser geolocation API
@@ -136,7 +136,7 @@ export default function PublicDirectoryPage() {
   // 2️⃣ Load initial results when filters change (especially after location detection)
   useEffect(() => {
     if (filters.zip || filters.trade) {
-      loadContractors(filters);
+      void loadContractors(filters);
     }
   }, [
     filters.zip,

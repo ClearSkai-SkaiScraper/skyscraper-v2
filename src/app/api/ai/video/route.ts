@@ -12,7 +12,7 @@ export const dynamic = "force-dynamic";
  * - Temporal analysis
  */
 
-import { auth } from "@clerk/nextjs/server";
+import { withAuth } from "@/lib/auth/withAuth";
 import { NextRequest, NextResponse } from "next/server";
 
 import { AICoreRouter } from "@/lib/ai/router";
@@ -67,14 +67,8 @@ async function POST_INNER(request: NextRequest, ctx: { userId: string; orgId: st
  *
  * Returns available video AI capabilities
  */
-export async function GET() {
+export const GET = withAuth(async (_req, { userId }) => {
   try {
-    const { userId } = await auth();
-
-    if (!userId) {
-      return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
-    }
-
     return NextResponse.json({
       success: true,
       module: "video",
@@ -98,7 +92,7 @@ export async function GET() {
   } catch (error) {
     return NextResponse.json({ success: false, error: "Internal server error" }, { status: 500 });
   }
-}
+});
 
 export const POST = withAiBilling(
   createAiConfig("video_analysis", { costPerRequest: 100, planRequired: "pro" }),

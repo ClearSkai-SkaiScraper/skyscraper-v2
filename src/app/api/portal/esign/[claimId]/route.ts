@@ -10,6 +10,7 @@ export const revalidate = 0;
 
 import { auth, currentUser } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
 
 import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
@@ -54,12 +55,21 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ cla
       return NextResponse.json({ error: "This document has already been signed" }, { status: 409 });
     }
 
-    const body = await req.json();
-    const { signature, documentId, ipAddress } = body;
+    const esignSchema = z.object({
+      signature: z.string().min(1, "Signature data required").max(500_000),
+      documentId: z.string().optional(),
+      ipAddress: z.string().ip().optional(),
+    });
 
-    if (!signature) {
-      return NextResponse.json({ error: "Signature data required" }, { status: 400 });
+    const body = await req.json();
+    const parsed = esignSchema.safeParse(body);
+    if (!parsed.success) {
+      return NextResponse.json(
+        { error: parsed.error.issues[0]?.message || "Invalid input" },
+        { status: 400 }
+      );
     }
+    const { signature, documentId, ipAddress } = parsed.data;
 
     // Record the e-signature
     const clientIp = ipAddress || req.headers.get("x-forwarded-for")?.split(",")[0] || "unknown";

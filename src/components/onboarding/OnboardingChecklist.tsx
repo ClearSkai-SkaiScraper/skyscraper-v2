@@ -301,7 +301,7 @@ export function useOnboardingProgress(orgId: string) {
         logger.error("Failed to parse onboarding progress:", e);
       }
     }
-    load().finally(() => {
+    void load().finally(() => {
       if (!cancelled) setIsLoading(false);
     });
     return () => {

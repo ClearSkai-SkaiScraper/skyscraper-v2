@@ -53,7 +53,7 @@ export default function MyProsPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetchPros();
+    void fetchPros();
   }, []);
 
   const fetchPros = async () => {
@@ -107,7 +107,7 @@ export default function MyProsPage() {
 
       if (res.ok) {
         toast.success("Connection request sent!");
-        fetchPros(); // Refresh lists
+        void fetchPros(); // Refresh lists
       }
     } catch (error) {
       logger.error("Failed to connect:", error);

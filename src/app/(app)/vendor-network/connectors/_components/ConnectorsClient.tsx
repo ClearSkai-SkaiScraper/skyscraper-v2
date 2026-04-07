@@ -54,7 +54,7 @@ export function ConnectorsClient() {
   }, []);
 
   useEffect(() => {
-    fetchConnectors();
+    void fetchConnectors();
   }, [fetchConnectors]);
 
   const saveConnector = async (supplier: string) => {
@@ -75,7 +75,7 @@ export function ConnectorsClient() {
         setConfiguring(null);
         setAccountRef("");
         setApiKey("");
-        fetchConnectors();
+        void fetchConnectors();
       } else {
         toast.error(data.error || "Failed to save");
       }
@@ -94,7 +94,7 @@ export function ConnectorsClient() {
       const data = await res.json();
       if (data.success) {
         toast.success(enabled ? "Disconnected" : "Connected");
-        fetchConnectors();
+        void fetchConnectors();
       }
     } catch {
       toast.error("Toggle failed");

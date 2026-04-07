@@ -6,6 +6,7 @@ import { NextRequest, NextResponse } from "next/server";
 
 import { withAuth } from "@/lib/auth/withAuth";
 import { logRecommendationEvent } from "@/lib/reports/recommendation-analytics";
+import { logger } from "@/lib/logger";
 
 /**
  * POST /api/reports/recommendation-analytics

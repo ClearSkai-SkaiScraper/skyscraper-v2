@@ -80,7 +80,7 @@ export default function BillingPage() {
       setSuccess(
         `✅ Subscription created! ${seats} seat${seats > 1 ? "s" : ""} × $${PRICE_PER_SEAT}/mo = $${seats * PRICE_PER_SEAT}/mo`
       );
-      mutate("/api/billing/seats");
+      void mutate("/api/billing/seats");
       setSeatInput(null);
     } catch (err) {
       setError(err.message || "Failed to create subscription.");
@@ -113,7 +113,7 @@ export default function BillingPage() {
       setSuccess(
         `✅ Seats updated: ${currentSeats} → ${seatInput}. ${seatInput > currentSeats ? "Prorated charge applied." : "Prorated credit applied."}`
       );
-      mutate("/api/billing/seats");
+      void mutate("/api/billing/seats");
       setSeatInput(null);
     } catch (err) {
       setError(err.message || "Failed to update seats.");

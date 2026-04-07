@@ -121,7 +121,7 @@ export default function PerformanceDashboardPage() {
   }, []);
 
   useEffect(() => {
-    fetchData();
+    void fetchData();
   }, [fetchData]);
 
   const handleExport = async () => {

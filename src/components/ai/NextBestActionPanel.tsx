@@ -62,7 +62,7 @@ export function NextBestActionPanel({ claimId, onActionClick }: NextBestActionPa
       }
     }
 
-    fetchIntelligence();
+    void fetchIntelligence();
   }, [claimId]);
 
   if (loading) {

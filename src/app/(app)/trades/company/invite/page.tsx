@@ -70,7 +70,7 @@ export default function CompanyInvitePage() {
   const [sendingClientInvite, setSendingClientInvite] = useState(false);
 
   useEffect(() => {
-    loadData();
+    void loadData();
   }, []);
 
   const loadData = async () => {
@@ -135,7 +135,7 @@ export default function CompanyInvitePage() {
             ? {
                 label: "Copy Link",
                 onClick: () => {
-                  navigator.clipboard.writeText(data.inviteLink);
+                  void navigator.clipboard.writeText(data.inviteLink);
                   toast.success("Link copied!");
                 },
               }
@@ -149,7 +149,7 @@ export default function CompanyInvitePage() {
       setInviteLastName("");
       setInviteTitle("");
       setInviteRole("member");
-      loadData();
+      void loadData();
     } catch (error) {
       toast.error(error.message || "Failed to send invite");
     } finally {
@@ -167,7 +167,7 @@ export default function CompanyInvitePage() {
       });
       if (!res.ok) throw new Error("Failed to revoke invite");
       toast.success("Invite revoked");
-      loadData();
+      void loadData();
     } catch {
       toast.error("Failed to revoke invite");
     } finally {
@@ -188,7 +188,7 @@ export default function CompanyInvitePage() {
       if (!res.ok) throw new Error(data.error || "Failed to process request");
 
       toast.success(action === "approve" ? "Employee approved! 🎉" : "Request declined.");
-      loadData();
+      void loadData();
     } catch (error) {
       toast.error(error.message || "Failed to process request");
     } finally {

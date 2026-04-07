@@ -148,7 +148,7 @@ export default function FinancialOverviewPage() {
         setLoading(false);
       }
     };
-    fetchData();
+    void fetchData();
   }, [isLoaded, isSignedIn]);
 
   if (!isLoaded || !isSignedIn) {

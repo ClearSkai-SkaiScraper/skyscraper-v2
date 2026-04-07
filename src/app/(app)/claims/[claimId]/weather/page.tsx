@@ -217,7 +217,7 @@ export default function ClaimWeatherPage({ params }: Props) {
         setLoadingScans(false);
       }
     }
-    loadClaimAddress();
+    void loadClaimAddress();
   }, [claimId]);
 
   // ── Load saved scans ──
@@ -882,7 +882,7 @@ export default function ClaimWeatherPage({ params }: Props) {
                     className="mt-2"
                     onClick={() => {
                       setError(null);
-                      runWeatherReport();
+                      void runWeatherReport();
                     }}
                     disabled={isReportRunning}
                   >
@@ -937,7 +937,7 @@ export default function ClaimWeatherPage({ params }: Props) {
                       className="mt-2"
                       onClick={() => {
                         setReportResult(null);
-                        runWeatherReport();
+                        void runWeatherReport();
                       }}
                       disabled={isReportRunning}
                     >

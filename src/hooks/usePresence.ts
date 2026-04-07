@@ -81,7 +81,7 @@ export function usePresence(
     // Re-track on visibility change (tab refocus)
     function onVisibility() {
       if (document.visibilityState === "visible" && channelRef.current) {
-        channelRef.current.track({
+        void channelRef.current.track({
           userId: currentUserId,
           online_at: new Date().toISOString(),
         });
@@ -91,7 +91,7 @@ export function usePresence(
 
     return () => {
       document.removeEventListener("visibilitychange", onVisibility);
-      supabase.removeChannel(presenceChannel);
+      void supabase.removeChannel(presenceChannel);
       channelRef.current = null;
       setOnlineUsers(new Set());
     };

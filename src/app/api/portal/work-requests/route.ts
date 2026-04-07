@@ -3,6 +3,7 @@ export const dynamic = "force-dynamic";
 import { auth } from "@clerk/nextjs/server";
 import { createId } from "@paralleldrive/cuid2";
 import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
 
 import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
@@ -45,12 +46,26 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const body = await request.json();
-    const { title, description, category, serviceType, urgency, propertyAddress, budget } = body;
+    const workRequestSchema = z.object({
+      title: z.string().max(200).optional(),
+      description: z.string().min(1, "Description is required").max(5000),
+      category: z.string().max(100).optional(),
+      serviceType: z.string().max(100).optional(),
+      urgency: z.enum(["low", "normal", "urgent"]).optional(),
+      propertyAddress: z.string().max(500).optional(),
+      budget: z.string().max(50).optional(),
+    });
 
-    if (!description) {
-      return NextResponse.json({ error: "Description is required" }, { status: 400 });
+    const body = await request.json();
+    const parsed = workRequestSchema.safeParse(body);
+    if (!parsed.success) {
+      return NextResponse.json(
+        { error: parsed.error.issues[0]?.message || "Invalid input" },
+        { status: 400 }
+      );
     }
+    const { title, description, category, serviceType, urgency, propertyAddress, budget } =
+      parsed.data;
 
     // Get or create client record
     let client = await prisma.client.findFirst({

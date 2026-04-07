@@ -88,7 +88,7 @@ function MessageComposer({
         onKeyDown={(e) => {
           if (e.key === "Enter" && !e.shiftKey) {
             e.preventDefault();
-            handleSubmit(e);
+            void handleSubmit(e);
           }
         }}
       />
@@ -209,7 +209,7 @@ export default function MessageHub({
 
   // ── Polling ───────────────────────────────────────────────────────
   useEffect(() => {
-    fetchThreads();
+    void fetchThreads();
     pollRef.current = setInterval(fetchThreads, 8_000);
     return () => {
       if (pollRef.current) clearInterval(pollRef.current);
@@ -218,7 +218,7 @@ export default function MessageHub({
 
   useEffect(() => {
     if (selectedThread) {
-      fetchMessages();
+      void fetchMessages();
       msgPollRef.current = setInterval(fetchMessages, 4_000);
     }
     return () => {

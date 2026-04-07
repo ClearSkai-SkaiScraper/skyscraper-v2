@@ -51,7 +51,7 @@ export function ClaimMessagesPanel({ claimId }: ClaimMessagesPanelProps) {
   const [showNewThread, setShowNewThread] = useState(false);
 
   useEffect(() => {
-    fetchThreads();
+    void fetchThreads();
   }, [claimId]);
 
   const fetchThreads = async () => {
@@ -118,9 +118,9 @@ export function ClaimMessagesPanel({ claimId }: ClaimMessagesPanelProps) {
         setMessageBody("");
         setNewSubject("");
         setShowNewThread(false);
-        fetchThreads();
+        void fetchThreads();
         if (selectedThread) {
-          fetchThreadMessages(selectedThread.id);
+          void fetchThreadMessages(selectedThread.id);
         }
       } else {
         const data = await response.json();
@@ -140,7 +140,7 @@ export function ClaimMessagesPanel({ claimId }: ClaimMessagesPanelProps) {
 
   const selectThread = (thread: MessageThread) => {
     setSelectedThread(thread);
-    fetchThreadMessages(thread.id);
+    void fetchThreadMessages(thread.id);
   };
 
   if (loading) {

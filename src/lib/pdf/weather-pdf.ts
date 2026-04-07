@@ -226,7 +226,7 @@ export function renderWeatherPDF(input: WeatherPdfInput): Buffer {
     yPos = addSectionHeader(doc, "🔍 Executive Summary", yPos, margin, contentWidth);
 
     // Summary box
-    const summaryLines = doc.splitTextToSize(summary, contentWidth - 16);
+    const summaryLines = doc.splitTextToSize(summary, contentWidth - 16) as string[];
     const boxHeight = Math.max(20, summaryLines.length * 4.5 + 12);
 
     yPos = checkPage(doc, yPos, boxHeight);
@@ -254,7 +254,7 @@ export function renderWeatherPDF(input: WeatherPdfInput): Buffer {
   if (carrierTalkingPoints) {
     yPos = checkPage(doc, yPos, 30);
 
-    const talkingLines = doc.splitTextToSize(carrierTalkingPoints, contentWidth - 16);
+    const talkingLines = doc.splitTextToSize(carrierTalkingPoints, contentWidth - 16) as string[];
     const boxHeight = Math.max(20, talkingLines.length * 4.5 + 12);
 
     // Amber/yellow box
@@ -381,7 +381,7 @@ export function renderWeatherPDF(input: WeatherPdfInput): Buffer {
 
       doc.setFont("helvetica", "normal");
       const descText = event.description || event.type || "Weather Event";
-      const descLines = doc.splitTextToSize(descText, contentWidth - 60);
+      const descLines = doc.splitTextToSize(descText, contentWidth - 60) as string[];
       doc.text(descLines[0], margin + 40, yPos + 6);
 
       // Additional details

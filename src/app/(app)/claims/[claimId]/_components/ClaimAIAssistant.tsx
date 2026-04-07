@@ -199,7 +199,7 @@ What would you like help with?`,
             onKeyDown={(e) => {
               if (e.key === "Enter" && !e.shiftKey) {
                 e.preventDefault();
-                handleSendMessage();
+                void handleSendMessage();
               }
             }}
             placeholder="Ask me anything about this claim..."

@@ -3,9 +3,9 @@
  * Prevents hanging PDF generation in production
  */
 
-import puppeteer, { Browser, Page } from "puppeteer";
+import puppeteer, { Browser } from "puppeteer";
 
-import { FeatureFlags } from "./featureFlags";
+import { FeatureFlags } from "@/lib/flags";
 
 export interface PuppeteerTimeoutError extends Error {
   code: "PDF_RENDER_TIMEOUT";

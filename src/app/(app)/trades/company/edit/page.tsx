@@ -197,7 +197,7 @@ export default function CompanyEditPage() {
       }
     };
 
-    loadCompany();
+    void loadCompany();
   }, [router]);
 
   const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {

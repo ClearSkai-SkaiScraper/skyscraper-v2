@@ -21,35 +21,39 @@ import {
 // ═════════════════════════════════════════════════════════════════════
 describe("featureGates", () => {
   describe("hasFeature", () => {
-    it("free plan has basic_reports", () => {
-      expect(hasFeature("free", "basic_reports")).toBe(true);
+    it("free plan has pipeline", () => {
+      expect(hasFeature("free", "pipeline")).toBe(true);
     });
 
-    it("free plan does NOT have ai_tools", () => {
-      expect(hasFeature("free", "ai_tools")).toBe(false);
+    it("free plan does NOT have ai_assistant", () => {
+      expect(hasFeature("free", "ai_assistant")).toBe(false);
     });
 
     it("solo plan includes all free features plus its own", () => {
-      expect(hasFeature("solo", "basic_reports")).toBe(true);
-      expect(hasFeature("solo", "ai_tools")).toBe(true);
+      expect(hasFeature("solo", "pipeline")).toBe(true);
+      expect(hasFeature("solo", "ai_assistant")).toBe(true);
     });
 
-    it("business plan has team_management", () => {
-      expect(hasFeature("business", "team_management")).toBe(true);
+    it("business plan has team_seats", () => {
+      expect(hasFeature("business", "team_seats")).toBe(true);
     });
 
     it("enterprise plan has all features", () => {
       const allFeatures: FeatureKey[] = [
-        "basic_reports",
-        "ai_tools",
-        "team_management",
-        "api_access",
+        "ai_assistant",
+        "ai_damage_analysis",
+        "advanced_reports",
+        "pdf_export",
         "custom_branding",
-        "advanced_analytics",
+        "api_access",
+        "integrations",
+        "team_seats",
+        "client_portal",
+        "message_center",
+        "pipeline",
+        "weather_verification",
         "priority_support",
-        "sso",
         "white_label",
-        "dedicated_account_manager",
       ];
 
       for (const feature of allFeatures) {
@@ -63,20 +67,20 @@ describe("featureGates", () => {
   });
 
   describe("getMinPlanForFeature", () => {
-    it("basic_reports minimum plan is free", () => {
-      expect(getMinPlanForFeature("basic_reports")).toBe("free");
+    it("pipeline minimum plan is free", () => {
+      expect(getMinPlanForFeature("pipeline")).toBe("free");
     });
 
-    it("ai_tools minimum plan is solo", () => {
-      expect(getMinPlanForFeature("ai_tools")).toBe("solo");
+    it("ai_assistant minimum plan is solo", () => {
+      expect(getMinPlanForFeature("ai_assistant")).toBe("solo");
     });
 
-    it("team_management minimum plan is business", () => {
-      expect(getMinPlanForFeature("team_management")).toBe("business");
+    it("team_seats minimum plan is business", () => {
+      expect(getMinPlanForFeature("team_seats")).toBe("business");
     });
 
-    it("sso minimum plan is enterprise", () => {
-      expect(getMinPlanForFeature("sso")).toBe("enterprise");
+    it("white_label minimum plan is enterprise", () => {
+      expect(getMinPlanForFeature("white_label")).toBe("enterprise");
     });
   });
 

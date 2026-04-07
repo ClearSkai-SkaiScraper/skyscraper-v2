@@ -69,7 +69,7 @@ export default function ScopePricingPage() {
   }, [claimId]);
 
   useEffect(() => {
-    fetchData();
+    void fetchData();
   }, [fetchData]);
 
   const formatCurrency = (amount: number) =>

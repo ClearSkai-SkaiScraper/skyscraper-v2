@@ -108,7 +108,7 @@ export function useRBAC(): RBACContext {
       }
     }
 
-    fetchRole();
+    void fetchRole();
   }, [user, isLoaded]);
 
   const can = (permission: Permission): boolean => {

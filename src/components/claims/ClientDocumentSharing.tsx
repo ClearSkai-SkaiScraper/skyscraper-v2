@@ -62,7 +62,7 @@ export default function ClientDocumentSharing({
   // Auto-fetch connected client if none passed via prop
   useEffect(() => {
     if (!clientsProp?.length) {
-      fetchConnectedClient();
+      void fetchConnectedClient();
     }
   }, [claimId]);
 
@@ -106,7 +106,7 @@ export default function ClientDocumentSharing({
     if (clients.length === 1 && !selectedClientId) {
       setSelectedClientId(clients[0].id);
     }
-    loadDocuments();
+    void loadDocuments();
   }, [claimId, selectedClientId, clients]);
 
   const loadDocuments = async () => {
@@ -349,7 +349,7 @@ export default function ClientDocumentSharing({
                       onClick={() => {
                         documents.forEach((doc) => {
                           if (!doc.shared) {
-                            toggleDocumentSharing(doc.id, true);
+                            void toggleDocumentSharing(doc.id, true);
                           }
                         });
                       }}
@@ -362,7 +362,7 @@ export default function ClientDocumentSharing({
                       onClick={() => {
                         documents.forEach((doc) => {
                           if (doc.shared) {
-                            toggleDocumentSharing(doc.id, false);
+                            void toggleDocumentSharing(doc.id, false);
                           }
                         });
                       }}

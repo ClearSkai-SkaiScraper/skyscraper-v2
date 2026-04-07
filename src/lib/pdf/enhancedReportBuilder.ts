@@ -297,7 +297,7 @@ function addTableOfContents(
   ];
 
   doc.fontSize(12).fillColor("#000000");
-  sections.forEach((section, idx) => {
+  sections.forEach((section, _idx) => {
     if (
       (section.includes("Weather") && !data.weatherData) ||
       (section.includes("Photo") && !data.annotatedPhotos) ||
@@ -327,7 +327,7 @@ function addExecutiveSummary(
   doc: PDFKit.PDFDocument,
   data: EnhancedReportData,
   primaryColor: string,
-  secondaryColor: string
+  _secondaryColor: string
 ) {
   doc.fontSize(20).fillColor(primaryColor).text("Executive Summary", { underline: true });
   doc.moveDown(1);
@@ -428,7 +428,7 @@ function addWeatherSection(
   doc: PDFKit.PDFDocument,
   weatherData: EnhancedWeatherData,
   primaryColor: string,
-  secondaryColor: string
+  _secondaryColor: string
 ) {
   doc
     .fontSize(20)
@@ -519,7 +519,7 @@ function addDamageAnalysis(
   doc: PDFKit.PDFDocument,
   analysis: StormIntakeResults,
   primaryColor: string,
-  secondaryColor: string
+  _secondaryColor: string
 ) {
   doc.fontSize(20).fillColor(primaryColor).text("AI Damage Analysis", { underline: true });
   doc.moveDown(1);
@@ -698,7 +698,7 @@ function addComplianceSection(
   doc: PDFKit.PDFDocument,
   compliance: ComplianceReport,
   primaryColor: string,
-  secondaryColor: string
+  _secondaryColor: string
 ) {
   doc.fontSize(20).fillColor(primaryColor).text("Code & Compliance Analysis", { underline: true });
   doc.moveDown(1);
@@ -764,7 +764,7 @@ function addRepairRecommendations(
   doc: PDFKit.PDFDocument,
   analysis: StormIntakeResults,
   primaryColor: string,
-  secondaryColor: string
+  _secondaryColor: string
 ) {
   doc.fontSize(20).fillColor(primaryColor).text("Repair Recommendations", { underline: true });
   doc.moveDown(1);
@@ -860,7 +860,7 @@ function addDisclaimers(
   doc: PDFKit.PDFDocument,
   data: EnhancedReportData,
   primaryColor: string,
-  secondaryColor: string
+  _secondaryColor: string
 ) {
   doc.fontSize(18).fillColor(primaryColor).text("Important Disclaimers", { underline: true });
   doc.moveDown(1);

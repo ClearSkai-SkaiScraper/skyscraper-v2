@@ -93,7 +93,7 @@ export function AnalyticsDashboard({ className }: AnalyticsDashboardProps) {
   }, []);
 
   useEffect(() => {
-    fetchAnalytics();
+    void fetchAnalytics();
   }, [fetchAnalytics]);
 
   if (loading) {

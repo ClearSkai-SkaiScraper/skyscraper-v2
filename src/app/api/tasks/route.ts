@@ -2,14 +2,14 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
-import { auth } from "@clerk/nextjs/server";
 import { NextRequest } from "next/server";
 import { z } from "zod";
 
 import { getVisibleUserIds } from "@/lib/auth/managerScope";
+import { withAuth } from "@/lib/auth/withAuth";
 import { logger } from "@/lib/logger";
 import { sendTemplatedNotification } from "@/lib/notifications/templates";
-import { getCurrentUserPermissions, requirePermission } from "@/lib/permissions";
+import { requirePermission } from "@/lib/permissions";
 import prisma from "@/lib/prisma";
 
 // Prisma singleton imported from @/lib/db/prisma
@@ -30,14 +30,9 @@ const createTaskSchema = z.object({
   notes: z.string().trim().max(5000).nullish(),
 });
 
-export async function GET(request: NextRequest) {
+export const GET = withAuth(async (request: NextRequest, { orgId, userId }) => {
   try {
     await requirePermission("view_tasks");
-    const { orgId } = await getCurrentUserPermissions();
-
-    if (!orgId) {
-      return Response.json({ error: "Organization not found" }, { status: 404 });
-    }
 
     const { searchParams } = new URL(request.url);
     const status = searchParams.get("status");
@@ -70,9 +65,8 @@ export async function GET(request: NextRequest) {
     }
 
     // Manager-scoped visibility: non-admins see only their own + direct reports' tasks
-    const { userId: clerkUserId } = await auth();
-    if (clerkUserId) {
-      const visibleUserIds = await getVisibleUserIds(clerkUserId, orgId);
+    if (userId) {
+      const visibleUserIds = await getVisibleUserIds(userId, orgId);
       if (visibleUserIds) {
         where.OR = [
           { assigneeId: { in: visibleUserIds } },
@@ -124,16 +118,11 @@ export async function GET(request: NextRequest) {
     logger.error("Error fetching tasks:", error);
     return Response.json({ error: "Failed to fetch tasks" }, { status: 500 });
   }
-}
+});
 
-export async function POST(request: NextRequest) {
+export const POST = withAuth(async (request: NextRequest, { orgId, userId }) => {
   try {
     await requirePermission("create_tasks");
-    const { orgId, userId } = await getCurrentUserPermissions();
-
-    if (!orgId || !userId) {
-      return Response.json({ error: "Authentication required" }, { status: 401 });
-    }
 
     const body = await request.json();
     const parsed = createTaskSchema.safeParse(body);
@@ -262,4 +251,4 @@ export async function POST(request: NextRequest) {
     logger.error("Error creating tasks:", error);
     return Response.json({ error: "Failed to create tasks" }, { status: 500 });
   }
-}
+});

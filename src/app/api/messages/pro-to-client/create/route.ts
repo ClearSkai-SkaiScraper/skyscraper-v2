@@ -1,6 +1,6 @@
-import { auth } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
 
+import { withAuth } from "@/lib/auth/withAuth";
 import { generateContactSlug } from "@/lib/generateContactSlug";
 import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
@@ -20,14 +20,8 @@ export const dynamic = "force-dynamic";
  *  - subject?: string  (optional thread subject)
  *  - claimId?: string  (optional claim to attach to thread)
  */
-export async function POST(req: NextRequest) {
+export const POST = withAuth(async (req: NextRequest, { orgId, userId }) => {
   try {
-    const { userId } = await auth();
-
-    if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
     const body = await req.json();
     const { clientId, body: messageBody, subject, claimId } = body;
 
@@ -279,9 +273,12 @@ export async function POST(req: NextRequest) {
       messageId: message.id,
       clientName: client.name,
     });
-  } catch (error: any) {
-    const errMsg = error?.message || error?.toString?.() || "Unknown error";
-    logger.error("[messages/pro-to-client/create] Error:", { error: errMsg, stack: error?.stack });
+  } catch (error) {
+    const errMsg = error instanceof Error ? error.message : "Unknown error";
+    logger.error("[messages/pro-to-client/create] Error:", {
+      error: errMsg,
+      stack: error instanceof Error ? error.stack : undefined,
+    });
     return NextResponse.json({ error: `Failed to create message: ${errMsg}` }, { status: 500 });
   }
-}
+});

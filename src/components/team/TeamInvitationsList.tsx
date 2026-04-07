@@ -19,7 +19,7 @@ export default function TeamInvitationsList() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetchInvitations();
+    void fetchInvitations();
   }, []);
 
   const fetchInvitations = async () => {

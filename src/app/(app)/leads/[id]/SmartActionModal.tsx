@@ -23,7 +23,7 @@ export function SmartActionModal({
   onRegenerate,
 }: SmartActionModalProps) {
   const copyToClipboard = () => {
-    navigator.clipboard.writeText(content);
+    void navigator.clipboard.writeText(content);
     toast.success("Content copied to clipboard");
   };
 

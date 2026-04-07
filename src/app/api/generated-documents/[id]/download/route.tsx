@@ -5,10 +5,10 @@
  * Downloads PDFs for all document types: PROPOSAL, PACKET, SUPPLEMENT, REBUTTAL, CLAIM_MASTER
  */
 
-import { auth } from "@clerk/nextjs/server";
 import { renderToStream } from "@react-pdf/renderer";
 import { NextRequest, NextResponse } from "next/server";
 
+import { withAuth } from "@/lib/auth/withAuth";
 import { db } from "@/lib/db";
 import { logger } from "@/lib/logger";
 import { ContractorPacketPDFDocument } from "@/lib/pdf/contractorPacketRenderer";
@@ -17,14 +17,9 @@ import { RebuttalPDFDocument } from "@/lib/pdf/rebuttalRenderer";
 import { SupplementPDFDocument } from "@/lib/pdf/supplementRenderer";
 import { getOrgBranding, sanitizeFilename } from "@/lib/pdf/utils";
 
-export async function GET(req: NextRequest, context: { params: Promise<{ id: string }> }) {
+export const GET = withAuth(async (req: NextRequest, { orgId, userId }, routeParams) => {
   try {
-    const { userId, orgId } = await auth();
-    if (!userId || !orgId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    const { id } = await context.params;
+    const { id } = await routeParams.params;
 
     // Fetch document
     const result = await db.query(
@@ -175,4 +170,4 @@ export async function GET(req: NextRequest, context: { params: Promise<{ id: str
     logger.error("Document download error:", error);
     return NextResponse.json({ error: "Failed to download document" }, { status: 500 });
   }
-}
+});

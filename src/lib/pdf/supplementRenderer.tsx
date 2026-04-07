@@ -7,8 +7,7 @@
  * MIGRATED: Now uses shared PDF components from pdfConfig.ts and components.tsx
  */
 
-import { Document, Text,View } from "@react-pdf/renderer";
-import React from "react";
+import { Document, Text, View } from "@react-pdf/renderer";
 
 import { Variance } from "@/lib/delta/computeDelta";
 
@@ -22,7 +21,7 @@ import {
   SummaryBox,
 } from "./components";
 import { WeatherVerificationPage } from "./components/WeatherVerificationPage";
-import { colors, formatCurrency, formatDate, truncateText } from "./pdfConfig";
+import { formatCurrency, formatDate, truncateText } from "./pdfConfig";
 
 export type EvidenceAssetForPDF = {
   id: string;
@@ -139,11 +138,7 @@ export function SupplementPDFDocument({ data }: { data: SupplementPDFData }) {
 
       {/* Evidence Pages (if provided) */}
       {evidenceAssets && evidenceAssets.length > 0 && (
-        <PDFPage
-          pageNumber={sections.length + 3}
-          companyName={orgName}
-          companyLogo={brandLogoUrl}
-        >
+        <PDFPage pageNumber={sections.length + 3} companyName={orgName} companyLogo={brandLogoUrl}>
           <Section title="Evidence Photos" theme="supplement">
             <Paragraph>
               {evidenceAssets.length} photo{evidenceAssets.length !== 1 ? "s" : ""} attached

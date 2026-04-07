@@ -1,22 +1,13 @@
 export const dynamic = "force-dynamic";
 
-import { auth } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
 
+import { withAuth } from "@/lib/auth/withAuth";
 import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 
-export async function GET(request: NextRequest) {
+export const GET = withAuth(async (req: NextRequest, { orgId, userId }) => {
   try {
-    const { userId, orgId } = await auth();
-    if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    if (!orgId) {
-      return NextResponse.json({ error: "Organization required for data export" }, { status: 403 });
-    }
-
     const claims = await prisma.claims.findMany({
       where: { orgId },
       select: {
@@ -35,7 +26,7 @@ export async function GET(request: NextRequest) {
     const exportData = {
       exportedAt: new Date().toISOString(),
       exportedBy: userId,
-      orgId: orgId || "personal",
+      orgId,
       claims,
       meta: { totalClaims: claims.length, format: "json", version: "1.0" },
     };
@@ -52,9 +43,6 @@ export async function GET(request: NextRequest) {
     });
   } catch (error) {
     logger.error("Settings export error:", error);
-    return NextResponse.json(
-      { error: "Export failed" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Export failed" }, { status: 500 });
   }
-}
+});

@@ -101,7 +101,7 @@ export function UserIdentityProvider({ children }: { children: React.ReactNode }
 
   useEffect(() => {
     if (clerkLoaded) {
-      fetchIdentity();
+      void fetchIdentity();
     }
   }, [clerkLoaded, fetchIdentity]);
 

@@ -64,7 +64,7 @@ export default function TimelinePage() {
   }, [claimId]);
 
   useEffect(() => {
-    fetchEvents();
+    void fetchEvents();
   }, [fetchEvents]);
 
   if (loading) {

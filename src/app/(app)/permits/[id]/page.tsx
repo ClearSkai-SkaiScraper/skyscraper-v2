@@ -155,8 +155,8 @@ export default function PermitDetailPage() {
   }, [id, router]);
 
   useEffect(() => {
-    fetchPermit();
-    fetchDocuments();
+    void fetchPermit();
+    void fetchDocuments();
   }, [fetchPermit]);
 
   const fetchDocuments = async () => {
@@ -259,7 +259,7 @@ export default function PermitDetailPage() {
       if (!res.ok) throw new Error("Failed to update");
       toast.success("Permit updated successfully");
       router.refresh();
-      fetchPermit();
+      void fetchPermit();
     } catch {
       toast.error("Failed to save permit");
     } finally {

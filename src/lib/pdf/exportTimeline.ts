@@ -29,10 +29,16 @@ interface ClaimData {
   approvedValue?: number;
 }
 
+interface TimelineNote {
+  createdAt: string;
+  noteType?: string;
+  note: string;
+}
+
 export async function exportTimelineToPDF(
   claim: ClaimData,
   timeline: TimelineEvent[],
-  notes: any[]
+  notes: TimelineNote[]
 ): Promise<Blob> {
   const doc = new jsPDF();
 
@@ -73,7 +79,8 @@ export async function exportTimelineToPDF(
 
   // Notes Section
   if (notes.length > 0) {
-    const finalY = (doc as any).lastAutoTable.finalY + 10;
+    const autoTableDoc = doc as jsPDF & { lastAutoTable?: { finalY: number } };
+    const finalY = (autoTableDoc.lastAutoTable?.finalY ?? 85) + 10;
     doc.setFontSize(14);
     doc.text("Internal Notes", 14, finalY);
 
@@ -147,7 +154,8 @@ export async function exportClaimSummaryToPDF(
   });
 
   // Recent Activity
-  const finalY = (doc as any).lastAutoTable.finalY + 15;
+  const autoTableDoc = doc as jsPDF & { lastAutoTable?: { finalY: number } };
+  const finalY = (autoTableDoc.lastAutoTable?.finalY ?? 55) + 15;
   doc.setFontSize(14);
   doc.text("Recent Activity", 14, finalY);
 

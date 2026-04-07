@@ -58,7 +58,7 @@ export function PredictionPanel({ claimId }: PredictionPanelProps) {
   const [generating, setGenerating] = useState(false);
 
   useEffect(() => {
-    fetchPrediction();
+    void fetchPrediction();
   }, [claimId]);
 
   const fetchPrediction = async () => {

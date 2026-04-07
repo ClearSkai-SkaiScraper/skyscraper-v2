@@ -2,8 +2,31 @@ import { createWriteStream, existsSync, mkdirSync } from "fs";
 import path from "path";
 import PDFDocument from "pdfkit";
 
+interface ScopeLineItem {
+  code?: string | number;
+  description?: string;
+  quantity?: string | number;
+  unit?: string;
+  notes?: string;
+}
+
+interface CodeReference {
+  jurisdiction?: string;
+  reference?: string;
+  note?: string;
+}
+
+interface DamageJson {
+  summary?: (string | unknown)[];
+  scope?: ScopeLineItem[];
+  codes?: CodeReference[];
+  materials?: (string | unknown)[];
+  safety?: (string | unknown)[];
+  assumptions?: (string | unknown)[];
+}
+
 export async function buildDamagePdf(params: {
-  json: any;
+  json: DamageJson;
   meta: {
     address: string;
     dateOfLoss: string;
@@ -38,7 +61,7 @@ export async function buildDamagePdf(params: {
 
   // Summary
   doc.fontSize(12).text("Summary", { underline: true });
-  (json.summary || []).forEach((s: any) => {
+  (json.summary || []).forEach((s) => {
     const text = typeof s === "string" ? s : String(s || "");
     doc.text(`• ${text}`);
   });
@@ -46,7 +69,7 @@ export async function buildDamagePdf(params: {
 
   // Scope
   doc.fontSize(12).text("Scope of Work", { underline: true });
-  (json.scope || []).forEach((li: any, idx: number) => {
+  (json.scope || []).forEach((li, idx) => {
     const code = typeof li.code === "string" ? li.code : String(li.code || "");
     const description =
       typeof li.description === "string" ? li.description : String(li.description || "");
@@ -61,7 +84,7 @@ export async function buildDamagePdf(params: {
 
   // Codes
   doc.fontSize(12).text("Code References", { underline: true });
-  (json.codes || []).forEach((c: any) => {
+  (json.codes || []).forEach((c) => {
     const jurisdiction =
       typeof c.jurisdiction === "string" ? c.jurisdiction : String(c.jurisdiction || "");
     const reference = typeof c.reference === "string" ? c.reference : String(c.reference || "");
@@ -72,7 +95,7 @@ export async function buildDamagePdf(params: {
 
   // Materials
   doc.fontSize(12).text("Materials", { underline: true });
-  (json.materials || []).forEach((m: any) => {
+  (json.materials || []).forEach((m) => {
     const text = typeof m === "string" ? m : String(m || "");
     doc.fontSize(10).text(`• ${text}`);
   });
@@ -80,14 +103,14 @@ export async function buildDamagePdf(params: {
 
   // Safety & Assumptions
   doc.fontSize(12).text("Safety", { underline: true });
-  (json.safety || []).forEach((m: any) => {
+  (json.safety || []).forEach((m) => {
     const text = typeof m === "string" ? m : String(m || "");
     doc.fontSize(10).text(`• ${text}`);
   });
   doc.moveDown();
 
   doc.fontSize(12).text("Assumptions", { underline: true });
-  (json.assumptions || []).forEach((m: any) => {
+  (json.assumptions || []).forEach((m) => {
     const text = typeof m === "string" ? m : String(m || "");
     doc.fontSize(10).text(`• ${text}`);
   });

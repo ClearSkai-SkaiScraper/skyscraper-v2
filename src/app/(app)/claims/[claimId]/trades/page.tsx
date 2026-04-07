@@ -54,7 +54,7 @@ export default function TradesPage() {
   });
 
   useEffect(() => {
-    fetchTrades();
+    void fetchTrades();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [claimId]);
 
@@ -104,7 +104,7 @@ export default function TradesPage() {
         estimatedCost: "",
       });
       setShowForm(false);
-      fetchTrades();
+      void fetchTrades();
     } catch (error) {
       logger.error("Failed to add trade:", error);
       alert("Failed to add trade");
@@ -127,7 +127,7 @@ export default function TradesPage() {
         alert("❌ Failed to delete trade. Please try again.");
         return;
       }
-      fetchTrades();
+      void fetchTrades();
     } catch (error) {
       logger.error("Failed to delete trade:", error);
       alert("Failed to delete trade");

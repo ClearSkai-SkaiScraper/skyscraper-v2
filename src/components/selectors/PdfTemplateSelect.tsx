@@ -75,7 +75,7 @@ export function PdfTemplateSelect(props: {
       }
     }
 
-    run();
+    void run();
     return () => {
       cancelled = true;
     };

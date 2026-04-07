@@ -92,7 +92,7 @@ export default function ClientProfilePage() {
   }, []);
 
   useEffect(() => {
-    fetchProfile();
+    void fetchProfile();
   }, [slug]);
 
   const fetchProfile = async () => {
@@ -151,7 +151,7 @@ export default function ClientProfilePage() {
   };
 
   const copyShareableLink = () => {
-    navigator.clipboard.writeText(getShareableLink());
+    void navigator.clipboard.writeText(getShareableLink());
     toast.success("Profile link copied to clipboard!");
   };
 

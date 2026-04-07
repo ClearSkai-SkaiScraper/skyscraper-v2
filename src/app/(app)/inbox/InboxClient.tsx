@@ -205,7 +205,7 @@ export default function InboxClient({
                       <button
                         onClick={(e) => {
                           e.preventDefault();
-                          handleMarkAsRead(activity.id);
+                          void handleMarkAsRead(activity.id);
                         }}
                         className="flex-shrink-0 rounded-lg border border-[color:var(--border)] bg-[var(--surface-1)] p-1.5 transition-colors hover:bg-[var(--surface-1)]"
                         title="Mark as read"

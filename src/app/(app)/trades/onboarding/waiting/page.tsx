@@ -20,7 +20,7 @@ export default function WaitingPage() {
   const [inviteLink, setInviteLink] = useState("");
 
   useEffect(() => {
-    checkStatus();
+    void checkStatus();
     // Poll every 10 seconds
     const interval = setInterval(checkStatus, 10000);
     return () => clearInterval(interval);
@@ -56,7 +56,7 @@ export default function WaitingPage() {
   };
 
   const copyInviteLink = () => {
-    navigator.clipboard.writeText(inviteLink);
+    void navigator.clipboard.writeText(inviteLink);
     toast.success("Invite link copied!");
   };
 

@@ -146,7 +146,7 @@ export default function CompanyPage() {
   const [inviting, setInviting] = useState(false);
 
   useEffect(() => {
-    loadData();
+    void loadData();
   }, []);
 
   const loadData = async () => {
@@ -240,7 +240,7 @@ export default function CompanyPage() {
             ? {
                 label: "Copy Link",
                 onClick: () => {
-                  navigator.clipboard.writeText(data.inviteLink);
+                  void navigator.clipboard.writeText(data.inviteLink);
                   toast.success("Link copied!");
                 },
               }
@@ -251,7 +251,7 @@ export default function CompanyPage() {
       }
       setInviteEmail("");
       setShowInviteModal(false);
-      loadData();
+      void loadData();
     } catch (error) {
       logger.error("Failed to send invite:", error);
       toast.error("Failed to send invite");
@@ -276,7 +276,7 @@ export default function CompanyPage() {
       }
 
       toast.success(action === "approve" ? "Employee approved! 🎉" : "Request declined.");
-      loadData();
+      void loadData();
     } catch (error) {
       logger.error("Failed to process join request:", error);
       toast.error("Failed to process request");

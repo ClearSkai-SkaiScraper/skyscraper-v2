@@ -43,7 +43,7 @@ export function SimulationHistoryTracker({ claimId, compact }: Props) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetchHistory();
+    void fetchHistory();
   }, [claimId]);
 
   async function fetchHistory() {

@@ -209,7 +209,7 @@ export default function ProjectPlanBuilderPage() {
         /* silent */
       }
     }
-    loadPlans();
+    void loadPlans();
   }, [result]);
 
   // ── Email plan handler ─────────────────────────────────────

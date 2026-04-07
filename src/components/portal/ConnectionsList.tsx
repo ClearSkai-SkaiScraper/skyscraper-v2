@@ -83,7 +83,7 @@ export function ConnectionsList({
   );
 
   useEffect(() => {
-    fetchConnections();
+    void fetchConnections();
   }, [fetchConnections]);
 
   const displayConnections = maxDisplay ? connections.slice(0, maxDisplay) : connections;
@@ -271,7 +271,7 @@ export function ConnectionsListCompact({ maxDisplay = 3 }: { maxDisplay?: number
         setLoading(false);
       }
     }
-    fetchConnections();
+    void fetchConnections();
   }, []);
 
   if (loading) {

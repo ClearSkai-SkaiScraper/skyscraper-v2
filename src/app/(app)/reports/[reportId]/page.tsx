@@ -1,9 +1,11 @@
 // src/app/(app)/reports/[reportId]/page.tsx
-import { auth } from "@clerk/nextjs/server";
+// Session 9: Fixed tenant isolation — added orgId to Prisma WHERE clause
+// and removed conditional bypass that allowed access when orgId was null.
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { ReportPreviewLayout } from "@/components/report/ReportPreviewLayout";
+import { resolveOrg } from "@/lib/org/resolveOrg";
 import prisma from "@/lib/prisma";
 
 export const dynamic = "force-dynamic";
@@ -14,11 +16,18 @@ type PageProps = {
 };
 
 export default async function ReportViewerPage({ params }: PageProps) {
-  const { orgId } = await auth();
+  let orgId: string;
+  try {
+    const ctx = await resolveOrg();
+    orgId = ctx.orgId;
+  } catch {
+    notFound();
+  }
+
   const { reportId } = params;
 
-  const report = await prisma.ai_reports.findUnique({
-    where: { id: reportId },
+  const report = await prisma.ai_reports.findFirst({
+    where: { id: reportId, orgId },
     include: {
       claims: {
         include: {
@@ -28,7 +37,7 @@ export default async function ReportViewerPage({ params }: PageProps) {
     },
   });
 
-  if (!report || (orgId && report.orgId !== orgId)) {
+  if (!report) {
     notFound();
   }
 

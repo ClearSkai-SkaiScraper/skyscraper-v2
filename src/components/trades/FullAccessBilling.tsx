@@ -32,7 +32,7 @@ export function FullAccessBilling() {
   const [actionLoading, setActionLoading] = useState(false);
 
   useEffect(() => {
-    fetchStatus();
+    void fetchStatus();
   }, []);
 
   const fetchStatus = async () => {
@@ -106,7 +106,7 @@ export function FullAccessBilling() {
 
       if (response.ok) {
         toast.success("Subscription will cancel at end of billing period");
-        fetchStatus();
+        void fetchStatus();
       } else {
         toast.error(data.error || "Failed to cancel subscription");
       }

@@ -5,9 +5,9 @@
  * POST /api/migrations/status/[jobId] — Control migration (pause, resume, cancel, rollback)
  */
 
-import { auth } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
 
+import { withAuth } from "@/lib/auth/withAuth";
 import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 
@@ -18,12 +18,7 @@ export const dynamic = "force-dynamic";
  * GET /api/migrations/status
  * List all migrations for the authenticated org
  */
-export async function GET(request: NextRequest) {
-  const { userId, orgId } = await auth();
-  if (!userId || !orgId) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
-
+export const GET = withAuth(async (request: NextRequest, { orgId, userId }) => {
   try {
     const migrations = await prisma.migration_jobs.findMany({
       where: { orgId },
@@ -66,4 +61,4 @@ export async function GET(request: NextRequest) {
     logger.error("[Migration Status] Error:", error);
     return NextResponse.json({ error: "Failed to fetch migrations" }, { status: 500 });
   }
-}
+});

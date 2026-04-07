@@ -60,7 +60,7 @@ export default function FeaturedJobsSection({ userId, isOwnProfile }: FeaturedJo
   }, [userId]);
 
   useEffect(() => {
-    fetchFeaturedWork();
+    void fetchFeaturedWork();
   }, [fetchFeaturedWork]);
 
   const handleDelete = async (id: string) => {
@@ -117,7 +117,7 @@ export default function FeaturedJobsSection({ userId, isOwnProfile }: FeaturedJo
               <AddFeaturedWorkForm
                 onSuccess={() => {
                   setShowAddDialog(false);
-                  fetchFeaturedWork();
+                  void fetchFeaturedWork();
                 }}
               />
             </DialogContent>
@@ -207,7 +207,7 @@ export default function FeaturedJobsSection({ userId, isOwnProfile }: FeaturedJo
               item={selectedItem}
               onSuccess={() => {
                 setSelectedItem(null);
-                fetchFeaturedWork();
+                void fetchFeaturedWork();
               }}
             />
           </DialogContent>

@@ -1,9 +1,9 @@
 import { clerkClient, currentUser } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
 
+import { withAuth } from "@/lib/auth/withAuth";
 import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
-import { safeOrgContext } from "@/lib/safeOrgContext";
 
 export const dynamic = "force-dynamic";
 
@@ -15,18 +15,13 @@ export const dynamic = "force-dynamic";
  * and to merge data from both user_organizations + tradesCompanyMember tables
  * (whichever has richer profile data) so names & avatars always show.
  */
-export async function GET(request: NextRequest) {
+export const GET = withAuth(async (req: NextRequest, { orgId, userId }) => {
   try {
-    const ctx = await safeOrgContext();
-    if (ctx.status !== "ok" || !ctx.orgId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
     const clerkUser = await currentUser();
 
     // ── Strategy 1: user_organizations + users table ─────────────
     const orgUsers = await prisma.user_organizations.findMany({
-      where: { organizationId: ctx.orgId },
+      where: { organizationId: orgId },
       orderBy: { createdAt: "desc" },
     });
 
@@ -63,9 +58,9 @@ export async function GET(request: NextRequest) {
     // Get the current user's company, then all active members
     let companyMembers: any[] = [];
     try {
-      const membership = ctx.userId
+      const membership = userId
         ? await prisma.tradesCompanyMember.findFirst({
-            where: { userId: ctx.userId },
+            where: { userId },
             select: { companyId: true },
           })
         : null;
@@ -148,8 +143,8 @@ export async function GET(request: NextRequest) {
 
     // ── Guarantee current user is always in the list ─────────────
     // AND enrich with Clerk profile if their DB profile data is missing
-    if (ctx.userId) {
-      const existingIdx = formattedMembers.findIndex((m) => m.id === ctx.userId);
+    if (userId) {
+      const existingIdx = formattedMembers.findIndex((m) => m.id === userId);
       const clerkEmail =
         clerkUser?.emailAddresses?.[0]?.emailAddress ||
         clerkUser?.primaryEmailAddress?.emailAddress;
@@ -172,7 +167,7 @@ export async function GET(request: NextRequest) {
       } else {
         // User not in list at all — inject from Clerk session
         formattedMembers.unshift({
-          id: ctx.userId,
+          id: userId,
           name: clerkName || "You",
           email: clerkEmail || "Unknown",
           role: "Admin",
@@ -231,7 +226,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({
       ok: true,
       members: formattedMembers,
-      currentUserId: ctx.userId || null,
+      currentUserId: userId,
       source: "merged",
     });
   } catch (error) {
@@ -239,4 +234,4 @@ export async function GET(request: NextRequest) {
     logger.error("[GET /api/team/members] Error:", error);
     return NextResponse.json({ error: message }, { status: 500 });
   }
-}
+});

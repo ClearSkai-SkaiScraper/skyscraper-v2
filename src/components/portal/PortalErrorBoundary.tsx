@@ -1,5 +1,6 @@
 "use client";
 
+import * as Sentry from "@sentry/nextjs";
 import { Component, ReactNode } from "react";
 
 interface Props {
@@ -21,7 +22,7 @@ export class PortalErrorBoundary extends Component<Props, State> {
     return { hasError: true, error };
   }
 
-  componentDidCatch(error: Error, errorInfo: any) {
+  componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
     // Log error to console and monitoring service
     console.error("[PORTAL_ERROR_BOUNDARY] Caught error:", {
       error: error.message,
@@ -30,7 +31,11 @@ export class PortalErrorBoundary extends Component<Props, State> {
       timestamp: new Date().toISOString(),
     });
 
-    // TODO: Send to error monitoring service (Sentry, LogRocket, etc.)
+    // Send to Sentry
+    Sentry.captureException(error, {
+      tags: { boundary: "portal" },
+      contexts: { react: { componentStack: errorInfo.componentStack } },
+    });
   }
 
   render() {

@@ -1,6 +1,7 @@
-import { auth, currentUser } from "@clerk/nextjs/server";
-import { NextResponse } from "next/server";
+import { currentUser } from "@clerk/nextjs/server";
+import { NextRequest, NextResponse } from "next/server";
 
+import { withAuth } from "@/lib/auth/withAuth";
 import { log } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 
@@ -51,7 +52,7 @@ async function resolveClientRecord(userId: string) {
         // userId unique constraint — another client record already has this userId
         log.warn("[messages/threads] Could not backfill userId", {
           clientId: client.id,
-          error: backfillErr.message,
+          error: backfillErr instanceof Error ? backfillErr.message : "Unknown error",
         });
       }
       return client;
@@ -92,21 +93,18 @@ async function resolveClientRecord(userId: string) {
       log.info("[messages/threads] Auto-created client record", { clientId: client.id, userId });
       return client;
     } catch (createErr) {
-      log.warn("[messages/threads] Auto-create client failed", { error: createErr.message });
+      log.warn("[messages/threads] Auto-create client failed", {
+        error: createErr instanceof Error ? createErr.message : "Unknown error",
+      });
     }
   }
 
   return null;
 }
 
-export async function GET(req: Request) {
+export const GET = withAuth(async (req: NextRequest, { orgId, userId }) => {
   const startTime = Date.now();
   try {
-    const { userId } = await auth();
-    if (!userId) {
-      return NextResponse.json({ threads: [], error: "Unauthorized" }, { status: 200 });
-    }
-
     log.info("[messages/threads] Request started", { userId });
 
     const { searchParams } = new URL(req.url);
@@ -342,7 +340,7 @@ export async function GET(req: Request) {
     return NextResponse.json({ threads });
   } catch (error) {
     log.error("[messages/threads] Request failed", {
-      error: error?.message,
+      error: error instanceof Error ? error.message : "Unknown error",
       duration: Date.now() - startTime,
     });
     log.error("Threads fetch error:", error);
@@ -351,9 +349,14 @@ export async function GET(req: Request) {
       {
         threads: [],
         error: "Failed to load messages",
-        details: process.env.NODE_ENV === "development" ? error.message : undefined,
+        details:
+          process.env.NODE_ENV === "development"
+            ? error instanceof Error
+              ? error.message
+              : "Unknown error"
+            : undefined,
       },
       { status: 200 }
     );
   }
-}
+});

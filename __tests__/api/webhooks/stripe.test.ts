@@ -13,14 +13,19 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 /* ------------------------------------------------------------------ */
 
 const { mockConstructEvent, mockCreate, mockQueryRaw, mockUpdate, mockFindFirst, mockFindUnique } =
-  vi.hoisted(() => ({
-    mockConstructEvent: vi.fn(),
-    mockCreate: vi.fn(),
-    mockQueryRaw: vi.fn(),
-    mockUpdate: vi.fn(),
-    mockFindFirst: vi.fn(),
-    mockFindUnique: vi.fn(),
-  }));
+  vi.hoisted(() => {
+    // Must set env BEFORE the route module is evaluated (top-level guard)
+    process.env.STRIPE_WEBHOOK_SECRET = "whsec_test_fake";
+    process.env.STRIPE_SECRET_KEY = "sk_test_fake";
+    return {
+      mockConstructEvent: vi.fn(),
+      mockCreate: vi.fn(),
+      mockQueryRaw: vi.fn(),
+      mockUpdate: vi.fn(),
+      mockFindFirst: vi.fn(),
+      mockFindUnique: vi.fn(),
+    };
+  });
 
 // Stripe mock
 vi.mock("stripe", () => {

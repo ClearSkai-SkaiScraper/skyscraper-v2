@@ -7,9 +7,10 @@ export const dynamic = "force-dynamic";
  * DELETE — Revoke a pending invitation
  */
 
-import { auth } from "@clerk/nextjs/server";
 import { randomUUID } from "crypto";
 import { NextRequest, NextResponse } from "next/server";
+
+import { withAuth } from "@/lib/auth/withAuth";
 
 import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
@@ -18,13 +19,8 @@ import prisma from "@/lib/prisma";
 /*  POST — Send invite                                           */
 /* ────────────────────────────────────────────────────────────── */
 
-export async function POST(req: NextRequest) {
+export const POST = withAuth(async (req: NextRequest, { userId }) => {
   try {
-    const { userId } = await auth();
-    if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
     const body = await req.json();
     const { email, firstName, lastName, role, title } = body;
 
@@ -111,9 +107,9 @@ export async function POST(req: NextRequest) {
         token: token.slice(0, 8) + "...",
         inviteLink,
       });
-    } catch (emailErr: any) {
+    } catch (emailErr: unknown) {
       emailSent = false;
-      emailError = emailErr?.message || "Email delivery failed";
+      emailError = emailErr instanceof Error ? emailErr.message : "Email delivery failed";
       logger.warn("[Seats] Email delivery failed:", emailErr);
     }
 
@@ -124,23 +120,18 @@ export async function POST(req: NextRequest) {
       emailSent,
       emailError,
     });
-  } catch (error) {
+  } catch (error: unknown) {
     logger.error("[Seats] Invite POST error:", error);
     return NextResponse.json({ error: "Failed to send invitation" }, { status: 500 });
   }
-}
+});
 
 /* ────────────────────────────────────────────────────────────── */
 /*  DELETE — Revoke invite                                       */
 /* ────────────────────────────────────────────────────────────── */
 
-export async function DELETE(req: NextRequest) {
+export const DELETE = withAuth(async (req: NextRequest, { userId }) => {
   try {
-    const { userId } = await auth();
-    if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
     const { searchParams } = new URL(req.url);
     const inviteId = searchParams.get("id");
 
@@ -185,8 +176,8 @@ export async function DELETE(req: NextRequest) {
     });
 
     return NextResponse.json({ success: true, message: "Invite revoked" });
-  } catch (error) {
+  } catch (error: unknown) {
     logger.error("[Seats] Invite DELETE error:", error);
     return NextResponse.json({ error: "Failed to revoke invite" }, { status: 500 });
   }
-}
+});

@@ -1,8 +1,9 @@
 export const dynamic = "force-dynamic";
 
-import { auth, currentUser } from "@clerk/nextjs/server";
+import { currentUser } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
 
+import { withAuth } from "@/lib/auth/withAuth";
 import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 
@@ -10,14 +11,8 @@ import prisma from "@/lib/prisma";
  * POST /api/messages/client/create
  * Creates a new message thread from client to a connected pro
  */
-export async function POST(req: NextRequest) {
+export const POST = withAuth(async (req: NextRequest, { orgId, userId }) => {
   try {
-    const { userId } = await auth();
-
-    if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
     const body = await req.json();
     const { proId, body: messageBody } = body;
 
@@ -187,4 +182,4 @@ export async function POST(req: NextRequest) {
     logger.error("[messages/client/create] Error:", error);
     return NextResponse.json({ error: "Failed to create message" }, { status: 500 });
   }
-}
+});

@@ -60,7 +60,7 @@ export default function CRMPage() {
 
   useEffect(() => {
     if (!isLoaded || !isSignedIn) return;
-    Promise.all([fetchPipelineSummary(), fetchTeamPosts(), fetchBranding()]).finally(() =>
+    void Promise.all([fetchPipelineSummary(), fetchTeamPosts(), fetchBranding()]).finally(() =>
       setLoading(false)
     );
   }, [isLoaded, isSignedIn]);
@@ -112,7 +112,7 @@ export default function CRMPage() {
 
       if (response.ok) {
         setNewPostMessage("");
-        fetchTeamPosts();
+        void fetchTeamPosts();
       }
     } catch (error) {
       logger.error("Error creating post:", error);

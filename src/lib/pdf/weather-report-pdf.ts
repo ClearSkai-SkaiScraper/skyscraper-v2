@@ -23,7 +23,7 @@ import { jsPDF } from "jspdf";
 
 import { BRAND_PRIMARY, BRAND_PRIMARY_RGB } from "@/lib/constants/branding";
 import { logger } from "@/lib/logger";
-import { drawCoverPage, fetchPropertyMapBase64, type CoverPageData } from "@/lib/pdf/coverPage";
+import { type CoverPageData, drawCoverPage, fetchPropertyMapBase64 } from "@/lib/pdf/coverPage";
 import type { WeatherPdfViewModel } from "@/lib/weather/weatherPdfViewModel";
 
 // Re-export for route compat
@@ -431,7 +431,7 @@ function renderExecutiveSummary(
   yPos = renderSectionHeader(doc, "EXECUTIVE SUMMARY", margin, contentWidth, brandColor, yPos);
 
   const summary = sanitizeText(vm.executiveSummary);
-  const lines = doc.splitTextToSize(summary, contentWidth - 16);
+  const lines = doc.splitTextToSize(summary, contentWidth - 16) as string[];
   const boxHeight = Math.max(20, lines.length * 4.5 + 12);
 
   doc.setFillColor(COLORS.lightBlue.r, COLORS.lightBlue.g, COLORS.lightBlue.b);
@@ -705,7 +705,7 @@ function renderEventAnchorNote(
   if (!vm.eventAnchorNote) return yPos;
 
   const noteText = sanitizeText(vm.eventAnchorNote);
-  const lines = doc.splitTextToSize(noteText, contentWidth - 16);
+  const lines = doc.splitTextToSize(noteText, contentWidth - 16) as string[];
   const boxHeight = Math.max(14, lines.length * 4 + 10);
 
   doc.setFillColor(254, 243, 199); // Amber 100
@@ -869,7 +869,7 @@ function renderRadarImagery(
         doc.text(frameLabel, imgX + (imageWidth - 4) / 2, yPos + imageHeight + 4, {
           align: "center",
         });
-      } catch (err) {
+      } catch {
         // Image embedding failed — show clean note
         doc.setFillColor(COLORS.light.r, COLORS.light.g, COLORS.light.b);
         doc.roundedRect(imgX, yPos, imageWidth - 4, imageHeight, 2, 2, "F");
@@ -895,7 +895,7 @@ function renderCarrierTalkingPoints(
   yPos: number
 ): number {
   const text = sanitizeText(vm.carrierTalkingPoints);
-  const lines = doc.splitTextToSize(text, contentWidth - 20);
+  const lines = doc.splitTextToSize(text, contentWidth - 20) as string[];
   const lineHeight = 4.5;
   const headerHeight = 16;
   const padding = 8;

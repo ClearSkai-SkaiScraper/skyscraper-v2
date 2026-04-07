@@ -5,36 +5,20 @@
  * Reads from file_assets with category "company-template".
  */
 
-import { auth } from "@clerk/nextjs/server";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
+import { withAuth } from "@/lib/auth/withAuth";
 import { logger } from "@/lib/logger";
-import { resolveOrg } from "@/lib/org/resolveOrg";
 import prisma from "@/lib/prisma";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-export async function GET() {
+export const GET = withAuth(async (req: NextRequest, { orgId, userId }) => {
   try {
-    const { userId } = await auth();
-    if (!userId) {
-      return NextResponse.json({ templates: [] }, { status: 401 });
-    }
-
-    let orgId: string | null = null;
-    try {
-      const ctx = await resolveOrg();
-      orgId = ctx.orgId;
-    } catch {
-      // fallback
-    }
-
-    const safeOwner = orgId || userId;
-
     const assets = await prisma.file_assets.findMany({
       where: {
-        orgId: safeOwner,
+        orgId,
         category: "company-template",
       },
       orderBy: { createdAt: "desc" },
@@ -64,4 +48,4 @@ export async function GET() {
     logger.error("[Company Docs List] Error:", error);
     return NextResponse.json({ templates: [] });
   }
-}
+});

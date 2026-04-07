@@ -1222,8 +1222,8 @@ function capitalizeFirst(str: string): string {
 }
 
 // Backward compat re-exports
-export { getClaimWindowDays } from "./effectiveDolContext";
 export type { EffectiveDolContext } from "./effectiveDolContext";
+export { getClaimWindowDays } from "./effectiveDolContext";
 /** @deprecated Use NormalizedRadarFrame */
 export type RadarFrame = NormalizedRadarFrame;
 /** @deprecated Use the new WeatherEvent from old module — storm evidence replaces it */

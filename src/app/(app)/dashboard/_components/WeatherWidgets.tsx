@@ -24,7 +24,7 @@ export default function WeatherWidgets() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    (async () => {
+    void (async () => {
       try {
         // Attempt lightweight call (replace with real endpoint later)
         // Fallback: synthetic demo data

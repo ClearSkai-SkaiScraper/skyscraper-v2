@@ -13,8 +13,9 @@ export const revalidate = 0;
  * Also includes "public" requests matching the company's trade specialties.
  */
 
-import { auth } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
+
+import { withAuth } from "@/lib/auth/withAuth";
 
 import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
@@ -22,13 +23,8 @@ import prisma from "@/lib/prisma";
 // ────────────────────────────────────────────────────────────────────────
 // GET — Incoming work requests for this pro company
 // ────────────────────────────────────────────────────────────────────────
-export async function GET(request: NextRequest) {
+export const GET = withAuth(async (request: NextRequest, { userId, orgId }) => {
   try {
-    const { userId, orgId } = await auth();
-    if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
     // Find the pro's company via org membership or member record
     let companyId: string | null = null;
 
@@ -133,22 +129,17 @@ export async function GET(request: NextRequest) {
     }));
 
     return NextResponse.json({ workRequests: transformed });
-  } catch (error) {
+  } catch (error: unknown) {
     logger.error("[TRADES_WORK_REQUESTS_GET]", error);
     return NextResponse.json({ error: "Failed to fetch work requests" }, { status: 500 });
   }
-}
+});
 
 // ────────────────────────────────────────────────────────────────────────
 // PATCH — Update status of a work request (accept, decline, etc.)
 // ────────────────────────────────────────────────────────────────────────
-export async function PATCH(request: NextRequest) {
+export const PATCH = withAuth(async (request: NextRequest, { userId, orgId }) => {
   try {
-    const { userId, orgId } = await auth();
-    if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
     const body = await request.json();
     const { requestId, status } = body;
 
@@ -318,8 +309,8 @@ export async function PATCH(request: NextRequest) {
         status: updated.status,
       },
     });
-  } catch (error) {
+  } catch (error: unknown) {
     logger.error("[TRADES_WORK_REQUESTS_PATCH]", error);
     return NextResponse.json({ error: "Failed to update work request" }, { status: 500 });
   }
-}
+});

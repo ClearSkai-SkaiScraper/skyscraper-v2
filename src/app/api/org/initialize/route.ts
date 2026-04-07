@@ -6,26 +6,16 @@ export const dynamic = "force-dynamic";
  * NOW USES: ensureOrgForUser to guarantee org exists
  */
 
-import { currentUser } from "@clerk/nextjs/server";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
+import { withAuth } from "@/lib/auth/withAuth";
 import { logger } from "@/lib/logger";
-import { ensureOrgForUser } from "@/lib/org/ensureOrgForUser";
 import prisma from "@/lib/prisma";
 import { isTestMode } from "@/lib/testMode";
 
-export async function POST(req: Request) {
+export const POST = withAuth(async (req: NextRequest, { orgId, userId }) => {
   try {
-    const user = await currentUser();
-    if (!user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    // Use ensureOrgForUser to guarantee org + membership exists
-    const ensured = await ensureOrgForUser();
-    const orgId = ensured.orgId;
-
-    logger.debug(`[OrgInit] Org ${orgId} resolved for user ${user.id}`);
+    logger.debug(`[OrgInit] Org ${orgId} resolved for user ${userId}`);
 
     // Update org timestamp (brandingCompleted/onboardingCompleted fields don't exist in schema)
     await prisma.org.update({
@@ -58,4 +48,4 @@ export async function POST(req: Request) {
     logger.error("[OrgInit] Failed:", error);
     return NextResponse.json({ error: "Failed to initialize organization" }, { status: 500 });
   }
-}
+});

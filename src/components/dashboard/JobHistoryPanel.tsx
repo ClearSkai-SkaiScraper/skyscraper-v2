@@ -18,7 +18,7 @@ export const JobHistoryPanel: React.FC = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetchJobs();
+    void fetchJobs();
   }, []);
 
   const fetchJobs = async () => {

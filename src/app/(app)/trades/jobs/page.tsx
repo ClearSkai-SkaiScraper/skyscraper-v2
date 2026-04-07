@@ -235,9 +235,9 @@ export default function TradesJobsPage() {
   >([]);
 
   useEffect(() => {
-    fetchJobs();
-    fetchAnalytics();
-    fetchIncomingRequests();
+    void fetchJobs();
+    void fetchAnalytics();
+    void fetchIncomingRequests();
   }, []);
 
   const fetchJobs = async () => {
@@ -366,7 +366,7 @@ export default function TradesJobsPage() {
         setIncomingRequests((prev) => prev.filter((wr) => wr.id !== requestId));
         // Refresh analytics after accepting
         if (action === "accepted") {
-          fetchAnalytics();
+          void fetchAnalytics();
         }
       }
     } catch (error) {

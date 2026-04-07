@@ -116,7 +116,7 @@ export default function CreateClaimWizard({
       }
     };
 
-    loadData();
+    void loadData();
   }, []);
 
   // Real-time validation
@@ -184,7 +184,7 @@ export default function CreateClaimWizard({
 
     // Trigger AI estimate when relevant fields change
     if (["typeOfLoss", "dateOfLoss", "property_id", "newPropertyAddress"].includes(field)) {
-      fetchAiEstimate();
+      void fetchAiEstimate();
     }
   };
 

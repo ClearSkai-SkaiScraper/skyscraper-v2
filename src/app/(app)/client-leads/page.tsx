@@ -77,7 +77,7 @@ export default function ClientLeadsPage() {
   const [responseNote, setResponseNote] = useState("");
 
   useEffect(() => {
-    fetchWorkRequests();
+    void fetchWorkRequests();
   }, []);
 
   async function fetchWorkRequests() {
@@ -373,7 +373,7 @@ export default function ClientLeadsPage() {
                               size="sm"
                               onClick={(e) => {
                                 e.stopPropagation();
-                                updateStatus(request.id, "accepted");
+                                void updateStatus(request.id, "accepted");
                                 toast.success(
                                   "Job accepted! You're now connected with the client."
                                 );
@@ -387,7 +387,7 @@ export default function ClientLeadsPage() {
                               variant="outline"
                               onClick={(e) => {
                                 e.stopPropagation();
-                                updateStatus(request.id, "viewed");
+                                void updateStatus(request.id, "viewed");
                               }}
                             >
                               Mark Viewed
@@ -399,7 +399,7 @@ export default function ClientLeadsPage() {
                             size="sm"
                             onClick={(e) => {
                               e.stopPropagation();
-                              updateStatus(request.id, "accepted");
+                              void updateStatus(request.id, "accepted");
                               toast.success("Job accepted! You're now connected with the client.");
                             }}
                           >

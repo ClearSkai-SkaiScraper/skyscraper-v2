@@ -19,7 +19,7 @@ export default function BrandingPage() {
   const [p, setP] = useState<Profile>({ brand_color: "#117CFF", accent_color: "#FFC838" });
 
   useEffect(() => {
-    (async () => {
+    void (async () => {
       const res = await fetch("/api/branding");
       if (res.ok) {
         const json = await res.json();

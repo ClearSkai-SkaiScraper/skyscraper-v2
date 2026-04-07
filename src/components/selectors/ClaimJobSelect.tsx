@@ -109,7 +109,7 @@ export function ClaimJobSelect(props: {
       }
     }
 
-    run();
+    void run();
     return () => {
       cancelled = true;
     };

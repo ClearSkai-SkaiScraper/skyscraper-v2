@@ -52,7 +52,7 @@ export default function HomeownerStatementPage() {
   }, [claimId]);
 
   useEffect(() => {
-    fetchData();
+    void fetchData();
   }, [fetchData]);
 
   const handleSave = async () => {

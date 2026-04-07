@@ -1,23 +1,15 @@
 export const dynamic = "force-dynamic";
 
-import { auth } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
 
-import { getResolvedOrgId } from "@/lib/auth/getResolvedOrgId";
+import { withAuth } from "@/lib/auth/withAuth";
 import { db } from "@/lib/db";
 import { logger } from "@/lib/logger";
 import { saveReportHistory } from "@/lib/reports/saveReportHistory";
 
 // POST /api/contractor-packet - Create new contractor packet generation job
-export async function POST(req: NextRequest) {
+export const POST = withAuth(async (req: NextRequest, { orgId, userId }) => {
   try {
-    const { userId } = await auth();
-    if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    const orgId = await getResolvedOrgId();
-
     const body = await req.json();
     const {
       sections = [],
@@ -85,18 +77,11 @@ export async function POST(req: NextRequest) {
     logger.error("[Contractor Packet] Error creating packet:", error);
     return NextResponse.json({ error: "Failed to create contractor packet" }, { status: 500 });
   }
-}
+});
 
 // GET /api/contractor-packet - List recent contractor packets
-export async function GET(req: NextRequest) {
+export const GET = withAuth(async (req: NextRequest, { orgId, userId }) => {
   try {
-    const { userId } = await auth();
-    if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    const orgId = await getResolvedOrgId();
-
     const packetsRes = await db.query(
       `
       SELECT 
@@ -124,7 +109,7 @@ export async function GET(req: NextRequest) {
     logger.error("[Contractor Packet] Error listing packets:", error);
     return NextResponse.json({ error: "Failed to list contractor packets" }, { status: 500 });
   }
-}
+});
 
 // ============================================================================
 // ASYNC GENERATION WORKER
@@ -363,7 +348,12 @@ async function generateContractorPacketAsync(
         updated_at = NOW()
       WHERE id = $3 AND organization_id = $4
       `,
-      ["failed", error.message || "Unknown error during generation", packetId, orgId]
+      [
+        "failed",
+        error instanceof Error ? error.message : "Unknown error during generation",
+        packetId,
+        orgId,
+      ]
     );
   }
 }

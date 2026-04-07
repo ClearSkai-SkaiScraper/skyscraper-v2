@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 
+import { logger } from "@/lib/logger";
 import { getPremiumRegistryBySlug } from "@/lib/templates/registry";
 import { getTemplateById, getTemplateBySlug } from "@/lib/templates/templateRegistry";
 
@@ -17,6 +18,7 @@ export const dynamic = "force-dynamic";
  */
 export async function GET(_: Request, { params }: { params: { templateId: string } }) {
   const idOrSlug = params.templateId;
+  logger.info("[TEMPLATES_PLACEHOLDERS]", { idOrSlug });
 
   const reg = getTemplateById(idOrSlug) ?? getTemplateBySlug(idOrSlug);
   const slug = reg?.slug ?? idOrSlug;

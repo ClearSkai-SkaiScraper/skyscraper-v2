@@ -8,6 +8,7 @@ export const dynamic = "force-dynamic";
 
 import { auth, currentUser } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
 
 import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
@@ -94,39 +95,65 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const body = await request.json();
+    const jobRequestSchema = z.object({
+      title: z.string().min(1, "Title is required").max(200),
+      description: z.string().min(1, "Description is required").max(5000),
+      category: z.string().min(1, "Category is required").max(100),
+      urgency: z.enum(["low", "normal", "urgent"]).default("normal"),
+      preferredDate: z.string().optional(),
+      propertyAddress: z.string().max(500).optional(),
+      propertyPhotos: z.array(z.string().url()).max(20).default([]),
+      coverPhoto: z.string().url().optional().nullable(),
+      summary: z.string().max(2000).optional().nullable(),
+      budget: z.string().max(50).optional().nullable(),
+      budgetMin: z.string().max(50).optional().nullable(),
+      budgetMax: z.string().max(50).optional().nullable(),
+      timeline: z.string().max(200).optional().nullable(),
+      lookingFor: z.array(z.string().max(100)).max(10).default([]),
+      requirements: z.array(z.string().max(500)).max(20).default([]),
+      preferredTypes: z.array(z.string().max(100)).max(10).default([]),
+      city: z.string().max(100).optional().nullable(),
+      state: z.string().max(50).optional().nullable(),
+      zip: z.string().max(20).optional().nullable(),
+      serviceArea: z.string().max(200).optional().nullable(),
+      visibility: z.enum(["public", "private"]).default("public"),
+      expiresAt: z.string().optional().nullable(),
+      targetProId: z.string().optional().nullable(),
+    });
+
+    const rawBody = await request.json();
+    const parsed = jobRequestSchema.safeParse(rawBody);
+    if (!parsed.success) {
+      return NextResponse.json(
+        { error: parsed.error.issues[0]?.message || "Invalid input" },
+        { status: 400 }
+      );
+    }
     const {
       title,
       description,
       category,
-      urgency = "normal",
+      urgency,
       preferredDate,
       propertyAddress,
-      propertyPhotos = [],
+      propertyPhotos,
       coverPhoto,
       summary,
       budget,
       budgetMin,
       budgetMax,
       timeline,
-      lookingFor = [],
-      requirements = [],
-      preferredTypes = [],
+      lookingFor,
+      requirements,
+      preferredTypes,
       city,
       state,
       zip,
       serviceArea,
-      visibility = "public",
+      visibility,
       expiresAt,
       targetProId,
-    } = body;
-
-    if (!title || !description || !category) {
-      return NextResponse.json(
-        { error: "Title, description, and category are required" },
-        { status: 400 }
-      );
-    }
+    } = parsed.data;
 
     // Get or create client
     const email = user.emailAddresses?.[0]?.emailAddress || "";

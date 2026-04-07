@@ -73,7 +73,7 @@ export function StormTimelineNarrative({ claimId, className }: StormTimelineNarr
   }, [claimId]);
 
   useEffect(() => {
-    fetchTimeline();
+    void fetchTimeline();
   }, [fetchTimeline]);
 
   if (loading) {

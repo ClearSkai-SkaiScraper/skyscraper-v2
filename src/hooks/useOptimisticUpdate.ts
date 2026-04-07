@@ -144,7 +144,7 @@ export function useMutation<TInput = void, TResult = unknown>({
                   label: "Retry",
                   onClick: () => {
                     if (lastInput.current !== null) {
-                      mutate(lastInput.current);
+                      void mutate(lastInput.current);
                     }
                   },
                 }

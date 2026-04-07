@@ -111,7 +111,7 @@ export default function ScopePage() {
         setLoading(false);
       }
     }
-    fetchScope();
+    void fetchScope();
   }, [claimId]);
 
   const calculateTotals = useCallback(() => {

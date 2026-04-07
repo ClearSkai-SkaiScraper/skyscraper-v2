@@ -61,7 +61,7 @@ export function CarrierIntelligencePanel({ compact }: Props) {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    fetchPlaybooks();
+    void fetchPlaybooks();
   }, []);
 
   async function fetchPlaybooks() {

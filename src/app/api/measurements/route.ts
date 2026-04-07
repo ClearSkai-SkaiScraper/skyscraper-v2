@@ -3,8 +3,9 @@
  * POST /api/measurements         — place a new measurement order (via GAF/EagleView API)
  */
 
-import { auth } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
+
+import { withAuth } from "@/lib/auth/withAuth";
 
 import { getGAFClient } from "@/lib/integrations/gaf";
 import { logger } from "@/lib/logger";
@@ -17,27 +18,13 @@ export const dynamic = "force-dynamic";
 /*  GET — list orders                                                  */
 /* ------------------------------------------------------------------ */
 
-export async function GET(request: NextRequest) {
+export const GET = withAuth(async (req: NextRequest, { orgId }) => {
   try {
-    const { userId } = await auth();
-    if (!userId) {
-      return NextResponse.json({ ok: false, message: "Unauthorized" }, { status: 401 });
-    }
-
-    const user = await prisma.users.findUnique({
-      where: { id: userId },
-      select: { orgId: true },
-    });
-
-    if (!user?.orgId) {
-      return NextResponse.json({ ok: false, message: "No organization" }, { status: 400 });
-    }
-
     // Support optional claimId filter
-    const url = new URL(request.url);
+    const url = new URL(req.url);
     const claimId = url.searchParams.get("claimId");
 
-    const where: any = { org_id: user.orgId };
+    const where: any = { org_id: orgId };
     if (claimId) {
       where.claim_id = claimId;
     }
@@ -49,11 +36,11 @@ export async function GET(request: NextRequest) {
     });
 
     return NextResponse.json({ ok: true, orders });
-  } catch (error) {
+  } catch (error: unknown) {
     logger.error("[MEASUREMENTS_LIST_ERROR]", error);
     return NextResponse.json({ ok: false, message: "Failed to load" }, { status: 500 });
   }
-}
+});
 
 /* ------------------------------------------------------------------ */
 /*  POST — create order                                                */
@@ -71,22 +58,8 @@ interface CreateOrderBody {
   urgency?: "standard" | "rush";
 }
 
-export async function POST(req: NextRequest) {
+export const POST = withAuth(async (req: NextRequest, { orgId, userId }) => {
   try {
-    const { userId } = await auth();
-    if (!userId) {
-      return NextResponse.json({ ok: false, message: "Unauthorized" }, { status: 401 });
-    }
-
-    const user = await prisma.users.findUnique({
-      where: { id: userId },
-      select: { orgId: true },
-    });
-
-    if (!user?.orgId) {
-      return NextResponse.json({ ok: false, message: "No organization" }, { status: 400 });
-    }
-
     const body: CreateOrderBody = await req.json();
 
     if (!body.propertyAddress) {
@@ -102,7 +75,7 @@ export async function POST(req: NextRequest) {
     // Create the local DB record first
     const order = await prisma.measurement_orders.create({
       data: {
-        org_id: user.orgId,
+        org_id: orgId,
         claim_id: body.claimId ?? null,
         job_id: body.jobId ?? null,
         property_address: body.propertyAddress,
@@ -119,7 +92,7 @@ export async function POST(req: NextRequest) {
     // If provider is GAF, call the GAF API to actually place the order
     if (provider === "gaf" && process.env.GAF_API_KEY) {
       try {
-        const gaf = getGAFClient(user.orgId);
+        const gaf = getGAFClient(orgId);
         const gafOrder = await gaf.orderMeasurement({
           address: {
             street: body.propertyAddress,
@@ -183,8 +156,8 @@ export async function POST(req: NextRequest) {
     }
 
     return NextResponse.json({ ok: true, order }, { status: 201 });
-  } catch (error) {
+  } catch (error: unknown) {
     logger.error("[MEASUREMENTS_CREATE_ERROR]", error);
     return NextResponse.json({ ok: false, message: "Failed to create order" }, { status: 500 });
   }
-}
+});

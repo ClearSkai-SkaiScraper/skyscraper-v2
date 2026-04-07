@@ -2,17 +2,12 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
-import { auth } from "@clerk/nextjs/server";
+import { NextRequest, NextResponse } from "next/server";
 
+import { withAuth } from "@/lib/auth/withAuth";
 import { logger } from "@/lib/logger";
 
-export async function POST(req: Request) {
-  const { userId } = await auth();
-  if (!userId)
-    return new Response(JSON.stringify({ error: "Unauthenticated" }), {
-      status: 401,
-    });
-
+export const POST = withAuth(async (req: NextRequest, { userId }) => {
   try {
     // DOL (Department of Labor) integration placeholder
     await new Promise((r) => setTimeout(r, 150));
@@ -27,8 +22,8 @@ export async function POST(req: Request) {
     };
 
     return new Response(JSON.stringify({ data }), { status: 200 });
-  } catch (error) {
+  } catch (error: unknown) {
     logger.error("[DOL-PULL] Error:", error);
-    return new Response(JSON.stringify({ error: "DOL pull failed" }), { status: 500 });
+    return NextResponse.json({ error: "DOL pull failed" }, { status: 500 });
   }
-}
+});

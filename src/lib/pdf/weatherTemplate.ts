@@ -6,6 +6,7 @@
 import chromium from "@sparticuz/chromium";
 import puppeteer from "puppeteer-core";
 
+import { isDevelopment } from "@/lib/config";
 import { logger } from "@/lib/logger";
 import { uploadBufferToFirebase } from "@/lib/storage/firebase-admin";
 import type { DOLResult, PropertyContext, ScoredEvent } from "@/types/weather";
@@ -30,23 +31,13 @@ interface PDFRenderOptions {
  * Generate weather verification PDF using Puppeteer
  */
 export async function renderWeatherPDF(opts: PDFRenderOptions): Promise<string> {
-  const {
-    dol,
-    scored,
-    property,
-    ai_summary,
-    citations,
-    scan_window,
-    orgId,
-    userId,
-    brandingOverride,
-  } = opts;
+  const { orgId, userId } = opts;
 
-  let browser;
+  let browser: Awaited<ReturnType<typeof puppeteer.launch>> | undefined;
 
   try {
     // Launch Puppeteer (serverless-compatible)
-    const isDev = process.env.NODE_ENV === "development";
+    const isDev = isDevelopment();
 
     if (isDev) {
       // Local development: Use system Chrome
@@ -126,7 +117,7 @@ function generateWeatherHTML(opts: PDFRenderOptions): string {
 
   const orgName = brandingOverride?.orgName || "SkaiScrape";
   const primaryColor = brandingOverride?.primaryColor || "#2563eb";
-  const logoUrl =
+  const _logoUrl =
     brandingOverride?.logoUrl ||
     "https://firebasestorage.googleapis.com/v0/b/your-project.appspot.com/o/logo.png";
 

@@ -66,7 +66,7 @@ export default function RetailProjectsPage() {
       }
     };
 
-    fetchPackets();
+    void fetchPackets();
   }, [user, isLoaded]);
 
   if (!isLoaded) {

@@ -53,7 +53,7 @@ export function useUnreadCount(options: UseUnreadCountOptions = {}) {
 
   // Initial fetch + polling
   useEffect(() => {
-    fetchCount();
+    void fetchCount();
     if (!pollIntervalMs) return;
 
     const interval = setInterval(fetchCount, pollIntervalMs);
@@ -91,7 +91,7 @@ export function useUnreadCount(options: UseUnreadCountOptions = {}) {
     channelRef.current = channel;
 
     return () => {
-      supabase.removeChannel(channel);
+      void supabase.removeChannel(channel);
       channelRef.current = null;
     };
   }, [realtime, fetchCount]);
@@ -99,7 +99,7 @@ export function useUnreadCount(options: UseUnreadCountOptions = {}) {
   // ── Also re-fetch on tab focus ───────────────────────────────────────
   useEffect(() => {
     function onVisibility() {
-      if (document.visibilityState === "visible") fetchCount();
+      if (document.visibilityState === "visible") void fetchCount();
     }
     document.addEventListener("visibilitychange", onVisibility);
     return () => document.removeEventListener("visibilitychange", onVisibility);

@@ -1,11 +1,10 @@
 export const dynamic = "force-dynamic";
 
-import { auth } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 
+import { withAuth } from "@/lib/auth/withAuth";
 import { logger } from "@/lib/logger";
-
 import prisma from "@/lib/prisma";
 import { checkRateLimit } from "@/lib/rate-limit";
 
@@ -26,14 +25,12 @@ const pilotFeedbackSchema = z.object({
  * This is the single source of truth for all feedback data.
  * The dedicated user_feedback table was removed to avoid storage split.
  * Structured feedback fields are stored in the metadata JSONB column.
+ *
+ * Session 9: Migrated from auth() → withAuth for DB-backed orgId.
+ * Previously wrote `orgId || "unknown"` — poisoning data.
  */
-export async function POST(req: NextRequest) {
+const handleFeedbackPost = withAuth(async (req: NextRequest, { userId, orgId }) => {
   try {
-    const { userId, orgId } = await auth();
-    if (!userId) {
-      return NextResponse.json({ ok: false, error: "Unauthorized" }, { status: 401 });
-    }
-
     const rl = await checkRateLimit(userId, "PUBLIC");
     if (!rl.success) {
       return NextResponse.json(
@@ -59,7 +56,7 @@ export async function POST(req: NextRequest) {
       data: {
         id: `feedback-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`,
         userId,
-        orgId: orgId || "unknown",
+        orgId,
         type: "pilot_feedback",
         title: `Pilot Feedback: ${type}`,
         userName: "User",
@@ -81,18 +78,18 @@ export async function POST(req: NextRequest) {
     logger.error("[PILOT_FEEDBACK_STORE_FAILED]", { error });
     return NextResponse.json({ ok: false, error: "Failed to submit feedback" }, { status: 500 });
   }
-}
+});
+
+export const POST = handleFeedbackPost;
 
 /**
  * GET /api/pilot/feedback — Retrieve pilot feedback for dashboard
+ *
+ * Session 9: Migrated from auth() → withAuth. Previously used
+ * `orgId || undefined` which removed the tenant filter entirely.
  */
-export async function GET(req: NextRequest) {
+const handleFeedbackGet = withAuth(async (req: NextRequest, { orgId }) => {
   try {
-    const { userId, orgId } = await auth();
-    if (!userId) {
-      return NextResponse.json({ ok: false, error: "Unauthorized" }, { status: 401 });
-    }
-
     const { searchParams } = new URL(req.url);
     const page = Math.max(1, parseInt(searchParams.get("page") || "1", 10));
     const limit = Math.min(parseInt(searchParams.get("limit") || "50", 10), 100);
@@ -101,7 +98,7 @@ export async function GET(req: NextRequest) {
     const [items, total] = await Promise.all([
       prisma.activities.findMany({
         where: {
-          orgId: orgId || undefined,
+          orgId,
           type: "pilot_feedback",
         },
         orderBy: { createdAt: "desc" },
@@ -110,7 +107,7 @@ export async function GET(req: NextRequest) {
       }),
       prisma.activities.count({
         where: {
-          orgId: orgId || undefined,
+          orgId,
           type: "pilot_feedback",
         },
       }),
@@ -129,4 +126,6 @@ export async function GET(req: NextRequest) {
     logger.error("[PILOT_FEEDBACK_RETRIEVE_FAILED]", { error });
     return NextResponse.json({ ok: false, error: "Failed to retrieve feedback" }, { status: 500 });
   }
-}
+});
+
+export const GET = handleFeedbackGet;

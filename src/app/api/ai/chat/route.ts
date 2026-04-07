@@ -3,13 +3,13 @@ export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
 // src/app/api/ai/chat/route.ts
-import { currentUser } from "@clerk/nextjs/server";
 import type { claims, jobs, Org, Plan, projects, properties } from "@prisma/client";
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 
 import { getOpenAI } from "@/lib/ai/client";
 import { trackAiUsage } from "@/lib/ai/trackUsage";
 import { aiFail, aiOk, classifyOpenAiError } from "@/lib/api/aiResponse";
+import { withAuth } from "@/lib/auth/withAuth";
 import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 import { getRateLimitIdentifier, rateLimiters } from "@/lib/rate-limit";
@@ -46,19 +46,12 @@ interface ChatMessage {
   content: string;
 }
 
-export async function POST(request: NextRequest) {
+export const POST = withAuth(async (request, { userId, orgId }) => {
   const startTime = Date.now();
 
   try {
-    // Auth check — must be logged in
-    const currentClerkUser = await currentUser();
-    if (!currentClerkUser) {
-      logger.error("[AI_CHAT] ❌ Unauthorized - no user");
-      return NextResponse.json(aiFail("Authentication required", "AUTH"), { status: 401 });
-    }
-
     // Rate limiting check (10 requests per minute for AI endpoints)
-    const identifier = getRateLimitIdentifier(currentClerkUser.id, request);
+    const identifier = getRateLimitIdentifier(userId, request);
     const allowed = await rateLimiters.ai.check(10, identifier);
 
     if (!allowed) {
@@ -70,8 +63,6 @@ export async function POST(request: NextRequest) {
 
     // Critical configuration check
     const openai = getOpenAI();
-
-    const user = currentClerkUser;
 
     let body;
     try {
@@ -88,14 +79,7 @@ export async function POST(request: NextRequest) {
 
     const { message } = validated.data;
 
-    // Get user's Org ID — resolve from DB, not publicMetadata
-    const dbUser = await prisma.users.findUnique({
-      where: { id: user.id },
-      select: { orgId: true },
-    });
-    const orgId = dbUser?.orgId || user.id;
     // Get or create user memory
-    const userId = user.id;
     let memory = userMemory.get(userId);
 
     if (!memory || Date.now() - memory.timestamp > 3600000) {
@@ -106,8 +90,8 @@ export async function POST(request: NextRequest) {
     // Gather contextual data from database
     const [orgResult, recentJobs, recentClaims, activeProjects, subscriptionResult] =
       await Promise.all([
-        prisma.org.findFirst({
-          where: { OR: [{ clerkOrgId: orgId }, { id: orgId }] },
+        prisma.org.findUnique({
+          where: { id: orgId },
           include: { Plan: true },
         }),
         prisma.jobs.findMany({
@@ -322,4 +306,4 @@ Be conversational, helpful, and specific. Reference real data when available. If
       { status: 200 }
     );
   }
-}
+});

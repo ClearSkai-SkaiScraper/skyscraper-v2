@@ -259,7 +259,7 @@ export function useAIClaimsBuilder(): UseAIClaimsBuilderReturn {
         window.open(url, "_blank");
         // Fire-and-forget history recording with persistent storage URL
         try {
-          fetch("/api/reports/history", {
+          void fetch("/api/reports/history", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({

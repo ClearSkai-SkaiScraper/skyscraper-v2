@@ -160,7 +160,7 @@ export default function MeasurementsPage() {
   }, []);
 
   useEffect(() => {
-    fetchOrders();
+    void fetchOrders();
   }, [fetchOrders]);
 
   /* ── Create ───────────────────────────────────────────────────── */
@@ -301,7 +301,7 @@ export default function MeasurementsPage() {
             size="icon"
             onClick={() => {
               setLoading(true);
-              fetchOrders();
+              void fetchOrders();
             }}
           >
             <RefreshCw className="h-4 w-4" />

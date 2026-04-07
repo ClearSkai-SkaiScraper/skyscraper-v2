@@ -13,9 +13,10 @@ export const dynamic = "force-dynamic";
  * Retrieve reviews for a specific Pro (tradesCompanyMember.id)
  */
 
-import { auth } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
+
+import { withAuth } from "@/lib/auth/withAuth";
 
 import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
@@ -29,14 +30,8 @@ const CreateReviewSchema = z.object({
   projectCost: z.string().optional(),
 });
 
-export async function POST(req: NextRequest) {
+export const POST = withAuth(async (req: NextRequest, { userId }) => {
   try {
-    const { userId } = await auth();
-
-    if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
     const body = await req.json();
     const data = CreateReviewSchema.parse(body);
 
@@ -121,10 +116,10 @@ export async function POST(req: NextRequest) {
         createdAt: review.createdAt,
       },
     });
-  } catch (error) {
+  } catch (error: unknown) {
     logger.error("[CREATE_REVIEW]", error);
 
-    if (error.name === "ZodError") {
+    if (error instanceof z.ZodError) {
       return NextResponse.json(
         { error: "Invalid request data", details: error.errors },
         { status: 400 }
@@ -133,7 +128,7 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({ error: "Failed to create review" }, { status: 500 });
   }
-}
+});
 
 export async function GET(req: NextRequest) {
   try {
@@ -202,7 +197,7 @@ export async function GET(req: NextRequest) {
         ratingDistribution,
       },
     });
-  } catch (error) {
+  } catch (error: unknown) {
     logger.error("[GET_REVIEWS]", error);
     return NextResponse.json({ error: "Failed to fetch reviews" }, { status: 500 });
   }

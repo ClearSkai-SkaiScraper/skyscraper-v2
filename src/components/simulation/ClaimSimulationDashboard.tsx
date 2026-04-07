@@ -162,7 +162,7 @@ export function ClaimSimulationDashboard({
   );
 
   useEffect(() => {
-    fetchSimulation();
+    void fetchSimulation();
   }, [fetchSimulation]);
 
   // ─── Loading State ──────────────────────────────────────────────────────────

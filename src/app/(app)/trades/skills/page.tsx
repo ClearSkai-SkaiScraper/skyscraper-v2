@@ -52,7 +52,7 @@ export default function SkillsCertificationsPage() {
       }
     };
 
-    loadSkills();
+    void loadSkills();
   }, []);
 
   const handleSave = async (updatedSkills: Skill[]) => {

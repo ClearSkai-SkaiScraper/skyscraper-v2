@@ -1,34 +1,16 @@
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
-import { auth } from "@clerk/nextjs/server";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
+import { withAuth } from "@/lib/auth/withAuth";
 import { logger } from "@/lib/logger";
-import { getActiveOrgContext } from "@/lib/org/getActiveOrgContext";
 import prisma from "@/lib/prisma";
 
-export async function GET() {
+export const GET = withAuth(async (req: NextRequest, { orgId }) => {
   try {
-    const { userId } = await auth();
-
-    if (!userId) {
-      return NextResponse.json({ complete: false, error: "Unauthorized" }, { status: 401 });
-    }
-
-    const orgCtx = await getActiveOrgContext({ required: true });
-    if (!orgCtx.ok) {
-      return NextResponse.json({ complete: false, error: "No organization" }, { status: 400 });
-    }
-
-    const orgIdCandidates = [orgCtx.orgId, orgCtx.clerkOrgId].filter(
-      (v): v is string => typeof v === "string" && v.length > 0
-    );
-
-    // Database is always available now
-
     // Fetch organization branding from database
     const branding = await prisma.org_branding.findFirst({
-      where: { orgId: { in: orgIdCandidates } },
+      where: { orgId },
       select: {
         colorPrimary: true,
         colorAccent: true,
@@ -58,7 +40,7 @@ export async function GET() {
       companyName: branding.companyName || null,
     });
   } catch (error) {
-    logger.error("Error fetching branding:", error);
+    logger.error("[ME_BRANDING]", { error });
     return NextResponse.json({ complete: false, error: "Internal server error" }, { status: 500 });
   }
-}
+});

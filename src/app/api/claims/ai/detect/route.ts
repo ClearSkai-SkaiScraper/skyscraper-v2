@@ -1,20 +1,15 @@
 export const dynamic = "force-dynamic";
 
-import { auth } from "@clerk/nextjs/server";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
 import { AIModels, callOpenAI } from "@/lib/ai/client";
-import { withSentryApi } from "@/lib/monitoring/sentryApi";
+import { withAuth } from "@/lib/auth/withAuth";
 import { requirePermission } from "@/lib/permissions";
 import { checkRateLimit, getClientIdentifier } from "@/lib/security/ratelimit";
+import { logger } from "@/lib/logger";
 
-export const POST = withSentryApi(async function POST(req: Request) {
+export const POST = withAuth(async (req: NextRequest, { orgId, userId }) => {
   try {
-    const { userId } = await auth();
-    if (!userId) {
-      return NextResponse.json({ ok: false, error: "Unauthorized" }, { status: 401 });
-    }
-
     const identifier = getClientIdentifier(req, userId);
     const rl = await checkRateLimit(identifier, "API");
     if (!rl.success) {

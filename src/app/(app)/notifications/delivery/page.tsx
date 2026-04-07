@@ -111,7 +111,7 @@ export default function ClientDeliveryNotificationsPage() {
 
   useEffect(() => {
     if (!isLoaded || !isSignedIn) return;
-    fetchNotifications();
+    void fetchNotifications();
   }, [isLoaded, isSignedIn]);
 
   if (!isLoaded || !isSignedIn) {
@@ -136,7 +136,7 @@ export default function ClientDeliveryNotificationsPage() {
         toast.success("Notification sent successfully!");
         setShowNewModal(false);
         setFormData({ type: "job_update", title: "", message: "", channel: "in_app" });
-        fetchNotifications();
+        void fetchNotifications();
       } else {
         toast.error(data.error || "Failed to send notification");
       }

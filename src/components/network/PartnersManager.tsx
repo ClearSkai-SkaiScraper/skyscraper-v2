@@ -52,7 +52,7 @@ export function PartnersManager() {
   });
 
   useEffect(() => {
-    fetchPartners();
+    void fetchPartners();
   }, []);
 
   useEffect(() => {
@@ -127,7 +127,7 @@ export function PartnersManager() {
       });
       setShowForm(false);
       setEditingId(null);
-      fetchPartners();
+      void fetchPartners();
     } catch (error: any) {
       alert(error.message || "Operation failed");
     }
@@ -153,7 +153,7 @@ export function PartnersManager() {
     try {
       const res = await fetch(`/api/partners/${id}`, { method: "DELETE" });
       if (!res.ok) throw new Error("Failed to delete");
-      fetchPartners();
+      void fetchPartners();
     } catch (error: any) {
       alert(error.message || "Delete failed");
     }

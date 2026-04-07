@@ -42,17 +42,17 @@ export default function ActivityFeedPage() {
     }
   }, [isLoaded, isSignedIn, router]);
 
-  if (!isLoaded || !isSignedIn) {
-    return <div className="flex h-screen items-center justify-center">Loading...</div>;
-  }
-
   const [activities, setActivities] = useState<ActivityLog[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<string>("all");
 
   useEffect(() => {
-    fetchActivities();
+    void fetchActivities();
   }, []);
+
+  if (!isLoaded || !isSignedIn) {
+    return <div className="flex h-screen items-center justify-center">Loading...</div>;
+  }
 
   const fetchActivities = async () => {
     try {

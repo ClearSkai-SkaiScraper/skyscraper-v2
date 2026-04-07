@@ -4,21 +4,17 @@
  * tradesCompany is the contractor (i.e., incoming connection requests from clients).
  */
 
-import { auth } from "@clerk/nextjs/server";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
+
+import { withAuth } from "@/lib/auth/withAuth";
 
 import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 
 export const dynamic = "force-dynamic";
 
-export async function GET() {
+export const GET = withAuth(async (req: NextRequest, { userId }) => {
   try {
-    const { userId } = await auth();
-    if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
     // Find the tradesCompanyMember record for this user
     const member = await prisma.tradesCompanyMember.findFirst({
       where: { userId },
@@ -80,4 +76,4 @@ export async function GET() {
     logger.error("[GET /api/connections/received]", error);
     return NextResponse.json({ error: "Failed to load received connections" }, { status: 500 });
   }
-}
+});

@@ -1809,7 +1809,7 @@ function PhotosSection({ claimId }: { claimId: string }) {
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
-                      handleDeletePhoto(photo.id);
+                      void handleDeletePhoto(photo.id);
                     }}
                     className="absolute right-2 top-2 z-50 rounded-full bg-red-500/80 p-1.5 text-white opacity-0 transition-opacity hover:bg-red-600 group-hover:opacity-100"
                     aria-label="Delete photo"
@@ -1845,7 +1845,7 @@ function PhotosSection({ claimId }: { claimId: string }) {
                         size="sm"
                         onClick={(e) => {
                           e.stopPropagation();
-                          handleAnalyzePhoto(photo.id);
+                          void handleAnalyzePhoto(photo.id);
                         }}
                         disabled={analyzingPhotoId === photo.id}
                         className="pointer-events-auto bg-purple-600 hover:bg-purple-700"
@@ -2200,7 +2200,7 @@ function FinancialsSection({
   );
 }
 
-function _TimelineSection({ claimId }: { claimId: string }) {
+function TimelineSection({ claimId }: { claimId: string }) {
   const [events, setEvents] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 

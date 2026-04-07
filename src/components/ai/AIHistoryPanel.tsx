@@ -28,7 +28,7 @@ export function AIHistoryPanel({ type, onRestore, limit = 10 }: AIHistoryPanelPr
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    fetchHistory();
+    void fetchHistory();
   }, [type]);
 
   const fetchHistory = async () => {

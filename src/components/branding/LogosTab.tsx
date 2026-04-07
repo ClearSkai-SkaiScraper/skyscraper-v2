@@ -6,7 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 export default function LogosTab({ orgId }: { orgId?: string }) {
   const [branding, setBranding] = useState<any>(null);
   useEffect(() => {
-    (async () => {
+    void (async () => {
       if (!orgId) return;
       const { data } = await supabase.from("org_branding").select("*").eq("org_id", orgId).single();
       setBranding(data);
@@ -38,7 +38,7 @@ export default function LogosTab({ orgId }: { orgId?: string }) {
           aria-label="Upload company logo"
           onChange={(e) => {
             const f = e.target.files?.[0];
-            if (f) uploadLogo(f, "secondary_logo_url");
+            if (f) void uploadLogo(f, "secondary_logo_url");
           }}
         />
         <div className="mt-4">Current co-logo:</div>

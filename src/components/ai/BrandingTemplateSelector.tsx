@@ -53,7 +53,7 @@ export function BrandingTemplateSelector({ onApplyTemplate }: BrandingTemplateSe
         setLoading(false);
       }
     }
-    fetchTemplates();
+    void fetchTemplates();
   }, []);
 
   const handleSelectTemplate = (templateId: string) => {

@@ -171,10 +171,10 @@ export default function ContractorProfilePage() {
 
   useEffect(() => {
     if (!companyId) return;
-    loadProfile();
-    loadConnectionStatus();
-    loadSavedStatus();
-    loadActiveJobs();
+    void loadProfile();
+    void loadConnectionStatus();
+    void loadSavedStatus();
+    void loadActiveJobs();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [companyId]);
 
@@ -390,7 +390,7 @@ export default function ContractorProfilePage() {
         );
 
         // Refresh jobs list
-        loadActiveJobs();
+        void loadActiveJobs();
       }
 
       setShowInviteModal(false);

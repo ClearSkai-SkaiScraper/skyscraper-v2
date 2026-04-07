@@ -216,7 +216,7 @@ export function renderJustificationPDF(options: RenderOptions): Buffer {
   doc.setFillColor(240, 249, 255);
   doc.setDrawColor(pRgb.r, pRgb.g, pRgb.b);
   doc.setLineWidth(0.5);
-  const recLines = doc.splitTextToSize(report.recommendation, contentWidth - 12);
+  const recLines = doc.splitTextToSize(report.recommendation, contentWidth - 12) as string[];
   const recHeight = recLines.length * 5 + 8;
   doc.roundedRect(margin, yPos - 4, contentWidth, recHeight, 2, 2, "FD");
 
@@ -241,7 +241,7 @@ export function renderJustificationPDF(options: RenderOptions): Buffer {
       const argLines = doc.splitTextToSize(
         `${i + 1}. ${report.carrierArguments[i]}`,
         contentWidth - 8
-      );
+      ) as string[];
       doc.text(argLines, margin + 4, yPos);
       yPos += argLines.length * 4.5 + 3;
     }
@@ -332,7 +332,7 @@ function addWrappedText(
   doc.setFontSize(9);
   doc.setFont("helvetica", "normal");
   doc.setTextColor(40, 40, 40);
-  const lines = doc.splitTextToSize(text, maxWidth);
+  const lines = doc.splitTextToSize(text, maxWidth) as string[];
   for (const line of lines) {
     yPos = checkPage(doc, yPos, 8);
     doc.text(line, xPos, yPos);

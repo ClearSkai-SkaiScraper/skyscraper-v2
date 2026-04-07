@@ -2,13 +2,14 @@ export const dynamic = "force-dynamic";
 /**
  * PHASE 13.5 — CARRIER TRACKING API
  * GET /api/carrier/track/[trackingId]/[action]
- * 
+ *
  * Tracks email opens and link clicks
  */
 
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from "next/server";
 
-import { recordEmailOpen, recordLinkClick } from '@/lib/intel/emailDeliveryChannel';
+import { recordEmailOpen, recordLinkClick } from "@/lib/intel/emailDeliveryChannel";
+import { logger } from "@/lib/logger";
 
 // ============================================
 // TRACKING PIXEL - EMAIL OPEN
@@ -19,30 +20,28 @@ export async function GET(
   { params }: { params: { trackingId: string; action: string } }
 ) {
   const { trackingId, action } = params;
+  logger.info("[CARRIER_TRACK]", { trackingId, action });
 
-  if (action === 'pixel.gif') {
+  if (action === "pixel.gif") {
     // Record email open
     await recordEmailOpen(trackingId);
 
     // Return 1x1 transparent GIF
-    const gif = Buffer.from(
-      'R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7',
-      'base64'
-    );
+    const gif = Buffer.from("R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7", "base64");
 
     return new NextResponse(gif, {
       status: 200,
       headers: {
-        'Content-Type': 'image/gif',
-        'Cache-Control': 'no-cache, no-store, must-revalidate',
+        "Content-Type": "image/gif",
+        "Cache-Control": "no-cache, no-store, must-revalidate",
       },
     });
   }
 
-  if (action === 'click') {
+  if (action === "click") {
     // Record link click
     const { searchParams } = new URL(req.url);
-    const linkUrl = searchParams.get('url') || '';
+    const linkUrl = searchParams.get("url") || "";
 
     await recordLinkClick(trackingId, linkUrl);
 
@@ -54,5 +53,5 @@ export async function GET(
     return NextResponse.json({ success: true });
   }
 
-  return NextResponse.json({ error: 'Invalid action' }, { status: 400 });
+  return NextResponse.json({ error: "Invalid action" }, { status: 400 });
 }

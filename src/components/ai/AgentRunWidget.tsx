@@ -19,7 +19,7 @@ export function AgentRunWidget() {
 
   useEffect(() => {
     let active = true;
-    (async () => {
+    void (async () => {
       try {
         const res = await fetch("/api/agents/runs");
         if (!res.ok) {
@@ -41,7 +41,7 @@ export function AgentRunWidget() {
       }
     })();
     const interval = setInterval(() => {
-      (async () => {
+      void (async () => {
         try {
           const res = await fetch("/api/agents/runs");
           if (!res.ok) return;

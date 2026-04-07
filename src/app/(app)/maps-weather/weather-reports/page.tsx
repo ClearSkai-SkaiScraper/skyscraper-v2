@@ -77,7 +77,7 @@ export default function WeatherReportsPage() {
   }, []);
 
   useEffect(() => {
-    fetchReports();
+    void fetchReports();
   }, [fetchReports]);
 
   const handleGenerate = async () => {
@@ -108,7 +108,7 @@ export default function WeatherReportsPage() {
       setAddress("");
       setDol("");
       setPeril("hail");
-      fetchReports();
+      void fetchReports();
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Failed to generate report");
     } finally {

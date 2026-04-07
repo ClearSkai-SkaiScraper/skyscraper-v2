@@ -2,11 +2,10 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
-import { auth, currentUser } from "@clerk/nextjs/server";
 import { jsPDF } from "jspdf";
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 
-import { BRAND_PRIMARY } from "@/lib/constants/branding";
+import { withAuth } from "@/lib/auth/withAuth";
 import { logger } from "@/lib/logger";
 import { drawBrandedHeader, drawPageFooter, fetchBrandingData } from "@/lib/pdf/brandedHeader";
 import { checkRateLimit } from "@/lib/rate-limit";
@@ -33,15 +32,10 @@ interface DamageFinding {
   materialSpec?: string;
 }
 
-export async function POST(req: NextRequest) {
+export const POST = withAuth(async (req, { userId, orgId }) => {
   try {
-    const user = await currentUser();
-    if (!user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
     // Rate limit: AI tier
-    const rl = await checkRateLimit(user.id, "AI");
+    const rl = await checkRateLimit(userId, "AI");
     if (!rl.success) {
       return NextResponse.json(
         { error: "rate_limit_exceeded", message: "Too many requests. Please wait." },
@@ -72,14 +66,7 @@ export async function POST(req: NextRequest) {
     const findings = (rawFindings || []) as unknown as DamageFinding[];
 
     // ── Fetch company branding for branded header ──
-    const { orgId } = await auth();
-    const branding = orgId
-      ? await fetchBrandingData(orgId, user.id)
-      : {
-          companyName: "SkaiScraper",
-          brandColor: BRAND_PRIMARY,
-          employeeName: `${user.firstName || ""} ${user.lastName || ""}`.trim(),
-        };
+    const branding = await fetchBrandingData(orgId, userId);
 
     // Attach property info to branding for sub-header
     if (propertyAddress) (branding as any).clientAddress = propertyAddress;
@@ -339,8 +326,8 @@ export async function POST(req: NextRequest) {
         "Content-Disposition": `attachment; filename="damage-report-${Date.now()}.pdf"`,
       },
     });
-  } catch (error) {
+  } catch (error: unknown) {
     logger.error("PDF export error:", error);
     return NextResponse.json({ error: "Export failed" }, { status: 500 });
   }
-}
+});

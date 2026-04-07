@@ -63,7 +63,7 @@ export function useReadReceipts(conversationId: string | null | undefined) {
     channelRef.current = channel;
 
     return () => {
-      supabase.removeChannel(channel);
+      void supabase.removeChannel(channel);
       channelRef.current = null;
     };
   }, [conversationId]);

@@ -1,25 +1,16 @@
 export const dynamic = "force-dynamic";
 
-import { auth } from "@clerk/nextjs/server";
+import { withAuth } from "@/lib/auth/withAuth";
 import { NextRequest, NextResponse } from "next/server";
 
 import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 import { safeOrgContext } from "@/lib/safeOrgContext";
 
-type RouteContext = {
-  params: Promise<{ threadId: string; messageId: string }>;
-};
-
 // PATCH /api/messages/:threadId/:messageId/read - Mark message as read
-export async function PATCH(req: NextRequest, context: RouteContext) {
+export const PATCH = withAuth(async (req: NextRequest, { orgId, userId }, routeParams) => {
   try {
-    const { userId } = await auth();
-    if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    const { threadId, messageId } = await context.params;
+    const { threadId, messageId } = await routeParams.params;
 
     // 1. Fetch the thread to verify ownership / access
     const thread = await prisma.messageThread.findUnique({
@@ -110,4 +101,4 @@ export async function PATCH(req: NextRequest, context: RouteContext) {
     logger.error("[MESSAGES_READ]", { error });
     return NextResponse.json({ error: "Failed to mark message as read" }, { status: 500 });
   }
-}
+});

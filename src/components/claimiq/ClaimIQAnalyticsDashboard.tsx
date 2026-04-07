@@ -89,7 +89,7 @@ export function ClaimIQAnalyticsDashboard({ className }: Props) {
   }, []);
 
   useEffect(() => {
-    fetchAnalytics();
+    void fetchAnalytics();
   }, [fetchAnalytics]);
 
   if (loading) {

@@ -86,7 +86,7 @@ export function EditableField({
       setTimeout(() => {
         if (savingRef.current) return;
         if (editValue !== (value || "")) {
-          handleSave();
+          void handleSave();
         } else {
           setIsEditing(false);
         }
@@ -99,7 +99,7 @@ export function EditableField({
     (e: React.KeyboardEvent) => {
       if (e.key === "Enter") {
         e.preventDefault();
-        handleSave();
+        void handleSave();
       } else if (e.key === "Escape") {
         e.preventDefault();
         handleCancel();

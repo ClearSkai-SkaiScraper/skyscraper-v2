@@ -63,7 +63,7 @@ export default function ConnectionsWidget({ userId, isOwnProfile }: ConnectionsW
   const [actionLoading, setActionLoading] = useState<string | null>(null);
 
   useEffect(() => {
-    fetchConnections();
+    void fetchConnections();
   }, [userId]);
 
   const fetchConnections = async () => {
@@ -101,7 +101,7 @@ export default function ConnectionsWidget({ userId, isOwnProfile }: ConnectionsW
 
       if (res.ok) {
         toast.success("Connection accepted!");
-        fetchConnections();
+        void fetchConnections();
       } else {
         toast.error("Failed to accept connection");
       }
@@ -123,7 +123,7 @@ export default function ConnectionsWidget({ userId, isOwnProfile }: ConnectionsW
 
       if (res.ok) {
         toast.success("Connection declined");
-        fetchConnections();
+        void fetchConnections();
       } else {
         toast.error("Failed to decline connection");
       }
@@ -143,7 +143,7 @@ export default function ConnectionsWidget({ userId, isOwnProfile }: ConnectionsW
 
       if (res.ok) {
         toast.success("Connection removed");
-        fetchConnections();
+        void fetchConnections();
       } else {
         toast.error("Failed to remove connection");
       }
@@ -420,7 +420,7 @@ export function ConnectButton({
   const [connectionId, setConnectionId] = useState<string | null>(null);
 
   useEffect(() => {
-    checkConnectionStatus();
+    void checkConnectionStatus();
   }, [targetUserId]);
 
   const checkConnectionStatus = async () => {

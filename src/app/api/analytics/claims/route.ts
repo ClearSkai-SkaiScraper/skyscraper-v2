@@ -1,8 +1,8 @@
 export const dynamic = "force-dynamic";
 
-import { auth } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
 
+import { withAuth } from "@/lib/auth/withAuth";
 import { logger } from "@/lib/logger";
 
 import prisma from "@/lib/prisma";
@@ -12,13 +12,8 @@ import prisma from "@/lib/prisma";
  *
  * Returns: cycle time, close rate, claims by status, claims by month
  */
-export async function GET(req: NextRequest) {
+export const GET = withAuth(async (req: NextRequest, { orgId }) => {
   try {
-    const { userId, orgId } = await auth();
-    if (!userId || !orgId) {
-      return NextResponse.json({ ok: false, error: "Unauthorized" }, { status: 401 });
-    }
-
     const now = new Date();
     const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
     const ninetyDaysAgo = new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000);
@@ -100,4 +95,4 @@ export async function GET(req: NextRequest) {
       { status: 500 }
     );
   }
-}
+});

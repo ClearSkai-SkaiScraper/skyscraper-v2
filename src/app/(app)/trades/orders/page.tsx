@@ -112,7 +112,7 @@ export default function TradesOrdersPage() {
   }, []);
 
   useEffect(() => {
-    fetchOrders();
+    void fetchOrders();
   }, [fetchOrders]);
 
   const handleSaveOrder = async () => {
@@ -146,7 +146,7 @@ export default function TradesOrdersPage() {
           notes: "",
           receiptFile: null,
         });
-        fetchOrders();
+        void fetchOrders();
       } else {
         const err = await res.json();
         toast.error(err.error || "Failed to create order");

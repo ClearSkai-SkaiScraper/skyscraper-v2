@@ -65,7 +65,7 @@ export default function SmartReportBuilderPage() {
         logger.error("Failed to load claims list", e);
       }
     }
-    loadClaims();
+    void loadClaims();
   }, []);
 
   // When claim changes, we can auto-fill address/loss/roofType if claim list has it

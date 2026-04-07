@@ -1,8 +1,8 @@
 export const dynamic = "force-dynamic";
 
-import { auth } from "@clerk/nextjs/server";
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 
+import { withAuth } from "@/lib/auth/withAuth";
 import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 import {
@@ -15,14 +15,9 @@ import {
  * GET /api/client/claims/[claimId]
  * Get claim details for a client (only if CONNECTED)
  */
-export async function GET(req: NextRequest, { params }: { params: Promise<{ claimId: string }> }) {
+export const GET = withAuth(async (req, { userId, orgId }, routeParams) => {
   try {
-    const { userId } = await auth();
-    const { claimId } = await params;
-
-    if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    const { claimId } = await routeParams.params;
 
     // Security: Verify client has access to this claim
     const hasAccess = await verifyClientClaimAccess(userId, claimId);
@@ -72,4 +67,4 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ clai
     logger.error("[CLIENT_CLAIM_DETAIL_ERROR]", error);
     return NextResponse.json({ error: "Failed to fetch claim details" }, { status: 500 });
   }
-}
+});

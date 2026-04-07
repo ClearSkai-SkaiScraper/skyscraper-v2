@@ -43,56 +43,73 @@ export async function GET(request: NextRequest) {
     if (ctx.orgId) orConditions.push({ orgId: ctx.orgId });
     if (membership?.companyId) orConditions.push({ tradePartnerId: membership.companyId });
 
-    // Parallel fetch: threads, unread trade notifications, appointments, pending invitations
-    const [threads, unreadTradeNotifs, upcomingAppointments, pendingInvitations] =
-      await Promise.all([
-        prisma.messageThread
-          .findMany({
-            where: { OR: orConditions },
-            select: { id: true },
-          })
-          .catch(() => [] as { id: string }[]),
+    // Parallel fetch: threads, unread trade notifications, appointments, pending invitations, pending work requests
+    const [
+      threads,
+      unreadTradeNotifs,
+      upcomingAppointments,
+      pendingInvitations,
+      pendingWorkRequests,
+    ] = await Promise.all([
+      prisma.messageThread
+        .findMany({
+          where: { OR: orConditions },
+          select: { id: true },
+        })
+        .catch(() => [] as { id: string }[]),
 
-        prisma.tradeNotification
-          .count({
-            where: {
-              recipientId: {
-                in: [
-                  ctx.userId!,
-                  ...(ctx.orgId ? [ctx.orgId] : []),
-                  ...(membership?.companyId ? [membership.companyId] : []),
-                ],
-              },
-              isRead: false,
+      prisma.tradeNotification
+        .count({
+          where: {
+            recipientId: {
+              in: [
+                ctx.userId!,
+                ...(ctx.orgId ? [ctx.orgId] : []),
+                ...(membership?.companyId ? [membership.companyId] : []),
+              ],
             },
-          })
-          .catch(() => 0),
+            isRead: false,
+          },
+        })
+        .catch(() => 0),
 
-        prisma.appointments
-          .count({
-            where: {
-              orgId: ctx.orgId ?? undefined,
-              status: "scheduled",
-              startTime: {
-                gte: new Date(),
-                lte: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
-              },
+      prisma.appointments
+        .count({
+          where: {
+            orgId: ctx.orgId ?? undefined,
+            status: "scheduled",
+            startTime: {
+              gte: new Date(),
+              lte: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
             },
-          })
-          .catch(() => 0),
+          },
+        })
+        .catch(() => 0),
 
-        // Count pending connection invitations for this pro's company
-        membership?.companyId
-          ? prisma.clientProConnection
-              .count({
-                where: {
-                  contractorId: membership.companyId,
-                  status: "pending",
-                },
-              })
-              .catch(() => 0)
-          : 0,
-      ]);
+      // Count pending connection invitations for this pro's company
+      membership?.companyId
+        ? prisma.clientProConnection
+            .count({
+              where: {
+                contractorId: membership.companyId,
+                status: "pending",
+              },
+            })
+            .catch(() => 0)
+        : 0,
+
+      // Count pending work requests for this pro's company
+      membership?.companyId
+        ? prisma.clientWorkRequest
+            .count({
+              where: {
+                targetProId: membership.companyId,
+                status: { in: ["pending", "in_review"] },
+              },
+            })
+            .catch(() => 0)
+        : 0,
+    ]);
 
     // Count unread messages across threads
     let unreadMessages = 0;
@@ -115,6 +132,7 @@ export async function GET(request: NextRequest) {
         upcomingAppointments,
         unreadNotifications: unreadTradeNotifs,
         pendingInvitations,
+        pendingWorkRequests,
       },
     });
   } catch (error) {

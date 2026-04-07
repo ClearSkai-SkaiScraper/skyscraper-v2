@@ -6,37 +6,21 @@ export const dynamic = "force-dynamic";
  * Toggle file sharing with client
  */
 
-import { auth } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
 
+import { withAuth } from "@/lib/auth/withAuth";
 import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 
-export async function PATCH(
-  req: NextRequest,
-  { params }: { params: { id: string; fileId: string } }
-) {
+export const PATCH = withAuth(async (req: NextRequest, { orgId }, routeParams) => {
   try {
-    const { orgId } = await auth();
-    if (!orgId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    const Org = await prisma.org.findUnique({
-      where: { clerkOrgId: orgId },
-    });
-
-    if (!Org) {
-      return NextResponse.json({ error: "Organization not found" }, { status: 404 });
-    }
-
-    const { id: leadId, fileId } = params;
+    const { id: leadId, fileId } = await routeParams.params;
     const body = await req.json();
     const { sharedWithClient } = body;
 
     // Verify lead belongs to org
     const lead = await prisma.leads.findFirst({
-      where: { id: leadId, orgId: Org.id },
+      where: { id: leadId, orgId },
       select: { id: true },
     });
 
@@ -48,7 +32,7 @@ export async function PATCH(
     const file = await prisma.file_assets.findFirst({
       where: {
         id: fileId,
-        orgId: Org.id,
+        orgId,
         leadId: leadId,
       },
     });
@@ -94,4 +78,4 @@ export async function PATCH(
     logger.error("[Files Share PATCH] Error:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
-}
+});

@@ -66,7 +66,7 @@ export default function StatusEditor({
         // Ignore
       }
     }
-    loadStatus();
+    void loadStatus();
   }, [userType]);
 
   const handleSave = async () => {

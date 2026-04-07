@@ -7,6 +7,7 @@ import { requireAuth } from "@/lib/auth/requireAuth";
 import { BasePDFTemplate } from "@/lib/pdf/baseTemplate.tsx";
 import { uploadPDFToFirebase } from "@/lib/storage/firebaseUpload";
 import { pdfToUint8 } from "@/pdf/render";
+import { logger } from "@/lib/logger";
 
 export async function POST(req: Request) {
   const auth = await requireAuth();

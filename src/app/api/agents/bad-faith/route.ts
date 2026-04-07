@@ -1,19 +1,14 @@
 export const dynamic = "force-dynamic";
 
-import { auth } from "@clerk/nextjs/server";
-import { NextRequest, NextResponse } from "next/server";
+import { withAuth } from "@/lib/auth/withAuth";
+import { NextResponse } from "next/server";
 
 import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 import { saveReportHistory } from "@/lib/reports/saveReportHistory";
 
-export async function POST(request: NextRequest) {
+export const POST = withAuth(async (request, { userId, orgId }) => {
   try {
-    const { userId, orgId } = await auth();
-    if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
     const body = await request.json();
     const { claimId, forceRefresh } = body;
 
@@ -212,8 +207,8 @@ export async function POST(request: NextRequest) {
     });
 
     return NextResponse.json(result);
-  } catch (error) {
+  } catch (error: unknown) {
     logger.error("[BAD_FAITH_ANALYSIS] Error:", error);
     return NextResponse.json({ error: "Bad faith analysis failed" }, { status: 500 });
   }
-}
+});

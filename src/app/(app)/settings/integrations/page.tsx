@@ -157,7 +157,7 @@ export default function IntegrationsPage() {
   }, []);
 
   useEffect(() => {
-    fetchStatus();
+    void fetchStatus();
   }, [fetchStatus]);
 
   async function handleConnect() {
@@ -192,7 +192,7 @@ export default function IntegrationsPage() {
         setSyncResult(data.error || "Sync failed");
       }
       // Refresh status
-      fetchStatus();
+      void fetchStatus();
     } catch (err) {
       setSyncResult("Sync request failed");
       logger.error("[INTEGRATIONS] sync error:", err);
@@ -208,7 +208,7 @@ export default function IntegrationsPage() {
       const res = await fetch("/api/integrations/quickbooks/status", { method: "DELETE" });
       const data = await res.json();
       if (data.ok) {
-        fetchStatus();
+        void fetchStatus();
       }
     } catch (err) {
       logger.error("[INTEGRATIONS] disconnect error:", err);

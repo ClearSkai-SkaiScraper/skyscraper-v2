@@ -175,7 +175,7 @@ export default function CodesPage() {
         setLoading(false);
       }
     }
-    fetchClaim();
+    void fetchClaim();
   }, [claimId]);
 
   const handleAnalyzeCodes = async () => {

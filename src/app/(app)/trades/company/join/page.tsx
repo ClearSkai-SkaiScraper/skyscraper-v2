@@ -44,7 +44,7 @@ export default function JoinCompanyPage() {
   const [hasCompany, setHasCompany] = useState(false);
 
   useEffect(() => {
-    loadCompanies();
+    void loadCompanies();
   }, []);
 
   const loadCompanies = async () => {

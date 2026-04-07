@@ -139,9 +139,107 @@ export default function PhotosPage() {
   }, [claimId]);
 
   useEffect(() => {
-    fetchPhotos();
+    void fetchPhotos();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [claimId]);
+
+  const handleSaveAnnotations = useCallback(
+    async (
+      photoId: string,
+      annotations: Annotation[],
+      canvasSize?: { width: number; height: number }
+    ) => {
+      // Use actual canvas dimensions for coordinate conversion (not hardcoded 800x600)
+      const cw = canvasSize?.width || 800;
+      const ch = canvasSize?.height || 600;
+      try {
+        await fetch(`/api/claims/photos/${photoId}/annotations`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            annotations,
+            canvasWidth: cw,
+            canvasHeight: ch,
+          }),
+        });
+
+        // Build damageBoxes from annotations for display overlay
+        // Annotations are stored in pixel space relative to the annotator canvas
+        // DamageBoxes need to be 0-1 fractions for CSS positioning
+        const damageBoxes: DamageBox[] = annotations.map((ann) => {
+          // Handle circles (x,y is center, has radius)
+          if (ann.type === "circle" && ann.radius) {
+            const r = ann.radius;
+            return {
+              x: (ann.x - r) / cw,
+              y: (ann.y - r) / ch,
+              w: (r * 2) / cw,
+              h: (r * 2) / ch,
+              label: ann.caption || ann.damageType || "Damage",
+            };
+          }
+          // Handle rectangles/ai_detection (x,y is top-left, has width/height)
+          return {
+            x: ann.x / cw,
+            y: ann.y / ch,
+            w: (ann.width || 50) / cw,
+            h: (ann.height || 50) / ch,
+            label: ann.caption || ann.damageType || "Damage",
+          };
+        });
+
+        setPhotos((prev) =>
+          prev.map((p) =>
+            p.id === photoId ? { ...p, annotations, damageBoxes, analyzed: true } : p
+          )
+        );
+
+        if (selectedPhoto?.id === photoId) {
+          setSelectedPhoto({ ...selectedPhoto, annotations, damageBoxes, analyzed: true });
+        }
+
+        toast.success("Annotations saved");
+      } catch (error) {
+        logger.error("Save annotations error:", error);
+        toast.error("Failed to save annotations");
+      }
+    },
+    [selectedPhoto]
+  );
+
+  const handleSaveNote = useCallback(
+    async (photoId: string, note: string) => {
+      if (!claimId) return;
+      setSavingNote(true);
+      try {
+        const res = await fetch(`/api/claims/photos/${photoId}/annotations`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            annotations: selectedPhoto?.annotations || [],
+            note,
+          }),
+        });
+
+        if (!res.ok) throw new Error("Failed to save note");
+
+        // Update local state
+        setPhotos((prev) => prev.map((p) => (p.id === photoId ? { ...p, note } : p)));
+
+        if (selectedPhoto?.id === photoId) {
+          setSelectedPhoto({ ...selectedPhoto, note });
+        }
+
+        toast.success("Note saved");
+      } catch (error) {
+        logger.error("Save note error:", error);
+        toast.error("Failed to save note");
+      } finally {
+        setSavingNote(false);
+      }
+    },
+    [claimId, selectedPhoto]
+  );
 
   if (!claimId) return null;
 
@@ -642,104 +740,6 @@ export default function PhotosPage() {
     }
   };
 
-  const handleSaveAnnotations = useCallback(
-    async (
-      photoId: string,
-      annotations: Annotation[],
-      canvasSize?: { width: number; height: number }
-    ) => {
-      // Use actual canvas dimensions for coordinate conversion (not hardcoded 800x600)
-      const cw = canvasSize?.width || 800;
-      const ch = canvasSize?.height || 600;
-      try {
-        await fetch(`/api/claims/photos/${photoId}/annotations`, {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            annotations,
-            canvasWidth: cw,
-            canvasHeight: ch,
-          }),
-        });
-
-        // Build damageBoxes from annotations for display overlay
-        // Annotations are stored in pixel space relative to the annotator canvas
-        // DamageBoxes need to be 0-1 fractions for CSS positioning
-        const damageBoxes: DamageBox[] = annotations.map((ann) => {
-          // Handle circles (x,y is center, has radius)
-          if (ann.type === "circle" && ann.radius) {
-            const r = ann.radius;
-            return {
-              x: (ann.x - r) / cw,
-              y: (ann.y - r) / ch,
-              w: (r * 2) / cw,
-              h: (r * 2) / ch,
-              label: ann.caption || ann.damageType || "Damage",
-            };
-          }
-          // Handle rectangles/ai_detection (x,y is top-left, has width/height)
-          return {
-            x: ann.x / cw,
-            y: ann.y / ch,
-            w: (ann.width || 50) / cw,
-            h: (ann.height || 50) / ch,
-            label: ann.caption || ann.damageType || "Damage",
-          };
-        });
-
-        setPhotos((prev) =>
-          prev.map((p) =>
-            p.id === photoId ? { ...p, annotations, damageBoxes, analyzed: true } : p
-          )
-        );
-
-        if (selectedPhoto?.id === photoId) {
-          setSelectedPhoto({ ...selectedPhoto, annotations, damageBoxes, analyzed: true });
-        }
-
-        toast.success("Annotations saved");
-      } catch (error) {
-        logger.error("Save annotations error:", error);
-        toast.error("Failed to save annotations");
-      }
-    },
-    [selectedPhoto]
-  );
-
-  const handleSaveNote = useCallback(
-    async (photoId: string, note: string) => {
-      if (!claimId) return;
-      setSavingNote(true);
-      try {
-        const res = await fetch(`/api/claims/photos/${photoId}/annotations`, {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            annotations: selectedPhoto?.annotations || [],
-            note,
-          }),
-        });
-
-        if (!res.ok) throw new Error("Failed to save note");
-
-        // Update local state
-        setPhotos((prev) => prev.map((p) => (p.id === photoId ? { ...p, note } : p)));
-
-        if (selectedPhoto?.id === photoId) {
-          setSelectedPhoto({ ...selectedPhoto, note });
-        }
-
-        toast.success("Note saved");
-      } catch (error) {
-        logger.error("Save note error:", error);
-        toast.error("Failed to save note");
-      } finally {
-        setSavingNote(false);
-      }
-    },
-    [claimId, selectedPhoto]
-  );
-
   const getSeverityColorHex = (severity?: string): string => {
     switch (severity) {
       case "Critical":
@@ -1103,7 +1103,7 @@ export default function PhotosPage() {
             size="sm"
             onClick={() => {
               setLoading(true);
-              fetchPhotos();
+              void fetchPhotos();
             }}
             className="mt-4"
           >
@@ -1216,7 +1216,7 @@ export default function PhotosPage() {
                     )}
                     onClick={(e) => {
                       e.stopPropagation();
-                      handleAnalyze(photo.id);
+                      void handleAnalyze(photo.id);
                     }}
                     disabled={analyzing === photo.id}
                   >

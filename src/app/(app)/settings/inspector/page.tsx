@@ -170,7 +170,7 @@ export default function InspectorProfilePage() {
   }, []);
 
   useEffect(() => {
-    fetchProfile();
+    void fetchProfile();
   }, [fetchProfile]);
 
   const saveProfile = async () => {

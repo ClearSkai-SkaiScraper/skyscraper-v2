@@ -31,7 +31,7 @@ export default function NotesPage() {
   const [deleteTarget, setDeleteTarget] = useState<{ id: string; label?: string } | null>(null);
 
   useEffect(() => {
-    fetchNotes();
+    void fetchNotes();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [claimId]);
 

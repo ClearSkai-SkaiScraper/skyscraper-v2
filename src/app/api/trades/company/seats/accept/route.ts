@@ -8,19 +8,15 @@ export const dynamic = "force-dynamic";
  * - Auto-creates a network connection between the new employee and the company owner
  */
 
-import { auth } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
+
+import { withAuth } from "@/lib/auth/withAuth";
 
 import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 
-export async function POST(req: NextRequest) {
+export const POST = withAuth(async (req: NextRequest, { userId }) => {
   try {
-    const { userId } = await auth();
-    if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
     const body = await req.json();
     const token = body.token;
 
@@ -172,8 +168,8 @@ export async function POST(req: NextRequest) {
       message: `Welcome to ${companyName}!`,
       companyName,
     });
-  } catch (error) {
+  } catch (error: unknown) {
     logger.error("[Seats] Accept seat error:", error);
     return NextResponse.json({ error: "Failed to accept invitation" }, { status: 500 });
   }
-}
+});

@@ -8,35 +8,22 @@ export const dynamic = "force-dynamic";
  * Creates a pending client network with invite token.
  */
 
-import { auth, currentUser } from "@clerk/nextjs/server";
+import { currentUser } from "@clerk/nextjs/server";
 import { randomBytes } from "crypto";
 import { NextRequest, NextResponse } from "next/server";
 
-import { getResolvedOrgId } from "@/lib/auth/getResolvedOrgId";
+import { withAuth } from "@/lib/auth/withAuth";
 import { getResend } from "@/lib/email/resend";
 import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 
-export async function POST(req: NextRequest) {
+export const POST = withAuth(async (req: NextRequest, { orgId, userId }) => {
   try {
-    const { userId } = await auth();
-    if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
     const body = await req.json();
     const { email, name, networkId } = body;
 
     if (!email) {
       return NextResponse.json({ error: "Email is required" }, { status: 400 });
-    }
-
-    // Get the current user's org
-    let orgId: string;
-    try {
-      orgId = await getResolvedOrgId();
-    } catch {
-      orgId = userId;
     }
 
     // Get the current user for sender info
@@ -166,4 +153,4 @@ export async function POST(req: NextRequest) {
       { status: 500 }
     );
   }
-}
+});

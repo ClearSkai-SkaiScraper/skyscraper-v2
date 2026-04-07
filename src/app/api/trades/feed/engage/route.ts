@@ -6,21 +6,17 @@
  * Body: { postId, action: "like" | "comment" | "share", commentText?: string }
  */
 
-import { auth } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
+
+import { withAuth } from "@/lib/auth/withAuth";
 
 import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 
 export const dynamic = "force-dynamic";
 
-export async function POST(req: NextRequest) {
+export const POST = withAuth(async (req: NextRequest, { userId }) => {
   try {
-    const { userId } = await auth();
-    if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
     const body = await req.json();
     const { postId, action, commentText } = body;
 
@@ -105,11 +101,8 @@ export async function POST(req: NextRequest) {
     }
 
     return NextResponse.json({ ok: true });
-  } catch (error) {
+  } catch (error: unknown) {
     logger.error("[POST /api/trades/feed/engage]", error);
-    return NextResponse.json(
-      { error: "Failed to engage" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Failed to engage" }, { status: 500 });
   }
-}
+});

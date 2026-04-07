@@ -70,7 +70,7 @@ export default function ConnectionsPage() {
   }, []);
 
   useEffect(() => {
-    loadConnections();
+    void loadConnections();
   }, [loadConnections]);
 
   const handleAccept = async (id: string) => {
@@ -83,7 +83,7 @@ export default function ConnectionsPage() {
       });
       if (res.ok) {
         toast.success("Connection accepted!");
-        loadConnections();
+        void loadConnections();
       } else {
         toast.error("Failed to accept");
       }
@@ -104,7 +104,7 @@ export default function ConnectionsPage() {
       });
       if (res.ok) {
         toast.success("Connection declined");
-        loadConnections();
+        void loadConnections();
       } else {
         toast.error("Failed to decline");
       }

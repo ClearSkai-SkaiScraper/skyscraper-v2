@@ -31,13 +31,13 @@ export function initializeWebSocket(server: HTTPServer) {
 
     // Join claim-specific room
     socket.on("join:claim", (claimId: string) => {
-      socket.join(`claim:${claimId}`);
+      void socket.join(`claim:${claimId}`);
       logger.debug(`[WebSocket] ${socket.id} joined claim:${claimId}`);
     });
 
     // Leave claim-specific room
     socket.on("leave:claim", (claimId: string) => {
-      socket.leave(`claim:${claimId}`);
+      void socket.leave(`claim:${claimId}`);
       logger.debug(`[WebSocket] ${socket.id} left claim:${claimId}`);
     });
 

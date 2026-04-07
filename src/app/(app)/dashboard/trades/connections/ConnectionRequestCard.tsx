@@ -31,7 +31,7 @@ export default function ConnectionRequestCard() {
   const [requests, setRequests] = useState<ConnectionRequest[]>([]);
 
   useEffect(() => {
-    loadRequests();
+    void loadRequests();
   }, []);
 
   async function loadRequests() {

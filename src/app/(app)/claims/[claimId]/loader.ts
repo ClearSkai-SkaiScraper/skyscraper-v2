@@ -121,12 +121,14 @@ export async function getClaim(claimId: string, orgId?: string): Promise<GetClai
 
     logger.debug("[getClaim] SUCCESS", { claimNumber: claim.claimNumber });
     return { ok: true, claim };
-  } catch (error) {
-    logger.error("[getClaim] DB_ERROR", { error: error.message, stack: error.stack });
+  } catch (error: unknown) {
+    const msg = error instanceof Error ? error.message : String(error);
+    const stack = error instanceof Error ? error.stack : undefined;
+    logger.error("[getClaim] DB_ERROR", { error: msg, stack });
     return {
       ok: false,
       reason: "DB_ERROR",
-      detail: error?.message ?? String(error),
+      detail: msg,
     };
   }
 }

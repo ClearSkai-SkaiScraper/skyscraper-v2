@@ -46,6 +46,7 @@
 
 import { jsPDF } from "jspdf";
 
+import { config } from "@/lib/config";
 import { logger } from "@/lib/logger";
 
 // ============================================================================
@@ -186,7 +187,7 @@ export async function drawCoverPage(doc: jsPDF, data: CoverPageData): Promise<vo
   const contentWidth = pageWidth - margin * 2;
   const brand = hexToRgb(data.brandColor);
   const brandLight = lightenRgb(brand, 0.92);
-  const brandDark = darkenRgb(brand);
+  const _brandDark = darkenRgb(brand);
   const accent = data.accentColor
     ? hexToRgb(data.accentColor)
     : ([255, 200, 56] as [number, number, number]);
@@ -471,7 +472,9 @@ export async function fetchPropertyMapBase64(address: string): Promise<string | 
     );
 
     if (!geoRes.ok) return undefined;
-    const geoData = await geoRes.json();
+    const geoData = (await geoRes.json()) as {
+      results?: Array<{ latitude: number; longitude: number }>;
+    };
 
     const result = geoData?.results?.[0];
     if (!result) return undefined;
@@ -479,7 +482,7 @@ export async function fetchPropertyMapBase64(address: string): Promise<string | 
     const { latitude: lat, longitude: lng } = result;
 
     // Build map URL
-    const mapboxToken = process.env.NEXT_PUBLIC_MAPBOX_TOKEN || process.env.MAPBOX_ACCESS_TOKEN;
+    const mapboxToken = config.NEXT_PUBLIC_MAPBOX_TOKEN ?? config.MAPBOX_ACCESS_TOKEN;
     let mapUrl: string;
 
     if (mapboxToken) {

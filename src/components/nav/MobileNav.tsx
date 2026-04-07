@@ -130,6 +130,7 @@ const navSections: NavSection[] = [
     items: [
       { label: "My Profile & Company", href: "/trades/profile", icon: Users },
       { label: "Trades Network Hub", href: "/trades", icon: Users },
+      { label: "Work Requests", href: "/network/work-requests", icon: ClipboardList },
       { label: "Job Board", href: "/trades/jobs", icon: Briefcase },
       { label: "Vendor Intelligence", href: "/vendor-network", icon: Building2 },
       { label: "Company Settings", href: "/settings", icon: Settings },

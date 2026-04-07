@@ -1,10 +1,10 @@
-import { auth } from "@clerk/nextjs/server";
 import Busboy from "busboy";
 import crypto from "crypto";
 import mime from "mime";
 import { NextRequest, NextResponse } from "next/server";
 
 import { verifyClaimAccess } from "@/lib/auth/apiAuth";
+import { withAuth } from "@/lib/auth/withAuth";
 import { getDelegate } from "@/lib/db/modelAliases";
 import { storage } from "@/lib/firebaseAdmin";
 import { logger } from "@/lib/logger";
@@ -86,7 +86,7 @@ function parseMultipart(req: NextRequest) {
             bb.destroy(error instanceof Error ? error : new Error(String(error)));
           }
         };
-        pump();
+        void pump();
       } else {
         bb.end();
       }
@@ -94,13 +94,8 @@ function parseMultipart(req: NextRequest) {
   });
 }
 
-export async function POST(req: NextRequest) {
+export const POST = withAuth(async (req: NextRequest, { userId, orgId }) => {
   try {
-    const { userId, orgId } = await auth();
-    if (!userId || !orgId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
     // Check storage availability first
     const { enabled, ready } = await assertStorageReady();
     if (!enabled) {
@@ -130,9 +125,9 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Use multipart/form-data" }, { status: 400 });
     }
 
-    // Get Org by clerkOrgId first for token checking
+    // Get Org by DB UUID (withAuth guarantees DB-backed orgId)
     const Org = await prisma.org.findUnique({
-      where: { clerkOrgId: orgId },
+      where: { id: orgId },
     });
 
     if (!Org) {
@@ -325,4 +320,4 @@ export async function POST(req: NextRequest) {
     logger.error("Upload error:", err);
     return NextResponse.json({ error: "Upload failed" }, { status: 500 });
   }
-}
+});

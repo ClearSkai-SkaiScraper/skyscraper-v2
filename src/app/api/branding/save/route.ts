@@ -48,35 +48,23 @@ export const revalidate = 0;
  * ============================================================================
  */
 
-import { currentUser } from "@clerk/nextjs/server";
 import { revalidatePath, revalidateTag } from "next/cache";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 
 import { hasTrackedEvent, PRODUCT_EVENTS, trackProductEvent } from "@/lib/analytics/track";
+import { withAuth } from "@/lib/auth/withAuth";
 import { BRAND_ACCENT, BRAND_PRIMARY } from "@/lib/constants/branding";
 import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
-import { safeOrgContext } from "@/lib/safeOrgContext";
 import { isValidationError, validateBody } from "@/lib/validation/middleware";
 import { BrandingSchema } from "@/lib/validation/schemas";
 import { pool } from "@/server/db";
 
-export async function POST(req: Request) {
+export const POST = withAuth(async (req: NextRequest, { orgId, userId }) => {
   try {
-    const user = await currentUser();
-    if (!user) {
-      logger.error("[branding/save] ❌ Unauthorized - no user");
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    const orgCtx = await safeOrgContext();
-    if (!orgCtx.ok || !orgCtx.orgId) {
-      return NextResponse.json({ error: "No organization" }, { status: 400 });
-    }
-
     const org = await prisma.org.findUnique({
-      where: { id: orgCtx.orgId },
+      where: { id: orgId },
       select: { id: true, clerkOrgId: true },
     });
     if (!org) {
@@ -133,7 +121,7 @@ export async function POST(req: Request) {
     logger.info(`[branding/save] 💾 Saving branding for org ${resolvedOrgId}:`, {
       companyName,
       hasLogo: !!logoUrl,
-      userId: user.id,
+      userId,
     });
 
     // Prepare branding data - convert empty strings to null for database
@@ -156,14 +144,14 @@ export async function POST(req: Request) {
     const savedBranding = await prisma.org_branding.upsert({
       where: { orgId: resolvedOrgId },
       update: {
-        ownerId: user.id,
+        ownerId: userId,
         ...brandingData,
         updatedAt: new Date(),
       },
       create: {
         id: resolvedOrgId,
         orgId: resolvedOrgId,
-        ownerId: user.id,
+        ownerId: userId,
         ...brandingData,
         updatedAt: new Date(),
       },
@@ -182,7 +170,7 @@ export async function POST(req: Request) {
     if (isFirstBranding) {
       await trackProductEvent({
         orgId: resolvedOrgId,
-        userId: user.id,
+        userId,
         eventName: PRODUCT_EVENTS.ORG_BRANDING_COMPLETED,
         payload: { companyName, hasLogo: !!logoUrl },
       });
@@ -196,26 +184,33 @@ export async function POST(req: Request) {
 
     logger.debug(`[branding/save] ✅ Successfully saved branding for org ${resolvedOrgId}`);
     return NextResponse.json({ ok: true });
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const errMsg = error instanceof Error ? error.message : "Unknown error";
+    const errCode = (error as Record<string, unknown>)?.code as string | undefined;
+    const errMeta = (error as Record<string, unknown>)?.meta;
+    const errName = error instanceof Error ? error.name : undefined;
+    const errStack =
+      error instanceof Error ? error.stack?.split("\n").slice(0, 3).join("\n") : undefined;
+
     // Log the FULL error for debugging
     logger.error("[branding/save] ❌ Error saving branding:", {
-      message: error?.message || "Unknown error",
-      code: error?.code,
-      meta: error?.meta, // Prisma error metadata
-      name: error?.name,
-      stack: error?.stack?.split("\n").slice(0, 3).join("\n"), // First 3 lines of stack
+      message: errMsg,
+      code: errCode,
+      meta: errMeta, // Prisma error metadata
+      name: errName,
+      stack: errStack,
     });
 
     // Return more specific error message for debugging
     const errorMessage =
-      error?.code === "P2002"
+      errCode === "P2002"
         ? "Duplicate branding record - please refresh and try again"
-        : error?.code === "P2025"
+        : errCode === "P2025"
           ? "Branding record not found"
-          : error?.message?.includes("column")
-            ? `Database schema issue: ${error.message}`
+          : errMsg.includes("column")
+            ? `Database schema issue: ${errMsg}`
             : "Internal server error";
 
     return NextResponse.json({ ok: false, error: errorMessage }, { status: 500 });
   }
-}
+});

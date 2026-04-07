@@ -6,12 +6,11 @@
  * Stores in Supabase and registers in file_assets with category "company-template".
  */
 
-import { auth } from "@clerk/nextjs/server";
 import { createClient } from "@supabase/supabase-js";
 import { NextRequest, NextResponse } from "next/server";
 
+import { withAuth } from "@/lib/auth/withAuth";
 import { logger } from "@/lib/logger";
-import { resolveOrg } from "@/lib/org/resolveOrg";
 import prisma from "@/lib/prisma";
 
 export const runtime = "nodejs";
@@ -24,21 +23,8 @@ function getSupabaseAdmin() {
   return createClient(url, key, { auth: { persistSession: false } });
 }
 
-export async function POST(req: NextRequest) {
+export const POST = withAuth(async (req: NextRequest, { orgId, userId }) => {
   try {
-    const { userId } = await auth();
-    if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    let orgId: string | null = null;
-    try {
-      const ctx = await resolveOrg();
-      orgId = ctx.orgId;
-    } catch {
-      // fallback
-    }
-
     const supabase = getSupabaseAdmin();
     if (!supabase) {
       return NextResponse.json({ ok: false, message: "Storage not configured" }, { status: 500 });
@@ -82,8 +68,7 @@ export async function POST(req: NextRequest) {
     const ext = file.name.split(".").pop() || "bin";
     const timestamp = Date.now();
     const uuid = crypto.randomUUID();
-    const safeOwner = orgId || userId;
-    const filePath = `${safeOwner}/company-docs/${timestamp}-${uuid}.${ext}`;
+    const filePath = `${orgId}/company-docs/${timestamp}-${uuid}.${ext}`;
     const bucket = "claim-documents";
 
     // Ensure bucket exists
@@ -110,7 +95,7 @@ export async function POST(req: NextRequest) {
       await prisma.file_assets.create({
         data: {
           id: crypto.randomUUID(),
-          orgId: safeOwner,
+          orgId,
           ownerId: userId,
           filename: title,
           mimeType: file.type,
@@ -137,4 +122,4 @@ export async function POST(req: NextRequest) {
     logger.error("[Company Docs Upload] Error:", error);
     return NextResponse.json({ ok: false, message: "Upload failed" }, { status: 500 });
   }
-}
+});

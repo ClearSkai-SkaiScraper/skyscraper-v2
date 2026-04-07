@@ -1,4 +1,5 @@
-import { Document, Image,Page, Text, View } from "@react-pdf/renderer";
+/* eslint-disable jsx-a11y/alt-text -- react-pdf Image component doesn't support alt prop */
+import { Document, Image, Page, Text, View } from "@react-pdf/renderer";
 
 export function BasePDFTemplate({
   landscape = true,

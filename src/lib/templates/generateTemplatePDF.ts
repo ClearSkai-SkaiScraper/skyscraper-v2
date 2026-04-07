@@ -9,7 +9,7 @@
 import { jsPDF } from "jspdf";
 
 import { logger } from "@/lib/logger";
-import { drawCoverPage, fetchPropertyMapBase64, type CoverPageData } from "@/lib/pdf/coverPage";
+import { type CoverPageData,drawCoverPage, fetchPropertyMapBase64 } from "@/lib/pdf/coverPage";
 import prisma from "@/lib/prisma";
 
 import { getMergedTemplate } from "./mergeTemplate";

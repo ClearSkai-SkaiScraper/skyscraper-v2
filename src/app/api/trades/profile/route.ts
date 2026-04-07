@@ -1,10 +1,11 @@
 export const dynamic = "force-dynamic";
 
-import { auth, currentUser } from "@clerk/nextjs/server";
-import { NextResponse } from "next/server";
+import { currentUser } from "@clerk/nextjs/server";
+import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 
-import { ensureUserOrgContext } from "@/lib/auth/ensureUserOrgContext";
+import { withAuth } from "@/lib/auth/withAuth";
+
 import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 import { ensureVendorForOrg } from "@/lib/trades/vendorSync";
@@ -43,11 +44,8 @@ const tradesProfileSchema = z.object({
  */
 
 // GET /api/trades/profile - Get current user's profile
-export async function GET(req: Request) {
+export const GET = withAuth(async (req: NextRequest, { userId, orgId }) => {
   try {
-    const { userId } = await auth();
-    if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-
     const { searchParams } = new URL(req.url);
     const profileId = searchParams.get("profileId");
 
@@ -70,16 +68,7 @@ export async function GET(req: Request) {
     const user = await currentUser();
     if (!user) return new NextResponse("User not found", { status: 404 });
 
-    // Resolve org context (non-fatal — profile should still load without it)
-    let orgId: string | null = null;
-    try {
-      const ctx = await ensureUserOrgContext(userId);
-      orgId = ctx.orgId;
-    } catch (err) {
-      logger.warn(
-        `[API trades/profile GET] ⚠️ ensureUserOrgContext failed for ${userId}: ${(err as Error).message}`
-      );
-    }
+    // orgId is available from withAuth context
 
     // Primary lookup: tradesCompanyMember by userId
     let profile = await prisma.tradesCompanyMember.findFirst({
@@ -136,26 +125,24 @@ export async function GET(req: Request) {
         availability: profile.status === "active" ? "AVAILABLE" : "UNAVAILABLE",
       },
     });
-  } catch (err) {
+  } catch (err: unknown) {
     logger.error(
-      `[API trades/profile GET] ❌ Unhandled error for request: ${(err as Error).message}`,
+      `[API trades/profile GET] ❌ Unhandled error for request: ${err instanceof Error ? err.message : "Unknown error"}`,
       err
     );
     return NextResponse.json(
-      { profile: null, error: "Internal server error", detail: (err as Error).message },
+      {
+        profile: null,
+        error: "Internal server error",
+        detail: err instanceof Error ? err.message : "Unknown error",
+      },
       { status: 500 }
     );
   }
-}
+});
 
 // POST /api/trades/profile - Create new profile
-export async function POST(req: Request) {
-  const { userId } = await auth();
-  if (!userId) {
-    logger.error("[trades/profile POST] ❌ Unauthorized - no userId");
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
-
+export const POST = withAuth(async (req: NextRequest, { userId, orgId }) => {
   const user = await currentUser();
   if (!user) {
     logger.error(`[trades/profile POST] ❌ User ${userId} not found in Clerk`);
@@ -171,14 +158,6 @@ export async function POST(req: Request) {
     );
   }
   const body = parsed.data;
-  let orgId: string;
-  try {
-    orgId = (await ensureUserOrgContext(userId)).orgId;
-  } catch (error) {
-    const message = "Unknown error";
-    logger.error("[trades/profile POST] ❌ Failed to resolve orgId", message);
-    return NextResponse.json({ error: "Organization context missing" }, { status: 403 });
-  }
 
   try {
     // Check if profile already exists
@@ -256,7 +235,7 @@ export async function POST(req: Request) {
     await ensureVendorForOrg(orgId);
 
     return NextResponse.json({ profile }, { status: 201 });
-  } catch (error) {
+  } catch (error: unknown) {
     const err = error instanceof Error ? error : new Error("Unknown error");
     logger.error("[trades/profile POST] ❌ Error creating profile:", {
       message: "Internal server error",
@@ -264,29 +243,14 @@ export async function POST(req: Request) {
     });
     return NextResponse.json({ error: "Failed to create profile" }, { status: 500 });
   }
-}
+});
 
 // PATCH /api/trades/profile - Update profile and sync to vendor directory
-export async function PATCH(req: Request) {
-  const { userId } = await auth();
-  if (!userId) {
-    logger.error("[trades/profile PATCH] ❌ Unauthorized - no userId");
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
-
+export const PATCH = withAuth(async (req: NextRequest, { userId, orgId }) => {
   const user = await currentUser();
   if (!user) {
     logger.error(`[trades/profile PATCH] ❌ User ${userId} not found in Clerk`);
     return new NextResponse("User not found", { status: 404 });
-  }
-
-  let orgId: string;
-  try {
-    orgId = (await ensureUserOrgContext(userId)).orgId;
-  } catch (error) {
-    const message = "Unknown error";
-    logger.error("[trades/profile PATCH] ❌ Failed to resolve orgId", message);
-    return NextResponse.json({ error: "Organization context required" }, { status: 403 });
   }
 
   const raw = await req.json();
@@ -341,7 +305,7 @@ export async function PATCH(req: Request) {
     await ensureVendorForOrg(orgId);
 
     return NextResponse.json({ profile });
-  } catch (error) {
+  } catch (error: unknown) {
     const err = error instanceof Error ? error : new Error("Unknown error");
     logger.error("[trades/profile PATCH] ❌ Error updating profile:", {
       message: "Internal server error",
@@ -349,9 +313,7 @@ export async function PATCH(req: Request) {
     });
     return NextResponse.json({ error: "Failed to update profile" }, { status: 500 });
   }
-}
+});
 
 // Alias PUT to PATCH for compatibility
-export async function PUT(req: Request) {
-  return PATCH(req);
-}
+export const PUT = PATCH;

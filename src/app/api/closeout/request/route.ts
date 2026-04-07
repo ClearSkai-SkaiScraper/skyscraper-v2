@@ -8,11 +8,10 @@
  *
  * Body: { entityId, entityType: "claim"|"lead", reason?: string }
  */
-import { auth } from "@clerk/nextjs/server";
 import { createId } from "@paralleldrive/cuid2";
 import { NextRequest, NextResponse } from "next/server";
 
-import { getTenantContext } from "@/lib/auth/tenant";
+import { withAuth } from "@/lib/auth/withAuth";
 import { logger } from "@/lib/logger";
 import { sendTemplatedNotification } from "@/lib/notifications/templates";
 import prisma from "@/lib/prisma";
@@ -20,18 +19,8 @@ import prisma from "@/lib/prisma";
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
-export async function POST(req: NextRequest) {
+export const POST = withAuth(async (req: NextRequest, { orgId, userId }) => {
   try {
-    const { userId } = await auth();
-    if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    const ctx = await getTenantContext();
-    if (!ctx?.orgId) {
-      return NextResponse.json({ error: "No organization" }, { status: 403 });
-    }
-
     const body = await req.json();
     const { entityId, entityType, reason } = body;
 
@@ -49,7 +38,7 @@ export async function POST(req: NextRequest) {
     // 1. Update status to FINISHED
     if (entityType === "claim") {
       const claim = await prisma.claims.findFirst({
-        where: { id: entityId, orgId: ctx.orgId },
+        where: { id: entityId, orgId },
         select: { id: true, title: true },
       });
       if (!claim) {
@@ -63,7 +52,7 @@ export async function POST(req: NextRequest) {
       });
     } else {
       const lead = await prisma.leads.findFirst({
-        where: { id: entityId, orgId: ctx.orgId },
+        where: { id: entityId, orgId },
         select: { id: true, title: true },
       });
       if (!lead) {
@@ -83,7 +72,7 @@ export async function POST(req: NextRequest) {
       await prisma.tasks.create({
         data: {
           id: taskId,
-          orgId: ctx.orgId,
+          orgId,
           title: `Closeout Approval: ${entityTitle}`,
           description: [
             `Closeout requested for ${entityType === "claim" ? "claim" : "retail job"}: "${entityTitle}"`,
@@ -106,7 +95,7 @@ export async function POST(req: NextRequest) {
       await prisma.tasks.create({
         data: {
           id: taskId,
-          orgId: ctx.orgId,
+          orgId,
           title: `Closeout Approval: ${entityTitle}`,
           description: [
             `Closeout requested for ${entityType === "claim" ? "claim" : "retail job"}: "${entityTitle}"`,
@@ -129,7 +118,7 @@ export async function POST(req: NextRequest) {
       await prisma.activities.create({
         data: {
           id: createId(),
-          orgId: ctx.orgId,
+          orgId,
           userId: userId,
           type: "status_change",
           title: "Closeout Requested",
@@ -151,7 +140,7 @@ export async function POST(req: NextRequest) {
     try {
       const managers = await prisma.users.findMany({
         where: {
-          orgId: ctx.orgId,
+          orgId,
           role: { in: ["ADMIN", "MANAGER"] },
           clerkUserId: { not: userId },
         },
@@ -175,7 +164,7 @@ export async function POST(req: NextRequest) {
     }
 
     logger.info("[CLOSEOUT_REQUEST]", {
-      orgId: ctx.orgId,
+      orgId,
       entityId,
       entityType,
       userId,
@@ -191,4 +180,4 @@ export async function POST(req: NextRequest) {
     logger.error("[CLOSEOUT_REQUEST] Error:", err);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
-}
+});

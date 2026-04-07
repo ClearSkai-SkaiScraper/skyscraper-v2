@@ -3,9 +3,9 @@
  * POST /api/integrations/quickbooks/status  — disconnect
  */
 
-import { auth } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
 
+import { withAuth } from "@/lib/auth/withAuth";
 import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 
@@ -16,24 +16,10 @@ export const dynamic = "force-dynamic";
 /*  GET — connection status                                            */
 /* ------------------------------------------------------------------ */
 
-export async function GET() {
+export const GET = withAuth(async (req: NextRequest, { orgId, userId }) => {
   try {
-    const { userId } = await auth();
-    if (!userId) {
-      return NextResponse.json({ ok: false, message: "Unauthorized" }, { status: 401 });
-    }
-
-    const user = await prisma.users.findUnique({
-      where: { id: userId },
-      select: { orgId: true },
-    });
-
-    if (!user?.orgId) {
-      return NextResponse.json({ ok: false, message: "No organization" }, { status: 400 });
-    }
-
     const conn = await prisma.quickbooks_connections.findUnique({
-      where: { org_id: user.orgId },
+      where: { org_id: orgId },
       select: {
         id: true,
         company_name: true,
@@ -70,38 +56,21 @@ export async function GET() {
     });
   } catch (error) {
     logger.error("[QB_STATUS_ERROR]", error);
-    return NextResponse.json(
-      { ok: false, message: "Failed" },
-      { status: 500 }
-    );
+    return NextResponse.json({ ok: false, message: "Failed" }, { status: 500 });
   }
-}
+});
 
 /* ------------------------------------------------------------------ */
 /*  POST — disconnect                                                  */
 /* ------------------------------------------------------------------ */
 
-export async function POST(req: NextRequest) {
+export const POST = withAuth(async (req: NextRequest, { orgId, userId }) => {
   try {
-    const { userId } = await auth();
-    if (!userId) {
-      return NextResponse.json({ ok: false, message: "Unauthorized" }, { status: 401 });
-    }
-
-    const user = await prisma.users.findUnique({
-      where: { id: userId },
-      select: { orgId: true },
-    });
-
-    if (!user?.orgId) {
-      return NextResponse.json({ ok: false, message: "No organization" }, { status: 400 });
-    }
-
     const body = await req.json();
 
     if (body.action === "disconnect") {
       await prisma.quickbooks_connections.update({
-        where: { org_id: user.orgId },
+        where: { org_id: orgId },
         data: { is_active: false },
       });
 
@@ -111,9 +80,6 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ ok: false, message: "Unknown action" }, { status: 400 });
   } catch (error) {
     logger.error("[QB_DISCONNECT_ERROR]", error);
-    return NextResponse.json(
-      { ok: false, message: "Failed" },
-      { status: 500 }
-    );
+    return NextResponse.json({ ok: false, message: "Failed" }, { status: 500 });
   }
-}
+});

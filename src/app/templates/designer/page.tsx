@@ -94,11 +94,11 @@ export default function TemplateDesigner() {
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    loadExistingPresets();
+    void loadExistingPresets();
   }, []);
 
   useEffect(() => {
-    loadPreset(selectedPreset);
+    void loadPreset(selectedPreset);
   }, [selectedPreset]);
 
   async function loadExistingPresets() {

@@ -142,7 +142,7 @@ function ConnectionsTab({ isOwnProfile, memberId }: { isOwnProfile: boolean; mem
         setLoading(false);
       }
     }
-    fetchConnections();
+    void fetchConnections();
   }, [memberId]);
 
   if (loading) {
@@ -382,7 +382,7 @@ function ActivityNotificationsWidget() {
         setLoading(false);
       }
     }
-    fetchActivities();
+    void fetchActivities();
   }, []);
 
   const handleAcceptConnection = async (requestId: string) => {
@@ -799,7 +799,7 @@ export default function TradesSocialProfile({
       }
     }
 
-    fetchData();
+    void fetchData();
   }, [member?.company?.id]);
 
   // Calculate average rating

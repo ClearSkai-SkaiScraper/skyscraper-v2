@@ -36,12 +36,12 @@ export default function TrialBanner() {
       }
     };
 
-    fetchTrialInfo();
+    void fetchTrialInfo();
 
     // Update countdown every minute
     const interval = setInterval(() => {
       setCurrentTime(Date.now());
-      fetchTrialInfo(); // Refresh trial data
+      void fetchTrialInfo(); // Refresh trial data
     }, 60000); // 60 seconds
 
     return () => clearInterval(interval);

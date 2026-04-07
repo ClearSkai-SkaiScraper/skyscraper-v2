@@ -1042,6 +1042,15 @@ model Org {
   photo_embeddings      photo_embeddings[]
   intelligence_insights intelligence_insights[]
 
+  // Feature flags and contact info
+  featureFlags Json? @default("{}")
+  contactInfo  Json? @default("{}")
+
+  // Missing model relations
+  claim_photo_meta claim_photo_meta[]
+  parsed_documents parsed_documents[]
+  ai_actions       ai_actions[]
+
   @@index([stripeCustomerId])
   @@index([subscriptionStatus])
   @@index([trialEndsAt])
@@ -2490,6 +2499,11 @@ model claims {
   // Visual Intelligence relations
   claim_embedding  claim_embeddings?
   photo_embeddings photo_embeddings[]
+
+  // AI-powered analysis relations
+  claim_photo_meta claim_photo_meta[]
+  parsed_documents parsed_documents[]
+  ai_actions       ai_actions[]
 
   externalId     String?
   externalSource String?
@@ -7522,4 +7536,92 @@ model intelligence_insights {
 
   @@index([orgId])
   @@index([orgId, type])
+}
+
+/// Metadata extracted from claim photos via AI vision analysis.
+/// Stores damage detection, material identification, and measurement data.
+model claim_photo_meta {
+  id           String   @id
+  orgId        String
+  claimId      String
+  photoUrl     String
+  analysisType String   @default("damage_detection")
+  damageType   String?
+  severity     String?
+  confidence   Float?
+  materials    String[] @default([])
+  dimensions   Json?    @default("{}")
+  annotations  Json?    @default("[]")
+  aiModel      String?
+  processedAt  DateTime @default(now()) @db.Timestamptz
+  createdAt    DateTime @default(now()) @db.Timestamptz
+
+  org   Org    @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  claim claims @relation(fields: [claimId], references: [id], onDelete: Cascade)
+
+  @@index([orgId])
+  @@index([claimId])
+  @@index([orgId, analysisType])
+}
+
+/// Parsed document content from uploaded files (PDFs, insurance docs, etc.)
+/// Stores extracted text, tables, and structured data from document processing.
+model parsed_documents {
+  id             String    @id
+  orgId          String
+  claimId        String?
+  uploadId       String?
+  fileName       String
+  fileType       String
+  fileSize       Int?
+  pageCount      Int?
+  extractedText  String?   @db.Text
+  structuredData Json?     @default("{}")
+  tables         Json?     @default("[]")
+  entities       Json?     @default("[]")
+  confidence     Float?
+  processingTime Int?
+  aiModel        String?
+  status         String    @default("pending")
+  errorMessage   String?
+  processedAt    DateTime?
+  createdAt      DateTime  @default(now()) @db.Timestamptz
+  updatedAt      DateTime  @updatedAt @db.Timestamptz
+
+  org   Org     @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  claim claims? @relation(fields: [claimId], references: [id], onDelete: SetNull)
+
+  @@index([orgId])
+  @@index([claimId])
+  @@index([orgId, status])
+}
+
+/// AI action log for tracking automated actions and suggestions.
+/// Records all AI-initiated actions for audit trail and learning.
+model ai_actions {
+  id               String    @id
+  orgId            String
+  claimId          String?
+  userId           String?
+  actionType       String
+  actionData       Json?     @default("{}")
+  suggestion       String?   @db.Text
+  confidence       Float?
+  status           String    @default("pending")
+  userFeedback     String?
+  appliedAt        DateTime?
+  rejectedAt       DateTime?
+  aiModel          String?
+  promptTokens     Int?
+  completionTokens Int?
+  latencyMs        Int?
+  createdAt        DateTime  @default(now()) @db.Timestamptz
+
+  org   Org     @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  claim claims? @relation(fields: [claimId], references: [id], onDelete: SetNull)
+
+  @@index([orgId])
+  @@index([claimId])
+  @@index([orgId, actionType])
+  @@index([orgId, status])
 }

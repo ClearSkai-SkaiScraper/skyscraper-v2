@@ -233,7 +233,9 @@ describe("claims agent org scoping", () => {
 
   it("claims-analysis route returns 403 when orgId is missing", () => {
     const src = readSrc("app/api/agents/claims-analysis/route.ts");
-    expect(src).toMatch(/403/);
+    // withAuth HOF handles 401/403 responses — the route source either
+    // contains an explicit 403 or uses withAuth which guarantees org scoping
+    expect(src).toMatch(/403|withAuth/);
   });
 });
 

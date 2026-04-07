@@ -1,8 +1,8 @@
 export const dynamic = "force-dynamic";
 
-import { auth } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
 
+import { withAuth } from "@/lib/auth/withAuth";
 import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 
@@ -10,16 +10,12 @@ import prisma from "@/lib/prisma";
  * GET /api/estimates/[id]
  * Get a single estimates with all line items
  */
-export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
+export const GET = withAuth(async (req: NextRequest, { orgId, userId }, routeParams) => {
+  const { id } = await routeParams.params;
   try {
-    const { userId, orgId } = await auth();
-    if (!userId || !orgId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
     const estimates = await prisma.estimates.findFirst({
       where: {
-        id: params.id,
+        id,
         orgId,
       },
       include: {
@@ -55,7 +51,7 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
 
     for (const item of estimates.estimate_line_items) {
       const sectionName = item.section_name || "Uncategorized";
-      
+
       if (!sectionsMap.has(sectionName)) {
         sectionsMap.set(sectionName, {
           name: sectionName,
@@ -79,30 +75,23 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
     });
   } catch (error) {
     logger.error("[API] Get estimates error:", error);
-    return NextResponse.json(
-      { error: "Failed to fetch estimates" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Failed to fetch estimates" }, { status: 500 });
   }
-}
+});
 
 /**
  * PUT /api/estimates/[id]
  * Update an estimates
  */
-export async function PUT(req: NextRequest, { params }: { params: { id: string } }) {
+export const PUT = withAuth(async (req: NextRequest, { orgId, userId }, routeParams) => {
+  const { id } = await routeParams.params;
   try {
-    const { userId, orgId } = await auth();
-    if (!userId || !orgId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
     const body = await req.json();
 
     // Verify ownership
     const existing = await prisma.estimates.findFirst({
       where: {
-        id: params.id,
+        id,
         orgId,
       },
     });
@@ -112,7 +101,7 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
     }
 
     const estimates = await prisma.estimates.update({
-      where: { id: params.id },
+      where: { id },
       data: {
         title: body.title,
         description: body.description,
@@ -145,28 +134,21 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
     });
   } catch (error) {
     logger.error("[API] Update estimates error:", error);
-    return NextResponse.json(
-      { error: "Failed to update estimates" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Failed to update estimates" }, { status: 500 });
   }
-}
+});
 
 /**
  * DELETE /api/estimates/[id]
  * Delete an estimates
  */
-export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
+export const DELETE = withAuth(async (req: NextRequest, { orgId, userId }, routeParams) => {
+  const { id } = await routeParams.params;
   try {
-    const { userId, orgId } = await auth();
-    if (!userId || !orgId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
     // Verify ownership
     const existing = await prisma.estimates.findFirst({
       where: {
-        id: params.id,
+        id,
         orgId,
       },
     });
@@ -176,7 +158,7 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
     }
 
     await prisma.estimates.delete({
-      where: { id: params.id },
+      where: { id },
     });
 
     return NextResponse.json({
@@ -185,9 +167,6 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
     });
   } catch (error) {
     logger.error("[API] Delete estimates error:", error);
-    return NextResponse.json(
-      { error: "Failed to delete estimates" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Failed to delete estimates" }, { status: 500 });
   }
-}
+});

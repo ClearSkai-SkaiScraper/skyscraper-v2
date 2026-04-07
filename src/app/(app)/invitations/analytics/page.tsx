@@ -62,7 +62,7 @@ export default function InvitationAnalytics() {
   const [period, setPeriod] = useState("30d");
 
   useEffect(() => {
-    loadAnalytics();
+    void loadAnalytics();
 
     // Auto-refresh every 30 seconds for real-time updates
     const interval = setInterval(loadAnalytics, 30000);

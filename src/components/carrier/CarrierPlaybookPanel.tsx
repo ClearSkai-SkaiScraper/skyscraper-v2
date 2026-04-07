@@ -89,7 +89,7 @@ export function CarrierPlaybookPanel({ carrierFilter, compact, className }: Prop
   }, [carrierFilter]);
 
   useEffect(() => {
-    fetchPlaybooks();
+    void fetchPlaybooks();
   }, [fetchPlaybooks]);
 
   if (loading) {

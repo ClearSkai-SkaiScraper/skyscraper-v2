@@ -159,7 +159,7 @@ export function AIClaimsBuilderWizard({
 
   const handleSaveDraft = async () => {
     await saveToDatabase();
-    recordReportHistory({
+    void recordReportHistory({
       type: "AI_CLAIM_SCOPE",
       sourceId: activeClaim?.id,
       title: `Draft Scope ${new Date().toLocaleDateString()}`,
@@ -171,7 +171,7 @@ export function AIClaimsBuilderWizard({
     await generatePDF();
     const today = new Date().toISOString().split("T")[0];
     const baseName = `Scope_${activeClaim?.claimNumber || activeClaim?.id || "claim"}_${today}_v2`;
-    recordReportHistory({
+    void recordReportHistory({
       type: "claim_pdf",
       sourceId: activeClaim?.id,
       title: baseName,
@@ -182,7 +182,7 @@ export function AIClaimsBuilderWizard({
   const handleSendToRetail = async () => {
     if (!activeClaim) return;
     try {
-      recordReportHistory({
+      void recordReportHistory({
         type: "RETAIL_PROPOSAL_INIT",
         sourceId: activeClaim.id,
         title: `Retail Proposal Init ${new Date().toLocaleDateString()}`,
@@ -194,7 +194,7 @@ export function AIClaimsBuilderWizard({
 
   // Load persisted photo metadata + assets if claim changes
   useEffect(() => {
-    (async () => {
+    void (async () => {
       if (!activeClaim) return;
       try {
         const metas = await getPhotoMetaForClaim(activeClaim.id);
@@ -214,7 +214,7 @@ export function AIClaimsBuilderWizard({
 
   // Generate narratives once analysis view + weather loaded
   useEffect(() => {
-    (async () => {
+    void (async () => {
       if (!activeClaim || !analysisView || narratives) return;
       setNarrativesLoading(true);
       try {

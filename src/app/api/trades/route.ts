@@ -2,18 +2,13 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
-import { auth } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
 
+import { withAuth } from "@/lib/auth/withAuth";
 import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 
-export async function GET(req: NextRequest) {
-  const { userId, orgId } = await auth();
-  if (!userId || !orgId) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
-
+export const GET = withAuth(async (req: NextRequest, { orgId, userId }) => {
   try {
     // Scope to current user's contractors — never return all
     const trades = await prisma.contractors.findMany({
@@ -26,14 +21,9 @@ export async function GET(req: NextRequest) {
     logger.error("[TRADES_LIST]", error);
     return NextResponse.json({ error: "Failed to fetch trades" }, { status: 500 });
   }
-}
+});
 
-export async function POST(req: NextRequest) {
-  const { userId, orgId } = await auth();
-  if (!userId || !orgId) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
-
+export const POST = withAuth(async (req: NextRequest, { orgId, userId }) => {
   try {
     const body = await req.json();
     const { businessName, licenseNumber, phone, email, specialties } = body;
@@ -60,4 +50,4 @@ export async function POST(req: NextRequest) {
     logger.error("[TRADES_CREATE]", error);
     return NextResponse.json({ error: "Failed to create trade" }, { status: 500 });
   }
-}
+});

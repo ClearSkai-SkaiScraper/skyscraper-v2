@@ -56,7 +56,7 @@ export default function BrandingProvider({ children }: { children: React.ReactNo
       }
     }
 
-    loadBranding();
+    void loadBranding();
   }, [resolvedTheme]);
 
   return <>{children}</>;

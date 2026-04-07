@@ -1,24 +1,56 @@
 // lib/pdf/financialPdfEngine.ts
-import { PDFDocument, rgb,StandardFonts } from "pdf-lib";
+import { PDFDocument, rgb as pdfRgb, StandardFonts } from "pdf-lib";
+
+// Wrapper to handle pdf-lib's rgb return type
+const rgb = (r: number, g: number, b: number) => pdfRgb(r, g, b);
+
+interface CarrierContractorFinancials {
+  rcv?: number;
+  acv?: number;
+}
+
+interface DepreciationData {
+  carrierApplied?: number;
+  correctAmount?: number;
+}
+
+interface SettlementProjection {
+  min?: number;
+  max?: number;
+  expected?: number;
+  confidence?: number;
+}
+
+interface MathResult {
+  carrier?: CarrierContractorFinancials;
+  contractor?: CarrierContractorFinancials;
+  underpayment?: number;
+  deductible?: number;
+  totalPaid?: number;
+  depreciation?: DepreciationData;
+}
+
+interface AIResult {
+  depreciationNarrative?: string;
+  supplementSummary?: string;
+  settlementProjection?: SettlementProjection;
+  additionalNotes?: string;
+  projectionNarrative?: string;
+  reportRefs?: string[];
+  summary?: string;
+}
 
 type FinancialPDFInput = {
   claimNumber?: string;
   insured_name?: string;
   propertyAddress?: string;
   dateOfLoss?: string;
-  mathResult: any;
-  aiResult: any;
+  mathResult: MathResult | null;
+  aiResult: AIResult | null;
 };
 
 export async function buildFinancialPDF(input: FinancialPDFInput) {
-  const {
-    claimNumber,
-    insured_name,
-    propertyAddress,
-    dateOfLoss,
-    mathResult,
-    aiResult,
-  } = input;
+  const { claimNumber, insured_name, propertyAddress, dateOfLoss, mathResult, aiResult } = input;
 
   const pdf = await PDFDocument.create();
   const page = pdf.addPage([612, 792]); // Letter 8.5 x 11
@@ -134,21 +166,22 @@ export async function buildFinancialPDF(input: FinancialPDFInput) {
 
   textLine("Carrier Depreciation Applied", `$${depCarrier.toLocaleString()}`);
   textLine("Correct Depreciation (Estimated)", `$${depCorrect.toLocaleString()}`);
-  textLine(
-    "Depreciation Delta",
-    `${depDiff >= 0 ? "+" : ""}$${depDiff.toLocaleString()}`
-  );
+  textLine("Depreciation Delta", `${depDiff >= 0 ? "+" : ""}$${depDiff.toLocaleString()}`);
 
   if (aiResult?.depreciationNarrative) {
     y -= 4;
-    wrapTextBlock(page, font, aiResult.depreciationNarrative, 40, y, (newY) => { y = newY; });
+    wrapTextBlock(page, font, aiResult.depreciationNarrative, 40, y, (newY) => {
+      y = newY;
+    });
   }
 
   // LINE ITEM / SUPPLEMENT SUMMARY
   section("Line Item & Supplement Opportunities");
 
   if (aiResult?.supplementSummary) {
-    wrapTextBlock(page, font, aiResult.supplementSummary, 40, y, (newY) => { y = newY; });
+    wrapTextBlock(page, font, aiResult.supplementSummary, 40, y, (newY) => {
+      y = newY;
+    });
   } else {
     textLine("Summary", "See attached supplement packet for detailed line items.");
   }
@@ -161,34 +194,45 @@ export async function buildFinancialPDF(input: FinancialPDFInput) {
   const projMax = proj.max ?? 0;
   const projConf = proj.confidence ?? 0;
 
-  textLine("Expected Settlement Range", `$${projMin.toLocaleString()} – $${projMax.toLocaleString()}`);
+  textLine(
+    "Expected Settlement Range",
+    `$${projMin.toLocaleString()} – $${projMax.toLocaleString()}`
+  );
   textLine("Confidence", `${Math.round(projConf * 100)}%`);
 
   if (aiResult?.projectionNarrative) {
     y -= 4;
-    wrapTextBlock(page, font, aiResult.projectionNarrative, 40, y, (newY) => { y = newY; });
+    wrapTextBlock(page, font, aiResult.projectionNarrative, 40, y, (newY) => {
+      y = newY;
+    });
   }
 
   // LINKED REPORTS & SUPPLEMENTS
   if (aiResult?.reportRefs && aiResult.reportRefs.length > 0) {
     section("Linked Reports & Supplements");
-    wrapTextBlock(page, font, aiResult.reportRefs.join("\n"), 40, y, (newY) => { y = newY; });
+    wrapTextBlock(page, font, aiResult.reportRefs.join("\n"), 40, y, (newY) => {
+      y = newY;
+    });
   }
 
   // FINAL SUMMARY
   section("Financial Conclusions");
 
   if (aiResult?.summary) {
-    wrapTextBlock(page, font, aiResult.summary, 40, y, (newY) => { y = newY; });
+    wrapTextBlock(page, font, aiResult.summary, 40, y, (newY) => {
+      y = newY;
+    });
   }
 
   const pdfBytes = await pdf.save();
   return pdfBytes;
 }
 
+import type { PDFFont, PDFPage } from "pdf-lib";
+
 function wrapTextBlock(
-  page: any,
-  font: any,
+  page: PDFPage,
+  font: PDFFont,
   text: string,
   x: number,
   startY: number,
@@ -196,7 +240,7 @@ function wrapTextBlock(
 ) {
   const lines = wrapText(text, 90);
   let currentY = startY;
-  
+
   for (const line of lines) {
     page.drawText(line, {
       x,
@@ -206,7 +250,7 @@ function wrapTextBlock(
     });
     currentY -= 14;
   }
-  
+
   currentY -= 8; // Extra space after block
   setY(currentY);
 }

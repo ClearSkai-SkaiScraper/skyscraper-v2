@@ -52,7 +52,7 @@ export default function NewClientMessageModal({
 
   useEffect(() => {
     if (isOpen) {
-      fetchConnectedPros();
+      void fetchConnectedPros();
     }
   }, [isOpen]);
 

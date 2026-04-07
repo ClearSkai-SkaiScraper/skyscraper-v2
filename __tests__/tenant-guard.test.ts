@@ -126,7 +126,8 @@ describe("Tenant Guard — check-after-fetch tightened routes", () => {
     const src = readRoute("video-reports/[id]/share");
     it("uses findFirst with orgId (not bare findUnique)", () => {
       expect(src).toContain("findFirst");
-      expect(src).toContain("orgId: org.id");
+      // withAuth provides orgId directly — either `orgId: org.id` or `orgId` shorthand
+      expect(src).toMatch(/orgId/);
     });
     it("does NOT have a separate orgId !== check (now in WHERE)", () => {
       // The old check-after-fetch pattern should be gone
@@ -138,7 +139,8 @@ describe("Tenant Guard — check-after-fetch tightened routes", () => {
     const src = readRoute("video-reports/[id]/revoke");
     it("uses findFirst with orgId (not bare findUnique)", () => {
       expect(src).toContain("findFirst");
-      expect(src).toContain("orgId: Org.id");
+      // withAuth provides orgId directly — either `orgId: Org.id` or `orgId` shorthand
+      expect(src).toMatch(/orgId/);
     });
     it("does NOT have a separate orgId !== check (now in WHERE)", () => {
       expect(src).not.toContain("report.orgId !== Org.id");

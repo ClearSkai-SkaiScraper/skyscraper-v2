@@ -6,6 +6,7 @@ import { z } from "zod";
 
 import { compose, withRateLimit, withSentryApi } from "@/lib/api/wrappers";
 import { withOrgScope } from "@/lib/auth/tenant";
+import { logger } from "@/lib/logger";
 
 const TeamInviteSchema = z.object({
   email: z.string().email("Invalid email address"),

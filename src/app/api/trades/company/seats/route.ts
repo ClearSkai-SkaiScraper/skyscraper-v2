@@ -11,19 +11,15 @@ export const dynamic = "force-dynamic";
  * - Company info
  */
 
-import { auth } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
+
+import { withAuth } from "@/lib/auth/withAuth";
 
 import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 
-export async function GET(req: NextRequest) {
+export const GET = withAuth(async (req: NextRequest, { userId }) => {
   try {
-    const { userId, orgId } = await auth();
-    if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
     // Find the user's company membership
     const membership = await prisma.tradesCompanyMember.findFirst({
       where: { userId, status: "active" },
@@ -77,8 +73,8 @@ export async function GET(req: NextRequest) {
       canManageSeats: isAdmin,
       isOwner,
     });
-  } catch (error) {
+  } catch (error: unknown) {
     logger.error("[Seats] GET error:", error);
     return NextResponse.json({ error: "Failed to load seat data" }, { status: 500 });
   }
-}
+});

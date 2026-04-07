@@ -1141,7 +1141,7 @@ export function ClientWorkspace({
                       onKeyDown={(e) => {
                         if (e.key === "Enter" && !e.shiftKey) {
                           e.preventDefault();
-                          handleSendMessage();
+                          void handleSendMessage();
                         }
                       }}
                     />

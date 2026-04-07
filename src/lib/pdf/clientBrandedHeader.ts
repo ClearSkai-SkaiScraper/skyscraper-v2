@@ -12,8 +12,9 @@
  *   drawPageFooterClient(doc, { companyName: branding.companyName });
  */
 
-import { BRAND_PRIMARY } from "@/lib/constants/branding";
 import type { jsPDF } from "jspdf";
+
+import { BRAND_PRIMARY } from "@/lib/constants/branding";
 
 // ============================================================================
 // Types (matches server-side BrandingData)
@@ -52,7 +53,7 @@ export async function fetchClientBranding(): Promise<ClientBrandingData> {
   try {
     const res = await fetch("/api/branding/pdf");
     if (!res.ok) throw new Error(`Branding fetch failed: ${res.status}`);
-    const data = await res.json();
+    const data = (await res.json()) as Partial<ClientBrandingData>;
     return {
       companyName: data.companyName || "Your Company",
       companyPhone: data.companyPhone || undefined,

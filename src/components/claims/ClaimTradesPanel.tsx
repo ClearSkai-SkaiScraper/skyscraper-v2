@@ -45,7 +45,7 @@ export function ClaimTradesPanel({ claimId }: ClaimTradesPanelProps) {
   const [assigning, setAssigning] = useState(false);
 
   useEffect(() => {
-    fetchData();
+    void fetchData();
   }, [claimId]);
 
   const fetchData = async () => {
@@ -99,7 +99,7 @@ export function ClaimTradesPanel({ claimId }: ClaimTradesPanelProps) {
       });
         setSelectedTradeId("");
         setSelectedRole("Contractor");
-        fetchData();
+        void fetchData();
       } else {
         const data = await response.json();
         toast.error("Failed to assign", {
@@ -128,7 +128,7 @@ export function ClaimTradesPanel({ claimId }: ClaimTradesPanelProps) {
         toast.success("Trade partner removed", {
         description: `${businessName} unassigned from claim`,
       });
-        fetchData();
+        void fetchData();
       } else {
         toast.error("Failed to remove", {
         description: "Could not unassign trade partner",

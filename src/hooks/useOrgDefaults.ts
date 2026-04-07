@@ -11,7 +11,7 @@ export function useOrgDefaults() {
   const [defaults, setDefaults] = useState<OrgDefaults>();
 
   useEffect(() => {
-    (async () => {
+    void (async () => {
       const {
         data: { user },
       } = await supabase.auth.getUser();

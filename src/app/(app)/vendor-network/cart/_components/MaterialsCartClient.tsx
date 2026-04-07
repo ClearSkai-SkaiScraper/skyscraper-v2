@@ -56,7 +56,7 @@ export function MaterialsCartClient() {
   }, []);
 
   useEffect(() => {
-    fetchCarts();
+    void fetchCarts();
   }, [fetchCarts]);
 
   const removeItem = async (cartId: string, itemId: string) => {
@@ -67,7 +67,7 @@ export function MaterialsCartClient() {
       const data = await res.json();
       if (data.success) {
         toast.success("Item removed");
-        fetchCarts();
+        void fetchCarts();
       }
     } catch {
       toast.error("Failed to remove item");
@@ -85,7 +85,7 @@ export function MaterialsCartClient() {
       const data = await res.json();
       if (data.success) {
         toast.success("Order submitted successfully!");
-        fetchCarts();
+        void fetchCarts();
       } else {
         toast.error(data.error || "Submit failed");
       }
@@ -102,7 +102,7 @@ export function MaterialsCartClient() {
       const data = await res.json();
       if (data.success) {
         toast.success("Cart deleted");
-        fetchCarts();
+        void fetchCarts();
       }
     } catch {
       toast.error("Failed to delete cart");

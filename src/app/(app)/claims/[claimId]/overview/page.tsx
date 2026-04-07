@@ -147,7 +147,7 @@ function EditableTextareaField({
           onChange={(e) => setDraft(e.target.value)}
           onBlur={() => {
             setTimeout(() => {
-              if (!savingRef.current) commit();
+              if (!savingRef.current) void commit();
             }, 100);
           }}
           onKeyDown={(e) => {
@@ -199,9 +199,6 @@ export default function OverviewPage() {
   const saveQueueRef = useRef<{ [key: string]: any }>({});
   const saveTimerRef = useRef<NodeJS.Timeout | null>(null);
 
-  // SECURITY: Early return AFTER all hooks to avoid React Hook ordering violation
-  if (!claimId) return null;
-
   // Autosave handler - debounces saves by 2 seconds
   const queueSave = useCallback(
     (field: string, value: any) => {
@@ -236,7 +233,7 @@ export default function OverviewPage() {
             body: JSON.stringify(updates),
           });
           // Revert optimistic updates on failure
-          fetchData();
+          void fetchData();
         }
       }, 2000);
     },
@@ -258,7 +255,7 @@ export default function OverviewPage() {
         if (navigator.sendBeacon) {
           navigator.sendBeacon(url, blob);
         } else {
-          fetch(url, {
+          void fetch(url, {
             method: "PATCH",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(pending),
@@ -346,8 +343,8 @@ export default function OverviewPage() {
   }, [claimId]);
 
   useEffect(() => {
-    fetchData();
-    fetchAttachedClient();
+    void fetchData();
+    void fetchAttachedClient();
     // Fetch team members for inspector dropdown
     fetch("/api/team/members")
       .then((r) => (r.ok ? r.json() : { members: [] }))
@@ -362,6 +359,9 @@ export default function OverviewPage() {
       })
       .catch(() => {});
   }, [claimId, fetchAttachedClient]);
+
+  // SECURITY: Early return AFTER all hooks to avoid React Hook ordering violation
+  if (!claimId) return null;
 
   const fetchData = async () => {
     try {

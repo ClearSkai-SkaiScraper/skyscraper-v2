@@ -1,22 +1,14 @@
 export const dynamic = "force-dynamic";
 
-import { auth } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
 
-import { getResolvedOrgId } from "@/lib/auth/getResolvedOrgId";
+import { withAuth } from "@/lib/auth/withAuth";
 import { db } from "@/lib/db";
 import { logger } from "@/lib/logger";
 
-export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
+export const GET = withAuth(async (req: NextRequest, { orgId, userId }, routeParams) => {
   try {
-    const { userId } = await auth();
-    if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    const orgId = await getResolvedOrgId();
-
-    const packetId = params.id;
+    const { id: packetId } = await routeParams.params;
 
     // Fetch packet with all details
     const result = await db.query(
@@ -74,4 +66,4 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
       { status: 500 }
     );
   }
-}
+});

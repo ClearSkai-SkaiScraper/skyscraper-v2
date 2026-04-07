@@ -188,7 +188,7 @@ export default function EnhancedPhotosTab({
 
   const handleShare = (photo: Photo) => {
     const url = `${window.location.origin}/trades/profiles/${userId}/photos/${photo.id}`;
-    navigator.clipboard.writeText(url);
+    void navigator.clipboard.writeText(url);
     toast.success("Link copied to clipboard!");
   };
 

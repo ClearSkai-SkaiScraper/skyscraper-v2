@@ -41,7 +41,7 @@ export default function StatusPage() {
       }
     }
 
-    checkHealth();
+    void checkHealth();
     // Refresh every 30 seconds
     const interval = setInterval(checkHealth, 30000);
     return () => clearInterval(interval);

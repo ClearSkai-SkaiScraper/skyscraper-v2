@@ -49,10 +49,6 @@ export default function ProfileEditPage({ params }: { params: { memberId: string
     }
   }, [isLoaded, isSignedIn, router]);
 
-  if (!isLoaded || !isSignedIn) {
-    return <div className="flex h-screen items-center justify-center">Loading...</div>;
-  }
-
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [uploadingHeadshot, setUploadingHeadshot] = useState(false);
@@ -67,8 +63,12 @@ export default function ProfileEditPage({ params }: { params: { memberId: string
   const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
 
   useEffect(() => {
-    loadProfile();
+    void loadProfile();
   }, [params.memberId]);
+
+  if (!isLoaded || !isSignedIn) {
+    return <div className="flex h-screen items-center justify-center">Loading...</div>;
+  }
 
   async function loadProfile() {
     try {

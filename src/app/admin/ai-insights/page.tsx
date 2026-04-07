@@ -41,7 +41,7 @@ export default function AIInsightsDashboard() {
   const [filterType, setFilterType] = useState<"all" | "claim" | "task">("all");
 
   useEffect(() => {
-    fetchStats();
+    void fetchStats();
   }, [timeRange]);
 
   const fetchStats = async () => {

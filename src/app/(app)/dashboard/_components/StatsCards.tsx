@@ -22,7 +22,7 @@ export default function StatsCards() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    (async () => {
+    void (async () => {
       try {
         const res = await fetch("/api/dashboard/stats", { credentials: "include" });
         if (!res.ok) {

@@ -12,6 +12,10 @@
  * MIGRATED: Now uses shared PDF components from pdfConfig.ts and components.tsx
  */
 
+/* eslint-disable jsx-a11y/alt-text -- react-pdf Image component doesn't support alt prop */
+// Import config for potential future use - keeping consistent style patterns
+import "./pdfConfig";
+
 import { Document, Font, Image } from "@react-pdf/renderer";
 import QRCode from "qrcode";
 import React from "react";
@@ -27,7 +31,6 @@ import {
   PhotoGrid,
   Section,
 } from "./components";
-import { colors, formatDate } from "./pdfConfig";
 
 // Register fonts
 Font.register({
@@ -126,7 +129,8 @@ interface UniversalClaimsReport {
   };
 }
 
-interface PDFGeneratorProps {
+// Keeping interface for potential future component use
+interface _PDFGeneratorProps {
   report: UniversalClaimsReport;
   portalUrl: string;
 }

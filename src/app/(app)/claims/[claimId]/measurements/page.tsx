@@ -157,7 +157,7 @@ export default function ClaimMeasurementsPage() {
   }, [claimId]);
 
   useEffect(() => {
-    fetchOrders();
+    void fetchOrders();
   }, [fetchOrders]);
 
   /* ── Create ───────────────────────────────────────────────────── */

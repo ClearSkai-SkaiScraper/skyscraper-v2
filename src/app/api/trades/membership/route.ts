@@ -1,5 +1,6 @@
-import { auth } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
+
+import { withAuth } from "@/lib/auth/withAuth";
 
 import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
@@ -13,13 +14,8 @@ export const dynamic = "force-dynamic";
  *
  * Returns the current user's Full Access membership status
  */
-export async function GET(req: NextRequest) {
+export const GET = withAuth(async (req: NextRequest, { userId }) => {
   try {
-    const { userId } = await auth();
-    if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
     // Check Full Access status
     const hasFullAccess = await prisma.$queryRaw<Array<{ has_access: boolean }>>`
       SELECT has_full_access(${userId}::uuid) as has_access
@@ -46,8 +42,8 @@ export async function GET(req: NextRequest) {
       expiresAt: membershipData?.expires_at || null,
       stripeSubscriptionId: membershipData?.stripe_subscription_id || null,
     });
-  } catch (err) {
+  } catch (err: unknown) {
     logger.error("GET /api/trades/membership error:", err);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
-}
+});

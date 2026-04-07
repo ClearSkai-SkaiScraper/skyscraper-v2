@@ -37,7 +37,7 @@ export function CoverPhotoPicker({
   // Fetch existing photos when modal opens
   useState(() => {
     if (activeTab === "existing") {
-      fetchPhotos();
+      void fetchPhotos();
     }
   });
 
@@ -110,7 +110,7 @@ export function CoverPhotoPicker({
           <button
             onClick={() => {
               setActiveTab("existing");
-              fetchPhotos();
+              void fetchPhotos();
             }}
             aria-label="Choose from existing photos"
             className={`flex-1 px-6 py-3 text-sm font-medium transition-colors ${

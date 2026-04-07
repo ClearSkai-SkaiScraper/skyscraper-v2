@@ -8,9 +8,10 @@ export const dynamic = "force-dynamic";
  * Returns conflicts, recommendations, and carrier-friendly adjusted scope
  */
 
-import { auth } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
+
+import { withAuth } from "@/lib/auth/withAuth";
 
 import {
   analyzeScopeForCarrierConflicts,
@@ -43,15 +44,9 @@ const ComplianceRequestSchema = z.object({
   policyPDFText: z.string().optional(),
 });
 
-export async function POST(request: NextRequest) {
+export const POST = withAuth(async (request: NextRequest, { orgId, userId }) => {
   try {
-    // 1. Authenticate
-    const { userId } = await auth();
-    if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    // 2. Rate limiting
+    // 1. Rate limiting
     const rateLimit = await checkRateLimit(userId, "API");
     if (!rateLimit.success) {
       return NextResponse.json(
@@ -79,21 +74,11 @@ export async function POST(request: NextRequest) {
 
     const { leadId, scope, manualCarrier, adjusterEmail, policyPDFText } = parsed.data;
 
-    // 4. Get user & org
-    const user = await prisma.users.findUnique({
-      where: { clerkUserId: userId },
-      select: { id: true, orgId: true },
-    });
-
-    if (!user) {
-      return NextResponse.json({ error: "User not found" }, { status: 404 });
-    }
-
-    // 5. Get lead and verify ownership
+    // 4. Get lead and verify ownership
     const lead = await prisma.leads.findFirst({
       where: {
         id: leadId,
-        orgId: user.orgId,
+        orgId,
       },
       select: {
         id: true,
@@ -144,7 +129,7 @@ export async function POST(request: NextRequest) {
     await prisma.carrierProfile.create({
       data: {
         id: crypto.randomUUID(),
-        orgId: user.orgId,
+        orgId,
         leadId: leadId,
         carrierName: carrierDetection.carrierName,
         detectedFrom: carrierDetection.detectedFrom,
@@ -158,7 +143,7 @@ export async function POST(request: NextRequest) {
     await track("carrier_detected", {
       props: {
         leadId,
-        orgId: user.orgId,
+        orgId,
         carrier: carrierDetection.carrierName,
         confidence: carrierDetection.confidence,
         detectedFrom: carrierDetection.detectedFrom,
@@ -194,4 +179,4 @@ export async function POST(request: NextRequest) {
       { status: 500 }
     );
   }
-}
+});

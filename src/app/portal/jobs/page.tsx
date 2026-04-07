@@ -25,7 +25,7 @@ export default function PortalJobsPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetchJobs();
+    void fetchJobs();
   }, []);
 
   async function fetchJobs() {

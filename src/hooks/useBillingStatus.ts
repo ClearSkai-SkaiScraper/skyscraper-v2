@@ -49,7 +49,7 @@ export function useBillingStatus() {
       }
     }
     loadRef.current = load;
-    load();
+    void load();
   }, []);
 
   return { status, loading, error, refetch: () => loadRef.current?.() };

@@ -79,7 +79,7 @@ export default function GroupFeed({ groupId, canPost, isMember, groupPrivacy }: 
   );
 
   useEffect(() => {
-    fetchPosts(1);
+    void fetchPosts(1);
   }, [fetchPosts]);
 
   const handlePost = async () => {
@@ -265,7 +265,7 @@ export default function GroupFeed({ groupId, canPost, isMember, groupPrivacy }: 
                 variant="outline"
                 onClick={() => {
                   setPage((p) => p + 1);
-                  fetchPosts(page + 1);
+                  void fetchPosts(page + 1);
                 }}
               >
                 Load More

@@ -61,7 +61,7 @@ export function SkaiAssistantPanel({ leadId }: SkaiAssistantPanelProps) {
 
   // Load AI data on mount
   useEffect(() => {
-    loadAIData();
+    void loadAIData();
   }, [leadId]);
 
   async function loadAIData() {

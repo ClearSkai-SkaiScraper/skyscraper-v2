@@ -5,6 +5,7 @@ import { NextRequest } from "next/server";
 import { z } from "zod";
 
 import { apiError, apiOk } from "@/lib/apiError";
+import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 import { safeOrgContext } from "@/lib/safeOrgContext";
 
@@ -21,6 +22,7 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
     if (ctx.status !== "ok" || !ctx.orgId) {
       return apiError(401, "UNAUTHORIZED", "Authentication required");
     }
+    logger.info("[PERMITS_GET]", { permitId: id, orgId: ctx.orgId });
 
     const permit = await prisma.permits.findFirst({
       where: { id, orgId: ctx.orgId },
@@ -56,6 +58,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     if (ctx.status !== "ok" || !ctx.orgId) {
       return apiError(401, "UNAUTHORIZED", "Authentication required");
     }
+    logger.info("[PERMITS_UPDATE]", { permitId: id, orgId: ctx.orgId });
 
     const body = await req.json().catch(() => null);
     if (!body) return apiError(400, "INVALID_BODY", "Invalid JSON");
@@ -102,6 +105,7 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
     if (ctx.status !== "ok" || !ctx.orgId) {
       return apiError(401, "UNAUTHORIZED", "Authentication required");
     }
+    logger.info("[PERMITS_DELETE]", { permitId: id, orgId: ctx.orgId });
 
     const result = await prisma.permits.deleteMany({ where: { id, orgId: ctx.orgId } });
     if (result.count === 0) {

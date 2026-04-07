@@ -1,11 +1,11 @@
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-import { auth } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 
 import { getOpenAI } from "@/lib/ai/client";
+import { withAuth } from "@/lib/auth/withAuth";
 import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 
@@ -18,15 +18,9 @@ const sendNoticeSchema = z.object({
  * POST /api/hoa/notices/[id]/send
  * Generate PDF and mark the HOA notice as sent
  */
-export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+export const POST = withAuth(async (request: NextRequest, { orgId, userId }, routeParams) => {
   try {
-    const { userId, orgId } = await auth();
-
-    if (!userId || !orgId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    const { id } = await params;
+    const { id } = await routeParams.params;
 
     // Parse request body
     const body = await request.json().catch(() => ({}));
@@ -201,21 +195,15 @@ Return a JSON object with:
     logger.error("[HOA_NOTICES] Error sending notice:", error);
     return NextResponse.json({ error: "Failed to send HOA notice" }, { status: 500 });
   }
-}
+});
 
 /**
  * GET /api/hoa/notices/[id]/send
  * Preview the generated notice content
  */
-export async function GET(_request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+export const GET = withAuth(async (_request: NextRequest, { orgId }, routeParams) => {
   try {
-    const { userId, orgId } = await auth();
-
-    if (!userId || !orgId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    const { id } = await params;
+    const { id } = await routeParams.params;
 
     const notice = await prisma.hoa_notice_packs.findFirst({
       where: { id, orgId },
@@ -241,4 +229,4 @@ export async function GET(_request: NextRequest, { params }: { params: Promise<{
     logger.error("[HOA_NOTICES] Error fetching preview:", error);
     return NextResponse.json({ error: "Failed to fetch notice preview" }, { status: 500 });
   }
-}
+});

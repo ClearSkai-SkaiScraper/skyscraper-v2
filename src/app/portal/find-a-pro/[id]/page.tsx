@@ -92,7 +92,7 @@ export default function ProProfilePage() {
 
   useEffect(() => {
     if (proId) {
-      fetchProProfile();
+      void fetchProProfile();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [proId]);
@@ -100,7 +100,7 @@ export default function ProProfilePage() {
   // Check connection status after pro is loaded
   useEffect(() => {
     if (pro) {
-      checkConnectionStatus();
+      void checkConnectionStatus();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pro]);

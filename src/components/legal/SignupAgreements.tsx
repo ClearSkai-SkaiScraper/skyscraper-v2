@@ -51,7 +51,7 @@ export function SignupAgreements({ userType, onComplete, redirectTo }: SignupAgr
   const [productUpdates, setProductUpdates] = useState(true);
 
   useEffect(() => {
-    loadDocuments();
+    void loadDocuments();
   }, [userType]);
 
   async function loadDocuments() {

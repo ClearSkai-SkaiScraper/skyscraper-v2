@@ -107,7 +107,7 @@ export default function CommissionPlansPanel() {
   };
 
   useEffect(() => {
-    if (expanded && plans.length === 0) fetchPlans();
+    if (expanded && plans.length === 0) void fetchPlans();
   }, [expanded]);
 
   const createFromPreset = async (presetKey: string) => {
@@ -131,7 +131,7 @@ export default function CommissionPlansPanel() {
         setShowCreate(false);
         setSelectedPreset(null);
         setCustomName("");
-        fetchPlans();
+        void fetchPlans();
       }
     } catch (e) {
       console.error("Failed to create plan:", e);
@@ -147,7 +147,7 @@ export default function CommissionPlansPanel() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ isActive: !currentActive }),
       });
-      fetchPlans();
+      void fetchPlans();
     } catch (error) {
       console.error("[CommissionPlans] Failed to toggle plan:", error);
     }
@@ -160,7 +160,7 @@ export default function CommissionPlansPanel() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ isDefault: true }),
       });
-      fetchPlans();
+      void fetchPlans();
     } catch (error) {
       console.error("[CommissionPlans] Failed to set default:", error);
     }
@@ -170,7 +170,7 @@ export default function CommissionPlansPanel() {
     if (!confirm("Delete this commission plan?")) return;
     try {
       await fetch(`/api/finance/commission-plans/${planId}`, { method: "DELETE" });
-      fetchPlans();
+      void fetchPlans();
     } catch (error) {
       console.error("[CommissionPlans] Failed to delete plan:", error);
     }

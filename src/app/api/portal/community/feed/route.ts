@@ -1,5 +1,6 @@
 import { auth } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
 
 import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
@@ -183,19 +184,28 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const body = await req.json();
-    const { content, media } = body;
+    const feedPostSchema = z.object({
+      content: z.string().min(1, "Content is required").max(5000),
+      type: z.string().max(50).optional(),
+      media: z.array(z.string().url()).max(10).optional(),
+    });
 
-    if (!content || content.trim().length === 0) {
-      return NextResponse.json({ error: "Content is required" }, { status: 400 });
+    const body = await req.json();
+    const parsed = feedPostSchema.safeParse(body);
+    if (!parsed.success) {
+      return NextResponse.json(
+        { error: parsed.error.issues[0]?.message || "Invalid input" },
+        { status: 400 }
+      );
     }
+    const { content, media } = parsed.data;
 
     // Persist the post to the community_posts table
     const post = await prisma.community_posts.create({
       data: {
         authorId: userId,
         content: content.trim(),
-        type: body.type || "text",
+        type: parsed.data.type || "text",
         mediaUrls: media || [],
       },
     });

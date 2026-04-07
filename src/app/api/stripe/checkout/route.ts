@@ -1,4 +1,3 @@
-import { randomUUID } from "crypto";
 import { NextRequest, NextResponse } from "next/server";
 
 import { withManager } from "@/lib/auth/withAuth";
@@ -52,18 +51,19 @@ const handleCheckout = withManager(async (request: NextRequest, { userId, orgId 
 
     // FREE_BETA mode: bypass Stripe, create trial Org immediately
     if (freeBeta) {
-      // Find or create Org
+      // Session 9: withManager provides DB org UUID via resolveOrg().
+      // Use org.id (not clerkOrgId) for lookups.
       let Org = await prisma.org.findUnique({
-        where: { clerkOrgId: orgId },
+        where: { id: orgId },
       });
 
       if (!Org) {
         Org = await prisma.org.upsert({
-          where: { clerkOrgId: orgId },
+          where: { id: orgId },
           update: { planId: plan },
           create: {
-            id: randomUUID(),
-            clerkOrgId: orgId,
+            id: orgId,
+            clerkOrgId: `org_${orgId}`,
             name: "Beta Organization",
             planId: plan,
           } as any,
@@ -74,8 +74,9 @@ const handleCheckout = withManager(async (request: NextRequest, { userId, orgId 
     }
 
     // Production mode: create Stripe checkout session
+    // Session 9: Use org.id (DB UUID from withManager) not clerkOrgId
     const Org = await prisma.org.findUnique({
-      where: { clerkOrgId: orgId },
+      where: { id: orgId },
       include: { Subscription: true },
     });
 

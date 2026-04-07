@@ -3,6 +3,7 @@ export const dynamic = "force-dynamic";
 import { NextResponse } from "next/server";
 
 import { isAuthError, requireAdmin } from "@/lib/auth/requireAuth";
+import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 import { supabaseServer } from "@/lib/supabase-server";
 import { renderPdfAndThumbnail } from "@/lib/template/renderPdfAndThumb";
@@ -23,6 +24,7 @@ export async function POST(_: Request, ctx: { params: Promise<{ templateId: stri
     if (isAuthError(auth)) return auth;
 
     const { templateId } = await ctx.params;
+    logger.info("[TEMPLATES_GENERATE_ASSETS]", { templateId, orgId: auth.orgId });
 
     const bucket = requireEnv("SUPABASE_STORAGE_BUCKET_TEMPLATES");
 
@@ -89,6 +91,7 @@ export async function POST(_: Request, ctx: { params: Promise<{ templateId: stri
 
     return NextResponse.json({ ok: true, previewPdfUrl: pdfPublic, thumbnailUrl: thumbPublic });
   } catch (e) {
+    logger.error("[TEMPLATES_GENERATE_ASSETS]", { error: e?.message ?? "UNKNOWN_ERROR" });
     return NextResponse.json({ ok: false, error: e?.message ?? "UNKNOWN_ERROR" }, { status: 500 });
   }
 }

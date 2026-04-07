@@ -36,7 +36,7 @@ export default function PortalSettingsPage() {
   }, []);
 
   useEffect(() => {
-    loadPreferences();
+    void loadPreferences();
   }, [loadPreferences]);
 
   // Save preferences to API

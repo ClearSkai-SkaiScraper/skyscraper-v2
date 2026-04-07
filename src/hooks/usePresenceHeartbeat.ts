@@ -20,14 +20,14 @@ export function usePresenceHeartbeat() {
     }
 
     // Immediate heartbeat
-    beat();
+    void beat();
 
     // Then every 2 minutes
     interval = setInterval(beat, 2 * 60 * 1000);
 
     // Also beat on visibility change (tab focus)
     function onVisibility() {
-      if (document.visibilityState === "visible") beat();
+      if (document.visibilityState === "visible") void beat();
     }
     document.addEventListener("visibilitychange", onVisibility);
 

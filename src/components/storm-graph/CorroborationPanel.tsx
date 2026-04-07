@@ -131,7 +131,7 @@ export function CorroborationPanel({
   }, [claimId]);
 
   useEffect(() => {
-    fetchData();
+    void fetchData();
   }, [fetchData]);
 
   if (loading) {

@@ -86,7 +86,7 @@ export default function CoverPageBuilderPage() {
         setLoading(false);
       }
     };
-    loadBranding();
+    void loadBranding();
   }, []);
 
   const handleInputChange = (field: keyof CoverPageData, value: string) => {

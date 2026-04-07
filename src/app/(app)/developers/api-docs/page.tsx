@@ -10,7 +10,7 @@ export default function ApiDocsPage() {
   const [copied, setCopied] = useState(false);
 
   const copyApiKey = () => {
-    navigator.clipboard.writeText(apiKey);
+    void navigator.clipboard.writeText(apiKey);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };

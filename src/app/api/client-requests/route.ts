@@ -1,23 +1,14 @@
 export const dynamic = "force-dynamic";
 
-import { auth } from "@clerk/nextjs/server";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
+
+import { withAuth } from "@/lib/auth/withAuth";
 
 import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 
-export async function POST(request: Request) {
+export const POST = withAuth(async (request: NextRequest, { orgId }) => {
   try {
-    const { userId, orgId } = await auth();
-
-    if (!userId) {
-      return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
-    }
-
-    if (!orgId) {
-      return NextResponse.json({ success: false, error: "Organization required" }, { status: 400 });
-    }
-
     const body = await request.json();
     const { subject, description, priority, clientId } = body;
 
@@ -54,4 +45,4 @@ export async function POST(request: Request) {
       { status: 500 }
     );
   }
-}
+});

@@ -9,18 +9,15 @@ export const dynamic = "force-dynamic";
  * Returns list of active trades companies
  */
 
-import { auth } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
+
+import { withAuth } from "@/lib/auth/withAuth";
 
 import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 
-export async function GET(request: NextRequest) {
+export const GET = withAuth(async (request: NextRequest, { userId }) => {
   try {
-    const { userId } = await auth();
-    if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
     const { searchParams } = new URL(request.url);
     const specialty = searchParams.get("specialty");
 
@@ -54,8 +51,8 @@ export async function GET(request: NextRequest) {
         memberCount: c._count?.members ?? 0,
       })),
     });
-  } catch (error) {
+  } catch (error: unknown) {
     logger.error("Error fetching trades companies:", error);
     return NextResponse.json({ error: "Failed to fetch companies" }, { status: 500 });
   }
-}
+});

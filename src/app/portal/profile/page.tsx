@@ -116,7 +116,7 @@ function PropertyPhotoGallery() {
   }, []);
 
   useEffect(() => {
-    loadPhotos();
+    void loadPhotos();
   }, [loadPhotos]);
 
   async function handleUpload(files: FileList) {
@@ -283,7 +283,7 @@ function PropertyPhotoGallery() {
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
-                        handleDelete(photo.id);
+                        void handleDelete(photo.id);
                       }}
                       className="rounded-full bg-red-500/80 p-1.5 text-white transition hover:bg-red-600"
                     >
@@ -367,7 +367,7 @@ function PropertyPhotoGallery() {
                   size="sm"
                   variant="destructive"
                   onClick={() => {
-                    handleDelete(lightboxPhoto.id);
+                    void handleDelete(lightboxPhoto.id);
                     setLightboxPhoto(null);
                   }}
                 >
@@ -390,7 +390,7 @@ function ConnectionsSection() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    loadConnections();
+    void loadConnections();
   }, []);
 
   async function loadConnections() {
@@ -657,7 +657,7 @@ export default function ClientProfilePage() {
     }
 
     if (isLoaded && user) {
-      loadProfile();
+      void loadProfile();
     } else if (isLoaded && !user) {
       setLoading(false);
     }
@@ -681,7 +681,7 @@ export default function ClientProfilePage() {
         console.warn("[Portal Profile] Failed to load stats:", error);
       }
     }
-    if (isLoaded && user) loadStats();
+    if (isLoaded && user) void loadStats();
   }, [isLoaded, user]);
 
   const handleChange = (field: keyof ProfileData, value: string) => {
@@ -701,7 +701,7 @@ export default function ClientProfilePage() {
         console.warn("[Portal Profile] Failed to load linked company:", error);
       }
     }
-    if (isLoaded && user) loadLinkedCompany();
+    if (isLoaded && user) void loadLinkedCompany();
   }, [isLoaded, user]);
   async function handleSave() {
     setSaving(true);
@@ -834,7 +834,7 @@ export default function ClientProfilePage() {
         aria-label="Upload avatar photo"
         onChange={(e) => {
           const file = e.target.files?.[0];
-          if (file) handlePhotoUpload("avatar", file);
+          if (file) void handlePhotoUpload("avatar", file);
         }}
       />
       <input
@@ -845,7 +845,7 @@ export default function ClientProfilePage() {
         aria-label="Upload cover photo"
         onChange={(e) => {
           const file = e.target.files?.[0];
-          if (file) handlePhotoUpload("cover", file);
+          if (file) void handlePhotoUpload("cover", file);
         }}
       />
 

@@ -243,7 +243,7 @@ export default function TradesNetworkDashboard({ userProfile, stats }: Dashboard
         /* silent */
       }
     }
-    loadData();
+    void loadData();
   }, []);
 
   const handleSearch = async () => {
@@ -766,7 +766,7 @@ export default function TradesNetworkDashboard({ userProfile, stats }: Dashboard
                         onKeyDown={(e) => {
                           if ((e.metaKey || e.ctrlKey) && e.key === "Enter") {
                             e.preventDefault();
-                            handleCreatePost();
+                            void handleCreatePost();
                           }
                         }}
                         className="min-h-[100px] resize-none"

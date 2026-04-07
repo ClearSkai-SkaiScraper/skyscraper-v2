@@ -272,17 +272,17 @@ export default function FindAProPage() {
 
   // Load initial data
   useEffect(() => {
-    fetchPros(true);
-    loadSavedStatus();
-    loadConnectionStatus();
-    loadActiveJobs();
+    void fetchPros(true);
+    void loadSavedStatus();
+    void loadConnectionStatus();
+    void loadActiveJobs();
   }, [fetchPros]);
 
   // Refetch when filters change
   useEffect(() => {
     const timer = setTimeout(() => {
       setPage(1);
-      fetchPros(true);
+      void fetchPros(true);
     }, 300);
     return () => clearTimeout(timer);
   }, [selectedTrade, verifiedOnly, minRating, zipCode, fetchPros]);
@@ -317,12 +317,12 @@ export default function FindAProPage() {
 
   const handleSearch = useCallback(() => {
     setPage(1);
-    fetchPros(true);
+    void fetchPros(true);
   }, [fetchPros]);
 
   const handleLoadMore = useCallback(() => {
     setPage((prev) => prev + 1);
-    fetchPros(false);
+    void fetchPros(false);
   }, [fetchPros]);
 
   async function handleSave(pro: Pro) {
@@ -424,7 +424,7 @@ export default function FindAProPage() {
         );
 
         // Refresh jobs list
-        loadActiveJobs();
+        void loadActiveJobs();
       }
 
       setShowInviteModal(false);

@@ -8,9 +8,9 @@
  * Uses existing SignatureEnvelope model as a simplified alternative.
  */
 
-import { auth } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
 
+import { withAuth } from "@/lib/auth/withAuth";
 import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 
@@ -30,22 +30,8 @@ interface CreateEnvelopeRequest {
   requiredSignerCount?: number;
 }
 
-export async function POST(req: NextRequest) {
+export const POST = withAuth(async (req: NextRequest, { orgId, userId }) => {
   try {
-    const { userId } = await auth();
-    if (!userId) {
-      return NextResponse.json({ ok: false, message: "Unauthorized" }, { status: 401 });
-    }
-
-    const user = await prisma.users.findUnique({
-      where: { id: userId },
-      select: { orgId: true },
-    });
-
-    if (!user?.orgId) {
-      return NextResponse.json({ ok: false, message: "No organization found" }, { status: 400 });
-    }
-
     const body: CreateEnvelopeRequest = await req.json();
 
     // Validate at least one signer is provided
@@ -100,9 +86,6 @@ export async function POST(req: NextRequest) {
     });
   } catch (error) {
     logger.error("[ENVELOPE_CREATE_ERROR]", error);
-    return NextResponse.json(
-      { ok: false, message: "Failed to create envelope" },
-      { status: 500 }
-    );
+    return NextResponse.json({ ok: false, message: "Failed to create envelope" }, { status: 500 });
   }
-}
+});

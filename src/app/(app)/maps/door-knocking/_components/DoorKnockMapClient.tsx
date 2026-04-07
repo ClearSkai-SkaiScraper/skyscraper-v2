@@ -335,7 +335,7 @@ export default function DoorKnockMapClient() {
   }, [filterArea, filterOutcome]);
 
   useEffect(() => {
-    fetchPins();
+    void fetchPins();
   }, [fetchPins]);
 
   /* ───── map init ───── */
@@ -351,7 +351,7 @@ export default function DoorKnockMapClient() {
 
     let cancelled = false;
 
-    (async () => {
+    void (async () => {
       try {
         const mapboxgl = (await import("mapbox-gl")).default;
         if (cancelled) return;
@@ -569,7 +569,7 @@ export default function DoorKnockMapClient() {
                 value={searchQuery}
                 onChange={(e) => {
                   setSearchQuery(e.target.value);
-                  searchAddress(e.target.value);
+                  void searchAddress(e.target.value);
                 }}
                 className="pr-8 text-xs"
               />

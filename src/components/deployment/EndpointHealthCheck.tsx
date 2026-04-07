@@ -48,7 +48,7 @@ export function EndpointHealthCheck() {
   };
 
   useEffect(() => {
-    runCheck();
+    void runCheck();
   }, []);
 
   const renderEndpointRow = (result: EndpointStatus) => {

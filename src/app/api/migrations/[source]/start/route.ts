@@ -8,9 +8,10 @@ export const dynamic = "force-dynamic";
  * Streams progress via SSE to the client.
  */
 
-import { auth } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
 
+import { withAuth } from "@/lib/auth/withAuth";
+import { logger } from "@/lib/logger";
 import type { MigrationProgress, MigrationSource } from "@/lib/migrations/base-engine";
 import { JobNimbusMigrationEngine } from "@/lib/migrations/jobnimbus-engine";
 import prisma from "@/lib/prisma";
@@ -19,22 +20,14 @@ import { checkRateLimit } from "@/lib/rate-limit";
 // Supported migration sources
 const SUPPORTED_SOURCES: MigrationSource[] = ["JOBNIMBUS", "ACCULYNX", "CSV"];
 
-export async function POST(
-  request: NextRequest,
-  { params }: { params: Promise<{ source: string }> }
-) {
-  const { source } = await params;
+export const POST = withAuth(async (request: NextRequest, { orgId, userId }, routeParams) => {
+  const { source } = await routeParams.params;
   const upperSource = source.toUpperCase() as MigrationSource;
+  logger.info("[MIGRATION_START]", { source: upperSource, orgId, userId });
 
   // Validate source
   if (!SUPPORTED_SOURCES.includes(upperSource)) {
     return NextResponse.json({ error: `Unsupported migration source: ${source}` }, { status: 400 });
-  }
-
-  // Auth check
-  const { userId, orgId } = await auth();
-  if (!userId || !orgId) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   // Rate limit (migrations are expensive)
@@ -146,21 +139,13 @@ export async function POST(
       Connection: "keep-alive",
     },
   });
-}
+});
 
 /**
  * GET /api/migrations/[source]/start
  * Returns the status of a running migration
  */
-export async function GET(
-  request: NextRequest,
-  { params }: { params: Promise<{ source: string }> }
-) {
-  const { userId, orgId } = await auth();
-  if (!userId || !orgId) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
-
+export const GET = withAuth(async (request: NextRequest, { orgId, userId }) => {
   // Get latest migration job for this org
   const job = await prisma.migration_jobs.findFirst({
     where: { orgId },
@@ -184,4 +169,4 @@ export async function GET(
       completedAt: job.completedAt,
     },
   });
-}
+});

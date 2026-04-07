@@ -92,7 +92,7 @@ export default function AttachmentsPage() {
   }, [claimId]);
 
   useEffect(() => {
-    fetchAttachments();
+    void fetchAttachments();
   }, [fetchAttachments]);
 
   const filteredAttachments = attachments.filter((att) => {

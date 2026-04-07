@@ -202,7 +202,7 @@ export default function ClaimFolderBuilderPage() {
   }, [claimId]);
 
   useEffect(() => {
-    fetchFolder();
+    void fetchFolder();
   }, [fetchFolder]);
 
   const handleSectionToggle = (section: FolderSectionKey) => {

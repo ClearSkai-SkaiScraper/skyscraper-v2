@@ -55,7 +55,7 @@ export default function MapboxMap({
 
     let cancelled = false;
 
-    (async () => {
+    void (async () => {
       try {
         const mapboxgl = (await import("mapbox-gl")).default;
         if (cancelled) return;

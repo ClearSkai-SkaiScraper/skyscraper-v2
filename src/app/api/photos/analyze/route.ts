@@ -9,8 +9,9 @@
  *    so we always return a valid analysis.
  */
 
-import { auth } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
+
+import { withAuth } from "@/lib/auth/withAuth";
 
 import { analyzeImage } from "@/lib/ai/openai-vision";
 import {
@@ -24,13 +25,8 @@ import { checkRateLimit } from "@/lib/rate-limit";
 export const dynamic = "force-dynamic";
 export const maxDuration = 60; // AI analysis can take a while
 
-export async function POST(request: NextRequest) {
+export const POST = withAuth(async (req: NextRequest, { userId }) => {
   try {
-    const { userId } = await auth();
-    if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
     const rl = await checkRateLimit(userId, "UPLOAD");
     if (!rl.success) {
       return NextResponse.json(
@@ -39,7 +35,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const body = await request.json();
+    const body = await req.json();
     const { imageUrl, context, componentType } = body;
 
     if (!imageUrl) {
@@ -143,7 +139,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ error: "AI analysis failed" }, { status: 500 });
   }
-}
+});
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Helpers

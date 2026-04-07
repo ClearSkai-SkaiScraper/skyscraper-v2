@@ -50,7 +50,7 @@ export default function RepairJustificationPage() {
   }, [claimId]);
 
   useEffect(() => {
-    fetchData();
+    void fetchData();
   }, [fetchData]);
 
   const handleGenerate = async () => {

@@ -64,7 +64,7 @@ export default function WeatherCauseOfLossPage() {
   }, [claimId]);
 
   useEffect(() => {
-    fetchData();
+    void fetchData();
   }, [fetchData]);
 
   const handleGenerateNarrative = async () => {

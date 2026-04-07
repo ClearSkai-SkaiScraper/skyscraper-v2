@@ -1,9 +1,8 @@
 export const dynamic = "force-dynamic";
 
-import { auth } from "@clerk/nextjs/server";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
-import { getTenant } from "@/lib/auth/tenant";
+import { withAuth } from "@/lib/auth/withAuth";
 import { prismaModel } from "@/lib/db/prismaModel";
 import { sendInvitationEmail } from "@/lib/email/invitations";
 import { logger } from "@/lib/logger";
@@ -12,16 +11,9 @@ import prisma from "@/lib/prisma";
 // Activity model for logging (soft-fail if not available)
 const Activity = prismaModel("activities");
 
-export async function POST(request: Request, { params }: { params: { id: string } }) {
+export const POST = withAuth(async (req: NextRequest, { orgId, userId }, routeParams) => {
   try {
-    const { userId } = await auth();
-    const orgId = await getTenant();
-
-    if (!orgId || !userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    const invitationId = params.id;
+    const { id: invitationId } = await routeParams.params;
 
     // Find invitation (team_invitations is a raw SQL table, not in Prisma schema)
     const invitation = await (prisma as any).team_invitations.findUnique({
@@ -99,4 +91,4 @@ export async function POST(request: Request, { params }: { params: { id: string 
     logger.error("Failed to resend invitation:", error);
     return NextResponse.json({ error: "Failed to resend invitation" }, { status: 500 });
   }
-}
+});

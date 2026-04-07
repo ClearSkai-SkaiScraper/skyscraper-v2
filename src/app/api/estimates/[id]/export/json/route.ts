@@ -1,25 +1,19 @@
 export const dynamic = "force-dynamic";
 
 // src/app/api/estimates/[id]/export/json/route.ts
-import { auth } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
 
+import { withAuth } from "@/lib/auth/withAuth";
 import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 
-type RouteParams = { params: { id: string } };
-
-export async function GET(req: NextRequest, { params }: RouteParams) {
+export const GET = withAuth(async (req: NextRequest, { orgId, userId }, routeParams) => {
+  const { id: estimateId } = await routeParams.params;
   try {
-    const { userId, orgId } = await auth();
-    if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-
-    const estimateId = params.id;
-
     const estimates = await prisma.estimates.findFirst({
       where: {
         id: estimateId,
-        orgId: orgId ?? undefined,
+        orgId,
       },
     });
 
@@ -72,4 +66,4 @@ export async function GET(req: NextRequest, { params }: RouteParams) {
     logger.error("Error exporting estimates JSON:", err);
     return NextResponse.json({ error: "Failed to export estimates." }, { status: 500 });
   }
-}
+});

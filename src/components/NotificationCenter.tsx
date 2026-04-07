@@ -78,7 +78,7 @@ export function NotificationCenter() {
 
   // Initial fetch + polling every 30s
   useEffect(() => {
-    fetchNotifications();
+    void fetchNotifications();
     pollRef.current = setInterval(fetchNotifications, 30_000);
     return () => {
       if (pollRef.current) clearInterval(pollRef.current);
@@ -88,7 +88,7 @@ export function NotificationCenter() {
 
   // Re-fetch when dropdown opens
   useEffect(() => {
-    if (isOpen) fetchNotifications();
+    if (isOpen) void fetchNotifications();
   }, [isOpen, fetchNotifications]);
 
   const markAsRead = async (id: string) => {
@@ -124,12 +124,12 @@ export function NotificationCenter() {
     } catch (error) {
       logger.error("Failed to mark all as read:", error);
       // Re-fetch to get accurate state on failure
-      fetchNotifications();
+      void fetchNotifications();
     }
   };
 
   const handleNotificationClick = (notification: Notification) => {
-    if (!notification.read) markAsRead(notification.id);
+    if (!notification.read) void markAsRead(notification.id);
     setIsOpen(false);
     // Navigation handled by Link wrapper — no window.location needed
   };

@@ -35,7 +35,7 @@ export default function PortalNotificationsPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetchNotifications();
+    void fetchNotifications();
   }, []);
 
   async function fetchNotifications() {
@@ -190,7 +190,7 @@ export default function PortalNotificationsPage() {
                     : ""
                 }`}
                 onClick={() => {
-                  if (!notification.read) markRead(notification.id);
+                  if (!notification.read) void markRead(notification.id);
                 }}
               >
                 <CardContent className="flex items-start gap-4 p-4">

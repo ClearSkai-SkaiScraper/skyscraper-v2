@@ -8,21 +8,17 @@
  * now cleanly resolves to the camelCase tradesPost model.
  */
 
-import { auth } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
+
+import { withAuth } from "@/lib/auth/withAuth";
 
 import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 
 export const dynamic = "force-dynamic";
 
-export async function GET(req: NextRequest) {
+export const GET = withAuth(async (req: NextRequest, { userId }) => {
   try {
-    const { userId } = await auth();
-    if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
     const { searchParams } = new URL(req.url);
     const limit = Math.min(parseInt(searchParams.get("limit") || "20"), 50);
     const offset = parseInt(searchParams.get("offset") || "0");
@@ -91,19 +87,14 @@ export async function GET(req: NextRequest) {
     });
 
     return NextResponse.json({ posts: formattedPosts, total: formattedPosts.length });
-  } catch (error) {
+  } catch (error: unknown) {
     logger.error("[GET /api/trades/feed]", error);
     return NextResponse.json({ error: "Failed to fetch feed" }, { status: 500 });
   }
-}
+});
 
-export async function POST(req: NextRequest) {
+export const POST = withAuth(async (req: NextRequest, { userId }) => {
   try {
-    const { userId } = await auth();
-    if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
     const body = await req.json();
     const { content, type, title, images, tags, postAs } = body;
 
@@ -204,8 +195,8 @@ export async function POST(req: NextRequest) {
           isActive: true,
         },
       });
-    } catch (dbErr: any) {
-      const msg = dbErr?.message || "Unknown database error";
+    } catch (dbErr: unknown) {
+      const msg = dbErr instanceof Error ? dbErr.message : "Unknown database error";
       logger.error("[POST /api/trades/feed] DB create failed:", msg);
 
       // Surface actionable info based on Prisma error codes
@@ -242,8 +233,8 @@ export async function POST(req: NextRequest) {
         createdAt: post.createdAt,
       },
     });
-  } catch (error) {
+  } catch (error: unknown) {
     logger.error("[POST /api/trades/feed]", error);
     return NextResponse.json({ error: "Failed to create post" }, { status: 500 });
   }
-}
+});

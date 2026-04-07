@@ -11,23 +11,18 @@ export const dynamic = "force-dynamic";
 
 export const runtime = "nodejs";
 
-import { auth } from "@clerk/nextjs/server";
 import { randomUUID } from "crypto";
 import { NextRequest, NextResponse } from "next/server";
 
+import { withAuth } from "@/lib/auth/withAuth";
 import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 
 // Max file size: 10MB
 const MAX_SIZE = 25 * 1024 * 1024; // 25MB for attachments
 
-export async function POST(req: NextRequest) {
+export const POST = withAuth(async (req: NextRequest, { userId, orgId }) => {
   try {
-    const { userId } = await auth();
-    if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
     const formData = await req.formData();
     const file = formData.get("file") as File | null;
 
@@ -106,33 +101,27 @@ export async function POST(req: NextRequest) {
         } = supabase.storage.from("uploads").getPublicUrl(path);
 
         // B-30: Create file_assets record for message attachments
-        const user = await prisma.users.findFirst({
-          where: { clerkUserId: userId },
-          select: { orgId: true },
-        });
-        if (user?.orgId) {
-          try {
-            await prisma.file_assets.create({
-              data: {
-                id: randomUUID(),
-                orgId: user.orgId,
-                ownerId: userId,
-                filename: file.name,
-                mimeType: file.type,
-                sizeBytes: file.size,
-                storageKey: path,
-                bucket: "uploads",
-                publicUrl,
-                category: "message-attachment",
-                source: "user",
-                updatedAt: new Date(),
-              },
-            });
-          } catch (assetErr) {
-            logger.warn("[message-attachment] file_assets record failed", {
-              error: String(assetErr),
-            });
-          }
+        try {
+          await prisma.file_assets.create({
+            data: {
+              id: randomUUID(),
+              orgId,
+              ownerId: userId,
+              filename: file.name,
+              mimeType: file.type,
+              sizeBytes: file.size,
+              storageKey: path,
+              bucket: "uploads",
+              publicUrl,
+              category: "message-attachment",
+              source: "user",
+              updatedAt: new Date(),
+            },
+          });
+        } catch (assetErr) {
+          logger.warn("[message-attachment] file_assets record failed", {
+            error: String(assetErr),
+          });
         }
 
         return NextResponse.json({ url: publicUrl, path: data.path });
@@ -155,4 +144,4 @@ export async function POST(req: NextRequest) {
     logger.error("[POST /api/uploads/message-attachment]", error);
     return NextResponse.json({ error: "Upload failed" }, { status: 500 });
   }
-}
+});

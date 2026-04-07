@@ -8,11 +8,11 @@
  * Uses tradesCompanyMember with status='pending' and pendingCompanyToken to track requests
  */
 
-import { auth } from "@clerk/nextjs/server";
 import crypto from "crypto";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 
+import { withAuth } from "@/lib/auth/withAuth";
 import { logger } from "@/lib/observability/logger";
 import prisma from "@/lib/prisma";
 
@@ -23,13 +23,8 @@ export const dynamic = "force-dynamic";
 // GET: List pending join requests (for company admins)
 // ============================================================================
 
-export async function GET(req: NextRequest) {
+export const GET = withAuth(async (req: NextRequest, { userId }) => {
   try {
-    const { userId } = await auth();
-    if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
     // Get user's company (must be admin/owner)
     const membership = await prisma.tradesCompanyMember.findFirst({
       where: { userId },
@@ -93,7 +88,7 @@ export async function GET(req: NextRequest) {
     logger.error("[Join Requests GET] Error:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
-}
+});
 
 // ============================================================================
 // POST: Submit a join request
@@ -105,13 +100,8 @@ const SubmitRequestSchema = z.object({
   message: z.string().optional(),
 });
 
-export async function POST(req: NextRequest) {
+export const POST = withAuth(async (req: NextRequest, { userId }) => {
   try {
-    const { userId } = await auth();
-    if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
     const body = await req.json();
     const parsed = SubmitRequestSchema.safeParse(body);
 
@@ -204,7 +194,7 @@ export async function POST(req: NextRequest) {
     logger.error("[Join Requests POST] Error:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
-}
+});
 
 // ============================================================================
 // PATCH: Approve or reject a join request (admin only)
@@ -216,13 +206,8 @@ const HandleRequestSchema = z.object({
   message: z.string().optional(),
 });
 
-export async function PATCH(req: NextRequest) {
+export const PATCH = withAuth(async (req: NextRequest, { userId }) => {
   try {
-    const { userId } = await auth();
-    if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
     const body = await req.json();
     const parsed = HandleRequestSchema.safeParse(body);
 
@@ -323,4 +308,4 @@ export async function PATCH(req: NextRequest) {
     logger.error("[Join Requests PATCH] Error:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
-}
+});

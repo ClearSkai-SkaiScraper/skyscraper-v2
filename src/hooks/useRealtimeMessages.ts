@@ -79,7 +79,7 @@ export function useRealtimeMessages(conversationId: string | null | undefined) {
       }
     }
 
-    load();
+    void load();
     return () => {
       cancelled = true;
     };
@@ -157,7 +157,7 @@ export function useRealtimeMessages(conversationId: string | null | undefined) {
     channelRef.current = channel;
 
     return () => {
-      supabase.removeChannel(channel);
+      void supabase.removeChannel(channel);
       channelRef.current = null;
       setIsConnected(false);
     };

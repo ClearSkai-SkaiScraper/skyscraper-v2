@@ -55,7 +55,7 @@ export function PresetSelector({
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    loadPresets();
+    void loadPresets();
   }, [reportType]);
 
   const loadPresets = async () => {
@@ -98,7 +98,7 @@ export function PresetSelector({
         setSaveDialogOpen(false);
         setSaveName("");
         setSaveDescription("");
-        loadPresets();
+        void loadPresets();
       } else {
         alert("Failed to save preset");
       }

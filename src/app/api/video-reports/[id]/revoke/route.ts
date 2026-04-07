@@ -7,34 +7,19 @@ export const dynamic = "force-dynamic";
  * Revokes public access to video report
  */
 
-import { auth } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
 
+import { withAuth } from "@/lib/auth/withAuth";
 import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 
-// Prisma singleton imported from @/lib/db/prisma
-
-export async function POST(req: NextRequest, { params }: { params: { id: string } }) {
+export const POST = withAuth(async (req: NextRequest, { orgId }, routeParams) => {
   try {
-    const { userId, orgId } = await auth();
-    if (!userId || !orgId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    const Org = await prisma.org.findUnique({
-      where: { clerkOrgId: orgId },
-    });
-
-    if (!Org) {
-      return NextResponse.json({ error: "Organization not found" }, { status: 404 });
-    }
-
-    const reportId = params.id;
+    const { id: reportId } = await routeParams.params;
 
     // Verify report exists and belongs to Org (orgId in WHERE prevents IDOR/enumeration)
     const report = await prisma.ai_reports.findFirst({
-      where: { id: reportId, orgId: Org.id },
+      where: { id: reportId, orgId },
     });
 
     if (!report) {
@@ -43,7 +28,7 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
 
     // Revoke public access — org-scoped for defense-in-depth
     await prisma.ai_reports.updateMany({
-      where: { id: reportId, orgId: Org.id },
+      where: { id: reportId, orgId },
       data: {
         status: "revoked",
       },
@@ -53,11 +38,14 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
       success: true,
       message: "Share link revoked",
     });
-  } catch (error) {
-    logger.error("Error revoking video share:", error);
+  } catch (err: unknown) {
+    logger.error("Error revoking video share:", err);
     return NextResponse.json(
-      { error: "Failed to revoke share link", details: "Internal server error" },
+      {
+        error: "Failed to revoke share link",
+        details: err instanceof Error ? err.message : "Unknown error",
+      },
       { status: 500 }
     );
   }
-}
+});

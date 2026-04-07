@@ -1,6 +1,7 @@
-import { auth } from "@clerk/nextjs/server";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
+
+import { withAuth } from "@/lib/auth/withAuth";
 
 import { sendEmail, TEMPLATES } from "@/lib/email/resend";
 import { log } from "@/lib/logger";
@@ -18,35 +19,8 @@ const inviteSchema = z.object({
  * GET /api/clients/connections - List all client connections for org
  * Also includes ClientProConnection data (accepted invites from client portal)
  */
-export async function GET() {
+export const GET = withAuth(async (req: NextRequest, { orgId, userId }) => {
   try {
-    const { userId } = await auth();
-    if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    // DB-first org resolution: users table → tradesCompanyMember → fallback
-    const user = await prisma.users.findFirst({
-      where: { clerkUserId: userId },
-      select: { id: true, orgId: true },
-    });
-
-    let orgId = user?.orgId || null;
-
-    // Fallback: resolve from tradesCompanyMember if users table has no orgId
-    if (!orgId) {
-      const membershipFallback = await prisma.tradesCompanyMember.findFirst({
-        where: { userId },
-        select: { companyId: true, orgId: true },
-      });
-      orgId = membershipFallback?.orgId || membershipFallback?.companyId || null;
-    }
-
-    if (!orgId) {
-      // No org → return empty list instead of 403
-      return NextResponse.json({ clients: [] });
-    }
-
     // Get all clients connected to this org (legacy ClientConnection system)
     const clients = await prisma.client.findMany({
       where: { orgId },
@@ -179,27 +153,22 @@ export async function GET() {
     log.error("[clients/connections] Failed to fetch", { error: "Internal server error" });
     return NextResponse.json({ error: "Failed to fetch clients" }, { status: 500 });
   }
-}
+});
 
 /**
  * POST /api/clients/connections - Invite a new client
  * Pro can invite by email, name, or phone
  * Creates a client record and sends invitation
  */
-export async function POST(req: Request) {
+export const POST = withAuth(async (req: NextRequest, { orgId, userId }) => {
   try {
-    const { userId } = await auth();
-    if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
     const user = await prisma.users.findFirst({
       where: { clerkUserId: userId },
-      select: { id: true, orgId: true },
+      select: { id: true },
     });
 
-    if (!user?.orgId) {
-      return NextResponse.json({ error: "No organization" }, { status: 403 });
+    if (!user) {
+      return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
     const body = await req.json();
@@ -221,7 +190,7 @@ export async function POST(req: Request) {
     let existingClient: Awaited<ReturnType<typeof prisma.client.findFirst>> = null;
     if (email) {
       existingClient = await prisma.client.findFirst({
-        where: { email, orgId: user.orgId },
+        where: { email, orgId },
       });
     }
 
@@ -243,7 +212,7 @@ export async function POST(req: Request) {
         email: email || `${slug}@pending.skaiscraper.com`,
         name: name || email?.split("@")[0] || "Invited Client",
         phone: phone || null,
-        orgId: user.orgId,
+        orgId,
         category: "Homeowner",
       },
     });
@@ -252,7 +221,7 @@ export async function POST(req: Request) {
     await prisma.clientConnection.create({
       data: {
         id: crypto.randomUUID(),
-        orgId: user.orgId,
+        orgId,
         clientId: newClient.id,
         status: "pending",
         invitedBy: user.id,
@@ -265,7 +234,7 @@ export async function POST(req: Request) {
       try {
         // Get org branding
         const branding = await prisma.org_branding.findFirst({
-          where: { orgId: user.orgId },
+          where: { orgId },
           select: { companyName: true },
         });
         const companyName = branding?.companyName || "SkaiScraper";
@@ -284,8 +253,10 @@ export async function POST(req: Request) {
         });
         emailSent = true;
         log.info("[clients/connections] Invitation email sent", { email });
-      } catch (emailError) {
-        log.error("[clients/connections] Failed to send email", { error: emailError.message });
+      } catch (emailError: unknown) {
+        log.error("[clients/connections] Failed to send email", {
+          error: emailError instanceof Error ? emailError.message : "Unknown error",
+        });
         // Don't fail - client was created, email can be resent
       }
     }
@@ -312,4 +283,4 @@ export async function POST(req: Request) {
     log.error("[clients/connections] Failed to invite", { error: "Internal server error" });
     return NextResponse.json({ error: "Failed to invite client" }, { status: 500 });
   }
-}
+});

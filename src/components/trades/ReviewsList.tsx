@@ -33,7 +33,7 @@ export function ReviewsList({ proId, limit }: ReviewsListProps) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    loadReviews();
+    void loadReviews();
   }, [proId]);
 
   async function loadReviews() {

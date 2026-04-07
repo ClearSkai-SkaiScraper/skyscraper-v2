@@ -69,7 +69,7 @@ export function ClientConnectionDropdown({ jobId, contactId }: ClientConnectionD
       }
     };
 
-    fetchConnections();
+    void fetchConnections();
   }, []);
 
   // Check if job already has a connected client
@@ -94,7 +94,7 @@ export function ClientConnectionDropdown({ jobId, contactId }: ClientConnectionD
       }
     };
 
-    fetchConnected();
+    void fetchConnected();
   }, [contactId]);
 
   const handleAttach = useCallback(async () => {

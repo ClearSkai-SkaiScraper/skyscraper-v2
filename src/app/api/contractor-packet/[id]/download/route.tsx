@@ -1,23 +1,15 @@
-import { auth } from "@clerk/nextjs/server";
 import { renderToStream } from "@react-pdf/renderer";
 import { NextRequest, NextResponse } from "next/server";
 
-import { getResolvedOrgId } from "@/lib/auth/getResolvedOrgId";
+import { withAuth } from "@/lib/auth/withAuth";
 import { db } from "@/lib/db";
 import { logger } from "@/lib/logger";
 import { ContractorPacketPDFDocument } from "@/lib/pdf/contractorPacketRenderer";
 import { getOrgBranding, sanitizeFilename } from "@/lib/pdf/utils";
 
-export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
+export const GET = withAuth(async (req: NextRequest, { orgId, userId }, routeParams) => {
   try {
-    const { userId } = await auth();
-    if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    const orgId = await getResolvedOrgId();
-
-    const packetId = params.id;
+    const { id: packetId } = await routeParams.params;
 
     // Fetch packet
     const result = await db.query(
@@ -121,4 +113,4 @@ ${packet.sections.map((s: string) => `- ${s}`).join("\n")}
     logger.error("[Contractor Packet] Error downloading packet:", error);
     return NextResponse.json({ error: "Failed to download contractor packet" }, { status: 500 });
   }
-}
+});

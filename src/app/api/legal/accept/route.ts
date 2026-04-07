@@ -1,21 +1,16 @@
 export const dynamic = "force-dynamic";
 
-import { auth } from "@clerk/nextjs/server";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
+
+import { withAuth } from "@/lib/auth/withAuth";
 
 import { LEGAL_DOCUMENTS } from "@/lib/legal/config";
 import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 
-export async function POST(req: Request) {
+export const POST = withAuth(async (req: NextRequest, { userId }) => {
   try {
-    const { userId } = await auth();
     logger.debug("[Legal Accept] Starting - userId:", userId);
-
-    if (!userId) {
-      logger.error("[Legal Accept] No userId - unauthorized");
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
 
     const body = await req.json().catch(() => null);
     if (!body) {
@@ -90,12 +85,12 @@ export async function POST(req: Request) {
     });
 
     return NextResponse.json({ ok: true, acceptances, count: acceptances.length });
-  } catch (error) {
+  } catch (error: unknown) {
     logger.error("[Legal Accept] ❌ Error:", {
       message: "Internal server error",
-      stack: error.stack,
-      name: error.name,
+      stack: error instanceof Error ? error.stack : undefined,
+      name: error instanceof Error ? error.name : "Unknown",
     });
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
-}
+});

@@ -80,7 +80,7 @@ export function TemplatePreviewModal({ template, onClose }: TemplatePreviewModal
 
   useEffect(() => {
     // Always try to fetch template data for fallback rendering
-    fetchTemplatePreview();
+    void fetchTemplatePreview();
   }, [templateId]);
 
   const fetchTemplatePreview = async () => {

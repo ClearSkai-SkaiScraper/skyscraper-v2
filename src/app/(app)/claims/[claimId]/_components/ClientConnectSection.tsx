@@ -75,12 +75,12 @@ export function ClientConnectSection({ claimId, currentClientId }: ClientConnect
 
   // Fetch connections from Trades Network
   useEffect(() => {
-    fetchConnections();
+    void fetchConnections();
   }, []);
 
   // Fetch current attached client using unified endpoint
   useEffect(() => {
-    fetchAttachedClient();
+    void fetchAttachedClient();
   }, [claimId, currentClientId]);
 
   const fetchConnections = async () => {
@@ -165,7 +165,7 @@ export function ClientConnectSection({ claimId, currentClientId }: ClientConnect
       setSelectedConnectionId("");
       toast.success("Client attached successfully!");
       // Refresh attached client from API to get authoritative data
-      fetchAttachedClient();
+      void fetchAttachedClient();
     } catch (error: any) {
       logger.error("Attach from connection failed:", error);
       toast.error(error.message || "Failed to attach client");
@@ -259,7 +259,7 @@ export function ClientConnectSection({ claimId, currentClientId }: ClientConnect
 
   const copyInviteLink = () => {
     if (inviteLink) {
-      navigator.clipboard.writeText(inviteLink);
+      void navigator.clipboard.writeText(inviteLink);
       setCopied(true);
       toast.success("Link copied to clipboard!");
       setTimeout(() => setCopied(false), 2000);

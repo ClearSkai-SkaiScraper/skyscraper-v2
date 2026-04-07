@@ -63,7 +63,7 @@ export default function NewMessageModal({
 
   useEffect(() => {
     if (open) {
-      fetchData();
+      void fetchData();
       setRecipientType(initialRecipientType);
       setFormData({
         contactId: initialContactId || "",

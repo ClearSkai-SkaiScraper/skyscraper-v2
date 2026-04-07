@@ -27,7 +27,7 @@ export function ApprovalsClient({ orgId }: { orgId: string }) {
   const [processing, setProcessing] = useState<string | null>(null);
 
   useEffect(() => {
-    fetchPending();
+    void fetchPending();
   }, []);
 
   const fetchPending = async () => {

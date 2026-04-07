@@ -1,6 +1,7 @@
 export const dynamic = "force-dynamic";
 
 import { NextResponse } from "next/server";
+import { logger } from "@/lib/logger";
 
 // Stripe pricing guard: returns configured price IDs or graceful empty set.
 export async function GET() {

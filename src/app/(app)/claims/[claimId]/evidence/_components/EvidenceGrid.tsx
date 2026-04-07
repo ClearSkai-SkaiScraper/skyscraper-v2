@@ -73,7 +73,7 @@ export function EvidenceGrid({ assets, claimId, onAssetUpdated }: EvidenceGridPr
       {assets.map((asset) => {
         // Fetch thumbnail if not already loaded
         if (!thumbnailUrls[asset.id] && asset.mimeType.startsWith("image/")) {
-          getThumbnail(asset.id);
+          void getThumbnail(asset.id);
         }
 
         return (

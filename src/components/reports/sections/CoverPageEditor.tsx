@@ -76,7 +76,7 @@ export function CoverPageEditor({ claimId, initialData, orgData }: CoverPageEdit
   // Auto-save on data change
   useEffect(() => {
     if (debouncedData) {
-      saveData();
+      void saveData();
     }
   }, [debouncedData]);
 

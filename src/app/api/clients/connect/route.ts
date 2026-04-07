@@ -1,33 +1,13 @@
 export const dynamic = "force-dynamic";
 
-import { auth } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
 
+import { withAuth } from "@/lib/auth/withAuth";
 import { logger } from "@/lib/logger";
-import { resolveOrg } from "@/lib/org/resolveOrg";
 import prisma from "@/lib/prisma";
 
-export async function POST(request: NextRequest) {
+export const POST = withAuth(async (request: NextRequest, { orgId, userId }) => {
   try {
-    const { userId } = await auth();
-
-    if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    // Resolve org server-side
-    let orgId: string | null = null;
-    try {
-      const org = await resolveOrg();
-      orgId = org.orgId;
-    } catch {
-      return NextResponse.json({ error: "Organization not found" }, { status: 404 });
-    }
-
-    if (!orgId) {
-      return NextResponse.json({ error: "Organization not found" }, { status: 404 });
-    }
-
     const body = await request.json();
     const { clientId } = body;
 
@@ -81,4 +61,4 @@ export async function POST(request: NextRequest) {
     logger.error("Error creating connection:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
-}
+});

@@ -1,7 +1,8 @@
 export const dynamic = "force-dynamic";
 
-import { auth } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
+
+import { withAuth } from "@/lib/auth/withAuth";
 
 import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
@@ -10,15 +11,9 @@ import prisma from "@/lib/prisma";
  * POST /api/invitations/:id/resend
  * Resend a client invitation by resetting its status to pending
  */
-export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+export const POST = withAuth(async (req: NextRequest, { userId }, routeParams) => {
   try {
-    const { userId } = await auth();
-
-    if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    const { id: invitationId } = await params;
+    const { id: invitationId } = await routeParams.params;
 
     // Verify this invitation belongs to the requesting pro's company
     const member = await prisma.tradesCompanyMember.findFirst({
@@ -60,8 +55,8 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
         resentAt: updated.invitedAt,
       },
     });
-  } catch (error) {
+  } catch (error: unknown) {
     logger.error("[POST /api/invitations/:id/resend] Error:", error);
     return NextResponse.json({ error: "Failed to resend invitation" }, { status: 500 });
   }
-}
+});

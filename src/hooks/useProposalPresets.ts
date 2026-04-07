@@ -7,7 +7,7 @@ export function useProposalPresets() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    loadPresets();
+    void loadPresets();
   }, []);
 
   async function loadPresets() {

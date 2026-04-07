@@ -90,7 +90,7 @@ export default function CompanyPage() {
 
   useEffect(() => {
     if (!slug) return;
-    loadCompany();
+    void loadCompany();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [slug]);
 

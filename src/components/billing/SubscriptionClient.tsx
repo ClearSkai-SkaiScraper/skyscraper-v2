@@ -56,7 +56,7 @@ export function SubscriptionClient({
         setLoading(false);
       }
     }
-    fetchPlans();
+    void fetchPlans();
   }, []);
 
   const handleUpgrade = async (plan: Plan) => {

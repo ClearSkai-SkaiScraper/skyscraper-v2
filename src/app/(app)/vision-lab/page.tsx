@@ -91,7 +91,7 @@ export default function VisionLabPage() {
         setIsLoadingLeads(false);
       }
     };
-    fetchLeads();
+    void fetchLeads();
   }, []);
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {

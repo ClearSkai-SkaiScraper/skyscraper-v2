@@ -57,7 +57,7 @@ export function EvidenceUpload({ claimId, sectionKey, onUploadComplete }: Eviden
 
     // Auto-upload
     uploadFiles.forEach((uploadFile) => {
-      uploadFile_(uploadFile);
+      void uploadFile_(uploadFile);
     });
   };
 

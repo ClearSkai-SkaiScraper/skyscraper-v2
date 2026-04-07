@@ -41,7 +41,7 @@ export default function TeamLibraryTab({ orgId }: { orgId?: string }) {
           type="file"
           onChange={(e) => {
             const f = e.target.files?.[0];
-            if (f) uploadHeadshot(f);
+            if (f) void uploadHeadshot(f);
           }}
         />
       </div>

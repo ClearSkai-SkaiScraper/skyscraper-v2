@@ -62,7 +62,7 @@ export default function InvoiceDetailPage() {
   }, [id, router]);
 
   useEffect(() => {
-    fetchInvoice();
+    void fetchInvoice();
   }, [fetchInvoice]);
 
   const handleSave = async () => {
@@ -78,7 +78,7 @@ export default function InvoiceDetailPage() {
       });
       if (!res.ok) throw new Error("Failed");
       toast.success("Invoice updated");
-      fetchInvoice();
+      void fetchInvoice();
     } catch {
       toast.error("Failed to save");
     } finally {

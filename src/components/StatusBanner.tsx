@@ -73,7 +73,7 @@ export function StatusBanner({ incidents: staticIncidents }: { incidents?: Incid
       }
     };
 
-    fetchStatus();
+    void fetchStatus();
     // Re-check every 2 minutes
     const interval = setInterval(fetchStatus, 2 * 60 * 1000);
     return () => clearInterval(interval);

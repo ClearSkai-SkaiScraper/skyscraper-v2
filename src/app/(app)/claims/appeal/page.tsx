@@ -60,7 +60,7 @@ export default function ClaimsAppealPage() {
 
   useEffect(() => {
     if (claimId) {
-      fetchAppealHistory();
+      void fetchAppealHistory();
     }
   }, [claimId]);
 
@@ -127,7 +127,7 @@ export default function ClaimsAppealPage() {
       setGeneratedDocument(data.document);
       setReportId(data.reportId);
       setSuccess(true);
-      fetchAppealHistory(); // Refresh history
+      void fetchAppealHistory(); // Refresh history
     } catch (err) {
       setError(err.message || "An error occurred while generating the appeal");
     } finally {

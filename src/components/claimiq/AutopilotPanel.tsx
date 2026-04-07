@@ -169,7 +169,7 @@ export function AutopilotPanel({ claimId, className }: AutopilotPanelProps) {
   }, [claimId, setStorePlan]);
 
   useEffect(() => {
-    fetchPlan();
+    void fetchPlan();
   }, [fetchPlan]);
 
   // ── Execute single action ─────────────────────────────────────────────
@@ -195,7 +195,7 @@ export function AutopilotPanel({ claimId, className }: AutopilotPanelProps) {
             durationMs: data.result.durationMs,
           });
           // Refresh readiness
-          refreshAfterChange(claimId, `autopilot_${field}`);
+          void refreshAfterChange(claimId, `autopilot_${field}`);
         } else {
           setFailedFields((prev) => new Map([...prev, [field, data.result?.message || "Failed"]]));
           updateAutopilotAction(field, {
@@ -325,9 +325,9 @@ export function AutopilotPanel({ claimId, className }: AutopilotPanelProps) {
                   if (isRunning) {
                     pauseAutopilot();
                   } else if (isPaused) {
-                    executeAll();
+                    void executeAll();
                   } else {
-                    executeAll();
+                    void executeAll();
                   }
                 }}
                 disabled={autoActions.every((a) => completedFields.has(a.field))}
@@ -552,7 +552,7 @@ export function AutopilotPanel({ claimId, className }: AutopilotPanelProps) {
                   resetAutopilot();
                   setCompletedFields(new Set());
                   setFailedFields(new Map());
-                  fetchPlan();
+                  void fetchPlan();
                 }}
               >
                 <RefreshCw className="h-3 w-3" /> Re-scan
