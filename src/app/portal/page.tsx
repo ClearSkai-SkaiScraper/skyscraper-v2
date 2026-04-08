@@ -55,7 +55,7 @@ export default async function ClientPortalPage() {
   // Middleware reads x-user-type cookie (set by /after-sign-in) and routes accordingly.
   // DO NOT add redirect checks here - they cause infinite loops.
   // If middleware let the user through to /portal, they ARE a client.
-  
+
   // The x-user-type cookie is the AUTHORITATIVE source of user type.
   // It's set during sign-in based on which portal (pro vs client) the user used.
   // If user signed in via /client/sign-in, they're a client, period.

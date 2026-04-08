@@ -98,15 +98,17 @@ vi.mock("@/lib/requestContext", () => ({
 
 // ── Mock: resolveOrg ─────────────────────────────────────────────────────────
 const mockResolveOrg = vi.fn();
+class MockOrgResolutionError extends Error {
+  reason: string;
+  constructor(reason: string, message: string) {
+    super(message);
+    this.name = "OrgResolutionError";
+    this.reason = reason;
+  }
+}
 vi.mock("@/lib/org/resolveOrg", () => ({
   resolveOrg: (...args: unknown[]) => mockResolveOrg(...args),
-  OrgResolutionError: class OrgResolutionError extends Error {
-    code: string;
-    constructor(message: string, code: string) {
-      super(message);
-      this.code = code;
-    }
-  },
+  OrgResolutionError: MockOrgResolutionError,
 }));
 
 // ── Mock: email sender ──────────────────────────────────────────────────────
@@ -117,6 +119,25 @@ vi.mock("@/lib/email/messages", () => ({
 // ── Mock: resolveClient ─────────────────────────────────────────────────────
 vi.mock("@/lib/portal/resolveClient", () => ({
   resolveClient: vi.fn().mockResolvedValue(null),
+}));
+
+// ── Mock: safeOrgContext ────────────────────────────────────────────────────
+const mockSafeOrgContext = vi.fn();
+vi.mock("@/lib/safeOrgContext", () => ({
+  safeOrgContext: (...args: unknown[]) => mockSafeOrgContext(...args),
+}));
+
+// ── Mock: validation helpers ────────────────────────────────────────────────
+vi.mock("@/lib/validation/message-schemas", () => ({
+  sendMessageSchema: {
+    parse: vi.fn((data: any) => data),
+  },
+  threadActionSchema: {
+    parse: vi.fn((data: any) => data),
+  },
+}));
+vi.mock("@/lib/validation/middleware", () => ({
+  validateBody: vi.fn((schema: any) => (data: any) => schema.parse(data)),
 }));
 
 // ── Constants ───────────────────────────────────────────────────────────────
@@ -151,16 +172,19 @@ function mockAuthenticatedPro(orgId = ORG_A, userId = PRO_USER) {
     role: "ADMIN",
     membershipId: "mem_pro",
   });
+  mockSafeOrgContext.mockResolvedValue({
+    status: "ok",
+    ok: true,
+    orgId,
+    userId,
+    role: "ADMIN",
+    membershipId: "mem_pro",
+  });
 }
 
 function mockUnauthenticated() {
   mockResolveOrg.mockRejectedValue(
-    new (class extends Error {
-      code = "NO_SESSION";
-      constructor() {
-        super("Not authenticated");
-      }
-    })()
+    new MockOrgResolutionError("unauthenticated", "No authenticated user session")
   );
 }
 
@@ -181,7 +205,7 @@ describe("Pro ↔ Client Messaging", () => {
     });
 
     it("returns 401 when user is not authenticated", async () => {
-      mockClerkAuth.mockResolvedValue({ userId: null });
+      mockUnauthenticated();
 
       const req = makeRequest("/api/messages/send", {
         threadId: THREAD_ID,
@@ -193,7 +217,7 @@ describe("Pro ↔ Client Messaging", () => {
     });
 
     it("returns 400 when body is empty", async () => {
-      mockClerkAuth.mockResolvedValue({ userId: PRO_USER });
+      mockAuthenticatedPro();
 
       const req = makeRequest("/api/messages/send", {
         threadId: THREAD_ID,
@@ -205,7 +229,7 @@ describe("Pro ↔ Client Messaging", () => {
     });
 
     it("returns 400 when threadId is missing", async () => {
-      mockClerkAuth.mockResolvedValue({ userId: PRO_USER });
+      mockAuthenticatedPro();
 
       const req = makeRequest("/api/messages/send", {
         body: "Hello",
@@ -216,8 +240,8 @@ describe("Pro ↔ Client Messaging", () => {
     });
 
     it("returns 404 when thread does not exist", async () => {
-      mockClerkAuth.mockResolvedValue({ userId: PRO_USER });
-      mockPrisma.messageThread.findFirst.mockResolvedValue(null);
+      mockAuthenticatedPro();
+      mockPrisma.messageThread.findUnique.mockResolvedValue(null);
 
       const req = makeRequest("/api/messages/send", {
         threadId: "thread_nonexistent",
@@ -229,7 +253,7 @@ describe("Pro ↔ Client Messaging", () => {
     });
 
     it("returns 400 when body exceeds 5000 chars", async () => {
-      mockClerkAuth.mockResolvedValue({ userId: PRO_USER });
+      mockAuthenticatedPro();
 
       const req = makeRequest("/api/messages/send", {
         threadId: THREAD_ID,
@@ -428,7 +452,7 @@ describe("Pro ↔ Client Messaging", () => {
         participants: [PRO_USER],
         createdAt: new Date(),
         updatedAt: new Date(),
-        messages: [
+        Message: [
           {
             id: MSG_ID,
             body: "Hello!",
@@ -441,7 +465,9 @@ describe("Pro ↔ Client Messaging", () => {
           },
         ],
       };
+      // Mock both find methods — route tries findFirst (org-scoped), then findUnique (fallback)
       mockPrisma.messageThread.findFirst.mockResolvedValue(threadData);
+      mockPrisma.messageThread.findUnique.mockResolvedValue(threadData);
 
       const req = makeRequest(`/api/messages/${THREAD_ID}`, null, "GET");
       const res = await GET(req, { params: Promise.resolve({ threadId: THREAD_ID }) });

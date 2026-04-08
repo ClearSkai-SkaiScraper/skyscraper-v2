@@ -47,7 +47,7 @@ export default async function PortalLayout({ children }: { children: React.React
     }
 
     user = await currentUser();
-    
+
     // NOTE: Cross-surface routing is handled EXCLUSIVELY by middleware.
     // The middleware reads x-user-type cookie and routes accordingly.
     // DO NOT add redirect logic here - it causes infinite loops.

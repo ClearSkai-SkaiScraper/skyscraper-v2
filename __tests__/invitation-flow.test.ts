@@ -78,15 +78,17 @@ vi.mock("@/lib/auth/rbac", () => ({
 
 // ── Mock: resolveOrg (used by withAuth/withManager) ──────────────────────────
 const mockResolveOrg = vi.fn();
+class MockOrgResolutionError extends Error {
+  reason: string;
+  constructor(reason: string, message: string) {
+    super(message);
+    this.name = "OrgResolutionError";
+    this.reason = reason;
+  }
+}
 vi.mock("@/lib/org/resolveOrg", () => ({
   resolveOrg: (...args: unknown[]) => mockResolveOrg(...args),
-  OrgResolutionError: class OrgResolutionError extends Error {
-    code: string;
-    constructor(message: string, code: string) {
-      super(message);
-      this.code = code;
-    }
-  },
+  OrgResolutionError: MockOrgResolutionError,
 }));
 
 // ── Mock: requestContext ─────────────────────────────────────────────────────
@@ -138,12 +140,7 @@ function mockAuthenticatedManager(orgId = ORG_A, userId = USER_ADMIN) {
 
 function mockUnauthenticated() {
   mockResolveOrg.mockRejectedValue(
-    new (class extends Error {
-      code = "NO_SESSION";
-      constructor() {
-        super("Not authenticated");
-      }
-    })()
+    new MockOrgResolutionError("unauthenticated", "No authenticated user session")
   );
 }
 
@@ -200,7 +197,11 @@ describe("Company Seat Invitations", () => {
     it("returns 409 when invitation already exists", async () => {
       mockAuthenticatedManager();
       mockRequirePermission.mockResolvedValue(undefined);
-      mockPrisma.org.findUnique.mockResolvedValue({ id: ORG_A, name: "Test Co", clerkOrgId: "clerk_org_1" });
+      mockPrisma.org.findUnique.mockResolvedValue({
+        id: ORG_A,
+        name: "Test Co",
+        clerkOrgId: "clerk_org_1",
+      });
       mockCurrentUser.mockResolvedValue({
         firstName: "Admin",
         lastName: "User",
@@ -219,7 +220,11 @@ describe("Company Seat Invitations", () => {
     it("successfully sends invitation and returns 200", async () => {
       mockAuthenticatedManager();
       mockRequirePermission.mockResolvedValue(undefined);
-      mockPrisma.org.findUnique.mockResolvedValue({ id: ORG_A, name: "Test Co", clerkOrgId: "clerk_org_1" });
+      mockPrisma.org.findUnique.mockResolvedValue({
+        id: ORG_A,
+        name: "Test Co",
+        clerkOrgId: "clerk_org_1",
+      });
       mockCurrentUser.mockResolvedValue({
         firstName: "Admin",
         lastName: "User",
@@ -266,7 +271,11 @@ describe("Company Seat Invitations", () => {
     it("cleans up DB entry when email send fails", async () => {
       mockAuthenticatedManager();
       mockRequirePermission.mockResolvedValue(undefined);
-      mockPrisma.org.findUnique.mockResolvedValue({ id: ORG_A, name: "Test Co", clerkOrgId: "clerk_org_1" });
+      mockPrisma.org.findUnique.mockResolvedValue({
+        id: ORG_A,
+        name: "Test Co",
+        clerkOrgId: "clerk_org_1",
+      });
       mockCurrentUser.mockResolvedValue({ firstName: "Admin", lastName: "User" });
       mockPrisma.$queryRaw.mockResolvedValue([]);
       mockPrisma.$executeRaw.mockResolvedValue(1);
@@ -288,12 +297,17 @@ describe("Company Seat Invitations", () => {
     it("normalizes email to lowercase", async () => {
       mockAuthenticatedManager();
       mockRequirePermission.mockResolvedValue(undefined);
-      mockPrisma.org.findUnique.mockResolvedValue({ id: ORG_A, name: "Test Co", clerkOrgId: "clerk_org_1" });
+      mockPrisma.org.findUnique.mockResolvedValue({
+        id: ORG_A,
+        name: "Test Co",
+        clerkOrgId: "clerk_org_1",
+      });
       mockCurrentUser.mockResolvedValue({ firstName: "Admin", lastName: "User" });
       mockPrisma.$queryRaw.mockResolvedValue([]);
       mockPrisma.$executeRaw.mockResolvedValue(1);
 
-      const req = makeRequest({ email: "  UPPER@CASE.COM  " });
+      // Note: Zod .email() rejects whitespace — only test case normalization
+      const req = makeRequest({ email: "UPPER@CASE.COM" });
       const res = await POST(req);
 
       expect(res.status).toBe(200);
@@ -304,7 +318,11 @@ describe("Company Seat Invitations", () => {
     it("maps admin role correctly", async () => {
       mockAuthenticatedManager();
       mockRequirePermission.mockResolvedValue(undefined);
-      mockPrisma.org.findUnique.mockResolvedValue({ id: ORG_A, name: "Test Co", clerkOrgId: "clerk_org_1" });
+      mockPrisma.org.findUnique.mockResolvedValue({
+        id: ORG_A,
+        name: "Test Co",
+        clerkOrgId: "clerk_org_1",
+      });
       mockCurrentUser.mockResolvedValue({ firstName: "Admin", lastName: "User" });
       mockPrisma.$queryRaw.mockResolvedValue([]);
       mockPrisma.$executeRaw.mockResolvedValue(1);
@@ -527,7 +545,11 @@ describe("Company Seat Invitations", () => {
       // No existing membership
       mockPrisma.user_organizations.findFirst.mockResolvedValue(null);
       // Org exists
-      mockPrisma.org.findUnique.mockResolvedValue({ id: ORG_A, name: "Test Co", clerkOrgId: "clerk_org_1" });
+      mockPrisma.org.findUnique.mockResolvedValue({
+        id: ORG_A,
+        name: "Test Co",
+        clerkOrgId: "clerk_org_1",
+      });
       // Create membership succeeds
       mockPrisma.user_organizations.create.mockResolvedValue({
         id: "cuid_test_123",
@@ -592,7 +614,11 @@ describe("Company Seat Invitations", () => {
       });
 
       mockPrisma.user_organizations.findFirst.mockResolvedValue(null);
-      mockPrisma.org.findUnique.mockResolvedValue({ id: ORG_A, name: "Test Co", clerkOrgId: "clerk_org_1" });
+      mockPrisma.org.findUnique.mockResolvedValue({
+        id: ORG_A,
+        name: "Test Co",
+        clerkOrgId: "clerk_org_1",
+      });
       mockPrisma.user_organizations.create.mockResolvedValue({
         id: "cuid_test_123",
         userId: USER_NEW,
