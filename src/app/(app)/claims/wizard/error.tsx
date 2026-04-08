@@ -2,7 +2,7 @@
 
 import { ErrorCard } from "@/components/ui/error-card";
 
-export default function ScopeError({
+export default function WizardError({
   error,
   reset,
 }: {
@@ -13,7 +13,7 @@ export default function ScopeError({
     <ErrorCard
       error={error}
       reset={reset}
-      module="Claims_Scope"
+      module="Claims_Wizard"
       fallbackHref="/claims"
       fallbackLabel="Back to Claims"
     />
