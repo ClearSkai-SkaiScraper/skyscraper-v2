@@ -299,7 +299,7 @@ function formatPhotosSection(photos: any[]): string {
 }
 
 /**
- * Get org branding
+ * Get org branding including cover page canvas data
  */
 async function getOrgBranding(orgId: string) {
   try {
@@ -308,16 +308,37 @@ async function getOrgBranding(orgId: string) {
       prisma.org_branding.findFirst({ where: { orgId } }).catch(() => null),
     ]);
 
+    // Try to fetch cover page canvas data
+    let coverPageData = null;
+    try {
+      const coverPageResult = await prisma.$queryRaw<{ data: string }[]>`
+        SELECT cover_page_data as data FROM org_branding WHERE "orgId" = ${orgId}
+      `;
+      if (coverPageResult?.[0]?.data) {
+        coverPageData = JSON.parse(coverPageResult[0].data);
+      }
+    } catch {
+      // Column may not exist yet - that's OK
+    }
+
     return {
       name: branding?.companyName || org?.name || "SkaiScraper",
       logo: branding?.logoUrl || org?.brandLogoUrl || null,
+      teamPhoto: branding?.teamPhotoUrl || null,
       primaryColor: branding?.colorPrimary || BRAND_PRIMARY,
+      accentColor: branding?.colorAccent || null,
+      slogan: branding?.slogan || null,
+      coverPage: coverPageData, // Canvas elements, backgroundColor, backgroundImage
     };
   } catch {
     return {
       name: "SkaiScraper",
       logo: null,
+      teamPhoto: null,
       primaryColor: BRAND_PRIMARY,
+      accentColor: null,
+      slogan: null,
+      coverPage: null,
     };
   }
 }

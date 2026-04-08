@@ -533,7 +533,7 @@ describe("Pro ↔ Client Messaging", () => {
 
     it("returns 400 for invalid action", async () => {
       mockAuthenticatedPro();
-      mockPrisma.messageThread.findFirst.mockResolvedValue({
+      mockPrisma.messageThread.findUnique.mockResolvedValue({
         id: THREAD_ID,
         orgId: ORG_A,
         participants: [PRO_USER],

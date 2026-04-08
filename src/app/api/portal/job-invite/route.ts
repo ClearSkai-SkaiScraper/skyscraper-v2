@@ -3,9 +3,16 @@ export const dynamic = "force-dynamic";
 import { auth } from "@clerk/nextjs/server";
 import { createId } from "@paralleldrive/cuid2";
 import { NextRequest, NextResponse } from "next/server";
+import { z, ZodError } from "zod";
 
 import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
+
+const jobInviteSchema = z.object({
+  companyId: z.string().min(1, "companyId is required").max(100),
+  jobDescription: z.string().max(5000).nullish(),
+  serviceType: z.string().max(200).nullish(),
+});
 
 /**
  * POST /api/portal/job-invite
@@ -27,12 +34,21 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Client profile not found" }, { status: 404 });
     }
 
-    const body = await request.json();
-    const { companyId, jobDescription, serviceType } = body;
-
-    if (!companyId) {
-      return NextResponse.json({ error: "companyId is required" }, { status: 400 });
+    const raw = await request.json();
+    let parsed: z.infer<typeof jobInviteSchema>;
+    try {
+      parsed = jobInviteSchema.parse(raw);
+    } catch (err) {
+      if (err instanceof ZodError) {
+        return NextResponse.json(
+          { error: err.errors[0]?.message || "Invalid input" },
+          { status: 400 }
+        );
+      }
+      throw err;
     }
+
+    const { companyId, jobDescription, serviceType } = parsed;
 
     // Verify the target company exists
     const company = await prisma.tradesCompany.findUnique({

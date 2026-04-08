@@ -9,10 +9,18 @@ export const dynamic = "force-dynamic";
 
 import { auth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
+import { z, ZodError } from "zod";
 
 import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 import { notifyConnectionRequest } from "@/lib/services/tradesNotifications";
+
+const connectSchema = z.object({
+  clientId: z.string().min(1, "Client ID is required").max(100),
+  contractorId: z.string().min(1, "Contractor ID is required").max(100),
+  claimId: z.string().max(100).nullish(),
+  notes: z.string().max(2000).nullish(),
+});
 
 export async function POST(req: Request) {
   try {
@@ -21,15 +29,21 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const body = await req.json();
-    const { clientId, contractorId, claimId, notes } = body;
-
-    if (!clientId || !contractorId) {
-      return NextResponse.json(
-        { error: "Client ID and Contractor ID are required" },
-        { status: 400 }
-      );
+    const raw = await req.json();
+    let parsed: z.infer<typeof connectSchema>;
+    try {
+      parsed = connectSchema.parse(raw);
+    } catch (err) {
+      if (err instanceof ZodError) {
+        return NextResponse.json(
+          { error: err.errors[0]?.message || "Invalid input" },
+          { status: 400 }
+        );
+      }
+      throw err;
     }
+
+    const { clientId, contractorId, notes } = parsed;
 
     // Verify the client belongs to the authenticated user
     const client = await prisma.client.findUnique({

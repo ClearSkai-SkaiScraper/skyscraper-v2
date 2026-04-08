@@ -12,12 +12,34 @@ export const dynamic = "force-dynamic";
 
 import { auth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
+import { z, ZodError } from "zod";
 
 import { generateClaimNumber } from "@/lib/claims/generateClaimNumber";
 import { generateContactSlug } from "@/lib/generateContactSlug";
 import { logger } from "@/lib/logger";
 import { getClientFromAuth } from "@/lib/portal/getClientFromAuth";
 import prisma from "@/lib/prisma";
+
+const workRequestSchema = z.object({
+  lossType: z.string().min(1, "lossType is required").max(100),
+  description: z.string().min(1, "description is required").max(5000),
+  dateOfLoss: z.string().max(50).nullish(),
+  urgency: z.enum(["low", "routine", "urgent", "emergency"]),
+  contactName: z.string().max(200).nullish(),
+  phone: z.string().max(30).nullish(),
+  email: z.string().email().max(254).nullish(),
+  propertyAddress: z.string().max(500).nullish(),
+  photoUrls: z.array(z.string().url().max(2048)).max(20).default([]),
+  targetProId: z.string().max(100).nullish(),
+  postToJobBoard: z.boolean().nullish(),
+  title: z.string().max(200).nullish(),
+  tradeType: z.string().max(100).nullish(),
+  budget: z.number().min(0).max(10_000_000).nullish(),
+  city: z.string().max(100).nullish(),
+  state: z.string().max(50).nullish(),
+  zip: z.string().max(20).nullish(),
+  address: z.string().max(500).nullish(),
+});
 
 export async function POST(req: Request) {
   try {
@@ -38,8 +60,21 @@ export async function POST(req: Request) {
       );
     }
 
-    // 2. Validate request body
-    const body = await req.json();
+    // 2. Validate request body with Zod
+    const raw = await req.json();
+    let parsed: z.infer<typeof workRequestSchema>;
+    try {
+      parsed = workRequestSchema.parse(raw);
+    } catch (err) {
+      if (err instanceof ZodError) {
+        return NextResponse.json(
+          { success: false, error: err.errors.map((e) => e.message).join(", ") },
+          { status: 400 }
+        );
+      }
+      throw err;
+    }
+
     const {
       lossType,
       description,
@@ -49,8 +84,7 @@ export async function POST(req: Request) {
       phone,
       email,
       propertyAddress,
-      photoUrls = [],
-      // Enhanced fields for job posting
+      photoUrls,
       targetProId,
       postToJobBoard,
       title,
@@ -60,14 +94,7 @@ export async function POST(req: Request) {
       state,
       zip,
       address,
-    } = body;
-
-    if (!lossType || !description || !urgency) {
-      return NextResponse.json(
-        { success: false, error: "Missing required fields: lossType, description, or urgency" },
-        { status: 400 }
-      );
-    }
+    } = parsed;
 
     // 3. Create job posting if requested (this will be the main path going forward)
     if (postToJobBoard || targetProId) {

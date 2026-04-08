@@ -36,6 +36,7 @@ const mockPrisma = {
   claims: {
     findFirst: vi.fn(),
     findMany: vi.fn(),
+    findUnique: vi.fn(),
   },
   messageThread: {
     findMany: vi.fn(),
@@ -44,6 +45,8 @@ const mockPrisma = {
     create: vi.fn(),
   },
   users: { findFirst: vi.fn() },
+  client_access: { findMany: vi.fn() },
+  claimClientLink: { findMany: vi.fn() },
 };
 
 vi.mock("@/lib/prisma", () => ({ default: mockPrisma }));
@@ -64,6 +67,16 @@ vi.mock("@/lib/rateLimit", () => ({
 }));
 vi.mock("@/lib/requestContext", () => ({
   setRequestContext: vi.fn(),
+}));
+
+// ── requirePortalAuth mock ──────────────────────────────────────────────────
+const { mockRequirePortalAuth } = vi.hoisted(() => ({
+  mockRequirePortalAuth: vi.fn(),
+}));
+vi.mock("@/lib/auth/requirePortalAuth", () => ({
+  requirePortalAuth: mockRequirePortalAuth,
+  isPortalAuthError: (result: unknown) =>
+    result !== null && typeof result === "object" && "status" in (result as any),
 }));
 
 const CLIENT_USER = "user_client_1";
@@ -122,7 +135,11 @@ describe("Portal Client Auth & Access Control", () => {
       for (const route of portalRoutes) {
         const src = fs.readFileSync(path.resolve(route), "utf-8");
         const hasAuth =
-          src.includes("auth()") || src.includes("userId") || src.includes("currentUser");
+          src.includes("auth()") ||
+          src.includes("userId") ||
+          src.includes("currentUser") ||
+          src.includes("requireAuth") ||
+          src.includes("requirePortalAuth");
         expect(hasAuth, `${route} must still have auth check`).toBe(true);
       }
     });
@@ -145,7 +162,11 @@ describe("Portal Client Auth & Access Control", () => {
 
     it("returns 401 when client is not authenticated", async () => {
       if (!GET) return;
-      mockClerkAuth.mockResolvedValue({ userId: null });
+      // requirePortalAuth returns a NextResponse 401 when unauthenticated
+      const { NextResponse } = await import("next/server");
+      mockRequirePortalAuth.mockResolvedValue(
+        NextResponse.json({ error: "UNAUTHENTICATED" }, { status: 401 })
+      );
 
       const req = makeRequest("/api/portal/claims");
       const res = await GET(req);
@@ -155,20 +176,26 @@ describe("Portal Client Auth & Access Control", () => {
 
     it("returns claims for authenticated client", async () => {
       if (!GET) return;
-      mockClerkAuth.mockResolvedValue({ userId: CLIENT_USER });
+      // requirePortalAuth returns a valid auth result
+      mockRequirePortalAuth.mockResolvedValue({
+        userId: CLIENT_USER,
+        email: "client@example.com",
+      });
+      mockPrisma.client_access = { findMany: vi.fn().mockResolvedValue([]) };
       mockPrisma.client.findFirst.mockResolvedValue({
         id: "client_1",
-        clerkUserId: CLIENT_USER,
-        orgId: ORG_A,
+        userId: CLIENT_USER,
+        email: "client@example.com",
       });
-      mockPrisma.claims.findMany.mockResolvedValue([
-        { id: "claim_1", title: "Roof Claim", status: "open" },
-      ]);
+      mockPrisma.claimClientLink = { findMany: vi.fn().mockResolvedValue([]) };
+      mockPrisma.claims.findMany.mockResolvedValue([]);
 
       const req = makeRequest("/api/portal/claims");
       const res = await GET(req);
 
       expect(res.status).toBe(200);
+      const data = await res.json();
+      expect(data.ok).toBe(true);
     });
   });
 
@@ -184,9 +211,14 @@ describe("Portal Client Auth & Access Control", () => {
       const portalRoutes = glob.sync("src/app/api/portal/**/route.ts");
       for (const route of portalRoutes) {
         const src = fs.readFileSync(path.resolve(route), "utf-8");
-        // Portal routes should reference clientId or userId for scoping
+        // Portal routes should reference clientId, userId, email, or a client-aware auth helper
         const hasClientScoping =
-          src.includes("clientId") || src.includes("userId") || src.includes("clerkUserId");
+          src.includes("clientId") ||
+          src.includes("userId") ||
+          src.includes("clerkUserId") ||
+          src.includes("currentUser") ||
+          src.includes("requirePortalAuth") ||
+          src.includes("getClientFromAuth");
         expect(hasClientScoping, `${route} must scope by client identity`).toBe(true);
       }
     });

@@ -1,11 +1,16 @@
 export const dynamic = "force-dynamic";
 
 import { NextResponse } from "next/server";
+import { z, ZodError } from "zod";
 
 import { isAuthError, requireAuth } from "@/lib/auth/requireAuth";
 import { logger } from "@/lib/logger";
 import { generatePortalToken } from "@/lib/portalAuth";
 import prisma from "@/lib/prisma";
+
+const generateAccessSchema = z.object({
+  clientId: z.string().min(1, "Missing clientId").max(100),
+});
 
 export async function POST(req: Request) {
   try {
@@ -14,9 +19,21 @@ export async function POST(req: Request) {
     if (isAuthError(auth)) return auth;
     const { orgId } = auth;
 
-    const body = await req.json();
-    const { clientId } = body;
-    if (!clientId) return NextResponse.json({ error: "Missing clientId" }, { status: 400 });
+    const raw = await req.json();
+    let parsed: z.infer<typeof generateAccessSchema>;
+    try {
+      parsed = generateAccessSchema.parse(raw);
+    } catch (err) {
+      if (err instanceof ZodError) {
+        return NextResponse.json(
+          { error: err.errors[0]?.message || "Invalid input" },
+          { status: 400 }
+        );
+      }
+      throw err;
+    }
+
+    const { clientId } = parsed;
 
     // B-02: Verify client belongs to caller's org (cross-tenant fix)
     const client = await prisma.client.findFirst({ where: { id: clientId, orgId } });

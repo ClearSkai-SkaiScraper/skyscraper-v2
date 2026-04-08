@@ -414,14 +414,36 @@ export default function AdvancedCoverPageBuilder() {
                     <Label className="text-xs">Presets</Label>
                     <div className="mt-2 flex flex-wrap gap-2">
                       {[
+                        // Blues
                         "#117CFF",
                         "#1e40af",
-                        "#059669",
-                        "#dc2626",
-                        "#7c3aed",
+                        "#0ea5e9",
                         "#0891b2",
+                        "#06b6d4",
+                        // Greens
+                        "#059669",
+                        "#10b981",
+                        "#22c55e",
+                        "#16a34a",
+                        // Reds/Oranges
+                        "#dc2626",
+                        "#ef4444",
+                        "#f97316",
                         "#ea580c",
+                        "#f59e0b",
+                        // Purples/Pinks
+                        "#7c3aed",
+                        "#8b5cf6",
+                        "#a855f7",
+                        "#d946ef",
+                        "#ec4899",
+                        // Neutrals
                         "#1f2937",
+                        "#374151",
+                        "#4b5563",
+                        "#64748b",
+                        "#0f172a",
+                        // Brand colors (if set)
                         ...(branding?.colorPrimary ? [branding.colorPrimary] : []),
                         ...(branding?.colorAccent ? [branding.colorAccent] : []),
                       ].map((color) => (

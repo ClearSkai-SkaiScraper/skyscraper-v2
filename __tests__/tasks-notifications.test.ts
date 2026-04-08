@@ -18,13 +18,14 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 // ── Hoisted mocks ───────────────────────────────────────────────────────────
-const { mockClerkAuth } = vi.hoisted(() => ({
+const { mockClerkAuth, mockCurrentUser } = vi.hoisted(() => ({
   mockClerkAuth: vi.fn(),
+  mockCurrentUser: vi.fn(),
 }));
 
 vi.mock("@clerk/nextjs/server", () => ({
   auth: mockClerkAuth,
-  currentUser: vi.fn(),
+  currentUser: (...args: unknown[]) => mockCurrentUser(...args),
 }));
 
 const mockPrisma = {
@@ -46,10 +47,21 @@ const mockPrisma = {
     updateMany: vi.fn(),
     count: vi.fn(),
   },
-  users: { findFirst: vi.fn() },
+  tradesCompanyMember: {
+    findFirst: vi.fn(),
+    findUnique: vi.fn(),
+  },
+  users: { findFirst: vi.fn(), findUnique: vi.fn() },
   org: { findUnique: vi.fn() },
-  user_organizations: { findFirst: vi.fn() },
+  user_organizations: { findFirst: vi.fn(), findMany: vi.fn() },
   claims: { findFirst: vi.fn() },
+  contacts: { findFirst: vi.fn(), findUnique: vi.fn() },
+  activities: { create: vi.fn() },
+  claim_timeline_events: { create: vi.fn() },
+  tradeNotification: { findMany: vi.fn(), update: vi.fn(), updateMany: vi.fn() },
+  message: { findMany: vi.fn(), count: vi.fn() },
+  messageThread: { findMany: vi.fn(), findFirst: vi.fn() },
+  client: { findFirst: vi.fn(), findUnique: vi.fn() },
 };
 
 vi.mock("@/lib/prisma", () => ({ default: mockPrisma }));
@@ -72,6 +84,38 @@ vi.mock("@/lib/requestContext", () => ({
   setRequestContext: vi.fn(),
 }));
 
+// ── Mock: permissions ───────────────────────────────────────────────────────
+vi.mock("@/lib/permissions", () => ({
+  requirePermission: vi.fn().mockResolvedValue(undefined),
+  getCurrentUserPermissions: vi.fn().mockResolvedValue([]),
+}));
+
+// ── Mock: manager scope ─────────────────────────────────────────────────────
+vi.mock("@/lib/auth/managerScope", () => ({
+  getVisibleUserIds: vi.fn().mockResolvedValue([]),
+}));
+
+// ── Mock: notifications templates ───────────────────────────────────────────
+vi.mock("@/lib/notifications/templates", () => ({
+  sendTemplatedNotification: vi.fn().mockResolvedValue(undefined),
+}));
+
+// ── Mock: db (raw query layer for notifications) ────────────────────────────
+const mockDb = {
+  query: vi.fn().mockResolvedValue({ rows: [] }),
+};
+vi.mock("@/lib/db", () => ({
+  db: mockDb,
+}));
+
+// ── Mock: validation middleware ─────────────────────────────────────────────
+vi.mock("@/lib/validation/message-schemas", () => ({
+  markNotificationReadSchema: { parse: vi.fn((d: any) => d) },
+}));
+vi.mock("@/lib/validation/middleware", () => ({
+  validateBody: vi.fn((schema: any) => (data: any) => schema.parse(data)),
+}));
+
 const mockResolveOrg = vi.fn();
 class MockOrgResolutionError extends Error {
   reason: string;
@@ -83,6 +127,9 @@ class MockOrgResolutionError extends Error {
 }
 vi.mock("@/lib/org/resolveOrg", () => ({
   resolveOrg: (...args: unknown[]) => mockResolveOrg(...args),
+  resolveOrgSafe: vi
+    .fn()
+    .mockResolvedValue({ orgId: "org_company_A", userId: "user_1", role: "ADMIN" }),
   OrgResolutionError: MockOrgResolutionError,
 }));
 
@@ -114,6 +161,13 @@ function mockAuthenticated(orgId = ORG_A, userId = USER_1) {
     membershipId: "mem_1",
   });
   mockClerkAuth.mockResolvedValue({ userId });
+  mockCurrentUser.mockResolvedValue({
+    id: userId,
+    emailAddresses: [{ emailAddress: "test@example.com" }],
+    primaryEmailAddressId: "ea_1",
+    firstName: "Test",
+    lastName: "User",
+  });
 }
 
 function mockUnauthenticated() {
@@ -121,6 +175,7 @@ function mockUnauthenticated() {
     new MockOrgResolutionError("unauthenticated", "No authenticated user session")
   );
   mockClerkAuth.mockResolvedValue({ userId: null });
+  mockCurrentUser.mockResolvedValue(null);
 }
 
 describe("Tasks & Notifications", () => {
@@ -212,6 +267,13 @@ describe("Tasks & Notifications", () => {
         "POST"
       );
       const res = await POST(req);
+      if (res.status >= 400) {
+        const errorBody = await res
+          .clone()
+          .json()
+          .catch(() => ({}));
+        console.error("Task create error:", res.status, errorBody);
+      }
 
       expect([200, 201]).toContain(res.status);
     });
@@ -245,6 +307,11 @@ describe("Tasks & Notifications", () => {
     it("returns notifications for authenticated user", async () => {
       if (!GET) return;
       mockAuthenticated();
+      // Notifications route chains .catch() on Prisma calls — mock must return thenables
+      mockPrisma.tradesCompanyMember.findUnique.mockResolvedValue(null);
+      mockPrisma.user_organizations.findMany.mockResolvedValue([]);
+      mockPrisma.tradeNotification.findMany.mockResolvedValue([]);
+      mockPrisma.messageThread.findMany.mockResolvedValue([]);
       mockPrisma.projectNotification.findMany.mockResolvedValue([
         { id: "n_1", title: "New message", read: false, userId: USER_1 },
       ]);

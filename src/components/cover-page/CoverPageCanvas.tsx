@@ -467,9 +467,48 @@ export function CoverPageCanvas({
             {(selectedElement.type === "image" || selectedElement.type === "logo") && (
               <div className="space-y-3">
                 <div>
-                  <Label className="text-xs">Image URL</Label>
+                  <Label className="text-xs">Upload Image</Label>
+                  <div className="mt-1">
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      id={`upload-${selectedElement.id}`}
+                      onChange={async (e) => {
+                        const file = e.target.files?.[0];
+                        if (!file) return;
+                        if (file.size > 10 * 1024 * 1024) {
+                          alert("File must be less than 10MB");
+                          return;
+                        }
+                        // Convert to base64 for canvas preview (for production, upload to server)
+                        const reader = new FileReader();
+                        reader.onload = (ev) => {
+                          const dataUrl = ev.target?.result as string;
+                          updateElement(selectedElement.id, { src: dataUrl });
+                        };
+                        reader.readAsDataURL(file);
+                      }}
+                    />
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="w-full"
+                      onClick={() =>
+                        document.getElementById(`upload-${selectedElement.id}`)?.click()
+                      }
+                    >
+                      <Plus className="mr-2 h-4 w-4" />
+                      Upload Image
+                    </Button>
+                  </div>
+                </div>
+                <div>
+                  <Label className="text-xs">Or Enter URL</Label>
                   <Input
-                    value={selectedElement.src || ""}
+                    value={
+                      selectedElement.src?.startsWith("data:") ? "" : selectedElement.src || ""
+                    }
                     onChange={(e) => updateElement(selectedElement.id, { src: e.target.value })}
                     placeholder="https://..."
                     className="mt-1"

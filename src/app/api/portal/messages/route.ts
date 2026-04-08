@@ -1,11 +1,17 @@
 import { auth, currentUser } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
+import { z, ZodError } from "zod";
 
 import { logger } from "@/lib/logger";
 import { getOrCreatePortalThread } from "@/lib/messages/getOrCreatePortalThread";
 import prisma from "@/lib/prisma";
 
 export const dynamic = "force-dynamic";
+
+const sendMessageSchema = z.object({
+  claimId: z.string().min(1, "claimId is required").max(100),
+  message: z.string().min(1, "Message cannot be empty").max(5000, "Message too long"),
+});
 
 /**
  * Verify portal access to a claim using ALL access paths:
@@ -141,16 +147,21 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const body = await req.json();
-    const { claimId, message } = body;
-
-    if (!claimId || !message) {
-      return NextResponse.json({ error: "Missing claimId or message" }, { status: 400 });
+    const raw = await req.json();
+    let parsed: z.infer<typeof sendMessageSchema>;
+    try {
+      parsed = sendMessageSchema.parse(raw);
+    } catch (err) {
+      if (err instanceof ZodError) {
+        return NextResponse.json(
+          { error: err.errors[0]?.message || "Invalid input" },
+          { status: 400 }
+        );
+      }
+      throw err;
     }
 
-    if (typeof message !== "string" || message.trim().length === 0) {
-      return NextResponse.json({ error: "Message cannot be empty" }, { status: 400 });
-    }
+    const { claimId, message } = parsed;
 
     // Get user email to check portal access
     const user = await currentUser();

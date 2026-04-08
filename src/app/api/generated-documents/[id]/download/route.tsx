@@ -5,6 +5,9 @@
  * Downloads PDFs for all document types: PROPOSAL, PACKET, SUPPLEMENT, REBUTTAL, CLAIM_MASTER
  */
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 import { renderToStream } from "@react-pdf/renderer";
 import { NextRequest, NextResponse } from "next/server";
 

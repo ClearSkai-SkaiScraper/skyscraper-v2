@@ -1,5 +1,8 @@
 // app/api/pdf/create/route.ts
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 import { renderToBuffer } from "@react-pdf/renderer";
 import { NextResponse } from "next/server";
 

@@ -5,6 +5,9 @@
  * Generates supplement document with delta analysis as GeneratedDocument
  */
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 import { renderToStream } from "@react-pdf/renderer";
 import { NextRequest, NextResponse } from "next/server";
 

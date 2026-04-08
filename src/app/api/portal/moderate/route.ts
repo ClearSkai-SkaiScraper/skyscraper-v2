@@ -7,9 +7,15 @@ export const dynamic = "force-dynamic";
 
 import { currentUser } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
+import { z, ZodError } from "zod";
 
 import { logger } from "@/lib/logger";
 import { getContentPolicy, moderateContent, quickCheck } from "@/lib/services/content-moderation";
+
+const moderateSchema = z.object({
+  content: z.string().min(1, "Content is required").max(50000),
+  quickCheckOnly: z.boolean().nullish(),
+});
 
 export async function POST(req: NextRequest) {
   try {
@@ -18,12 +24,21 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const body = await req.json();
-    const { content, quickCheckOnly } = body;
-
-    if (!content || typeof content !== "string") {
-      return NextResponse.json({ error: "Content is required" }, { status: 400 });
+    const raw = await req.json();
+    let parsed: z.infer<typeof moderateSchema>;
+    try {
+      parsed = moderateSchema.parse(raw);
+    } catch (err) {
+      if (err instanceof ZodError) {
+        return NextResponse.json(
+          { error: err.errors[0]?.message || "Invalid input" },
+          { status: 400 }
+        );
+      }
+      throw err;
     }
+
+    const { content, quickCheckOnly } = parsed;
 
     // Quick check for real-time validation
     if (quickCheckOnly) {

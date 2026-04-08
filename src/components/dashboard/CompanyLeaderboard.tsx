@@ -60,6 +60,7 @@ export function CompanyLeaderboard() {
   const [entries, setEntries] = useState<LeaderboardEntry[]>([]);
   const [summary, setSummary] = useState<LeaderboardSummary | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [tab, setTab] = useState<TabKey>("revenue");
   const [expanded, setExpanded] = useState(false);
   const [period, setPeriod] = useState<"month" | "3month" | "6month" | "year">("month");
@@ -68,16 +69,24 @@ export function CompanyLeaderboard() {
   useEffect(() => {
     const fetchLeaderboard = async () => {
       setLoading(true);
+      setError(null);
       try {
         const params = new URLSearchParams({ period });
         if (sourceFilter !== "all") params.append("source", sourceFilter);
         const res = await fetch(`/api/finance/leaderboard?${params.toString()}`);
+        if (!res.ok) {
+          throw new Error(`Failed to load leaderboard: ${res.status}`);
+        }
         const data = await res.json();
         if (data.success) {
-          setEntries(data.data.leaderboard);
-          setSummary(data.data.summary);
+          setEntries(data.data?.leaderboard || []);
+          setSummary(data.data?.summary || null);
+        } else {
+          throw new Error(data.error || "Failed to load leaderboard");
         }
       } catch (e) {
+        const msg = e instanceof Error ? e.message : "Failed to load leaderboard";
+        setError(msg);
         logger.error("Leaderboard fetch failed:", e);
       } finally {
         setLoading(false);
@@ -100,6 +109,25 @@ export function CompanyLeaderboard() {
     }
     return { sorted: s, maxVal: max };
   }, [entries, tab]);
+
+  // Error state
+  if (error) {
+    return (
+      <div className="rounded-2xl border border-red-200/50 bg-red-50/50 p-6 text-center dark:border-red-800/30 dark:bg-red-950/20">
+        <div className="flex flex-col items-center gap-3">
+          <BarChart3 className="h-10 w-10 text-red-400" />
+          <p className="font-medium text-red-700 dark:text-red-300">Unable to load leaderboard</p>
+          <p className="text-sm text-red-600/70 dark:text-red-400/70">{error}</p>
+          <button
+            onClick={() => window.location.reload()}
+            className="mt-2 rounded-lg bg-red-100 px-4 py-2 text-sm font-medium text-red-700 transition hover:bg-red-200 dark:bg-red-900/30 dark:text-red-300 dark:hover:bg-red-900/50"
+          >
+            Try Again
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   if (loading) {
     return (

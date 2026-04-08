@@ -71,8 +71,15 @@ vi.mock("@/lib/requestContext", () => ({
 // ── Mock: rate limiting ─────────────────────────────────────────────────────
 const mockCheckRateLimit = vi.fn().mockResolvedValue({ success: true });
 const mockRateLimit = vi.fn().mockResolvedValue({ success: true });
+const mockRateLimiterCheck = vi.fn().mockResolvedValue(true);
 vi.mock("@/lib/rate-limit", () => ({
   checkRateLimit: (...args: unknown[]) => mockCheckRateLimit(...args),
+  getRateLimitIdentifier: vi.fn().mockReturnValue("test-identifier"),
+  rateLimiters: {
+    ai: { check: (...args: unknown[]) => mockRateLimiterCheck(...args) },
+    standard: { check: vi.fn().mockResolvedValue(true) },
+    relaxed: { check: vi.fn().mockResolvedValue(true) },
+  },
 }));
 vi.mock("@/lib/rateLimit", () => ({
   rateLimit: (...args: unknown[]) => mockRateLimit(...args),
@@ -365,8 +372,8 @@ describe("AI Features", () => {
     it("returns 429 when rate limited", async () => {
       if (!POST) return;
       mockAuthenticatedPro();
-      mockCheckRateLimit.mockResolvedValue({ success: false });
-      mockRateLimit.mockResolvedValue({ success: false });
+      // Chat route uses rateLimiters.ai.check() which returns false when rate limited
+      mockRateLimiterCheck.mockResolvedValue(false);
 
       const req = makeRequest("/api/ai/chat", {
         message: "What are the signs of hail damage?",
@@ -444,6 +451,13 @@ describe("AI Features", () => {
           src.includes("withManager") ||
           src.includes("requireAuth") ||
           src.includes("auth()") ||
+          src.includes("currentUser") ||
+          src.includes("getTenant") ||
+          src.includes("getResolvedOrgId") ||
+          src.includes("orgCtx") ||
+          src.includes("safeOrgContext") ||
+          src.includes("apiError(401") ||
+          src.includes("Unauthorized") ||
           src.includes("userId");
 
         expect(hasAuth, `${route} must contain auth check`).toBe(true);

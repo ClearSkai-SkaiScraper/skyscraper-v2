@@ -2,9 +2,15 @@ export const dynamic = "force-dynamic";
 
 import { auth } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
+import { z, ZodError } from "zod";
 
 import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
+
+const saveProSchema = z.object({
+  proId: z.string().min(1, "Pro ID is required").max(100),
+  action: z.enum(["save", "unsave"], { message: "Action must be 'save' or 'unsave'" }),
+});
 
 /**
  * POST /api/portal/save-pro
@@ -18,16 +24,21 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const body = await request.json();
-    const { proId, action } = body;
-
-    if (!proId) {
-      return NextResponse.json({ error: "Pro ID is required" }, { status: 400 });
+    const raw = await request.json();
+    let parsed: z.infer<typeof saveProSchema>;
+    try {
+      parsed = saveProSchema.parse(raw);
+    } catch (err) {
+      if (err instanceof ZodError) {
+        return NextResponse.json(
+          { error: err.errors[0]?.message || "Invalid input" },
+          { status: 400 }
+        );
+      }
+      throw err;
     }
 
-    if (!["save", "unsave"].includes(action)) {
-      return NextResponse.json({ error: "Action must be 'save' or 'unsave'" }, { status: 400 });
-    }
+    const { proId, action } = parsed;
 
     // Get or create client
     let client = await prisma.client.findUnique({
