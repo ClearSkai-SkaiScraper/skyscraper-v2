@@ -86,69 +86,117 @@ export default async function ClaimsPage({ searchParams }: ClaimsPageProps) {
     const page = Math.max(1, parseInt(params?.page || "1", 10) || 1);
     const limit = 20;
     const offset = (page - 1) * limit;
-    const where: any = { orgId: organizationId };
-    if (params.stage) where.status = params.stage.toLowerCase();
-    if (params.search) {
-      where.OR = [
-        { claimNumber: { contains: params.search, mode: "insensitive" } },
-        { title: { contains: params.search, mode: "insensitive" } },
-      ];
-    }
+
     let claims: any[] = [];
     let total = 0;
     let queryFailed = false;
     let errorMessage = "";
 
     try {
-      const [fetchedClaims, fetchedTotal] = await Promise.all([
-        prisma.claims.findMany({
-          where,
-          select: {
-            id: true,
-            orgId: true,
-            title: true,
-            claimNumber: true,
-            status: true,
-            damageType: true,
-            estimatedValue: true,
-            insured_name: true,
-            createdAt: true,
-            updatedAt: true,
-            dateOfLoss: true,
-            properties: {
-              select: {
-                street: true,
-                city: true,
-                state: true,
-                zipCode: true,
-              },
-            },
-            activities: {
-              orderBy: { createdAt: "desc" as const },
-              take: 1,
-              select: { id: true, createdAt: true, description: true },
-            },
-          },
-          orderBy: { createdAt: "desc" },
-          skip: offset,
-          take: limit,
-        }),
-        prisma.claims.count({ where }),
-      ]);
-      claims = fetchedClaims.map((claim: any) => ({
-        ...claim,
+      // Use raw SQL to avoid Prisma model validation issues with missing columns
+      let rawClaims: any[];
+      let countResult: [{ count: number }];
+
+      // Build search condition if present
+      const searchTerm = params.search ? `%${params.search}%` : null;
+
+      if (params.stage && searchTerm) {
+        rawClaims = await prisma.$queryRaw<any[]>`
+          SELECT 
+            c.id, c."orgId", c.title, c."claimNumber", c.status, c."damageType",
+            c."estimatedValue", c.insured_name, c."createdAt", c."updatedAt", c."dateOfLoss",
+            p.street AS property_street, p.city AS property_city, 
+            p.state AS property_state, p."zipCode" AS property_zip
+          FROM claims c
+          LEFT JOIN properties p ON c."propertyId" = p.id
+          WHERE c."orgId" = ${organizationId} 
+            AND c.status = ${params.stage.toLowerCase()}
+            AND (c."claimNumber" ILIKE ${searchTerm} OR c.title ILIKE ${searchTerm})
+          ORDER BY c."createdAt" DESC
+          LIMIT ${limit} OFFSET ${offset}
+        `;
+        countResult = await prisma.$queryRaw<[{ count: number }]>`
+          SELECT COUNT(*)::int as count FROM claims 
+          WHERE "orgId" = ${organizationId} 
+            AND status = ${params.stage.toLowerCase()}
+            AND ("claimNumber" ILIKE ${searchTerm} OR title ILIKE ${searchTerm})
+        `;
+      } else if (params.stage) {
+        rawClaims = await prisma.$queryRaw<any[]>`
+          SELECT 
+            c.id, c."orgId", c.title, c."claimNumber", c.status, c."damageType",
+            c."estimatedValue", c.insured_name, c."createdAt", c."updatedAt", c."dateOfLoss",
+            p.street AS property_street, p.city AS property_city, 
+            p.state AS property_state, p."zipCode" AS property_zip
+          FROM claims c
+          LEFT JOIN properties p ON c."propertyId" = p.id
+          WHERE c."orgId" = ${organizationId} AND c.status = ${params.stage.toLowerCase()}
+          ORDER BY c."createdAt" DESC
+          LIMIT ${limit} OFFSET ${offset}
+        `;
+        countResult = await prisma.$queryRaw<[{ count: number }]>`
+          SELECT COUNT(*)::int as count FROM claims WHERE "orgId" = ${organizationId} AND status = ${params.stage.toLowerCase()}
+        `;
+      } else if (searchTerm) {
+        rawClaims = await prisma.$queryRaw<any[]>`
+          SELECT 
+            c.id, c."orgId", c.title, c."claimNumber", c.status, c."damageType",
+            c."estimatedValue", c.insured_name, c."createdAt", c."updatedAt", c."dateOfLoss",
+            p.street AS property_street, p.city AS property_city, 
+            p.state AS property_state, p."zipCode" AS property_zip
+          FROM claims c
+          LEFT JOIN properties p ON c."propertyId" = p.id
+          WHERE c."orgId" = ${organizationId}
+            AND (c."claimNumber" ILIKE ${searchTerm} OR c.title ILIKE ${searchTerm})
+          ORDER BY c."createdAt" DESC
+          LIMIT ${limit} OFFSET ${offset}
+        `;
+        countResult = await prisma.$queryRaw<[{ count: number }]>`
+          SELECT COUNT(*)::int as count FROM claims 
+          WHERE "orgId" = ${organizationId}
+            AND ("claimNumber" ILIKE ${searchTerm} OR title ILIKE ${searchTerm})
+        `;
+      } else {
+        rawClaims = await prisma.$queryRaw<any[]>`
+          SELECT 
+            c.id, c."orgId", c.title, c."claimNumber", c.status, c."damageType",
+            c."estimatedValue", c.insured_name, c."createdAt", c."updatedAt", c."dateOfLoss",
+            p.street AS property_street, p.city AS property_city, 
+            p.state AS property_state, p."zipCode" AS property_zip
+          FROM claims c
+          LEFT JOIN properties p ON c."propertyId" = p.id
+          WHERE c."orgId" = ${organizationId}
+          ORDER BY c."createdAt" DESC
+          LIMIT ${limit} OFFSET ${offset}
+        `;
+        countResult = await prisma.$queryRaw<[{ count: number }]>`
+          SELECT COUNT(*)::int as count FROM claims WHERE "orgId" = ${organizationId}
+        `;
+      }
+
+      claims = rawClaims.map((claim: any) => ({
+        id: claim.id,
+        orgId: claim.orgId,
+        title: claim.title,
+        claimNumber: claim.claimNumber,
+        status: claim.status,
+        damageType: claim.damageType,
+        estimatedValue: claim.estimatedValue,
+        insured_name: claim.insured_name,
         createdAt: claim.createdAt?.toISOString?.() || null,
         updatedAt: claim.updatedAt?.toISOString?.() || null,
         dateOfLoss: claim.dateOfLoss?.toISOString?.() || null,
-        activities:
-          claim.activities?.map((a: any) => ({
-            ...a,
-            createdAt: a.createdAt?.toISOString?.() || null,
-          })) || [],
+        properties: {
+          street: claim.property_street,
+          city: claim.property_city,
+          state: claim.property_state,
+          zipCode: claim.property_zip,
+        },
+        activities: [], // Skip activities for now - can add later
       }));
-      total = fetchedTotal;
-    } catch (error) {
-      logger.error("[ClaimsPage] Prisma query failed", {
+      total = Number(countResult[0]?.count || 0);
+    } catch (error: any) {
+      logger.error("[ClaimsPage] Raw SQL query failed", {
         error: error?.message || error,
         organizationId,
         stack: error?.stack,
@@ -163,10 +211,9 @@ export default async function ClaimsPage({ searchParams }: ClaimsPageProps) {
     // Calculate stats from ALL claims for this org (not just current page)
     let allOrgClaims: any[] = [];
     try {
-      allOrgClaims = await prisma.claims.findMany({
-        where: { orgId: organizationId },
-        select: { status: true, estimatedValue: true },
-      });
+      allOrgClaims = await prisma.$queryRaw<any[]>`
+        SELECT status, "estimatedValue" FROM claims WHERE "orgId" = ${organizationId}
+      `;
     } catch {
       allOrgClaims = claims; // fallback to current page
     }
@@ -174,10 +221,9 @@ export default async function ClaimsPage({ searchParams }: ClaimsPageProps) {
     // Safely try to fetch signing stats (column may not exist in DB yet)
     let signingData: any[] = [];
     try {
-      signingData = await prisma.claims.findMany({
-        where: { orgId: organizationId },
-        select: { signingStatus: true },
-      });
+      signingData = await prisma.$queryRaw<any[]>`
+        SELECT "signingStatus" FROM claims WHERE "orgId" = ${organizationId}
+      `;
     } catch {
       // signingStatus column may not exist — that's ok
     }
