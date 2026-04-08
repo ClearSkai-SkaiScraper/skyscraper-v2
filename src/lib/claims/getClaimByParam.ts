@@ -80,8 +80,11 @@ export async function getClaimByParam(orgId: string, claimParam: string) {
  */
 export async function getClaimDetailsByParam(orgId: string, claimParam: string) {
   try {
-    const claim = await prismaModel("claims")
-      .findFirst({
+    logger.debug("[getClaimDetailsByParam] Looking up claim", { orgId, claimParam });
+
+    let claim;
+    try {
+      claim = await prismaModel("claims").findFirst({
         where: {
           orgId,
           OR: [{ id: claimParam }, { claimNumber: claimParam }],
@@ -107,18 +110,26 @@ export async function getClaimDetailsByParam(orgId: string, claimParam: string) 
           createdAt: true,
           updatedAt: true,
           propertyId: true,
-          estimatedJobValue: true,
-          jobValueStatus: true,
-          // ✅ HARDENING FIX: These fields exist in schema - select them
+          // ✅ HARDENING FIX: Only select fields that ACTUALLY exist on claims model
           insured_name: true,
           lifecycle_stage: true,
           policy_number: true,
           homeownerEmail: true,
           homeowner_email: true,
-          coverPhotoUrl: true,
+          estimatedJobValue: true,
+          jobValueStatus: true,
+          // NOTE: coverPhotoUrl does NOT exist on claims model
         },
-      })
-      .catch(() => null);
+      });
+    } catch (queryError) {
+      // 🔥 CRITICAL: Log the ACTUAL error instead of silently swallowing it
+      logger.error("[getClaimDetailsByParam] Prisma query FAILED", {
+        orgId,
+        claimParam,
+        error: queryError instanceof Error ? queryError.message : String(queryError),
+      });
+      return null;
+    }
 
     if (!claim) return null;
 
@@ -180,8 +191,9 @@ export async function getClaimDetailsByParam(orgId: string, claimParam: string) 
       insured_name: insuredName,
       homeownerEmail: resolvedEmail,
       policyNumber: claim.policy_number || null,
-      coverPhotoUrl: claim.coverPhotoUrl || null,
-      coverPhotoId: null, // No coverPhotoId column yet
+      // NOTE: coverPhotoUrl doesn't exist on claims model
+      coverPhotoUrl: null,
+      coverPhotoId: null,
       lifecycle_stage: claim.lifecycle_stage || "FILED",
       property: property
         ? { address: `${property.street}, ${property.city}, ${property.state} ${property.zipCode}` }
