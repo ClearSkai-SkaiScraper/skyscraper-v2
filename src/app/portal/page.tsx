@@ -26,7 +26,6 @@ import {
   Users,
 } from "lucide-react";
 import type { Metadata } from "next";
-import { isRedirectError } from "next/dist/client/components/redirect";
 import Image from "next/image";
 import Link from "next/link";
 import { redirect } from "next/navigation";
@@ -52,47 +51,20 @@ export default async function ClientPortalPage() {
     redirect("/client/sign-in?redirect_url=/portal");
   }
 
+  // NOTE: Cross-surface routing is handled EXCLUSIVELY by middleware.
+  // Middleware reads x-user-type cookie (set by /after-sign-in) and routes accordingly.
+  // DO NOT add redirect checks here - they cause infinite loops.
+  // If middleware let the user through to /portal, they ARE a client.
+  
+  // The x-user-type cookie is the AUTHORITATIVE source of user type.
+  // It's set during sign-in based on which portal (pro vs client) the user used.
+  // If user signed in via /client/sign-in, they're a client, period.
+
   let identity = await getUserIdentity(user.id);
   let needsOnboarding = false;
 
-  // NOTE: Cross-surface routing is handled by middleware.
-  // Pro users should be redirected before this page even loads.
-  // This is a safety fallback only.
-  if (identity?.userType === "pro") {
-    logger.warn("[PORTAL] Pro user reached portal page - middleware should have caught this");
-    redirect("/dashboard");
-  }
-
   // Check Clerk metadata for user type hints (before auto-creating as client)
   const clerkUserType = user.publicMetadata?.userType as string | undefined;
-
-  // If Clerk knows this is a pro user but they have no identity, redirect to dashboard
-  // This prevents accidental client registration of pro users
-  if (clerkUserType === "pro") {
-    logger.warn("[PORTAL] Pro user (via Clerk metadata) at portal - redirecting to dashboard");
-    redirect("/dashboard");
-  }
-
-  // CRITICAL: Check for org membership - this is the DEFINITIVE indicator of a pro user
-  // If user has ANY organization membership, they are a pro user, redirect to dashboard
-  try {
-    const orgMembership = await prisma.user_organizations.findFirst({
-      where: { userId: user.id },
-      select: { id: true, organizationId: true },
-    });
-
-    if (orgMembership) {
-      logger.debug(
-        "[PORTAL] User has org membership - this is a PRO user, redirecting to dashboard"
-      );
-      redirect("/dashboard");
-    }
-  } catch (orgError) {
-    // Re-throw Next.js redirect errors — they're not real errors!
-    if (isRedirectError(orgError)) throw orgError;
-    logger.error("[PORTAL] Error checking org membership:", orgError);
-    // Continue - non-fatal, will fall through to other checks
-  }
 
   // If no identity exists, auto-create client registry entry.
   // The user already landed on /portal, so they ARE a client.
@@ -105,9 +77,9 @@ export default async function ClientPortalPage() {
       select: { userType: true },
     });
 
-    if (existingRegistry?.userType === "pro") {
-      redirect("/dashboard");
-    }
+    // NOTE: Even if existingRegistry.userType is "pro", we don't redirect.
+    // Middleware already validated the user type via x-user-type cookie.
+    // If they're here, trust the cookie.
 
     // Auto-create client entry for any user who reaches /portal
     if (!existingRegistry) {

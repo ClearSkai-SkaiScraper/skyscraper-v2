@@ -47,14 +47,11 @@ export default async function PortalLayout({ children }: { children: React.React
     }
 
     user = await currentUser();
-    const role = user?.publicMetadata?.role as string | undefined;
-
-    // If a pro user somehow hits this, send them back to dashboard
-    // NOTE: Middleware should have already handled this - this is a safety fallback
-    if (userId && role && role !== "client") {
-      logger.warn("[Portal Layout] Pro user reached portal - middleware should have caught this");
-      redirect("/dashboard");
-    }
+    
+    // NOTE: Cross-surface routing is handled EXCLUSIVELY by middleware.
+    // The middleware reads x-user-type cookie and routes accordingly.
+    // DO NOT add redirect logic here - it causes infinite loops.
+    // If a pro user somehow reaches this layout, let the page handle it.
 
     // Fetch contractor branding for white-label experience
     // Resolve orgId from the client's linked contractor (ClientProConnection → tradesCompany)
