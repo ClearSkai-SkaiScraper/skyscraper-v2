@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { apiError } from "@/lib/apiError";
-import { requireAuth } from "@/lib/auth";
+import { requireAuth } from "@/lib/auth/requireAuth";
 import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 
