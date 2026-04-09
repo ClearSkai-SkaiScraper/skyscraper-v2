@@ -109,3 +109,29 @@ export function withManager(handler: AuthenticatedHandler) {
 
 // Export types for use in route handlers
 export type { AuthenticatedHandler, ResolvedAuth, RouteContext };
+
+/**
+ * Type-safe route params extractor.
+ *
+ * Safely extracts and unwraps route parameters from the withAuth context,
+ * handling both sync and async params (Next.js 14+ App Router).
+ *
+ * @example
+ * export const GET = withAuth(async (req, { orgId }, routeContext) => {
+ *   const { claimId } = await getRouteParams<{ claimId: string }>(routeContext);
+ *   // claimId is typed as string
+ * });
+ *
+ * @example
+ * // Multi-param routes:
+ * const { claimId, noteId } = await getRouteParams<{ claimId: string; noteId: string }>(routeContext);
+ */
+export async function getRouteParams<T extends Record<string, string>>(
+  routeContext: unknown
+): Promise<T> {
+  const ctx = routeContext as { params: T | Promise<T> } | undefined;
+  if (!ctx?.params) {
+    throw new Error("Missing route params — ensure this route has dynamic segments");
+  }
+  return ctx.params instanceof Promise ? await ctx.params : ctx.params;
+}

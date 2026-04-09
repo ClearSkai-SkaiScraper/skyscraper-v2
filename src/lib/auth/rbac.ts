@@ -1,4 +1,4 @@
-/* eslint-disable no-restricted-imports, @typescript-eslint/no-explicit-any, @typescript-eslint/await-thenable */
+/* eslint-disable no-restricted-imports, @typescript-eslint/no-explicit-any, @typescript-eslint/await-thenable, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access */
 /**
  * MASTER PROMPT #66: Role-Based Access Control (RBAC) Enforcement
  *

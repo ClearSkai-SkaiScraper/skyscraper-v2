@@ -255,6 +255,13 @@ const nextConfig = {
       const externals = Array.isArray(config.externals) ? config.externals : [];
       config.externals = [...externals, "sharp"];
     }
+
+    // Suppress libheif-js critical dependency warning (dynamic require in WASM bundle)
+    config.module = {
+      ...config.module,
+      exprContextCritical: false,
+    };
+
     return config;
   },
   images: {

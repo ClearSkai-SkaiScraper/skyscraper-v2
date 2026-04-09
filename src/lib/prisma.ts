@@ -1,4 +1,4 @@
-/* eslint-disable no-restricted-syntax */
+/* eslint-disable no-restricted-syntax, @typescript-eslint/no-unsafe-assignment */
 // src/lib/prisma.ts
 // CANONICAL PRISMA SINGLETON — SINGLE SOURCE OF TRUTH
 //

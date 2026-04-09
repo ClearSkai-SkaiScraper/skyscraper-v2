@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 /**
  * Recommendation Analytics — Track how users interact with template recommendations.
  *

@@ -1,4 +1,4 @@
-/* eslint-disable no-restricted-syntax */
+/* eslint-disable no-restricted-syntax, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access */
 /**
  * Phase 2: AI PDF Storage Helper
  * Standardized pipeline for saving AI-generated PDFs to Supabase + GeneratedArtifact

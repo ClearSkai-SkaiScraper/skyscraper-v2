@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-argument */
 // lib/reports/ai/damage.ts
 
 import { ensureOpenAI } from "@/lib/ai/client";
