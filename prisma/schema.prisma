@@ -4173,6 +4173,21 @@ model org_branding {
   @@index([ownerId])
 }
 
+model branding_uploads {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  orgId     String
+  userId    String
+  url       String
+  filename  String
+  fileType  String?
+  fileSize  Int?
+  category  String?  @default("general")
+  createdAt DateTime @default(now()) @db.Timestamptz(6)
+
+  @@index([orgId])
+  @@index([category])
+}
+
 model payment_history {
   id           String   @id
   claimId      String
@@ -5544,6 +5559,18 @@ model tradesConnection {
   @@index([addresseeId])
   @@index([requesterId])
   @@index([status])
+}
+
+model trades_blocks {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  blockerId String
+  blockedId String
+  reason    String?
+  createdAt DateTime @default(now()) @db.Timestamptz(6)
+
+  @@unique([blockerId, blockedId])
+  @@index([blockerId])
+  @@index([blockedId])
 }
 
 model tradesFeaturedWork {

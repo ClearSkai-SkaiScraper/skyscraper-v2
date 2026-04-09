@@ -77,7 +77,7 @@ export async function canUpload({
  * Requires: Org ownership with appropriate role.
  */
 export async function canEditClaim({
-  userId,
+  userId: _userId,
   claimId,
 }: {
   userId: string;
@@ -97,7 +97,7 @@ export async function canEditClaim({
  * Requires: Org ownership.
  */
 export async function canInviteClients({
-  userId,
+  userId: _userId,
   claimId,
 }: {
   userId: string;
@@ -117,7 +117,7 @@ export async function canInviteClients({
  * Requires: Org ownership.
  */
 export async function canAttachVendors({
-  userId,
+  userId: _userId,
   claimId,
 }: {
   userId: string;

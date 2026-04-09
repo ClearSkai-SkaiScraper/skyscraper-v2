@@ -1,3 +1,4 @@
+/* eslint-disable no-restricted-syntax */
 // src/lib/prisma.ts
 // CANONICAL PRISMA SINGLETON — SINGLE SOURCE OF TRUTH
 //

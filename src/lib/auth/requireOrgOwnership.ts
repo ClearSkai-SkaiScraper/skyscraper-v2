@@ -39,6 +39,7 @@ export async function requireOrgOwnership(
   model: OrgScopedModel,
   recordId: string,
   orgId: string
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
 ): Promise<any | NextResponse> {
   if (!recordId || !orgId) {
     logger.warn(`[requireOrgOwnership] Missing recordId or orgId`, { model, recordId, orgId });
@@ -46,6 +47,7 @@ export async function requireOrgOwnership(
   }
 
   try {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const delegate = (prisma as any)[model];
     if (!delegate?.findFirst) {
       logger.error(`[requireOrgOwnership] Invalid model: ${model}`);

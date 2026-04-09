@@ -3,6 +3,7 @@
  * Creates org + membership for users who don't have one
  */
 
+/* eslint-disable no-restricted-imports */
 import { auth, currentUser } from "@clerk/nextjs/server";
 
 import { logger } from "@/lib/logger";
@@ -48,7 +49,6 @@ export async function ensureActiveOrgForUser() {
 
     // Create org + user together in transaction
     const name = makeDefaultOrgName(clerkUser);
-    const slug = slugify(name);
 
     const result = await prisma.$transaction(async (tx) => {
       const org = await tx.org.create({
@@ -127,7 +127,6 @@ export async function ensureActiveOrgForUser() {
   // 4) Create org + membership
   const clerkUser = await currentUser();
   const name = makeDefaultOrgName(clerkUser);
-  const slug = slugify(name);
 
   const created = await prisma.$transaction(async (tx) => {
     const org = await tx.org.create({

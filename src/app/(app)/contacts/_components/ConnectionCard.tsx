@@ -1,10 +1,28 @@
 "use client";
 
-import { Building2, Mail, MessageCircle, Phone, UserCheck } from "lucide-react";
+import {
+  Ban,
+  Building2,
+  Mail,
+  MessageCircle,
+  MoreVertical,
+  Phone,
+  UserCheck,
+  UserX,
+} from "lucide-react";
 import { useRouter } from "next/navigation";
+import { useState } from "react";
+import { toast } from "sonner";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 interface ConnectionCardProps {
   conn: {
@@ -19,16 +37,81 @@ interface ConnectionCardProps {
     phone?: string | null;
     specialties?: string[];
     companyId?: string;
+    profileId?: string; // Profile ID for block functionality
   };
+  onRemoved?: () => void;
 }
 
-export function ConnectionCard({ conn }: ConnectionCardProps) {
+export function ConnectionCard({ conn, onRemoved }: ConnectionCardProps) {
   const router = useRouter();
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleCardClick = () => {
     // Navigate to trades company profile if we have a companyId
     if (conn.companyId) {
       router.push(`/trades/companies/${conn.companyId}`);
+    }
+  };
+
+  const handleDisconnect = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!confirm("Are you sure you want to remove this connection?")) return;
+
+    setIsLoading(true);
+    try {
+      const res = await fetch("/api/trades/actions", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "disconnect", connectionId: conn.id }),
+      });
+
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.error || "Failed to remove connection");
+      }
+
+      toast.success(`${conn.name} has been removed from your connections.`);
+      onRemoved?.();
+    } catch (error: any) {
+      toast.error(error.message || "Failed to remove connection");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleBlock = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!conn.profileId) {
+      toast.error("Profile information not available");
+      return;
+    }
+
+    if (
+      !confirm(
+        `Are you sure you want to block ${conn.name}? This will remove the connection and prevent future contact.`
+      )
+    )
+      return;
+
+    setIsLoading(true);
+    try {
+      const res = await fetch("/api/trades/actions", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "block", profileId: conn.profileId }),
+      });
+
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.error || "Failed to block user");
+      }
+
+      toast.success(`${conn.name} has been blocked.`);
+      onRemoved?.();
+    } catch (error: any) {
+      toast.error(error.message || "Failed to block user");
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -69,7 +152,36 @@ export function ConnectionCard({ conn }: ConnectionCardProps) {
               </Badge>
             </div>
           </div>
-          {conn.verified && <UserCheck className="h-5 w-5 text-green-500" />}
+          <div className="pointer-events-auto flex items-center gap-2">
+            {conn.verified && <UserCheck className="h-5 w-5 text-green-500" />}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8"
+                  onClick={(e) => e.stopPropagation()}
+                  disabled={isLoading}
+                >
+                  <MoreVertical className="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem
+                  onClick={handleDisconnect}
+                  className="text-amber-600 focus:text-amber-700"
+                >
+                  <UserX className="mr-2 h-4 w-4" />
+                  Remove Connection
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={handleBlock} className="text-red-600 focus:text-red-700">
+                  <Ban className="mr-2 h-4 w-4" />
+                  Block User
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
         </div>
         <div className="space-y-2">
           {conn.city && conn.state && (

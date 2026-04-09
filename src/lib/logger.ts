@@ -1,3 +1,4 @@
+/* eslint-disable no-restricted-syntax, no-console */
 // ============================================================================
 // H-13: Structured Logger Utility — Sentry-Integrated
 // ============================================================================
@@ -14,7 +15,7 @@ interface LogContext {
   orgId?: string;
   claimId?: string;
   requestId?: string;
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 class Logger {
@@ -24,7 +25,7 @@ class Logger {
     this.context = { ...this.context, ...ctx };
   }
 
-  private log(level: LogLevel, message: string, meta?: any) {
+  private log(level: LogLevel, message: string, meta?: unknown) {
     const timestamp = new Date().toISOString();
     const logEntry = {
       timestamp,
@@ -85,25 +86,25 @@ class Logger {
     }
   }
 
-  debug(message: string, meta?: any) {
+  debug(message: string, meta?: unknown) {
     if (process.env.NODE_ENV === "development") {
       this.log("debug", message, meta);
     }
   }
 
-  info(message: string, meta?: any) {
+  info(message: string, meta?: unknown) {
     this.log("info", message, meta);
   }
 
-  warn(message: string, meta?: any) {
+  warn(message: string, meta?: unknown) {
     this.log("warn", message, meta);
   }
 
-  error(message: string, error?: Error | any, meta?: any) {
+  error(message: string, error?: Error | unknown, meta?: unknown) {
     this.log("error", message, {
-      error: error?.message,
-      stack: error?.stack,
-      ...meta,
+      error: error instanceof Error ? error.message : String(error ?? ""),
+      stack: error instanceof Error ? error.stack : undefined,
+      ...(meta && typeof meta === "object" ? meta : {}),
     });
   }
 
@@ -111,7 +112,7 @@ class Logger {
   startTimer(label: string) {
     const start = performance.now();
     return {
-      end: (meta?: any) => {
+      end: (meta?: unknown) => {
         const duration = performance.now() - start;
         this.info(`${label} completed`, { duration: `${duration.toFixed(2)}ms`, ...meta });
       },
@@ -125,8 +126,9 @@ export const logger = new Logger();
 export const log = logger;
 
 // Export convenience function for API routes
-export function withLogging(handler: Function, context: string) {
-  return async (...args: any[]) => {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function withLogging(handler: (...args: any[]) => Promise<unknown>, context: string) {
+  return async (...args: unknown[]) => {
     const timer = logger.startTimer(context);
     try {
       const result = await handler(...args);

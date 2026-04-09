@@ -16,6 +16,7 @@ import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 
 import CoverPageCanvas, { type CanvasElement } from "@/components/cover-page/CoverPageCanvas";
+import { ImageLibraryCard } from "@/components/cover-page/ImageLibraryCard";
 import { PageContainer } from "@/components/layout/PageContainer";
 import { PageHero } from "@/components/layout/PageHero";
 import { Button } from "@/components/ui/button";
@@ -598,6 +599,31 @@ export default function AdvancedCoverPageBuilder() {
               )}
             </CardContent>
           </Card>
+
+          {/* Image Library */}
+          <ImageLibraryCard
+            onSelectImage={(url) => {
+              setElements((prev) => [
+                ...prev,
+                {
+                  id: `img-${Date.now()}`,
+                  type: "image",
+                  x: 25,
+                  y: 30,
+                  width: 50,
+                  height: 30,
+                  zIndex: prev.length,
+                  src: url,
+                  objectFit: "cover",
+                },
+              ]);
+              toast.success("Image added to canvas");
+            }}
+            onSelectAsBackground={(url) => {
+              setBackgroundImage(url);
+              toast.success("Background image set");
+            }}
+          />
 
           {/* Help */}
           <Card>

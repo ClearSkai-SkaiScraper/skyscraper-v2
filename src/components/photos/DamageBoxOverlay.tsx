@@ -331,9 +331,7 @@ export function DamageBoxOverlay({
                   {/* Source badge: YOLO verified (green check), AI inferred (sparkle), Grouped (multiple) */}
                   {isYolo ? (
                     <span title="YOLO Verified - Precise location detected">
-                      <CheckCircle2
-                        className="h-3 w-3 text-green-300"
-                      />
+                      <CheckCircle2 className="h-3 w-3 text-green-300" />
                     </span>
                   ) : isGrouped ? (
                     <span
@@ -343,7 +341,9 @@ export function DamageBoxOverlay({
                       G
                     </span>
                   ) : (
-                    <span title={isLowConfidenceGpt ? "AI Inferred - Low confidence" : "AI Inferred"}>
+                    <span
+                      title={isLowConfidenceGpt ? "AI Inferred - Low confidence" : "AI Inferred"}
+                    >
                       <Sparkles
                         className={cn(
                           "h-3 w-3",

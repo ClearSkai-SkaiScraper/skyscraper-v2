@@ -481,13 +481,36 @@ export function CoverPageCanvas({
                           alert("File must be less than 10MB");
                           return;
                         }
-                        // Convert to base64 for canvas preview (for production, upload to server)
-                        const reader = new FileReader();
-                        reader.onload = (ev) => {
-                          const dataUrl = ev.target?.result as string;
-                          updateElement(selectedElement.id, { src: dataUrl });
-                        };
-                        reader.readAsDataURL(file);
+                        // Upload to image library
+                        const formData = new FormData();
+                        formData.append("file", file);
+                        formData.append("category", "cover-page");
+                        try {
+                          const res = await fetch("/api/branding/image-library", {
+                            method: "POST",
+                            body: formData,
+                          });
+                          if (res.ok) {
+                            const { image } = await res.json();
+                            updateElement(selectedElement.id, { src: image.url });
+                          } else {
+                            // Fallback to base64
+                            const reader = new FileReader();
+                            reader.onload = (ev) => {
+                              const dataUrl = ev.target?.result as string;
+                              updateElement(selectedElement.id, { src: dataUrl });
+                            };
+                            reader.readAsDataURL(file);
+                          }
+                        } catch {
+                          // Fallback to base64
+                          const reader = new FileReader();
+                          reader.onload = (ev) => {
+                            const dataUrl = ev.target?.result as string;
+                            updateElement(selectedElement.id, { src: dataUrl });
+                          };
+                          reader.readAsDataURL(file);
+                        }
                       }}
                     />
                     <Button
@@ -499,21 +522,19 @@ export function CoverPageCanvas({
                       }
                     >
                       <Plus className="mr-2 h-4 w-4" />
-                      Upload Image
+                      Upload New Image
                     </Button>
                   </div>
                 </div>
-                <div>
-                  <Label className="text-xs">Or Enter URL</Label>
-                  <Input
-                    value={
-                      selectedElement.src?.startsWith("data:") ? "" : selectedElement.src || ""
-                    }
-                    onChange={(e) => updateElement(selectedElement.id, { src: e.target.value })}
-                    placeholder="https://..."
-                    className="mt-1"
-                  />
-                </div>
+                {selectedElement.src && (
+                  <div className="rounded-lg border p-2">
+                    <img
+                      src={selectedElement.src}
+                      alt="Preview"
+                      className="h-20 w-full rounded object-contain"
+                    />
+                  </div>
+                )}
                 <div>
                   <Label className="text-xs">Fit</Label>
                   <Select

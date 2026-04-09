@@ -66,6 +66,7 @@ const navSections: NavSection[] = [
       { label: "Job Pipeline", href: "/pipeline", icon: Briefcase },
       { label: "Smart Actions", href: "/ai/smart-actions", icon: Sparkles },
       { label: "Quick DOL", href: "/quick-dol", icon: Cloud },
+      { label: "Notifications", href: "/notifications", icon: Zap },
     ],
   },
   {
@@ -129,6 +130,7 @@ const navSections: NavSection[] = [
     label: "Company & Network",
     items: [
       { label: "My Profile & Company", href: "/trades/profile", icon: Users },
+      { label: "Company Branding", href: "/settings/branding", icon: Building2 },
       { label: "Trades Network Hub", href: "/trades", icon: Users },
       { label: "Work Requests", href: "/network/work-requests", icon: ClipboardList },
       { label: "Job Board", href: "/trades/jobs", icon: Briefcase },

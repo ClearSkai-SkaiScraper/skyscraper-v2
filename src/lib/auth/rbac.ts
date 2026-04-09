@@ -34,6 +34,7 @@
  * ```
  */
 
+/* eslint-disable no-restricted-imports, no-restricted-syntax */
 import { auth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 
@@ -173,8 +174,8 @@ export async function getCurrentUserRole(): Promise<{
     try {
       const platformOwnerEmail = process.env.PLATFORM_OWNER_EMAIL;
       if (platformOwnerEmail) {
-        const ownerEmail =
-          (sessionClaims as any)?.email || (sessionClaims as any)?.primaryEmailAddress;
+        const claims = sessionClaims as Record<string, unknown> | null;
+        const ownerEmail = (claims?.email as string) || (claims?.primaryEmailAddress as string);
         if (ownerEmail === platformOwnerEmail) {
           return { userId, orgId: effectiveOrgId, role: "admin" };
         }
@@ -346,14 +347,18 @@ export async function requireRole(minimumRole: TeamRole): Promise<{
   const { hasAccess, role, userId, orgId } = await checkRole(minimumRole);
 
   if (!hasAccess) {
-    const error = new Error(
+    const error: Error & {
+      statusCode?: number;
+      currentRole?: TeamRole | null;
+      requiredRole?: TeamRole;
+    } = new Error(
       role
         ? `Insufficient permissions. Required: ${minimumRole}, Current: ${role}`
         : "Authentication required"
     );
-    (error as any).statusCode = 403;
-    (error as any).currentRole = role;
-    (error as any).requiredRole = minimumRole;
+    error.statusCode = 403;
+    error.currentRole = role;
+    error.requiredRole = minimumRole;
     throw error;
   }
 
@@ -376,19 +381,23 @@ export async function requirePermission(permission: Permission): Promise<{
   const userRole = await getCurrentUserRole();
 
   if (!userRole) {
-    const error = new Error("Authentication required");
-    (error as any).statusCode = 401;
+    const error: Error & { statusCode?: number } = new Error("Authentication required");
+    error.statusCode = 401;
     throw error;
   }
 
   const allowedPermissions = ROLE_PERMISSIONS[userRole.role];
   if (!allowedPermissions.includes(permission)) {
-    const error = new Error(
+    const error: Error & {
+      statusCode?: number;
+      currentRole?: TeamRole;
+      requiredPermission?: Permission;
+    } = new Error(
       `Permission denied. Required permission: ${permission}, Current role: ${userRole.role}`
     );
-    (error as any).statusCode = 403;
-    (error as any).currentRole = userRole.role;
-    (error as any).requiredPermission = permission;
+    error.statusCode = 403;
+    error.currentRole = userRole.role;
+    error.requiredPermission = permission;
     throw error;
   }
 
@@ -431,26 +440,35 @@ export function createUnauthorizedResponse(
   );
 }
 
+/** Error shape thrown by requireRole/requirePermission */
+interface RbacError extends Error {
+  statusCode?: number;
+  currentRole?: TeamRole | null;
+  requiredRole?: TeamRole;
+  requiredPermission?: Permission;
+}
+
 /**
  * Middleware helper to wrap API handlers with role check
  */
 export function withRole(
-  handler: (req: Request, context: any) => Promise<NextResponse>,
+  handler: (req: Request, context: Record<string, unknown>) => Promise<NextResponse>,
   minimumRole: TeamRole
 ) {
-  return async (req: Request, context: any): Promise<NextResponse> => {
+  return async (req: Request, context: Record<string, unknown>): Promise<NextResponse> => {
     try {
       await requireRole(minimumRole);
       return await handler(req, context);
-    } catch (error: any) {
-      if (error.statusCode === 403) {
-        return createForbiddenResponse(error.message, {
-          currentRole: error.currentRole,
-          requiredRole: error.requiredRole,
+    } catch (error: unknown) {
+      const rbacErr = error as RbacError;
+      if (rbacErr.statusCode === 403) {
+        return createForbiddenResponse(rbacErr.message, {
+          currentRole: rbacErr.currentRole,
+          requiredRole: rbacErr.requiredRole,
         });
       }
-      if (error.statusCode === 401) {
-        return createUnauthorizedResponse(error.message);
+      if (rbacErr.statusCode === 401) {
+        return createUnauthorizedResponse(rbacErr.message);
       }
       throw error;
     }
@@ -461,22 +479,23 @@ export function withRole(
  * Middleware helper to wrap API handlers with permission check
  */
 export function withPermission(
-  handler: (req: Request, context: any) => Promise<NextResponse>,
+  handler: (req: Request, context: Record<string, unknown>) => Promise<NextResponse>,
   permission: Permission
 ) {
-  return async (req: Request, context: any): Promise<NextResponse> => {
+  return async (req: Request, context: Record<string, unknown>): Promise<NextResponse> => {
     try {
       await requirePermission(permission);
       return await handler(req, context);
-    } catch (error: any) {
-      if (error.statusCode === 403) {
-        return createForbiddenResponse(error.message, {
-          currentRole: error.currentRole,
-          requiredPermission: error.requiredPermission,
+    } catch (error: unknown) {
+      const rbacErr = error as RbacError;
+      if (rbacErr.statusCode === 403) {
+        return createForbiddenResponse(rbacErr.message, {
+          currentRole: rbacErr.currentRole,
+          requiredPermission: rbacErr.requiredPermission,
         });
       }
-      if (error.statusCode === 401) {
-        return createUnauthorizedResponse(error.message);
+      if (rbacErr.statusCode === 401) {
+        return createUnauthorizedResponse(rbacErr.message);
       }
       throw error;
     }

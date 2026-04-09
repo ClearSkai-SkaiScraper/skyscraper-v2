@@ -46,6 +46,7 @@ const navSections: NavSection[] = [
       { label: "Analytics Hub", href: "/analytics" },
       { label: "Smart Actions", href: "/ai/smart-actions" },
       { label: "Quick DOL", href: "/quick-dol" },
+      { label: "Notifications", href: "/notifications" },
     ],
   },
   {
@@ -128,11 +129,11 @@ const navSections: NavSection[] = [
     label: "Company",
     items: [
       { label: "My Profile & Company", href: "/trades/profile" },
+      { label: "Company Branding", href: "/settings/branding" },
       { label: "Company Settings", href: "/settings" },
       { label: "Team Leaderboard", href: "/leaderboard" },
       { label: "Team & Company Seats", href: "/teams" },
       { label: "Company Hierarchy", href: "/teams/hierarchy" },
-      { label: "Notifications", href: "/notifications" },
       { label: "Archive", href: "/archive" },
     ],
   },

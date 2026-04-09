@@ -3,6 +3,7 @@
  * This is the MOST IMPORTANT utility for SaaS data isolation
  */
 
+/* eslint-disable no-restricted-imports, no-restricted-syntax */
 import { auth } from "@clerk/nextjs/server";
 
 import { logger } from "@/lib/logger";
@@ -17,21 +18,22 @@ async function retryWithBackoff<T>(
   maxRetries = 3,
   initialDelay = 100
 ): Promise<T> {
-  let lastError: any;
+  let lastError: unknown;
 
   for (let attempt = 1; attempt <= maxRetries; attempt++) {
     try {
       return await operation();
-    } catch (error: any) {
+    } catch (error: unknown) {
       lastError = error;
 
       // Retry on connection errors
+      const errObj = error as { code?: string; message?: string };
       const isRetryable =
-        error.code === "ECONNRESET" ||
-        error.code === "ETIMEDOUT" ||
-        error.code === "ENOTFOUND" ||
-        error.message?.includes("Connection terminated") ||
-        error.message?.includes("Connection closed");
+        errObj.code === "ECONNRESET" ||
+        errObj.code === "ETIMEDOUT" ||
+        errObj.code === "ENOTFOUND" ||
+        errObj.message?.includes("Connection terminated") ||
+        errObj.message?.includes("Connection closed");
 
       if (!isRetryable || attempt === maxRetries) {
         throw error;
@@ -39,7 +41,7 @@ async function retryWithBackoff<T>(
 
       const delay = initialDelay * Math.pow(2, attempt - 1);
       logger.warn(
-        `[Retry ${attempt}/${maxRetries}] Network error (${error.code}), retrying in ${delay}ms...`
+        `[Retry ${attempt}/${maxRetries}] Network error (${errObj.code}), retrying in ${delay}ms...`
       );
       await new Promise((resolve) => setTimeout(resolve, delay));
     }
@@ -161,10 +163,10 @@ export async function getTenant(): Promise<string | null> {
           })
         );
         logger.debug("[getTenant] AUTO-CREATED Org:", Org.id);
-      } catch (createError: any) {
+      } catch (createError: unknown) {
         logger.error(
           "[getTenant] ORG CREATION FAILURE (auto-create disabled or failed):",
-          createError.message
+          (createError as Error).message
         );
       }
     } else if (!membership) {
@@ -176,7 +178,10 @@ export async function getTenant(): Promise<string | null> {
     }
 
     // 🔧 FIX: Use organizationId with comprehensive fallback for all field name variations
-    const orgId = membership?.organizationId ?? (membership as any)?.organization_id ?? null;
+    const orgId =
+      membership?.organizationId ??
+      ((membership as Record<string, unknown>)?.organization_id as string) ??
+      null;
     logger.debug("[getTenant] Returning orgId:", orgId);
 
     if (!orgId) {
@@ -344,9 +349,11 @@ export function withOrgScope<
   T extends (
     req: Request,
     context: { userId: string; orgId: string },
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     ...args: any[]
   ) => Promise<Response>,
 >(handler: T) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   return async (req: Request, ...args: any[]) => {
     try {
       const { userId } = await auth();
@@ -356,13 +363,14 @@ export function withOrgScope<
 
       const orgId = await requireTenant();
       return await handler(req, { userId, orgId }, ...args);
-    } catch (error: any) {
+    } catch (error: unknown) {
       logger.error("[ORG SCOPE ERROR]", error);
       // Classify: auth errors → 401, everything else → 500
+      const errMsg = (error as Error)?.message ?? "";
       const isAuthError =
-        error.message?.includes("Unauthorized") ||
-        error.message?.includes("No active tenant") ||
-        error.message?.includes("No org membership");
+        errMsg.includes("Unauthorized") ||
+        errMsg.includes("No active tenant") ||
+        errMsg.includes("No org membership");
       const status = isAuthError ? 401 : 500;
       const safeMessage = isAuthError ? "Unauthorized" : "Internal server error";
       return NextResponse.json({ ok: false, error: safeMessage }, { status });

@@ -5,7 +5,9 @@
  * Provides TOTP-based 2FA for enhanced security
  */
 
+/* eslint-disable no-restricted-imports */
 import { clerkClient } from "@clerk/nextjs/server";
+import crypto from "crypto";
 
 import { logger } from "@/lib/logger";
 
@@ -66,7 +68,7 @@ export async function disable2FA(userId: string): Promise<void> {
 export async function is2FAEnabled(userId: string): Promise<boolean> {
   try {
     const user = await clerkClient.users.getUser(userId);
-    return !!(user.privateMetadata as any)?.mfaEnabled;
+    return !!(user.privateMetadata as Record<string, unknown>)?.mfaEnabled;
   } catch {
     return false;
   }
@@ -78,7 +80,8 @@ export async function is2FAEnabled(userId: string): Promise<boolean> {
 export async function verifyBackupCode(userId: string, code: string): Promise<boolean> {
   try {
     const user = await clerkClient.users.getUser(userId);
-    const backupCodes = ((user.privateMetadata as any)?.backupCodes || []) as string[];
+    const backupCodes = ((user.privateMetadata as Record<string, unknown>)?.backupCodes ||
+      []) as string[];
 
     const codeHash = hashBackupCode(code);
     const codeIndex = backupCodes.indexOf(codeHash);
@@ -123,7 +126,6 @@ export async function regenerateBackupCodes(userId: string): Promise<{ backupCod
  * Generate backup code (8 characters)
  */
 function generateBackupCode(): string {
-  const crypto = require("crypto");
   return crypto.randomBytes(4).toString("hex").toUpperCase();
 }
 
@@ -131,7 +133,6 @@ function generateBackupCode(): string {
  * Hash backup code for storage
  */
 function hashBackupCode(code: string): string {
-  const crypto = require("crypto");
   return crypto.createHash("sha256").update(code).digest("hex");
 }
 
@@ -141,7 +142,8 @@ function hashBackupCode(code: string): string {
 export async function getRemainingBackupCodes(userId: string): Promise<number> {
   try {
     const user = await clerkClient.users.getUser(userId);
-    const backupCodes = ((user.privateMetadata as any)?.backupCodes || []) as string[];
+    const backupCodes = ((user.privateMetadata as Record<string, unknown>)?.backupCodes ||
+      []) as string[];
     return backupCodes.length;
   } catch {
     return 0;
@@ -153,7 +155,7 @@ export async function getRemainingBackupCodes(userId: string): Promise<number> {
  */
 export async function enforce2FAForOrg(orgId: string, required: boolean): Promise<void> {
   // Store org 2FA requirement in database
-  const prisma = require("@/lib/prisma").default;
+  const { default: prisma } = await import("@/lib/prisma");
 
   await prisma.org
     .update({
@@ -173,7 +175,7 @@ export async function enforce2FAForOrg(orgId: string, required: boolean): Promis
  */
 export async function orgRequires2FA(orgId: string): Promise<boolean> {
   try {
-    const prisma = require("@/lib/prisma").default;
+    const { default: prisma } = await import("@/lib/prisma");
 
     const org = await prisma.org.findUnique({
       where: { id: orgId },
@@ -201,7 +203,9 @@ export async function get2FASettings(userId: string): Promise<{
 
   try {
     const user = await clerkClient.users.getUser(userId);
-    enabledAt = (user.privateMetadata as any)?.mfaEnabledAt;
+    enabledAt = (user.privateMetadata as Record<string, unknown>)?.mfaEnabledAt as
+      | string
+      | undefined;
   } catch {
     // Ignore
   }

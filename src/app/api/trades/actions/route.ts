@@ -39,6 +39,19 @@ const ActionSchema = z.discriminatedUnion("action", [
     reason: z.string().optional(),
   }),
   z.object({
+    action: z.literal("disconnect"),
+    connectionId: z.string(),
+  }),
+  z.object({
+    action: z.literal("block"),
+    profileId: z.string(),
+    reason: z.string().optional(),
+  }),
+  z.object({
+    action: z.literal("unblock"),
+    profileId: z.string(),
+  }),
+  z.object({
     action: z.literal("apply"),
     jobId: z.string(),
     message: z.string().optional(),
@@ -107,6 +120,15 @@ export const POST = withAuth(async (req: NextRequest, { userId, orgId }) => {
 
       case "decline":
         return handleDecline(userId, input);
+
+      case "disconnect":
+        return handleDisconnect(userId, input);
+
+      case "block":
+        return handleBlock(userId, input);
+
+      case "unblock":
+        return handleUnblock(userId, input);
 
       case "apply":
         return handleApply(userId, input);
@@ -223,6 +245,129 @@ async function handleDecline(userId: string, input: Extract<ActionInput, { actio
   }
 
   return NextResponse.json({ error: "connectionId or inviteId required" }, { status: 400 });
+}
+
+async function handleDisconnect(
+  userId: string,
+  input: Extract<ActionInput, { action: "disconnect" }>
+) {
+  // Get the user's trades profile
+  const profile = await prisma.tradesProfile.findFirst({ where: { userId } });
+  if (!profile) {
+    return NextResponse.json({ error: "Trades profile required" }, { status: 400 });
+  }
+
+  // Find the connection - user could be either requester or addressee
+  const conn = await tradesConn.findFirst({
+    where: {
+      id: input.connectionId,
+      OR: [{ requesterId: profile.id }, { addresseeId: profile.id }],
+    },
+  });
+
+  if (!conn) {
+    return NextResponse.json(
+      { error: "Connection not found or you are not part of it" },
+      { status: 404 }
+    );
+  }
+
+  // Delete the connection entirely
+  await tradesConn.delete({
+    where: { id: input.connectionId },
+  });
+
+  logger.info("[Trades] Connection removed", {
+    userId,
+    connectionId: input.connectionId,
+  });
+
+  return NextResponse.json({ success: true, message: "Connection removed" });
+}
+
+async function handleBlock(userId: string, input: Extract<ActionInput, { action: "block" }>) {
+  // Get the user's trades profile
+  const profile = await prisma.tradesProfile.findFirst({ where: { userId } });
+  if (!profile) {
+    return NextResponse.json({ error: "Trades profile required" }, { status: 400 });
+  }
+
+  // Check if already blocked using raw query (table may not exist yet)
+  try {
+    const existingBlock = await prisma.$queryRaw<Array<{ id: string }>>`
+      SELECT id FROM trades_blocks
+      WHERE "blockerId" = ${profile.id} AND "blockedId" = ${input.profileId}
+      LIMIT 1
+    `;
+
+    if (existingBlock.length > 0) {
+      return NextResponse.json({ error: "User is already blocked" }, { status: 409 });
+    }
+
+    // Create block record
+    await prisma.$executeRaw`
+      INSERT INTO trades_blocks (id, "blockerId", "blockedId", reason, "createdAt")
+      VALUES (gen_random_uuid(), ${profile.id}, ${input.profileId}, ${input.reason || null}, NOW())
+    `;
+  } catch (err: any) {
+    // If table doesn't exist, skip blocking for now
+    if (err?.code === "42P01" || err?.message?.includes("does not exist")) {
+      logger.warn("[Trades] trades_blocks table not yet created, skipping block");
+    } else {
+      throw err;
+    }
+  }
+
+  // Also remove any existing connection between these profiles
+  await tradesConn.deleteMany({
+    where: {
+      OR: [
+        { requesterId: profile.id, addresseeId: input.profileId },
+        { requesterId: input.profileId, addresseeId: profile.id },
+      ],
+    },
+  });
+
+  logger.info("[Trades] User blocked", {
+    userId,
+    blockedProfileId: input.profileId,
+    reason: input.reason,
+  });
+
+  return NextResponse.json({ success: true, message: "User blocked" });
+}
+
+async function handleUnblock(userId: string, input: Extract<ActionInput, { action: "unblock" }>) {
+  // Get the user's trades profile
+  const profile = await prisma.tradesProfile.findFirst({ where: { userId } });
+  if (!profile) {
+    return NextResponse.json({ error: "Trades profile required" }, { status: 400 });
+  }
+
+  // Find and delete the block using raw query
+  try {
+    const result = await prisma.$executeRaw`
+      DELETE FROM trades_blocks
+      WHERE "blockerId" = ${profile.id} AND "blockedId" = ${input.profileId}
+    `;
+
+    if (result === 0) {
+      return NextResponse.json({ error: "User is not blocked" }, { status: 404 });
+    }
+  } catch (err: any) {
+    // If table doesn't exist, user wasn't blocked
+    if (err?.code === "42P01" || err?.message?.includes("does not exist")) {
+      return NextResponse.json({ error: "User is not blocked" }, { status: 404 });
+    }
+    throw err;
+  }
+
+  logger.info("[Trades] User unblocked", {
+    userId,
+    unblockedProfileId: input.profileId,
+  });
+
+  return NextResponse.json({ success: true, message: "User unblocked" });
 }
 
 async function handleApply(userId: string, input: Extract<ActionInput, { action: "apply" }>) {

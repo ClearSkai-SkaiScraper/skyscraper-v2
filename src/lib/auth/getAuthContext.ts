@@ -1,10 +1,11 @@
 // src/lib/auth/getAuthContext.ts
+/* eslint-disable no-restricted-imports */
 import { auth, currentUser } from "@clerk/nextjs/server";
 
 export type AuthContext = {
   userId: string | null;
   orgId: string | null;
-  user: any | null;
+  user: Awaited<ReturnType<typeof currentUser>>;
 };
 
 export async function getAuthContext(): Promise<AuthContext> {

@@ -3,6 +3,7 @@
  * Returns NextResponse errors instead of redirects (unlike page guards)
  */
 
+/* eslint-disable no-restricted-imports */
 import { auth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 

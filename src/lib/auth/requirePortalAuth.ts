@@ -26,6 +26,7 @@
  * ============================================================================
  */
 
+/* eslint-disable no-restricted-imports */
 import "server-only";
 
 import { auth } from "@clerk/nextjs/server";

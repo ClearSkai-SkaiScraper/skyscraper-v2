@@ -10,6 +10,7 @@
  * Use this EVERYWHERE that needs org context.
  */
 
+/* eslint-disable no-restricted-imports */
 import { auth } from "@clerk/nextjs/server";
 
 import { logger } from "@/lib/logger";

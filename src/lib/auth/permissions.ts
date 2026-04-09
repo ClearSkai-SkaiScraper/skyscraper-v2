@@ -9,6 +9,7 @@
  *
  * @see src/lib/auth/rbac.ts — the canonical System B
  */
+/* eslint-disable no-restricted-imports */
 import { auth } from "@clerk/nextjs/server";
 
 import { getTenant } from "@/lib/auth/tenant";
@@ -206,7 +207,7 @@ export async function getUserPermissions(): Promise<Permission[]> {
 }
 
 // Legacy function for backwards compatibility
-export async function ensureRole(userId: string, allowedRoles: string[]) {
+export async function ensureRole(_userId: string, allowedRoles: string[]) {
   logger.warn("ensureRole is deprecated - use requireRole or requirePermission instead");
   const role = await getUserRole();
   if (!role) {
@@ -226,7 +227,7 @@ export async function ensureRole(userId: string, allowedRoles: string[]) {
 }
 
 // Legacy function for backwards compatibility
-export async function getUserRoles(userId: string): Promise<string[]> {
+export async function getUserRoles(_userId: string): Promise<string[]> {
   logger.warn("getUserRoles is deprecated - use getUserRole instead");
   const role = await getUserRole();
   return role ? [role] : [];
@@ -241,7 +242,7 @@ export async function getUserRoles(userId: string): Promise<string[]> {
  * Requires: Claim ownership OR portal access with EDITOR role
  */
 export async function canUpload({
-  userId,
+  userId: _userId,
   claimId,
 }: {
   userId: string;
@@ -281,7 +282,7 @@ export async function canUpload({
  * Requires: Org ownership with appropriate role
  */
 export async function canEditClaim({
-  userId,
+  userId: _userId,
   claimId,
 }: {
   userId: string;
@@ -308,7 +309,7 @@ export async function canEditClaim({
  * Requires: Org ownership
  */
 export async function canInviteClients({
-  userId,
+  userId: _userId,
   claimId,
 }: {
   userId: string;
@@ -335,7 +336,7 @@ export async function canInviteClients({
  * Requires: Org ownership
  */
 export async function canAttachVendors({
-  userId,
+  userId: _userId,
   claimId,
 }: {
   userId: string;

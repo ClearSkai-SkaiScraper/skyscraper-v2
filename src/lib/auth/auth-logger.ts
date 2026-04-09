@@ -1,3 +1,4 @@
+/* eslint-disable no-restricted-imports */
 import * as originalClerk from "@clerk/nextjs/server";
 
 import { logger } from "@/lib/logger";

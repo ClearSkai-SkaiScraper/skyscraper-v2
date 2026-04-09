@@ -41,7 +41,7 @@ type ResolvedAuth = {
 type AuthenticatedHandler = (
   req: NextRequest,
   ctx: ResolvedAuth,
-  params?: any
+  params?: Record<string, unknown>
 ) => Promise<NextResponse | Response>;
 
 /**
@@ -65,7 +65,10 @@ type AuthenticatedHandler = (
  * }, { roles: ["ADMIN"] });
  */
 export function withAuth(handler: AuthenticatedHandler, options?: RequireAuthOptions) {
-  return async (req: NextRequest, params?: any): Promise<NextResponse | Response> => {
+  return async (
+    req: NextRequest,
+    params?: Record<string, unknown>
+  ): Promise<NextResponse | Response> => {
     // Session 9: Propagate correlation ID from middleware to all wrapped routes
     const requestId = req.headers.get("x-request-id");
     if (requestId) setRequestContext(requestId);
