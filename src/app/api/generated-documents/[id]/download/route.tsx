@@ -22,7 +22,7 @@ import { getOrgBranding, sanitizeFilename } from "@/lib/pdf/utils";
 
 export const GET = withAuth(async (req: NextRequest, { orgId, userId }, routeParams) => {
   try {
-    const { id } = await routeParams.params;
+    const { id } = await routeParams!.params;
 
     // Fetch document
     const result = await db.query(
