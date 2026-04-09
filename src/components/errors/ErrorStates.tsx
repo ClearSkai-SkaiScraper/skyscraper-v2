@@ -108,5 +108,3 @@ export function ClaimNotFoundError({ claimId }: { claimId: string }) {
     />
   );
 }
-
-

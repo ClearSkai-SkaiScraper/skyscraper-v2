@@ -6,10 +6,10 @@ import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 
 import { RemoteViewSelector } from "@/components/remote-view/RemoteViewSelector";
+import { isNavItemVisible, navSections } from "@/config/navConfig";
 import { getUiTheme } from "@/config/uiTheme";
 import { logger } from "@/lib/logger";
 import { cn } from "@/lib/utils";
-import { navSections, isNavItemVisible } from "@/config/navConfig";
 
 export function AppSidebar() {
   const pathname = usePathname();
@@ -164,37 +164,35 @@ export function AppSidebar() {
               </button>
               {(!isCollapsed || sectionHasActive) && (
                 <div className="space-y-0.5 rounded-b-lg bg-slate-50/80 px-2 py-1 dark:bg-slate-800/40">
-                  {section.items
-                    .filter(isNavItemVisible)
-                    .map((item) => {
-                      const isActive = activeHref === item.href;
-                      const badgeCount = getBadgeCount(item.href);
-                      return (
-                        <Link
-                          key={item.href}
-                          href={item.href}
-                          className={cn(
-                            t.sidebar.item.base,
-                            isActive ? t.sidebar.item.active : t.sidebar.item.idle,
-                            "flex items-center justify-between"
-                          )}
-                        >
-                          <span>{item.label}</span>
-                          {badgeCount && badgeCount > 0 && (
-                            <span
-                              className={cn(
-                                "ml-auto rounded-full px-2 py-0.5 text-[10px] font-semibold",
-                                isActive
-                                  ? "bg-primary-foreground/20 text-primary-foreground"
-                                  : "bg-primary/10 text-primary"
-                              )}
-                            >
-                              {badgeCount > 99 ? "99+" : badgeCount}
-                            </span>
-                          )}
-                        </Link>
-                      );
-                    })}
+                  {section.items.filter(isNavItemVisible).map((item) => {
+                    const isActive = activeHref === item.href;
+                    const badgeCount = getBadgeCount(item.href);
+                    return (
+                      <Link
+                        key={item.href}
+                        href={item.href}
+                        className={cn(
+                          t.sidebar.item.base,
+                          isActive ? t.sidebar.item.active : t.sidebar.item.idle,
+                          "flex items-center justify-between"
+                        )}
+                      >
+                        <span>{item.label}</span>
+                        {badgeCount && badgeCount > 0 && (
+                          <span
+                            className={cn(
+                              "ml-auto rounded-full px-2 py-0.5 text-[10px] font-semibold",
+                              isActive
+                                ? "bg-primary-foreground/20 text-primary-foreground"
+                                : "bg-primary/10 text-primary"
+                            )}
+                          >
+                            {badgeCount > 99 ? "99+" : badgeCount}
+                          </span>
+                        )}
+                      </Link>
+                    );
+                  })}
                 </div>
               )}
             </div>

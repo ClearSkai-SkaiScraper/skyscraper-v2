@@ -1,6 +1,6 @@
 "use client";
 
-import { Activity, AlertCircle, Clock,Database, TrendingUp, Zap } from "lucide-react";
+import { Activity, AlertCircle, Clock, Database, TrendingUp, Zap } from "lucide-react";
 import { useEffect, useState } from "react";
 import useSWR from "swr";
 

@@ -42,8 +42,8 @@ import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 
 import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
 import { navSections as canonicalSections, isNavItemVisible } from "@/config/navConfig";
+import { cn } from "@/lib/utils";
 
 // Icon assignments for mobile nav rendering — keyed by href
 const iconMap: Record<string, React.ElementType> = {
