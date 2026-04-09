@@ -27,7 +27,7 @@ import { apiError } from "@/lib/apiError";
 import { requireAuth } from "@/lib/auth/requireAuth";
 import { DAMAGE_COLORS, type DamageColor } from "@/lib/constants/irc-codes";
 import { getAZCode, isArizonaJurisdiction } from "@/lib/constants/irc-codes-az";
-import { type CaptionStyle,generateCaption } from "@/lib/inspection/caption-generator";
+import { type CaptionStyle, generateCaption } from "@/lib/inspection/caption-generator";
 import {
   collectUniqueCodes,
   type EvidenceCluster,
@@ -424,33 +424,15 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
         },
       }),
       prisma.org_branding.findFirst({ where: { orgId } }).catch(() => null),
-      // Fetch current user first, then check for org default inspector
-      prisma.users
-        .findFirst({
-          where: { clerkUserId: userId, orgId },
-          select: {
-            name: true,
-            email: true,
-            headshot_url: true,
-            title: true,
-            phone: true,
-            license_number: true,
-            license_state: true,
-            certifications: true,
-            is_default_inspector: true,
-          },
-        })
-        .then(async (u) => {
-          // If user found, return it
-          if (u?.name) return u;
-          // Fallback: try by id instead of clerkUserId
-          const fallback = await prisma.users.findFirst({
-            where: { id: userId },
+      // Fetch current user - wrapped in try/catch for column compatibility
+      (async () => {
+        try {
+          const user = await prisma.users.findFirst({
+            where: { clerkUserId: userId, orgId },
             select: {
               name: true,
               email: true,
               headshot_url: true,
-              title: true,
               phone: true,
               license_number: true,
               license_state: true,
@@ -458,8 +440,26 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
               is_default_inspector: true,
             },
           });
-          return fallback;
-        }),
+          if (user?.name) return user;
+          // Fallback: try by id instead of clerkUserId
+          return await prisma.users.findFirst({
+            where: { id: userId },
+            select: {
+              name: true,
+              email: true,
+              headshot_url: true,
+              phone: true,
+              license_number: true,
+              license_state: true,
+              certifications: true,
+              is_default_inspector: true,
+            },
+          });
+        } catch (userErr) {
+          logger.warn("[DAMAGE_REPORT] Failed to fetch user details", { error: userErr });
+          return null;
+        }
+      })(),
       // Fetch storm evidence (canonical weather intelligence layer)
       getStormEvidence(claimId).catch(() => null),
     ]);

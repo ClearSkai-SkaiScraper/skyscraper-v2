@@ -629,14 +629,23 @@ export default function PhotosPage() {
                     y: number;
                     width: number;
                     height: number;
-                    caption: string;
+                    damageType?: string;
+                    caption?: string;
+                    severity?: string;
+                    confidence?: number;
+                    sourceModel?: "roboflow_yolo" | "gpt4";
                   }) => ({
                     // AI returns percentages (0-100), convert to 0-1 fractions for CSS positioning
                     x: ann.x / 100,
                     y: ann.y / 100,
                     w: ann.width / 100,
                     h: ann.height / 100,
-                    label: ann.caption,
+                    // Use damageType as primary label (more concise), fall back to caption
+                    label: ann.damageType || ann.caption || "Damage",
+                    severity: ann.severity,
+                    score: ann.confidence,
+                    // Preserve source model from API (YOLO vs GPT-4V)
+                    sourceModel: ann.sourceModel || "gpt4",
                   })
                 ),
               }

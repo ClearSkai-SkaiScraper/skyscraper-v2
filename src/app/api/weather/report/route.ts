@@ -336,13 +336,14 @@ export const POST = withAuth(async (req: NextRequest, { userId, orgId }) => {
     try {
       const user = await prisma.users.findFirst({
         where: { clerkUserId: userId },
-        select: { name: true, email: true, title: true, phone: true },
+        select: { name: true, email: true, phone: true },
       });
       generatedBy = user?.name || user?.email || undefined;
-      employeeTitle = user?.title || undefined;
       employeePhone = user?.phone || undefined;
+      // Title field may not exist in older databases
+      employeeTitle = undefined;
     } catch {
-      // Ignore
+      // Ignore - user info is optional
     }
 
     // ══════════════════════════════════════════════════════════════════════════

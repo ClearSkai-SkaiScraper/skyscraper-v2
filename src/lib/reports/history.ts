@@ -6,13 +6,13 @@ export async function recordReportHistory(entry: {
   sourceId?: string;
   title?: string;
   fileUrl?: string;
-  metadata?: any;
+  metadata?: Record<string, unknown>;
 }): Promise<boolean> {
   try {
-    const res = await fetch('/api/reports/history', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(entry)
+    const res = await fetch("/api/reports/history", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(entry),
     });
     if (!res.ok) return false;
     return true;

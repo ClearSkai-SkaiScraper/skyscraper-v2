@@ -1,10 +1,21 @@
 export const dynamic = "force-dynamic";
 
 import { NextResponse } from "next/server";
+import { z } from "zod";
 
 import { isAuthError, requireAuth } from "@/lib/auth/requireAuth";
 import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
+
+const AiBuildSchema = z.object({
+  claimId: z.string().min(1, "claimId required"),
+  damageLabels: z.array(z.object({
+    damageTypes: z.union([z.string(), z.array(z.string())]),
+  }).passthrough()),
+  weather: z.object({
+    summary: z.string().optional(),
+  }).passthrough().optional(),
+});
 
 export async function POST(req: Request) {
   try {
@@ -13,14 +24,15 @@ export async function POST(req: Request) {
     if (isAuthError(auth)) return auth;
     const { userId, orgId } = auth;
 
-    const { claimId, damageLabels, weather } = await req.json();
-
-    if (!claimId) {
+    const raw = await req.json();
+    const parsed = AiBuildSchema.safeParse(raw);
+    if (!parsed.success) {
       return NextResponse.json(
-        { ok: false, error: "claimId required" },
+        { ok: false, error: "Validation failed", details: parsed.error.flatten() },
         { status: 400 }
       );
     }
+    const { claimId, damageLabels, weather } = parsed.data;
 
     // Verify claim exists AND belongs to caller's org (B-01: cross-tenant fix)
     const claim = await prisma.claims.findFirst({
@@ -42,13 +54,6 @@ export async function POST(req: Request) {
       qty: number;
       unit: string;
     }> = [];
-
-    if (!damageLabels || !Array.isArray(damageLabels)) {
-      return NextResponse.json(
-        { ok: false, error: "damageLabels must be an array" },
-        { status: 400 }
-      );
-    }
 
     for (const d of damageLabels) {
       const types = Array.isArray(d.damageTypes) ? d.damageTypes : [d.damageTypes];

@@ -206,6 +206,8 @@ export interface Annotation {
   caption?: string;
   confidence?: number;
   isPercentage?: boolean;
+  // Track source model for provenance (YOLO vs GPT-4V vs manual)
+  sourceModel?: "roboflow_yolo" | "gpt4" | "manual";
 }
 
 interface PhotoAnnotatorProps {
@@ -314,8 +316,9 @@ export function PhotoAnnotator({
     img.crossOrigin = "anonymous";
     img.onload = () => {
       imageRef.current = img;
-      const maxWidth = 800;
-      const maxHeight = 700;
+      // Increased max dimensions for larger photo viewing
+      const maxWidth = 1000;
+      const maxHeight = 800;
       let width = img.naturalWidth;
       let height = img.naturalHeight;
       if (width > maxWidth) {
@@ -1204,8 +1207,11 @@ export function PhotoAnnotator({
       {/* ─── Canvas Container ──────────────────────────────────────────────── */}
       <div
         ref={containerRef}
-        className="relative overflow-hidden rounded-lg border bg-slate-100 dark:bg-slate-800"
-        style={{ minHeight: "400px", height: `${Math.max(canvasSize.height + 20, 400)}px` }}
+        className="relative overflow-auto rounded-lg border bg-slate-100 dark:bg-slate-800"
+        style={{
+          minHeight: "400px",
+          maxHeight: "850px",
+        }}
       >
         <canvas
           ref={canvasRef}

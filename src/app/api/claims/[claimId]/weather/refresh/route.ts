@@ -7,12 +7,18 @@ export const dynamic = "force-dynamic";
 
 import { Prisma } from "@prisma/client";
 import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
 
 import { withAuth } from "@/lib/auth/withAuth";
 import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 import { fetchOpenMeteoWeather } from "@/lib/weather/openMeteo";
 import { formatLocationError, resolveClaimLocation } from "@/lib/weather/resolveClaimLocation";
+
+const WeatherRefreshSchema = z.object({
+  startDate: z.string().min(1, "startDate is required"),
+  endDate: z.string().min(1, "endDate is required"),
+});
 
 const RATE_LIMIT_MS = 10 * 60 * 1000; // 10 minutes
 
@@ -33,12 +39,15 @@ export const POST = withAuth(
       const { claimId } = routeParams.params;
 
       // Parse body
-      const body = await request.json();
-      const { startDate, endDate } = body;
-
-      if (!startDate || !endDate) {
-        return NextResponse.json({ error: "startDate and endDate are required" }, { status: 400 });
+      const raw = await request.json();
+      const parsed = WeatherRefreshSchema.safeParse(raw);
+      if (!parsed.success) {
+        return NextResponse.json(
+          { error: "Validation failed", details: parsed.error.flatten() },
+          { status: 400 }
+        );
       }
+      const { startDate, endDate } = parsed.data;
 
       // Verify claim belongs to org
       const claim = await prisma.claims.findFirst({

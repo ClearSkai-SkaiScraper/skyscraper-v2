@@ -2,11 +2,16 @@ export const dynamic = "force-dynamic";
 
 // Pro-side API to toggle file visibility and delete claim files
 import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
 
 import { withAuth } from "@/lib/auth/withAuth";
 import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 import { getSupabaseAdmin } from "@/lib/supabaseAdmin";
+
+const PatchFileSchema = z.object({
+  visibleToClient: z.boolean(),
+});
 
 /**
  * Helper to extract claimId and fileId from the request URL
@@ -31,13 +36,14 @@ export const PATCH = withAuth(async (req: NextRequest, { orgId }) => {
     const { claimId, fileId } = extractParams(req.url);
 
     const body = await req.json();
-    const { visibleToClient } = body as { visibleToClient?: boolean };
-
-    if (typeof visibleToClient !== "boolean") {
-      return new NextResponse("visibleToClient must be boolean", {
-        status: 400,
-      });
+    const parsed = PatchFileSchema.safeParse(body);
+    if (!parsed.success) {
+      return NextResponse.json(
+        { error: "Validation failed", details: parsed.error.flatten() },
+        { status: 400 }
+      );
     }
+    const { visibleToClient } = parsed.data;
 
     // FileAsset lookup — scoped by claimId AND orgId to prevent cross-org access
     const file = await prisma.file_assets.findFirst({

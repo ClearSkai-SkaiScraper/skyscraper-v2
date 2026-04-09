@@ -467,6 +467,10 @@ export async function POST(request: NextRequest) {
           caption: buildCaption(detection, ircCodeKey),
           confidence: detection.confidence,
           materialIdentified: detection.materialIdentified,
+          // Track detection source for UI provenance display
+          sourceModel:
+            (detection as { sourceModel?: string }).sourceModel ||
+            (yoloDetections.length > 0 ? "roboflow_yolo" : "gpt4"),
         };
       });
 
@@ -533,8 +537,9 @@ export async function POST(request: NextRequest) {
     }
 
     let filteredAnnotations = rawAnnotations;
-    // For hail/storm claims: real hail damage legitimately appears as rows of
-    // same-sized dents on gutters, drip edge, fascia. Don't filter those.
+    // IMPROVED HALLUCINATION HANDLING:
+    // For hail/storm claims, YOLO boxes are accurate but GPT-4o's are fabricated.
+    // We check the SOURCE of the boxes — only exempt YOLO-sourced boxes.
     const isHailRelated =
       validated.claimType === "hail" ||
       validated.claimType === "storm" ||
@@ -545,26 +550,32 @@ export async function POST(request: NextRequest) {
           a.damageType?.toLowerCase().includes("chip") ||
           a.damageType?.toLowerCase().includes("spatter")
       );
-    if (hallucinationDetected && !isHailRelated) {
+
+    // Only exempt hallucination detection if boxes came from YOLO (yoloDetections.length > 0)
+    const boxesFromYolo = yoloDetections.length > 0;
+
+    if (hallucinationDetected && (!isHailRelated || !boxesFromYolo)) {
       logger.warn("[PHOTO_ANNOTATE] Detected hallucination pattern — boxes are likely fabricated", {
         reason: hallucinationReason,
         count: rawAnnotations.length,
+        boxesFromYolo,
         yValues,
         xValues,
         widths,
         heights,
       });
-      // Keep only top 3 highest confidence detections
+      // For GPT-4o fabricated boxes, keep only top 2 highest confidence detections
+      // This prevents the "LINE of boxes" issue
       if (rawAnnotations.length > 0) {
         const sorted = [...rawAnnotations].sort((a, b) => b.confidence - a.confidence);
-        filteredAnnotations = sorted.slice(0, 3);
+        filteredAnnotations = sorted.slice(0, 2);
         logger.info(
           `[PHOTO_ANNOTATE] Keeping top ${filteredAnnotations.length} detections (${hallucinationReason})`
         );
       }
-    } else if (hallucinationDetected && isHailRelated) {
+    } else if (hallucinationDetected && isHailRelated && boxesFromYolo) {
       logger.info(
-        "[PHOTO_ANNOTATE] Hallucination pattern detected but exempted for hail/storm claim",
+        "[PHOTO_ANNOTATE] Hallucination pattern detected but exempted — boxes from YOLO are reliable",
         {
           reason: hallucinationReason,
           count: rawAnnotations.length,
@@ -598,6 +609,22 @@ export async function POST(request: NextRequest) {
     // Generate overall caption
     const overallCaption = generateOverallCaption(annotations, materialAnalysis);
 
+    // Detection metadata for debugging and UI
+    const detectionMetadata = {
+      yoloBoxCount: yoloDetections.length,
+      gptBoxCount: rawAnnotations.length - yoloDetections.length,
+      filteredBoxCount: annotations.length,
+      hallucinationFiltered: hallucinationDetected,
+      hallucinationReason: hallucinationDetected ? hallucinationReason : null,
+      detectionSource:
+        yoloDetections.length > 0
+          ? rawAnnotations.length > yoloDetections.length
+            ? "mixed"
+            : "roboflow_yolo"
+          : "gpt4",
+      hasVerifiedLocations: yoloDetections.length > 0,
+    };
+
     return NextResponse.json({
       success: true,
       annotations,
@@ -608,6 +635,8 @@ export async function POST(request: NextRequest) {
       photoId: validated.photoId,
       componentType: validated.componentType,
       claimType: validated.claimType,
+      // Include detection metadata for UI display
+      detectionMetadata,
     });
   } catch (error) {
     if (error instanceof z.ZodError) {

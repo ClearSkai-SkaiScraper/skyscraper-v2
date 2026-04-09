@@ -26,7 +26,19 @@ import prisma from "@/lib/prisma";
 
 // Report queue statuses
 export type ReportQueueStatus = "queued" | "processing" | "completed" | "failed" | "cancelled";
-
+/** Shape of the Prisma JSON `attachments` column on reports */
+export interface ReportAttachments {
+  pdfUrl?: string | null;
+  pdfStoragePath?: string | null;
+  fileSize?: number | null;
+  pageCount?: number | null;
+  generatedAt?: string | null;
+  lastError?: string | null;
+  attempts?: number;
+  notifyEmail?: string | null;
+  queueConfig?: ReportQueueConfig | null;
+  [key: string]: unknown;
+}
 export interface ReportQueueItem {
   id: string;
   orgId: string;
@@ -46,7 +58,7 @@ export interface ReportQueueItem {
 
 export interface ReportQueueConfig {
   sections: string[];
-  options?: Record<string, any>;
+  options?: Record<string, unknown>;
   customTitle?: string;
   generatedBy?: string;
 }
@@ -125,7 +137,7 @@ export async function getReportStatus(
 
   if (!report) return null;
 
-  const attachments = (report.attachments as any) || {};
+  const attachments = (report.attachments as ReportAttachments) || {};
   const status = report.status as ReportQueueStatus;
 
   // Calculate progress based on status
@@ -186,7 +198,7 @@ export async function getNextQueuedReport(): Promise<{
 
   if (!report) return null;
 
-  const attachments = (report.attachments as any) || {};
+  const attachments = (report.attachments as ReportAttachments) || {};
 
   // Check if exceeded max attempts
   if ((attachments.attempts || 0) >= (attachments.maxAttempts || 3)) {
@@ -220,7 +232,7 @@ export async function markReportProcessing(reportId: string): Promise<void> {
     select: { attachments: true },
   });
 
-  const attachments = (report?.attachments as any) || {};
+  const attachments = (report?.attachments as ReportAttachments) || {};
 
   await prisma.ai_reports.update({
     where: { id: reportId },
@@ -249,7 +261,7 @@ export async function markReportCompleted(
     select: { attachments: true },
   });
 
-  const attachments = (report?.attachments as any) || {};
+  const attachments = (report?.attachments as ReportAttachments) || {};
 
   await prisma.ai_reports.update({
     where: { id: reportId },
@@ -280,7 +292,7 @@ export async function markReportFailed(reportId: string, error: string): Promise
     select: { attachments: true },
   });
 
-  const attachments = (report?.attachments as any) || {};
+  const attachments = (report?.attachments as ReportAttachments) || {};
   const attempts = attachments.attempts || 0;
   const maxAttempts = attachments.maxAttempts || 3;
 
@@ -394,7 +406,7 @@ export async function listRecentReports(
 > {
   const { limit = 20, status, claimId } = options;
 
-  const where: any = { orgId };
+  const where: Prisma.ai_reportsWhereInput = { orgId };
   if (status) where.status = status;
   if (claimId) where.claimId = claimId;
 
@@ -418,7 +430,7 @@ export async function listRecentReports(
     type: r.type,
     title: r.title,
     status: r.status,
-    pdfUrl: (r.attachments as any)?.pdfUrl || null,
+    pdfUrl: (r.attachments as ReportAttachments)?.pdfUrl || null,
     createdAt: r.createdAt,
     claimId: r.claimId,
   }));

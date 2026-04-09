@@ -1402,12 +1402,27 @@ function PhotosSection({ claimId }: { claimId: string }) {
 
         // Build damageBoxes from annotations for immediate overlay display
         const damageBoxes = (data.annotations || []).map(
-          (ann: { x: number; y: number; width: number; height: number; label?: string }) => ({
+          (ann: {
+            x: number;
+            y: number;
+            width: number;
+            height: number;
+            damageType?: string;
+            label?: string;
+            severity?: string;
+            confidence?: number;
+            sourceModel?: "roboflow_yolo" | "gpt4";
+          }) => ({
             x: ann.x / 100,
             y: ann.y / 100,
             w: ann.width / 100,
             h: ann.height / 100,
-            label: ann.label || "",
+            // Use damageType as primary label (more concise)
+            label: ann.damageType || ann.label || "Damage",
+            severity: ann.severity,
+            score: ann.confidence,
+            // Preserve source model from API (YOLO vs GPT-4V)
+            sourceModel: ann.sourceModel || "gpt4",
           })
         );
 
@@ -1476,12 +1491,27 @@ function PhotosSection({ claimId }: { claimId: string }) {
 
           // Build damageBoxes from annotations for immediate overlay display
           const damageBoxes = (data.annotations || []).map(
-            (ann: { x: number; y: number; width: number; height: number; label?: string }) => ({
+            (ann: {
+              x: number;
+              y: number;
+              width: number;
+              height: number;
+              damageType?: string;
+              label?: string;
+              severity?: string;
+              confidence?: number;
+              sourceModel?: "roboflow_yolo" | "gpt4";
+            }) => ({
               x: ann.x / 100,
               y: ann.y / 100,
               w: ann.width / 100,
               h: ann.height / 100,
-              label: ann.label || "",
+              // Use damageType as primary label (more concise)
+              label: ann.damageType || ann.label || "Damage",
+              severity: ann.severity,
+              score: ann.confidence,
+              // Preserve source model from API (YOLO vs GPT-4V)
+              sourceModel: ann.sourceModel || "gpt4",
             })
           );
 

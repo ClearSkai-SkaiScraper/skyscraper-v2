@@ -31,7 +31,7 @@ export const tradesCompanyUpdateSchema = z.object({
   city: z.string().max(100).optional(),
   state: z.string().max(50).optional(),
   zip: z.string().max(20).optional(),
-  specialties: z.any().optional(), // JSON array
+  specialties: z.array(z.string()).optional(), // JSON array
   yearsInBusiness: z.union([z.string(), z.number()]).optional(),
   licenseNumber: z.string().max(100).optional(),
 
@@ -47,9 +47,9 @@ export const tradesCompanyUpdateSchema = z.object({
   emergencyAvailable: z.boolean().optional(),
   freeEstimates: z.boolean().optional(),
   warrantyInfo: z.string().max(2000).optional(),
-  socialLinks: z.any().optional(), // JSON object
-  paymentMethods: z.any().optional(), // JSON array
-  languages: z.any().optional(), // JSON array
+  socialLinks: z.record(z.string()).optional(), // JSON object
+  paymentMethods: z.array(z.string()).optional(), // JSON array
+  languages: z.array(z.string()).optional(), // JSON array
   rocNumber: z.string().max(100).optional(),
   insuranceProvider: z.string().max(200).optional(),
 });

@@ -5,10 +5,38 @@
  */
 
 import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
 
 import { requireAuth } from "@/lib/auth/requireAuth";
 import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
+
+const PatchPayoutSchema = z.object({
+  status: z
+    .enum([
+      "work_in_progress",
+      "work_completed",
+      "docs_uploaded",
+      "invoice_generated",
+      "submitted",
+      "under_review",
+      "approved",
+      "paid",
+    ])
+    .optional(),
+  lineItems: z
+    .array(
+      z.object({
+        id: z.string().min(1),
+        description: z.string().optional(),
+        rcv: z.number().optional(),
+        acv: z.number().optional(),
+      })
+    )
+    .optional(),
+  certificationSigned: z.boolean().optional(),
+  notes: z.string().optional(),
+});
 
 export const dynamic = "force-dynamic";
 
@@ -238,8 +266,15 @@ export async function PATCH(request: NextRequest, { params }: { params: { claimI
     const { orgId, userId } = auth;
 
     const { claimId } = params;
-    const body = await request.json();
-    const { status, lineItems, certificationSigned, notes } = body;
+    const raw = await request.json();
+    const parsed = PatchPayoutSchema.safeParse(raw);
+    if (!parsed.success) {
+      return NextResponse.json(
+        { error: "Validation failed", details: parsed.error.flatten() },
+        { status: 400 }
+      );
+    }
+    const { status, lineItems, certificationSigned, notes } = parsed.data;
 
     // Verify claim exists and belongs to org
     const claim = await prisma.claims.findUnique({

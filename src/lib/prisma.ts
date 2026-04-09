@@ -12,9 +12,13 @@
 
 import { PrismaClient } from "@prisma/client";
 
+import { logger } from "@/lib/logger";
+
 declare global {
   // eslint-disable-next-line no-var
   var __prisma: PrismaClient | undefined;
+  // eslint-disable-next-line no-var
+  var __prismaShutdownRegistered: boolean | undefined;
 }
 
 /**
@@ -76,11 +80,11 @@ if (typeof process !== "undefined") {
   };
 
   // Only register once per process (guard against HMR re-registration)
-  if (!(globalThis as any).__prismaShutdownRegistered) {
+  if (!globalThis.__prismaShutdownRegistered) {
     process.on("beforeExit", shutdown);
     process.on("SIGINT", () => shutdown().then(() => process.exit(0)));
     process.on("SIGTERM", () => shutdown().then(() => process.exit(0)));
-    (globalThis as any).__prismaShutdownRegistered = true;
+    globalThis.__prismaShutdownRegistered = true;
   }
 }
 
@@ -94,7 +98,7 @@ export async function ensurePrismaConnection(): Promise<boolean> {
     await prismaClient.$connect();
     return true;
   } catch (err) {
-    console.error("[PRISMA] Connection warmup failed", { error: err });
+    logger.error("[PRISMA] Connection warmup failed", { error: err });
     // Attempt to disconnect and reconnect once
     try {
       await prismaClient.$disconnect();

@@ -10,6 +10,7 @@ export const revalidate = 0;
 
 import { renderToStream } from "@react-pdf/renderer";
 import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
 
 import { generateRebuttal } from "@/lib/ai/generateRebuttal";
 import { withAuth } from "@/lib/auth/withAuth";
@@ -19,6 +20,20 @@ import { logger } from "@/lib/logger";
 import { RebuttalPDFDocument } from "@/lib/pdf/rebuttalRenderer";
 import { getOrgBranding } from "@/lib/pdf/utils";
 
+const GenerateRebuttalSchema = z.object({
+  denialReason: z.string().min(1, "denialReason is required"),
+  rebuttalName: z.string().optional(),
+  templateId: z.string().optional(),
+  evidenceReferences: z
+    .object({
+      photos: z.array(z.string()).optional(),
+      weatherData: z.string().optional(),
+      measurements: z.array(z.string()).optional(),
+      codes: z.array(z.string()).optional(),
+    })
+    .optional(),
+});
+
 export const POST = withAuth(
   async (
     req: NextRequest,
@@ -27,27 +42,15 @@ export const POST = withAuth(
   ) => {
     try {
       const { claimId } = await routeParams.params;
-      const body = await req.json();
-      const {
-        denialReason,
-        rebuttalName,
-        templateId,
-        evidenceReferences,
-      }: {
-        denialReason: string;
-        rebuttalName?: string;
-        templateId?: string;
-        evidenceReferences?: {
-          photos?: string[];
-          weatherData?: string;
-          measurements?: string[];
-          codes?: string[];
-        };
-      } = body;
-
-      if (!denialReason) {
-        return NextResponse.json({ error: "denialReason is required" }, { status: 400 });
+      const raw = await req.json();
+      const parsed = GenerateRebuttalSchema.safeParse(raw);
+      if (!parsed.success) {
+        return NextResponse.json(
+          { error: "Validation failed", details: parsed.error.flatten() },
+          { status: 400 }
+        );
       }
+      const { denialReason, rebuttalName, templateId, evidenceReferences } = parsed.data;
 
       // Fetch claim data (orgId is DB-backed UUID from withAuth)
       const claim = await db.query(

@@ -3,15 +3,28 @@ export const dynamic = "force-dynamic";
 
 import { NextRequest, NextResponse } from "next/server";
 import PDFDocument from "pdfkit";
+import { z } from "zod";
 
 import { withAuth } from "@/lib/auth/withAuth";
 import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 
+const ExportDepreciationSchema = z.object({
+  format: z.enum(["pdf", "csv"]).default("pdf"),
+});
+
 export const POST = withAuth(
   async (req: NextRequest, { orgId, userId }, routeParams: { params: { claimId: string } }) => {
     try {
-      const { format = "pdf" } = await req.json();
+      const raw = await req.json();
+      const parsed = ExportDepreciationSchema.safeParse(raw);
+      if (!parsed.success) {
+        return NextResponse.json(
+          { error: "Validation failed", details: parsed.error.flatten() },
+          { status: 400 }
+        );
+      }
+      const { format } = parsed.data;
       const claimId = routeParams.params.claimId;
 
       // Fetch claim with materials — org-scoped

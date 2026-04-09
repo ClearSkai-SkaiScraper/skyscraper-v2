@@ -1,9 +1,21 @@
 import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
 
 import { ok, withErrorHandler } from "@/lib/api/response";
 import { requireApiAuth } from "@/lib/auth/apiAuth";
 import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
+
+const SharingPostSchema = z.object({
+  documentId: z.string().min(1, "documentId is required"),
+  claimId: z.string().min(1, "claimId is required"),
+  shared: z.boolean().default(false),
+});
+
+const SharingGetQuerySchema = z.object({
+  claimId: z.string().min(1, "claimId is required"),
+  clientId: z.string().optional(),
+});
 
 /**
  * GET /api/claims/documents/sharing?claimId=...&clientId=...
@@ -20,12 +32,17 @@ async function handleGET(req: NextRequest) {
   }
 
   const { searchParams } = new URL(req.url);
-  const claimId = searchParams.get("claimId");
-  const clientId = searchParams.get("clientId");
-
-  if (!claimId) {
-    return NextResponse.json({ error: "claimId is required" }, { status: 400 });
+  const queryParsed = SharingGetQuerySchema.safeParse({
+    claimId: searchParams.get("claimId") ?? undefined,
+    clientId: searchParams.get("clientId") ?? undefined,
+  });
+  if (!queryParsed.success) {
+    return NextResponse.json(
+      { error: "Validation failed", details: queryParsed.error.flatten() },
+      { status: 400 }
+    );
   }
+  const { claimId, clientId } = queryParsed.data;
 
   // Verify the claim belongs to this org
   const claim = await prisma.claims.findFirst({
@@ -100,12 +117,15 @@ async function handlePOST(req: NextRequest) {
     return NextResponse.json({ error: "Organization context required" }, { status: 403 });
   }
 
-  const body = await req.json();
-  const { documentId, claimId, shared } = body;
-
-  if (!documentId || !claimId) {
-    return NextResponse.json({ error: "documentId and claimId are required" }, { status: 400 });
+  const raw = await req.json();
+  const parsed = SharingPostSchema.safeParse(raw);
+  if (!parsed.success) {
+    return NextResponse.json(
+      { error: "Validation failed", details: parsed.error.flatten() },
+      { status: 400 }
+    );
   }
+  const { documentId, claimId, shared } = parsed.data;
 
   // Verify the claim belongs to this org
   const claim = await prisma.claims.findFirst({

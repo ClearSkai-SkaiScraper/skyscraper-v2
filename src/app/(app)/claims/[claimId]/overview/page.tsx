@@ -223,6 +223,8 @@ export default function OverviewPage() {
             throw new Error("Failed to save changes");
           }
 
+          // Refresh server layout so the claim header bar updates
+          router.refresh();
           toast.success("Changes saved", { duration: 2000 });
         } catch (err) {
           toast.error(err.message || "Failed to save changes");

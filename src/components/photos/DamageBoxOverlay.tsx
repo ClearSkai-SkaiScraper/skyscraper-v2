@@ -3,19 +3,20 @@
  *
  * Renders YOLO/AI bounding boxes on top of photos with:
  * - Severity-coded colours (red/orange/yellow/blue)
- * - Confidence percentage badges
- * - Source-model indicator (YOLO ● vs GPT-4)
+ * - Confidence percentage badges with High/Medium/Low indicators
+ * - Source-model badges: YOLO Verified, AI Inferred, Grouped Summary
  * - Compact mode for thumbnails, full mode for lightboxes
  * - Smart label hiding: small boxes (<12%) show only severity dot to reduce clutter
  * - Anti-overlap label placement: labels auto-arrange to avoid stacking
  * - Dismissable labels: click X to hide individual annotation labels
+ * - "No detector-verified location" state when YOLO finds nothing
  *
  * Coordinate system: 0–1 normalised fractions  (or 0-100 percentages from Roboflow)
  */
 
 "use client";
 
-import { X } from "lucide-react";
+import { AlertTriangle, CheckCircle2, Sparkles, X } from "lucide-react";
 import { useMemo, useState } from "react";
 
 import { cn } from "@/lib/utils";
@@ -39,8 +40,10 @@ export interface DamageBox {
   score?: number;
   /** Severity level */
   severity?: "Critical" | "High" | "Medium" | "Low" | string;
-  /** Which model produced this box */
-  sourceModel?: "roboflow_yolo" | "gpt4" | string;
+  /** Which model produced this box: roboflow_yolo (verified), gpt4 (inferred), grouped (summary) */
+  sourceModel?: "roboflow_yolo" | "gpt4" | "grouped" | string;
+  /** Is this a grouped/summary annotation? */
+  isGrouped?: boolean;
 }
 
 export interface DamageBoxOverlayProps {
@@ -53,6 +56,10 @@ export interface DamageBoxOverlayProps {
   className?: string;
   /** Allow dismissing labels with X button */
   dismissable?: boolean;
+  /** Show "no verified locations" warning when true and no YOLO boxes exist */
+  showUnverifiedWarning?: boolean;
+  /** Show all labels (true) or grouped labels only (false) */
+  showAllLabels?: boolean;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -198,6 +205,8 @@ export function DamageBoxOverlay({
   coordScale,
   className,
   dismissable = true,
+  showUnverifiedWarning = true,
+  showAllLabels = true,
 }: DamageBoxOverlayProps) {
   // Track which labels have been dismissed
   const [hiddenLabels, setHiddenLabels] = useState<Set<number>>(new Set());
@@ -211,6 +220,14 @@ export function DamageBoxOverlay({
   };
 
   if (!boxes || boxes.length === 0) return null;
+
+  // Check if any boxes are YOLO-verified
+  const hasYoloBoxes = boxes.some((b) => b.sourceModel === "roboflow_yolo");
+  const hasGptBoxes = boxes.some((b) => b.sourceModel === "gpt4" || !b.sourceModel);
+
+  // Determine detection source for summary
+  const detectionSource =
+    hasYoloBoxes && hasGptBoxes ? "Mixed" : hasYoloBoxes ? "YOLO Verified" : "AI Inferred";
 
   // Minimum box size (percentage) to show labels - prevents cluttering small boxes
   const MIN_SIZE_FOR_LABELS = 12; // 12% of image width/height
@@ -254,7 +271,21 @@ export function DamageBoxOverlay({
         const sev = normaliseSeverity(box.severity);
         const style = SEVERITY_STYLES[sev] || DEFAULT_STYLE;
         const isYolo = box.sourceModel === "roboflow_yolo";
+        const isGrouped = box.isGrouped || box.sourceModel === "grouped";
         const placement = placements[i];
+
+        // Confidence level indicator
+        const confidenceLevel =
+          box.score != null
+            ? box.score >= 0.8
+              ? "High"
+              : box.score >= 0.5
+                ? "Medium"
+                : "Low"
+            : null;
+
+        // Low confidence GPT-only boxes get dashed border
+        const isLowConfidenceGpt = !isYolo && box.score != null && box.score < 0.5;
 
         // Compute label position style
         const labelStyle: React.CSSProperties =
@@ -262,10 +293,21 @@ export function DamageBoxOverlay({
             ? { top: "100%", left: 0, marginTop: `${(placement.offsetY || 0) + 2}px` }
             : { bottom: "100%", left: 0, marginBottom: `${2 - (placement.offsetY || 0)}px` };
 
+        // Determine if label should be shown:
+        // - Always show if showAllLabels is true
+        // - Otherwise only show for YOLO-verified or grouped boxes (reduce clutter)
+        const shouldShowLabel = showAllLabels || isYolo || isGrouped;
+
         return (
           <div
             key={i}
-            className={cn("absolute border-2 transition-colors", style.border, style.bg)}
+            className={cn(
+              "absolute border-2 transition-colors",
+              style.border,
+              style.bg,
+              // Dashed border for low-confidence GPT-only detections
+              isLowConfidenceGpt && "border-dashed opacity-70"
+            )}
             style={{
               left: `${pctX}%`,
               top: `${pctY}%`,
@@ -273,10 +315,11 @@ export function DamageBoxOverlay({
               height: `${pctH}%`,
             }}
           >
-            {/* ── Full mode: label pill + confidence (only on large-enough boxes) ─────────────────── */}
+            {/* ── Full mode: label pill with source badge + confidence ─────────────────── */}
             {mode === "full" &&
               isLargeEnough &&
               !isLabelHidden &&
+              shouldShowLabel &&
               (box.label || box.score != null) && (
                 <span
                   className={cn(
@@ -285,18 +328,38 @@ export function DamageBoxOverlay({
                   )}
                   style={labelStyle}
                 >
-                  {/* YOLO dot indicator */}
-                  {isYolo && (
+                  {/* Source badge: YOLO verified (green check), AI inferred (sparkle), Grouped (multiple) */}
+                  {isYolo ? (
+                    <CheckCircle2
+                      className="h-3 w-3 text-green-300"
+                      title="YOLO Verified - Precise location detected"
+                    />
+                  ) : isGrouped ? (
                     <span
-                      className="inline-block h-1.5 w-1.5 rounded-full bg-green-300"
-                      title="YOLO detection"
+                      className="inline-block h-3 w-3 rounded border border-white/50 bg-purple-400 text-center text-[8px] leading-3"
+                      title="Grouped Summary"
+                    >
+                      G
+                    </span>
+                  ) : (
+                    <Sparkles
+                      className={cn(
+                        "h-3 w-3",
+                        isLowConfidenceGpt ? "text-yellow-300" : "text-blue-300"
+                      )}
+                      title={isLowConfidenceGpt ? "AI Inferred - Low confidence" : "AI Inferred"}
                     />
                   )}
 
                   {box.label && <span>{box.label}</span>}
 
+                  {/* Confidence with level indicator */}
                   {box.score != null && (
-                    <span className="opacity-80">{Math.round(box.score * 100)}%</span>
+                    <span
+                      className={cn("opacity-80", confidenceLevel === "Low" && "text-yellow-200")}
+                    >
+                      {Math.round(box.score * 100)}%
+                    </span>
                   )}
 
                   {/* Dismiss button */}
@@ -340,24 +403,47 @@ export function DamageBoxOverlay({
       })}
 
       {/* ── Legend (full mode only, when there are ≥2 boxes) ────────── */}
-      {mode === "full" && boxes.length >= 2 && (
-        <div className="absolute bottom-2 right-2 flex items-center gap-2 rounded-md bg-black/60 px-2 py-1 text-[10px] text-white backdrop-blur-sm">
-          <span className="font-medium">{boxes.length} detections</span>
-          {hiddenLabels.size > 0 && (
-            <button
-              className="pointer-events-auto underline opacity-80 hover:opacity-100"
-              onClick={() => setHiddenLabels(new Set())}
-              title="Show all hidden labels"
-            >
-              Show all
-            </button>
+      {mode === "full" && boxes.length >= 1 && (
+        <div className="absolute bottom-2 right-2 flex flex-col items-end gap-1">
+          {/* No verified location warning */}
+          {showUnverifiedWarning && !hasYoloBoxes && boxes.length > 0 && (
+            <div className="flex items-center gap-1.5 rounded-md bg-amber-500/90 px-2 py-1 text-[10px] text-white backdrop-blur-sm">
+              <AlertTriangle className="h-3 w-3" />
+              <span>Damage suspected — no verified location</span>
+            </div>
           )}
-          {boxes.some((b) => b.sourceModel === "roboflow_yolo") && (
-            <span className="flex items-center gap-1">
-              <span className="inline-block h-1.5 w-1.5 rounded-full bg-green-400" />
-              YOLO
+
+          {/* Detection summary */}
+          <div className="flex items-center gap-2 rounded-md bg-black/60 px-2 py-1 text-[10px] text-white backdrop-blur-sm">
+            <span className="font-medium">
+              {boxes.length} detection{boxes.length !== 1 ? "s" : ""}
             </span>
-          )}
+
+            {/* Detection source badge */}
+            <span
+              className={cn(
+                "flex items-center gap-1 rounded px-1.5 py-0.5",
+                hasYoloBoxes ? "bg-green-600/80" : "bg-blue-600/80"
+              )}
+            >
+              {hasYoloBoxes ? (
+                <CheckCircle2 className="h-2.5 w-2.5" />
+              ) : (
+                <Sparkles className="h-2.5 w-2.5" />
+              )}
+              {detectionSource}
+            </span>
+
+            {hiddenLabels.size > 0 && (
+              <button
+                className="pointer-events-auto underline opacity-80 hover:opacity-100"
+                onClick={() => setHiddenLabels(new Set())}
+                title="Show all hidden labels"
+              >
+                Show {hiddenLabels.size} hidden
+              </button>
+            )}
+          </div>
         </div>
       )}
     </div>

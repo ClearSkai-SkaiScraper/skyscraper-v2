@@ -9,6 +9,7 @@ export const dynamic = "force-dynamic";
 
 import { auth } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
 
 import { getOpenAI } from "@/lib/ai/client";
 import { withAuth } from "@/lib/auth/withAuth";
@@ -17,6 +18,12 @@ import { getClaimAIAnalysis, triggerManualAnalysis } from "@/lib/claims/aiHooks"
 import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 import { checkRateLimit } from "@/lib/rate-limit";
+
+const AiChatSchema = z.object({
+  analysisType: z.enum(["video", "damage", "triage", "blueprint", "policy"]).optional(),
+  message: z.string().min(1, "message is required"),
+  claimContext: z.record(z.unknown()).optional(),
+});
 
 // Force Node.js runtime for OpenAI SDK
 export const runtime = "nodejs";
@@ -89,8 +96,15 @@ const _authenticatedPOST = withAuth(
     try {
       const { claimId } = routeParams.params;
 
-      const body = await request.json();
-      const { analysisType, message, claimContext: _clientCtx } = body;
+      const raw = await request.json();
+      const parsed = AiChatSchema.safeParse(raw);
+      if (!parsed.success) {
+        return NextResponse.json(
+          { ok: false, error: { code: "VALIDATION_ERROR", details: parsed.error.flatten() } },
+          { status: 400 }
+        );
+      }
+      const { analysisType, message, claimContext: _clientCtx } = parsed.data;
 
       // Rate limit AI calls
       const rl = await checkRateLimit(userId, "AI");
@@ -291,10 +305,7 @@ Your goal: Help adjusters maximize accurate claim value while maintaining profes
       );
     } catch (error) {
       logger.error("[AI Analysis] Error:", error);
-      return NextResponse.json(
-        { success: false, error: "Unknown error" },
-        { status: 500 }
-      );
+      return NextResponse.json({ success: false, error: "Unknown error" }, { status: 500 });
     }
   }
 );
@@ -342,10 +353,7 @@ export const GET = withAuth(
       });
     } catch (error) {
       logger.error("[AI Analysis GET] Error:", error);
-      return NextResponse.json(
-        { success: false, error: "Unknown error" },
-        { status: 500 }
-      );
+      return NextResponse.json({ success: false, error: "Unknown error" }, { status: 500 });
     }
   }
 );

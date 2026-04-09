@@ -1,6 +1,6 @@
 "use client";
 
-import { Download, Edit3, Loader2, Sparkles } from "lucide-react";
+import { Download, Edit3, Layers, Loader2, Sparkles } from "lucide-react";
 import { useCallback, useState } from "react";
 
 import {
@@ -73,8 +73,8 @@ interface PhotoDetailModalProps {
 // Compute the canvas size that PhotoAnnotator will use for a given image.
 // Must match the exact same formula in PhotoAnnotator's image onload handler.
 function computeCanvasSize(naturalWidth: number, naturalHeight: number) {
-  const maxWidth = 800;
-  const maxHeight = 700;
+  const maxWidth = 1000;
+  const maxHeight = 800;
   let width = naturalWidth;
   let height = naturalHeight;
   if (width > maxWidth) {
@@ -116,6 +116,8 @@ export function PhotoDetailModal({
   const [activeTab, setActiveTab] = useState<"view" | "annotate" | "details">("view");
   const [aiAnalyzing, setAiAnalyzing] = useState(false);
   const [savingAnnotations, setSavingAnnotations] = useState(false);
+  // Label density toggle: false = grouped labels only, true = all labels
+  const [showAllLabels, setShowAllLabels] = useState(false);
 
   // Call AI annotation API — returns annotations in canvas pixel space
   const handleAIAnnotate = useCallback(
@@ -222,7 +224,10 @@ export function PhotoDetailModal({
                 y: (ann.y - r) / ch,
                 w: (r * 2) / cw,
                 h: (r * 2) / ch,
-                label: ann.caption || ann.damageType || "Damage",
+                // Show damageType as label (more concise than full caption)
+                label: ann.damageType || ann.caption || "Damage",
+                severity: ann.severity,
+                score: ann.confidence,
                 sourceModel: "manual" as const,
               };
             }
@@ -232,8 +237,12 @@ export function PhotoDetailModal({
               y: ann.y / ch,
               w: (ann.width || 50) / cw,
               h: (ann.height || 50) / ch,
-              label: ann.caption || ann.damageType || "Damage",
-              sourceModel: ann.type === "ai_detection" ? ("gpt4" as const) : ("manual" as const),
+              // Show damageType as label (more concise than full caption)
+              label: ann.damageType || ann.caption || "Damage",
+              severity: ann.severity,
+              score: ann.confidence,
+              // Preserve sourceModel if stored, else infer from type
+              sourceModel: ann.sourceModel || (ann.type === "ai_detection" ? "gpt4" : "manual"),
             };
           });
 
@@ -370,18 +379,37 @@ export function PhotoDetailModal({
               </div>
             )}
 
+            {/* Label density toggle */}
+            {photo.damageBoxes && photo.damageBoxes.length > 1 && (
+              <div className="flex justify-end">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setShowAllLabels(!showAllLabels)}
+                  className="text-xs text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200"
+                >
+                  <Layers className="mr-1.5 h-3.5 w-3.5" />
+                  {showAllLabels ? "Show grouped labels" : "Show all labels"}
+                </Button>
+              </div>
+            )}
+
             {/* Image + overlay wrapper — sized to actual image bounds */}
             <div className="flex items-center justify-center overflow-hidden rounded-lg bg-slate-100 dark:bg-slate-800">
               <div className="relative inline-block">
                 <img
                   src={photo.publicUrl}
                   alt={photo.filename}
-                  className="block h-auto max-h-[60vh] max-w-full"
+                  className="block h-auto max-h-[80vh] max-w-full object-contain"
                 />
 
                 {/* Overlay existing damage boxes — positioned against the image, not the container */}
                 {photo.damageBoxes && photo.damageBoxes.length > 0 && (
-                  <DamageBoxOverlay boxes={photo.damageBoxes} mode="full" />
+                  <DamageBoxOverlay
+                    boxes={photo.damageBoxes}
+                    mode="full"
+                    showAllLabels={showAllLabels}
+                  />
                 )}
               </div>
             </div>
@@ -449,6 +477,68 @@ export function PhotoDetailModal({
 
           {/* Details Tab - IRC codes and analysis details */}
           <TabsContent value="details" className="space-y-4">
+            {/* Detection Source & Metadata */}
+            {photo.annotations && photo.annotations.length > 0 && (
+              <div className="rounded-lg border bg-white p-4 dark:bg-slate-900">
+                <h4 className="mb-3 font-semibold">Detection Metadata</h4>
+                <div className="grid gap-4 md:grid-cols-3">
+                  <div>
+                    <p className="text-xs font-medium text-slate-500 dark:text-slate-400">
+                      Detection Source
+                    </p>
+                    <p className="text-sm font-medium">
+                      {(() => {
+                        const hasYolo = photo.annotations.some(
+                          (a) =>
+                            a.type === "ai_detection" &&
+                            (a as unknown as { sourceModel?: string }).sourceModel ===
+                              "roboflow_yolo"
+                        );
+                        const hasGpt = photo.annotations.some(
+                          (a) =>
+                            a.type === "ai_detection" &&
+                            (a as unknown as { sourceModel?: string }).sourceModel !==
+                              "roboflow_yolo"
+                        );
+                        const hasManual = photo.annotations.some((a) => a.type !== "ai_detection");
+
+                        if (hasYolo && hasGpt) return "Mixed (YOLO + GPT)";
+                        if (hasYolo) return "Roboflow YOLO";
+                        if (hasGpt) return "GPT-4 Vision";
+                        if (hasManual) return "Manual";
+                        return "—";
+                      })()}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-xs font-medium text-slate-500 dark:text-slate-400">
+                      Total Detections
+                    </p>
+                    <p className="text-sm font-medium">
+                      {photo.annotations.filter((a) => a.type === "ai_detection").length} AI +{" "}
+                      {photo.annotations.filter((a) => a.type !== "ai_detection").length} Manual
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-xs font-medium text-slate-500 dark:text-slate-400">
+                      Avg Confidence
+                    </p>
+                    <p className="text-sm font-medium">
+                      {(() => {
+                        const aiAnns = photo.annotations.filter(
+                          (a) => a.type === "ai_detection" && a.confidence
+                        );
+                        if (aiAnns.length === 0) return "—";
+                        const avg =
+                          aiAnns.reduce((sum, a) => sum + (a.confidence || 0), 0) / aiAnns.length;
+                        return `${Math.round(avg * 100)}%`;
+                      })()}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+
             {/* AI Caption Details */}
             {photo.aiCaption && (
               <div className="rounded-lg border bg-white p-4 dark:bg-slate-900">

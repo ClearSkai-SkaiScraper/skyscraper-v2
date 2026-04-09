@@ -15,22 +15,30 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
 
 import { getOrgClaimOrThrow, OrgScopeError } from "@/lib/auth/orgScope";
 import { withAuth } from "@/lib/auth/withAuth";
 import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 
+const AttachContactSchema = z.object({
+  contactId: z.string().min(1, "contactId is required"),
+});
+
 export const POST = withAuth(
   async (req: NextRequest, { orgId }, routeParams: { params: Promise<{ claimId: string }> }) => {
     try {
       const { claimId } = await routeParams.params;
       const body = await req.json();
-      const { contactId } = body;
-
-      if (!contactId) {
-        return NextResponse.json({ error: "contactId is required" }, { status: 400 });
+      const parsed = AttachContactSchema.safeParse(body);
+      if (!parsed.success) {
+        return NextResponse.json(
+          { error: "Validation failed", details: parsed.error.flatten() },
+          { status: 400 }
+        );
       }
+      const { contactId } = parsed.data;
 
       // Verify claim belongs to org
       await getOrgClaimOrThrow(orgId, claimId);

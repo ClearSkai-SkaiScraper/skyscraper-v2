@@ -10,6 +10,7 @@ export const revalidate = 0;
 
 import { renderToStream } from "@react-pdf/renderer";
 import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
 
 import { generateSupplement } from "@/lib/ai/generateSupplement";
 import { withAuth } from "@/lib/auth/withAuth";
@@ -20,28 +21,30 @@ import { logger } from "@/lib/logger";
 import { SupplementPDFDocument } from "@/lib/pdf/supplementRenderer";
 import { getOrgBranding } from "@/lib/pdf/utils";
 
+const GenerateSupplementSchema = z.object({
+  adjusterScope: z.array(z.record(z.unknown())).min(1, "adjusterScope is required"),
+  contractorScope: z.array(z.record(z.unknown())).min(1, "contractorScope is required"),
+  supplementName: z.string().optional(),
+  templateId: z.string().optional(),
+});
+
 export const POST = withAuth(async (req: NextRequest, { orgId, userId }, routeParams) => {
   try {
     const { claimId } = await routeParams.params;
-    const body = await req.json();
-    const {
-      adjusterScope,
-      contractorScope,
-      supplementName,
-      templateId,
-    }: {
+    const raw = await req.json();
+    const parsed = GenerateSupplementSchema.safeParse(raw);
+    if (!parsed.success) {
+      return NextResponse.json(
+        { error: "Validation failed", details: parsed.error.flatten() },
+        { status: 400 }
+      );
+    }
+    const { adjusterScope, contractorScope, supplementName, templateId } = parsed.data as {
       adjusterScope: ScopeLineItem[];
       contractorScope: ScopeLineItem[];
       supplementName?: string;
       templateId?: string;
-    } = body;
-
-    if (!adjusterScope || !contractorScope) {
-      return NextResponse.json(
-        { error: "adjusterScope and contractorScope are required" },
-        { status: 400 }
-      );
-    }
+    };
 
     // Fetch claim data
     const claim = await db.query(

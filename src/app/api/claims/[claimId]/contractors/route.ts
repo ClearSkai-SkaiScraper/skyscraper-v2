@@ -29,6 +29,7 @@ export const dynamic = "force-dynamic";
  */
 
 import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
 
 import { getOrgClaimOrThrow, OrgScopeError } from "@/lib/auth/orgScope";
 import { withAuth } from "@/lib/auth/withAuth";
@@ -36,6 +37,12 @@ import { createTimelineEvent } from "@/lib/claims/timeline";
 import { logger } from "@/lib/logger";
 import { safeSendEmail } from "@/lib/mail";
 import prisma from "@/lib/prisma";
+
+const AssignContractorSchema = z.object({
+  companyId: z.string().min(1, "companyId is required"),
+  role: z.enum(["primary_contractor", "subcontractor", "consultant"]).default("primary_contractor"),
+  notes: z.string().optional(),
+});
 
 /**
  * GET /api/claims/[claimId]/contractors
@@ -145,11 +152,14 @@ export const POST = withAuth(
     try {
       const { claimId } = await routeParams.params;
       const body = await req.json();
-      const { companyId, role = "primary_contractor", notes } = body;
-
-      if (!companyId) {
-        return NextResponse.json({ error: "companyId is required" }, { status: 400 });
+      const parsed = AssignContractorSchema.safeParse(body);
+      if (!parsed.success) {
+        return NextResponse.json(
+          { error: "Validation failed", details: parsed.error.flatten() },
+          { status: 400 }
+        );
       }
+      const { companyId, role, notes } = parsed.data;
 
       // Verify claim ownership (DB-backed orgId)
       const claim = await getOrgClaimOrThrow(orgId, claimId);

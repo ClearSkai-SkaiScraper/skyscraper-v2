@@ -163,9 +163,29 @@ export const PATCH = withAuth(async (request: NextRequest, { userId, orgId }) =>
       );
     }
 
-    // Verify the work request exists
-    const workRequest = await prisma.clientWorkRequest.findUnique({
-      where: { id: requestId },
+    // Verify the work request exists AND is targeted at this user's company
+    // Resolve the pro's company first
+    let verifyCompanyId: string | null = null;
+    if (orgId) {
+      const company = await prisma.tradesCompany.findFirst({
+        where: { orgId },
+        select: { id: true },
+      });
+      verifyCompanyId = company?.id ?? null;
+    }
+    if (!verifyCompanyId) {
+      const member = await prisma.tradesCompanyMember.findFirst({
+        where: { userId },
+        select: { companyId: true },
+      });
+      verifyCompanyId = member?.companyId ?? null;
+    }
+
+    const workRequest = await prisma.clientWorkRequest.findFirst({
+      where: {
+        id: requestId,
+        ...(verifyCompanyId ? { targetProId: verifyCompanyId } : {}),
+      },
       select: { id: true, clientId: true, targetProId: true },
     });
 

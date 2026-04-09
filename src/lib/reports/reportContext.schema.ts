@@ -69,7 +69,7 @@ export const PhotoSchema = z.object({
   type: z.string().nullable(),
   caption: z.string().nullable(),
   timestamp: z.string(),
-  metadata: z.any().nullable(),
+  metadata: z.record(z.unknown()).nullable(),
 });
 
 // Media
@@ -114,7 +114,7 @@ export const TemplateContextSchema = z
     name: z.string(),
     description: z.string().nullable(),
     category: z.string().nullable(),
-    structure: z.any(),
+    structure: z.record(z.unknown()),
     placeholders: z.array(z.string()),
     version: z.string(),
   })
@@ -122,8 +122,8 @@ export const TemplateContextSchema = z
 
 // Scopes
 export const ScopesContextSchema = z.object({
-  adjuster: z.any().nullable(),
-  contractor: z.any().nullable(),
+  adjuster: z.record(z.unknown()).nullable(),
+  contractor: z.record(z.unknown()).nullable(),
 });
 
 // Main Report Context
@@ -135,13 +135,13 @@ export const ReportContextSchema = z.object({
   claim: ClaimContextSchema,
   property: PropertyContextSchema,
   scopes: ScopesContextSchema,
-  variances: z.any().nullable(),
+  variances: z.record(z.unknown()).nullable(),
   weather: WeatherContextSchema,
   media: MediaContextSchema,
   notes: z.array(NoteSchema),
   findings: z.array(FindingSchema),
-  evidence: z.any().nullable(),
-  carrierStrategy: z.any().nullable(),
+  evidence: z.record(z.unknown()).nullable(),
+  carrierStrategy: z.record(z.unknown()).nullable(),
   template: TemplateContextSchema,
 });
 

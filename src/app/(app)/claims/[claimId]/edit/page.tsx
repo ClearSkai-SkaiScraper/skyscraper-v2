@@ -100,6 +100,7 @@ export default function EditClaimPage({ params }: { params: { claimId: string } 
       }
 
       toast.success("Claim updated successfully! 🎉");
+      router.refresh();
       router.push(`/claims/${params.claimId}`);
     } catch (error) {
       logger.error("Error updating claim:", error);

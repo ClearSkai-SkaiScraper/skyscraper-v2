@@ -87,7 +87,7 @@ const ActionSchema = z.discriminatedUnion("action", [
 
 type ActionInput = z.infer<typeof ActionSchema>;
 
-export const POST = withAuth(async (req: NextRequest, { userId }) => {
+export const POST = withAuth(async (req: NextRequest, { userId, orgId }) => {
   try {
     const body = await req.json();
     const parsed = ActionSchema.safeParse(body);
@@ -118,16 +118,16 @@ export const POST = withAuth(async (req: NextRequest, { userId }) => {
         return handleMatch(userId, input);
 
       case "convert_lead":
-        return handleConvertLead(userId, input);
+        return handleConvertLead(userId, orgId, input);
 
       case "invite_client":
-        return handleInviteClient(userId, input);
+        return handleInviteClient(userId, orgId, input);
 
       case "cancel_subscription":
         return handleCancelSubscription(userId, input);
 
       case "attach_to_claim":
-        return handleAttachToClaim(userId, input);
+        return handleAttachToClaim(userId, orgId, input);
 
       default:
         return NextResponse.json({ error: "Unknown action" }, { status: 400 });
@@ -140,6 +140,20 @@ export const POST = withAuth(async (req: NextRequest, { userId }) => {
 
 async function handleAccept(userId: string, input: Extract<ActionInput, { action: "accept" }>) {
   if (input.connectionId) {
+    // Verify the connection is addressed to the current user's profile
+    const profile = await prisma.tradesProfile.findFirst({ where: { userId } });
+    if (!profile) {
+      return NextResponse.json({ error: "Trades profile required" }, { status: 400 });
+    }
+    const conn = await tradesConn.findFirst({
+      where: { id: input.connectionId, addresseeId: profile.id },
+    });
+    if (!conn) {
+      return NextResponse.json(
+        { error: "Connection not found or not addressed to you" },
+        { status: 404 }
+      );
+    }
     await tradesConn.update({
       where: { id: input.connectionId },
       data: { status: "accepted", connectedAt: new Date() },
@@ -148,6 +162,16 @@ async function handleAccept(userId: string, input: Extract<ActionInput, { action
   }
 
   if (input.inviteId) {
+    // Verify the invite belongs to the current user
+    const invite = await prisma.trades_invites.findFirst({
+      where: { id: input.inviteId, toUserId: userId },
+    });
+    if (!invite) {
+      return NextResponse.json(
+        { error: "Invite not found or not addressed to you" },
+        { status: 404 }
+      );
+    }
     await prisma.trades_invites.update({
       where: { id: input.inviteId },
       data: { status: "accepted", respondedAt: new Date(), updatedAt: new Date() },
@@ -160,6 +184,20 @@ async function handleAccept(userId: string, input: Extract<ActionInput, { action
 
 async function handleDecline(userId: string, input: Extract<ActionInput, { action: "decline" }>) {
   if (input.connectionId) {
+    // Verify the connection is addressed to the current user's profile
+    const profile = await prisma.tradesProfile.findFirst({ where: { userId } });
+    if (!profile) {
+      return NextResponse.json({ error: "Trades profile required" }, { status: 400 });
+    }
+    const conn = await tradesConn.findFirst({
+      where: { id: input.connectionId, addresseeId: profile.id },
+    });
+    if (!conn) {
+      return NextResponse.json(
+        { error: "Connection not found or not addressed to you" },
+        { status: 404 }
+      );
+    }
     await tradesConn.update({
       where: { id: input.connectionId },
       data: { status: "declined" },
@@ -168,6 +206,15 @@ async function handleDecline(userId: string, input: Extract<ActionInput, { actio
   }
 
   if (input.inviteId) {
+    const invite = await prisma.trades_invites.findFirst({
+      where: { id: input.inviteId, toUserId: userId },
+    });
+    if (!invite) {
+      return NextResponse.json(
+        { error: "Invite not found or not addressed to you" },
+        { status: 404 }
+      );
+    }
     await prisma.trades_invites.update({
       where: { id: input.inviteId },
       data: { status: "declined", respondedAt: new Date(), updatedAt: new Date() },
@@ -265,31 +312,30 @@ async function handleMatch(userId: string, input: Extract<ActionInput, { action:
 
 async function handleConvertLead(
   userId: string,
+  orgId: string,
   input: Extract<ActionInput, { action: "convert_lead" }>
 ) {
-  // Real model: user_organizations (NOT orgUser)
-  const membership = await prisma.user_organizations.findFirst({
-    where: { userId },
+  // Verify the lead belongs to the user's organization
+  const lead = await prisma.leads.findFirst({
+    where: { id: input.leadId, orgId },
   });
 
-  if (!membership) {
-    return NextResponse.json({ error: "Org not found" }, { status: 404 });
+  if (!lead) {
+    return NextResponse.json({ error: "Lead not found in your organization" }, { status: 404 });
   }
 
-  // Real model: leads uses "stage" (NOT "status")
-  const lead = await prisma.leads.update({
+  // Update lead stage — scoped by id + orgId
+  await prisma.leads.update({
     where: { id: input.leadId },
     data: { stage: "converted" },
   });
 
   let claim: any = null;
   if (input.claimData) {
-    // claims.create requires many fields (propertyId, claimNumber, title, etc.)
-    // claimData is expected to provide them — cast to bypass compile-time check
     claim = await prisma.claims.create({
       data: {
         id: crypto.randomUUID(),
-        orgId: membership.organizationId,
+        orgId,
         ...(input.claimData as any),
       } as any,
     });
@@ -300,10 +346,19 @@ async function handleConvertLead(
 
 async function handleInviteClient(
   userId: string,
+  orgId: string,
   input: Extract<ActionInput, { action: "invite_client" }>
 ) {
-  // No clientInvitation table — use client_access if claimId provided
   if (input.claimId) {
+    // Verify the claim belongs to the user's organization before granting access
+    const claim = await prisma.claims.findFirst({
+      where: { id: input.claimId, orgId },
+      select: { id: true },
+    });
+    if (!claim) {
+      return NextResponse.json({ error: "Claim not found in your organization" }, { status: 404 });
+    }
+
     await prisma.client_access.create({
       data: {
         id: crypto.randomUUID(),
@@ -320,15 +375,11 @@ async function handleInviteClient(
   }
 
   // Standalone client invitation (no claim)
-  const membership = await prisma.user_organizations.findFirst({
-    where: { userId },
-  });
-
   const invitation = await prisma.client_invitations.create({
     data: {
       email: input.email.toLowerCase(),
       invitedBy: userId,
-      orgId: membership?.organizationId || null,
+      orgId,
       message: input.message || null,
       expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days
     },
@@ -416,8 +467,18 @@ async function handleCancelSubscription(
 
 async function handleAttachToClaim(
   userId: string,
+  orgId: string,
   input: Extract<ActionInput, { action: "attach_to_claim" }>
 ) {
+  // Verify the claim belongs to the user's organization
+  const claim = await prisma.claims.findFirst({
+    where: { id: input.claimId, orgId },
+    select: { id: true },
+  });
+  if (!claim) {
+    return NextResponse.json({ error: "Claim not found in your organization" }, { status: 404 });
+  }
+
   // Create proper join record + activity log
   const attachment = await prisma.claim_trades_companies.upsert({
     where: {
