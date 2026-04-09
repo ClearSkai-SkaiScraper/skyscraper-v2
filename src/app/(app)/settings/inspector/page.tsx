@@ -4,6 +4,7 @@ import { Award, CheckCircle2, FileText, Loader2, Phone, Save, Shield, User, X } 
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 
+import { PageHero } from "@/components/layout/PageHero";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -239,33 +240,31 @@ export default function InspectorProfilePage() {
 
   return (
     <div className="mx-auto max-w-4xl space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-2xl font-bold tracking-tight">Inspector Profile</h2>
-          <p className="text-muted-foreground">
-            Your professional credentials appear on damage assessment reports.
-          </p>
-        </div>
-        <div className="flex items-center gap-3">
-          {profile && (
-            <Badge
-              variant={profile.completeness >= 80 ? "default" : "secondary"}
-              className="text-sm"
-            >
-              {profile.completeness}% complete
-            </Badge>
-          )}
-          <Button onClick={saveProfile} disabled={saving}>
-            {saving ? (
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-            ) : (
-              <Save className="mr-2 h-4 w-4" />
+      <PageHero
+        title="Inspector Profile"
+        subtitle="Your professional credentials appear on damage assessment reports."
+        section="settings"
+        actions={
+          <div className="flex items-center gap-3">
+            {profile && (
+              <Badge
+                variant={profile.completeness >= 80 ? "default" : "secondary"}
+                className="text-sm"
+              >
+                {profile.completeness}% complete
+              </Badge>
             )}
-            Save Profile
-          </Button>
-        </div>
-      </div>
+            <Button onClick={saveProfile} disabled={saving}>
+              {saving ? (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              ) : (
+                <Save className="mr-2 h-4 w-4" />
+              )}
+              Save Profile
+            </Button>
+          </div>
+        }
+      />
 
       {/* Professional Info */}
       <Card>

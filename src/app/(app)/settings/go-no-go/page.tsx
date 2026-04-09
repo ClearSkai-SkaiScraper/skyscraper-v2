@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 
+import { PageHero } from "@/components/layout/PageHero";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -251,29 +252,27 @@ export default function GoNoGoPage() {
 
   return (
     <div className="mx-auto max-w-4xl space-y-6 p-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight">Go / No-Go Checklist</h1>
-          <p className="text-muted-foreground">
-            DAU launch readiness assessment — all critical checks must pass.
-          </p>
-        </div>
-        <Button
-          onClick={runChecks}
-          disabled={running}
-          variant="outline"
-          size="sm"
-          className="gap-1.5"
-        >
-          {running ? (
-            <Loader2 className="h-3.5 w-3.5 animate-spin" />
-          ) : (
-            <RefreshCcw className="h-3.5 w-3.5" />
-          )}
-          Re-run Checks
-        </Button>
-      </div>
+      <PageHero
+        title="Go / No-Go Checklist"
+        subtitle="DAU launch readiness assessment — all critical checks must pass."
+        section="settings"
+        actions={
+          <Button
+            onClick={runChecks}
+            disabled={running}
+            variant="outline"
+            size="sm"
+            className="gap-1.5"
+          >
+            {running ? (
+              <Loader2 className="h-3.5 w-3.5 animate-spin" />
+            ) : (
+              <RefreshCcw className="h-3.5 w-3.5" />
+            )}
+            Re-run Checks
+          </Button>
+        }
+      />
 
       {/* Verdict Banner */}
       <Card

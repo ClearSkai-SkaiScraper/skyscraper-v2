@@ -2,6 +2,7 @@ import { currentUser } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 
 import { EndpointHealthCheck } from "@/components/deployment/EndpointHealthCheck";
+import { PageHero } from "@/components/layout/PageHero";
 
 export const dynamic = "force-dynamic";
 
@@ -36,13 +37,11 @@ export default async function DeploymentStatusPage() {
 
   return (
     <div className="mx-auto max-w-6xl space-y-8 p-6">
-      {/* Header */}
-      <div className="border-b border-slate-700 pb-6">
-        <h1 className="mb-2 text-3xl font-bold text-slate-100">Deployment Status</h1>
-        <p className="text-slate-400">
-          View deployment health, build information, and system configuration
-        </p>
-      </div>
+      <PageHero
+        title="Deployment Status"
+        subtitle="View deployment health, build information, and system configuration"
+        section="settings"
+      />
 
       {/* Build Info */}
       <div className="rounded-lg border border-slate-700 bg-slate-900 p-6">

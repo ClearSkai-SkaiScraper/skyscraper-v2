@@ -4,6 +4,7 @@ import { Activity, AlertCircle, Clock,Database, TrendingUp, Zap } from "lucide-r
 import { useEffect, useState } from "react";
 import useSWR from "swr";
 
+import { PageHero } from "@/components/layout/PageHero";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -29,13 +30,11 @@ export default function OpsPage() {
 
   return (
     <div className="container max-w-7xl py-8">
-      <div className="mb-8">
-        <h1 className="mb-2 text-3xl font-bold">Operations Dashboard</h1>
-        <p className="text-muted-foreground">
-          Real-time system monitoring and analytics • Last updated:{" "}
-          {currentTime.toLocaleTimeString()}
-        </p>
-      </div>
+      <PageHero
+        title="Operations Dashboard"
+        subtitle={`Real-time system monitoring and analytics • Last updated: ${currentTime.toLocaleTimeString()}`}
+        section="settings"
+      />
 
       {/* Health Status Cards */}
       <div className="mb-8 grid gap-4 md:grid-cols-2 lg:grid-cols-4">

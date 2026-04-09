@@ -3,6 +3,7 @@
 import { BarChart3, CheckCircle2, Lightbulb, Loader2, TrendingDown, Users } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 
+import { PageHero } from "@/components/layout/PageHero";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
@@ -107,13 +108,11 @@ export default function OnboardingAnalyticsPage() {
 
   return (
     <div className="mx-auto max-w-6xl space-y-6 p-6">
-      {/* Header */}
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight">Onboarding Analytics</h1>
-        <p className="text-muted-foreground">
-          Track where users drop off and optimize the activation funnel.
-        </p>
-      </div>
+      <PageHero
+        title="Onboarding Analytics"
+        subtitle="Track where users drop off and optimize the activation funnel."
+        section="settings"
+      />
 
       {/* Quick stats */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
