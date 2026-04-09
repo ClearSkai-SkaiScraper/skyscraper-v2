@@ -14,6 +14,7 @@ interface ClaimTabsProps {
 
 const tabs = [
   { label: "Overview", href: "/overview" },
+  { label: "Lifecycle", href: "/lifecycle" },
   { label: "Carrier", href: "/carrier" },
   { label: "Photos", href: "/photos" },
   { label: "Documents", href: "/documents" },

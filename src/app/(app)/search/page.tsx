@@ -1,7 +1,10 @@
 import { currentUser } from "@clerk/nextjs/server";
+import { Search as SearchIcon } from "lucide-react";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
+import { PageContainer } from "@/components/layout/PageContainer";
+import { PageHero } from "@/components/layout/PageHero";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { logger } from "@/lib/logger";
@@ -110,141 +113,149 @@ export default async function SearchPage({
   };
 
   return (
-    <div className="container mx-auto py-6">
-      <div className="mb-6">
-        <h1 className="mb-2 text-3xl font-bold text-[color:var(--text)]">Search Results</h1>
-        <p className="text-gray-600">
-          {query ? `Found ${totalResults} results for "${query}"` : "Enter a search query"}
-        </p>
-      </div>
+    <>
+      <PageHero
+        title="Search Results"
+        subtitle={
+          query
+            ? `Found ${totalResults} results for "${query}"`
+            : "Enter a search query to find claims, leads, jobs, and clients"
+        }
+        icon={<SearchIcon className="h-6 w-6" />}
+      />
+      <PageContainer>
+        {/* Filter Badges - Now Clickable */}
+        <div className="mb-6 flex gap-2">
+          {filterLink("all", "All")}
+          {filterLink("claims", "Claims")}
+          {filterLink("leads", "Leads")}
+          {filterLink("jobs", "Jobs")}
+          {filterLink("clients", "Clients")}
+        </div>
 
-      {/* Filter Badges - Now Clickable */}
-      <div className="mb-6 flex gap-2">
-        {filterLink("all", "All")}
-        {filterLink("claims", "Claims")}
-        {filterLink("leads", "Leads")}
-        {filterLink("jobs", "Jobs")}
-        {filterLink("clients", "Clients")}
-      </div>
+        <div className="space-y-6">
+          {/* Claims Results */}
+          {results.claims.length > 0 && (
+            <Card>
+              <CardHeader>
+                <CardTitle>Claims ({results.claims.length})</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-2">
+                  {results.claims.map((claim: any) => (
+                    <Link
+                      key={claim.id}
+                      href={`/claims/${claim.id}`}
+                      className="flex justify-between border-b border-slate-200 pb-2 transition-colors hover:bg-slate-50 dark:border-slate-700 dark:hover:bg-slate-800"
+                    >
+                      <div>
+                        <p className="font-medium text-blue-600 hover:underline dark:text-blue-400">
+                          {claim.title || claim.claimNumber}
+                        </p>
+                        <p className="text-sm text-slate-500 dark:text-slate-400">
+                          {claim.claimNumber}
+                        </p>
+                      </div>
+                      <Badge>{claim.status}</Badge>
+                    </Link>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          )}
 
-      <div className="space-y-6">
-        {/* Claims Results */}
-        {results.claims.length > 0 && (
-          <Card>
-            <CardHeader>
-              <CardTitle>Claims ({results.claims.length})</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-2">
-                {results.claims.map((claim: any) => (
-                  <Link
-                    key={claim.id}
-                    href={`/claims/${claim.id}`}
-                    className="flex justify-between border-b pb-2 transition-colors hover:bg-gray-50"
-                  >
-                    <div>
-                      <p className="font-medium text-blue-600 hover:underline">
-                        {claim.title || claim.claimNumber}
-                      </p>
-                      <p className="text-sm text-gray-500">{claim.claimNumber}</p>
-                    </div>
-                    <Badge>{claim.status}</Badge>
-                  </Link>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        )}
+          {/* Leads Results */}
+          {results.leads.length > 0 && (
+            <Card>
+              <CardHeader>
+                <CardTitle>Leads ({results.leads.length})</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-2">
+                  {results.leads.map((lead: any) => (
+                    <Link
+                      key={lead.id}
+                      href={`/leads/${lead.id}`}
+                      className="flex justify-between border-b border-slate-200 pb-2 transition-colors hover:bg-slate-50 dark:border-slate-700 dark:hover:bg-slate-800"
+                    >
+                      <div>
+                        <p className="font-medium text-blue-600 hover:underline dark:text-blue-400">
+                          {lead.title}
+                        </p>
+                        <p className="text-sm text-slate-500 dark:text-slate-400">{lead.source}</p>
+                      </div>
+                      <Badge variant="outline">{lead.stage}</Badge>
+                    </Link>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          )}
 
-        {/* Leads Results */}
-        {results.leads.length > 0 && (
-          <Card>
-            <CardHeader>
-              <CardTitle>Leads ({results.leads.length})</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-2">
-                {results.leads.map((lead: any) => (
-                  <Link
-                    key={lead.id}
-                    href={`/leads/${lead.id}`}
-                    className="flex justify-between border-b pb-2 transition-colors hover:bg-gray-50"
-                  >
-                    <div>
-                      <p className="font-medium text-blue-600 hover:underline">{lead.title}</p>
-                      <p className="text-sm text-gray-500">{lead.source}</p>
-                    </div>
-                    <Badge variant="outline">{lead.stage}</Badge>
-                  </Link>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        )}
+          {/* Jobs Results */}
+          {results.jobs.length > 0 && (
+            <Card>
+              <CardHeader>
+                <CardTitle>Jobs ({results.jobs.length})</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-2">
+                  {results.jobs.map((job: any) => (
+                    <Link
+                      key={job.id}
+                      href={`/jobs/${job.id}`}
+                      className="flex justify-between border-b border-slate-200 pb-2 transition-colors hover:bg-slate-50 dark:border-slate-700 dark:hover:bg-slate-800"
+                    >
+                      <div>
+                        <p className="font-medium text-blue-600 hover:underline dark:text-blue-400">
+                          {job.jobNumber || job.jobType}
+                        </p>
+                        <p className="text-sm text-slate-500 dark:text-slate-400">{job.jobType}</p>
+                      </div>
+                      <Badge>{job.status}</Badge>
+                    </Link>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          )}
 
-        {/* Jobs Results */}
-        {results.jobs.length > 0 && (
-          <Card>
-            <CardHeader>
-              <CardTitle>Jobs ({results.jobs.length})</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-2">
-                {results.jobs.map((job: any) => (
-                  <Link
-                    key={job.id}
-                    href={`/jobs/${job.id}`}
-                    className="flex justify-between border-b pb-2 transition-colors hover:bg-gray-50"
-                  >
-                    <div>
-                      <p className="font-medium text-blue-600 hover:underline">
-                        {job.jobNumber || job.jobType}
-                      </p>
-                      <p className="text-sm text-gray-500">{job.jobType}</p>
-                    </div>
-                    <Badge>{job.status}</Badge>
-                  </Link>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        )}
+          {/* Clients Results */}
+          {results.clients.length > 0 && (
+            <Card>
+              <CardHeader>
+                <CardTitle>Clients ({results.clients.length})</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-2">
+                  {results.clients.map((client: any) => (
+                    <Link
+                      key={client.id}
+                      href={`/portal/clients/${client.id}`}
+                      className="flex justify-between border-b border-slate-200 pb-2 transition-colors hover:bg-slate-50 dark:border-slate-700 dark:hover:bg-slate-800"
+                    >
+                      <div>
+                        <p className="font-medium text-blue-600 hover:underline dark:text-blue-400">
+                          {client.firstName} {client.lastName}
+                        </p>
+                        <p className="text-sm text-slate-500 dark:text-slate-400">{client.email}</p>
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          )}
 
-        {/* Clients Results */}
-        {results.clients.length > 0 && (
-          <Card>
-            <CardHeader>
-              <CardTitle>Clients ({results.clients.length})</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-2">
-                {results.clients.map((client: any) => (
-                  <Link
-                    key={client.id}
-                    href={`/portal/clients/${client.id}`}
-                    className="flex justify-between border-b pb-2 transition-colors hover:bg-gray-50"
-                  >
-                    <div>
-                      <p className="font-medium text-blue-600 hover:underline">
-                        {client.firstName} {client.lastName}
-                      </p>
-                      <p className="text-sm text-gray-500">{client.email}</p>
-                    </div>
-                  </Link>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        )}
-
-        {query && totalResults === 0 && (
-          <Card>
-            <CardContent className="py-12 text-center text-gray-500">
-              No results found for &quot;{query}&quot;
-            </CardContent>
-          </Card>
-        )}
-      </div>
-    </div>
+          {query && totalResults === 0 && (
+            <Card>
+              <CardContent className="py-12 text-center text-muted-foreground">
+                No results found for &quot;{query}&quot;
+              </CardContent>
+            </Card>
+          )}
+        </div>
+      </PageContainer>
+    </>
   );
 }

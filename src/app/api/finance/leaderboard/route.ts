@@ -138,6 +138,25 @@ export async function GET(req: Request) {
       const totalClaims = cleanLeaderboard.reduce((s, r) => s + r.claimsSigned, 0);
       const totalDoors = cleanLeaderboard.reduce((s, r) => s + r.doorsKnocked, 0);
 
+      // Calculate signed claims count from claims table for accurate summary
+      const signedClaimsCount = await prisma.claims.count({
+        where: {
+          orgId: ctx.orgId,
+          createdAt: { gte: periodStart },
+          signingStatus: "signed",
+          isDemo: false,
+        },
+      });
+
+      const pendingClaimsCount = await prisma.claims.count({
+        where: {
+          orgId: ctx.orgId,
+          createdAt: { gte: periodStart },
+          OR: [{ signingStatus: "pending" }, { signingStatus: null }],
+          isDemo: false,
+        },
+      });
+
       return NextResponse.json({
         success: true,
         data: {
@@ -146,6 +165,8 @@ export async function GET(req: Request) {
             totalRevenue,
             totalClaims,
             totalDoors,
+            pendingClaimsCount,
+            signedClaimsCount,
             repCount: cleanLeaderboard.length,
             avgCloseRate:
               cleanLeaderboard.length > 0

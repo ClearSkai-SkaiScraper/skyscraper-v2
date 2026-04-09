@@ -26,8 +26,8 @@ export async function GET() {
   const [rawResult, membership] = await Promise.all([
     db
       .query(
-        `select n.id, n.level, n.title, n.body, n.link, n.created_at,
-                (select 1 from notifications_reads r where r.notification_id = n.id and r.clerk_user_id = $2) as is_read
+        `select n.id, n.level, n.title, n.body, n.link, n.created_at, n.read_at,
+                (select 1 from notifications_reads r where r.notification_id = n.id and r.clerk_user_id = $2) as is_read_join
          from notifications n
          where (n.clerk_user_id = $2 or (n.org_id = $1 and n.clerk_user_id is null))
          order by n.created_at desc
@@ -50,13 +50,14 @@ export async function GET() {
   ]);
 
   // Transform to format expected by NotificationBell component
+  // Check BOTH read_at column AND join table for read status
   const notifications: any[] = (rawResult?.rows || []).map((row: any) => ({
     id: row.id,
     type: row.level === "error" ? "warning" : row.level === "success" ? "success" : "info",
     title: row.title || "Notification",
     message: row.body || "",
     createdAt: row.created_at,
-    read: !!row.is_read,
+    read: !!(row.read_at || row.is_read_join),
     link: row.link,
   }));
 
@@ -233,6 +234,8 @@ export async function POST(req: NextRequest) {
     return Response.json({ ok: true });
   }
 
+  // Mark raw notification as read — use BOTH approaches for reliability
+  // 1. Try join table (legacy approach)
   try {
     await db.query(
       `insert into notifications_reads (notification_id, clerk_user_id)
@@ -241,6 +244,16 @@ export async function POST(req: NextRequest) {
     );
   } catch {
     // notifications_reads table may not exist — silently ignore
+  }
+
+  // 2. Also update Notification.readAt via Prisma (preferred approach)
+  try {
+    await prisma.notification.update({
+      where: { id: notificationId },
+      data: { readAt: new Date() },
+    });
+  } catch {
+    // Notification may not exist or ID format mismatch — silently ignore
   }
 
   return Response.json({ ok: true });

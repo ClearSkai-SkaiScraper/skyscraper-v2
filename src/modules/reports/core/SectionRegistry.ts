@@ -49,7 +49,7 @@ export const SECTION_REGISTRY: Record<SectionKey, Section> = {
     key: "weather-verification",
     title: "Weather Verification",
     icon: "Cloud",
-    enabled: false,
+    enabled: false, // REMOVED: Not needed in Bid Package per user request
     order: 11,
     requiredDataKeys: ["weather"],
     renderFn: placeholderRender("Weather Verification"),
@@ -63,20 +63,22 @@ export const SECTION_REGISTRY: Record<SectionKey, Section> = {
     requiredDataKeys: ["adjusterNotes"],
     renderFn: placeholderRender("Contractor Notes"),
   },
+  // photo-evidence renamed to "Project Photos" per user request - still disabled in Bid Package
   "photo-evidence": {
     key: "photo-evidence",
-    title: "Photo Evidence",
+    title: "Project Photos",
     icon: "Camera",
     enabled: false, // DISABLED: Removed from Bid Package per Sprint 28
     order: 5,
     requiredDataKeys: ["photos"],
-    renderFn: placeholderRender("Photo Evidence"),
+    renderFn: placeholderRender("Project Photos"),
   },
+  // test-cuts: DISABLED per user request - removed from Bid Package
   "test-cuts": {
     key: "test-cuts",
     title: "Test Cuts & Invasive Testing",
     icon: "Scissors",
-    enabled: false,
+    enabled: false, // REMOVED: Not needed in Bid Package per user request
     order: 6,
     requiredDataKeys: ["testCutsData"],
     renderFn: placeholderRender("Test Cuts"),

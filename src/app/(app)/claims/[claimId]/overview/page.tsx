@@ -21,9 +21,7 @@ import {
 } from "@/components/contacts/UniversalContactCard";
 import { ClaimNotFoundError } from "@/components/errors/ErrorStates";
 import { TabErrorBoundary } from "@/components/errors/TabErrorBoundary";
-import { CloseoutChecklist } from "@/components/jobs/CloseoutChecklist";
 import { JobValueBox } from "@/components/jobs/JobValueBox";
-import { RequestCloseoutButton } from "@/components/jobs/RequestCloseoutButton";
 import { ClaimWorkspaceSkeleton } from "@/components/loading/LoadingStates";
 import { retryQueue } from "@/lib/client/retryQueue";
 import { logger } from "@/lib/logger";
@@ -901,23 +899,13 @@ export default function OverviewPage() {
                   <PenLine className="h-4 w-4" />
                   Bid Package
                 </Link>
-              </div>
-            </div>
-
-            {/* Closeout */}
-            <div className="border-t border-slate-200/60 pt-4 dark:border-slate-700/60">
-              <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                Lifecycle
-              </p>
-              <RequestCloseoutButton
-                entityId={claimId}
-                entityType="claim"
-                entityTitle={claim.title}
-                currentStatus={claim.status}
-                onCloseoutRequested={fetchData}
-              />
-              <div className="mt-4">
-                <CloseoutChecklist entityId={claimId} entityType="claim" />
+                <Link
+                  href={`/claims/${claimId}/lifecycle`}
+                  className="inline-flex items-center gap-2 rounded-xl border border-amber-200/80 bg-amber-50/80 px-4 py-2.5 text-sm font-semibold text-amber-700 shadow-sm transition-all hover:bg-amber-100 dark:border-amber-800 dark:bg-amber-950/60 dark:text-amber-300 dark:hover:bg-amber-900"
+                >
+                  <ClipboardCheck className="h-4 w-4" />
+                  Lifecycle
+                </Link>
               </div>
             </div>
           </div>

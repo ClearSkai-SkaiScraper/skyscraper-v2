@@ -221,50 +221,43 @@ export default async function ClaimLayout({ children, params }: ClaimLayoutProps
     }
 
     return (
-      <div className="flex h-screen items-center justify-center bg-slate-50">
-        <div className="max-w-md rounded-lg border border-slate-200 bg-white p-8 shadow-lg">
+      <div className="flex h-screen items-center justify-center bg-slate-50 dark:bg-slate-950">
+        <div className="max-w-md rounded-lg border border-slate-200 bg-white p-8 shadow-lg dark:border-slate-700 dark:bg-slate-900">
           <div className="mb-4 text-center">
-            <h2 className="mb-2 text-2xl font-semibold text-slate-900">Claim not found</h2>
-            <p className="mb-4 text-slate-600">
-              This claim may have been deleted or you don't have access to it.
+            <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800">
+              <FileText className="h-6 w-6 text-slate-400" />
+            </div>
+            <h2 className="mb-2 text-2xl font-semibold text-slate-900 dark:text-white">
+              Claim not found
+            </h2>
+            <p className="mb-4 text-slate-600 dark:text-slate-400">
+              This claim may have been deleted or you may not have access to it.
             </p>
           </div>
 
-          <div className="mb-6 rounded-lg bg-slate-100 p-4 text-left">
-            <h3 className="mb-2 text-sm font-semibold text-slate-900">Debug Information:</h3>
-            <div className="space-y-1 font-mono text-xs text-slate-700">
-              <p>
-                <span className="font-semibold">Attempted ID:</span> {claimId}
-              </p>
-              <p>
-                <span className="font-semibold">Reason:</span> {result.reason}
-              </p>
-              {result.detail && (
-                <p>
-                  <span className="font-semibold">Detail:</span> {result.detail}
-                </p>
-              )}
-              <p>
-                <span className="font-semibold">ID Type:</span>{" "}
-                {claimId.includes("-")
-                  ? claimId.startsWith("CL-")
-                    ? "Claim Number"
-                    : claimId.startsWith("claim-from-lead")
-                      ? "Lead-Converted Claim"
-                      : "UUID/CUID"
-                  : "Unknown"}
-              </p>
-            </div>
-            <div className="mt-3 rounded bg-amber-50 p-2 text-xs text-amber-800">
+          <div className="mb-6 rounded-lg bg-slate-100 p-4 text-left dark:bg-slate-800">
+            <p className="text-sm text-slate-600 dark:text-slate-400">
               <strong>Common causes:</strong>
-              <ul className="mt-1 list-inside list-disc">
-                <li>Claim was created in a different organization</li>
-                <li>Organization membership was reset/changed</li>
-                <li>Claim was deleted</li>
-                <li>Link is from an old session</li>
-              </ul>
-            </div>
+            </p>
+            <ul className="mt-1 list-inside list-disc text-sm text-slate-500 dark:text-slate-400">
+              <li>Claim was created in a different organization</li>
+              <li>Organization membership was changed</li>
+              <li>Claim was deleted</li>
+              <li>Link is from an old session</li>
+            </ul>
           </div>
+
+          {/* Debug panel — only in development */}
+          {process.env.NODE_ENV === "development" && (
+            <div className="mb-4 rounded-lg border border-amber-200 bg-amber-50 p-3 text-left">
+              <h3 className="mb-1 text-xs font-semibold text-amber-900">Dev Debug:</h3>
+              <div className="space-y-0.5 font-mono text-xs text-amber-800">
+                <p>ID: {claimId}</p>
+                <p>Reason: {result.reason}</p>
+                {result.detail && <p>Detail: {result.detail}</p>}
+              </div>
+            </div>
+          )}
 
           <div className="flex flex-col gap-2">
             <a
@@ -273,22 +266,12 @@ export default async function ClaimLayout({ children, params }: ClaimLayoutProps
             >
               Back to Claims List
             </a>
-            <div className="flex gap-2">
-              <a
-                href="/api/diag/org"
-                target="_blank"
-                className="flex-1 rounded-lg border border-slate-300 px-4 py-2 text-center text-slate-700 hover:bg-slate-50"
-              >
-                Check Org
-              </a>
-              <a
-                href={`/api/__truth?testClaim=${encodeURIComponent(claimId)}`}
-                target="_blank"
-                className="flex-1 rounded-lg border border-slate-300 px-4 py-2 text-center text-slate-700 hover:bg-slate-50"
-              >
-                Test Access
-              </a>
-            </div>
+            <a
+              href="/dashboard"
+              className="rounded-lg border border-slate-300 px-4 py-2 text-center text-slate-700 hover:bg-slate-50 dark:border-slate-600 dark:text-slate-300 dark:hover:bg-slate-800"
+            >
+              Go to Dashboard
+            </a>
           </div>
         </div>
       </div>

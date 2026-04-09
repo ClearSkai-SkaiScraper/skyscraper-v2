@@ -106,12 +106,12 @@ const SECTION_DETAILS: Record<
     dataFields: ["Inspection Date", "Inspector Name", "Observations", "Measurements"],
   },
   "photo-evidence": {
-    description: "Organized photo documentation with labels, annotations, and damage descriptions.",
+    description: "Organized project photo documentation with labels and descriptions.",
     tips: [
       "Group photos by location (roof, siding, interior)",
-      "Include close-ups of specific damage",
+      "Include close-ups of specific areas",
     ],
-    dataFields: ["Photo Grid", "Captions", "Damage Labels", "Location Tags"],
+    dataFields: ["Photo Grid", "Captions", "Labels", "Location Tags"],
   },
 
   "scope-matrix": {
@@ -319,7 +319,6 @@ export default function Builder() {
     "cover",
     "customer-details",
     "retail-proposal",
-    "photo-evidence",
     "material-selections",
     "payment-schedule",
     "warranty-terms",
@@ -743,7 +742,6 @@ export default function Builder() {
                 "customer-details",
                 "retail-proposal",
                 "material-selections",
-                "photo-evidence",
                 "payment-schedule",
                 "warranty-terms",
                 "signature-page",

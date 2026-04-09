@@ -115,6 +115,14 @@ export const GET = withAuth(async (request: NextRequest, { orgId, userId }) => {
       },
     });
   } catch (error) {
+    // Check if this is a permission error
+    if (error instanceof Error && error.message.includes("Permission denied")) {
+      logger.warn("[Tasks API] Permission denied:", error.message);
+      return Response.json(
+        { error: "You don't have permission to view tasks. Please contact your administrator." },
+        { status: 403 }
+      );
+    }
     logger.error("Error fetching tasks:", error);
     return Response.json({ error: "Failed to fetch tasks" }, { status: 500 });
   }

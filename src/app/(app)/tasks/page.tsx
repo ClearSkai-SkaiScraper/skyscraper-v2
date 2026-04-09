@@ -53,6 +53,7 @@ export default function TasksPage() {
 
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [filterStatus, setFilterStatus] = useState<string>("all");
   const [filterSource, setFilterSource] = useState<string>("all");
   const [showCreateDialog, setShowCreateDialog] = useState(false);
@@ -74,6 +75,7 @@ export default function TasksPage() {
   useEffect(() => {
     const fetchTasks = async () => {
       try {
+        setError(null);
         const res = await fetch("/api/tasks");
         if (res.ok) {
           const data = await res.json();
@@ -86,9 +88,13 @@ export default function TasksPage() {
             assignedTo: t.users || t.assignedTo,
           }));
           setTasks(normalized);
+        } else {
+          const data = await res.json().catch(() => ({}));
+          setError(data.error || "Failed to load tasks");
         }
-      } catch (error) {
-        logger.error("Failed to fetch tasks:", error);
+      } catch (err) {
+        logger.error("Failed to fetch tasks:", err);
+        setError("Failed to connect to server");
       } finally {
         setLoading(false);
       }
@@ -427,6 +433,20 @@ export default function TasksPage() {
         <div className="flex items-center justify-center py-12">
           <Loader2 className="h-8 w-8 animate-spin" />
         </div>
+      ) : error ? (
+        <Card className="mx-auto max-w-md p-8 text-center">
+          <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-red-100 dark:bg-red-900/30">
+            <X className="h-6 w-6 text-red-600 dark:text-red-400" />
+          </div>
+          <h3 className="mb-2 text-lg font-semibold text-slate-900 dark:text-white">
+            Unable to Load Tasks
+          </h3>
+          <p className="mb-4 text-sm text-slate-500 dark:text-slate-400">{error}</p>
+          <Button onClick={() => window.location.reload()} variant="outline" className="gap-2">
+            <Loader2 className="h-4 w-4" />
+            Try Again
+          </Button>
+        </Card>
       ) : tasks.length === 0 ? (
         <NoClaimsEmpty
           icon={Target}

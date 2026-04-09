@@ -96,6 +96,20 @@ export default function SettingsSecurityPage() {
   return (
     <PageContainer>
       <div className="mx-auto max-w-4xl space-y-8">
+        {/* Coming Soon Banner */}
+        <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 dark:border-amber-800 dark:bg-amber-950/40">
+          <div className="flex items-center gap-3">
+            <ShieldCheck className="h-5 w-5 text-amber-600 dark:text-amber-400" />
+            <div>
+              <p className="font-medium text-amber-800 dark:text-amber-200">Preview Mode</p>
+              <p className="text-sm text-amber-600 dark:text-amber-400">
+                Security settings are currently in preview. Session management and MFA are managed
+                through your Clerk account. Full integration is coming soon.
+              </p>
+            </div>
+          </div>
+        </div>
+
         {/* Header */}
         <div className="flex items-center gap-4">
           <Link href="/settings" className="text-muted-foreground hover:text-foreground">
