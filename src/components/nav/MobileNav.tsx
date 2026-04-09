@@ -43,104 +43,76 @@ import { useEffect, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { navSections as canonicalSections, isNavItemVisible } from "@/config/navConfig";
 
-interface NavItem {
-  label: string;
-  href: string;
-  icon?: React.ElementType;
-}
+// Icon assignments for mobile nav rendering — keyed by href
+const iconMap: Record<string, React.ElementType> = {
+  "/dashboard": LayoutDashboard,
+  "/storm-center": Cloud,
+  "/pipeline": Briefcase,
+  "/analytics": BarChart3,
+  "/ai/smart-actions": Sparkles,
+  "/quick-dol": Cloud,
+  "/notifications": Zap,
+  "/claims": ClipboardList,
+  "/analytics/claims-timeline": Clock,
+  "/claims-ready-folder": FolderOpen,
+  "/ai/tools/supplement": Wrench,
+  "/ai/tools/depreciation": Wrench,
+  "/ai/tools/rebuttal": Shield,
+  "/ai/bad-faith": Shield,
+  "/jobs/retail": Store,
+  "/leads": Zap,
+  "/analytics/dashboard": BarChart3,
+  "/tasks": ClipboardList,
+  "/appointments": Calendar,
+  "/crews": HardHat,
+  "/maps/map-view": MapPin,
+  "/maps/door-knocking": MapPin,
+  "/ai/roofplan-builder": Sparkles,
+  "/ai/mockup": Sparkles,
+  "/vision-lab": Camera,
+  "/materials/estimator": Package,
+  "/vendors/orders": Package,
+  "/reports/hub": FileText,
+  "/reports/history": History,
+  "/reports/templates/pdf-builder": FileText,
+  "/reports/templates": FolderOpen,
+  "/reports/contractor-packet": FileText,
+  "/smart-docs": FileText,
+  "/ai/exports": FileText,
+  "/hoa/notices": FileText,
+  "/settings/company-documents": FileText,
+  "/permits": ClipboardList,
+  "/finance/overview": CreditCard,
+  "/invoices": Receipt,
+  "/commissions": CreditCard,
+  "/mortgage-checks": Landmark,
+  "/messages": MessageSquare,
+  "/trades": Users,
+  "/company/connections": Users,
+  "/network/work-requests": ClipboardList,
+  "/trades/jobs": Briefcase,
+  "/vendor-network": Building2,
+  "/invitations": Users,
+  "/trades/profile": Users,
+  "/settings/branding": Building2,
+  "/settings": Settings,
+  "/leaderboard": BarChart3,
+  "/teams": Users,
+  "/teams/hierarchy": Users,
+  "/archive": FolderOpen,
+};
 
-interface NavSection {
-  label: string;
-  items: NavItem[];
-}
-
-// SYNCED with AppSidebar.tsx — Information Architecture (Consolidated v6)
-const navSections: NavSection[] = [
-  {
-    label: "Storm Command Center",
-    items: [
-      { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
-      { label: "Analytics Dashboard", href: "/analytics/dashboard", icon: BarChart3 },
-      { label: "Storm Center", href: "/storm-center", icon: Cloud },
-      { label: "Job Pipeline", href: "/pipeline", icon: Briefcase },
-      { label: "Smart Actions", href: "/ai/smart-actions", icon: Sparkles },
-      { label: "Quick DOL", href: "/quick-dol", icon: Cloud },
-      { label: "Notifications", href: "/notifications", icon: Zap },
-    ],
-  },
-  {
-    label: "Claims & Supplements",
-    items: [
-      { label: "Active Claims", href: "/claims", icon: ClipboardList },
-      { label: "Claims Timeline", href: "/analytics/claims-timeline", icon: Clock },
-      { label: "Claims Assembly", href: "/claims-ready-folder", icon: FolderOpen },
-      { label: "Supplement Builder", href: "/ai/tools/supplement", icon: Wrench },
-      { label: "Supplement Tracker", href: "/supplements", icon: History },
-      { label: "Depreciation Builder", href: "/ai/tools/depreciation", icon: Wrench },
-      { label: "Rebuttal Builder", href: "/ai/tools/rebuttal", icon: Shield },
-      { label: "Bad Faith Analysis", href: "/ai/bad-faith", icon: Shield },
-    ],
-  },
-  {
-    label: "Jobs & Field Ops",
-    items: [
-      { label: "Retail Workspace", href: "/jobs/retail", icon: Store },
-      { label: "Lead Routing", href: "/leads", icon: Zap },
-      { label: "Appointments & Inspections", href: "/appointments", icon: Calendar },
-      { label: "Crew Manager", href: "/crews", icon: HardHat },
-      { label: "Map View", href: "/maps/map-view", icon: MapPin },
-      { label: "Permits", href: "/permits", icon: ClipboardList },
-    ],
-  },
-  {
-    label: "Build Tools & Materials",
-    items: [
-      { label: "Project Plan Builder", href: "/ai/roofplan-builder", icon: Sparkles },
-      { label: "Mockup Generator", href: "/ai/mockup", icon: Sparkles },
-      { label: "Vision Labs", href: "/vision-lab", icon: Camera },
-      { label: "Material Estimator", href: "/materials/estimator", icon: Package },
-      { label: "Material Orders", href: "/vendors/orders", icon: Package },
-    ],
-  },
-  {
-    label: "Reports & Documents",
-    items: [
-      { label: "Reports Hub", href: "/reports/hub", icon: FileText },
-      { label: "Report History", href: "/reports/history", icon: History },
-      { label: "Quick Reports", href: "/reports/templates/pdf-builder", icon: FileText },
-      { label: "Templates & Marketplace", href: "/reports/templates", icon: FolderOpen },
-      { label: "Bid Package", href: "/reports/contractor-packet", icon: FileText },
-      { label: "Smart Documents", href: "/smart-docs", icon: FileText },
-      { label: "Carrier Exports", href: "/ai/exports", icon: FileText },
-      { label: "Company Documents", href: "/settings/company-documents", icon: FileText },
-    ],
-  },
-  {
-    label: "Finance & Messages",
-    items: [
-      { label: "Financial Overview", href: "/finance/overview", icon: CreditCard },
-      { label: "Invoices", href: "/invoices", icon: Receipt },
-      { label: "Commissions", href: "/commissions", icon: CreditCard },
-      { label: "Mortgage Checks", href: "/mortgage-checks", icon: Landmark },
-      { label: "Messages Hub", href: "/messages", icon: MessageSquare },
-    ],
-  },
-  {
-    label: "Company & Network",
-    items: [
-      { label: "My Profile & Company", href: "/trades/profile", icon: Users },
-      { label: "Company Branding", href: "/settings/branding", icon: Building2 },
-      { label: "Trades Network Hub", href: "/trades", icon: Users },
-      { label: "Work Requests", href: "/network/work-requests", icon: ClipboardList },
-      { label: "Job Board", href: "/trades/jobs", icon: Briefcase },
-      { label: "Vendor Intelligence", href: "/vendor-network", icon: Building2 },
-      { label: "Team Leaderboard", href: "/leaderboard", icon: BarChart3 },
-      { label: "Company Settings", href: "/settings", icon: Settings },
-      { label: "Team & Company Seats", href: "/teams", icon: Users },
-    ],
-  },
-];
+// Derive mobile nav from canonical config — adds icons and filters by feature flags
+const navSections = canonicalSections.map((section) => ({
+  label: section.label,
+  items: section.items.filter(isNavItemVisible).map((item) => ({
+    label: item.label,
+    href: item.href,
+    icon: iconMap[item.href],
+  })),
+}));
 
 export function MobileNav() {
   const [isOpen, setIsOpen] = useState(false);
