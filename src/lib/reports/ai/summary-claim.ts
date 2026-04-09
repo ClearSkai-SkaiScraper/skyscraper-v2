@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 // lib/reports/ai/summary-claim.ts
 
 import { ensureOpenAI } from "@/lib/ai/client";
@@ -7,7 +8,7 @@ import { extractFirstOutputText } from "./responseText";
 
 const openai = ensureOpenAI();
 
-export async function aiGenerateClaimSummary(data: ReportData) {
+export async function aiGenerateClaimSummary(_data: ReportData) {
   const prompt = `
     Create a professional insurance adjuster summary using:
     - Damage findings

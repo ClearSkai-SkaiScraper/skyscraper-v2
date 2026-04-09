@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 // lib/reports/sectionBuilders.ts
 
 import prisma from "@/lib/prisma";
@@ -79,7 +80,7 @@ export async function buildWeatherData(
     }
 
     return result;
-  } catch (error) {
+  } catch {
     // Non-critical — return empty rather than crash report generation
     return {};
   }

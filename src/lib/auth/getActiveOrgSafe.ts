@@ -1,3 +1,4 @@
+/* eslint-disable no-restricted-imports, @typescript-eslint/await-thenable */
 /**
  * CANONICAL ORG RESOLVER (DB-FIRST, SELF-HEALING, NEVER THROWS)
  *

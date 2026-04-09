@@ -1,3 +1,4 @@
+/* eslint-disable no-restricted-syntax */
 /**
  * PDF generation and upload utilities
  * Handles HTML to PDF conversion and Supabase Storage uploads

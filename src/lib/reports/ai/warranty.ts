@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 // lib/reports/ai/warranty.ts
 
 import { ensureOpenAI } from "@/lib/ai/client";

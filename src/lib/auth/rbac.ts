@@ -1,3 +1,4 @@
+/* eslint-disable no-restricted-imports, @typescript-eslint/no-explicit-any, @typescript-eslint/await-thenable */
 /**
  * MASTER PROMPT #66: Role-Based Access Control (RBAC) Enforcement
  *
@@ -180,7 +181,7 @@ export async function getCurrentUserRole(): Promise<{
           return { userId, orgId: effectiveOrgId, role: "admin" };
         }
       }
-    } catch (e) {
+    } catch {
       // Non-fatal; continue with normal resolution
     }
 

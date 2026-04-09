@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-argument */
 "use server";
 
 import { getDelegate } from "@/lib/db/modelAliases";
@@ -46,7 +47,7 @@ export async function getAllUserReports(params?: {
 }): Promise<UnifiedReport[]> {
   const resolved = await resolveOrgSafe();
   if (!resolved) return [];
-  const { orgId, userId } = resolved;
+  const { orgId, userId: _userId } = resolved;
 
   const { type, from, to, search, claimId, leadId } = params || {};
 

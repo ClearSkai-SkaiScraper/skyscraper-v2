@@ -27,12 +27,14 @@ class Logger {
 
   private log(level: LogLevel, message: string, meta?: unknown) {
     const timestamp = new Date().toISOString();
-    const logEntry = {
+    const metaObj: Record<string, unknown> =
+      meta && typeof meta === "object" ? (meta as Record<string, unknown>) : {};
+    const logEntry: Record<string, unknown> = {
       timestamp,
       level,
       message,
       ...this.context,
-      ...meta,
+      ...metaObj,
     };
 
     // Console output with color coding
@@ -70,7 +72,14 @@ class Logger {
     // ── Sentry captureException for errors ───────────────────────────
     if (level === "error" && meta) {
       try {
-        const err = meta instanceof Error ? meta : meta?.error instanceof Error ? meta.error : null;
+        const metaRecord =
+          meta && typeof meta === "object" ? (meta as Record<string, unknown>) : null;
+        const err =
+          meta instanceof Error
+            ? meta
+            : metaRecord?.error instanceof Error
+              ? metaRecord.error
+              : null;
         if (err) {
           Sentry.captureException(err, {
             extra: logEntry,
@@ -112,7 +121,7 @@ class Logger {
   startTimer(label: string) {
     const start = performance.now();
     return {
-      end: (meta?: unknown) => {
+      end: (meta?: Record<string, unknown>) => {
         const duration = performance.now() - start;
         this.info(`${label} completed`, { duration: `${duration.toFixed(2)}ms`, ...meta });
       },

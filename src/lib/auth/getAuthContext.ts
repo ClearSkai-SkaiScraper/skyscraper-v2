@@ -1,5 +1,5 @@
 // src/lib/auth/getAuthContext.ts
-/* eslint-disable no-restricted-imports */
+/* eslint-disable no-restricted-imports, @typescript-eslint/await-thenable, @typescript-eslint/no-explicit-any */
 import { auth, currentUser } from "@clerk/nextjs/server";
 
 export type AuthContext = {

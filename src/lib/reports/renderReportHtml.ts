@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /**
  * PREMIUM PDF RENDERER
  *
@@ -41,7 +42,7 @@ export function renderReportHtml(
   // Extract data
   const { company, claim, property, weather, media, notes, findings, template } = context;
   const photos = media?.photos || [];
-  const hasWeather = !!weather;
+  const _hasWeather = !!weather;
 
   const templateTitle = template?.name ?? "Report";
   const templateCategory = template?.category ?? "Professional Report";

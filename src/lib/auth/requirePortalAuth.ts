@@ -1,3 +1,4 @@
+/* eslint-disable no-restricted-imports, @typescript-eslint/await-thenable */
 /**
  * ============================================================================
  * requirePortalAuth — Portal API Route Guard

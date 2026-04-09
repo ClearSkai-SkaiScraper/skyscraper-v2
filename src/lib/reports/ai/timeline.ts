@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 // lib/reports/ai/timeline.ts
 
 import { ensureOpenAI } from "@/lib/ai/client";

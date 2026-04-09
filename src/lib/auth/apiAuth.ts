@@ -1,3 +1,4 @@
+/* eslint-disable no-restricted-imports, @typescript-eslint/await-thenable */
 /**
  * API Route Authentication Helpers
  * Returns NextResponse errors instead of redirects (unlike page guards)

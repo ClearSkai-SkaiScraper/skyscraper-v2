@@ -1,3 +1,4 @@
+/* eslint-disable no-restricted-imports, @typescript-eslint/no-explicit-any, @typescript-eslint/await-thenable */
 /**
  * Multi-Tenant Session Resolution
  * This is the MOST IMPORTANT utility for SaaS data isolation

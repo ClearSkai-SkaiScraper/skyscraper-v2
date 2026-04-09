@@ -38,10 +38,17 @@ type ResolvedAuth = {
   membershipId: string;
 };
 
+// Route context type for Next.js 14+ App Router dynamic routes.
+// The `params` property contains route parameters and may be a Promise in async routes.
+// Using `any` to allow flexible destructuring patterns across all route handlers.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type RouteContext = any;
+
 type AuthenticatedHandler = (
   req: NextRequest,
   ctx: ResolvedAuth,
-  params?: Record<string, unknown>
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  routeContext?: any
 ) => Promise<NextResponse | Response>;
 
 /**
@@ -67,7 +74,7 @@ type AuthenticatedHandler = (
 export function withAuth(handler: AuthenticatedHandler, options?: RequireAuthOptions) {
   return async (
     req: NextRequest,
-    params?: Record<string, unknown>
+    routeContext?: RouteContext
   ): Promise<NextResponse | Response> => {
     // Session 9: Propagate correlation ID from middleware to all wrapped routes
     const requestId = req.headers.get("x-request-id");
@@ -76,7 +83,7 @@ export function withAuth(handler: AuthenticatedHandler, options?: RequireAuthOpt
     const auth = await requireAuth(options);
     if (isAuthError(auth)) return auth;
 
-    return handler(req, auth, params);
+    return handler(req, auth, routeContext);
   };
 }
 
@@ -99,3 +106,6 @@ export function withAdmin(handler: AuthenticatedHandler) {
 export function withManager(handler: AuthenticatedHandler) {
   return withAuth(handler, { roles: ["OWNER", "ADMIN", "MANAGER"] });
 }
+
+// Export types for use in route handlers
+export type { AuthenticatedHandler, ResolvedAuth, RouteContext };

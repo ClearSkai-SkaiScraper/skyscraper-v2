@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /**
  * PDF Generation Functions for Reports
  * Quick implementation using existing Puppeteer infrastructure

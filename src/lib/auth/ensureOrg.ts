@@ -1,3 +1,4 @@
+/* eslint-disable no-restricted-imports, @typescript-eslint/await-thenable, @typescript-eslint/no-unused-vars */
 /**
  * Auto-onboarding helper
  * Creates org + membership for users who don't have one

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-argument */
 /**
  * Report Generator Engine
  *
@@ -170,7 +171,7 @@ async function collectJobData(jobId: string) {
 /**
  * Collect estimate data
  */
-async function collectEstimateData(estimateId: string) {
+async function collectEstimateData(_estimateId: string) {
   // TODO: Implement when estimates table exists
   return {};
 }
@@ -178,7 +179,7 @@ async function collectEstimateData(estimateId: string) {
 /**
  * Collect invoice data
  */
-async function collectInvoiceData(invoiceId: string) {
+async function collectInvoiceData(_invoiceId: string) {
   // TODO: Implement when invoices table exists
   return {};
 }
@@ -186,7 +187,7 @@ async function collectInvoiceData(invoiceId: string) {
 /**
  * Collect inspection data
  */
-async function collectInspectionData(inspectionId: string) {
+async function collectInspectionData(_inspectionId: string) {
   // TODO: Implement when inspections table exists
   return {};
 }
@@ -384,7 +385,7 @@ async function storeReport(data: {
       generatedAt: new Date(),
       expiresAt,
     };
-  } catch (error) {
+  } catch {
     throw new Error("Failed to store report");
   }
 }

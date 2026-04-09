@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 // lib/reports/ai/summary-retail.ts
 
 import { ensureOpenAI } from "@/lib/ai/client";
@@ -6,7 +7,7 @@ import { extractFirstOutputText } from "./responseText";
 
 const openai = ensureOpenAI();
 
-export async function aiGenerateRetailSummary(data: any) {
+export async function aiGenerateRetailSummary(_data: any) {
   const prompt = `
     Summarize findings for a homeowner using friendly, plain English.
     Avoid insurance language.

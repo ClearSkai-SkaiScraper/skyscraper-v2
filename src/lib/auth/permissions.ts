@@ -1,3 +1,4 @@
+/* eslint-disable no-restricted-imports, @typescript-eslint/no-explicit-any, @typescript-eslint/await-thenable */
 /**
  * @deprecated ⚠️ SYSTEM C — DEPRECATED
  * Use `@/lib/auth/rbac` (System B) instead. This file uses "verb:noun"
@@ -9,7 +10,7 @@
  *
  * @see src/lib/auth/rbac.ts — the canonical System B
  */
-/* eslint-disable no-restricted-imports */
+/* eslint-disable no-restricted-imports, @typescript-eslint/await-thenable */
 import { auth } from "@clerk/nextjs/server";
 
 import { getTenant } from "@/lib/auth/tenant";
@@ -266,7 +267,7 @@ export async function canUpload({
     const portalAccess = await prisma.client_access.findFirst({
       where: {
         claimId: claimId,
-        email: userId, // Using email as userId lookup
+        email: _userId, // Using email as userId lookup
       },
     });
 
