@@ -10,9 +10,10 @@
  * This replaces all the scattered useState hooks in the claims-ready-folder page.
  */
 
-import type { ClaimIQReadiness, SectionReadiness } from "@/lib/claimiq/assembly-engine";
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
+
+import type { ClaimIQReadiness, SectionReadiness } from "@/lib/claimiq/assembly-engine";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Types
@@ -239,10 +240,9 @@ export const useClaimIQStore = create<ClaimIQStore>()(
         });
       },
 
-      refreshAfterChange: async (claimId: string, changeType: string) => {
+      refreshAfterChange: async (claimId: string, _changeType: string) => {
         // Small delay to let DB writes settle
         await new Promise((resolve) => setTimeout(resolve, 500));
-        console.log(`[ClaimIQ] Refreshing after ${changeType}`);
         await get().fetchReadiness(claimId);
       },
 

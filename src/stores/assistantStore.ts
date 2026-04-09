@@ -33,7 +33,7 @@ interface AssistantStore {
   clearSuggestions: () => void;
   triggerSmartReactive: (trigger: {
     type: "autosave_error" | "stripe_error" | "balance_zero" | "idle" | "photo_upload";
-    data?: any;
+    data?: Record<string, unknown>;
   }) => void;
 }
 
