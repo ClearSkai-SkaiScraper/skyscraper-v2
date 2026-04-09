@@ -35,9 +35,17 @@ export interface ReportAttachments {
   generatedAt?: string | null;
   lastError?: string | null;
   attempts?: number;
+  maxAttempts?: number;
   notifyEmail?: string | null;
-  queueConfig?: ReportQueueConfig | null;
-  [key: string]: unknown;
+  queueConfig?: Record<string, unknown> | null;
+  processingStartedAt?: string | null;
+  completedAt?: string | null;
+  lastFailedAt?: string | null;
+}
+
+/** Helper to cast ReportAttachments to Prisma-compatible JSON */
+function toJson(obj: ReportAttachments): Prisma.InputJsonValue {
+  return obj as unknown as Prisma.InputJsonValue;
 }
 export interface ReportQueueItem {
   id: string;
@@ -219,7 +227,7 @@ export async function getNextQueuedReport(): Promise<{
     orgId: report.orgId,
     claimId: report.claimId,
     type: report.type,
-    config: attachments.queueConfig || {},
+    config: (attachments.queueConfig as unknown as ReportQueueConfig) || { sections: [] },
   };
 }
 
@@ -238,11 +246,11 @@ export async function markReportProcessing(reportId: string): Promise<void> {
     where: { id: reportId },
     data: {
       status: "processing",
-      attachments: {
+      attachments: toJson({
         ...attachments,
         attempts: (attachments.attempts || 0) + 1,
         processingStartedAt: new Date().toISOString(),
-      },
+      }),
       updatedAt: new Date(),
     },
   });
@@ -268,11 +276,11 @@ export async function markReportCompleted(
     data: {
       status: "completed",
       content: content || "",
-      attachments: {
+      attachments: toJson({
         ...attachments,
         pdfUrl,
         completedAt: new Date().toISOString(),
-      },
+      }),
       updatedAt: new Date(),
     },
   });
@@ -303,11 +311,11 @@ export async function markReportFailed(reportId: string, error: string): Promise
     where: { id: reportId },
     data: {
       status: newStatus,
-      attachments: {
+      attachments: toJson({
         ...attachments,
         lastError: error,
         lastFailedAt: new Date().toISOString(),
-      },
+      }),
       updatedAt: new Date(),
     },
   });

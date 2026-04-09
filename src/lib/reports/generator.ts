@@ -327,7 +327,7 @@ async function getOrgBranding(orgId: string) {
       teamPhoto: branding?.teamPhotoUrl || null,
       primaryColor: branding?.colorPrimary || BRAND_PRIMARY,
       accentColor: branding?.colorAccent || null,
-      slogan: branding?.slogan || null,
+      slogan: (branding as Record<string, unknown>)?.slogan as string | null || null,
       coverPage: coverPageData, // Canvas elements, backgroundColor, backgroundImage
     };
   } catch {
