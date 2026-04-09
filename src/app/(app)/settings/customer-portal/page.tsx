@@ -99,6 +99,20 @@ export default function SettingsCustomerPortalPage() {
           </Button>
         </div>
 
+        {/* Preview Banner */}
+        <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 dark:border-amber-800 dark:bg-amber-950/40">
+          <div className="flex items-start gap-3">
+            <Eye className="mt-0.5 h-5 w-5 text-amber-600 dark:text-amber-400" />
+            <div>
+              <p className="font-medium text-amber-900 dark:text-amber-200">Preview Mode</p>
+              <p className="mt-1 text-sm text-amber-700 dark:text-amber-300">
+                Customer portal settings are currently in preview. Configuration will be connected
+                to backend services in an upcoming release.
+              </p>
+            </div>
+          </div>
+        </div>
+
         {/* Portal Access */}
         <Card>
           <CardHeader>

@@ -1,9 +1,7 @@
 "use client";
 
-import { useUser } from "@clerk/nextjs";
-import { CheckCircle, Globe, Languages, Plus } from "lucide-react";
-import { useRouter } from "next/navigation";
-import { useEffect,useState } from "react";
+import { CheckCircle, Eye, Globe, Languages, Plus } from "lucide-react";
+import { useState } from "react";
 
 import { Button } from "@/components/ui/button";
 
@@ -42,6 +40,20 @@ export default function MultiLanguagePage() {
           <Plus className="h-5 w-5" />
           Add Language
         </Button>
+      </div>
+
+      {/* Preview Banner */}
+      <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 dark:border-amber-800 dark:bg-amber-950/40">
+        <div className="flex items-start gap-3">
+          <Eye className="mt-0.5 h-5 w-5 text-amber-600 dark:text-amber-400" />
+          <div>
+            <p className="font-medium text-amber-900 dark:text-amber-200">Preview Mode</p>
+            <p className="mt-1 text-sm text-amber-700 dark:text-amber-300">
+              Multi-language support is currently in preview. Translations and language
+              configurations shown here are examples only.
+            </p>
+          </div>
+        </div>
       </div>
 
       {/* Global Settings */}

@@ -1,6 +1,16 @@
 "use client";
 
-import { ArrowLeft, Globe, Image, Mail, Paintbrush, Palette, Save, Upload } from "lucide-react";
+import {
+  ArrowLeft,
+  Eye,
+  Globe,
+  Image,
+  Mail,
+  Paintbrush,
+  Palette,
+  Save,
+  Upload,
+} from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -79,6 +89,20 @@ export default function SettingsWhiteLabelPage() {
             <Save className="mr-2 h-4 w-4" />
             {saving ? "Saving..." : "Save Changes"}
           </Button>
+        </div>
+
+        {/* Preview Banner */}
+        <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 dark:border-amber-800 dark:bg-amber-950/40">
+          <div className="flex items-start gap-3">
+            <Eye className="mt-0.5 h-5 w-5 text-amber-600 dark:text-amber-400" />
+            <div>
+              <p className="font-medium text-amber-900 dark:text-amber-200">Preview Mode</p>
+              <p className="mt-1 text-sm text-amber-700 dark:text-amber-300">
+                White-label branding is currently in preview. Brand customizations will be applied
+                to your platform in an upcoming release.
+              </p>
+            </div>
+          </div>
         </div>
 
         {/* Logo & Brand Assets */}

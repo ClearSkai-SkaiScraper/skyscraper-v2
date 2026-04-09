@@ -1,10 +1,9 @@
-import { Lock, Users2 } from "lucide-react";
+import { Users2 } from "lucide-react";
 import type { Metadata } from "next";
-import Link from "next/link";
 
 import { PageContainer } from "@/components/layout/PageContainer";
 import { PageHero } from "@/components/layout/PageHero";
-import { PageSectionCard } from "@/components/layout/PageSectionCard";
+import { AuthRequiredState } from "@/components/shared/AuthRequiredState";
 import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 import { safeOrgContext } from "@/lib/safeOrgContext";
@@ -31,21 +30,10 @@ export default async function CompanySeatsPage() {
           subtitle="Manage your team seats and invitations"
           icon={<Users2 className="h-5 w-5" />}
         />
-        <PageSectionCard>
-          <div className="py-8 text-center">
-            <Lock className="mx-auto mb-4 h-12 w-12 text-slate-400" />
-            <h2 className="mb-2 text-xl font-bold">Sign In Required</h2>
-            <p className="mb-4 text-sm text-slate-500">
-              Please sign in to manage your company seats.
-            </p>
-            <Link
-              href="/sign-in?redirect_url=/teams"
-              className="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
-            >
-              Sign In →
-            </Link>
-          </div>
-        </PageSectionCard>
+        <AuthRequiredState
+          redirectUrl="/teams"
+          message="Please sign in to manage your company seats."
+        />
       </PageContainer>
     );
   }

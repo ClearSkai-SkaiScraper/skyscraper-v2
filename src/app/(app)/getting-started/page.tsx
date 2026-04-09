@@ -208,7 +208,7 @@ export default function GettingStartedPage() {
   if (showCelebration) {
     return (
       <div className="container max-w-4xl py-12">
-        <Card className="border-green-200 bg-green-50">
+        <Card className="border-green-200 bg-green-50 dark:border-green-800 dark:bg-green-950/30">
           <CardHeader className="text-center">
             <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-green-500">
               <Check className="h-8 w-8 text-white" />
@@ -220,7 +220,7 @@ export default function GettingStartedPage() {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="rounded-lg bg-white p-4">
+            <div className="rounded-lg bg-white p-4 dark:bg-slate-800">
               <h3 className="mb-2 font-semibold">What's Next?</h3>
               <ul className="space-y-2 text-sm text-muted-foreground">
                 <li className="flex items-start gap-2">
@@ -282,7 +282,7 @@ export default function GettingStartedPage() {
       </div>
 
       <div className="mb-8 space-y-4">
-        <Card className="border-purple-200 bg-purple-50">
+        <Card className="border-purple-200 bg-purple-50 dark:border-purple-800 dark:bg-purple-950/30">
           <CardHeader>
             <CardTitle className="text-lg">Try with Sample Data</CardTitle>
           </CardHeader>
@@ -333,7 +333,7 @@ export default function GettingStartedPage() {
           </CardContent>
         </Card>
 
-        <Card className="border-blue-200 bg-blue-50">
+        <Card className="border-blue-200 bg-blue-50 dark:border-blue-800 dark:bg-blue-950/30">
           <CardHeader>
             <CardTitle className="text-lg">Need Help?</CardTitle>
           </CardHeader>
@@ -386,8 +386,8 @@ export default function GettingStartedPage() {
             key={item.id}
             className={
               item.completed
-                ? "border-green-200 bg-green-50/50"
-                : "hover:border-blue-200 hover:bg-blue-50/30"
+                ? "border-green-200 bg-green-50/50 dark:border-green-800 dark:bg-green-950/20"
+                : "hover:border-blue-200 hover:bg-blue-50/30 dark:hover:border-blue-800 dark:hover:bg-blue-950/20"
             }
           >
             <CardHeader>
