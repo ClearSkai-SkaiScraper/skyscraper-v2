@@ -27,7 +27,7 @@ interface ShareMetadata {
 
 export const POST = withAuth(async (req: NextRequest, { orgId }, routeParams) => {
   try {
-    const { id: reportId } = await routeParams.params;
+    const { id: reportId } = await routeParams!.params;
 
     // Verify report exists and belongs to org (orgId in WHERE prevents IDOR/enumeration)
     const report = await prisma.ai_reports.findFirst({
