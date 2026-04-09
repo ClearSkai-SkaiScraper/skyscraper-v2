@@ -11,8 +11,6 @@ export const dynamic = "force-dynamic";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 
-import { withAuth } from "@/lib/auth/withAuth";
-
 import {
   analyzeScopeForCarrierConflicts,
   generateCarrierFriendlyScope,
@@ -20,6 +18,7 @@ import {
   type ScopeLineItem,
 } from "@/lib/ai/carrierComplianceEngine";
 import { detectCarrier } from "@/lib/ai/carrierDetect";
+import { withAuth } from "@/lib/auth/withAuth";
 import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 import { checkRateLimit, getRateLimitError } from "@/lib/ratelimit";

@@ -1,8 +1,8 @@
 import { httpsCallable } from "firebase/functions";
-import { logger } from "@/lib/logger";
 import { useCallback,useState } from "react";
 
 import { functions } from "@/lib/firebase";
+import { logger } from "@/lib/logger";
 
 interface WeatherData {
   location: string;

@@ -1,7 +1,7 @@
-import { withAuth } from "@/lib/auth/withAuth";
 import { NextResponse } from "next/server";
 
 import { getOpenAI } from "@/lib/ai/client";
+import { withAuth } from "@/lib/auth/withAuth";
 import { logger } from "@/lib/logger";
 import { getRateLimitIdentifier, rateLimiters } from "@/lib/rate-limit";
 import { retailAssistantSchema, validateAIRequest } from "@/lib/validation/aiSchemas";

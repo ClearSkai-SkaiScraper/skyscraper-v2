@@ -1,9 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { logger } from "@/lib/logger";
 
 import type { Permission,TeamRole } from "@/lib/auth/rbac";
+import { logger } from "@/lib/logger";
 
 interface PermissionsData {
   role: TeamRole | null;

@@ -4,7 +4,6 @@ export const revalidate = 0;
 
 import { nanoid } from "nanoid";
 import { NextRequest, NextResponse } from "next/server";
-
 import { z } from "zod";
 
 import { withAuth } from "@/lib/auth/withAuth";

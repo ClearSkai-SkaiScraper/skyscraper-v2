@@ -1,7 +1,7 @@
 import { useCallback,useState } from "react";
-import { logger } from "@/lib/logger";
 
 import { supabase } from "@/integrations/supabase/client";
+import { logger } from "@/lib/logger";
 
 export type ChatMessage =
   | { role: "user" | "assistant"; content: string }

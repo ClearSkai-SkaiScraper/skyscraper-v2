@@ -1,9 +1,9 @@
 // src/app/api/claims/[claimId]/workspace/route.ts
-import { withAuth } from "@/lib/auth/withAuth";
 import { nanoid } from "nanoid";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 
+import { withAuth } from "@/lib/auth/withAuth";
 import { resolveClaim } from "@/lib/claims/resolveClaim";
 import { prismaModel } from "@/lib/db/prismaModel";
 import { logger } from "@/lib/logger";

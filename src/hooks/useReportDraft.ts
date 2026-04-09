@@ -4,9 +4,9 @@
  */
 
 import { useCallback, useState } from "react";
-import { logger } from "@/lib/logger";
 
 import type { Citation } from "@/lib/citations";
+import { logger } from "@/lib/logger";
 import { exportPdfFromHtml, useOffscreen } from "@/lib/pdfExportClient";
 import { renderPdfHtml } from "@/lib/pdfTemplates";
 

@@ -17,9 +17,9 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { logger } from "@/lib/logger";
 
 import { supabase } from "@/integrations/supabase/client";
+import { logger } from "@/lib/logger";
 
 export function useReadReceipts(conversationId: string | null | undefined) {
   const [readBy, setReadBy] = useState<Map<string, Date>>(new Map());

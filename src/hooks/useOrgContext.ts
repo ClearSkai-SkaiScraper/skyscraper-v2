@@ -1,8 +1,9 @@
 "use client";
 
 import { useAuth } from "@clerk/nextjs";
-import { logger } from "@/lib/logger";
 import { useCallback, useEffect, useState } from "react";
+
+import { logger } from "@/lib/logger";
 
 export interface OrgContextData {
   orgId: string;

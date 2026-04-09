@@ -16,8 +16,8 @@ import { toast } from "sonner";
 
 import { EditableField } from "@/components/claims/EditableField";
 import {
-  UniversalContactCard,
   type UniversalContact,
+  UniversalContactCard,
 } from "@/components/contacts/UniversalContactCard";
 import { ClaimNotFoundError } from "@/components/errors/ErrorStates";
 import { TabErrorBoundary } from "@/components/errors/TabErrorBoundary";

@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 
-import { getDriftMetrics, resetDriftMetrics } from "@/lib/monitoring/driftMetrics";
 import { logger } from "@/lib/logger";
+import { getDriftMetrics, resetDriftMetrics } from "@/lib/monitoring/driftMetrics";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;

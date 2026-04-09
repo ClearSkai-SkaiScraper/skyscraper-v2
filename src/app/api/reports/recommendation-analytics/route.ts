@@ -5,8 +5,8 @@ export const revalidate = 0;
 import { NextRequest, NextResponse } from "next/server";
 
 import { withAuth } from "@/lib/auth/withAuth";
-import { logRecommendationEvent } from "@/lib/reports/recommendation-analytics";
 import { logger } from "@/lib/logger";
+import { logRecommendationEvent } from "@/lib/reports/recommendation-analytics";
 
 /**
  * POST /api/reports/recommendation-analytics

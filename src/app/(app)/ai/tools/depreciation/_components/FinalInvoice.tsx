@@ -21,7 +21,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { fetchClientBranding } from "@/lib/pdf/clientBrandedHeader";
-import { drawClientCoverPage, type ClientCoverPageData } from "@/lib/pdf/clientCoverPage";
+import { type ClientCoverPageData,drawClientCoverPage } from "@/lib/pdf/clientCoverPage";
 
 interface LineItem {
   id: string;

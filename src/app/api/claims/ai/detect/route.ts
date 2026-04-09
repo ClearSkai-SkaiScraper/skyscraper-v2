@@ -4,9 +4,9 @@ import { NextRequest, NextResponse } from "next/server";
 
 import { AIModels, callOpenAI } from "@/lib/ai/client";
 import { withAuth } from "@/lib/auth/withAuth";
+import { logger } from "@/lib/logger";
 import { requirePermission } from "@/lib/permissions";
 import { checkRateLimit, getClientIdentifier } from "@/lib/security/ratelimit";
-import { logger } from "@/lib/logger";
 
 export const POST = withAuth(async (req: NextRequest, { orgId, userId }) => {
   try {

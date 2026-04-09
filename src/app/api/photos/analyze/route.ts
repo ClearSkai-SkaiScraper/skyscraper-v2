@@ -11,14 +11,13 @@
 
 import { NextRequest, NextResponse } from "next/server";
 
-import { withAuth } from "@/lib/auth/withAuth";
-
 import { analyzeImage } from "@/lib/ai/openai-vision";
 import {
   detectDamageWithYOLO,
   isRoboflowConfigured,
   type NormalizedDetection,
 } from "@/lib/ai/roboflow";
+import { withAuth } from "@/lib/auth/withAuth";
 import { logger } from "@/lib/logger";
 import { checkRateLimit } from "@/lib/rate-limit";
 

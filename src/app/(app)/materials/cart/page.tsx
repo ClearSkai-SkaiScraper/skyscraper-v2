@@ -1,6 +1,5 @@
 "use client";
 
-import { AZ_DEFAULT_TAX_RATE } from "@/lib/constants/taxRates";
 import { useUser } from "@clerk/nextjs";
 import {
   AlertCircle,
@@ -17,6 +16,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 
 import { PageHero } from "@/components/layout/PageHero";
+import { AZ_DEFAULT_TAX_RATE } from "@/lib/constants/taxRates";
 import type { SupplierCartItem, SupplierName } from "@/lib/suppliers/types";
 import { SUPPLIER_CONFIG } from "@/lib/suppliers/types";
 

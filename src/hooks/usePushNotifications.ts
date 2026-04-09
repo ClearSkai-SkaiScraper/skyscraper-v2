@@ -6,8 +6,9 @@
 "use client";
 
 import { useAuth } from "@clerk/nextjs";
-import { logger } from "@/lib/logger";
 import { useCallback, useEffect, useState } from "react";
+
+import { logger } from "@/lib/logger";
 
 // Get the VAPID public key from environment
 const VAPID_PUBLIC_KEY = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY || "";

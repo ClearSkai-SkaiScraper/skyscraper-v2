@@ -5,7 +5,7 @@ import { z } from "zod";
 import { withAuth } from "@/lib/auth/withAuth";
 import { logger } from "@/lib/logger";
 import { drawBrandedHeader, drawPageFooter, fetchBrandingData } from "@/lib/pdf/brandedHeader";
-import { drawCoverPage, fetchPropertyMapBase64, type CoverPageData } from "@/lib/pdf/coverPage";
+import { type CoverPageData,drawCoverPage, fetchPropertyMapBase64 } from "@/lib/pdf/coverPage";
 import { checkRateLimit } from "@/lib/rate-limit";
 
 const planExportSchema = z.object({

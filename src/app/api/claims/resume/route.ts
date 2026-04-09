@@ -7,10 +7,10 @@
 
 import "server-only";
 
-import { withAuth } from "@/lib/auth/withAuth";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 
+import { withAuth } from "@/lib/auth/withAuth";
 import { logger } from "@/lib/logger";
 
 export const runtime = "nodejs";

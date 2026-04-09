@@ -4,9 +4,10 @@
 
 "use client";
 
-import { logger } from "@/lib/logger";
 import { useUser } from "@clerk/nextjs";
 import { useEffect, useState } from "react";
+
+import { logger } from "@/lib/logger";
 
 /** System B canonical roles (lowercase) */
 export type Role = "admin" | "manager" | "member" | "viewer";

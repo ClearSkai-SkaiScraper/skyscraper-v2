@@ -14,8 +14,8 @@ import { useEffect, useState } from "react";
 
 import type { FeatureKey, PlanSlug } from "@/lib/billing/featureGates";
 import {
-  hasFeature as checkFeature,
   getMinPlanForFeature,
+  hasFeature as checkFeature,
   PLAN_DISPLAY_NAMES,
 } from "@/lib/billing/featureGates";
 

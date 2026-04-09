@@ -3,9 +3,9 @@ import { NextResponse } from "next/server";
 import { compose, withRateLimit, withSentryApi } from "@/lib/api/wrappers";
 import { createForbiddenResponse, requirePermission } from "@/lib/auth/rbac";
 import { withOrgScope } from "@/lib/auth/tenant";
+import { logger } from "@/lib/logger";
 import { getCurrentUserPermissions } from "@/lib/permissions";
 import prisma from "@/lib/prisma";
-import { logger } from "@/lib/logger";
 
 /**
  * GET /api/clients

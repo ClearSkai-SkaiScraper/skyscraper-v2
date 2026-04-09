@@ -13,8 +13,8 @@
 
 import { NextResponse } from "next/server";
 
-import { deepHealthCheck } from "@/lib/scale/health";
 import { logger } from "@/lib/logger";
+import { deepHealthCheck } from "@/lib/scale/health";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";

@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 
 import { withAuth } from "@/lib/auth/withAuth";
-
 import { sendEmail, TEMPLATES } from "@/lib/email/resend";
 import { log } from "@/lib/logger";
 import prisma from "@/lib/prisma";

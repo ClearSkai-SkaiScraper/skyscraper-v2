@@ -1,8 +1,8 @@
-import { withAuth } from "@/lib/auth/withAuth";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
 import { getOpenAI } from "@/lib/ai/client";
+import { withAuth } from "@/lib/auth/withAuth";
 import { logger } from "@/lib/logger";
 import { getRateLimitIdentifier, rateLimiters } from "@/lib/rate-limit";
 

@@ -1,8 +1,9 @@
 "use client";
 
 import { useAuth } from "@clerk/nextjs";
-import { logger } from "@/lib/logger";
 import { useEffect, useRef,useState } from "react";
+
+import { logger } from "@/lib/logger";
 
 /**
  * Hook to automatically initialize user account on first login

@@ -57,9 +57,9 @@ import {
   fetchClientBranding,
 } from "@/lib/pdf/clientBrandedHeader";
 import {
+  type ClientCoverPageData,
   drawClientCoverPage,
   fetchPropertyMapClient,
-  type ClientCoverPageData,
 } from "@/lib/pdf/clientCoverPage";
 
 // ── Types matching the API response shape ───────────────────────────────────

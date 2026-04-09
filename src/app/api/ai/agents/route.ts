@@ -12,11 +12,11 @@ export const dynamic = "force-dynamic";
  * - Action planning
  */
 
-import { withAuth } from "@/lib/auth/withAuth";
 import { NextRequest, NextResponse } from "next/server";
 
 import { AICoreRouter } from "@/lib/ai/router";
 import { type AiBillingContext, createAiConfig, withAiBilling } from "@/lib/ai/withAiBilling";
+import { withAuth } from "@/lib/auth/withAuth";
 import {
   requireActiveSubscription,
   SubscriptionRequiredError,

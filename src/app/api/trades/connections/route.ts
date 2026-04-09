@@ -13,7 +13,6 @@ export const dynamic = "force-dynamic";
 import { NextRequest, NextResponse } from "next/server";
 
 import { withAuth } from "@/lib/auth/withAuth";
-
 import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 import { isValidationError, validateBody } from "@/lib/validation/middleware";

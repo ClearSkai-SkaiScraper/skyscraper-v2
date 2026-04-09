@@ -3,7 +3,6 @@ export const dynamic = "force-dynamic";
 import { NextRequest, NextResponse } from "next/server";
 
 import { withAuth } from "@/lib/auth/withAuth";
-
 import { LEGAL_DOCUMENTS } from "@/lib/legal/config";
 import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";

@@ -1,11 +1,12 @@
 "use client";
 
+import { useCallback, useEffect, useState } from "react";
+
 import {
+  type ConsentState,
   getAnalyticsConsent,
   setAnalyticsConsent,
-  type ConsentState,
 } from "@/lib/analytics/consent";
-import { useCallback, useEffect, useState } from "react";
 
 /**
  * React hook for managing analytics consent state.

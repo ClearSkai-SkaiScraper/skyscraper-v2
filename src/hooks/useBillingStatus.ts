@@ -1,7 +1,8 @@
 "use client";
 
-import { logger } from "@/lib/logger";
 import React, { useEffect, useState } from "react";
+
+import { logger } from "@/lib/logger";
 
 export interface BillingStatus {
   plan: string;

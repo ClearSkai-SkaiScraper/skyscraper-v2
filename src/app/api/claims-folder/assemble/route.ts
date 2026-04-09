@@ -6,9 +6,9 @@ export const dynamic = "force-dynamic";
  * Assembles a complete claims-ready folder from a claim ID
  */
 
-import { withAuth } from "@/lib/auth/withAuth";
 import { NextRequest, NextResponse } from "next/server";
 
+import { withAuth } from "@/lib/auth/withAuth";
 import { assembleClaimFolder } from "@/lib/claims-folder/folderAssembler";
 import type { SectionStatus } from "@/lib/claims-folder/folderSchema";
 import { AssembleFolderRequestSchema } from "@/lib/claims-folder/folderSchema";

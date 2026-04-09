@@ -42,7 +42,7 @@ import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 
 import { Button } from "@/components/ui/button";
-import { navSections as canonicalSections, isNavItemVisible } from "@/config/navConfig";
+import { isNavItemVisible,navSections as canonicalSections } from "@/config/navConfig";
 import { cn } from "@/lib/utils";
 
 // Icon assignments for mobile nav rendering — keyed by href

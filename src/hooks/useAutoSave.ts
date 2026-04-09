@@ -19,9 +19,10 @@
  */
 
 import { useAuth } from "@clerk/nextjs";
-import { logger } from "@/lib/logger";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
+
+import { logger } from "@/lib/logger";
 
 interface UseAutoSaveProps {
   mode: "retail" | "claims";

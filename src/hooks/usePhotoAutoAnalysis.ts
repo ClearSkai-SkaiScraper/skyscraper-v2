@@ -1,7 +1,8 @@
 "use client";
 
-import { logger } from "@/lib/logger";
 import { useCallback, useState } from "react";
+
+import { logger } from "@/lib/logger";
 
 interface UploadedPhoto {
   id?: string;

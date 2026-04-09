@@ -19,9 +19,9 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { logger } from "@/lib/logger";
 
 import { supabase } from "@/integrations/supabase/client";
+import { logger } from "@/lib/logger";
 
 // ---------------------------------------------------------------------------
 // Types

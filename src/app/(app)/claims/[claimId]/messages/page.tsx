@@ -5,10 +5,9 @@ import { Loader2, Send } from "lucide-react";
 import { useParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
+import { NoMessagesEmpty } from "@/components/ui/EmptyStatePresets";
 import { logger } from "@/lib/logger";
 import { inputBase, textareaBase } from "@/lib/ui/inputStyles";
-
-import { NoMessagesEmpty } from "@/components/ui/EmptyStatePresets";
 
 import SectionCard from "../_components/SectionCard";
 

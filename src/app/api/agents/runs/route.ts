@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 
-import { safeOrgContext } from "@/lib/safeOrgContext";
 import { logger } from "@/lib/logger";
+import { safeOrgContext } from "@/lib/safeOrgContext";
 
 export const dynamic = "force-dynamic";
 

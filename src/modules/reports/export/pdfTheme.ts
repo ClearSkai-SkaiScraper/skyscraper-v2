@@ -2,7 +2,7 @@
 // PDF THEME — Centralized design tokens for professional report output
 // ============================================================================
 
-import { rgb, type Color } from "pdf-lib";
+import { type Color,rgb } from "pdf-lib";
 
 /** Page layout constants */
 export const PAGE = {
