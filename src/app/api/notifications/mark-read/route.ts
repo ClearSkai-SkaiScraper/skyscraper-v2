@@ -140,6 +140,38 @@ export const POST = withAuth(async (req: NextRequest, { userId }) => {
           where: { recipientId: { in: recipientIds }, isRead: false },
           data: { isRead: true, readAt: new Date() },
         });
+
+        // Also mark all unread messages in threads where user is participant
+        try {
+          // Get all threads where user is a participant
+          const threads = await prisma.messageThread.findMany({
+            where: {
+              OR: [
+                { participants: { has: userId } },
+                ...(orgCtx?.orgId ? [{ orgId: orgCtx.orgId }] : []),
+                ...(membership?.companyId ? [{ tradePartnerId: membership.companyId }] : []),
+              ],
+            },
+            select: { id: true },
+          });
+
+          if (threads.length > 0) {
+            const threadIds = threads.map((t) => t.id);
+            await prisma.message.updateMany({
+              where: {
+                threadId: { in: threadIds },
+                senderUserId: { not: userId }, // Only mark messages FROM others as read
+                read: false,
+              },
+              data: { read: true },
+            });
+          }
+        } catch (msgError) {
+          logger.warn("[NOTIFICATIONS_MARK_READ] Failed to mark messages as read", {
+            error: String(msgError),
+          });
+        }
+
         return NextResponse.json({ success: true });
       }
 
