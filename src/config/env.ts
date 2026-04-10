@@ -1,3 +1,4 @@
+/* eslint-disable no-restricted-syntax -- This IS the centralized env config layer. All other files must import from here. */
 /**
  * Centralized Environment Configuration
  *

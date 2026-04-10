@@ -1,3 +1,4 @@
+/* eslint-disable no-restricted-syntax -- Version config reads env vars at build time */
 /**
  * Application version configuration
  * Update this file when deploying new versions to ensure visible changes in production
