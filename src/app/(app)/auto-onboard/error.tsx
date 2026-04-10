@@ -1,0 +1,3 @@
+"use client";
+import { makeSectionError } from "@/components/errors/makeSectionError";
+export default makeSectionError("auto-onboard", "Auto Onboard");
