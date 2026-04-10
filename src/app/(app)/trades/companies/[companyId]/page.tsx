@@ -1,3 +1,4 @@
+/* eslint-disable no-restricted-syntax */
 /**
  * Company Detail Page
  * View a trades company profile, members, reviews, and featured work

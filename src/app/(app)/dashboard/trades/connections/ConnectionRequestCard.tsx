@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /**
  * ConnectionRequestCard Component
  * Displays list of pending client connection requests

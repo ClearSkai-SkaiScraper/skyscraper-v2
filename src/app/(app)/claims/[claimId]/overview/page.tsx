@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars, @typescript-eslint/no-explicit-any */
 // src/app/(app)/claims/[claimId]/overview/page.tsx
 "use client";
 

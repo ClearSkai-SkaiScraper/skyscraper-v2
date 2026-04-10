@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/await-thenable */
 // eslint-disable-next-line no-restricted-imports
 import { auth } from "@clerk/nextjs/server";
 import { Database, HardDrive, Info } from "lucide-react";

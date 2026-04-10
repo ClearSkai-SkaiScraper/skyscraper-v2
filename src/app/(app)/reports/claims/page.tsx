@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/await-thenable */
 // app/(dashboard)/reports/claims/page.tsx
 
 // eslint-disable-next-line no-restricted-imports

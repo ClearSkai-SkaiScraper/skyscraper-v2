@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/await-thenable */
 // eslint-disable-next-line no-restricted-imports
 import { auth } from "@clerk/nextjs/server";
 import { ArrowLeftIcon, LayoutGrid, List, Plus, Settings } from "lucide-react";

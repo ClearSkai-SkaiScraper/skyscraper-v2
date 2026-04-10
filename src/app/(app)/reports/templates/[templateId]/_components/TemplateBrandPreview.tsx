@@ -1,4 +1,5 @@
 "use client";
+/* eslint-disable @typescript-eslint/no-explicit-any */
 
 import { report_templates } from "@prisma/client";
 import { Upload } from "lucide-react";

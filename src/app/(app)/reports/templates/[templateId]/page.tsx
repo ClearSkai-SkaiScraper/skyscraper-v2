@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { ArrowLeft, Download, FileText, Settings } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";

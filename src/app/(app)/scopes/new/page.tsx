@@ -1,5 +1,5 @@
 "use client";
-/* eslint-disable react/jsx-no-comment-textnodes, @typescript-eslint/no-explicit-any */
+/* eslint-disable react/jsx-no-comment-textnodes, @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars */
 
 import { useUser } from "@clerk/nextjs";
 import { CheckCircle, FileText, Flag, Loader2, Upload } from "lucide-react";

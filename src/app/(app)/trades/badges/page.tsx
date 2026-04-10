@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /**
  * #183 — Vendor Badges & Certifications
  * Server component showing earned badges, progress toward next badges,

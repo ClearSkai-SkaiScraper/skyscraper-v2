@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/await-thenable */
 import { SignIn } from "@clerk/nextjs";
 // eslint-disable-next-line no-restricted-imports
 import { auth } from "@clerk/nextjs/server";

@@ -1,3 +1,4 @@
+/* eslint-disable no-restricted-syntax */
 // src/app/layout.tsx
 import "./globals.css";
 

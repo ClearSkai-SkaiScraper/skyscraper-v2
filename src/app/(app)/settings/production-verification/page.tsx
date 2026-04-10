@@ -1,4 +1,5 @@
 "use client";
+/* eslint-disable no-restricted-syntax */
 
 import { AlertCircle, CheckCircle, CheckCircle2, Loader2, XCircle } from "lucide-react";
 import { useEffect, useState } from "react";

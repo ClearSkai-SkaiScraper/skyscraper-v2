@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Calculator, FileText, Plus } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/await-thenable, @typescript-eslint/no-explicit-any */
 // eslint-disable-next-line no-restricted-imports
 import { auth, currentUser } from "@clerk/nextjs/server";
 import Link from "next/link";

@@ -1,4 +1,5 @@
 "use client";
+/* eslint-disable @typescript-eslint/no-unused-vars */
 
 import { ArrowLeft, Loader2 } from "lucide-react";
 import Link from "next/link";

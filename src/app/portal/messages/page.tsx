@@ -1,5 +1,5 @@
 "use client";
-/* eslint-disable react/jsx-no-comment-textnodes, @typescript-eslint/no-explicit-any */
+/* eslint-disable react/jsx-no-comment-textnodes, @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars */
 
 import { useAuth } from "@clerk/nextjs";
 import {

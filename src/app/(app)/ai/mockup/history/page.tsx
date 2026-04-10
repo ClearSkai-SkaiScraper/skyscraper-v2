@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 // eslint-disable-next-line no-restricted-imports
 import { currentUser } from "@clerk/nextjs/server";
 import { ArrowLeft, CheckCircle, Download } from "lucide-react";

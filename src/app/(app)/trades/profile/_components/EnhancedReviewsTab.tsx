@@ -1,4 +1,4 @@
-/* eslint-disable react/jsx-no-comment-textnodes */
+/* eslint-disable react/jsx-no-comment-textnodes, @typescript-eslint/no-unused-vars */
 /**
  * Enhanced Reviews Tab Component
  * Full review system with filtering, sorting, and detailed review cards

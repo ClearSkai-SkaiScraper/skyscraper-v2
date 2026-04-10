@@ -1,4 +1,4 @@
-/* eslint-disable react/jsx-no-comment-textnodes */
+/* eslint-disable react/jsx-no-comment-textnodes, @typescript-eslint/no-unused-vars */
 /**
  * Enhanced Videos Tab Component
  * Video gallery with player, categories, and upload

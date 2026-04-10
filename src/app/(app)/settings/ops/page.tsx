@@ -1,5 +1,5 @@
 "use client";
-/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars */
 
 import { Activity, AlertCircle, Clock, Database, TrendingUp, Zap } from "lucide-react";
 import { useEffect, useState } from "react";

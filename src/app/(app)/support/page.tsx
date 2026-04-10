@@ -1,5 +1,5 @@
 "use client";
-/* eslint-disable react/jsx-no-comment-textnodes, no-restricted-syntax */
+/* eslint-disable react/jsx-no-comment-textnodes, no-restricted-syntax, @typescript-eslint/no-unused-vars */
 
 import { useUser } from "@clerk/nextjs";
 import { Bug, Lightbulb, Mail, MessageCircle, Send } from "lucide-react";

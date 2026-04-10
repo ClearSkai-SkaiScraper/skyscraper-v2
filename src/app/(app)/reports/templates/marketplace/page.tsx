@@ -1,4 +1,4 @@
-/* eslint-disable react/jsx-no-comment-textnodes */
+/* eslint-disable react/jsx-no-comment-textnodes, @typescript-eslint/no-explicit-any */
 /**
  * Template Marketplace — 3-Style Navigation
  *

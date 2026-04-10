@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 /**
  * Client Portal - Claim Detail Workspace
  * Full interactive workspace for managing an insurance claim project

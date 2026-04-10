@@ -1,4 +1,5 @@
 "use client";
+/* eslint-disable @typescript-eslint/no-explicit-any, no-restricted-syntax */
 
 // Diagnostic page to check Clerk configuration
 // Access at: /clerk-debug

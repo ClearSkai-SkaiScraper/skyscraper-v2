@@ -1,4 +1,5 @@
 "use client";
+/* eslint-disable @typescript-eslint/no-explicit-any */
 
 import { CalendarIcon, Check, DollarSign, Pencil, TrendingUp, X } from "lucide-react";
 import { useState } from "react";

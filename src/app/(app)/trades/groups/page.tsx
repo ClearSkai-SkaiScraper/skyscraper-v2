@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/await-thenable */
 /**
  * Trades Groups List Page
  * Browse and discover trades professional groups

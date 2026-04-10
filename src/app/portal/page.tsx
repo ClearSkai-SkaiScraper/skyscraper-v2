@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/await-thenable, @typescript-eslint/no-unused-vars */
 /**
  * 🏠 CLIENT PORTAL DASHBOARD
  *

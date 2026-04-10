@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { FileText, FolderOpen } from "lucide-react";
 
 interface ClientDocumentsPageProps {

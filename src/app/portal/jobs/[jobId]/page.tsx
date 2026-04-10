@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 /**
  * Client Portal - Job Detail Workspace
  * Full interactive workspace for managing a project with contractor

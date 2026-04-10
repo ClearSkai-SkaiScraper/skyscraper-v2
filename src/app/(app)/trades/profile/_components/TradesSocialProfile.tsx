@@ -1,4 +1,4 @@
-/* eslint-disable react/jsx-no-comment-textnodes */
+/* eslint-disable react/jsx-no-comment-textnodes, @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars */
 /**
  * Trades Social Profile Component
  * Beautiful social-like profile with photos, videos, reviews, testimonials

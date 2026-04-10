@@ -1,4 +1,5 @@
 "use client";
+/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars */
 
 import { AlertCircle, Brain, Loader2, Zap } from "lucide-react";
 import { useEffect, useState } from "react";

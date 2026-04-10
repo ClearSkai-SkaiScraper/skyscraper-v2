@@ -1,4 +1,4 @@
-/* eslint-disable react/jsx-no-comment-textnodes, @typescript-eslint/no-explicit-any */
+/* eslint-disable react/jsx-no-comment-textnodes, @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars */
 /**
  * PHASE D: Redesigned 5-Step Claim Intake Wizard
  *

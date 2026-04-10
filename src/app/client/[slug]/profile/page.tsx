@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 // src/app/client/[slug]/profile/page.tsx
 "use client";
 

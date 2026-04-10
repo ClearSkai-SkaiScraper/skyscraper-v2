@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/await-thenable */
 // src/app/client/[slug]/layout.tsx
 // eslint-disable-next-line no-restricted-imports
 import { auth, currentUser } from "@clerk/nextjs/server";

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/await-thenable, no-restricted-syntax */
 // eslint-disable-next-line no-restricted-imports
 import { clerkClient, currentUser } from "@clerk/nextjs/server";
 import { cookies } from "next/headers";

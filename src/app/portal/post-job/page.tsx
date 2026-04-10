@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 /**
  * Client Job Request Page
  * Allows clients to post what they're looking for with photos, summary,

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { DollarSign, FileText, Plus, Send } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";

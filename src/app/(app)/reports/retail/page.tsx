@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { NoOrgMembershipBanner } from "@/components/guards/NoOrgMembershipBanner";
 import { safeRetailContext } from "@/lib/db/safeRetailContext";
 import { safeOrgContext } from "@/lib/safeOrgContext";

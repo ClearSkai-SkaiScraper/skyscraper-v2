@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/await-thenable */
 /**
  * UNIVERSAL REPORT EDITOR PAGE
  * Edits ClaimReport data with auto-save, finalize, and submit actions

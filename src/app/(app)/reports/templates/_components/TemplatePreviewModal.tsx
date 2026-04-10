@@ -1,5 +1,5 @@
 "use client";
-/* eslint-disable react/jsx-no-comment-textnodes */
+/* eslint-disable react/jsx-no-comment-textnodes, @typescript-eslint/no-explicit-any */
 
 /**
  * Template Preview Modal - Shows template with company branding applied

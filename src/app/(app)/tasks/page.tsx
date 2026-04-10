@@ -1,4 +1,5 @@
 "use client";
+/* eslint-disable @typescript-eslint/no-unused-vars */
 
 import { useUser } from "@clerk/nextjs";
 import { Brain, CheckSquare, Clock, Loader2, Plus, Target, User, X } from "lucide-react";

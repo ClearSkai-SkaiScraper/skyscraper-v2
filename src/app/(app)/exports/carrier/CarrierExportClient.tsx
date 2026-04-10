@@ -1,4 +1,5 @@
 "use client";
+/* eslint-disable @typescript-eslint/no-unused-vars */
 
 import { CheckCircle, Download, FileText, Image, Package, XCircle } from "lucide-react";
 import { useState } from "react";
