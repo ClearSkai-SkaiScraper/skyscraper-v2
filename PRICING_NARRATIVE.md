@@ -1,5 +1,9 @@
 # Pricing Narrative — SkaiScraper vs. Competition
 
+> ⚠️ **NOTE:** This document contains a legacy pricing model ($139.99 flat).
+> The **canonical pricing** is now **$80/seat/month** — see `src/lib/billing/seat-pricing.ts`.
+> For the consolidated positioning document, see [POSITIONING.md](POSITIONING.md).
+
 ---
 
 ## 🎯 CORE POSITIONING
