@@ -433,8 +433,7 @@ async function renderContactsPage() {
 
       // ── Fetch trade connections (vendors, subs, contractors) via accepted user connections ──
       try {
-        const tradesConnectionModel = prisma.tradesConnection as any;
-        const userConnections = await tradesConnectionModel.findMany({
+        const userConnections = await prisma.tradesConnection.findMany({
           where: {
             OR: [{ requesterId: userId }, { addresseeId: userId }],
             status: "accepted",

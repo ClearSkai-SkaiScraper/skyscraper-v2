@@ -70,10 +70,9 @@ export const POST = withAuth(async (req: NextRequest, { userId }) => {
     if (ownerId && ownerId !== userId) {
       try {
         // Use the lowercase tradesConnection model (the active one)
-        const tradesConnectionModel = prisma.tradesConnection as any;
 
         // Check if connection already exists
-        const existing = await tradesConnectionModel.findFirst({
+        const existing = await prisma.tradesConnection.findFirst({
           where: {
             OR: [
               { requesterId: userId, addresseeId: ownerId },
@@ -83,7 +82,7 @@ export const POST = withAuth(async (req: NextRequest, { userId }) => {
         });
 
         if (!existing) {
-          await tradesConnectionModel.create({
+          await prisma.tradesConnection.create({
             data: {
               requesterId: userId,
               addresseeId: ownerId,
@@ -116,12 +115,10 @@ export const POST = withAuth(async (req: NextRequest, { userId }) => {
         select: { userId: true },
       });
 
-      const tradesConnectionModel = prisma.tradesConnection as any;
-
       for (const otherMember of otherMembers) {
         if (!otherMember.userId) continue;
         try {
-          const existing = await tradesConnectionModel.findFirst({
+          const existing = await prisma.tradesConnection.findFirst({
             where: {
               OR: [
                 { requesterId: userId, addresseeId: otherMember.userId },
@@ -131,7 +128,7 @@ export const POST = withAuth(async (req: NextRequest, { userId }) => {
           });
 
           if (!existing) {
-            await tradesConnectionModel.create({
+            await prisma.tradesConnection.create({
               data: {
                 requesterId: userId,
                 addresseeId: otherMember.userId,

@@ -21,11 +21,6 @@ import prisma from "@/lib/prisma";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-// Prisma name collision: TradesConnection (uppercase) vs tradesConnection (lowercase).
-// TypeScript resolves to uppercase model types. Runtime dispatches correctly.
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const tradesConn = prisma.tradesConnection as any;
-
 const ActionSchema = z.discriminatedUnion("action", [
   z.object({
     action: z.literal("accept"),
@@ -167,7 +162,7 @@ async function handleAccept(userId: string, input: Extract<ActionInput, { action
     if (!profile) {
       return NextResponse.json({ error: "Trades profile required" }, { status: 400 });
     }
-    const conn = await tradesConn.findFirst({
+    const conn = await prisma.tradesConnection.findFirst({
       where: { id: input.connectionId, addresseeId: profile.id },
     });
     if (!conn) {
@@ -176,7 +171,7 @@ async function handleAccept(userId: string, input: Extract<ActionInput, { action
         { status: 404 }
       );
     }
-    await tradesConn.update({
+    await prisma.tradesConnection.update({
       where: { id: input.connectionId },
       data: { status: "accepted", connectedAt: new Date() },
     });
@@ -211,7 +206,7 @@ async function handleDecline(userId: string, input: Extract<ActionInput, { actio
     if (!profile) {
       return NextResponse.json({ error: "Trades profile required" }, { status: 400 });
     }
-    const conn = await tradesConn.findFirst({
+    const conn = await prisma.tradesConnection.findFirst({
       where: { id: input.connectionId, addresseeId: profile.id },
     });
     if (!conn) {
@@ -220,7 +215,7 @@ async function handleDecline(userId: string, input: Extract<ActionInput, { actio
         { status: 404 }
       );
     }
-    await tradesConn.update({
+    await prisma.tradesConnection.update({
       where: { id: input.connectionId },
       data: { status: "declined" },
     });
@@ -258,7 +253,7 @@ async function handleDisconnect(
   }
 
   // Find the connection - user could be either requester or addressee
-  const conn = await tradesConn.findFirst({
+  const conn = await prisma.tradesConnection.findFirst({
     where: {
       id: input.connectionId,
       OR: [{ requesterId: profile.id }, { addresseeId: profile.id }],
@@ -273,7 +268,7 @@ async function handleDisconnect(
   }
 
   // Delete the connection entirely
-  await tradesConn.delete({
+  await prisma.tradesConnection.delete({
     where: { id: input.connectionId },
   });
 
@@ -319,7 +314,7 @@ async function handleBlock(userId: string, input: Extract<ActionInput, { action:
   }
 
   // Also remove any existing connection between these profiles
-  await tradesConn.deleteMany({
+  await prisma.tradesConnection.deleteMany({
     where: {
       OR: [
         { requesterId: profile.id, addresseeId: input.profileId },
@@ -421,7 +416,7 @@ async function handleConnect(userId: string, input: Extract<ActionInput, { actio
   }
 
   // Real model: tradesConnection uses addresseeId (NOT targetId)
-  const connection = await tradesConn.create({
+  const connection = await prisma.tradesConnection.create({
     data: {
       id: crypto.randomUUID(),
       requesterId: profile.id,

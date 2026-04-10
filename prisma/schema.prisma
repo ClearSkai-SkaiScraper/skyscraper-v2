@@ -1395,19 +1395,6 @@ model Template {
   OrgTemplate   OrgTemplate[]
 }
 
-model TradesConnection {
-  id                                                        String        @id
-  followerId                                                String
-  followingId                                               String
-  createdAt                                                 DateTime      @default(now())
-  TradesProfile_TradesConnection_followerIdToTradesProfile  TradesProfile @relation("TradesConnection_followerIdToTradesProfile", fields: [followerId], references: [id], onDelete: Cascade)
-  TradesProfile_TradesConnection_followingIdToTradesProfile TradesProfile @relation("TradesConnection_followingIdToTradesProfile", fields: [followingId], references: [id], onDelete: Cascade)
-
-  @@unique([followerId, followingId])
-  @@index([followerId])
-  @@index([followingId])
-}
-
 model TradesMessage {
   id                                                       String        @id
   fromProfileId                                            String
@@ -1430,38 +1417,36 @@ model TradesMessage {
 /// same Prisma accessor `prisma.tradesPost`. All runtime code targets the camelCase model.
 
 model TradesProfile {
-  id                                                           String             @id
-  userId                                                       String             @unique
-  orgId                                                        String
-  companyName                                                  String
-  contactName                                                  String
-  email                                                        String
-  phone                                                        String?
-  address                                                      String?
-  city                                                         String?
-  state                                                        String?
-  zip                                                          String?
-  latitude                                                     Float?
-  longitude                                                    Float?
-  specialties                                                  String[]
-  certifications                                               String[]
-  bio                                                          String?
-  logoUrl                                                      String?
-  website                                                      String?
-  yearsInBusiness                                              Int?
-  crewSize                                                     Int?
-  rating                                                       Float?             @default(0)
-  reviewCount                                                  Int                @default(0)
-  projectCount                                                 Int                @default(0)
-  verified                                                     Boolean            @default(false)
-  active                                                       Boolean            @default(true)
-  createdAt                                                    DateTime           @default(now())
-  updatedAt                                                    DateTime
-  avatarUrl                                                    String?
-  TradesConnection_TradesConnection_followerIdToTradesProfile  TradesConnection[] @relation("TradesConnection_followerIdToTradesProfile")
-  TradesConnection_TradesConnection_followingIdToTradesProfile TradesConnection[] @relation("TradesConnection_followingIdToTradesProfile")
-  TradesMessage_TradesMessage_fromProfileIdToTradesProfile     TradesMessage[]    @relation("TradesMessage_fromProfileIdToTradesProfile")
-  TradesMessage_TradesMessage_toProfileIdToTradesProfile       TradesMessage[]    @relation("TradesMessage_toProfileIdToTradesProfile")
+  id                                                       String          @id
+  userId                                                   String          @unique
+  orgId                                                    String
+  companyName                                              String
+  contactName                                              String
+  email                                                    String
+  phone                                                    String?
+  address                                                  String?
+  city                                                     String?
+  state                                                    String?
+  zip                                                      String?
+  latitude                                                 Float?
+  longitude                                                Float?
+  specialties                                              String[]
+  certifications                                           String[]
+  bio                                                      String?
+  logoUrl                                                  String?
+  website                                                  String?
+  yearsInBusiness                                          Int?
+  crewSize                                                 Int?
+  rating                                                   Float?          @default(0)
+  reviewCount                                              Int             @default(0)
+  projectCount                                             Int             @default(0)
+  verified                                                 Boolean         @default(false)
+  active                                                   Boolean         @default(true)
+  createdAt                                                DateTime        @default(now())
+  updatedAt                                                DateTime
+  avatarUrl                                                String?
+  TradesMessage_TradesMessage_fromProfileIdToTradesProfile TradesMessage[] @relation("TradesMessage_fromProfileIdToTradesProfile")
+  TradesMessage_TradesMessage_toProfileIdToTradesProfile   TradesMessage[] @relation("TradesMessage_toProfileIdToTradesProfile")
 
   @@index([city, state])
   @@index([orgId])

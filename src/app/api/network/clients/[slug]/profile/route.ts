@@ -68,8 +68,7 @@ export const GET = withAuth(async (req: NextRequest, { orgId }, routeParams) => 
     }
 
     // 2. Check connections (trades network) - uses lowercase tradesConnection model with status
-    const tradesConnectionModel = prisma.tradesConnection as any;
-    const connection = await tradesConnectionModel.findFirst({
+    const connection = await prisma.tradesConnection.findFirst({
       where: {
         OR: [{ requesterId: clientId }, { addresseeId: clientId }],
         status: "accepted",

@@ -90,8 +90,8 @@ export async function GET(
     const connection = await prisma.tradesConnection.findFirst({
       where: {
         OR: [
-          { followerId: userId, followingId: company.id },
-          { followerId: company.id, followingId: userId },
+          { requesterId: userId, addresseeId: company.id },
+          { requesterId: company.id, addresseeId: userId },
         ],
       },
     });

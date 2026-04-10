@@ -18,10 +18,6 @@ import prisma from "@/lib/prisma";
 import { isValidationError, validateBody } from "@/lib/validation/middleware";
 import { connectionActionSchema, connectionRequestSchema } from "@/lib/validation/trades-schemas";
 
-// Use any cast for tradesConnection due to dual model naming conflict in schema
-// (TradesConnection PascalCase has different fields than tradesConnection lowercase)
-const tradesConnectionModel = prisma.tradesConnection as any;
-
 // GET - Get all connections for current user
 export const GET = withAuth(async (req: NextRequest, { userId }) => {
   try {
@@ -29,7 +25,7 @@ export const GET = withAuth(async (req: NextRequest, { userId }) => {
     const status = searchParams.get("status") || "accepted";
 
     // Get connections where user is either requester or addressee
-    const connections = await tradesConnectionModel.findMany({
+    const connections = await prisma.tradesConnection.findMany({
       where: {
         OR: [{ requesterId: userId }, { addresseeId: userId }],
         status: status,
@@ -87,7 +83,7 @@ export const POST = withAuth(async (req: NextRequest, { userId }) => {
     }
 
     // Check if connection already exists (in either direction)
-    const existing = await tradesConnectionModel.findFirst({
+    const existing = await prisma.tradesConnection.findFirst({
       where: {
         OR: [
           { requesterId: userId, addresseeId: addresseeId },
@@ -104,7 +100,7 @@ export const POST = withAuth(async (req: NextRequest, { userId }) => {
     }
 
     // Create new connection request
-    const connection = await tradesConnectionModel.create({
+    const connection = await prisma.tradesConnection.create({
       data: {
         requesterId: userId,
         addresseeId: addresseeId,
@@ -128,7 +124,7 @@ export const PATCH = withAuth(async (req: NextRequest, { userId }) => {
     const { connectionId, action } = body;
 
     // Find the connection
-    const connection = await tradesConnectionModel.findUnique({
+    const connection = await prisma.tradesConnection.findUnique({
       where: { id: connectionId },
     });
 
@@ -145,7 +141,7 @@ export const PATCH = withAuth(async (req: NextRequest, { userId }) => {
     }
 
     // Update the connection
-    const updated = await tradesConnectionModel.update({
+    const updated = await prisma.tradesConnection.update({
       where: { id: connectionId },
       data: {
         status: action === "accept" ? "accepted" : action === "decline" ? "declined" : "blocked",
@@ -171,7 +167,7 @@ export const DELETE = withAuth(async (req: NextRequest, { userId }) => {
     }
 
     // Find the connection
-    const connection = await tradesConnectionModel.findUnique({
+    const connection = await prisma.tradesConnection.findUnique({
       where: { id: connectionId },
     });
 
@@ -187,7 +183,7 @@ export const DELETE = withAuth(async (req: NextRequest, { userId }) => {
       );
     }
 
-    await tradesConnectionModel.delete({
+    await prisma.tradesConnection.delete({
       where: { id: connectionId },
     });
 
