@@ -61,11 +61,15 @@ echo ""
 # ═══════════════════════════════════════════════════════════════
 banner "PHASE 1 — Unit & Integration Tests (Vitest)"
 
-if npx vitest run --reporter=dot 2>&1 | tail -5; then
-  VITEST_RESULT=$(npx vitest run 2>&1 | grep "Tests" | tail -1)
+VITEST_OUTPUT=$(npx vitest run --reporter=dot 2>&1)
+VITEST_EXIT=$?
+echo "$VITEST_OUTPUT" | tail -5
+
+if [[ $VITEST_EXIT -eq 0 ]]; then
+  VITEST_RESULT=$(echo "$VITEST_OUTPUT" | grep "Tests" | tail -1)
   section_pass "Vitest: $VITEST_RESULT"
 else
-  section_fail "Vitest: some tests failed"
+  section_fail "Vitest: some tests failed (exit code $VITEST_EXIT)"
 fi
 
 # ═══════════════════════════════════════════════════════════════
@@ -105,7 +109,11 @@ fi
 # ═══════════════════════════════════════════════════════════════
 banner "PHASE 4 — Production Health"
 
-HEALTH=$(curl -sS https://www.skaiscrape.com/api/health/live 2>/dev/null)
+HEALTH_URL="${BASE_URL}/api/health/live"
+echo -e "  Target: ${YELLOW}$HEALTH_URL${NC}"
+echo ""
+
+HEALTH=$(curl -sS "$HEALTH_URL" 2>/dev/null)
 STATUS=$(echo "$HEALTH" | grep -o '"status":"[^"]*"' | head -1 | cut -d'"' -f4)
 SHA=$(echo "$HEALTH" | grep -o '"commitSha":"[^"]*"' | head -1 | cut -d'"' -f4)
 BUILD=$(echo "$HEALTH" | grep -o '"buildTime":"[^"]*"' | head -1 | cut -d'"' -f4)
