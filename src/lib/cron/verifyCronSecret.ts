@@ -10,6 +10,7 @@ import { NextResponse } from "next/server";
 import { logger } from "@/lib/logger";
 
 export function verifyCronSecret(req: Request): NextResponse | null {
+  // eslint-disable-next-line no-restricted-syntax
   const cronSecret = process.env.CRON_SECRET;
 
   // If CRON_SECRET is not set, reject everything — fail closed

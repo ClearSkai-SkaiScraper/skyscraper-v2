@@ -34,6 +34,7 @@ export default function NewDamageAssessmentPage() {
   const [notes, setNotes] = useState("");
 
   // Step 4: Results
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [assessment, setAssessment] = useState<any>(null);
   const [analyzing, setAnalyzing] = useState(false);
 

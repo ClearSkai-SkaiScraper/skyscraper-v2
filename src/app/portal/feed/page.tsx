@@ -163,6 +163,7 @@ export default function FeedPage() {
       if (res.ok) {
         const data = await res.json();
         setMentionSuggestions(
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           (data.pros || []).slice(0, 5).map((p: any) => ({
             id: p.id,
             name: p.name,

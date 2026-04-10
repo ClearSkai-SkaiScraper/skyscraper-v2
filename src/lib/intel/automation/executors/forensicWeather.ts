@@ -20,6 +20,7 @@ export async function executeForensicWeather(claimId: string, orgId: string) {
 
   const weatherReport = weatherReports[0];
   const damageAssessment = damageAssessments[0];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const providerRaw = (weatherReport?.providerRaw as any) || {};
 
   // Generate forensic weather report

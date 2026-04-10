@@ -61,6 +61,7 @@ export function SimulationComparison({ claimId, className }: Props) {
       const json = await res.json();
       // API returns { history: [...] } - transform to SimulationRun shape
       const rawHistory = json.history ?? json.runs ?? [];
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const items: SimulationRun[] = rawHistory.map((h: any) => ({
         id: h.id,
         createdAt: h.createdAt,

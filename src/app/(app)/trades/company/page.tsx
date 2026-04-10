@@ -56,12 +56,14 @@ interface MemberSettings {
   aboutCompany?: string;
   foundedYear?: number;
   teamSize?: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   hoursOfOperation?: any; // JSON object e.g. { mon: "8a–5p", ... }
   officePhone?: string;
   mobilePhone?: string;
   emergencyAvailable?: boolean;
   freeEstimates?: boolean;
   warrantyInfo?: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   socialLinks?: any; // JSON object e.g. { facebook, linkedin, ... }
   paymentMethods?: string[];
   languages?: string[];
@@ -430,6 +432,7 @@ export default function CompanyPage() {
         : {};
 
   // Full address
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const fullAddress = [company.address, company.city, company.state, (company as any).zip]
     .filter(Boolean)
     .join(", ");

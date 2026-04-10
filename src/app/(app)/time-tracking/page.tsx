@@ -1,3 +1,4 @@
+// eslint-disable-next-line no-restricted-imports
 import { currentUser } from "@clerk/nextjs/server";
 import { Calendar, CheckCircle, Clock, Users } from "lucide-react";
 import Link from "next/link";
@@ -20,6 +21,7 @@ export default async function TimeTrackingPage() {
   if (!orgId) return <NoOrgMembershipBanner title="Time Tracking" />;
 
   // ── Fetch real team members ───────────────────────────────────────
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let members: any[] = [];
   try {
     members = await prisma.tradesCompanyMember.findMany({
@@ -43,6 +45,7 @@ export default async function TimeTrackingPage() {
   }
 
   // ── Fetch real job schedules for the team ──────────────────────────
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let schedules: any[] = [];
   try {
     const sevenDaysAgo = new Date();

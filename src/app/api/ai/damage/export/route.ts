@@ -69,6 +69,7 @@ export const POST = withAuth(async (req, { userId, orgId }) => {
     const branding = await fetchBrandingData(orgId, userId);
 
     // Attach property info to branding for sub-header
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     if (propertyAddress) (branding as any).clientAddress = propertyAddress;
 
     // Generate PDF
@@ -79,6 +80,7 @@ export const POST = withAuth(async (req, { userId, orgId }) => {
     const contentWidth = pageWidth - margin * 2;
 
     // ========== BRANDED HEADER ==========
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let y = await drawBrandedHeader(doc, branding as any, {
       reportType: "AI Damage Assessment",
       reportTitle: "Damage Assessment Report",

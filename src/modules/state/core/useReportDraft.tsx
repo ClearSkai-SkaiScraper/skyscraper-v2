@@ -13,6 +13,7 @@ const fetcher = (url: string) => fetch(url).then((r) => r.json());
 interface DraftState {
   selectedSections: string[];
   sectionOrder: string[];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   metadata?: any;
   lastAutosave: string;
 }

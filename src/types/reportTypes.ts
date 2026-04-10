@@ -56,6 +56,7 @@ export interface WeatherInfo {
   hail_size_in?: number;
   confidence?: number;
   map_url?: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   raw?: any;
 }
 
@@ -74,6 +75,7 @@ export interface ScopeInfo {
 export interface PhotoInfo {
   url: string;
   label?: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   exif?: any;
   tags?: string[];
 }
@@ -86,6 +88,7 @@ export interface RenderContext {
   scope?: ScopeInfo;
   photos?: PhotoInfo[];
   // carrier profile transform (applied before render)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   carrierProfile?: any;
   // additional internal metadata
   __required_docs?: string[];

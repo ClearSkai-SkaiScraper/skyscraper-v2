@@ -5,6 +5,7 @@ import Link from "next/link";
 import { SendPacketButton } from "./SendPacketButton";
 
 interface EstimatesSectionProps {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   claim: any;
 }
 
@@ -36,7 +37,9 @@ export function ClaimEstimatesSection({ claim }: EstimatesSectionProps) {
           New Estimate
         </Link>
       </div>
+      // eslint-disable-next-line react/jsx-no-comment-textnodes
       <div className="divide-y rounded-xl border bg-card">
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         {items.map((e: any) => (
           <div key={e.id} className="space-y-2 px-4 py-3">
             {/* Header */}

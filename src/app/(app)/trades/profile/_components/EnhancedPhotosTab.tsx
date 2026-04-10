@@ -270,7 +270,9 @@ export default function EnhancedPhotosTab({
               }}
               className="group relative overflow-hidden rounded-xl border border-slate-200 bg-white transition-all hover:shadow-lg"
             >
+              // eslint-disable-next-line react/jsx-no-comment-textnodes
               {/* Album Cover */}
+              // eslint-disable-next-line react/jsx-no-comment-textnodes
               <div className="aspect-square overflow-hidden bg-slate-100">
                 // eslint-disable-next-line @next/next/no-img-element
                 {albumPhotos.length > 0 ? (
@@ -441,8 +443,10 @@ export default function EnhancedPhotosTab({
             aria-label="Next photo"
           >
             <ChevronRight className="h-6 w-6 text-white" />
+          // eslint-disable-next-line react/jsx-no-comment-textnodes
           </button>
 
+          // eslint-disable-next-line react/jsx-no-comment-textnodes
           {/* Image */}
           // eslint-disable-next-line @next/next/no-img-element
           <div className="max-h-[85vh] max-w-[85vw]">

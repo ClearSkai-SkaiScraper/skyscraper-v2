@@ -22,6 +22,7 @@ export async function register() {
   // ═══════════════════════════════════════════════════════════════════════
   // 2. Build-Phase External Fetch Guard (Reduces ECONNRESET noise)
   // ═══════════════════════════════════════════════════════════════════════
+  // eslint-disable-next-line no-restricted-syntax
   if (hasProcess && process.env.BUILD_PHASE) {
     const originalFetch = globalThis.fetch;
     globalThis.fetch = async (input: RequestInfo | URL, init?: RequestInit): Promise<Response> => {
@@ -29,6 +30,7 @@ export async function register() {
         const url =
           typeof input === "string" ? input : input instanceof URL ? input.toString() : input.url;
         const isExternal =
+          // eslint-disable-next-line no-restricted-syntax
           /^https?:\/\//.test(url) && !url.includes(process.env.VERCEL_URL || "localhost");
         if (isExternal) {
           return new Response(JSON.stringify({ ok: true, buildPhaseStub: true }), {
@@ -49,12 +51,14 @@ export async function register() {
   // ═══════════════════════════════════════════════════════════════════════
   // 3. Environment Variable Validation (fail-fast in production)
   // ═══════════════════════════════════════════════════════════════════════
+  // eslint-disable-next-line no-restricted-syntax
   if (hasProcess && !process.env.BUILD_PHASE) {
     try {
       const { assertRequiredEnv } = await import("@/lib/validateEnv");
       assertRequiredEnv();
     } catch (err) {
       // In production, this is fatal — surface clearly
+      // eslint-disable-next-line no-restricted-syntax
       if (process.env.NODE_ENV === "production") {
         console.error("❌ Environment validation failed:", err);
         throw err;

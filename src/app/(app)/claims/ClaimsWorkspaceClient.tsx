@@ -5,7 +5,9 @@ import React from "react";
 import { ClaimsGrid } from "@/components/claims/ClaimsGrid";
 
 type ClaimsWorkspaceClientProps = {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   initialClaims?: any[];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   [key: string]: any;
 };
 

@@ -63,6 +63,7 @@ export type InternalClaimDataset = {
       peril: string | null;
       severity: string | null;
       summary: string | null;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       aiDamageJson: any;
       createdAt: Date;
     }>;
@@ -72,6 +73,7 @@ export type InternalClaimDataset = {
       weatherType: string | null;
       severity: string | null;
       dolProbability: number | null;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       aiWeatherJson: any;
       createdAt: Date;
     }>;
@@ -79,6 +81,7 @@ export type InternalClaimDataset = {
       id: string;
       title: string | null;
       mode: string | null;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       scopeItems: any;
       materialTaxRate: number | null;
       laborTaxRate: number | null;
@@ -92,6 +95,7 @@ export type InternalClaimDataset = {
       claimNumber: string | null;
       carrier: string | null;
       dateOfLoss: Date | null;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       scopeItems: any;
       notes: string | null;
       createdAt: Date;
@@ -100,6 +104,7 @@ export type InternalClaimDataset = {
       id: string;
       title: string | null;
       summary: string | null;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       aiScopeJson: any;
       createdAt: Date;
     }>;
@@ -107,15 +112,21 @@ export type InternalClaimDataset = {
       id: string;
       title: string | null;
       reportType: string | null;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       aiReportJson: any;
       createdAt: Date;
     }>;
     financialSnapshots: Array<{
       id: string;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       totals: any;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       depreciation: any;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       lineItems: any;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       supplements: any;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       projection: any;
       underpaymentAmount: number;
       confidence: number;
@@ -142,6 +153,7 @@ export type InternalClaimDataset = {
     status: string;
     notes: string | null;
     photoCount: number;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     weatherData: any;
     inspectorName: string;
   }>;

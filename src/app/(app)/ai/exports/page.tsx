@@ -74,6 +74,7 @@ export default function CarrierExportsPage() {
   const [selectedClaimId, setSelectedClaimId] = useState(searchParams?.get("claimId") || "");
   const [carrier, setCarrier] = useState("");
   const [format, setFormat] = useState("");
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [result, setResult] = useState<any>(null);
 
   // Pre-select carrier from URL param (after claims load so auto-detect can also fire)
@@ -95,6 +96,7 @@ export default function CarrierExportsPage() {
         if (res.ok) {
           const data = await res.json();
           setClaims(
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             (data.claims || []).map((c: any) => ({
               id: c.id,
               title: c.title || "Untitled Claim",

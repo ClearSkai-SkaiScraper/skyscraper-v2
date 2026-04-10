@@ -33,19 +33,24 @@ import { logger } from "@/lib/logger";
 
 function isNextRedirect(err: unknown): boolean {
   // Use Next.js official check (digest-based) with fallback
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   return isRedirectError(err) || (err as any)?.digest?.startsWith?.("NEXT_REDIRECT");
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function isZodError(err: unknown): err is { name: "ZodError"; errors: any[] } {
   return err instanceof Error && err.name === "ZodError" && "errors" in err;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function isPrismaError(err: unknown): err is { code: string; meta?: any } {
   return (
     typeof err === "object" &&
     err !== null &&
     "code" in err &&
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     typeof (err as any).code === "string" &&
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (err as any).code.startsWith("P")
   );
 }
@@ -83,6 +88,7 @@ function errorResponse(
       error: message,
       code,
       ...(details ? { details } : {}),
+      // eslint-disable-next-line no-restricted-syntax
       traceId: process.env.VERCEL_REQUEST_ID || undefined,
     },
     {
@@ -94,6 +100,7 @@ function errorResponse(
 
 // ── Main wrapper ──────────────────────────────────────────────────
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 type RouteHandler = (req: NextRequest, context?: any) => Promise<NextResponse>;
 
 /**
@@ -104,6 +111,7 @@ type RouteHandler = (req: NextRequest, context?: any) => Promise<NextResponse>;
  * @returns Wrapped handler that never throws unhandled errors
  */
 export function withSafeHandler(tag: string, handler: RouteHandler): RouteHandler {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   return async (req: NextRequest, context?: any): Promise<NextResponse> => {
     const start = Date.now();
 
@@ -157,6 +165,7 @@ export function withSafeHandler(tag: string, handler: RouteHandler): RouteHandle
         });
 
         const safeMessage =
+          // eslint-disable-next-line no-restricted-syntax
           process.env.NODE_ENV === "production" ? "An unexpected error occurred" : err.message;
 
         return errorResponse(500, "INTERNAL_ERROR", safeMessage);

@@ -89,6 +89,7 @@ export function SimilarClaimsPanel({ claimId }: { claimId: string }) {
       const data: SimilarClaimsResponse = await res.json();
       setResults(data.results);
       setHasSearched(true);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       setError(err.message || "Failed to search similar claims");
     } finally {

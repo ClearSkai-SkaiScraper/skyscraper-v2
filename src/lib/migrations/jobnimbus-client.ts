@@ -164,6 +164,7 @@ export class JobNimbusClient {
         }
 
         return res.json() as Promise<T>;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } catch (err: any) {
         lastError = err;
         logger.warn(`[JobNimbus] Attempt ${attempt} failed: ${err.message}`);
@@ -191,6 +192,7 @@ export class JobNimbusClient {
     try {
       await this.request<PaginatedResponse<JobNimbusContact>>("/contacts", { count: 1 });
       return { ok: true };
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       return { ok: false, error: err.message };
     }

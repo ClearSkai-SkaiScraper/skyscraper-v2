@@ -12,6 +12,7 @@ export interface WorkflowTrigger {
   type: string;
   entityId: string;
   entityType: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   data?: Record<string, any>;
 }
 
@@ -30,6 +31,7 @@ export interface StageContext {
   orgId: string;
   stageName: string;
   eventType?: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   metadata?: Record<string, any>;
 }
 
@@ -56,6 +58,7 @@ export async function triggerStage(context: StageContext): Promise<WorkflowResul
 
   for (const workflow of workflowActions) {
     try {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const config = (workflow.config as Record<string, any>) || {};
 
       // Execute based on actionType
@@ -154,6 +157,7 @@ export async function triggerWorkflows(trigger: WorkflowTrigger): Promise<Workfl
 /**
  * Get pending workflow actions for an action type
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export async function getActiveWorkflows(actionType: string, orgId: string): Promise<any[]> {
   const workflows = await prisma.workflowAction.findMany({
     where: {
@@ -172,6 +176,7 @@ export async function getActiveWorkflows(actionType: string, orgId: string): Pro
  */
 export async function executeWorkflow(
   workflowId: string,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   context: Record<string, any>
 ): Promise<{ success: boolean; error?: string }> {
   const workflow = await prisma.workflowAction.findUnique({
@@ -186,6 +191,7 @@ export async function executeWorkflow(
     return { success: false, error: "Workflow already completed" };
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const config = (workflow.config as Record<string, any>) || {};
   const leadId = context.leadId || context.entityId || workflow.leadId;
   const orgId = workflow.orgId;
@@ -351,6 +357,7 @@ async function executeNotifyTeam(
 async function executeWebhookAction(
   leadId: string,
   config: { url?: string; headers?: Record<string, string> },
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   metadata?: Record<string, any>
 ) {
   if (!config.url) {

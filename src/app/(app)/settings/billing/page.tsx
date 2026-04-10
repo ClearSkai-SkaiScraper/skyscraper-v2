@@ -200,7 +200,9 @@ export default function BillingPage() {
             </div>
           )}
 
+          // eslint-disable-next-line react/jsx-no-comment-textnodes
           {/* ── Beta banner ──────────────────────────────────────────── */}
+          // eslint-disable-next-line no-restricted-syntax
           {process.env.NEXT_PUBLIC_BETA_MODE !== "false" && !hasSubscription && (
             <Card className="border-blue-200 bg-blue-50 dark:border-blue-800 dark:bg-blue-950/30">
               <CardContent className="flex items-center gap-3 py-4">

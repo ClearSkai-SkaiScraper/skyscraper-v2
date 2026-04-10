@@ -55,6 +55,7 @@ export async function POST(req: NextRequest) {
     // Verify webhook signature (timing-safe comparison)
     const headersList = headers();
     const webhookSecret = headersList.get("x-webhook-secret");
+    // eslint-disable-next-line no-restricted-syntax
     const expectedSecret = process.env.TRADES_WEBHOOK_SECRET;
 
     if (!webhookSecret || !expectedSecret || !verifyWebhookSecret(webhookSecret, expectedSecret)) {

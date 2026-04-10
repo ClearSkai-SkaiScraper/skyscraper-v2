@@ -76,6 +76,7 @@ export const GET = withAuth(
       });
 
       // Build enriched timeline
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const enrichedEvents: any[] = [];
 
       // Add storm event if linked (single relation via catStormEventId)

@@ -75,6 +75,7 @@ export default function WorkRequestForm({
           setMyPros(data.savedPros || []);
           // If preselected pro is set and we have pros, verify it exists
           if (preselectedProId && data.savedPros?.length) {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const found = data.savedPros.find((p: any) => p.id === preselectedProId);
             if (found) {
               setSelectedProId(preselectedProId);

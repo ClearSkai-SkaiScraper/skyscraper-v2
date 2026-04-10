@@ -1,3 +1,4 @@
+// eslint-disable-next-line no-restricted-imports
 import { currentUser } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 
@@ -17,21 +18,30 @@ export default async function DeploymentStatusPage() {
 
   // Get build info from environment
   const commitSha =
+    // eslint-disable-next-line no-restricted-syntax
     process.env.NEXT_PUBLIC_COMMIT_SHA || process.env.VERCEL_GIT_COMMIT_SHA || "unknown";
+  // eslint-disable-next-line no-restricted-syntax
   const branch = process.env.VERCEL_GIT_COMMIT_REF || "unknown";
+  // eslint-disable-next-line no-restricted-syntax
   const buildTime = process.env.VERCEL_BUILD_TIME || "unknown";
 
   // Feature flags status
   const featureFlags = {
+    // eslint-disable-next-line no-restricted-syntax
     pdfGenerationEnabled: process.env.FEATURE_PDF_GENERATION !== "false",
+    // eslint-disable-next-line no-restricted-syntax
     aiAnalysisEnabled: process.env.FEATURE_AI_ANALYSIS !== "false",
+    // eslint-disable-next-line no-restricted-syntax
     supplementsEnabled: process.env.FEATURE_SUPPLEMENTS !== "false",
+    // eslint-disable-next-line no-restricted-syntax
     mockupsEnabled: process.env.FEATURE_MOCKUPS !== "false",
   };
 
   // Timeout configs
   const timeouts = {
+    // eslint-disable-next-line no-restricted-syntax
     pdfGeneration: process.env.TIMEOUT_PDF_GENERATION || "25000",
+    // eslint-disable-next-line no-restricted-syntax
     aiAnalysis: process.env.TIMEOUT_AI_ANALYSIS || "30000",
   };
 

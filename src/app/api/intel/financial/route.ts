@@ -56,8 +56,10 @@ export const POST = withAuth(async (req: NextRequest, { orgId }) => {
     const approvedValue = (claim.approvedValue || 0) / 100;
     const deductible = (claim.deductible || 0) / 100;
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const totalPayments = payments.reduce((sum: number, p: any) => sum + (p.amount_cents || 0), 0);
     const totalSupplements = supplements.reduce(
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (sum: number, s: any) => sum + (s.total_cents || 0),
       0
     );
@@ -107,8 +109,10 @@ export const POST = withAuth(async (req: NextRequest, { orgId }) => {
         ],
       },
       requiredSupplements: supplements
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         .filter((s: any) => s.status === "pending" || s.status === "submitted")
         .map(
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           (s: any) =>
             `Supplement #${s.id?.slice(0, 8)} — $${((s.total_cents || 0) / 100).toLocaleString()} (${s.status})`
         ),

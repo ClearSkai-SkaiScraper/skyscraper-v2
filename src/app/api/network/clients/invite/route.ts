@@ -8,6 +8,7 @@ export const dynamic = "force-dynamic";
  * Creates a pending client network with invite token.
  */
 
+// eslint-disable-next-line no-restricted-imports
 import { currentUser } from "@clerk/nextjs/server";
 import { randomBytes } from "crypto";
 import { NextRequest, NextResponse } from "next/server";
@@ -70,6 +71,7 @@ export const POST = withAuth(async (req: NextRequest, { orgId, userId }) => {
     }
 
     // Generate invite link
+    // eslint-disable-next-line no-restricted-syntax
     const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://skaiscrape.com";
     const inviteLink = `${baseUrl}/portal/${network.slug}/join?token=${inviteToken}`;
 

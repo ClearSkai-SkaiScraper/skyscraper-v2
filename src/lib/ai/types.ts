@@ -21,6 +21,7 @@ export interface AgentDefinition {
   name: string;
   description: string;
   goal: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   utilityModel: any; // JSON structure defining utility calculation
 }
 
@@ -28,7 +29,9 @@ export interface RuleDefinition {
   id: string;
   name: string;
   description: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   trigger: any; // Condition DSL (e.g., { all: [{ path: "roof.slope", op: ">", value: 4 }] })
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   action: any; // Effect definition (add lineItem, flag risk, etc.)
   enabled?: boolean;
 }
@@ -72,6 +75,7 @@ export interface KnowledgeNodeData {
   id: string;
   type: string;
   name: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   metadata?: any;
 }
 
@@ -80,6 +84,7 @@ export interface KnowledgeEdgeData {
   fromNodeId: string;
   toNodeId: string;
   relation: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   metadata?: any;
 }
 
@@ -94,6 +99,7 @@ export interface ClaimContext {
   hasPhotos?: boolean;
   hasWeatherData?: boolean;
   estimateValue?: number;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   [key: string]: any; // Allow flexible context
 }
 
@@ -109,7 +115,9 @@ export interface AIActionLog {
   claimId: string;
   agentId: string;
   actionType: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   inputData: any;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   outputData: any;
   createdAt: Date;
 }
@@ -118,6 +126,7 @@ export interface AIOutcomeLog {
   id: string;
   actionId: string;
   resultType: string; // approved, partial, denied, delayed, disputed
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   metadata?: any;
   createdAt: Date;
 }
@@ -125,8 +134,11 @@ export interface AIOutcomeLog {
 export interface HumanEditLog {
   id: string;
   actionId: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   originalOutput: any;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   editedOutput: any;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   diff: any;
   createdAt: Date;
 }

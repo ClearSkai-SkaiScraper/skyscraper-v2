@@ -20,6 +20,7 @@ export interface UploadResult { url: string; path: string; bucket: string; provi
 
 export async function uploadClaimPdf(claimId: string, buffer: Buffer): Promise<UploadResult> {
   const path = storagePaths.claimPdf(claimId);
+  // eslint-disable-next-line no-restricted-syntax
   if (storageConfig.pdfs.provider === 'firebase' && process.env.FIREBASE_STORAGE_BUCKET) {
     try {
       const uploadPDF = await getFirebaseUpload();
@@ -37,6 +38,7 @@ export async function uploadClaimPdf(claimId: string, buffer: Buffer): Promise<U
 
 export async function uploadClaimPdfAI(claimId: string, buffer: Buffer): Promise<UploadResult> {
   const path = storagePaths.claimPdfAI(claimId);
+  // eslint-disable-next-line no-restricted-syntax
   if (storageConfig.pdfs.provider === 'firebase' && process.env.FIREBASE_STORAGE_BUCKET) {
     try {
       const uploadPDF = await getFirebaseUpload();

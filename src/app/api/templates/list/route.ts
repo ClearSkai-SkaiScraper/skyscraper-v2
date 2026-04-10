@@ -12,6 +12,7 @@ export const GET = withAuth(async (req: NextRequest, { orgId }) => {
     const type = searchParams.get("type"); // "proposal", "insurance", "contractor", etc.
 
     // Query report_templates using the correct model and column names
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const where: any = { org_id: orgId };
 
     if (type) {
@@ -20,6 +21,7 @@ export const GET = withAuth(async (req: NextRequest, { orgId }) => {
     }
 
     // Use report_templates model directly
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const templates = await (prisma as any).report_templates.findMany({
       where,
       orderBy: [{ is_default: "desc" }, { updated_at: "desc" }],
@@ -33,6 +35,7 @@ export const GET = withAuth(async (req: NextRequest, { orgId }) => {
     });
 
     // Transform to expected format
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const result = templates.map((t: any) => ({
       id: t.id,
       name: t.name,

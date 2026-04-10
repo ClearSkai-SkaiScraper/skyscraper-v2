@@ -5,6 +5,7 @@ export interface ACHPayment {
   postedDate: string;
   memo?: string;
   ref?: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   rawRow?: any;
 }
 
@@ -16,15 +17,18 @@ export interface ACHParseResult {
 /**
  * Simple CSV parser (no external dependencies)
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function parseCSV(content: string): any[] {
   const lines = content.trim().split('\n');
   if (lines.length < 2) return [];
 
   const headers = lines[0].split(',').map((h) => h.trim().toLowerCase());
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const rows: any[] = [];
 
   for (let i = 1; i < lines.length; i++) {
     const values = lines[i].split(',');
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const row: any = {};
     headers.forEach((header, index) => {
       row[header] = values[index]?.trim() || '';
@@ -84,12 +88,14 @@ export async function parseAchCSVorXLSX(fileContent: string): Promise<ACHParseRe
             rawRow: row,
           });
         }
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } catch (rowError: any) {
         errors.push(`Error parsing row: ${rowError.message}`);
       }
     }
 
     return { payments, errors };
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (error: any) {
     return { payments: [], errors: [error.message] };
   }

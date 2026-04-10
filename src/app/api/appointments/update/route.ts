@@ -37,6 +37,7 @@ export async function PATCH(req: NextRequest) {
     }
 
     // Build update data — only include fields that were provided
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const updateData: Record<string, any> = {
       updatedAt: new Date(),
     };

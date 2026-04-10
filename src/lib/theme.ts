@@ -71,6 +71,7 @@ export async function applyOrgTheme() {
 }
 
 export function getOrgBranding(): OrgBranding | null {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   return (window as any).__orgBranding || null;
 }
 

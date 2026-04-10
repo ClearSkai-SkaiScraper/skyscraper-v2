@@ -58,12 +58,19 @@ export async function collectInternalClaimDataset(claimId: string, orgId?: strin
 
     // Related data counts (for AI context)
     relatedData: {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       inspectionsCount: (claim as any).inspections?.length ?? 0,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       estimatesCount: (claim as any).estimates?.length ?? 0,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       supplementsCount: (claim as any).supplements?.length ?? 0,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       weatherReportsCount: (claim as any).weatherReports?.length ?? 0,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       damageAssessmentsCount: (claim as any).damageAssessments?.length ?? 0,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       scopesCount: (claim as any).scopes?.length ?? 0,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       reportsCount: (claim as any).reports?.length ?? 0,
     },
 

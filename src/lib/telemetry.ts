@@ -1,5 +1,6 @@
 import { db } from "@/lib/db";
 import { logger } from "@/lib/logger";
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 type JsonValue = any;
 
 async function safe<T>(label: string, fn: () => Promise<T>): Promise<T | null> {

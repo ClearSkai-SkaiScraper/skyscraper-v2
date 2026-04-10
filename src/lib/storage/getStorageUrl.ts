@@ -10,6 +10,7 @@ export async function getStorageUrlForAsset(id: string) {
   if (!asset) return null;
   if (asset.publicUrl) return asset.publicUrl;
   // Fallback Firebase path construction
+  // eslint-disable-next-line no-restricted-syntax
   const baseBucket = process.env.FIREBASE_STORAGE_BUCKET || asset.bucket;
   return `https://firebasestorage.googleapis.com/v0/b/${baseBucket}/o/${encodeURIComponent(asset.storageKey)}?alt=media`;
 }

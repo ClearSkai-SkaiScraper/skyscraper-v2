@@ -29,6 +29,7 @@ export async function createSignedDownloadUrl(
     // return data.signedUrl;
 
     logger.warn("[SUPABASE_STORAGE] Stub — returning public URL fallback", { bucket, key });
+    // eslint-disable-next-line no-restricted-syntax
     return `${process.env.NEXT_PUBLIC_SUPABASE_URL || ""}/storage/v1/object/public/${bucket}/${key}`;
   } catch (error) {
     logger.error("[SUPABASE_STORAGE] createSignedDownloadUrl failed", { bucket, key, error });

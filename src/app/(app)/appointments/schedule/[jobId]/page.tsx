@@ -22,6 +22,7 @@ export const metadata: Metadata = {
 export const dynamic = "force-dynamic";
 
 // Demo job data - matches the IDs in JobScheduleClient
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const DEMO_JOBS: Record<string, any> = {
   "job-1": {
     id: "job-1",

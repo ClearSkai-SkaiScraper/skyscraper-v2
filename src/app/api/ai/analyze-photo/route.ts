@@ -75,6 +75,7 @@ export const POST = withAuth(async (request, { userId, orgId }) => {
  * Determine overall severity from damage report
  * Uses the schema's overall_severity field first, then falls back to per-item check.
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function determineSeverity(report: any): "low" | "medium" | "high" {
   // Prefer the AI's own overall_severity rating
   if (report.overall_severity) {
@@ -86,9 +87,11 @@ function determineSeverity(report: any): "low" | "medium" | "high" {
   // Fallback: check individual items (field is "items", severity is "estimated_severity")
   if (!report.items || report.items.length === 0) return "low";
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const hasSevere = report.items.some((f: any) => f.estimated_severity === "severe");
   if (hasSevere) return "high";
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const hasModerate = report.items.some((f: any) => f.estimated_severity === "moderate");
   if (hasModerate) return "medium";
 

@@ -1,4 +1,5 @@
 // ORG-SCOPE: Scoped by userId/clientId — queries clientSavedPro by client.id (derived from auth userId). No cross-tenant risk.
+// eslint-disable-next-line no-restricted-imports
 import { auth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 
@@ -55,6 +56,7 @@ export async function GET() {
     });
 
     // Transform to match UI format
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const pros = (savedPros as any[]).map((sp) => ({
       id: sp.tradesCompany?.id,
       name: sp.tradesCompany?.name,

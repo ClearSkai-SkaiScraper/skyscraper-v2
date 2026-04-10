@@ -5,6 +5,7 @@ import { logger } from "@/lib/logger";
 
 import { fetchWithRetry } from "./net/fetchWithRetry";
 // Cast helper to bypass union delegate type limitations for dynamic model names
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const delegate = (name: string) => (getDelegate as any)(name) as any;
 
 // Webhook event types
@@ -21,6 +22,7 @@ interface WebhookPayload {
   event: WebhookEvent;
   timestamp: string;
   orgId: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   data: Record<string, any>;
 }
 
@@ -31,6 +33,7 @@ interface WebhookPayload {
 export async function triggerWebhooks(
   orgId: string,
   event: WebhookEvent,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   data: Record<string, any>
 ) {
   try {
@@ -75,6 +78,7 @@ export async function triggerWebhooks(
 /**
  * Deliver a webhook to a single endpoint with retry logic
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 async function deliverWebhook(webhook: any, payload: WebhookPayload): Promise<void> {
   const maxRetries = 3;
   let lastError: Error | null = null;

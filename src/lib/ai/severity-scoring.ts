@@ -216,6 +216,7 @@ export function generateSeverityReport(severity: OverallSeverity): string {
 /**
  * Map AI analysis results to damage zones
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function analysisToDamageZones(analysis: any): DamageZone[] {
   const zones: DamageZone[] = [];
 

@@ -147,6 +147,7 @@ export async function getTokenUsageByUser(orgId: string, days = 30) {
 export async function getRecentReportEvents(orgId: string, limit = 50) {
   try {
     // Use raw SQL since report_events table not in Prisma schema yet
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const events = await prisma.$queryRaw<any[]>`
       SELECT id, kind, created_at as "createdAt", ip, meta, report_id as "reportId"
       FROM report_events
@@ -188,9 +189,11 @@ export async function getDashboardMetrics(userId: string) {
   const totalLeads = leads.count ?? 0;
   const activeJobs = jobsActive.count ?? 0;
   const revenueCents = (revenue.data ?? []).reduce(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (sum, record: any) => sum + (record.revenue_cents ?? 0),
     0
   );
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const won = (conversions.data ?? []).filter((x: any) => x.status === "won").length;
   const conversionRate = totalLeads === 0 ? 0 : Math.round((won / totalLeads) * 100);
 

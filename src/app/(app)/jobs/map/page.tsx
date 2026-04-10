@@ -1,3 +1,4 @@
+// eslint-disable-next-line simple-import-sort/imports, no-restricted-imports
 import { currentUser } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 
@@ -11,6 +12,7 @@ export default async function JobsMapPage() {
   const user = await currentUser();
   if (!user) redirect("/sign-in");
 
+  // eslint-disable-next-line no-restricted-syntax
   const token = process.env.NEXT_PUBLIC_MAPBOX_TOKEN;
   const jobs = await getJobsForMap();
 

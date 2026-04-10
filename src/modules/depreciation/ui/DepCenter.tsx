@@ -54,6 +54,7 @@ export function DepCenter({ jobId }: DepCenterProps) {
       }
       const data = await res.json();
       setReadiness(data);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       setError(err.message);
     } finally {
@@ -83,6 +84,7 @@ export function DepCenter({ jobId }: DepCenterProps) {
         `Packet prepared:\n\nSubject: ${data.subject}\n\nAttachments: ${data.attachments.join(", ")}`
       );
       await loadReadiness();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       setError(err.message);
     } finally {
@@ -106,6 +108,7 @@ export function DepCenter({ jobId }: DepCenterProps) {
       }
       await loadReadiness();
       alert("Depreciation packet sent successfully!");
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       setError(err.message);
     } finally {

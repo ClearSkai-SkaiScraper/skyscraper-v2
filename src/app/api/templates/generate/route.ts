@@ -135,6 +135,7 @@ export async function POST(req: NextRequest) {
     let templateHtml: string;
     try {
       templateHtml = await fs.readFile(templateHtmlPath, "utf-8");
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (_error) {
       return NextResponse.json({ error: "Template HTML not found" }, { status: 500 });
     }
@@ -145,6 +146,7 @@ export async function POST(req: NextRequest) {
     try {
       pdfThemeCss = await fs.readFile(pdfThemePath, "utf-8");
       templateHtml = templateHtml.replace("/* INJECT: pdf-theme.css */", pdfThemeCss);
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (_error) {
       logger.warn("PDF theme CSS not found, continuing without it");
     }

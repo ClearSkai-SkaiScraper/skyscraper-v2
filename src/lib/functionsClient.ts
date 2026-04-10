@@ -7,6 +7,7 @@ export function functionsClient() {
   if (cached) return cached;
   const app = getApp();
   const fn = getFunctions(app, "us-central1");
+  // eslint-disable-next-line no-restricted-syntax
   if (process.env.NEXT_PUBLIC_USE_FUNCTIONS_EMULATOR === "true") {
     connectFunctionsEmulator(fn, "localhost", 5001);
   }

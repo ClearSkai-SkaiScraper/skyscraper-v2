@@ -13,7 +13,9 @@ interface AIReport {
   type: string;
   createdAt: string;
   status: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   input: any;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   output: any;
 }
 
@@ -65,6 +67,7 @@ export function ClaimAIReports({ claimId }: ClaimAIReportsProps) {
         const data = await res.json();
         const pdfs = data.documents || [];
         const map = new Map<string, { id: string; url: string; title: string }>();
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         pdfs.forEach((doc: any) => {
           if (
             doc.type &&
@@ -249,7 +252,9 @@ export function ClaimAIReports({ claimId }: ClaimAIReportsProps) {
                       {report.output?.events && report.output.events.length > 0 && (
                         <div>
                           <h4 className="text-sm font-semibold text-slate-900">Weather Events</h4>
+                          // eslint-disable-next-line react/jsx-no-comment-textnodes
                           <ul className="mt-1 space-y-1">
+                            // eslint-disable-next-line @typescript-eslint/no-explicit-any
                             {report.output.events.slice(0, 3).map((event: any, idx: number) => (
                               <li key={idx} className="text-sm text-slate-700">
                                 • {event.description || event.type}

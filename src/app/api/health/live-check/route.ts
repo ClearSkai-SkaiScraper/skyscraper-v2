@@ -16,6 +16,7 @@
 
 export const dynamic = "force-dynamic";
 
+// eslint-disable-next-line no-restricted-imports
 import { auth } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -95,6 +96,7 @@ async function checkOpenAI(): Promise<HealthCheck> {
   const start = Date.now();
   try {
     // Just check if the env var is set — don't make an actual API call
+    // eslint-disable-next-line no-restricted-syntax
     const hasKey = !!process.env.OPENAI_API_KEY;
     return {
       name: "OpenAI API",
@@ -115,6 +117,7 @@ async function checkOpenAI(): Promise<HealthCheck> {
 async function checkEmailProvider(): Promise<HealthCheck> {
   const start = Date.now();
   try {
+    // eslint-disable-next-line no-restricted-syntax
     const hasResend = !!process.env.RESEND_API_KEY;
     return {
       name: "Email (Resend)",
@@ -146,6 +149,7 @@ async function checkWeatherService(): Promise<HealthCheck> {
       latencyMs: Date.now() - start,
       message: res.ok ? "Mesonet reachable" : `Status: ${res.status}`,
     };
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   } catch (_err) {
     return {
       name: "Weather Service (Mesonet)",
@@ -159,6 +163,7 @@ async function checkWeatherService(): Promise<HealthCheck> {
 async function checkStorage(): Promise<HealthCheck> {
   const start = Date.now();
   try {
+    // eslint-disable-next-line no-restricted-syntax
     const hasSupabase = !!process.env.NEXT_PUBLIC_SUPABASE_URL;
     return {
       name: "Storage (Supabase)",

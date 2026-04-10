@@ -150,6 +150,7 @@ export async function POST(
     });
 
     // ── Send signature request email via Resend ──
+    // eslint-disable-next-line no-restricted-syntax
     const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://skaiscrape.com";
     const signUrl = `${appUrl}/esign/sign/${envelopeId}`;
 

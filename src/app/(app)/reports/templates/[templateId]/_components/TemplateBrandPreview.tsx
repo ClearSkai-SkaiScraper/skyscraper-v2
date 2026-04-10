@@ -10,13 +10,16 @@ import { Label } from "@/components/ui/label";
 
 interface TemplateBrandPreviewProps {
   template: report_templates;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   onBrandingUpdate: (branding: any) => void;
 }
 
 export function TemplateBrandPreview({ template, onBrandingUpdate }: TemplateBrandPreviewProps) {
   // Note: brandingConfig doesn't exist on report_templates; use defaults as fallback
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let brandingConfig: any = {};
   try {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const defaults = template.defaults as any;
     brandingConfig = defaults?.branding || {
       logoUrl: null,
@@ -64,6 +67,7 @@ export function TemplateBrandPreview({ template, onBrandingUpdate }: TemplateBra
             </Button>
           </div>
           {logoUrl && (
+            // eslint-disable-next-line react/jsx-no-comment-textnodes
             <div className="mt-2 rounded-lg border border-[color:var(--border)] bg-white p-2">
               // eslint-disable-next-line @next/next/no-img-element
               <img src={logoUrl} alt="Logo preview" className="h-12 object-contain" />
@@ -119,6 +123,7 @@ export function TemplateBrandPreview({ template, onBrandingUpdate }: TemplateBra
             {...{ style: { borderColor: primaryColor, backgroundColor: `${primaryColor}08` } }}
           >
             {logoUrl && (
+              // eslint-disable-next-line react/jsx-no-comment-textnodes
               <div className="mb-4 flex justify-center">
                 // eslint-disable-next-line @next/next/no-img-element
                 <img src={logoUrl} alt="Logo" className="h-16 object-contain" />

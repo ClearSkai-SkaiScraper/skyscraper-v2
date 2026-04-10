@@ -8,6 +8,7 @@ import { logger } from "@/lib/logger";
 export interface WeatherVerificationResult {
   verified: boolean;
   summary: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   events: any[];
 }
 

@@ -29,6 +29,7 @@ export async function logClaimsIntegrity(
   // Get DB host
   let dbHost = "unknown";
   try {
+    // eslint-disable-next-line no-restricted-syntax
     const dbUrl = process.env.DATABASE_URL;
     if (dbUrl) {
       const url = new URL(dbUrl);

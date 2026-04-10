@@ -16,7 +16,9 @@ export async function GET() {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let properties: any[] = [];
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let leads: any[] = [];
 
     // Get all properties from the org with valid address data

@@ -9,6 +9,7 @@ export default async function ShareView({ params }: { params: { token: string } 
   const { token } = params;
 
   // const row = await db.query(...token...);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const row = { resource_type: "report", resource_id: "demo", expires_at: "2099-01-01" } as any; // mock
 
   if (!row) return notFound();

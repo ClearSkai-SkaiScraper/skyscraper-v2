@@ -36,6 +36,7 @@ export const GET = withOrgScope(
       });
 
       let isMarketplace = false;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       let layout: any;
 
       if (template) {

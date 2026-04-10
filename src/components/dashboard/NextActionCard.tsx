@@ -66,6 +66,7 @@ async function getNextAction(): Promise<NextAction> {
       // Check if claim has any reports (guard for missing ClaimReport model)
       let reportCount = 0;
       const claimReportModel =
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (prisma as any).ClaimReport ?? (prisma as any).claimReport ?? (prisma as any).claim_report;
       if (claimReportModel?.count) {
         try {

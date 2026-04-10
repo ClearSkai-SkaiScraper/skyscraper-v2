@@ -78,6 +78,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ clai
     }
 
     // Build contractor info from contractor_profiles
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let contractor: any = null;
     const profile = claim.Org?.contractor_profiles;
     if (profile) {

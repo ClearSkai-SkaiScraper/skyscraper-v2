@@ -11,6 +11,7 @@ interface RoleBadgeProps {
   size?: "sm" | "md" | "lg";
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const roleConfig: Record<TeamRole, { icon: any; color: string; label: string }> = {
   admin: { icon: Crown, color: "purple", label: "Admin" },
   manager: { icon: Briefcase, color: "green", label: "Manager" },

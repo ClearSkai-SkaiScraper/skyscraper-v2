@@ -185,6 +185,7 @@ export async function GET(req: NextRequest, { params }: { params: { templateId: 
     const templateSlug = dbTemplate?.slug ?? registryTemplate?.slug ?? null;
     const templateCategory = dbTemplate?.category ?? registryTemplate?.category ?? null;
     const templateTitle =
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (registryTemplate as any)?.title || (dbTemplate as any)?.title || templateSlug || templateId;
 
     // Build candidate keys for template-specific thumbnails FIRST

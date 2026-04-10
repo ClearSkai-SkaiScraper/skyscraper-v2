@@ -251,6 +251,7 @@ export function Step4_WhyUs({ data, updateData }: Step4Props) {
           </Label>
           <Select
             value={data.bbbRating || ""}
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             onValueChange={(value) => updateData({ bbbRating: value as any })}
           >
             <SelectTrigger id="bbbRating" className="w-full md:w-64">

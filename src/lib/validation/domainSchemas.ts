@@ -16,6 +16,7 @@ export const claimLifecycleStageEnum = z
     "COMPLETED",
     "DEPRECIATION",
   ])
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   .catch(undefined as any)
   .optional();
 

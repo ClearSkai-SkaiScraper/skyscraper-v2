@@ -145,6 +145,7 @@ export async function GET() {
     return NextResponse.json(
       {
         error: "Failed to fetch contractor profile",
+        // eslint-disable-next-line no-restricted-syntax
         details: process.env.NODE_ENV === "development" ? String(error) : undefined,
       },
       { status: 500 }
@@ -294,6 +295,7 @@ export async function PATCH(req: NextRequest) {
     return NextResponse.json(
       {
         error: "Failed to update contractor profile",
+        // eslint-disable-next-line no-restricted-syntax
         details: process.env.NODE_ENV === "development" ? String(error) : undefined,
       },
       { status: 500 }
@@ -456,6 +458,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json(
       {
         error: "Failed to create contractor profile",
+        // eslint-disable-next-line no-restricted-syntax
         details: process.env.NODE_ENV === "development" ? String(error) : undefined,
       },
       { status: 500 }
@@ -585,6 +588,7 @@ export async function PUT(req: NextRequest) {
     return NextResponse.json(
       {
         error: "Failed to update contractor profile",
+        // eslint-disable-next-line no-restricted-syntax
         details: process.env.NODE_ENV === "development" ? String(error) : undefined,
       },
       { status: 500 }

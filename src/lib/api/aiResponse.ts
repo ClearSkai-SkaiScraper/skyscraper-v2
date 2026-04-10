@@ -18,21 +18,25 @@ export type AiError = {
   error: {
     message: string;
     code?: string;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     details?: any;
   };
   metrics?: AiMetrics;
 };
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type AiResponse<T = any> = AiSuccess<T> | AiError;
 
 export function aiOk<T>(data: T, metrics?: AiMetrics): AiSuccess<T> {
   return { ok: true, data, metrics };
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function aiFail(message: string, code?: string, details?: any, metrics?: AiMetrics): AiError {
   return { ok: false, error: { message, code, details }, metrics };
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function classifyOpenAiError(err: any): { message: string; code?: string } {
   const raw = err?.message ?? String(err);
   const lower = raw.toLowerCase();

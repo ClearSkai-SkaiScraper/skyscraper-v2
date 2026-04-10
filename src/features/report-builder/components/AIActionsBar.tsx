@@ -28,6 +28,7 @@ export function AIActionsBar({
     setLoading(action);
     // eslint-disable-next-line @typescript-eslint/await-thenable
     try {
+      // eslint-disable-next-line @typescript-eslint/await-thenable
       await handler();
     } finally {
       setLoading(null);

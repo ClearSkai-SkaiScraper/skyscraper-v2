@@ -27,6 +27,7 @@ export const PATCH = withAuth(async (request: NextRequest, { orgId }) => {
       const template = await Templates!.findFirst({ where: { id: templateId, org_id: orgId } });
       if (!template) return null;
 
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const updates: any = { updated_at: new Date() };
       if (name !== undefined) updates.name = name;
       if (description !== undefined)
@@ -76,6 +77,7 @@ export const DELETE = withAuth(async (request: NextRequest, { orgId }) => {
     }
 
     // Don't allow deleting system templates
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     if ((template as any).templateType === "SYSTEM") {
       return NextResponse.json({ error: "Cannot delete system templates" }, { status: 400 });
     }

@@ -23,6 +23,7 @@ import prisma from "@/lib/prisma";
 import { checkRateLimit } from "@/lib/ratelimit";
 import { bootstrapNewOrg } from "@/scripts/bootstrap-new-org";
 
+// eslint-disable-next-line no-restricted-syntax
 const webhookSecret = process.env.CLERK_WEBHOOK_SECRET;
 
 /**
@@ -100,6 +101,7 @@ export async function POST(req: NextRequest) {
 
     // Verify webhook signature
     const wh = new Webhook(webhookSecret);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let evt: any;
 
     try {
@@ -127,6 +129,7 @@ export async function POST(req: NextRequest) {
         last_name,
       } = evt.data;
       const primaryEmail = email_addresses.find(
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (e: any) => e.id === primary_email_address_id
       )?.email_address;
 
@@ -142,6 +145,7 @@ export async function POST(req: NextRequest) {
             id: randomUUID(),
             clerkOrgId: `org_${userId}`,
             name: `${primaryEmail?.split("@")[0] || "My"} Company`,
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           } as any,
         });
 

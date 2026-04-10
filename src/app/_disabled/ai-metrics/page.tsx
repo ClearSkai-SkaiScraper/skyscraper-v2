@@ -56,7 +56,9 @@ interface MetricsResponse {
   byRoute: RouteStats[];
   byModel: ModelStats[];
   timeSeries: TimeSeriesPoint[];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   topExpensive: any[];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   topSlowest: any[];
 }
 

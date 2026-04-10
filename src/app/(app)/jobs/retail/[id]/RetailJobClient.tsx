@@ -14,6 +14,7 @@ interface EditableFieldProps {
   value: string | number | null;
   field: string;
   jobId: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   onUpdate: (field: string, value: any) => Promise<void>;
   type?: "text" | "number" | "textarea" | "currency";
 }
@@ -39,6 +40,7 @@ export function EditableField({
   const handleSave = async () => {
     setSaving(true);
     try {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       let processedValue: any = editValue;
       if (type === "number" || type === "currency") {
         processedValue = editValue ? parseInt(editValue.replace(/[^0-9]/g, ""), 10) : null;
@@ -46,6 +48,7 @@ export function EditableField({
       await onUpdate(field, processedValue);
       toast.success(`${label} updated successfully`);
       setIsEditing(false);
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (_error) {
       toast.error(`Failed to update ${label}`);
     } finally {
@@ -124,6 +127,7 @@ export function RetailJobClient({ jobId, initialJob }: RetailJobClientProps) {
   const [descriptionValue, setDescriptionValue] = useState(initialJob.description || "");
   const [savingDescription, setSavingDescription] = useState(false);
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const handleUpdate = async (field: string, value: any) => {
     const res = await fetch(`/api/leads/${jobId}`, {
       method: "PATCH",

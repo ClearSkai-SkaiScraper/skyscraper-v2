@@ -174,6 +174,7 @@ export function sanitizeUserInput(input: string, type: "text" | "html" | "url" =
 /**
  * Sanitize object recursively
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function sanitizeObject(obj: any, type: "text" | "html" = "text"): any {
   if (typeof obj === "string") {
     return sanitizeUserInput(obj, type);
@@ -184,6 +185,7 @@ export function sanitizeObject(obj: any, type: "text" | "html" = "text"): any {
   }
 
   if (typeof obj === "object" && obj !== null) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const sanitized: any = {};
     for (const [key, value] of Object.entries(obj)) {
       sanitized[key] = sanitizeObject(value, type);

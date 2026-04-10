@@ -164,6 +164,7 @@ export default function CreateInvoicePage() {
 
       router.push("/invoices");
       router.refresh();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       setError(err?.message || "Failed to create invoice");
     } finally {

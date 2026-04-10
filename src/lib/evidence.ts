@@ -58,9 +58,11 @@ export function toPhotoGrid(evidence: EvidencePair[]): Array<{ url: string; capt
     }));
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function generateDamageCounts(detections: any[]): Record<string, number> {
   const counts: Record<string, number> = {};
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   detections.forEach((detection: any) => {
     const damageType = detection.type || detection.label || "unknown";
     counts[damageType] = (counts[damageType] || 0) + 1;

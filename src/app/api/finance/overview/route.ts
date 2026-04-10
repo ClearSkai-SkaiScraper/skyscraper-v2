@@ -133,6 +133,7 @@ export async function GET() {
 
     // Build commission summary
     const commissionSummary: Record<string, { total: number; count: number }> = {};
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     for (const group of commissions as any[]) {
       commissionSummary[group.status] = {
         total: Number(group._sum?.commission_amount ?? 0),
@@ -190,6 +191,7 @@ export async function GET() {
     });
   } catch (err) {
     // Re-throw Next.js internal redirect errors
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     if ((err as any)?.digest?.startsWith?.("NEXT_REDIRECT")) throw err;
     logger.error("[API] finance/overview error:", err);
     return NextResponse.json({ error: "Internal error" }, { status: 500 });

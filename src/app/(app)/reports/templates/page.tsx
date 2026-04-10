@@ -101,12 +101,14 @@ export default async function ReportTemplatesPage() {
         create: { orgId, templateId: mandatoryTemplate.id, isActive: true },
       });
     }
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   } catch (_seedError) {
     // Failed to seed mandatory template — continue without it
   }
 
   // Fetch company templates via orgTemplate → template join
   // This shows templates the company has added from the marketplace
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let templates: any[] = [];
   try {
     const orgTemplates = await prisma.orgTemplate.findMany({
@@ -178,6 +180,7 @@ export default async function ReportTemplatesPage() {
         ];
       }
     }
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   } catch (_e) {
     // Failed to fetch orgTemplates — show empty state
     templates = [];

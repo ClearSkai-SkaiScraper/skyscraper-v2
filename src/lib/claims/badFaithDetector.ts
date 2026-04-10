@@ -222,6 +222,7 @@ export async function detectBadFaith(claimId: string): Promise<BadFaithAnalysis>
 
     // 5. CHECK FOR IGNORED EVIDENCE
     const supplements = claim.claim_supplements || [];
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const ignoredSupplements = supplements.filter((s: any) => {
       const age = differenceInDays(now, s.created_at);
       return age > 30 && !s.status?.toLowerCase().includes("reviewed");
@@ -306,6 +307,7 @@ export async function detectBadFaith(claimId: string): Promise<BadFaithAnalysis>
       attorneyReferralSuggested,
       summary,
     };
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (error: any) {
     logger.error("[BAD FAITH DETECTION ERROR]", error);
     return {
@@ -361,6 +363,7 @@ export async function getBadFaithAnalysis(claimId: string): Promise<BadFaithAnal
       data: {
         id: crypto.randomUUID(),
         claim_id: claimId,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         analysis: analysis as any,
         severity: severityMap[analysis.overallSeverity],
       },

@@ -162,6 +162,7 @@ export default function ClientLeadsPage() {
       } else {
         toast.error("Failed to update status");
       }
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (_error) {
       toast.error("Failed to update status");
     }

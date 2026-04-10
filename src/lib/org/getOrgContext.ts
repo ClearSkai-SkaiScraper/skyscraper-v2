@@ -10,6 +10,7 @@ import { safeOrgContext } from "@/lib/safeOrgContext";
 
 type OrgContext = {
   orgId: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   org: any;
   userId: string;
   isDemo: boolean;
@@ -62,6 +63,7 @@ export async function getOrgContext(): Promise<OrgContext> {
   }
 
   // Mark demo orgs based on configured demo IDs, if present.
+  // eslint-disable-next-line no-restricted-syntax
   const demoOrgIds = [process.env.DEMO_ORG_ID, process.env.BETA_DEMO_ORG_ID].filter(
     Boolean
   ) as string[];

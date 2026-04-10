@@ -49,6 +49,7 @@ export function PhotoGallery({ portfolioUrls, editable = false, onRemove }: Phot
             key={index}
             className="group relative aspect-square cursor-pointer overflow-hidden rounded-lg"
             onClick={() => openLightbox(index)}
+          // eslint-disable-next-line react/jsx-no-comment-textnodes
           >
             // eslint-disable-next-line @next/next/no-img-element
             <img
@@ -96,7 +97,9 @@ export function PhotoGallery({ portfolioUrls, editable = false, onRemove }: Phot
             ←
           </button>
 
+          // eslint-disable-next-line react/jsx-no-comment-textnodes
           {/* Image */}
+          // eslint-disable-next-line react/jsx-no-comment-textnodes
           <div className="max-h-[90vh] max-w-[90vw]" onClick={(e) => e.stopPropagation()}>
             // eslint-disable-next-line @next/next/no-img-element
             <img

@@ -321,6 +321,7 @@ export const POST = withAuth(async (req: NextRequest, { orgId, userId }) => {
               detections = await detectByComponent(
                 photo.url,
                 componentType,
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 input.claimType as any,
                 0.3
               );
@@ -336,6 +337,7 @@ export const POST = withAuth(async (req: NextRequest, { orgId, userId }) => {
             category: aiResult.category,
             subCategory: aiResult.subCategory,
             hasDamage: aiResult.hasDamage || detections.length > 0,
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             severity: aiResult.severity as any,
             detectionCount: detections.length,
             caption: aiResult.caption,

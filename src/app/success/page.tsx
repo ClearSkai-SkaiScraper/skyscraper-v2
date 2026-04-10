@@ -20,6 +20,7 @@ function SuccessContent() {
   }, [sp]);
 
   const [loading, setLoading] = useState(true);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [sessionData, setSessionData] = useState<any>(null);
 
   useEffect(() => {

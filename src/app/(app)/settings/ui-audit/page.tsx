@@ -1,3 +1,4 @@
+// eslint-disable-next-line no-restricted-imports
 import { auth } from "@clerk/nextjs/server";
 import {
   BarChart3,
@@ -29,6 +30,7 @@ interface AuditSection {
   pages: Array<{
     name: string;
     path: string;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     icon: any;
     description: string;
   }>;

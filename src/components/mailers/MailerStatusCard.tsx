@@ -23,6 +23,7 @@ interface MailerJob {
   mailedAt?: Date;
   deliveredAt?: Date;
   errorMessage?: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   toAddress: any;
 }
 

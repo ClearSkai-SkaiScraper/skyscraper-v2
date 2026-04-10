@@ -75,6 +75,7 @@ export function VendorLogo({ logo, name, website, size = "md", className = "" }:
     return (
       <div
         className={`relative flex ${sizeClasses.container} flex-shrink-0 items-center justify-center overflow-hidden rounded-xl border bg-white ${className}`}
+      // eslint-disable-next-line react/jsx-no-comment-textnodes
       >
         // eslint-disable-next-line @next/next/no-img-element
         <img
@@ -92,6 +93,7 @@ export function VendorLogo({ logo, name, website, size = "md", className = "" }:
     return (
       <div
         className={`relative flex ${sizeClasses.container} flex-shrink-0 items-center justify-center overflow-hidden rounded-xl border bg-white ${className}`}
+      // eslint-disable-next-line react/jsx-no-comment-textnodes
       >
         // eslint-disable-next-line @next/next/no-img-element
         <img

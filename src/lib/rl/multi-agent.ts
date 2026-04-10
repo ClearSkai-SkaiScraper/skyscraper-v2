@@ -19,6 +19,7 @@ export interface MultiAgentEnvironmentState {
   observations: Map<string, Float32Array>;
   rewards: Map<string, number>;
   done: boolean;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   info?: Record<string, any>;
 }
 
@@ -55,6 +56,7 @@ export interface QMIXConfig {
 }
 
 export class MultiAgentRL {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private static replayBuffer: Array<any> = [];
   private static targetNetworks: Map<string, AgentPolicy> = new Map();
   private static communicationHistory: CommunicationMessage[] = [];
@@ -349,6 +351,7 @@ export class MultiAgentRL {
 
   // ==================== Private Helper Methods ====================
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private static cloneState(state: MultiAgentEnvironmentState): any {
     return {
       agents: state.agents.map(a => ({ ...a })),
@@ -359,7 +362,9 @@ export class MultiAgentRL {
     };
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private static sampleBatch(batchSize: number): any[] {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const batch: any[] = [];
     for (let i = 0; i < batchSize; i++) {
       const idx = Math.floor(Math.random() * this.replayBuffer.length);
@@ -389,6 +394,7 @@ export class MultiAgentRL {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     centralizedObs: Float32Array,
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars
     batch: any[],
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     gamma: number,

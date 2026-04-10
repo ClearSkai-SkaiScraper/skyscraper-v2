@@ -231,9 +231,13 @@ async function renderContactsPage() {
     return false;
   };
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let contacts: any[] = [];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let connections: any[] = [];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let teamMembers: any[] = [];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let adjusters: any[] = [];
   let vendorCount = 0;
   let subCount = 0;
@@ -292,8 +296,10 @@ async function renderContactsPage() {
         });
 
         const existingEmails = new Set(
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           contacts.map((c: any) => c.email?.toLowerCase()).filter(Boolean)
         );
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const existingIds = new Set(contacts.map((c: any) => c.id));
 
         for (const cn of clientNetworks) {
@@ -339,9 +345,11 @@ async function renderContactsPage() {
         });
 
         const existingEmails2 = new Set(
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           contacts.map((c: any) => c.email?.toLowerCase()).filter(Boolean)
         );
         const existingNames = new Set(
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           contacts.map((c: any) => c.name?.toLowerCase()).filter(Boolean)
         );
 
@@ -443,6 +451,7 @@ async function renderContactsPage() {
         });
 
         // Get member profiles (with company info) for connected users
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const connectedUserIds = userConnections.map((c: any) =>
           c.requesterId === userId ? c.addresseeId : c.requesterId
         );
@@ -469,9 +478,11 @@ async function renderContactsPage() {
 
           connections = connectedMembers
             .filter(
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
               (m: any) =>
                 m.company && !isDemoContact({ email: m.company.email, firstName: m.company.name })
             )
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             .map((m: any) => {
               const companyType = (m.tradeType || m.role || "contractor").toLowerCase();
               return {
@@ -557,6 +568,7 @@ async function renderContactsPage() {
         });
 
         // Deduplicate adjusters by name+email combo
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const adjusterMap = new Map<string, any>();
 
         for (const cl of claimsWithAdjusters) {
@@ -629,6 +641,7 @@ async function renderContactsPage() {
   const adjusterCount = adjusters.length;
 
   // Helper to render contact card - Uses UniversalContactCard for all contact types
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const renderContactCard = (contact: any) => (
     <UniversalContactCard
       key={contact.id}
@@ -648,9 +661,11 @@ async function renderContactsPage() {
   );
 
   // Helper to render connection card - Uses client component for onClick handlers
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const renderConnectionCard = (conn: any) => <ConnectionCard key={conn.id} conn={conn} />;
 
   // Helper to render team member card
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const renderTeamMemberCard = (member: any) => <TeamMemberCard key={member.id} member={member} />;
 
   // Company Contacts page: unified view of clients + trade connections + team

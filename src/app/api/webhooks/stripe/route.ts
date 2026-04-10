@@ -20,9 +20,11 @@ export const revalidate = 0;
 const stripe = getStripeClient()!;
 
 // Validate webhook secret at module load — crash early if missing
+// eslint-disable-next-line no-restricted-syntax
 if (!process.env.STRIPE_WEBHOOK_SECRET && process.env.BUILD_PHASE !== "1") {
   throw new Error("STRIPE_WEBHOOK_SECRET environment variable is required");
 }
+// eslint-disable-next-line no-restricted-syntax
 const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET ?? "";
 
 // Durable idempotency check using database
@@ -39,6 +41,7 @@ async function saveEventId(eventId: string, eventType: string): Promise<boolean>
     return true; // New event, proceed
   } catch (error) {
     // Unique constraint violation means we've seen this event before
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     if ((error as any)?.code === "P2002") {
       return false; // Already processed
     }

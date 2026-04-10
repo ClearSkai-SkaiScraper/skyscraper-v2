@@ -23,6 +23,7 @@ export const GET = withAuth(async (req: NextRequest, { orgId }, routeParams) => 
     }
 
     // Fetch events for this report
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let events: any[] = [];
     try {
       const allEvents = await getRecentReportEvents(orgId, 100);

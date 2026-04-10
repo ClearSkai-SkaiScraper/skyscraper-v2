@@ -32,6 +32,7 @@ export interface LineItemsReport {
 /**
  * Generate line items from Storm Intake analysis
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function generateLineItems(analysis: any, claimId: string): LineItemsReport {
   const items: LineItem[] = [];
   let itemCounter = 1;

@@ -127,6 +127,7 @@ export function sanitizeFormData<T extends Record<string, unknown>>(
   for (const [key, value] of Object.entries(result)) {
     if (typeof value === "string") {
       const maxLen = maxLengths?.[key as keyof T] as number | undefined;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (result as any)[key] = sanitizeText(value, maxLen || 1000);
     }
   }

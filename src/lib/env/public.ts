@@ -21,10 +21,12 @@
  * @returns The value or undefined
  */
 export function getPublicEnv(name: string, fallbacks: string[] = []): string | undefined {
+  // eslint-disable-next-line no-restricted-syntax
   const value = process.env[name];
   if (value) return value;
 
   for (const fallback of fallbacks) {
+    // eslint-disable-next-line no-restricted-syntax
     const fallbackValue = process.env[fallback];
     if (fallbackValue) return fallbackValue;
   }

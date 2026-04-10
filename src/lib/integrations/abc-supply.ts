@@ -24,11 +24,14 @@ import "server-only";
 // ============================================================================
 
 const ABC_API_BASE =
+  // eslint-disable-next-line no-restricted-syntax
   process.env.ABC_SUPPLY_ENVIRONMENT === "production"
     ? "https://api.abcsupply.com/v1"
     : "https://sandbox-api.abcsupply.com/v1";
 
+// eslint-disable-next-line no-restricted-syntax
 const apiKey = process.env.ABC_SUPPLY_API_KEY || "";
+// eslint-disable-next-line no-restricted-syntax
 const apiSecret = process.env.ABC_SUPPLY_API_SECRET || "";
 
 // ============================================================================

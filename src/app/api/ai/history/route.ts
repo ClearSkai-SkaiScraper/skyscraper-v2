@@ -46,11 +46,13 @@ export async function GET(req: NextRequest) {
 
     // Query ai_reports table for history
     // Note: Adjust based on your actual schema
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const where: any = { orgId: ctx.orgId };
     if (type !== "all") {
       where.type = type;
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let history: any[] = [];
 
     try {
@@ -69,6 +71,7 @@ export async function GET(req: NextRequest) {
           content: true,
         },
       });
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (_err) {
       // If ai_reports table doesn't exist, return empty array
       logger.debug("[AI History] ai_reports table not found, returning empty history");

@@ -72,6 +72,7 @@ export function RequestCloseoutButton({
       setOpen(false);
       setReason("");
       onCloseoutRequested?.();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       toast.error(err.message || "Failed to request closeout");
     } finally {

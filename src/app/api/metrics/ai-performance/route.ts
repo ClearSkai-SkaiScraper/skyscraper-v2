@@ -25,6 +25,7 @@ export const GET = withAuth(async (req: NextRequest, { orgId, userId }) => {
     const model = searchParams.get("model");
 
     // Build where clause
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const where: any = { org_id: orgId };
 
     if (startDate) {
@@ -73,9 +74,11 @@ export const GET = withAuth(async (req: NextRequest, { orgId, userId }) => {
         if (log.cache_hit) acc[log.route].cacheHits++;
         return acc;
       },
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       {} as Record<string, any>
     );
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const routeStats = Object.values(byRoute).map((stat: any) => ({
       ...stat,
       avgDuration: stat.calls > 0 ? stat.duration / stat.calls : 0,
@@ -100,6 +103,7 @@ export const GET = withAuth(async (req: NextRequest, { orgId, userId }) => {
         acc[log.model].tokensOut += log.tokens_out;
         return acc;
       },
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       {} as Record<string, any>
     );
 
@@ -122,9 +126,11 @@ export const GET = withAuth(async (req: NextRequest, { orgId, userId }) => {
         if (log.cache_hit) acc[day].cacheHits++;
         return acc;
       },
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       {} as Record<string, any>
     );
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const timeSeries = Object.values(byDay).sort((a: any, b: any) => a.date.localeCompare(b.date));
 
     // Top 5 most expensive calls
@@ -165,7 +171,9 @@ export const GET = withAuth(async (req: NextRequest, { orgId, userId }) => {
         cacheHits,
         cacheMisses: totalCalls - cacheHits,
       },
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       byRoute: routeStats.sort((a: any, b: any) => b.cost - a.cost),
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       byModel: modelStats.sort((a: any, b: any) => b.cost - a.cost),
       timeSeries,
       topExpensive,

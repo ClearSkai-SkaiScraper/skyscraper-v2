@@ -197,6 +197,7 @@ export async function sendStormNotifications(
   for (const member of orgMembers) {
     try {
       const success = await sendTemplatedNotification(
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         template as any,
         member.userId,
         notificationData
@@ -248,6 +249,7 @@ export async function sendStormEndedNotification(
     : 0;
 
   for (const member of orgMembers) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     await sendTemplatedNotification("STORM_ENDED" as any, member.userId, {
       stormType: storm.type.replace("_", " "),
       city: storm.city || "your service area",
@@ -281,6 +283,7 @@ export async function notifyPhotoWeatherMismatch(
   const userId = assignedUserId || claim.assignedTo;
   if (!userId) return;
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   await sendTemplatedNotification("PHOTO_WEATHER_MISMATCH" as any, userId, {
     claimNumber: claim.claimNumber,
     score: correlationScore.toString(),
@@ -305,6 +308,7 @@ export async function notifyWeatherEvidenceReady(
 
   if (!claim || !claim.assignedTo) return;
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   await sendTemplatedNotification("WEATHER_EVIDENCE_READY" as any, claim.assignedTo, {
     claimNumber: claim.claimNumber,
     grade,
@@ -330,6 +334,7 @@ export async function notifyDOLVerificationNeeded(
 
   if (!claim || !claim.assignedTo) return;
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   await sendTemplatedNotification("DOL_VERIFICATION_NEEDED" as any, claim.assignedTo, {
     claimNumber: claim.claimNumber,
     confidence: Math.round(confidence).toString(),
@@ -339,6 +344,7 @@ export async function notifyDOLVerificationNeeded(
 
 // Helper functions
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function calculateSeverity(storm: any): "low" | "moderate" | "high" | "extreme" {
   if (storm.tornadoRating) return "extreme";
 

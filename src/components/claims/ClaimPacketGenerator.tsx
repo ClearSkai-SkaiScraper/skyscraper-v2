@@ -73,6 +73,7 @@ export default function ClaimPacketGenerator() {
       document.body.removeChild(a);
 
       setSuccess(true);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       setError(err.message);
     } finally {
@@ -191,6 +192,7 @@ export default function ClaimPacketGenerator() {
               <Select
                 aria-label="Event type"
                 value={data.eventType}
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 onValueChange={(value: any) => setData({ ...data, eventType: value })}
               >
                 <SelectTrigger>
@@ -211,6 +213,7 @@ export default function ClaimPacketGenerator() {
               <Select
                 aria-label="Weather event intensity"
                 value={data.roofType}
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 onValueChange={(value: any) => setData({ ...data, roofType: value })}
               >
                 <SelectTrigger>
@@ -270,6 +273,7 @@ export default function ClaimPacketGenerator() {
                 <Select
                   aria-label="Recommended action"
                   value={data.recommendedRepairAction || "full-replacement"}
+                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
                   onValueChange={(value: any) =>
                     setData({ ...data, recommendedRepairAction: value })
                   }
@@ -334,6 +338,7 @@ export default function ClaimPacketGenerator() {
                 <Select
                   aria-label="Warranty coverage type"
                   value={data.warrantyOption || "5yr-labor"}
+                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
                   onValueChange={(value: any) => setData({ ...data, warrantyOption: value })}
                 >
                   <SelectTrigger>
@@ -436,6 +441,7 @@ export default function ClaimPacketGenerator() {
                 <Select
                   aria-label="Primary material selection"
                   value={data.materialChoice || "architectural-shingle"}
+                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
                   onValueChange={(value: any) => setData({ ...data, materialChoice: value })}
                 >
                   <SelectTrigger>

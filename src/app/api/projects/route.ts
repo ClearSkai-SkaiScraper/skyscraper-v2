@@ -28,6 +28,7 @@ export async function GET(request: NextRequest) {
     const limit = parseInt(searchParams.get("limit") || "50");
     const offset = parseInt(searchParams.get("offset") || "0");
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const where: any = { orgId };
     if (status) where.status = status;
     if (assignedTo) where.assignedTo = assignedTo;
@@ -175,6 +176,7 @@ export async function POST(request: NextRequest) {
     });
 
     // Trigger stage change automation
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     await onStageChange(project.id, status as any, undefined, userId);
 
     return Response.json(project, { status: 201 });

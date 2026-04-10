@@ -17,6 +17,7 @@ export default function MapClient() {
     logMapboxDebugContext("MapClient mount");
 
     // Get token from environment
+    // eslint-disable-next-line no-restricted-syntax
     const token = getMapboxToken() || process.env.NEXT_PUBLIC_MAPBOX_TOKEN || null;
 
     if (!token) {

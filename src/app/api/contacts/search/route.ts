@@ -29,6 +29,7 @@ export const GET = withOrgScope(async (req, { orgId, userId }) => {
       return NextResponse.json({ contacts: [] });
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const where: any = { orgId };
 
     // Filter by tag (e.g. "adjuster")

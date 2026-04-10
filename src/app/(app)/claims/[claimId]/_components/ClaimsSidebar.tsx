@@ -138,6 +138,7 @@ export function ClaimsSidebar({ claimId, claim, onFieldUpdate }: ClaimsSidebarPr
         // Notify parent so overview state stays in sync
         onFieldUpdate?.(field, editValue);
         router.refresh();
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       } catch (_err) {
         toast.error("Failed to save — queued for retry");
         retryQueue.enqueue({

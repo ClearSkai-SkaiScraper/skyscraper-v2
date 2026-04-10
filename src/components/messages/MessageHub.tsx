@@ -154,6 +154,7 @@ export default function MessageHub({
       const data = await res.json();
       // Normalize field names: API returns senderUserId/body, component expects senderId/content
       const rawMessages = data.messages ?? data.Message ?? data ?? [];
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const normalized = (Array.isArray(rawMessages) ? rawMessages : []).map((m: any) => ({
         ...m,
         senderId: m.senderId || m.senderUserId || "",

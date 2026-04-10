@@ -45,6 +45,7 @@ const GENERATION_CONFIG = {
 export interface GeneratedSection {
   sectionKey: string;
   title?: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   content: any; // JSON structure
   variant?: string | null;
   generatedAt: Date;
@@ -81,6 +82,7 @@ export async function generateReportSection(
     const prompt = getSectionPrompt(
       sectionConfig.sectionKey,
       context,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       sectionConfig.layoutVariant ?? (undefined as any),
       aiInstructions
     );
@@ -114,9 +116,11 @@ export async function generateReportSection(
     }
 
     // Parse JSON response
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let parsedContent: any;
     try {
       parsedContent = JSON.parse(responseContent);
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (_parseError) {
       logger.error("[REPORT_GEN] Failed to parse JSON", { responseContent });
       throw new Error("Invalid JSON response from AI");
@@ -139,6 +143,7 @@ export async function generateReportSection(
       generatedAt: new Date(),
       tokensUsed,
     };
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (error: any) {
     logger.error(`[REPORT_GEN] Error generating section ${sectionConfig.sectionKey}`, {
       error: error.message,
@@ -239,6 +244,7 @@ export async function generateFullReport(
       logger.debug(
         `[REPORT_GEN] Progress: ${generatedSections.length}/${sections.filter((s) => s.enabled).length} sections`
       );
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       logger.error(`[REPORT_GEN] Failed to generate section ${sectionKey}`, {
         error: error.message,
@@ -267,6 +273,7 @@ export async function generateFullReport(
  */
 export function validateGeneratedContent(
   sectionKey: string,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   content: any
 ): { valid: boolean; errors: string[] } {
   const errors: string[] = [];

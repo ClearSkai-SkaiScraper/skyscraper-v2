@@ -44,6 +44,7 @@ export function UpgradeCTA({
       }
     }
     // Also hide in test mode
+    // eslint-disable-next-line no-restricted-syntax
     if (process.env.NEXT_PUBLIC_TEST_MODE === "true") {
       setHidden(true);
       return;

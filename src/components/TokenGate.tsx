@@ -7,6 +7,7 @@ import AddTokensModal from "./AddTokensModal";
 type TokenGateContextType = {
   showTopUpModal: (currentBalance?: number) => void;
   hideTopUpModal: () => void;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   handleTokenAction: (action: () => Promise<any>) => Promise<void>;
 };
 
@@ -38,11 +39,13 @@ export function TokenGateProvider({ orgId, children }: TokenGateProviderProps) {
     setNeedTopUp(false);
   };
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const handleTokenAction = async (action: () => Promise<any>) => {
     try {
       // Always allow actions since token costs are now 0
       const result = await action();
       return result;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       // Re-throw all errors (no token gating anymore)
       throw err;

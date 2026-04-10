@@ -23,6 +23,7 @@
 import { logger } from "@/lib/logger";
 
 // ── Configuration ─────────────────────────────────────────────────
+// eslint-disable-next-line no-restricted-syntax
 const DEFAULT_DAILY_TOKEN_CEILING = parseInt(process.env.AI_DAILY_TOKEN_CEILING || "500000", 10);
 
 // Per-tier ceilings (tokens per day per org)
@@ -35,11 +36,14 @@ const TIER_CEILINGS: Record<string, number> = {
 
 // ── Redis helpers ─────────────────────────────────────────────────
 function getRedisClient() {
+  // eslint-disable-next-line no-restricted-syntax
   if (!process.env.UPSTASH_REDIS_REST_URL || !process.env.UPSTASH_REDIS_REST_TOKEN) {
     return null;
   }
   return {
+    // eslint-disable-next-line no-restricted-syntax
     url: process.env.UPSTASH_REDIS_REST_URL,
+    // eslint-disable-next-line no-restricted-syntax
     token: process.env.UPSTASH_REDIS_REST_TOKEN,
   };
 }

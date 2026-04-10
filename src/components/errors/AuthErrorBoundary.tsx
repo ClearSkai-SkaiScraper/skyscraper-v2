@@ -95,8 +95,10 @@ export default function AuthErrorBoundary({ error, reset }: AuthErrorBoundaryPro
           >
             Back to Dashboard
           </Link>
+        // eslint-disable-next-line react/jsx-no-comment-textnodes
         </div>
 
+        // eslint-disable-next-line no-restricted-syntax
         {process.env.NODE_ENV === "development" && (
           <details className="mt-8 text-left">
             <summary className="cursor-pointer text-sm text-neutral-500">

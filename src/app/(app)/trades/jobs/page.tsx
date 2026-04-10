@@ -270,6 +270,7 @@ export default function TradesJobsPage() {
         const threads = data.threads || [];
         msgCount = threads.length;
         quoteCount = threads.filter(
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           (t: any) =>
             t.subject?.toLowerCase().includes("quote") ||
             t.subject?.toLowerCase().includes("estimate")
@@ -282,8 +283,10 @@ export default function TradesJobsPage() {
         const data = await connectionsRes.json();
         const conns = data.connections || data.contractors || [];
         accepted = conns.filter(
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           (c: any) => c.status === "accepted" || c.status === "connected"
         ).length;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         pending = conns.filter((c: any) => c.status === "pending").length;
       }
 
@@ -345,6 +348,7 @@ export default function TradesJobsPage() {
         const data = await res.json();
         setIncomingRequests(
           (data.workRequests || []).filter(
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             (wr: any) => wr.status === "pending" || wr.status === "in_review"
           )
         );

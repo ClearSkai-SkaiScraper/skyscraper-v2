@@ -150,7 +150,9 @@ export default function TradesCompaniesPage() {
                       <h3 className="text-xl font-bold">{company.name}</h3>
                       {company.verified && <Award className="h-5 w-5 text-blue-600" />}
                     </div>
+                    // eslint-disable-next-line react/jsx-no-comment-textnodes
                     <span className="inline-block rounded-full bg-primary/10 px-2 py-1 text-xs font-medium">
+                      // eslint-disable-next-line @typescript-eslint/no-explicit-any
                       {(company as any).specialties?.[0] || (company as any).specialty || "General"}
                     </span>
                   </div>

@@ -101,6 +101,7 @@ export function ClaimTradesCard({ claimId }: ClaimTradesCardProps) {
         const data = await response.json();
         throw new Error(data.error);
       }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       toast.error("Error", {
         description: error.message || "Failed to link trade partner",
@@ -122,6 +123,7 @@ export function ClaimTradesCard({ claimId }: ClaimTradesCardProps) {
       } else {
         throw new Error("Failed to unlink");
       }
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (_error) {
       toast.error("Error", {
         description: "Failed to remove trade partner",

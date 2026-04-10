@@ -383,6 +383,7 @@ export async function convertLead(
     data: { stage: "converted" },
   });
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let claim: any = null;
   if (claimData) {
     // claims.create requires many fields — claimData is expected to provide them
@@ -390,7 +391,9 @@ export async function convertLead(
       data: {
         id: crypto.randomUUID(),
         orgId: membership.organizationId,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         ...(claimData as any),
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } as any,
     });
   }

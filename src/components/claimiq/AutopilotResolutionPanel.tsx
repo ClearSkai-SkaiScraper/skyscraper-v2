@@ -132,6 +132,7 @@ export function AutopilotResolutionPanel({ claimId, className }: Props) {
       }
       const json = await res.json();
       // Normalize API shape to component's expected shape
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const actions: AutopilotAction[] = (json.actions ?? []).map((a: any) => ({
         field: a.field ?? a.title ?? "Action",
         section: a.section ?? a.type ?? "general",
@@ -143,6 +144,7 @@ export function AutopilotResolutionPanel({ claimId, className }: Props) {
         dataSource: a.dataSource,
       }));
       const completedCount = json.completedCount ?? 0;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const pendingActions = actions.filter((a: any) => a.confidence < 1.0);
       setPlan({
         claimId: json.claimId ?? claimId,

@@ -115,6 +115,7 @@ function StepCompanyProfile({
       }).catch((e) => console.warn("[ONBOARDING] Step 1 tracking failed:", e?.message));
 
       onNext();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       setError(err.message);
     } finally {

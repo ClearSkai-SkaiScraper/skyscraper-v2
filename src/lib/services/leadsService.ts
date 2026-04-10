@@ -34,6 +34,7 @@ type ContactLite = {
   company: string | null;
 };
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function mapLead(lead: any, contact: ContactLite | null): LeadDTO {
   return {
     id: lead.id,
@@ -93,6 +94,7 @@ export async function createLead(data: CreateLeadInput): Promise<LeadDTO> {
     throw new Error("contactId is required to create a lead");
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const leadData: any = {
     id: data.id || crypto.randomUUID(),
     orgId: data.orgId,
@@ -152,6 +154,7 @@ export async function listLeads(
   params: ListLeadsParams
 ): Promise<{ leads: LeadDTO[]; total: number; limit: number; offset: number }> {
   const { orgId, limit = 50, offset = 0, stage, source, assignedTo, search } = params;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const where: any = { orgId };
   if (stage) where.stage = stage;
   if (source) where.source = source;

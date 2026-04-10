@@ -31,7 +31,9 @@ export default async function AppealBuilderPage({
       ? searchParams.claimId
       : undefined;
   return (
+    // eslint-disable-next-line react/jsx-no-comment-textnodes
     <Suspense fallback={<div className="p-6">Loading appeal builder...</div>}>
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       <ClaimAppealClient claims={claims as any} initialClaimId={initialClaimId} />
     </Suspense>
   );

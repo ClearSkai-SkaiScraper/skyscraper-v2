@@ -40,6 +40,7 @@ export async function GET(request: NextRequest) {
       })
       .catch(() => null);
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const orConditions: any[] = [{ participants: { has: ctx.userId } }];
     if (ctx.orgId) orConditions.push({ orgId: ctx.orgId });
     if (membership?.companyId) orConditions.push({ tradePartnerId: membership.companyId });

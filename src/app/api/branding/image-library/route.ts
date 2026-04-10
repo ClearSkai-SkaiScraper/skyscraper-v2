@@ -36,6 +36,7 @@ export const GET = withAuth(async (req: NextRequest, { orgId }) => {
     `;
 
     return NextResponse.json({ images });
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (error: any) {
     // If table doesn't exist, return empty array
     if (error?.code === "42P01" || error?.message?.includes("does not exist")) {
@@ -180,6 +181,7 @@ export const DELETE = withAuth(async (req: NextRequest, { orgId }) => {
     logger.info("[Image Library] Image deleted", { orgId, imageId });
 
     return NextResponse.json({ success: true });
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (error: any) {
     // If table doesn't exist, return success
     if (error?.code === "42P01" || error?.message?.includes("does not exist")) {

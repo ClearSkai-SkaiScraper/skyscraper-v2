@@ -240,7 +240,9 @@ export default function TimelinePage() {
           </p>
         </div>
       ) : (
+        // eslint-disable-next-line react/jsx-no-comment-textnodes
         <div className="relative space-y-4">
+          // eslint-disable-next-line react/jsx-no-comment-textnodes
           <div className="absolute bottom-0 left-1 top-0 w-px bg-slate-200 dark:bg-white/10" />
           // eslint-disable-next-line @typescript-eslint/no-unused-vars
           {events.map((event, index) => (

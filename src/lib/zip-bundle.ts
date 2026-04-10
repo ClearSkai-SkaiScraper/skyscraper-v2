@@ -73,6 +73,7 @@ export async function createClaimBundle(
       fileCount: files.length,
       files: files.map((f) => ({
         name: f.name,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         size: f.content instanceof Blob ? f.content.size : ((f.content as any).byteLength ?? 0),
       })),
     };

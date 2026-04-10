@@ -12,6 +12,7 @@ export default function CorrelationWizardPage() {
   const { isLoaded, isSignedIn } = useUser();
   const [claimId, setClaimId] = useState("");
   const [loading, setLoading] = useState(false);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [result, setResult] = useState<any>(null);
 
   useEffect(() => {
@@ -161,6 +162,7 @@ export default function CorrelationWizardPage() {
   );
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function CorrelationBlock({ title, data }: any) {
   const getColorClass = (likelihood: number) => {
     if (likelihood >= 80) return "text-green-600";

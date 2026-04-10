@@ -95,6 +95,7 @@ export async function POST(req: Request) {
       maxAge: 3600, // 1 hour max
       httpOnly: true,
       sameSite: "lax",
+      // eslint-disable-next-line no-restricted-syntax
       secure: process.env.NODE_ENV === "production",
     });
 
@@ -106,6 +107,7 @@ export async function POST(req: Request) {
     });
 
     return NextResponse.json({ ok: true });
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (error: any) {
     logger.error("[RemoteView] Start failed:", error);
     return NextResponse.json({ error: "Failed to start Remote View" }, { status: 500 });

@@ -1,3 +1,4 @@
+// eslint-disable-next-line no-restricted-imports
 import { currentUser } from "@clerk/nextjs/server";
 import Link from "next/link";
 import { redirect } from "next/navigation";
@@ -46,6 +47,7 @@ export default async function ClientDetailPage({ params }: { params: { clientId:
   const token =
     orgId && latestClaimId ? await getOrCreatePortalToken(client.id, latestClaimId, orgId) : null;
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const leads: any[] = [];
 
   return (

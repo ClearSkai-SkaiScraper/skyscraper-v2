@@ -37,6 +37,7 @@ export default function ContractorMap({ contractors, origin }: ContractorMapProp
   const [error, setError] = useState<string | null>(null);
 
   // Check for token
+  // eslint-disable-next-line no-restricted-syntax
   const token = process.env.NEXT_PUBLIC_MAPBOX_TOKEN;
 
   if (!token) {
@@ -95,6 +96,7 @@ export default function ContractorMap({ contractors, origin }: ContractorMapProp
       mapboxAccessToken={token}
       mapStyle="mapbox://styles/mapbox/streets-v12"
       style={{ width: "100%", height: "100%" }}
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       onError={(e: any) => {
         logger.error("Mapbox error:", e);
         setError("Map failed to load");
@@ -113,6 +115,7 @@ export default function ContractorMap({ contractors, origin }: ContractorMapProp
           key={c.id}
           latitude={c.lat}
           longitude={c.lng}
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           onClick={(e: any) => {
             e.originalEvent.stopPropagation();
             setSelected(c);

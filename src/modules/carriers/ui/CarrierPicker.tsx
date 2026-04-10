@@ -11,6 +11,7 @@ import { getCarrierById } from "@/lib/carriers";
 import { DepreciationModal, type DepreciationValues } from "@/modules/exports/ui/DepreciationModal";
 
 interface CarrierPickerProps {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   onSelect: (preset: any) => void;
   selectedCarrierId?: string;
   orgId: string;
@@ -29,6 +30,7 @@ export default function CarrierPicker({
   initialDepreciation,
   onDepreciationChange,
 }: CarrierPickerProps) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [presets, setPresets] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [depOpen, setDepOpen] = useState(false);

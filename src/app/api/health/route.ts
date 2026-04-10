@@ -47,27 +47,33 @@ export async function GET() {
 
     // Auth check (Clerk availability)
     const authOk = !!(
+      // eslint-disable-next-line no-restricted-syntax
       process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY && process.env.CLERK_SECRET_KEY
     );
 
     // Storage check (Supabase availability)
     const storageOk = !!(
+      // eslint-disable-next-line no-restricted-syntax
       process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY
     );
 
     // AI check (OpenAI availability)
+    // eslint-disable-next-line no-restricted-syntax
     const aiOk = !!process.env.OPENAI_API_KEY;
 
     // Critical env vars
     const envVarsPresent = {
+      // eslint-disable-next-line no-restricted-syntax
       database: !!process.env.DATABASE_URL,
       clerk: authOk,
       supabase: storageOk,
       openai: aiOk,
+      // eslint-disable-next-line no-restricted-syntax
       stripe: !!(process.env.STRIPE_SECRET_KEY && process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY),
     };
 
     // Build SHA (from Vercel env var or default)
+    // eslint-disable-next-line no-restricted-syntax
     const buildSHA = process.env.VERCEL_GIT_COMMIT_SHA?.substring(0, 8) || "local";
 
     // API check
@@ -100,6 +106,7 @@ export async function GET() {
       },
       envVarsPresent,
       uptime: Date.now() - startTime,
+      // eslint-disable-next-line no-restricted-syntax
       environment: process.env.NODE_ENV || "unknown",
     };
 

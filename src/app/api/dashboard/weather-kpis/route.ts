@@ -204,6 +204,7 @@ function mapSeverity(severity: number): "warning" | "watch" | "advisory" {
   return "advisory";
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function formatAffectedArea(cities: any): string {
   if (!cities) return "Unknown area";
   if (Array.isArray(cities)) {

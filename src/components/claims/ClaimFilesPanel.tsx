@@ -70,6 +70,7 @@ export function ClaimFilesPanel({ claimId, orgId, initialFiles }: ClaimFilesPane
 
       // Refresh the page to show new files
       window.location.reload();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       logger.error("Upload error:", error);
       setUploadError(error.message || "Failed to upload files");

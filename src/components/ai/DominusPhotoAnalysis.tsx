@@ -27,6 +27,7 @@ interface ImageAnalysis {
 
 interface DominusPhotoAnalysisProps {
   images: ImageAnalysis[];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   photos?: any[];
 }
 

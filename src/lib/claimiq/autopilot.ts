@@ -564,6 +564,7 @@ export async function executeAutopilotAction(
     if (ctx.cookies) headers["Cookie"] = ctx.cookies;
 
     const res = await fetch(
+      // eslint-disable-next-line no-restricted-syntax
       `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}${url}${method === "GET" ? `?claimId=${ctx.claimId}` : ""}`,
       {
         method,

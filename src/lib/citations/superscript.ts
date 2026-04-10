@@ -8,6 +8,7 @@ const SUP = ["¹", "²", "³", "⁴", "⁵", "⁶", "⁷", "⁸", "⁹", "¹⁰"
 function escapeHtml(s: string): string {
   return String(s).replace(
     /[&<>"']/g,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (ch) => (({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }) as any)[ch]
   );
 }

@@ -41,7 +41,9 @@ export default function Splash() {
           background: "#0A1A2F",
           boxShadow: "0 8px 30px rgba(0,0,0,.35)",
         }}
+      // eslint-disable-next-line react/jsx-no-comment-textnodes
       >
+        // eslint-disable-next-line react/jsx-no-comment-textnodes
         {/* Replace with your SVG/Logo component */}
         // eslint-disable-next-line @next/next/no-img-element
         <img

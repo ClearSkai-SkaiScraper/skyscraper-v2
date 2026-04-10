@@ -88,6 +88,7 @@ export const FALLBACK_CONTENT = {
   },
 };
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function getFallbackContent(sectionKey: string): any {
   return (
     FALLBACK_CONTENT[sectionKey] || {

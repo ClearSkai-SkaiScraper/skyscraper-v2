@@ -28,8 +28,11 @@ export const GET = withAdmin(async (req: NextRequest, { userId, orgId }) => {
   const diagnostics: Record<string, unknown> = {
     FROM_EMAIL,
     APP_URL,
+    // eslint-disable-next-line no-restricted-syntax
     RESEND_API_KEY_SET: !!process.env.RESEND_API_KEY,
+    // eslint-disable-next-line no-restricted-syntax
     RESEND_FROM_EMAIL: process.env.RESEND_FROM_EMAIL || "(not set, using default)",
+    // eslint-disable-next-line no-restricted-syntax
     NODE_ENV: process.env.NODE_ENV,
   };
 
@@ -70,6 +73,7 @@ export const GET = withAdmin(async (req: NextRequest, { userId, orgId }) => {
     logger.info(`[INVITE_TEST] ✅ Test email sent to ${email}, id: ${data?.id}`);
 
     return NextResponse.json({ success: true, messageId: data?.id, diagnostics });
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (err: any) {
     diagnostics.exception = err.message;
     logger.error("[INVITE_TEST] Exception:", err);

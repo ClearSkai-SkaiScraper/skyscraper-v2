@@ -293,6 +293,7 @@ export function AdminAnalyticsDashboard({
                     <p className="text-sm">Data will appear after rules trigger outcomes</p>
                   </div>
                 ) : (
+                  // eslint-disable-next-line react/jsx-no-comment-textnodes
                   <div className="space-y-3">
                     // eslint-disable-next-line @typescript-eslint/no-unused-vars
                     {ruleEffectiveness.map((rule, index) => (

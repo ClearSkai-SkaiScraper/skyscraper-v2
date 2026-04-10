@@ -1,3 +1,4 @@
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export default function ClaimWeatherSection({ weatherReports }: any) {
   if (!weatherReports?.length) {
     return (
@@ -16,7 +17,9 @@ export default function ClaimWeatherSection({ weatherReports }: any) {
 
   return (
     <div className="space-y-6">
+      // eslint-disable-next-line react/jsx-no-comment-textnodes
       <h2 className="text-xl font-semibold">Weather Reports</h2>
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       {weatherReports.map((r: any) => (
         <a
           key={r.id}

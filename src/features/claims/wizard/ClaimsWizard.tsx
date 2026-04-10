@@ -70,7 +70,9 @@ interface ClaimsWizardProps {
     accent_color: string;
     company_name: string | null;
   } | null;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   lead?: any;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   job?: any;
 }
 

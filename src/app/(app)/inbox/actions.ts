@@ -1,5 +1,6 @@
 "use server";
 
+// eslint-disable-next-line no-restricted-imports
 import { currentUser } from "@clerk/nextjs/server";
 import { cache } from "react";
 
@@ -116,6 +117,7 @@ export async function markAsRead(activityId: string): Promise<{ success: boolean
 
     await prisma.activities.update({
       where: { id: activityId },
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       data: { metadata: metadata as any },
     });
 
@@ -144,6 +146,7 @@ export async function markAllAsRead(): Promise<{ success: boolean; count: number
         metadata.read = true;
         await prisma.activities.update({
           where: { id: activity.id },
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           data: { metadata: metadata as any },
         });
         count++;

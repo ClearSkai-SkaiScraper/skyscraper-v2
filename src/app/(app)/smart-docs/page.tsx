@@ -207,6 +207,7 @@ export default function SmartDocsPage() {
     fetch("/api/contacts?limit=100")
       .then((res) => res.json())
       .then((data) => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const contactList = (data.contacts || data.data || []).map((c: any) => ({
           id: c.id,
           name:
@@ -225,11 +226,13 @@ export default function SmartDocsPage() {
         .then((r) => r.json())
         .catch(() => ({ data: [] })),
     ]).then(([leadsData, claimsData]) => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const leads = (leadsData.data || leadsData.leads || []).map((l: any) => ({
         id: l.id,
         title: l.title || l.name || `Lead ${l.id?.slice(0, 8)}`,
         type: "job",
       }));
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const claims = (claimsData.data || claimsData.claims || []).map((c: any) => ({
         id: c.id,
         title: c.title || c.claimNumber || `Claim ${c.id?.slice(0, 8)}`,

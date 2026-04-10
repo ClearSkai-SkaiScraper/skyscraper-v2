@@ -95,6 +95,7 @@ export const POST = withAuth(async (req: NextRequest, { orgId, userId }) => {
     }
 
     // Fetch org branding for report header
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let branding: any = null;
     try {
       branding = await prisma.org_branding.findFirst({

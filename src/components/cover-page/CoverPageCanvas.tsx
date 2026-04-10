@@ -527,6 +527,7 @@ export function CoverPageCanvas({
                   </div>
                 </div>
                 {selectedElement.src && (
+                  // eslint-disable-next-line react/jsx-no-comment-textnodes
                   <div className="rounded-lg border p-2">
                     // eslint-disable-next-line @next/next/no-img-element
                     <img

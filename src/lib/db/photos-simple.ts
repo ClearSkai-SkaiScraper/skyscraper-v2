@@ -114,6 +114,7 @@ export async function insertFinding(args: {
   proposalId: string;
   photoId: string;
   model: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   findings: any;
   severity?: string;
   confidence?: number;
@@ -136,6 +137,7 @@ export async function getFindingsForProposal(proposalId: string): Promise<Array<
   finding_id: string;
   photo_id: string;
   image_url: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   findings: any;
   severity: string | null;
   confidence: number | null;

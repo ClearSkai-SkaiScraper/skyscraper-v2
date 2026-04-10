@@ -5,6 +5,7 @@
  * Also returns the user's current presence state
  */
 
+// eslint-disable-next-line no-restricted-imports
 import { auth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 
@@ -13,6 +14,7 @@ import prisma from "@/lib/prisma";
 export const dynamic = "force-dynamic";
 
 export async function POST() {
+  // eslint-disable-next-line @typescript-eslint/await-thenable
   const { userId } = await auth();
   // eslint-disable-next-line @typescript-eslint/await-thenable
   if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });

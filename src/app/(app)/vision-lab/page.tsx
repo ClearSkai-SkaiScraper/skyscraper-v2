@@ -189,6 +189,7 @@ export default function VisionLabPage() {
           annotatedImageUrl: mediaUrl,
           confidence: analysis.damages?.length > 0 ? 0.85 : 0.95,
           objectCount: analysis.damages?.length || 0,
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           detections: (analysis.damages || []).map((d: any, i: number) => ({
             id: `d-${i}`,
             label: d.type || d.label || "Damage",

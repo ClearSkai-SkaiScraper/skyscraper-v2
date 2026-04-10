@@ -15,6 +15,7 @@ export type ExportPdfOptions = {
   mode: "retail" | "claims";
   packetId?: string;
   reportId?: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   data: Record<string, any>;
 };
 
@@ -76,6 +77,7 @@ export function usePdfExport() {
         success: true,
         blob,
       };
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       const errorMessage = err.message || "Failed to export PDF";
       setError(errorMessage);
@@ -102,6 +104,7 @@ export function usePdfExport() {
 
       const data = await response.json();
       return data;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       logger.error("[PDF_EXPORT] Capability check failed:", err);
       return null;

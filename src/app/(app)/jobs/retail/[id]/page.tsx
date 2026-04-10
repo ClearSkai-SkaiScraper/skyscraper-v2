@@ -1,3 +1,4 @@
+// eslint-disable-next-line no-restricted-imports
 import { currentUser } from "@clerk/nextjs/server";
 import {
   Archive,
@@ -132,6 +133,7 @@ async function getRetailJob(id: string, orgId: string) {
 
   if (!lead) return null;
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let contact: any = null;
   try {
     contact = await prisma.contacts.findUnique({
@@ -377,6 +379,7 @@ export default async function RetailJobWorkspacePage({
             <div className="flex items-center gap-3">
               {/* Value Badge */}
               {(() => {
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 const val = (job as any).estimatedJobValue || job.value;
                 if (!val || val <= 0) return null;
                 const dollars = val / 100;

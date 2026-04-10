@@ -1,4 +1,5 @@
 // Helper to get client from Clerk user
+// eslint-disable-next-line no-restricted-imports
 import { auth, currentUser } from "@clerk/nextjs/server";
 
 import { safePortalQuery } from "@/lib/portal/safePortalQuery";

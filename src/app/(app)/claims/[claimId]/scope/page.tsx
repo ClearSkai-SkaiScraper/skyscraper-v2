@@ -91,6 +91,7 @@ export default function ScopePage() {
         if (res.ok) {
           const data = await res.json();
           setLineItems(
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             (data.lineItems || []).map((item: any) => ({
               id: item.id,
               category: item.category || "Other",
@@ -125,6 +126,7 @@ export default function ScopePage() {
     return { subtotal, approved, disputed };
   }, [lineItems]);
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const handleItemChange = (id: string, field: keyof LineItem, value: any) => {
     setLineItems((items) =>
       items.map((item) => {

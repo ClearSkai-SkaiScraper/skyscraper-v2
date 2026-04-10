@@ -183,6 +183,7 @@ export function autoFixCaption(caption: PhotoCaption): PhotoCaption {
   Object.keys(fixed).forEach((key) => {
     const field = key as keyof PhotoCaption;
     if (typeof fixed[field] === "string") {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       fixed[field] = (fixed[field] as string).replace(/\s+/g, " ").trim() as any;
     }
   });

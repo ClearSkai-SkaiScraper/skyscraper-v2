@@ -163,6 +163,7 @@ export async function POST(req: NextRequest) {
     }
 
     return NextResponse.json({ error: "No action specified" }, { status: 400 });
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (error: any) {
     logger.error("[assign-manager] Error:", error);
     return NextResponse.json(
@@ -247,6 +248,7 @@ export async function GET(req: NextRequest) {
         name: [m.firstName, m.lastName].filter(Boolean).join(" ") || m.email || "Unknown",
       })),
     });
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (error: any) {
     logger.error("[assign-manager] GET Error:", error);
     return NextResponse.json(

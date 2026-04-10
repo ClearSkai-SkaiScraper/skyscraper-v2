@@ -44,7 +44,9 @@ export default function ConnectionRequestCard() {
         // Transform received connections to match our interface
         // Accept both uppercase and legacy lowercase pending status
         const received = (data.received || [])
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           .filter((r: any) => r.status === "PENDING" || r.status === "pending")
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           .map((r: any) => ({
             id: r.id,
             clientId: r.client?.id || "",

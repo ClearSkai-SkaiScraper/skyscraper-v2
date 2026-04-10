@@ -54,8 +54,11 @@ export const POST = withAuth(async (req, { userId, orgId }) => {
     const branding = await fetchBrandingData(orgId, userId);
 
     // Attach optional client info
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     if (clientName) (branding as any).clientName = clientName;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     if (clientAddress) (branding as any).clientAddress = clientAddress;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     if (claimNumber) (branding as any).claimNumber = claimNumber;
 
     // ── COVER PAGE ──
@@ -91,6 +94,7 @@ export const POST = withAuth(async (req, { userId, orgId }) => {
     }
 
     // ── Branded Header ──
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let y = await drawBrandedHeader(doc, branding as any, {
       reportType: "Project Plan",
       reportTitle: title || "Professional Project Plan",

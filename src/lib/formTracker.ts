@@ -40,7 +40,9 @@ function logEvent(event: FormEvent) {
   }
 
   // Optional: Send to analytics/Sentry
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   if (typeof window !== "undefined" && (window as any).Sentry) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (window as any).Sentry.addBreadcrumb({
       category: "form",
       message: `${event.form}: ${event.event}`,

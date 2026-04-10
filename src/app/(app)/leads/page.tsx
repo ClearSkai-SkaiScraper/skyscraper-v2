@@ -60,6 +60,7 @@ export default async function LeadsPage({ searchParams }: { searchParams: LeadsS
       // ⚠️ DEMO SEEDING REMOVED FROM RENDER PATH
       // Demo data is seeded via /api/dev/seed-demo or pnpm run seed:minimal-demo
 
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const whereClause: any = {
         orgId,
         AND: [

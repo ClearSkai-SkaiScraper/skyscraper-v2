@@ -12,6 +12,7 @@ import { renderTemplateHtml } from "@/lib/template/renderTemplate";
 export const runtime = "nodejs";
 
 function requireEnv(name: string) {
+  // eslint-disable-next-line no-restricted-syntax
   const v = process.env[name];
   if (!v) throw new Error(`${name}_MISSING`);
   return v;

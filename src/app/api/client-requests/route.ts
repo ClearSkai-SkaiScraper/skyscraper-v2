@@ -24,7 +24,9 @@ export const POST = withAuth(async (request: NextRequest, { orgId }) => {
         id: crypto.randomUUID(),
         title: subject,
         description,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         priority: (priority?.toUpperCase() || "MEDIUM") as any,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         status: "TODO" as any,
         type: "CLIENT_REQUEST",
         orgId,

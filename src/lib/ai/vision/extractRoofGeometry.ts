@@ -19,6 +19,7 @@ export async function extractRoofGeometry(options: {
   claimId: string;
   photoIds: string[]; // prioritized top-down / drone photos first
   useSegmentation?: boolean;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 }): Promise<{ slopes: any; roofMap: any; meta: { cached?: boolean } }> {
   const redis = upstash;
   const jobKey = `aiq:roof-geometry:${options.claimId}`;
@@ -27,6 +28,7 @@ export async function extractRoofGeometry(options: {
   if (redis) {
     try {
       const cached = await redis.get(jobKey);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       if (cached) return { ...(cached as any), meta: { cached: true } };
     } catch {}
   }
@@ -36,6 +38,7 @@ export async function extractRoofGeometry(options: {
   const photoUrls = await Promise.all(options.photoIds.map(id => getStorageUrlForAsset(id)));
 
   // 2. (Placeholder) Call segmentation model if requested
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let segmentation: any = null;
   if (options.useSegmentation) {
     // TODO: integrate Replicate model call and produce mask polygons

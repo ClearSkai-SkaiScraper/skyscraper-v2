@@ -27,6 +27,7 @@ export async function POST(req: Request, { params }: { params: { id: string } })
     // Token format is reportId + secret suffix — verify the token matches the report.
     const crypto = await import("crypto");
     const expectedToken = crypto
+      // eslint-disable-next-line no-restricted-syntax
       .createHmac("sha256", process.env.REPORT_SHARE_SECRET || "skaiscraper-report-share-default")
       .update(params.id)
       .digest("hex")

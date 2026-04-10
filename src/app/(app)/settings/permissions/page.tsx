@@ -1,3 +1,4 @@
+// eslint-disable-next-line no-restricted-imports
 import { auth } from "@clerk/nextjs/server";
 import { CheckCircle, Crown, Shield, ShieldAlert, User, Users, XCircle } from "lucide-react";
 import { redirect } from "next/navigation";

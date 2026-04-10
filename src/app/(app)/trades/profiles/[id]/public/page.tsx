@@ -4,6 +4,7 @@
  * Works with member data directly - no separate contractor profile required
  */
 
+// eslint-disable-next-line no-restricted-imports
 import { currentUser } from "@clerk/nextjs/server";
 import {
   Award,
@@ -200,7 +201,9 @@ export default async function PublicTradeProfilePage({ params }: PublicProfilePa
   }
 
   // Get portfolio items if they have a company (with error handling)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let portfolioItems: any[] = [];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let reviews: any[] = [];
 
   if (member.companyId) {

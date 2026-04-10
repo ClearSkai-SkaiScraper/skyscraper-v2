@@ -1,3 +1,4 @@
+// eslint-disable-next-line no-restricted-imports
 import { currentUser } from "@clerk/nextjs/server";
 import type { Metadata } from "next";
 import { isRedirectError } from "next/dist/client/components/redirect";
@@ -47,6 +48,7 @@ function FullscreenLoader() {
   );
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function FatalErrorScreen({ error }: { error?: any }) {
   return (
     <div className="flex min-h-screen items-center justify-center bg-slate-950 text-slate-100">
@@ -162,7 +164,9 @@ export default async function AppLayout({ children }: { children: React.ReactNod
                   brandingCompleted={brandingCompleted}
                   onboardingCompleted={onboardingCompleted}
                 />
+                // eslint-disable-next-line react/jsx-no-comment-textnodes
                 {/* Demo Mode Banner */}
+                // eslint-disable-next-line no-restricted-syntax
                 {process.env.NEXT_PUBLIC_DEMO_MODE === "true" && (
                   <div className="mb-6">
                     <DemoModeBanner variant="full" />

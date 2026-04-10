@@ -49,7 +49,9 @@ import prisma from "@/lib/prisma";
  */
 export async function ensureVendorForOrg(
   orgId: string,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   contractorProfile?: any,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   tradeProfile?: any
 ) {
   try {

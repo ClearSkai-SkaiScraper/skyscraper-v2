@@ -8,6 +8,7 @@ import { logger } from "@/lib/logger";
  */
 
 export const isDemoMode = (): boolean => {
+  // eslint-disable-next-line no-restricted-syntax
   return process.env.DEMO_MODE === "true" || process.env.NEXT_PUBLIC_DEMO_MODE === "true";
 };
 

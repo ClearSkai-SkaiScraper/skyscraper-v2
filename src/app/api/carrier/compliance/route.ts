@@ -133,6 +133,7 @@ export const POST = withAuth(async (request: NextRequest, { orgId, userId }) => 
         carrierName: carrierDetection.carrierName,
         detectedFrom: carrierDetection.detectedFrom,
         confidence: carrierDetection.confidence,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         guidelinesJson: carrierDetection.rules as any,
         updatedAt: new Date(),
       },

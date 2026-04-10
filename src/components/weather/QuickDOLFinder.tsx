@@ -94,6 +94,7 @@ export function QuickDOLFinder({
       const incoming = Array.isArray(data.candidates) ? data.candidates : [];
 
       const normalized: QuickDOLCandidate[] = incoming
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         .map((candidate: any) => {
           const rawScore =
             typeof candidate.score === "number"

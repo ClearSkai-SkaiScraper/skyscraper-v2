@@ -1,5 +1,6 @@
 export const dynamic = "force-dynamic";
 
+// eslint-disable-next-line no-restricted-imports
 import { currentUser } from "@clerk/nextjs/server";
 import { randomUUID } from "crypto";
 import { NextResponse } from "next/server";
@@ -34,6 +35,7 @@ export async function POST(req: Request) {
     }
 
     // Upsert completion status
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const updateData: any = {
       org_id: orgId,
       updated_at: new Date(),

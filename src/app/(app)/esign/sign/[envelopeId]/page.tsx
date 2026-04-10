@@ -29,7 +29,9 @@ function RemoteSigningContent() {
         : null;
   const token = searchParams?.get("t") ?? null;
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [envelope, setEnvelope] = useState<any>(null);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [signer, setSigner] = useState<any>(null);
   const [printedName, setPrintedName] = useState("");
   const [loading, setLoading] = useState(true);
@@ -60,6 +62,7 @@ function RemoteSigningContent() {
         setEnvelope(data.envelope);
 
         // Find signer for this token (simplified - in production, validate token server-side)
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const pendingSigner = data.envelope.signers.find((s: any) => s.status === "PENDING");
         if (pendingSigner) {
           setSigner(pendingSigner);
@@ -88,6 +91,7 @@ function RemoteSigningContent() {
 
       // Find signature field for this signer's role
       const signatureField = envelope.fields.find(
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (f: any) => f.assignedRole === signer.role && f.type === "SIGNATURE"
       );
 

@@ -38,6 +38,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Parse request body
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let body: any;
     try {
       body = await req.json();
@@ -241,6 +242,7 @@ export async function POST(req: NextRequest) {
       {
         ok: false,
         error: "generation-failed",
+        // eslint-disable-next-line no-restricted-syntax
         details: process.env.NODE_ENV === "development" ? error.stack : undefined,
       },
       { status: 200 } // Return 200 to prevent demo crashes

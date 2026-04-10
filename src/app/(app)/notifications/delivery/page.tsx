@@ -140,6 +140,7 @@ export default function ClientDeliveryNotificationsPage() {
       } else {
         toast.error(data.error || "Failed to send notification");
       }
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (_e) {
       toast.error("Failed to send notification");
     } finally {

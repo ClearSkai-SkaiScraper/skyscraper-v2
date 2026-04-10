@@ -82,7 +82,9 @@ export function EvidenceGrid({ assets, claimId, onAssetUpdated }: EvidenceGridPr
             key={asset.id}
             className="group relative overflow-hidden rounded-lg border bg-white transition-shadow hover:shadow-md"
           >
+            // eslint-disable-next-line react/jsx-no-comment-textnodes
             {/* Thumbnail */}
+            // eslint-disable-next-line react/jsx-no-comment-textnodes
             <div className="flex aspect-square items-center justify-center bg-gray-100">
               // eslint-disable-next-line @next/next/no-img-element
               {thumbnailUrls[asset.id] ? (

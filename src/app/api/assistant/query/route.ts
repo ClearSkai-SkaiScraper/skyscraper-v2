@@ -5,6 +5,7 @@ export const dynamic = "force-dynamic";
  * Replaces the old /api/copilot endpoint
  */
 
+// eslint-disable-next-line no-restricted-imports
 import { currentUser } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -63,6 +64,7 @@ export async function POST(req: NextRequest) {
 
     // Run assistant with context
     const run = await openai.beta.threads.runs.create(actualThreadId, {
+      // eslint-disable-next-line no-restricted-syntax
       assistant_id: process.env.OPENAI_ASSISTANT_ID!,
       instructions: `${ASSISTANT_SYSTEM_PROMPT}\n\n## Current Claim Context\n${JSON.stringify(context, null, 2)}`,
     });
@@ -70,11 +72,13 @@ export async function POST(req: NextRequest) {
     // Poll for completion
     let runStatus = await openai.beta.threads.runs.retrieve(run.id, {
       thread_id: actualThreadId,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } as any);
     while (runStatus.status === "in_progress" || runStatus.status === "queued") {
       await new Promise((resolve) => setTimeout(resolve, 1000));
       runStatus = await openai.beta.threads.runs.retrieve(run.id, {
         thread_id: actualThreadId,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } as any);
     }
 

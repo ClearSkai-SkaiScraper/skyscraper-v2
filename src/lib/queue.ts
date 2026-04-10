@@ -5,6 +5,7 @@
 
 import { logger } from "@/lib/logger";
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export interface QueueJob<T = any> {
   id: string;
   type: string;
@@ -28,9 +29,13 @@ export async function addToQueue<T>(type: string, data: T): Promise<string> {
  * Enqueue a job (alias for compatibility)
  */
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
+// eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars
 export async function enqueue<T = any>(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   handler: (...args: any[]) => any,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   args: any[] = [],
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   options: { delayMs?: number; jobName?: string; meta?: Record<string, any> } = {}
 ): Promise<void> {
   const { delayMs, jobName } = options;

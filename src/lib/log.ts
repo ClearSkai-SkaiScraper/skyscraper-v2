@@ -16,6 +16,7 @@ export interface LogContext {
   route?: string;
   duration?: number;
   status?: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   [key: string]: any;
 }
 
@@ -73,12 +74,15 @@ function emitLog(entry: LogEntry): void {
     JSON.stringify({
       ...entry,
       // Add additional metadata for Vercel logs
+      // eslint-disable-next-line no-restricted-syntax
       env: process.env.NEXT_PUBLIC_VERCEL_ENV || "development",
+      // eslint-disable-next-line no-restricted-syntax
       commitSha: process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA || "local",
     })
   );
 
   // Also log human-readable format in development
+  // eslint-disable-next-line no-restricted-syntax
   if (process.env.NODE_ENV === "development") {
     const emoji = level === "error" ? "❌" : level === "warn" ? "⚠️" : "ℹ️";
     logger.debug(`${emoji} [${entry.event}]`, {

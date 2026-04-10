@@ -57,6 +57,7 @@ export function TaskSlideOver() {
       .then((data) => {
         const allMembers = data.members || [];
         const currentId = data.currentUserId;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         setMembers(currentId ? allMembers.filter((m: any) => m.id !== currentId) : allMembers);
       })
       .catch(() => {})

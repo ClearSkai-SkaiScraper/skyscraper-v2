@@ -56,6 +56,7 @@ async function fetchFromVisualCrossing(location: string): Promise<DashboardWeath
       return null;
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const json: any = await res.json();
 
     if (!json.currentConditions) {
@@ -118,6 +119,7 @@ async function fetchFromWeatherstack(location: string): Promise<DashboardWeather
       return null;
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const json: any = await res.json();
 
     if (json.error) {

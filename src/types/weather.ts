@@ -25,6 +25,7 @@ export interface WeatherEvent {
   geometry: GeoJSON.Geometry; // Point or Polygon
   raw_ref?: string; // CAP id / Mesonet id / radar key
   quality_score?: number; // 0..1 confidence
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   metadata?: Record<string, any>; // Additional fields (warning text, etc)
 }
 

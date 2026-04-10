@@ -153,6 +153,7 @@ export function AutopilotPanel({ claimId, className }: AutopilotPanelProps) {
       setPlan(data.plan);
 
       // Seed the Zustand store
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const storeActions: AutopilotActionState[] = data.plan.actions.map((a: any) => ({
         field: a.field,
         label: a.label,

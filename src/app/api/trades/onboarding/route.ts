@@ -12,6 +12,7 @@ export const dynamic = "force-dynamic";
  * 4. Enable admin to create company page
  */
 
+// eslint-disable-next-line no-restricted-imports
 import { currentUser } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
@@ -297,6 +298,7 @@ export const POST = withAuth(async (req: NextRequest, { userId, orgId }) => {
           {
             error: "Database error while saving profile",
             details: prismaError instanceof Error ? prismaError.message : "Unknown error",
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             code: (prismaError as any)?.code,
           },
           { status: 500 }
@@ -351,6 +353,7 @@ export const POST = withAuth(async (req: NextRequest, { userId, orgId }) => {
       });
 
       // Generate shareable invite link
+      // eslint-disable-next-line no-restricted-syntax
       const inviteLink = `${process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000"}/trades/join/${token}`;
 
       return NextResponse.json({

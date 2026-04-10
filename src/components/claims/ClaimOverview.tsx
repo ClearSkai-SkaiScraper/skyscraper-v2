@@ -40,6 +40,7 @@ export default function ClaimOverview({ claim }: ClaimOverviewProps) {
           return;
         }
         setSummary(data.text || "");
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } catch (e: any) {
         setError(e?.message || "AI summary failed");
       }

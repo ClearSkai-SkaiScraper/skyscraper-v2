@@ -56,6 +56,7 @@ export async function uploadFileWithProgress(
         const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
         onProgress?.({
           progress,
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           state: snapshot.state as any,
           bytesTransferred: snapshot.bytesTransferred,
           totalBytes: snapshot.totalBytes,
@@ -236,6 +237,7 @@ export async function fileExists(path: string): Promise<boolean> {
     const fileRef = ref(storage, path);
     await getMetadata(fileRef);
     return true;
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   } catch (_error) {
     return false;
   }

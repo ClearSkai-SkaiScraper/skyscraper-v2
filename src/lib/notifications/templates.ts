@@ -125,6 +125,7 @@ export type NotificationTemplateName = keyof typeof NOTIFICATION_TEMPLATES;
 export async function sendTemplatedNotification(
   templateName: NotificationTemplateName,
   userId: string,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   data: Record<string, any>
 ): Promise<boolean> {
   const template = NOTIFICATION_TEMPLATES[templateName];

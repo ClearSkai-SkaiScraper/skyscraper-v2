@@ -129,6 +129,7 @@ function walkPaths(value: unknown, prefix: string): string[] {
 
     return keys.flatMap((k) => {
       const nextPrefix = prefix ? `${prefix}.${k}` : k;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       return walkPaths((value as any)[k], nextPrefix);
     });
   }

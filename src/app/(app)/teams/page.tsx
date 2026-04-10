@@ -42,6 +42,7 @@ export default async function CompanySeatsPage() {
   const userId = orgCtx.userId;
 
   /* ── Fetch team members from DB ─────────────────────────────── */
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let members: any[] = [];
 
   if (orgId && userId) {

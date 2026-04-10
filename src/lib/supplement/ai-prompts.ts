@@ -421,6 +421,7 @@ export function getSystemPrompt(task: "damage" | "supplement" | "photo" | "carri
  */
 export function buildDamageAnalysisPrompt(context: {
   photos?: Array<{ url: string; tag?: string }>;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   hoverData?: any;
   metadata?: {
     address?: string;
@@ -457,8 +458,10 @@ export function buildDamageAnalysisPrompt(context: {
  */
 export function buildSupplementPrompt(context: {
   carrierEstimateText?: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   hoverData?: any;
   scopeText?: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   metadata?: any;
 }): string {
   let prompt = "Build a supplement for this insurance claim:\n\n";
@@ -628,9 +631,12 @@ export function buildEstimatePrompt(context: {
   dol?: string;
   oAndP?: { enabled: boolean; overheadPercent: number; profitPercent: number };
   tax?: { materialTaxRate: number; laborTaxRate: number };
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   damageAssessment?: any;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   supplement?: any;
   carrierEstimateText?: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   hoverData?: any;
   projectName?: string;
 }): string {
@@ -802,6 +808,7 @@ export function buildScopePrompt(context: {
   carrierEstimateText?: string;
   contractorScopeText?: string;
   notesText?: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   damageAssessment?: any;
   options?: {
     tryMapCodes?: boolean;
@@ -991,16 +998,27 @@ export function getClaimAutomationPrompt(): string {
  * Build claim automation analysis prompt with full context
  */
 export function buildClaimAutomationPrompt(context: {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   claim: any;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   damageAssessments?: any[];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   weatherReports?: any[];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   scopes?: any[];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   estimates?: any[];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   supplements?: any[];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   reports?: any[];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   tasks?: any[];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   timeline?: any[];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   automationRules?: any[];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   participants?: any;
 }): string {
   let prompt = `Analyze the following claim and provide actionable recommendations:\n\n`;
@@ -1067,6 +1085,7 @@ export function buildClaimAutomationPrompt(context: {
   // Timeline
   if (context.timeline && context.timeline.length > 0) {
     prompt += "**RECENT TIMELINE EVENTS:**\n";
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     context.timeline.slice(0, 10).forEach((event: any) => {
       prompt += `- [${event.occurredAt}] ${event.type}: ${event.description || ""}\n`;
     });
@@ -1077,14 +1096,17 @@ export function buildClaimAutomationPrompt(context: {
   if (context.tasks && context.tasks.length > 0) {
     prompt += "**EXISTING TASKS:**\n";
     const todoTasks = context.tasks.filter(
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (t: any) => t.status !== "done" && t.status !== "cancelled"
     );
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const doneTasks = context.tasks.filter((t: any) => t.status === "done");
     prompt += `- Active: ${todoTasks.length}\n`;
     prompt += `- Completed: ${doneTasks.length}\n`;
 
     if (todoTasks.length > 0) {
       prompt += "\nActive tasks:\n";
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       todoTasks.slice(0, 5).forEach((task: any) => {
         const overdue = task.dueDate && new Date(task.dueDate) < new Date() ? " (OVERDUE)" : "";
         prompt += `- [${task.priority}] ${task.title}${overdue}\n`;
@@ -1096,6 +1118,7 @@ export function buildClaimAutomationPrompt(context: {
   // Automation rules
   if (context.automationRules && context.automationRules.length > 0) {
     prompt += "**AUTOMATION RULES:**\n";
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     context.automationRules.forEach((rule: any) => {
       if (rule.isActive) {
         prompt += `- ${rule.name}: ${JSON.stringify(rule.conditions)}\n`;
@@ -1262,6 +1285,7 @@ export function buildReportBuilderPrompt(context: {
       locationFacet?: string;
       severity: string;
       description?: string;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       suggestedLineItems?: any;
     }>;
   };
@@ -1271,6 +1295,7 @@ export function buildReportBuilderPrompt(context: {
     primaryPeril?: string;
     confidence?: string;
     overallAssessment?: string;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     events?: any[];
     globalSummary?: {
       narrative?: string;
@@ -1397,6 +1422,7 @@ export function buildReportBuilderPrompt(context: {
 
     if (context.weather.events && context.weather.events.length > 0) {
       prompt += `- Weather Events (${context.weather.events.length} total):\n`;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       context.weather.events.slice(0, 5).forEach((event: any) => {
         prompt += `  * ${event.date || "Date unknown"}: ${event.description || event.peril || "Weather event"}\n`;
       });

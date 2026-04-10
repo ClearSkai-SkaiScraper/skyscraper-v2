@@ -38,6 +38,7 @@ export async function GET(req: NextRequest) {
     const claimId = url.searchParams.get("claimId");
     const status = url.searchParams.get("status");
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const where: any = { orgId: ctx.orgId };
     if (claimId) where.claimId = claimId;
     if (status) where.status = status;

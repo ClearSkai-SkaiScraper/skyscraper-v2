@@ -94,6 +94,7 @@ function deduplicateEvents(events: TimelineEvent[]): TimelineEvent[] {
 /**
  * Merge photo events into timeline
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function createPhotoEventStream(photos: Array<{ timestamp: Date; metadata?: any }>): EventStream {
   return {
     source: "photo",

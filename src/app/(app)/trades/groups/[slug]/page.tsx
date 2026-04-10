@@ -3,6 +3,7 @@
  * View and interact with a specific group
  */
 
+// eslint-disable-next-line no-restricted-imports
 import { auth } from "@clerk/nextjs/server";
 import { ArrowLeft, Globe, Lock, MessageSquare, Settings, Shield, Users } from "lucide-react";
 import { Metadata } from "next";

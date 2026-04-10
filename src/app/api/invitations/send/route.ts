@@ -95,6 +95,7 @@ export const POST = withAuth(async (request: NextRequest, { userId, orgId }) => 
         });
 
         results.push({ email: invitee.email, status: "sent" });
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       } catch (_err) {
         results.push({ email: invitee.email, status: "error", error: "Internal server error" });
       }

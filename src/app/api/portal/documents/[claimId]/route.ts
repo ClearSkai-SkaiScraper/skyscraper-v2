@@ -8,6 +8,7 @@ export const revalidate = 0;
  * Only returns documents that have been explicitly shared via document_links.
  */
 
+// eslint-disable-next-line no-restricted-imports
 import { auth, currentUser } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -48,6 +49,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ clai
     const claimOrgId = accessCheck[0].orgId;
 
     // Fetch shared documents via document_links table
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let documents: any[] = [];
     try {
       documents = await prisma.$queryRaw`

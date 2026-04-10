@@ -32,6 +32,7 @@ export interface ForensicsDataset {
   technicalReport?: string;
   retailReport?: string;
   quickReport?: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   fullPayload?: any;
 }
 
@@ -52,6 +53,7 @@ export async function collectForensicsDataset(claimId: string): Promise<Forensic
       };
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const payload = forensicReport.payload as any;
 
     // Format for different report types

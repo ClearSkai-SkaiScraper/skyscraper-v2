@@ -43,6 +43,7 @@ export const GET = withAuth(async (request: NextRequest, { orgId, userId }) => {
     const limit = parseInt(searchParams.get("limit") || "50");
     const offset = parseInt(searchParams.get("offset") || "0");
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const where: any = { orgId };
     if (status) where.status = status;
     if (assigneeId) where.assigneeId = assigneeId;
@@ -224,6 +225,7 @@ export const POST = withAuth(async (request: NextRequest, { orgId, userId }) => 
               priority,
               status,
               dueAt: dueAt || null,
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             } as unknown as any,
           },
         });

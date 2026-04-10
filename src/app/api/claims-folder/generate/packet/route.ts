@@ -152,6 +152,7 @@ export async function POST(request: NextRequest) {
     }
 
     // ── Generate sections sequentially ───────────────────────────────────
+    // eslint-disable-next-line no-restricted-syntax
     const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
     const results: GenerationResult[] = [];
 

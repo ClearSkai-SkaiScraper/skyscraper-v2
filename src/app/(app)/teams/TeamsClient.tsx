@@ -19,6 +19,7 @@ interface Member {
   avatarUrl?: string | null;
   phone?: string | null;
   title?: string | null;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   jobHistory?: any;
 }
 

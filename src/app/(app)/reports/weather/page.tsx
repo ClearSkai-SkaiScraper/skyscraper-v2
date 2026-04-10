@@ -202,6 +202,7 @@ export default function WeatherReportsPage() {
                       context={{
                         intent: "claim_support",
                         damageType:
+                          // eslint-disable-next-line @typescript-eslint/no-explicit-any
                           peril === "unspecified" || peril === "other" ? undefined : (peril as any),
                       }}
                       compact

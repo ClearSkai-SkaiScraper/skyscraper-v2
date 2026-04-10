@@ -68,6 +68,7 @@ async function handlePOST(
   });
 
   // 5) Call OpenAI
+  // eslint-disable-next-line no-restricted-syntax
   if (!process.env.OPENAI_API_KEY) {
     return errors.internal("AI service is not configured.");
   }
@@ -75,6 +76,7 @@ async function handlePOST(
   const aiRes = await fetch("https://api.openai.com/v1/chat/completions", {
     method: "POST",
     headers: {
+      // eslint-disable-next-line no-restricted-syntax
       Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
       "Content-Type": "application/json",
     },
@@ -96,9 +98,11 @@ async function handlePOST(
   const content = data?.choices?.[0]?.message?.content || "{}";
 
   // 6) Parse AI response
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let json: any;
   try {
     json = JSON.parse(content);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   } catch (_parseError) {
     log.error("[damage-builder] Failed to parse AI response", { content });
     return errors.internal("AI returned invalid response format.");

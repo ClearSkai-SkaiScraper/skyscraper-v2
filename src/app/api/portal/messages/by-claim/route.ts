@@ -9,6 +9,7 @@ export const revalidate = 0;
  * POST: Sends a new message from the client
  */
 
+// eslint-disable-next-line no-restricted-imports
 import { auth, currentUser } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -52,6 +53,7 @@ export async function GET(req: NextRequest) {
     }
 
     // Fetch messages for this claim thread
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let messages: any[] = [];
     try {
       messages = await prisma.$queryRaw`

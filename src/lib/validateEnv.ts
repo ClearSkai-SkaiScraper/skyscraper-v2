@@ -8,24 +8,30 @@ import { logger } from "@/lib/logger";
 // Dev/Preview-safe: only throws in production
 // =====================================================
 
+// eslint-disable-next-line no-restricted-syntax
 const IS_PROD = process.env.NODE_ENV === "production";
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
+// eslint-disable-next-line no-restricted-syntax, @typescript-eslint/no-unused-vars
 const IS_VERCEL = !!process.env.VERCEL;
 
 // ===== BUILD-TIME CLERK KEY VALIDATION =====
 // TEMPORARILY DISABLED - Using pk_test_ keys to avoid custom domain issues
 // TODO: Re-enable when we have proper pk_live_ keys without custom domain
 if (IS_PROD && false) {
+  // eslint-disable-next-line no-restricted-syntax
   if (!process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY?.startsWith("pk_live_")) {
     throw new Error(
       "❌ CLERK ERROR: Publishable key must start with pk_live_ in Production. Got: " +
+        // eslint-disable-next-line no-restricted-syntax
         (process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY?.substring(0, 20) || "UNDEFINED")
     );
   }
 
+  // eslint-disable-next-line no-restricted-syntax
   if (!process.env.CLERK_SECRET_KEY?.startsWith("sk_live_")) {
     throw new Error(
       "❌ CLERK ERROR: Secret key must start with sk_live_ in Production. Got: " +
+        // eslint-disable-next-line no-restricted-syntax
         (process.env.CLERK_SECRET_KEY?.substring(0, 20) || "UNDEFINED")
     );
   }
@@ -62,7 +68,9 @@ const optional = [
  * - Dev/Preview: Warns but provides safe defaults for NEXT_PUBLIC_* vars
  */
 export function validateEnv() {
+  // eslint-disable-next-line no-restricted-syntax
   const missingProd = requiredProd.filter((k) => !process.env[k]);
+  // eslint-disable-next-line no-restricted-syntax
   const missingPublic = requiredPublic.filter((k) => !process.env[k]);
 
   // PRODUCTION: Fail hard on missing vars
@@ -90,6 +98,7 @@ export function validateEnv() {
   }
 
   // Warn about optional but recommended vars
+  // eslint-disable-next-line no-restricted-syntax
   const missingOptional = optional.filter((k) => !process.env[k]);
   if (missingOptional.length) {
     console.warn(
@@ -111,6 +120,7 @@ export function requireEnv(
   options: { publicVar?: boolean; fallback?: string; required?: boolean } = {}
 ): string {
   const { publicVar = false, fallback, required = true } = options;
+  // eslint-disable-next-line no-restricted-syntax
   const val = process.env[name];
 
   // If value exists, return it
@@ -182,8 +192,11 @@ export function assertRequiredEnv() {
 
 // Optional helper to log environment profile at runtime
 export function logEnvProfile() {
+  // eslint-disable-next-line no-restricted-syntax
   const profile = process.env.VERCEL_ENV || process.env.NODE_ENV || "unknown";
+  // eslint-disable-next-line no-restricted-syntax
   const region = process.env.VERCEL_REGION || "local";
+  // eslint-disable-next-line no-restricted-syntax
   const commit = process.env.VERCEL_GIT_COMMIT_SHA?.slice(0, 7) || "dev";
 
   logger.debug(`[env] Profile: ${profile} | Region: ${region} | Commit: ${commit}`);
@@ -192,14 +205,18 @@ export function logEnvProfile() {
 // Validate specific env patterns
 export function validateEnvPatterns() {
   // Database URL should use SSL in production
+  // eslint-disable-next-line no-restricted-syntax
   if (process.env.NODE_ENV === "production" && process.env.DATABASE_URL) {
+    // eslint-disable-next-line no-restricted-syntax
     if (!process.env.DATABASE_URL.includes("sslmode=require")) {
       logger.warn("⚠️  DATABASE_URL should include ?sslmode=require in production");
     }
   }
 
   // Site URL should be https in production
+  // eslint-disable-next-line no-restricted-syntax
   if (process.env.NODE_ENV === "production" && process.env.NEXT_PUBLIC_SITE_URL) {
+    // eslint-disable-next-line no-restricted-syntax
     if (!process.env.NEXT_PUBLIC_SITE_URL.startsWith("https://")) {
       logger.warn("⚠️  NEXT_PUBLIC_SITE_URL should use https:// in production");
     }

@@ -63,6 +63,7 @@ export default function CreateClaimWizard({
   const [aiEstimate, setAiEstimate] = useState<{
     value: string;
     confidence: number;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     breakdown: any;
   } | null>(null);
   const [loadingAiEstimate, setLoadingAiEstimate] = useState(false);

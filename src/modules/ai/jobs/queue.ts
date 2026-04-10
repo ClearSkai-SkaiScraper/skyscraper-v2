@@ -20,6 +20,7 @@ export async function enqueue(params: {
   reportId: string;
   engine: string;
   sectionKey: AISectionKey;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   context?: any;
 }): Promise<string> {
   const jobId = `job_${Date.now()}_${crypto.randomUUID().slice(0, 8)}`;
@@ -58,6 +59,7 @@ async function executeJob(
     reportId: string;
     engine: string;
     sectionKey: AISectionKey;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     context?: any;
   }
 ): Promise<void> {
@@ -81,6 +83,7 @@ async function executeJob(
     job.result = result;
     job.completedAt = new Date().toISOString();
     jobs.set(jobId, job);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (error: any) {
     job.status = "failed";
     job.error = error.message;

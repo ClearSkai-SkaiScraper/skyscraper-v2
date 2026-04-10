@@ -310,6 +310,7 @@ async function geocodeWithFallback(
  * Geocode using Mapbox
  */
 async function geocodeMapbox(address: string): Promise<{ lat: number; lng: number } | null> {
+  // eslint-disable-next-line no-restricted-syntax
   const token = process.env.NEXT_PUBLIC_MAPBOX_TOKEN;
 
   if (!token) {

@@ -13,6 +13,7 @@ import { logger } from "@/lib/logger";
 
 interface OptimizeWorkflowButtonProps {
   claimId: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   onComplete?: (result: any) => void;
   variant?: "primary" | "secondary" | "outline";
   size?: "sm" | "md" | "lg";
@@ -45,6 +46,7 @@ export function OptimizeWorkflowButton({
       }
 
       onComplete?.(data.result);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       logger.error("[OptimizeWorkflow] Error:", err);
       setError(err.message);

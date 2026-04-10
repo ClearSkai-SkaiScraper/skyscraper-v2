@@ -54,6 +54,7 @@ export const POST = withAuth(async (request, { userId, orgId }) => {
 Provide actionable, specific advice. Use markdown formatting for clarity. Keep responses under 200 words.`;
 
     const contextMessages =
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       history?.slice(-5).map((msg: any) => ({
         role: msg.role,
         content: msg.content,
@@ -88,12 +89,14 @@ Provide actionable, specific advice. Use markdown formatting for clarity. Keep r
     });
 
     // Return more specific error messages
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     if (error instanceof Error && (error as any).code === "insufficient_quota") {
       return NextResponse.json(
         { error: "AI service quota exceeded. Please contact support." },
         { status: 503 }
       );
     }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     if (error instanceof Error && (error as any).code === "invalid_api_key") {
       return NextResponse.json({ error: "AI service configuration error." }, { status: 503 });
     }

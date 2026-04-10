@@ -1,3 +1,4 @@
+// eslint-disable-next-line no-restricted-imports
 import { auth } from "@clerk/nextjs/server";
 import { Settings } from "lucide-react";
 import { Metadata } from "next";

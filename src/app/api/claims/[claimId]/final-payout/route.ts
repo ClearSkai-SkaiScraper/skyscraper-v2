@@ -290,6 +290,7 @@ export async function PATCH(request: NextRequest, { params }: { params: { claimI
     }
 
     // Update or create depreciation tracker
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const trackerData: any = {
       updated_at: new Date(),
     };
@@ -361,6 +362,7 @@ export async function PATCH(request: NextRequest, { params }: { params: { claimI
       notes: notes || `Status updated to ${status}`,
     };
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const currentTimeline = (tracker.timeline as any[]) || [];
     await prisma.depreciation_trackers.update({
       where: { claim_id: claimId },

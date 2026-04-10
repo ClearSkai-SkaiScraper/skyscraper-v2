@@ -64,6 +64,7 @@ export default function PreviewPanel({
       }
 
       setPreviewUrl(url);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       setError(err.message);
     } finally {

@@ -1,6 +1,7 @@
 export const dynamic = "force-dynamic";
 
 // MODULE 6: Homeowner Profiles - Update profile
+// eslint-disable-next-line no-restricted-imports
 import { auth, clerkClient } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";

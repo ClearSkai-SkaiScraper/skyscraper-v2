@@ -248,6 +248,7 @@ export async function updatePhotoCorrelations(
   const updated = await prisma.storm_evidence.update({
     where: { claimId },
     data: {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       photoCorrelations: correlations as any,
       correlationScore,
       updatedAt: new Date(),
@@ -262,8 +263,11 @@ export async function updatePhotoCorrelations(
 // ============================================================================
 
 interface BuildEvidenceParams {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   claim: any; // Prisma claim with relations
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   weatherReports: any[];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   existingEvidence?: any;
   forceDOL?: Date;
   dolSource?: "weather_analysis" | "manual" | "carrier_provided";
@@ -305,6 +309,7 @@ async function buildStormEvidence(params: BuildEvidenceParams): Promise<StormEvi
   // Process weather reports
   if (weatherReports.length > 0) {
     const latestReport = weatherReports[0];
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const providerRaw = latestReport.providerRaw as any;
 
     if (providerRaw) {
@@ -428,6 +433,7 @@ async function buildStormEvidence(params: BuildEvidenceParams): Promise<StormEvi
     overallScore,
     evidenceGrade,
     lastFetchedAt: new Date(),
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     weatherSourceIds: weatherReports.map((r: any) => r.id),
     stormEventId: stormEvent?.id ?? stormEventId ?? null,
   };
@@ -449,10 +455,15 @@ async function upsertStormEvidence(evidence: StormEvidence): Promise<StormEviden
     windSpeedMph: evidence.windSpeedMph,
     rainfallInches: evidence.rainfallInches,
     tornadoRating: evidence.tornadoRating,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     topEvents: evidence.topEvents as any,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     radarImageUrls: evidence.radarImageUrls as any,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     satImageUrls: evidence.satImageUrls as any,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     nwsCitations: evidence.nwsCitations as any,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     photoCorrelations: evidence.photoCorrelations as any,
     correlationScore: evidence.correlationScore,
     stormStartTime: evidence.stormStartTime,
@@ -463,6 +474,7 @@ async function upsertStormEvidence(evidence: StormEvidence): Promise<StormEviden
     overallScore: evidence.overallScore,
     evidenceGrade: evidence.evidenceGrade,
     lastFetchedAt: evidence.lastFetchedAt,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     weatherSourceIds: evidence.weatherSourceIds as any,
     stormEventId: evidence.stormEventId,
     updatedAt: new Date(),
@@ -489,6 +501,7 @@ async function getOrgIdForClaim(claimId: string): Promise<string> {
   return claim?.orgId ?? "";
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function mapDbToStormEvidence(db: any): StormEvidence {
   return {
     id: db.id,

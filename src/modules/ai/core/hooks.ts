@@ -23,6 +23,7 @@ export async function runAI(params: {
   reportId: string;
   engine?: string;
   sectionKey?: AISectionKey;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   context?: any;
 }): Promise<{ jobId?: string; jobIds?: string[] }> {
   const res = await fetch("/api/ai/run", {

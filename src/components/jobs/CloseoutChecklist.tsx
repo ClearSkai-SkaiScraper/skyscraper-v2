@@ -84,6 +84,7 @@ export function CloseoutChecklist({ entityId, entityType }: CloseoutChecklistPro
         body: JSON.stringify({ entityId, entityType, field: key, value: checked }),
       });
       if (!res.ok) throw new Error("Failed to save");
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (_err) {
       // Revert on failure
       setItems((prev) =>

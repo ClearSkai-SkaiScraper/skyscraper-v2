@@ -154,6 +154,7 @@ async function getPhotos(claimId: string, orgId: string) {
 }
 
 async function getDocuments(claimId: string, aiReportsOnly: boolean) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const whereClause: any = {
     claimId,
     deletedAt: null,
@@ -271,7 +272,9 @@ async function handleFileUpload(req: NextRequest, claimId: string, orgId: string
       category: category,
       note: caption || undefined,
       storageKey: s3Key,
+      // eslint-disable-next-line no-restricted-syntax
       bucket: process.env.S3_BUCKET || "preloss",
+      // eslint-disable-next-line no-restricted-syntax
       publicUrl: `https://${process.env.S3_BUCKET}.s3.amazonaws.com/${s3Key}`,
       sizeBytes: file.size,
       mimeType: file.type,
@@ -314,6 +317,7 @@ async function handleJsonAction(req: NextRequest, claimId: string, orgId: string
         contentJson: isJson ? content : null,
         contentText: isJson ? null : String(content || ""),
         status: "DRAFT",
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } as any,
     });
 

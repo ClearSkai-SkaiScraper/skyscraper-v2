@@ -52,6 +52,7 @@ export function ArchiveJobButton({ jobId, jobTitle, type = "lead" }: ArchiveJobB
       toast.success(`${jobTitle} archived successfully`);
       setOpen(false);
       router.push("/archive");
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       toast.error(err.message || "Failed to archive job");
     } finally {

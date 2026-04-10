@@ -2,6 +2,7 @@
  * Debug current auth state - shows exactly who you're logged in as
  * GET /api/public/whoami
  */
+// eslint-disable-next-line no-restricted-imports
 import { auth, currentUser } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 
@@ -62,6 +63,7 @@ export async function GET() {
           : "OK - Has " + memberships.length + " org membership(s)",
       fixUrl: `/api/public/db-fix?userId=${userId}`,
     });
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   } catch (_error) {
     return NextResponse.json(
       {

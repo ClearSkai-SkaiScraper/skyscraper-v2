@@ -21,6 +21,7 @@ export function initializeWebSocket(server: HTTPServer) {
 
   io = new SocketIOServer(server, {
     cors: {
+      // eslint-disable-next-line no-restricted-syntax
       origin: process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000",
       methods: ["GET", "POST"],
     },
@@ -57,28 +58,34 @@ export function getIO(): SocketIOServer {
 }
 
 // Emit events to claim room
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function emitToClaimRoom(claimId: string, event: string, data: any) {
   const socketIO = getIO();
   socketIO.to(`claim:${claimId}`).emit(event, data);
 }
 
 // Event emitters for specific actions
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function notifyTimelineEvent(claimId: string, event: any) {
   emitToClaimRoom(claimId, "timeline:new", event);
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function notifyNoteAdded(claimId: string, note: any) {
   emitToClaimRoom(claimId, "note:new", note);
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function notifyDocumentUploaded(claimId: string, document: any) {
   emitToClaimRoom(claimId, "document:new", document);
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function notifyPhotoUploaded(claimId: string, photo: any) {
   emitToClaimRoom(claimId, "photo:new", photo);
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function notifyClaimUpdated(claimId: string, changes: any) {
   emitToClaimRoom(claimId, "claim:updated", changes);
 }

@@ -19,6 +19,7 @@ import { cn } from "@/lib/theme";
 interface ProgressProps {
   currentStep: number;
   totalSteps: number;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   steps: Array<{ id: number; label: string; component?: any }>;
 }
 

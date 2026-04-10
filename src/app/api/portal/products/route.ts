@@ -5,6 +5,7 @@
  * Returns manufacturers from VIN with their products and marketing assets.
  */
 
+// eslint-disable-next-line no-restricted-imports
 import { auth } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
 

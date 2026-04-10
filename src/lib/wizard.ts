@@ -6,6 +6,7 @@
 export type UpsertDraftPayload = {
   draftId?: string;
   step: number;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   data: any;
 };
 
@@ -16,6 +17,7 @@ export async function upsertDraft(
   _userId: string,
   _orgId: string | null,
   _payload: UpsertDraftPayload
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 ): Promise<any> {
   // const { draftId, step, data } = payload;
   throw new Error("Draft system not implemented");
@@ -72,6 +74,7 @@ export async function upsertDraft(
 /**
  * Get the most recent draft for a user
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export async function getLatestDraft(_userId: string, _orgId: string | null): Promise<any> {
   throw new Error("Draft system not implemented");
 
@@ -89,6 +92,7 @@ export async function getLatestDraft(_userId: string, _orgId: string | null): Pr
 /**
  * Delete a draft
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export async function deleteDraft(_draftId: string, _userId: string): Promise<any> {
   throw new Error("Draft system not implemented");
 

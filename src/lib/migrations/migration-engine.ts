@@ -155,6 +155,7 @@ export async function runAccuLynxMigration(opts: MigrationOptions): Promise<Migr
             status: "imported",
           },
         });
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } catch (err: any) {
         stats.contacts.errors++;
         errors.push(`Contact ${raw.id}: ${err.message}`);
@@ -368,6 +369,7 @@ export async function runAccuLynxMigration(opts: MigrationOptions): Promise<Migr
             },
           });
         }
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } catch (err: any) {
         stats.jobs.errors++;
         errors.push(`Job ${raw.id}: ${err.message}`);
@@ -393,6 +395,7 @@ export async function runAccuLynxMigration(opts: MigrationOptions): Promise<Migr
       errors,
       durationMs: Date.now() - startTime,
     };
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (err: any) {
     errors.push(err.message);
     await updateMigrationJob(migrationId, "failed", stats, errors);
@@ -430,7 +433,9 @@ async function updateMigrationJob(
       importedRecords: imported,
       skippedRecords: skipped,
       errorRecords: errorCount,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       stats: stats as any,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       errors: errors as any,
       completedAt: new Date(),
     },

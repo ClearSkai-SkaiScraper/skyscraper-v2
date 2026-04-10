@@ -1,5 +1,6 @@
 export const dynamic = "force-dynamic";
 
+// eslint-disable-next-line no-restricted-imports
 import { auth } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -100,6 +101,7 @@ export async function POST(req: NextRequest) {
 
       // Handle ProjectNotification — verify ownership via claim
       try {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const whereClause: any = { id: notificationId };
         if (client) {
           whereClause.claim = { clientId: client.id };

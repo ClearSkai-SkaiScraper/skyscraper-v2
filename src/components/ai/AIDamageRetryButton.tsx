@@ -16,6 +16,7 @@ import { Button } from "@/components/ui/button";
 interface AIDamageRetryButtonProps {
   claimId: string;
   photoId?: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   onSuccess?: (result: any) => void;
   className?: string;
 }

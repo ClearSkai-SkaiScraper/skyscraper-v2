@@ -7,6 +7,7 @@ export type WeatherEvent = {
   type: string;
   magnitude?: number;
   distance_miles?: number;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   geometry?: any;
 };
 
@@ -40,6 +41,7 @@ export function useWeather() {
       setDol(data.dol);
       setEvents(data.events || []);
       return data;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       setError(err.message);
       throw err;
@@ -66,6 +68,7 @@ export function useWeather() {
       setDol(data.dol);
       setEvents(data.events || []);
       return data;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       setError(err.message);
       throw err;

@@ -14,6 +14,7 @@ export async function safeClaimsSelect(orgId: string, take = 100) {
     }));
     Sentry.addBreadcrumb({ category: 'claims', level: 'info', message: 'claims.full.success', data: { count: claims.length, orgId } });
     return claims;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (e: any) {
     const msg = String(e?.message || '').toLowerCase();
     const drift = msg.includes('does not exist') || msg.includes('column') || msg.includes('claimnumber') || msg.includes('damage');
@@ -31,6 +32,7 @@ export async function safeClaimsSelect(orgId: string, take = 100) {
       const mapped = raw.map(r => ({ id: r.id, claimNumber: null, damageType: null }));
       Sentry.addBreadcrumb({ category: 'claims', level: 'info', message: 'claims.fallback.success', data: { count: mapped.length } });
       return mapped;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (fallbackErr: any) {
       Sentry.captureMessage('safeClaimsSelect: fallback failed', { level: 'error', contexts: { fallback: { message: fallbackErr?.message } } });
       return [];

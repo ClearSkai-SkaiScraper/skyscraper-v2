@@ -254,6 +254,7 @@ function determineCodeRequirements(roofType: string, state: string, yearBuilt: n
 /**
  * Identify missing code items from existing estimate
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function identifyMissingItems(requirements: CodeRequirement[], estimate: any): CodeRequirement[] {
   if (!estimate) {
     // No estimate - all requirements are missing

@@ -16,6 +16,7 @@ import { logger } from "@/lib/logger";
 import { buildAIKey } from './cache';
 
 // Global map of running AI requests
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const runningRequests = new Map<string, Promise<any>>();
 
 /**
@@ -33,6 +34,7 @@ const runningRequests = new Map<string, Promise<any>>();
  */
 export async function withDedupe<T>(
   routeName: string,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   inputObj: any,
   fn: () => Promise<T>
 ): Promise<T> {
@@ -62,6 +64,7 @@ export async function withDedupe<T>(
 /**
  * Check if request is currently running
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function isRequestRunning(routeName: string, inputObj: any): boolean {
   const key = buildAIKey(routeName, inputObj);
   return runningRequests.has(key);
@@ -71,6 +74,7 @@ export function isRequestRunning(routeName: string, inputObj: any): boolean {
  * Cancel/remove a running request
  * (Note: Doesn't actually cancel the Promise, just removes tracking)
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function cancelRequest(routeName: string, inputObj: any): void {
   const key = buildAIKey(routeName, inputObj);
   runningRequests.delete(key);
@@ -104,6 +108,7 @@ export function getRunningRequestKeys(): string[] {
  */
 export async function withConditionalDedupe<T>(
   routeName: string,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   inputObj: any,
   fn: () => Promise<T>,
   options: {

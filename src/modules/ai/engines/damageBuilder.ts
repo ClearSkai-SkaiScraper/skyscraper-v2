@@ -234,6 +234,7 @@ export async function analyzePhotoBatch(
   const highestSeverity: "low" | "medium" | "high" | "critical" = allDamages.reduce<
     "low" | "medium" | "high" | "critical"
   >((highest, d) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return severityOrder.indexOf(d.severity as any) > severityOrder.indexOf(highest)
       ? (d.severity as "low" | "medium" | "high" | "critical")
       : highest;

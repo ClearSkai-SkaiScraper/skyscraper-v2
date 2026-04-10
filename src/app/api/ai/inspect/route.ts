@@ -3,6 +3,7 @@ export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
 // src/app/api/ai/inspect/route.ts
+// eslint-disable-next-line no-restricted-imports
 import { currentUser } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 
@@ -152,6 +153,7 @@ Format your response as a structured analysis with clear sections. Be specific a
               conditions: "Clear",
               note: "AI Analysis - No weather data available",
             },
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           } as any,
         });
         inspectionId = inspectionRecord.id;

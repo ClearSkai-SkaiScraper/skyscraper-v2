@@ -37,6 +37,7 @@ export async function GET(req: NextRequest) {
   const claimId = searchParams.get("claimId");
 
   // We'll store work orders in the jobs table with jobType = 'work_order'
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const where: any = { orgId: ctx.orgId, jobType: "work_order" };
   if (status) where.status = status;
   if (claimId) where.claimId = claimId;

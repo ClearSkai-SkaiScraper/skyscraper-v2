@@ -46,6 +46,7 @@ export function useReadReceipts(conversationId: string | null | undefined) {
           filter: `threadId=eq.${conversationId}`,
         },
         (payload) => {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           const row = payload.new as Record<string, any>;
           if (row.read) {
             setReadBy((prev) => {

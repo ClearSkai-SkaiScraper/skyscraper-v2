@@ -69,6 +69,7 @@ export function usePlan(): UsePlanReturn {
             currentPeriodEnd: data.subscription?.currentPeriodEnd || null,
           });
         }
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       } catch (_err) {
         if (!cancelled) {
           setError("Failed to load plan info");

@@ -48,6 +48,7 @@ type CompanyFormValues = z.infer<typeof companySchema>;
 
 interface CompanySettingsClientProps {
   org: { id: string; name: string };
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   profile: any;
 }
 

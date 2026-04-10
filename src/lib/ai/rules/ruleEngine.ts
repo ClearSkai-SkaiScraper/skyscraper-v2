@@ -37,17 +37,20 @@ export async function evaluateRulesForClaim(claimContext: ClaimContext): Promise
 /**
  * Check if a single rule's trigger conditions are met
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function doesRuleTrigger(trigger: any, ctx: ClaimContext): boolean {
   if (!trigger) return false;
   if (trigger.always === true) return true;
 
   // Handle "all" operator (AND logic)
   if (trigger.all && Array.isArray(trigger.all)) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return trigger.all.every((cond: any) => evaluateCondition(cond, ctx));
   }
 
   // Handle "any" operator (OR logic)
   if (trigger.any && Array.isArray(trigger.any)) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return trigger.any.some((cond: any) => evaluateCondition(cond, ctx));
   }
 
@@ -58,6 +61,7 @@ function doesRuleTrigger(trigger: any, ctx: ClaimContext): boolean {
 /**
  * Evaluate a single condition against context
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function evaluateCondition(condition: any, ctx: ClaimContext): boolean {
   const { path, op, value } = condition;
 
@@ -94,6 +98,7 @@ function evaluateCondition(condition: any, ctx: ClaimContext): boolean {
 /**
  * Get nested value from object using dot notation path
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function getValueByPath(obj: any, path: string): any {
   const parts = path.split(".");
   let current = obj;

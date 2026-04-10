@@ -78,6 +78,7 @@ export async function createOrUpdateClaimEmbedding(claimId: string) {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const response = await callOpenAI({
       tag: "claim_embedding",
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       model: "text-embedding-3-small" as any,
       messages: [], // Not used for embeddings
       parseJson: false,

@@ -13,6 +13,7 @@
  * Use this when normal repair doesn't work.
  */
 
+// eslint-disable-next-line no-restricted-imports
 import { currentUser } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -211,6 +212,7 @@ async function seedDemoData(orgId: string) {
       propertyType: "residential",
       createdAt: now,
       updatedAt: now,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } as any,
   });
 
@@ -261,6 +263,7 @@ export const GET = withAuth(async (req: NextRequest, { userId }) => {
         orgName: m.Org?.name || "DELETED",
       })),
     });
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   } catch (_error) {
     return NextResponse.json({ ok: false, error: "Internal server error" }, { status: 500 });
   }

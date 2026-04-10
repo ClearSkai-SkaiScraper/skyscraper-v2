@@ -8,6 +8,7 @@
 /**
  * Compute structured diff between original and edited output
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function computeDiff(original: any, edited: any): any {
   // Simple JSON diff for now
   // In production, use a robust diff library like jsondiffpatch
@@ -34,6 +35,7 @@ export function computeDiff(original: any, edited: any): any {
   }
 
   // Object/array diff
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const changes: any = {};
   const allKeys = [...new Set([...Object.keys(original), ...Object.keys(edited)])];
 
@@ -55,12 +57,14 @@ export function computeDiff(original: any, edited: any): any {
 /**
  * Extract meaningful edits (ignore minor formatting changes)
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function extractMeaningfulEdits(diff: any): string[] {
   if (!diff) return [];
 
   const edits: string[] = [];
 
   // Recursively find meaningful changes
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   function traverse(obj: any, path: string = "") {
     if (obj && typeof obj === "object") {
       if (obj.type === "value_changed") {

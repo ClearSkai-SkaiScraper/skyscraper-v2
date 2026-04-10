@@ -14,7 +14,9 @@ export interface CreateNotificationData {
   body?: string;
   message?: string;
   link?: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   data?: Record<string, any>;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   metadata?: Record<string, any>;
 }
 

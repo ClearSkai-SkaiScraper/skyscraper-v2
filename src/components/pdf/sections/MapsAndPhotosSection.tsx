@@ -8,6 +8,7 @@ import { SectionHeader } from "../SectionHeader";
 import { baseStyles } from "../SharedStyles";
 
 export function MapsAndPhotosSection({ data }: { data: ReportData }) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const m = (data as any).mapsAndPhotos || {};
   const hasAnyPhoto = m.frontPhotoUrl || m.streetMapUrl || m.aerialPhotoUrl || m.mockupPhotoUrl;
 

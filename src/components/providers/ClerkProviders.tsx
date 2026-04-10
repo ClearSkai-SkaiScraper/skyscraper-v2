@@ -6,6 +6,7 @@ import * as React from "react";
 import { logger } from "@/lib/logger";
 
 export default function Providers({ children }: { children: React.ReactNode }) {
+  // eslint-disable-next-line no-restricted-syntax
   const publishableKey = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;
 
   // ALWAYS redirect to /after-sign-in which:

@@ -129,6 +129,7 @@ export function PartnersManager() {
       setShowForm(false);
       setEditingId(null);
       void fetchPartners();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       alert(error.message || "Operation failed");
     }
@@ -155,6 +156,7 @@ export function PartnersManager() {
       const res = await fetch(`/api/partners/${id}`, { method: "DELETE" });
       if (!res.ok) throw new Error("Failed to delete");
       void fetchPartners();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       alert(error.message || "Delete failed");
     }

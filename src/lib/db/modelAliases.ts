@@ -49,9 +49,11 @@ const aliasMap: Record<string, keyof typeof prisma> = {
 };
 
 // Temporary compatibility shim: return loosely typed any delegate to suppress union typing issues
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function getDelegate(name: string): any {
   const key = aliasMap[name];
   if (!key) throw new Error(`Model alias not found: ${name}`);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   return (prisma as any)[key];
 }
 

@@ -22,6 +22,7 @@ export async function GET() {
     const canonicalSlugs = new Set(ALL_TEMPLATES.map((t) => t.slug));
 
     // Try database first (but never fail hard in demo mode)
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let dbTemplates: any[] = [];
     let dbWarning: string | undefined;
 
@@ -67,6 +68,7 @@ export async function GET() {
               // Ensure stable slug for downstream routes.
               slug: reg.slug,
               // Map name to title for frontend consistency
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
               title: (db as any).name || reg.title,
               description: db.description || reg.description,
               category: db.category || reg.category,

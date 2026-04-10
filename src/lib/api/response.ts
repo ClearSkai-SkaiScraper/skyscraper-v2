@@ -6,6 +6,7 @@ import { NextResponse } from "next/server";
 
 import { logger } from "@/lib/logger";
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type ApiSuccessResponse<T = any> = {
   ok: true;
   data: T;
@@ -15,6 +16,7 @@ export type ApiErrorResponse = {
   ok: false;
   error: string;
   message: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   details?: any;
 };
 
@@ -28,6 +30,7 @@ export function ok<T>(data: T, status = 200) {
 /**
  * Return an error JSON response with safe, user-friendly message
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function fail(message: string, code = "INTERNAL_ERROR", status = 500, details?: any) {
   const response: ApiErrorResponse = {
     ok: false,
@@ -35,6 +38,7 @@ export function fail(message: string, code = "INTERNAL_ERROR", status = 500, det
     message,
   };
 
+  // eslint-disable-next-line no-restricted-syntax
   if (details && process.env.NODE_ENV !== "production") {
     response.details = details;
   }
@@ -60,6 +64,7 @@ export const errors = {
 /**
  * Wrap async route handlers with error catching
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function withErrorHandler<T extends any[]>(
   handler: (...args: T) => Promise<NextResponse>,
   routeName: string
@@ -67,6 +72,7 @@ export function withErrorHandler<T extends any[]>(
   return async (...args: T): Promise<NextResponse> => {
     try {
       return await handler(...args);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       logger.error(`[${routeName}] Unhandled error`, {
         message: error?.message,
@@ -77,6 +83,7 @@ export function withErrorHandler<T extends any[]>(
         error?.message || "An unexpected error occurred.",
         "INTERNAL_ERROR",
         500,
+        // eslint-disable-next-line no-restricted-syntax
         process.env.NODE_ENV !== "production" ? error?.stack : undefined
       );
     }

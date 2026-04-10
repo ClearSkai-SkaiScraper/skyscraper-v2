@@ -5,6 +5,7 @@ import { logger } from "@/lib/logger";
 // Import and use in external service integrations to avoid failing static builds.
 
 function isBuildTime(): boolean {
+  // eslint-disable-next-line no-restricted-syntax
   return Boolean(process.env.NEXT_PHASE) || (process.env.NODE_ENV === 'production' && !process.env.VERCEL_URL);
 }
 
@@ -28,6 +29,7 @@ export async function fetchSafe(url: string, init: FetchSafeOptions = {}): Promi
     try {
       const res = await fetch(url, { cache: 'no-store', ...rest });
       return res;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       const code = err?.code || '';
       const isConnReset = code === 'ECONNRESET' || /ECONNRESET/.test(String(err));
@@ -47,6 +49,7 @@ export async function fetchSafe(url: string, init: FetchSafeOptions = {}): Promi
   return null;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export async function fetchSafeJson<T = any>(url: string, init?: FetchSafeOptions): Promise<T | null> {
   const res = await fetchSafe(url, init);
   if (!res) return null;

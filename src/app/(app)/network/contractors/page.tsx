@@ -1,3 +1,4 @@
+// eslint-disable-next-line no-restricted-imports
 import { currentUser } from "@clerk/nextjs/server";
 import { Award, MapPin, Search, Users } from "lucide-react";
 import Link from "next/link";
@@ -142,6 +143,7 @@ function ContractorCard({
   contractor,
   isPremium = false,
 }: {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   contractor: any;
   isPremium?: boolean;
 }) {

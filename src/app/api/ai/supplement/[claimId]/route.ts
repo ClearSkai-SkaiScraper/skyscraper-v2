@@ -306,6 +306,7 @@ RESPONDING TO "OVERHEAD & PROFIT DENIED" PUSHBACK:
 
 export const POST = withAiBilling(
   createAiConfig("ai_supplement", { costPerRequest: 20 }),
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   async (req: NextRequest, ctx): Promise<NextResponse<any>> => {
     const url = new URL(req.url);
     const claimId = url.pathname.split("/").pop() || "";

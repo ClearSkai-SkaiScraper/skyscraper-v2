@@ -20,7 +20,9 @@ type EstimateBuildResponse = {
       lossType?: string;
       dol?: string;
     };
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     items?: any[];
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     totals?: any;
     notes?: string;
   };
@@ -60,6 +62,7 @@ export default function EstimateNewPage() {
     return <div className="flex h-screen items-center justify-center">Loading...</div>;
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   function mapAiItemsToXactimate(items: any[] | undefined): XactimateLineItem[] {
     if (!items) return [];
     return items.map((it, idx) => ({

@@ -75,6 +75,7 @@ export default function AnnotationViewer() {
             data.image_url,
             data.annotated_image_url,
             counts,
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             (data as any).detection_method || "ai_detection"
           );
           logger.info("Evidence saved to project");
@@ -179,8 +180,10 @@ export default function AnnotationViewer() {
                   >
                     {showOriginal ? "Show Annotations" : "Show Original"}
                   </button>
+                // eslint-disable-next-line react/jsx-no-comment-textnodes
                 </div>
 
+                // eslint-disable-next-line react/jsx-no-comment-textnodes
                 <div className="relative">
                   // eslint-disable-next-line @next/next/no-img-element
                   <img

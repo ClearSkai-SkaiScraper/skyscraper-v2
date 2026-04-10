@@ -169,6 +169,7 @@ export function OrgChartFullView({ initialMembers, companyName }: OrgChartFullVi
       const managerName = managerId ? members.find((m) => m.id === managerId)?.name : null;
       setMembers((prev) => prev.map((m) => (m.id === memberId ? { ...m, managerId } : m)));
       toast.success(managerId ? `Assigned to ${managerName}` : "Removed from manager");
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       toast.error(err.message || "Failed to update hierarchy");
     } finally {
@@ -191,6 +192,7 @@ export function OrgChartFullView({ initialMembers, companyName }: OrgChartFullVi
         prev.map((m) => (m.id === memberId ? { ...m, isManager: true, title: "Manager" } : m))
       );
       toast.success("Promoted to Manager!");
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       toast.error(err.message || "Failed to promote");
     } finally {
@@ -219,6 +221,7 @@ export function OrgChartFullView({ initialMembers, companyName }: OrgChartFullVi
         prev.map((m) => (m.id === memberId ? { ...m, isManager: false, title: "Team Member" } : m))
       );
       toast.success("Removed manager role");
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       toast.error(err.message || "Failed to update");
     } finally {

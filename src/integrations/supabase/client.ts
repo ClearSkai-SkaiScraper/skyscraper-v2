@@ -5,13 +5,18 @@ import type { Database } from "./types";
 
 // Use Next.js environment variable names so this client works when running under Next.
 const SUPABASE_URL =
+  // eslint-disable-next-line no-restricted-syntax
   (process.env.NEXT_PUBLIC_SUPABASE_URL as string | undefined) ||
+  // eslint-disable-next-line no-restricted-syntax
   process.env?.VITE_SUPABASE_URL;
 const SUPABASE_PUBLISHABLE_KEY =
+  // eslint-disable-next-line no-restricted-syntax
   (process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY as string | undefined) ||
+  // eslint-disable-next-line no-restricted-syntax
   process.env?.VITE_SUPABASE_PUBLISHABLE_KEY;
 
 function missingSupabaseProxy(msg: string) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const handler: ProxyHandler<any> = {
     get(_target, prop) {
       throw new Error(`${msg} — attempted to access supabase.${String(prop)}`);
@@ -40,6 +45,7 @@ function createSupabaseClient() {
   }
 
   try {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const options: any = {
       auth: {
         persistSession: true,

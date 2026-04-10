@@ -8,6 +8,7 @@ export const dynamic = "force-dynamic";
  * Creates/updates user_registry and Client table entries.
  */
 
+// eslint-disable-next-line no-restricted-imports
 import { auth, clerkClient, currentUser } from "@clerk/nextjs/server";
 import { nanoid } from "nanoid";
 import { NextResponse } from "next/server";

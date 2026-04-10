@@ -83,5 +83,6 @@ export type NotificationTrigger =
   | { type: "message_received"; claimId: string; body: string };
 
 export async function enqueueNotification(trigger: NotificationTrigger) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   logger.debug(`[notify] ${trigger.type}`, trigger as any);
 }

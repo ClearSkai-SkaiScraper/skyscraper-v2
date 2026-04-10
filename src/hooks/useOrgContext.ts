@@ -90,6 +90,7 @@ export function useOrgContext(): UseOrgContextResult {
         setOrg(null);
         setError(data.error || null);
       }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       logger.error("[useOrgContext] Fetch error:", err);
       setError(err.message || "Failed to fetch organization");

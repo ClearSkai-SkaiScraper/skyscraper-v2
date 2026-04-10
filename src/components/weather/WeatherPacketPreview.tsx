@@ -1,6 +1,7 @@
 "use client";
 
 interface WeatherPacketPreviewProps {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   packet: any;
 }
 
@@ -36,6 +37,7 @@ export function WeatherPacketPreview({ packet }: WeatherPacketPreviewProps) {
 }
 
 // Claims-Ready Packet View
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function ClaimsPacketView({ packet }: { packet: any }) {
   return (
     <div className="space-y-6">
@@ -91,6 +93,7 @@ function ClaimsPacketView({ packet }: { packet: any }) {
 }
 
 // Homeowner Packet View
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function HomeownerPacketView({ packet }: { packet: any }) {
   return (
     <div className="space-y-6">
@@ -145,6 +148,7 @@ function HomeownerPacketView({ packet }: { packet: any }) {
 }
 
 // Quick Snapshot View
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function QuickPacketView({ packet }: { packet: any }) {
   return (
     <div className="space-y-4">
@@ -197,6 +201,7 @@ function QuickPacketView({ packet }: { packet: any }) {
 }
 
 // Public Adjuster Forensic View
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function PAPacketView({ packet }: { packet: any }) {
   return (
     <div className="space-y-6">
@@ -268,6 +273,7 @@ function Section({ title, children }: { title: string; children: React.ReactNode
   );
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function DataGrid({ data }: { data: Record<string, any> }) {
   return (
     <div className="grid grid-cols-1 gap-2 md:grid-cols-2">

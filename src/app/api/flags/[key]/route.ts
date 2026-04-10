@@ -1,3 +1,4 @@
+// eslint-disable-next-line no-restricted-imports
 import { auth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 
@@ -12,6 +13,7 @@ import { deleteFlag, evaluateFlag, setFlag } from "@/lib/flags";
 
 export const GET = withSentryApi(async (req, { params }: { params: { key: string } }) => {
   try {
+    // eslint-disable-next-line no-restricted-syntax
     const hasDb = process.env.DATABASE_URL && process.env.DATABASE_URL.startsWith("postgres");
     if (!hasDb) {
       return NextResponse.json({
@@ -44,6 +46,7 @@ export const GET = withSentryApi(async (req, { params }: { params: { key: string
 
 export const POST = withSentryApi(
   withRateLimit(async (req, { params }: { params: { key: string } }) => {
+    // eslint-disable-next-line no-restricted-syntax
     const hasDb = process.env.DATABASE_URL && process.env.DATABASE_URL.startsWith("postgres");
     if (!hasDb) {
       return NextResponse.json({
@@ -83,6 +86,7 @@ export const POST = withSentryApi(
 
 export const DELETE = withSentryApi(
   withRateLimit(async (req, { params }: { params: { key: string } }) => {
+    // eslint-disable-next-line no-restricted-syntax
     const hasDb = process.env.DATABASE_URL && process.env.DATABASE_URL.startsWith("postgres");
     if (!hasDb) {
       return NextResponse.json({

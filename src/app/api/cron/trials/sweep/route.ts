@@ -37,6 +37,7 @@ export async function GET(request: NextRequest) {
     };
 
     // 1. Find and mark expired trials
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let expiredTrials: any[] = [];
     try {
       expiredTrials = await prisma.org.findMany({
@@ -109,6 +110,7 @@ export async function GET(request: NextRequest) {
     const t24hStart = new Date(now.getTime() + 23 * 60 * 60 * 1000);
     const t24hEnd = new Date(now.getTime() + 25 * 60 * 60 * 1000);
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let t24hOrgs: any[] = [];
     try {
       t24hOrgs = await prisma.org.findMany({
@@ -176,6 +178,7 @@ export async function GET(request: NextRequest) {
     const t1hStart = new Date(now.getTime() + 50 * 60 * 1000);
     const t1hEnd = new Date(now.getTime() + 70 * 60 * 1000);
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let t1hOrgs: any[] = [];
     try {
       t1hOrgs = await prisma.org.findMany({

@@ -131,6 +131,7 @@ export function PhotoAnnotator() {
           {photos.length > 0 && (
             <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
               {photos.map((photo, index) => (
+                // eslint-disable-next-line react/jsx-no-comment-textnodes
                 <div key={index} className="group relative">
                   // eslint-disable-next-line @next/next/no-img-element
                   <img
@@ -185,7 +186,9 @@ export function PhotoAnnotator() {
           {results.map((result, index) => (
             <Card key={index} className="overflow-hidden">
               <div className="grid gap-6 md:grid-cols-3">
+                // eslint-disable-next-line react/jsx-no-comment-textnodes
                 {/* Photo */}
+                // eslint-disable-next-line react/jsx-no-comment-textnodes
                 <div className="md:col-span-1">
                   // eslint-disable-next-line @next/next/no-img-element
                   <img

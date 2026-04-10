@@ -117,6 +117,7 @@ export const GET = withAuth(async (_req, { userId }) => {
         },
       },
     });
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   } catch (_error) {
     return NextResponse.json({ success: false, error: "Internal server error" }, { status: 500 });
   }

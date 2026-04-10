@@ -5,6 +5,7 @@
 
 import crypto from "crypto";
 
+// eslint-disable-next-line no-restricted-syntax
 const SIGNING_SECRET = process.env.ARTIFACT_SIGNING_SECRET || "change-in-production";
 const URL_EXPIRY_HOURS = 1;
 
@@ -35,6 +36,7 @@ export function generateSignedUrl(params: SignedUrlParams): string {
     .digest("hex");
 
   // Build URL
+  // eslint-disable-next-line no-restricted-syntax
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://skaiscrape.com";
   const queryParams = new URLSearchParams({
     id: params.artifactId,

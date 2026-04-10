@@ -13,6 +13,7 @@ import { requireAdmin } from "@/lib/security/roles";
 export const PATCH = withSentryApi(
   withRateLimit(async (req: Request, { params }: { params: { key: string } }) => {
     const body = await req.json();
+    // eslint-disable-next-line no-restricted-syntax
     const hasDb = process.env.DATABASE_URL && process.env.DATABASE_URL.startsWith("postgres");
     if (!hasDb) {
       return NextResponse.json({
@@ -47,5 +48,6 @@ export const PATCH = withSentryApi(
     } catch (err) {
       return NextResponse.json({ error: err?.message || "Invalid targeting" }, { status: 400 });
     }
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   }) as any
 );

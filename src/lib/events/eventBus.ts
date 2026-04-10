@@ -9,6 +9,7 @@ import { logger } from "@/lib/logger";
  * This is the nervous system of SkaiScraper.
  */
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 type EventCallback = (payload: any) => void | Promise<void>;
 
 interface EventSubscription {
@@ -19,12 +20,14 @@ interface EventSubscription {
 
 class EventBus {
   private subscriptions: Map<string, EventSubscription[]> = new Map();
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private eventHistory: Array<{ eventName: string; payload: any; timestamp: Date }> = [];
   private maxHistorySize = 1000;
 
   /**
    * Emit an event to all subscribers
    */
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   emit(eventName: string, payload: any): void {
     logger.debug(`[EventBus] 📡 Emitting: ${eventName}`, payload);
 
@@ -105,6 +108,7 @@ class EventBus {
   /**
    * Get event history
    */
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   getHistory(eventName?: string, limit = 50): Array<{ eventName: string; payload: any; timestamp: Date }> {
     let history = this.eventHistory;
     if (eventName) {
@@ -193,6 +197,7 @@ export const ClaimEvents = {
 /**
  * Emit a photo uploaded event
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function emitPhotoUploaded(claimId: string, orgId: string, photoId: string, metadata?: any) {
   eventBus.emit(ClaimEvents.PHOTO_UPLOADED, { claimId, orgId, photoId, metadata, timestamp: new Date() });
 }
@@ -207,6 +212,7 @@ export function emitVideoGenerated(claimId: string, orgId: string, videoId: stri
 /**
  * Emit storm data created event
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function emitStormDataCreated(claimId: string, orgId: string, stormData: any) {
   eventBus.emit(ClaimEvents.STORM_DATA_CREATED, { claimId, orgId, stormData, timestamp: new Date() });
 }
@@ -221,6 +227,7 @@ export function emitCarrierLetterUploaded(claimId: string, orgId: string, letter
 /**
  * Emit skai analysis completed event
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function emitSkaiCompleted(claimId: string, orgId: string, analysisId: string, results: any) {
   eventBus.emit(ClaimEvents.SKAI_ANALYSIS_COMPLETED, { claimId, orgId, analysisId, results, timestamp: new Date() });
 }

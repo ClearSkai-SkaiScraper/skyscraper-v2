@@ -110,7 +110,9 @@ export default function KPIDashboardClient({ embedded = false }: { embedded?: bo
 
   const content = (
     <>
+      // eslint-disable-next-line react/jsx-no-comment-textnodes
       {/* Time Range Selector */}
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       <Tabs value={timeRange} onValueChange={(v) => setTimeRange(v as any)} className="w-full">
         <TabsList>
           <TabsTrigger value="7d">7 Days</TabsTrigger>

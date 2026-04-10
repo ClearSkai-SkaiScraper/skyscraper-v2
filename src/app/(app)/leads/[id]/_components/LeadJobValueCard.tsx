@@ -29,6 +29,7 @@ export function LeadJobValueCard({
     jobValueApprovalNotes: initialNotes,
   });
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const handleUpdate = useCallback((updates: Record<string, any>) => {
     setData((prev) => ({ ...prev, ...updates }));
   }, []);

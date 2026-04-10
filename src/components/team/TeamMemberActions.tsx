@@ -78,6 +78,7 @@ export function TeamMemberActions({
         description: `${memberName}'s role has been changed to ${newRole}`,
       });
       router.refresh();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       toast.error("Error", {
         description: error.message || "Failed to update role",
@@ -109,6 +110,7 @@ export function TeamMemberActions({
       });
       setShowRemoveDialog(false);
       router.refresh();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       toast.error("Error", {
         description: error.message || "Failed to remove member",

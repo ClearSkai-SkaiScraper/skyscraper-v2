@@ -78,6 +78,7 @@ export default async function RetailWorkspacePage() {
     orgId = orgResult.ok ? orgResult.orgId : null;
   } catch (error) {
     // Re-throw redirect errors (Next.js uses throw for redirects)
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     if ((error as any)?.digest?.startsWith?.("NEXT_REDIRECT")) throw error;
     logger.error("[RetailWorkspacePage] Org context error:", error);
   }

@@ -113,6 +113,7 @@ function scheduleIdleClose() {
  */
 export function renderToHTML(
   templateHtml: string,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   data: Record<string, any>,
   options: RenderOptions = {}
 ): RenderResult {
@@ -138,6 +139,7 @@ export function renderToHTML(
       content: fullHtml,
       contentType: "text/html",
     };
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (error: any) {
     return {
       success: false,
@@ -151,6 +153,7 @@ export function renderToHTML(
  */
 export async function renderToPDF(
   templateHtml: string,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   data: Record<string, any>,
   options: RenderOptions = {}
 ): Promise<RenderResult> {
@@ -170,6 +173,7 @@ export async function renderToPDF(
       content: pdfBuffer,
       contentType: "application/pdf",
     };
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (error: any) {
     logger.error("[Renderer] PDF generation failed:", error);
     return {
@@ -185,6 +189,7 @@ export async function renderToPDF(
  */
 export async function renderTemplateToPdf(
   templateHtml: string,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   data: Record<string, any>,
   options: PdfRenderOptions = {}
 ): Promise<Buffer> {
@@ -275,6 +280,7 @@ export async function renderTemplateToPdf(
  */
 export async function renderTemplateToThumbnail(
   templateHtml: string,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   data: Record<string, any>,
   options: ThumbnailRenderOptions = {}
 ): Promise<Buffer> {
@@ -377,6 +383,7 @@ export async function renderTemplateToThumbnail(
  */
 export async function render(
   templateHtml: string,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   data: Record<string, any>,
   options: RenderOptions = {}
 ): Promise<RenderResult> {

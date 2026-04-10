@@ -49,8 +49,10 @@ export const POST = withAuth(async (req: NextRequest, { userId }) => {
     logger.debug(`[PDF_EXPORT] LibreOffice available: ${hasLibreOffice}`);
 
     // Fetch branding (non-fatal if fails)
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let branding: any = null;
     try {
+      // eslint-disable-next-line no-restricted-syntax
       const brandingRes = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL || ""}/api/me/branding`, {
         headers: { Cookie: req.headers.get("cookie") || "" },
         cache: "no-store",
@@ -58,6 +60,7 @@ export const POST = withAuth(async (req: NextRequest, { userId }) => {
       if (brandingRes.ok) {
         branding = await brandingRes.json();
       }
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (_e) {
       logger.warn("[PDF_EXPORT] Branding fetch failed, continuing without branding");
     }

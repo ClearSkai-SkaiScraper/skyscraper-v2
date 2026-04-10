@@ -77,6 +77,7 @@ export function ClaimSelect({
           const data = await res.json();
           const arr = data.claims || [];
           setClaims(
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             arr.map((c: any) => ({
               id: c.id,
               claimNumber: c.claimNumber ?? c.claim_number ?? null,

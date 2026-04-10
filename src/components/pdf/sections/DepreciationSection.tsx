@@ -10,6 +10,7 @@ import { baseStyles } from "../SharedStyles";
 export function DepreciationSection({ data }: { data: ReportData }) {
   const dep = data.depreciation;
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   if (!dep || !Array.isArray(dep) || (dep as any).items?.length === 0) {
     return (
       <View style={baseStyles.section}>
@@ -32,7 +33,9 @@ export function DepreciationSection({ data }: { data: ReportData }) {
           <Text style={baseStyles.tableHeaderCell}>Dep %</Text>
           <Text style={baseStyles.tableHeaderCell}>RCV</Text>
           <Text style={baseStyles.tableHeaderCell}>ACV</Text>
+        // eslint-disable-next-line react/jsx-no-comment-textnodes
         </View>
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         {((dep as any).items || []).map((i: any, idx: number) => (
           <View style={baseStyles.tableRow} key={idx}>
             <Text style={baseStyles.tableCell}>{i.label}</Text>

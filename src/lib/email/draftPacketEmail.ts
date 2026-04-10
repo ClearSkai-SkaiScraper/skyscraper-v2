@@ -6,7 +6,9 @@ import type { DraftedPacketEmail,PacketRecipientType } from "./types";
 
 interface DraftEmailParams {
   recipientType: PacketRecipientType;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   claim: any;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   payload: any;
   packetType: "report" | "estimate" | "supplement";
   packetUrl: string;

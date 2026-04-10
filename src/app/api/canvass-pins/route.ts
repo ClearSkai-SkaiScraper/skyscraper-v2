@@ -43,6 +43,7 @@ export async function GET(req: NextRequest) {
     const area = url.searchParams.get("area");
     const outcome = url.searchParams.get("outcome");
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const where: any = { orgId: ctx.orgId };
     if (area) where.areaTag = area;
     if (outcome) where.outcome = outcome;
@@ -87,6 +88,7 @@ export async function GET(req: NextRequest) {
       },
     });
   } catch (err) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     if ((err as any)?.digest?.startsWith?.("NEXT_REDIRECT")) throw err;
     logger.error("[API] canvass-pins GET error:", err);
     return NextResponse.json({ error: "Internal error" }, { status: 500 });
@@ -167,6 +169,7 @@ export async function POST(req: NextRequest) {
       data: { ...pin, lat: Number(pin.lat), lng: Number(pin.lng) },
     });
   } catch (err) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     if ((err as any)?.digest?.startsWith?.("NEXT_REDIRECT")) throw err;
     logger.error("[API] canvass-pins POST error:", err);
     return NextResponse.json({ error: "Internal error" }, { status: 500 });
@@ -245,6 +248,7 @@ export async function PATCH(req: NextRequest) {
       data: { ...pin, lat: Number(pin.lat), lng: Number(pin.lng) },
     });
   } catch (err) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     if ((err as any)?.digest?.startsWith?.("NEXT_REDIRECT")) throw err;
     logger.error("[API] canvass-pins PATCH error:", err);
     return NextResponse.json({ error: "Internal error" }, { status: 500 });
@@ -275,6 +279,7 @@ export async function DELETE(req: NextRequest) {
 
     return NextResponse.json({ success: true });
   } catch (err) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     if ((err as any)?.digest?.startsWith?.("NEXT_REDIRECT")) throw err;
     logger.error("[API] canvass-pins DELETE error:", err);
     return NextResponse.json({ error: "Internal error" }, { status: 500 });

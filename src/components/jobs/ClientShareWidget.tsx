@@ -58,6 +58,7 @@ export function ClientShareWidget({
       if (res.ok) {
         const data = await res.json();
         // Transform to our format
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const docs = (data.documents || data.files || []).map((doc: any) => ({
           id: doc.id,
           name: doc.filename || doc.name || "Document",

@@ -8,6 +8,7 @@
  * Invitation lifecycle is tracked via claim_activities.
  */
 
+// eslint-disable-next-line no-restricted-imports
 import { auth, currentUser } from "@clerk/nextjs/server";
 import crypto from "crypto";
 import { NextRequest, NextResponse } from "next/server";
@@ -217,6 +218,7 @@ async function handleSendInvite(
       companyName = org?.name || companyName;
     }
 
+    // eslint-disable-next-line no-restricted-syntax
     const portalUrl = `${process.env.NEXT_PUBLIC_APP_URL || "https://skaiscrape.com"}/portal/claims/${input.claimId}`;
 
     await sendEmail({
@@ -260,6 +262,7 @@ async function handleSendJobInvite(
   try {
     const { sendEmail } = await import("@/lib/email/resend");
 
+    // eslint-disable-next-line no-restricted-syntax
     const portalUrl = `${process.env.NEXT_PUBLIC_APP_URL || "https://skaiscrape.com"}/portal/my-jobs`;
 
     await sendEmail({

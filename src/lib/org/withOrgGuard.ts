@@ -34,6 +34,7 @@ export interface OrgGuardContext {
 type GuardedHandler = (
   req: NextRequest,
   ctx: OrgGuardContext,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   routeCtx?: any
 ) => Promise<NextResponse>;
 
@@ -44,6 +45,7 @@ type GuardedHandler = (
  * @param opts.requiredRole — Optional minimum role (e.g., "ADMIN")
  */
 export function withOrgGuard(handler: GuardedHandler, opts?: { requiredRole?: string }) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   return async (req: NextRequest, routeCtx?: any) => {
     const method = req.method;
     const path = req.nextUrl.pathname;
@@ -87,6 +89,7 @@ export function withOrgGuard(handler: GuardedHandler, opts?: { requiredRole?: st
 
       // ── 4. Execute handler ──────────────────────────────────────────
       return await handler(req, { userId, orgId, role }, routeCtx);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       // Known auth/org errors → 401
       if (err instanceof OrgResolutionError) {

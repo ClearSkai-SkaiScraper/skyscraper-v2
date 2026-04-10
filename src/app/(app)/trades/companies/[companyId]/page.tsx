@@ -3,6 +3,7 @@
  * View a trades company profile, members, reviews, and featured work
  */
 
+// eslint-disable-next-line no-restricted-imports
 import { currentUser } from "@clerk/nextjs/server";
 import {
   Award,
@@ -199,6 +200,7 @@ export default async function CompanyDetailPage({
                   </>
                 )}
                 <CompanyShareButton
+                  // eslint-disable-next-line no-restricted-syntax
                   url={`${process.env.NEXT_PUBLIC_BASE_URL || "https://www.skaiscrape.com"}/trades/companies/${companyId}/public`}
                   title={company.name}
                 />

@@ -52,6 +52,7 @@ export default function ClaimLeadButton({ leadId, hasUnlimitedAccess }: ClaimLea
           window.location.href = data.checkoutUrl;
         }
       }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       logger.error("Error claiming lead:", error);
       alert(error.message || "Failed to claim lead. Please try again.");

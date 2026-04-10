@@ -20,6 +20,7 @@ export async function getAllTrackedProperties() {
   return properties;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export async function saveDailyResultToDB(property_id: string, data: any) {
   return await saveResultsToDB(property_id, data);
 }

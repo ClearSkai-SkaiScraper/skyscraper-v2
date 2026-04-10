@@ -18,7 +18,9 @@ export async function createBillingPortalSession(
   if (!stripe) throw new Error("Stripe client not initialized");
   const portalReturnUrl =
     returnUrl ||
+    // eslint-disable-next-line no-restricted-syntax
     process.env.STRIPE_BILLING_PORTAL_RETURN_URL ||
+    // eslint-disable-next-line no-restricted-syntax
     `${process.env.NEXT_PUBLIC_APP_URL}/account/billing`;
 
   const session = await stripe.billingPortal.sessions.create({

@@ -73,6 +73,7 @@ export interface Report {
   status: "draft" | "final" | "sent";
   
   // Data (from ClaimPacketData)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   data: Record<string, any>; // Flexible JSON storage for claim packet data
   
   // Export History
@@ -211,6 +212,7 @@ export interface AIAction {
   status: "pending" | "running" | "completed" | "failed";
   
   // Results
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   result?: any;
   error?: string;
 }

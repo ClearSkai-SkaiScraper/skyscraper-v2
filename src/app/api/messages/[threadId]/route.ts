@@ -289,6 +289,7 @@ export const POST = withAuth(async (req: NextRequest, { orgId, userId }, routePa
         // Get participant email and send notification
         const participant = (await prisma.$queryRaw`
           SELECT email FROM users WHERE clerk_user_id = ${participantId} LIMIT 1
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         `) as any[];
 
         if (participant?.[0]?.email) {

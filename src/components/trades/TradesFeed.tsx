@@ -104,6 +104,7 @@ export function TradesFeed({ isAuthenticated }: TradesFeedProps) {
         // Map connections to mention suggestions
         const suggestions: MentionSuggestion[] = (data.connections || [])
           .slice(0, 5)
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           .map((c: any) => ({
             id: c.id || c.companyId,
             name: c.companyName || c.name || "Pro",

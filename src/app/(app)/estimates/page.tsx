@@ -61,6 +61,7 @@ export default async function EstimatesPage() {
         });
 
         return data.map((est) => {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           const totals = est.totals as any;
           const job = jobMap.get(est.job_id);
           return {

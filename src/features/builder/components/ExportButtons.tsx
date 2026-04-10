@@ -31,6 +31,7 @@ export default function ExportButtons() {
       a.download = `skai-${tpl}.pdf`;
       a.click();
       URL.revokeObjectURL(url);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (e: any) {
       setErr(e.message || "Export failed");
     } finally {

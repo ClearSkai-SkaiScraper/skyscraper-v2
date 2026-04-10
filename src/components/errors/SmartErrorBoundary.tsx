@@ -94,6 +94,7 @@ class ErrorBoundaryWrapper extends React.Component<
     console.error("Error caught by boundary:", error, errorInfo);
 
     // Report to error tracking service in production
+    // eslint-disable-next-line no-restricted-syntax
     if (process.env.NODE_ENV === "production") {
       // Sentry is already configured, errors will be automatically captured
       logger.error("Production error:", error);
@@ -106,6 +107,7 @@ class ErrorBoundaryWrapper extends React.Component<
         <SmartErrorBoundary
           error={this.state.error}
           reset={() => this.setState({ hasError: false, error: null })}
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           context={this.props.context as any}
         />
       );

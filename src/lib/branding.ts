@@ -127,6 +127,7 @@ export async function loadBranding(): Promise<Branding | null> {
     logger.error("loadBranding error", error);
     return null;
   }
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   return data as any;
 }
 

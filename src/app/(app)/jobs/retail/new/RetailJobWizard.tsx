@@ -30,6 +30,7 @@ interface PhotoFile {
   tag: string;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const JOB_CATEGORIES: { id: JobCategory; label: string; icon: any; color: string; desc: string }[] =
   [
     {

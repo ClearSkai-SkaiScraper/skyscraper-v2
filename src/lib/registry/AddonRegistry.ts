@@ -6,6 +6,7 @@ export type Addon = {
   defaultOn?: boolean;
   requires?: Array<"latlng" | "branding" | "photos" | "vendor">;
   // merge additional data into the build context
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   apply: (ctx: any) => Promise<any> | any;
 };
 

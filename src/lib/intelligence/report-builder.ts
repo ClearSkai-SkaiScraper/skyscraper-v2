@@ -188,11 +188,17 @@ ${
   features.financialAnalysisEnabled && internal.modules.financialSnapshots.length > 0
     ? `
 Latest Financial Snapshot:
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 - Carrier RCV: $${(internal.modules.financialSnapshots[0] as any).totals.rcvCarrier}
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 - Contractor RCV: $${(internal.modules.financialSnapshots[0] as any).totals.rcvContractor}
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 - Underpayment: $${(internal.modules.financialSnapshots[0] as any).totals.underpayment}
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 - Required Supplements: ${(internal.modules.financialSnapshots[0] as any).requiredSupplements.length}
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 - Settlement Projection: $${(internal.modules.financialSnapshots[0] as any).settlementProjection.min} - $${(internal.modules.financialSnapshots[0] as any).settlementProjection.max}
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 - Confidence: ${(internal.modules.financialSnapshots[0] as any).settlementProjection.confidence}%
 `
     : "Not calculated"
@@ -421,6 +427,7 @@ export async function runIntelligenceReportBuilder(options: {
   orgId?: string | null;
   userId?: string | null;
   reportType: ReportType;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   featureOverrides?: Partial<any>;
 }): Promise<GeneratedReport> {
   const { claimId, orgId, userId, reportType, featureOverrides } = options;

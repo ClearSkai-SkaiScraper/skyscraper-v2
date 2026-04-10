@@ -147,6 +147,7 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
 
     // Trigger stage change automation if status changed
     if (status && status !== currentProject.status) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       await onStageChange(project.id, status, currentProject.status as any, userId);
     }
 

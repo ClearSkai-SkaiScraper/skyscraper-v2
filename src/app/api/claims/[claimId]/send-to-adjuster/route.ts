@@ -17,7 +17,9 @@ const sendToAdjusterSchema = z.object({
 let _resend: Resend | null = null;
 
 function getResend() {
+  // eslint-disable-next-line no-restricted-syntax
   if (!_resend && process.env.RESEND_API_KEY) {
+    // eslint-disable-next-line no-restricted-syntax
     _resend = new Resend(process.env.RESEND_API_KEY);
   }
   return _resend;

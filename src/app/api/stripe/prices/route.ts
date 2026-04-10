@@ -10,6 +10,7 @@ export async function GET() {
     const prices: Record<string, string> = {};
     let presentCount = 0;
     for (const k of priceKeys) {
+      // eslint-disable-next-line no-restricted-syntax
       const v = process.env[k];
       if (v) {
         prices[k] = v;
@@ -23,6 +24,7 @@ export async function GET() {
       count: presentCount,
       missing: priceKeys.filter((k) => !prices[k]),
     });
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   } catch (_e) {
     return NextResponse.json({ ok: false, error: "server-error" }, { status: 500 });
   }

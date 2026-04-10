@@ -134,6 +134,7 @@ async function getClaimMarkers(orgId: string, token: string): Promise<JobMarker[
           value: claim.estimatedValue ? Number(claim.estimatedValue) : null,
         };
       })
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       .filter(Boolean) as Array<any>;
 
     return batchGeocode(items, token);
@@ -184,6 +185,7 @@ async function getLeadMarkers(orgId: string, token: string): Promise<JobMarker[]
           value: lead.value ? Number(lead.value) : null,
         };
       })
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       .filter(Boolean) as Array<any>;
 
     return batchGeocode(items, token);
@@ -235,6 +237,7 @@ async function getRetailMarkers(orgId: string, token: string): Promise<JobMarker
           value: job.value ? Number(job.value) : null,
         };
       })
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       .filter(Boolean) as Array<any>;
 
     return batchGeocode(items, token);

@@ -12,6 +12,7 @@ interface Report {
   userName?: string;
   attachments?: {
     pdfUrl?: string;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     [key: string]: any;
   };
 }
@@ -36,6 +37,7 @@ export function ClaimReports({ claimId }: ClaimReportsProps) {
         }
 
         setReports(data.data.reports || []);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } catch (err: any) {
         setError(err.message);
       } finally {
@@ -75,6 +77,7 @@ export function ClaimReports({ claimId }: ClaimReportsProps) {
     try {
       // Open in new tab for now
       window.open(pdfUrl, "_blank");
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (_err) {
       alert("Failed to open report. Please try again.");
     }

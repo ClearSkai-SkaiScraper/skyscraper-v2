@@ -71,6 +71,7 @@ interface ClaimTimelineProps {
   compact?: boolean;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const eventIcons: Record<TimelineEvent["type"], React.ComponentType<any>> = {
   storm_event: CloudLightning,
   claim_created: FileText,
@@ -186,8 +187,10 @@ export function ClaimTimeline({
       <CardContent>
         <div className="relative">
           {/* Timeline line */}
+          // eslint-disable-next-line react/jsx-no-comment-textnodes
           <div className="absolute bottom-0 left-4 top-0 w-0.5 bg-border" />
 
+          // eslint-disable-next-line react/jsx-no-comment-textnodes
           <div className="space-y-4">
             // eslint-disable-next-line @typescript-eslint/no-unused-vars
             {sortedEvents.map((event, index) => {

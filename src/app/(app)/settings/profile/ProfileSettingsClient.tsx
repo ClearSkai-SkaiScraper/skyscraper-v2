@@ -16,7 +16,9 @@ interface ProfileSettingsClientProps {
     bio: string | null;
     years_experience: number | null;
     headshot_url: string | null;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     public_skills: any;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     certifications: any;
   };
 }

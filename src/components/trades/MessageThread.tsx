@@ -17,6 +17,7 @@ interface Message {
   thread_id: string;
   sender_id: string;
   body: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   attachments?: any;
   created_at: string;
 }

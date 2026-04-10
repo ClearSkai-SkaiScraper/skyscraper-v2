@@ -161,6 +161,7 @@ export const GET = withAuth(
             snowfallIn: weatherFacts.snowfallIn,
             sourceLabel: weatherFacts.sourceLabel,
             raw: weatherFacts.raw,
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           } as any,
           updatedAt: new Date(),
         },

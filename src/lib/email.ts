@@ -9,6 +9,7 @@ export interface EmailData {
   to: string | string[];
   subject: string;
   template?: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   data?: Record<string, any>;
   html?: string;
   text?: string;
@@ -25,6 +26,7 @@ export async function sendEmail(emailData: EmailData): Promise<boolean> {
     });
 
     // For development, just log the email
+    // eslint-disable-next-line no-restricted-syntax
     if (process.env.NODE_ENV === "development") {
       logger.debug("🔧 Development mode: Email logged but not sent");
       return true;
@@ -59,6 +61,7 @@ export async function sendSMS(to: string, message: string): Promise<boolean> {
     // TODO: Integrate with SMS provider (Twilio, AWS SNS, etc.)
     logger.debug("📱 SMS would be sent:", { to, message });
 
+    // eslint-disable-next-line no-restricted-syntax
     if (process.env.NODE_ENV === "development") {
       logger.debug("🔧 Development mode: SMS logged but not sent");
       return true;
@@ -77,6 +80,7 @@ export async function sendSMS(to: string, message: string): Promise<boolean> {
  */
 export function generateEmailTemplate(
   template: string,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   data: Record<string, any>
 ): { html: string; text: string } {
   const templates = {

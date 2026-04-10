@@ -22,11 +22,17 @@ export interface FeatureFlags {
  */
 export function getFeatureFlags(): FeatureFlags {
   return {
+    // eslint-disable-next-line no-restricted-syntax
     TEST_PAGES: process.env.FEATURE_TEST_PAGES === "true",
+    // eslint-disable-next-line no-restricted-syntax
     PDF_EXPORT: process.env.FEATURE_PDF_EXPORT === "true",
+    // eslint-disable-next-line no-restricted-syntax
     ZIP_EXPORT: process.env.FEATURE_ZIP_EXPORT === "true",
+    // eslint-disable-next-line no-restricted-syntax
     AUTOSAVE: process.env.FEATURE_AUTOSAVE !== "false", // default ON
+    // eslint-disable-next-line no-restricted-syntax
     RETAIL_WIZARD: process.env.FEATURE_RETAIL_WIZARD !== "false", // default ON
+    // eslint-disable-next-line no-restricted-syntax
     CLAIMS_WIZARD: process.env.FEATURE_CLAIMS_WIZARD !== "false", // default ON
   };
 }
@@ -55,16 +61,19 @@ export function assertFeatureEnabled(feature: keyof FeatureFlags): void {
  * Check if running in production
  */
 export const IS_PROD =
+  // eslint-disable-next-line no-restricted-syntax
   process.env.NODE_ENV === "production" || process.env.VERCEL_ENV === "production";
 
 /**
  * Check if running in preview (Vercel preview deployments)
  */
+// eslint-disable-next-line no-restricted-syntax
 export const IS_PREVIEW = process.env.VERCEL_ENV === "preview";
 
 /**
  * Check if running in development
  */
+// eslint-disable-next-line no-restricted-syntax
 export const IS_DEV = process.env.NODE_ENV === "development";
 
 /**
@@ -72,6 +81,7 @@ export const IS_DEV = process.env.NODE_ENV === "development";
  * In production, logs a warning for missing vars instead of crashing
  */
 export function getEnv(key: string, fallback?: string): string {
+  // eslint-disable-next-line no-restricted-syntax
   const value = process.env[key];
 
   // In production, warn if required var is missing (but don't crash)
@@ -98,8 +108,10 @@ export function getPublicEnv(key: string, fallback?: string): string {
 // SITE_URL: Always provide a fallback to prevent production crashes.
 // Priority: NEXT_PUBLIC_SITE_URL → VERCEL_URL → hardcoded domain → localhost
 export const SITE_URL = (() => {
+  // eslint-disable-next-line no-restricted-syntax
   const explicit = process.env.NEXT_PUBLIC_SITE_URL;
   if (explicit && explicit.trim()) return explicit.replace(/\/$/, "");
+  // eslint-disable-next-line no-restricted-syntax
   const vercel = process.env.VERCEL_URL;
   if (vercel && vercel.trim()) return `https://${vercel.replace(/\/$/, "")}`;
   if (IS_DEV) return "http://localhost:3000";

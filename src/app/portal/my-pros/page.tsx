@@ -147,6 +147,7 @@ export default function MyProsPage() {
           url: shareUrl,
         });
         toast.success("Shared successfully!");
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       } catch (_error) {
         // User cancelled or share failed - try clipboard
         await copyToClipboard(shareUrl);
@@ -177,6 +178,7 @@ export default function MyProsPage() {
     );
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const ProCard = ({ pro, onUnsave, onConnect, onMessage, onShare, isSaved }: any) => (
     <Card className="group overflow-hidden transition-all hover:shadow-xl">
       {/* Cover Photo */}

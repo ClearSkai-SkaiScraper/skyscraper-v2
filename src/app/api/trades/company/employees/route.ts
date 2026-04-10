@@ -124,6 +124,7 @@ export const PATCH = withAuth(async (req: NextRequest, { userId }) => {
     }
 
     // Build update data
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const updateData: Record<string, any> = {};
     if (typeof isAdmin === "boolean") updateData.isAdmin = isAdmin;
     if (typeof canEditCompany === "boolean") updateData.canEditCompany = canEditCompany;

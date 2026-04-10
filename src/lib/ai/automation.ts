@@ -3,6 +3,7 @@ import { getOpenAI } from "@/lib/openai";
 import { CLAIM_AUTOMATION_PROMPT } from "@/lib/supplement/ai-prompts";
 
 type RunClaimAutomationInput = {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   claimContext: any; // you can strongly type later
 };
 

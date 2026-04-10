@@ -32,7 +32,9 @@ export default function ProductionVerificationPage() {
 
     // Detect environment
     const env = {
+      // eslint-disable-next-line no-restricted-syntax
       vercelEnv: process.env.NEXT_PUBLIC_VERCEL_ENV || "development",
+      // eslint-disable-next-line no-restricted-syntax
       commitSha: process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA || "local",
       baseUrl: typeof window !== "undefined" ? window.location.origin : "unknown",
     };

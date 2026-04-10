@@ -86,6 +86,7 @@ export interface StormIntakeResults {
     severity: string;
     confidence: number;
   }>;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   rawAnalysis: any; // Full AI output for debugging
 }
 

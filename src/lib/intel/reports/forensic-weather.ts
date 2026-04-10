@@ -33,8 +33,11 @@ export interface ForensicWeatherInput {
     
     // Event Timeline (10 days before → day of → 48 hours after)
     timeline: {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       tenDaysBefore: any[];
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       dayOfEvent: any[];
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       fortyEightHoursAfter: any[];
     };
     
@@ -43,6 +46,7 @@ export interface ForensicWeatherInput {
       size: string;
       maxSize: number;
       probability: number;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       swathPath?: any;
       impactAngle?: number;
     };
@@ -113,17 +117,20 @@ export interface ForensicWeatherResult {
     summary: string;
     tenDaysBefore: {
       description: string;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       weatherEvents: any[];
       relevance: string;
     };
     dayOfEvent: {
       description: string;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       timelineByHour: any[];
       peakIntensity: string;
       impactWindow: string;
     };
     fortyEightHoursAfter: {
       description: string;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       residualEffects: any[];
       subsequentDamage: string;
     };
@@ -142,6 +149,7 @@ export interface ForensicWeatherResult {
     };
     windAnalysis: {
       microburstDetected: boolean;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       gustFronts: any[];
       tornadicSignatures: boolean;
       impactVelocity: string;
@@ -589,6 +597,7 @@ function identifyImpactedElevations(input: ForensicWeatherInput) {
 }
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
+// eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars
 function calculateCorrelationScore(location: any, weather: any): number {
   // Higher severity + more impacts = higher correlation
   const severityFactor = location.severity * 10;

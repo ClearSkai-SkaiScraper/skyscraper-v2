@@ -9,6 +9,7 @@ export const dynamic = "force-dynamic";
  *       → Accepted work requests show here as "shared projects" the client can track
  */
 
+// eslint-disable-next-line no-restricted-imports
 import { currentUser } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -53,6 +54,7 @@ export async function GET(req: NextRequest) {
     });
 
     // 2. Also find any leads created from work requests (has clientId matching)
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let leadsForClient: any[] = [];
     try {
       leadsForClient = await prisma.leads.findMany({

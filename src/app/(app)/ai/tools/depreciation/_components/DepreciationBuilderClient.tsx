@@ -260,6 +260,7 @@ export function DepreciationBuilderClient({
           // Set line items from API
           if (data.lineItems && data.lineItems.length > 0) {
             setLineItems(
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
               data.lineItems.map((item: any) => ({
                 id: item.id,
                 description: item.description,
@@ -280,6 +281,7 @@ export function DepreciationBuilderClient({
           // Set supplements from API
           if (data.supplements && data.supplements.length > 0) {
             setSupplements(
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
               data.supplements.map((s: any) => ({
                 id: s.id,
                 description: s.description,
@@ -304,6 +306,7 @@ export function DepreciationBuilderClient({
           // Set generated packet URL if exists
           if (data.documents && data.documents.length > 0) {
             const packet = data.documents.find(
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
               (d: any) => d.type === "FINAL_PACKET" || d.type === "DEPRECIATION"
             );
             if (packet?.url) {

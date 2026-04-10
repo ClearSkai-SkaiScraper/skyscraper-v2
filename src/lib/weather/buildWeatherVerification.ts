@@ -67,6 +67,7 @@ async function fetchWeatherStackData(request: WeatherRequest): Promise<{
   windSpeed: string;
   travelPath: string;
 } | null> {
+  // eslint-disable-next-line no-restricted-syntax
   const apiKey = process.env.WEATHERSTACK_API_KEY;
   if (!apiKey) {
     logger.warn("[WEATHER_VERIFY] WeatherStack API key not configured");
@@ -170,6 +171,7 @@ async function fetchRadarLoops(request: WeatherRequest): Promise<{
 /**
  * Extract hail size from weather data
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function extractHailSize(historical: any): string {
   // WeatherStack doesn't directly provide hail size
   // This would need to be enhanced with additional data sources

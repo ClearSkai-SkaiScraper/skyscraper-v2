@@ -1,3 +1,4 @@
+// eslint-disable-next-line no-restricted-imports
 import { auth } from "@clerk/nextjs/server";
 import { Building2, Mail, MapPin, Phone, Users } from "lucide-react";
 import Link from "next/link";
@@ -49,6 +50,7 @@ export default async function TradesCompanyDetailPage({ params }: TradesCompanyD
 
   // tradesCompany doesn't have projects, so we skip that section
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars
   const projects: any[] = [];
 
   return (

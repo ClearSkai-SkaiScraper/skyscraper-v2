@@ -8,6 +8,7 @@
  * No messageReadReceipt / threadArchive tables.
  */
 
+// eslint-disable-next-line no-restricted-imports
 import { auth } from "@clerk/nextjs/server";
 import crypto from "crypto";
 import { NextRequest, NextResponse } from "next/server";

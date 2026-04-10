@@ -61,6 +61,7 @@ export async function POST(request: NextRequest) {
     const hasWeatherData = !!weatherDoc;
 
     // Determine scope info from metadata if available
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const metadata = (claim as any).metadata || {};
     const scopeTotal = metadata.scopeTotal || metadata.estimateTotal || null;
 
@@ -70,8 +71,11 @@ export async function POST(request: NextRequest) {
       insuredName: claim.insured_name || "Insured",
       propertyAddress,
       dateOfLoss: claim.dateOfLoss?.toISOString().split("T")[0] || "Not specified",
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       dateOfInspection: (claim as any).inspectionDate?.toISOString().split("T")[0] || null,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       carrier: (claim as any).carrier || null,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       policyNumber: (claim as any).policyNumber || null,
       damageType: claim.damageType || "Storm damage",
       status: claim.status || "active",

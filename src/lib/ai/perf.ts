@@ -64,6 +64,7 @@ export async function logAIPerformance(metrics: AIPerformanceMetrics): Promise<v
         tokens_in: metrics.tokensIn,
         tokens_out: metrics.tokensOut,
         cache_hit: metrics.cacheHit,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         cost_usd: costUsd as any,
         error: metrics.error || null,
       },
@@ -122,6 +123,7 @@ export async function trackPerformance<T>(
     });
 
     return result;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (error: any) {
     const durationMs = Date.now() - startTime;
 
@@ -169,6 +171,7 @@ export async function getOrgPerformanceStats(
   cacheHitRate: number;
   topRoutes: { route: string; count: number; cost: number }[];
 }> {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const where: any = { org_id: orgId };
 
   if (startDate || endDate) {

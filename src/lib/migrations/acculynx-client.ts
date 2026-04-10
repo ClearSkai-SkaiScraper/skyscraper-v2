@@ -129,6 +129,7 @@ export class AccuLynxClient {
         }
 
         return (await res.json()) as T;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } catch (err: any) {
         lastError = err;
         if (attempt < MAX_RETRIES) {
@@ -210,6 +211,7 @@ export class AccuLynxClient {
     try {
       await this.request("/contacts", { page: 1, pageSize: 1 });
       return { ok: true };
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       return { ok: false, error: err.message };
     }

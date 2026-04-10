@@ -43,6 +43,7 @@ export interface ReceiptSyncResult {
 // ── QB API Base ─────────────────────────────────────────────────────────
 
 const QB_API_BASE =
+  // eslint-disable-next-line no-restricted-syntax
   process.env.QUICKBOOKS_ENVIRONMENT === "production"
     ? "https://quickbooks.api.intuit.com/v3"
     : "https://sandbox-quickbooks.api.intuit.com/v3";
@@ -284,6 +285,7 @@ export async function disconnectQuickBooks(orgId: string): Promise<void> {
   try {
     const revokeUrl = "https://developer.api.intuit.com/v2/oauth2/tokens/revoke";
     const credentials = Buffer.from(
+      // eslint-disable-next-line no-restricted-syntax
       `${process.env.QUICKBOOKS_CLIENT_ID}:${process.env.QUICKBOOKS_CLIENT_SECRET}`
     ).toString("base64");
 

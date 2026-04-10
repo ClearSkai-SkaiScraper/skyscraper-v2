@@ -161,6 +161,7 @@ export default function ContractorPublicPage({ contractor }: { contractor: Contr
               <h2 className="mb-2 text-sm font-semibold">Project Gallery</h2>
               <div className="grid gap-3 md:grid-cols-3">
                 {contractor.gallery.slice(0, 6).map((g, idx) => (
+                  // eslint-disable-next-line react/jsx-no-comment-textnodes
                   <figure key={idx} className="space-y-1">
                     // eslint-disable-next-line @next/next/no-img-element
                     <img

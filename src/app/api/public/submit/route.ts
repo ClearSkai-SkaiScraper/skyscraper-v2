@@ -61,6 +61,7 @@ export async function POST(req: NextRequest) {
       email?: string;
       phone?: string;
       address?: string;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       details?: Record<string, any>;
       photos?: string[];
       trade?: string;

@@ -13,6 +13,7 @@ import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 
 export type ResolveClaimResult =
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   | { ok: true; claim: any; canonicalId: string; inputId: string; foundBy: "id" | "claimNumber" }
   | { ok: false; reason: "NOT_FOUND" | "NO_ORG"; inputId: string; orgId?: string };
 
@@ -63,6 +64,7 @@ export async function resolveClaim(
       inputId,
       foundBy,
     };
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (error: any) {
     logger.error("[resolveClaim] Error:", error);
     return {

@@ -16,13 +16,19 @@ interface LeadData {
   city?: string;
   state?: string;
   description?: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   photos?: any[];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   aiSummaryJson?: any;
   aiUrgencyScore?: number;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   aiNextActions?: any[];
   aiJobType?: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   aiMaterials?: any[];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   aiFlags?: any;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   aiImages?: any[];
   aiConfidence?: number;
 }

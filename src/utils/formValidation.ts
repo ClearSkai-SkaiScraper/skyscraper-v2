@@ -3,6 +3,7 @@ export interface ValidationRule {
   minLength?: number;
   maxLength?: number;
   pattern?: RegExp;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   custom?: (value: any) => boolean;
   message: string;
 }
@@ -15,6 +16,7 @@ export interface ValidationErrors {
   [key: string]: string;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function validateForm(data: Record<string, any>, rules: ValidationRules): ValidationErrors {
   const errors: ValidationErrors = {};
 
@@ -116,6 +118,7 @@ export const commonRules = {
 
   match: (
     otherField: string,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     data: Record<string, any>,
     message = "Fields do not match"
   ): ValidationRule => ({
@@ -123,6 +126,7 @@ export const commonRules = {
     message,
   }),
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   custom: (validator: (value: any) => boolean, message: string): ValidationRule => ({
     custom: validator,
     message,
@@ -132,12 +136,14 @@ export const commonRules = {
 // Real-time validation hook
 import { useCallback,useState } from "react";
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function useFormValidation(initialData: Record<string, any>, rules: ValidationRules) {
   const [data, setData] = useState(initialData);
   const [errors, setErrors] = useState<ValidationErrors>({});
   const [touched, setTouched] = useState<Record<string, boolean>>({});
 
   const validateField = useCallback(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (field: string, value: any) => {
       const fieldRules = rules[field];
       if (!fieldRules) return;
@@ -153,6 +159,7 @@ export function useFormValidation(initialData: Record<string, any>, rules: Valid
   );
 
   const updateField = useCallback(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (field: string, value: any) => {
       setData((prev) => ({ ...prev, [field]: value }));
 

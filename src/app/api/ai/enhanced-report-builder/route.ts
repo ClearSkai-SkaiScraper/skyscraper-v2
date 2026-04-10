@@ -115,7 +115,9 @@ async function POST_INNER(req: NextRequest, ctx: { userId: string; orgId: string
     let weatherData;
     if (options?.includeWeather !== false && claim.dateOfLoss) {
       // fetchWeatherForDOL returns WeatherData | null
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const lat = (property as any).latitude || (property as any).lat || 33.4484; // Default to Phoenix AZ
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const lng = (property as any).longitude || (property as any).lng || -112.074;
       const weatherResult = await fetchWeatherForDOL(lat, lng, claim.dateOfLoss);
 
@@ -230,6 +232,7 @@ async function POST_INNER(req: NextRequest, ctx: { userId: string; orgId: string
           lossType: claim.damageType,
           dol: claim.dateOfLoss,
           address: property.street,
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           sections: reportData as any,
           summary: {
             photoCount: photos.length,

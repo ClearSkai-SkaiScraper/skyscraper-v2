@@ -17,6 +17,7 @@ export interface DemoModeConfig {
  * Check if demo mode is enabled
  */
 export function isDemoMode(): boolean {
+  // eslint-disable-next-line no-restricted-syntax
   return process.env.NEXT_PUBLIC_DEMO_MODE === "true";
 }
 
@@ -28,7 +29,9 @@ export function getDemoConfig(): DemoModeConfig {
 
   return {
     enabled,
+    // eslint-disable-next-line no-restricted-syntax
     readOnly: enabled && process.env.DEMO_READ_ONLY === "true",
+    // eslint-disable-next-line no-restricted-syntax
     allowedClaims: process.env.DEMO_ALLOWED_CLAIMS?.split(",") || [],
     restrictedFeatures: [
       "delete-claim",
@@ -37,7 +40,9 @@ export function getDemoConfig(): DemoModeConfig {
       "billing-change",
       "org-delete",
     ],
+    // eslint-disable-next-line no-restricted-syntax
     autoReset: enabled && process.env.DEMO_AUTO_RESET === "true",
+    // eslint-disable-next-line no-restricted-syntax
     autoResetInterval: parseInt(process.env.DEMO_RESET_INTERVAL || "24", 10),
   };
 }

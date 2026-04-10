@@ -115,7 +115,9 @@ export function TemplatePreviewCard({
           </div>
         )}
       </div>
+      // eslint-disable-next-line react/jsx-no-comment-textnodes
       {/* Thumbnail Preview */}
+      // eslint-disable-next-line react/jsx-no-comment-textnodes
       <div className="relative h-48 cursor-pointer bg-slate-100" onClick={onClick}>
         // eslint-disable-next-line @next/next/no-img-element
         <img

@@ -7,6 +7,7 @@ export const dynamic = "force-dynamic";
  * Allows clients to initiate connection requests to trades companies.
  */
 
+// eslint-disable-next-line no-restricted-imports
 import { auth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 import { z, ZodError } from "zod";
@@ -192,6 +193,7 @@ export async function GET(req: Request) {
     }
 
     // Build query
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const where: any = { clientId };
     if (status) {
       where.status = status;

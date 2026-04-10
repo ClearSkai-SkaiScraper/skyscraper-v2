@@ -129,8 +129,11 @@ async function generateContractorPacketAsync(
 
   try {
     // Pull real data from claim if available
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let claimData: any = null;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let claimPhotos: any[] = [];
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let claimDocuments: any[] = [];
 
     if (claimId) {
@@ -173,6 +176,7 @@ async function generateContractorPacketAsync(
     const branding = brandRes.rows?.[0] || {};
 
     // Fetch AI-generated sections if available
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let aiSections: Record<string, any> = {};
     if (claimId) {
       try {

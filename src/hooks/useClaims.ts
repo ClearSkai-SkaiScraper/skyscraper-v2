@@ -50,6 +50,7 @@ export function useClaims(): UseClaimsResult {
       const arr = Array.isArray(data) ? data : Array.isArray(data?.claims) ? data.claims : [];
 
       setClaims(
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         arr.map((c: any) => ({
           id: String(c.id),
           claimNumber: c.claimNumber ?? c.claim_number ?? null,
@@ -61,6 +62,7 @@ export function useClaims(): UseClaimsResult {
           createdAt: c.createdAt ?? null,
         }))
       );
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (e: any) {
       setClaims([]);
       setError(e?.message || "Unknown error fetching claims");

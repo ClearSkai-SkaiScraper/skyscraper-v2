@@ -59,6 +59,7 @@ export function useReportDraft(initial?: Partial<ReportDraftState>) {
       setBusy(true);
       try {
         const html = renderPdfHtml(mode, {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           brand: { logoUrl: (window as any).__BRAND_LOGO__ || "" },
           heading:
             mode === "retail"

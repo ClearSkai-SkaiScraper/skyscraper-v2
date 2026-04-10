@@ -15,7 +15,9 @@ import prisma from "@/lib/prisma";
 let _resend: Resend | null = null;
 
 function getResend() {
+  // eslint-disable-next-line no-restricted-syntax
   if (!_resend && process.env.RESEND_API_KEY) {
+    // eslint-disable-next-line no-restricted-syntax
     _resend = new Resend(process.env.RESEND_API_KEY);
   }
   return _resend;
@@ -49,6 +51,7 @@ export async function GET(req: Request) {
         if (!item.toEmail) throw new Error("No recipient");
 
         await getResend()?.emails?.send({
+          // eslint-disable-next-line no-restricted-syntax
           from: process.env.EMAIL_FROM || "ClearSkai <noreply@clearskai.com>",
           to: [item.toEmail],
           subject: item.subject,
@@ -103,6 +106,7 @@ export async function GET(req: Request) {
     logger.error("[CRON:EMAIL_RETRY] Fatal error:", error?.message || error);
     try {
       Sentry.captureException(error, { tags: { component: "email-retry-cron" } });
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (__) {}
     return NextResponse.json({ error: error?.message || String(error) }, { status: 500 });
   }

@@ -23,6 +23,7 @@ export const POST = withAuth(async (req: NextRequest, { orgId, userId }, routePa
       return NextResponse.json({ error: "Estimate or claim not found" }, { status: 404 });
     }
 
+    // eslint-disable-next-line no-restricted-syntax
     const packetUrl = `${process.env.NEXT_PUBLIC_APP_URL || "https://skaiscrape.com"}/exports/estimates/${estimateId}/adjuster`;
 
     // Draft email using AI

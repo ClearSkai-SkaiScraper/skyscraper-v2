@@ -11,6 +11,7 @@ export function withObs(handler: (req: Request, ctx: { reqId: string }) => Promi
         JSON.stringify({
           level: "info",
           msg: "ok",
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           route: (req as any).url,
           reqId,
           ms: Date.now() - t0,
@@ -24,6 +25,7 @@ export function withObs(handler: (req: Request, ctx: { reqId: string }) => Promi
           ...Object.fromEntries(res.headers.entries()),
         },
       });
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (e: any) {
       console.error(
         JSON.stringify({
@@ -31,6 +33,7 @@ export function withObs(handler: (req: Request, ctx: { reqId: string }) => Promi
           msg: e?.message || "route error",
           stack: e?.stack,
           reqId,
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           route: (req as any).url,
           ms: Date.now() - t0,
         })

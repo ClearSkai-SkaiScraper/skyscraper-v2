@@ -75,6 +75,7 @@ export default function ProCard({
       setSaved(!saved);
       onSaveToggle?.(id, !saved);
       toast.success(saved ? "Removed from My Pros" : "Added to My Pros! 🎉");
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       toast.error(err.message || "Failed to save pro");
     } finally {
@@ -104,6 +105,7 @@ export default function ProCard({
       setConnected(true);
       onConnect?.(id);
       toast.success("Connection request sent! 🎉");
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       toast.error(err.message || "Failed to connect");
     } finally {

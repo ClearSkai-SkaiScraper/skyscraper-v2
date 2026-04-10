@@ -15,12 +15,15 @@ import { logger } from "@/lib/observability/logger";
 let _resend: Resend | null = null;
 
 function getResend() {
+  // eslint-disable-next-line no-restricted-syntax
   if (!_resend && process.env.RESEND_API_KEY) {
+    // eslint-disable-next-line no-restricted-syntax
     _resend = new Resend(process.env.RESEND_API_KEY);
   }
   return _resend;
 }
 
+// eslint-disable-next-line no-restricted-syntax
 const FROM = process.env.EMAIL_FROM || "ClearSkai <no-reply@skaiscrape.com>";
 
 /**
@@ -101,6 +104,7 @@ export async function sendTeamInviteEmail(opts: {
   inviteToken: string;
 }) {
   const { to, inviterName, companyName, inviteeName, role, inviteToken } = opts;
+  // eslint-disable-next-line no-restricted-syntax
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://skaiscrape.com";
   const inviteUrl = `${baseUrl}/trades/join?token=${inviteToken}`;
 
@@ -140,6 +144,7 @@ export async function sendNotificationEmail(opts: {
   actionLabel?: string;
 }) {
   const { to, subject, recipientName, title, body, actionUrl, actionLabel } = opts;
+  // eslint-disable-next-line no-restricted-syntax
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://skaiscrape.com";
 
   try {

@@ -48,6 +48,7 @@ export interface PhotoEvent {
   location?: string;
   damageType?: string;
   confidence: number;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   metadata?: any;
 }
 
@@ -98,6 +99,7 @@ export interface PipelineEvent {
   timestamp: Date;
   stageName: string;
   eventType: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   metadata?: any;
   confidence: number;
 }
@@ -124,6 +126,7 @@ export interface TimelineEvent {
   description: string;
   source: string; // 'photo', 'note', 'storm', 'carrier', 'video', 'dominus', 'pipeline', 'task'
   confidence: number; // 0-100
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   metadata?: any;
   severity?: "low" | "medium" | "high" | "critical";
 }
@@ -235,9 +238,11 @@ export async function gatherClaimSources(claimId: string): Promise<ClaimSource> 
   if (!claim) throw new Error(`Claim ${claimId} not found`);
 
   // Get photos - skip if table doesn't exist
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const photos: any[] = [];
 
   // Get notes (from lead/claim)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const notes: any[] = []; // TODO: Add notes model if it exists
 
   // Get pipeline events
@@ -258,7 +263,9 @@ export async function gatherClaimSources(claimId: string): Promise<ClaimSource> 
     photos: photos.map((p) => ({
       id: p.id,
       timestamp: p.createdAt,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       location: (p.metadata as any)?.location,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       damageType: (p.metadata as any)?.damageType,
       confidence: 80,
       metadata: p.metadata,

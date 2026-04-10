@@ -652,6 +652,7 @@ export default function RetailProposalBuilderPage() {
                 context={
                   {
                     intent: "homeowner_estimate",
+                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
                   } as any
                 }
                 compact

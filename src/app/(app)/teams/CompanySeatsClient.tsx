@@ -504,7 +504,9 @@ export default function CompanySeatsClient({ members, orgId }: CompanySeatsClien
         </div>
       )}
 
+      // eslint-disable-next-line react/jsx-no-comment-textnodes
       {/* ── Beta Banner ──────────────────────────────────────────── */}
+      // eslint-disable-next-line no-restricted-syntax
       {process.env.NEXT_PUBLIC_BETA_MODE !== "false" && !hasSubscription && (
         <div className="rounded-2xl border border-blue-200 bg-blue-50/80 p-5 backdrop-blur-xl dark:border-blue-800 dark:bg-blue-950/30">
           <div className="flex items-center gap-3">

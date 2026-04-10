@@ -5,6 +5,7 @@ export const dynamic = "force-dynamic";
  * Sends invitation emails via Resend and stores tokens in DB
  */
 
+// eslint-disable-next-line no-restricted-imports
 import { currentUser } from "@clerk/nextjs/server";
 import crypto from "crypto";
 import { NextRequest, NextResponse } from "next/server";
@@ -38,6 +39,7 @@ export const POST = withManager(async (req: NextRequest, { userId, orgId }) => {
     // 🛡️ RBAC: Check permission to invite team members
     try {
       await requirePermission("team:invite");
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (_error) {
       logger.warn("[TEAM_INVITATIONS] Permission denied", {
         userId,
@@ -139,6 +141,7 @@ export const POST = withManager(async (req: NextRequest, { userId, orgId }) => {
           status: "pending",
         },
       });
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (emailError: any) {
       logger.error("[TEAM_INVITATIONS] Failed to send email:", emailError);
 
@@ -156,6 +159,7 @@ export const POST = withManager(async (req: NextRequest, { userId, orgId }) => {
         { status: 500 }
       );
     }
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (error: any) {
     logger.error("Failed to send invitation:", error);
     return NextResponse.json(

@@ -62,6 +62,7 @@ export async function logClaimActivity(params: LogActivityParams) {
         description: body ?? title,
         actor_id: createdById,
         visible_to_client: visibleToClient,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         metadata: { title } as unknown as any,
       },
     });
@@ -95,6 +96,7 @@ export async function getClaimActivity(
       id: e.id,
       claim_id: e.claim_id,
       type: e.type,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       title: (e.metadata as any)?.title ?? e.type,
       body: e.description,
       createdAt: e.occurred_at,

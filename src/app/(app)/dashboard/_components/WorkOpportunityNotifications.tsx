@@ -67,6 +67,7 @@ export default function WorkOpportunityNotifications() {
 
       toast.success(accept ? "Invitation accepted!" : "Invitation declined");
       void mutate();
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (_err) {
       toast.error("Failed to respond to invitation");
     } finally {

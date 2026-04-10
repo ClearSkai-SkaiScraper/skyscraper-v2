@@ -66,6 +66,7 @@ export default async function PublicProfilePage({ params }: ProfilePageProps) {
   }
 
   // Load public feed posts for this company
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let posts: any[] = [];
   try {
     const feedPosts = await prisma.tradesPost.findMany({

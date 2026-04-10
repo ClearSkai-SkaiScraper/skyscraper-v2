@@ -98,6 +98,7 @@ export async function safeServerAction<T>(
  * @param requiredFields - Array of required field names
  * @throws Error if any required field is missing
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function validateRequiredFields(data: Record<string, any>, requiredFields: string[]): void {
   const missingFields = requiredFields.filter((field) => !data[field]);
 

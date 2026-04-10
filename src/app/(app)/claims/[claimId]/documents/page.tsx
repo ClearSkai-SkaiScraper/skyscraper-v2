@@ -58,7 +58,9 @@ export default function ClaimDocumentsPage() {
       setError(""); // Clear any previous errors
     } catch (err) {
       logger.error("[CLAIMS_DOCS] Fetch error:", {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         status: (err as any).status,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         message: (err as any).message,
         claimId,
       });

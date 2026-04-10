@@ -20,6 +20,7 @@ const SALT_LENGTH = 64;
  * Get backup encryption key
  */
 function getBackupKey(): string {
+  // eslint-disable-next-line no-restricted-syntax
   const key = process.env.BACKUP_ENCRYPTION_KEY || process.env.ENCRYPTION_KEY;
 
   if (!key) {
@@ -161,6 +162,7 @@ export async function createEncryptedBackup(
   } catch (error) {
     logger.error("Failed to create encrypted backup:", error);
     // Cleanup temp file if it exists
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     await execAsync(`rm -f ${tempPath}`).catch((e: any) => {
       logger.debug(`[BACKUP] Temp file cleanup failed: ${e?.message}`);
     });
@@ -197,6 +199,7 @@ export async function restoreEncryptedBackup(
   } catch (error) {
     logger.error("Failed to restore encrypted backup:", error);
     // Cleanup temp file if it exists
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     await execAsync(`rm -f ${tempPath}`).catch((e: any) => {
       logger.debug(`[BACKUP] Restore temp file cleanup failed: ${e?.message}`);
     });

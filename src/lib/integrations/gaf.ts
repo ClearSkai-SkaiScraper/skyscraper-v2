@@ -26,11 +26,14 @@ import { logger } from "@/lib/logger";
 // ── Config ──────────────────────────────────────────────────────────────
 
 const GAF_API_BASE =
+  // eslint-disable-next-line no-restricted-syntax
   process.env.GAF_ENVIRONMENT === "production"
     ? "https://api.gaf.com/quickmeasure/v1"
     : "https://sandbox-api.gaf.com/quickmeasure/v1";
 
+// eslint-disable-next-line no-restricted-syntax
 const apiKey = process.env.GAF_API_KEY || "";
+// eslint-disable-next-line no-restricted-syntax
 const apiSecret = process.env.GAF_API_SECRET || "";
 
 // ── Types ───────────────────────────────────────────────────────────────

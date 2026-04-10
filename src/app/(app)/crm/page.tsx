@@ -50,6 +50,7 @@ export default function CRMPage() {
   const [teamPosts, setTeamPosts] = useState<TeamPost[]>([]);
   const [loading, setLoading] = useState(true);
   const [newPostMessage, setNewPostMessage] = useState("");
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [branding, setBranding] = useState<any>(null);
 
   useEffect(() => {
@@ -385,6 +386,7 @@ export default function CRMPage() {
                           <span className="text-sm font-medium">
                             {post.authorId === user?.id
                               ? user?.fullName || "You"
+                              // eslint-disable-next-line @typescript-eslint/no-explicit-any
                               : (post as any).authorName || "Team Member"}
                           </span>
                           <div className="flex items-center gap-2">

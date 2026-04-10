@@ -34,6 +34,7 @@ export interface UseAIStreamReturn {
   isStreaming: boolean;
   isComplete: boolean;
   error: string | null;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   startStream: (url: string, body?: any) => Promise<void>;
   cancelStream: () => void;
   reset: () => void;
@@ -75,6 +76,7 @@ export function useAIStream(options: UseAIStreamOptions = {}): UseAIStreamReturn
   }, [cancelStream]);
 
   const startStream = useCallback(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     async (url: string, body?: any) => {
       reset();
       setIsStreaming(true);

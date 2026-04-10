@@ -314,6 +314,7 @@ export async function createCollage(
       metadatas.reduce((sum, m) => sum + (m.width || 0), 0) + spacing * (images.length - 1);
     const maxHeight = Math.max(...metadatas.map((m) => m.height || 0));
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const composite: any[] = [];
     let xOffset = 0;
 

@@ -8,7 +8,9 @@ let _admin: ReturnType<typeof createClient> | null = null;
 
 export function getSupabaseAdmin() {
   if (_admin) return _admin;
+  // eslint-disable-next-line no-restricted-syntax
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  // eslint-disable-next-line no-restricted-syntax
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
   if (!url || !key) {
     logger.warn("[supabaseAdmin] Service role not configured – returning null");

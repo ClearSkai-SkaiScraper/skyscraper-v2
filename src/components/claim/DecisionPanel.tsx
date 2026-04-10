@@ -65,8 +65,10 @@ interface DisputePackage {
   subjectLine: string;
   bodyMarkdown: string;
   bodyHtml?: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   timelineSnapshot?: any;
   legalReferences?: string[];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   damageEvidence?: any;
   createdAt: string;
 }

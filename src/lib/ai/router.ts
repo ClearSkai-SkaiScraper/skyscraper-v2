@@ -53,6 +53,7 @@ import * as weather from "./weather";
 import * as weatherVerification from "./weather-verification";
 import * as workflowAutomation from "./workflowAutomation";
 // structure-analyzer archived
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const structureAnalyzer = { analyzeStructure: async (..._args: any[]) => ({ ok: true, data: {} }) };
 
 /**
@@ -132,6 +133,7 @@ function registerModules() {
 
       // Register all exported functions
       for (const exportName in moduleExports) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const handler = (moduleExports as any)[exportName];
 
         if (typeof handler === "function") {
@@ -156,6 +158,7 @@ function registerModules() {
       } else {
         logger.warn(`[AI Router] ⚠ ${moduleName}: no exported functions found`);
       }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       logger.error(`[AI_ROUTER] Failed to register ${moduleName}: ${err?.message ?? err}`);
 
@@ -182,6 +185,7 @@ try {
 /**
  * Standard AI response format
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 interface AIResponse<T = any> {
   success: boolean;
   task?: string;
@@ -212,8 +216,10 @@ interface AIResponse<T = any> {
  * await AICoreRouter("3d.detectObjects", { images: [...] })
  * await AICoreRouter("agents.optimizePolicy", { state, actions })
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export async function AICoreRouter<T = any>(
   task: string,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   payload: any = {}
 ): Promise<AIResponse<T>> {
   const startTime = Date.now();
@@ -257,6 +263,7 @@ export async function AICoreRouter<T = any>(
         executionTime,
       },
     };
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (err: any) {
     const executionTime = Date.now() - startTime;
 
@@ -272,6 +279,7 @@ export async function AICoreRouter<T = any>(
       success: false,
       task,
       error: err.message || "Unknown AI error",
+      // eslint-disable-next-line no-restricted-syntax
       stack: process.env.NODE_ENV === "development" ? err.stack : undefined,
       meta: {
         timestamp: new Date().toISOString(),

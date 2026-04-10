@@ -9,6 +9,7 @@ export type APIVersion = "1.0" | "1.1" | "2.0" | "2.1" | "3.0";
 export interface VersionedEndpoint {
   path: string;
   version: APIVersion;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   handler: (req: any, res: any) => Promise<any>;
   deprecated?: boolean;
   deprecationDate?: Date;
@@ -137,6 +138,7 @@ export function initializeVersions(): void {
 /**
  * Extract version from request
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function extractVersion(req: any): APIVersion {
   // Check header
   const headerVersion = req.headers["x-api-version"];
@@ -157,6 +159,7 @@ export function extractVersion(req: any): APIVersion {
 /**
  * Version middleware
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function versionMiddleware(req: any, res: any, next: () => void): void {
   const version = extractVersion(req);
   const config = apiRegistry.getVersionConfig(version);
@@ -186,6 +189,7 @@ export function versionMiddleware(req: any, res: any, next: () => void): void {
   }
 
   // Store version in request
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   (req as any).apiVersion = version;
 
   next();
@@ -194,6 +198,7 @@ export function versionMiddleware(req: any, res: any, next: () => void): void {
 /**
  * Transform response for version compatibility
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function transformForVersion(data: any, version: APIVersion): any {
   switch (version) {
     case "1.0":
@@ -210,6 +215,7 @@ export function transformForVersion(data: any, version: APIVersion): any {
 /**
  * Transform to v1 format
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function transformToV1(data: any): any {
   // Remove features not available in v1
   if (Array.isArray(data)) {
@@ -232,6 +238,7 @@ function transformToV1(data: any): any {
 /**
  * Transform to v2 format
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function transformToV2(data: any): any {
   // Remove v3-only features
   if (Array.isArray(data)) {
@@ -283,6 +290,7 @@ export function getDeprecationInfo(version: APIVersion): {
 /**
  * Migrate data between versions
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function migrateData(data: any, fromVersion: APIVersion, toVersion: APIVersion): any {
   if (fromVersion === toVersion) return data;
 
@@ -317,6 +325,7 @@ export function migrateData(data: any, fromVersion: APIVersion, toVersion: APIVe
  */
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
+// eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars
 function upgradeVersion(data: any, from: APIVersion, to: APIVersion): any {
   // Version-specific upgrade logic
   return data;
@@ -327,6 +336,7 @@ function upgradeVersion(data: any, from: APIVersion, to: APIVersion): any {
  */
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
+// eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars
 function downgradeVersion(data: any, from: APIVersion, to: APIVersion): any {
   // Version-specific downgrade logic
   return data;

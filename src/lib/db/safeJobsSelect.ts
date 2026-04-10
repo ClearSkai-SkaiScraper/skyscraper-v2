@@ -14,6 +14,7 @@ export async function safeJobsSelect(orgId: string, take = 50) {
     }));
     Sentry.addBreadcrumb({ category: 'jobs', level: 'info', message: 'jobs.full.success', data: { count: jobs.length } });
     return jobs;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (e: any) {
     const msg = String(e?.message || '').toLowerCase();
     const drift = msg.includes('does not exist') || msg.includes('column') || msg.includes('jobtype');
@@ -30,6 +31,7 @@ export async function safeJobsSelect(orgId: string, take = 50) {
       }));
       Sentry.addBreadcrumb({ category: 'jobs', level: 'info', message: 'jobs.fallback.success', data: { count: raw.length } });
       return raw.map(j => ({ id: j.id, title: j.title, status: null, jobType: null, scheduledStart: null, scheduledEnd: null }));
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (fallbackErr: any) {
       Sentry.captureMessage('safeJobsSelect: fallback failed', { level: 'error', contexts: { fallback: { message: fallbackErr?.message } } });
       return [];

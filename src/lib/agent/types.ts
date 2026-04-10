@@ -11,6 +11,7 @@ export interface AgentMission {
   cron?: string; // cron schedule, optional
   requiresApproval?: boolean; // Phase 6: inline processor support
   preconditions(jobId: string): Promise<boolean>;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   execute(jobId: string, payload?: any): Promise<AgentResult>;
 }
 
@@ -19,6 +20,7 @@ export interface AgentResult {
   message: string;
   next?: MissionId | null; // chained missions
   requiresApproval?: boolean;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   metadata?: Record<string, any>;
 }
 
@@ -53,6 +55,7 @@ export interface AgentEvent {
   missionId?: MissionId;
   actor: "AI" | "USER" | "SYSTEM";
   message: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   metadata?: Record<string, any>;
   createdAt: Date;
 }

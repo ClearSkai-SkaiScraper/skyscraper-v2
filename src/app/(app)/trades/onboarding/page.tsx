@@ -245,6 +245,7 @@ export default function TradesOnboardingPage() {
             <div
               className="relative h-48 cursor-pointer overflow-hidden rounded-lg border-2 border-dashed border-gray-300 bg-gray-50 transition hover:border-blue-500"
               onClick={() => coverInputRef.current?.click()}
+            // eslint-disable-next-line react/jsx-no-comment-textnodes
             >
               // eslint-disable-next-line @next/next/no-img-element
               {coverPreview ? (
@@ -275,6 +276,7 @@ export default function TradesOnboardingPage() {
               <div
                 className="flex h-32 w-32 cursor-pointer items-center justify-center overflow-hidden rounded-full border-4 border-dashed border-gray-300 bg-gray-50 transition hover:border-blue-500"
                 onClick={() => avatarInputRef.current?.click()}
+              // eslint-disable-next-line react/jsx-no-comment-textnodes
               >
                 // eslint-disable-next-line @next/next/no-img-element
                 {avatarPreview ? (
@@ -425,6 +427,7 @@ export default function TradesOnboardingPage() {
                 <div
                   className="flex h-20 w-20 cursor-pointer items-center justify-center overflow-hidden rounded-lg border-2 border-dashed border-gray-300 bg-gray-50 transition hover:border-blue-500"
                   onClick={() => logoInputRef.current?.click()}
+                // eslint-disable-next-line react/jsx-no-comment-textnodes
                 >
                   // eslint-disable-next-line @next/next/no-img-element
                   {logoPreview ? (

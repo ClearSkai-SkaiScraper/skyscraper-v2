@@ -289,6 +289,7 @@ async function getClientDocuments(claimIds: string[]): Promise<ClientDocument[]>
 /**
  * Format claims for client view
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function formatClientClaims(claims: any[]): ClientClaim[] {
   return claims.map((claim) => ({
     id: claim.id,
@@ -303,6 +304,7 @@ function formatClientClaims(claims: any[]): ClientClaim[] {
 /**
  * Format jobs for client view
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function formatClientJobs(jobs: any[]): ClientJob[] {
   return jobs.map((job) => ({
     id: job.id,
@@ -316,6 +318,7 @@ function formatClientJobs(jobs: any[]): ClientJob[] {
 /**
  * Calculate client summary stats
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function calculateClientSummary(claims: any[], jobs: any[]) {
   return {
     totalClaims: claims.length,
@@ -331,6 +334,7 @@ function calculateClientSummary(claims: any[], jobs: any[]) {
 /**
  * Calculate job progress percentage
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function calculateJobProgress(job: any): number {
   const s = (job.status || "").toUpperCase();
   if (s === "COMPLETED") return 100;

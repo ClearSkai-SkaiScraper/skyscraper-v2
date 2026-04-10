@@ -24,6 +24,7 @@ export function CompletionUploadZone({
   onUploadComplete,
 }: CompletionUploadZoneProps) {
   const [uploading, setUploading] = useState(false);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [uploadedFiles, setUploadedFiles] = useState<any[]>([]);
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [progress, setProgress] = useState(0);

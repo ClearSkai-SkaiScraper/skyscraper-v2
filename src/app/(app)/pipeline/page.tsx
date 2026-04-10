@@ -221,7 +221,9 @@ export default async function PipelinePage({
 }) {
   const { q: searchQuery } = await searchParams;
   let orgId: string | null = null;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let jobs: any[] = [];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let stats: any[] = [];
 
   try {
@@ -238,6 +240,7 @@ export default async function PipelinePage({
     // If no orgId, continue with empty state — don't redirect
   } catch (error) {
     // Re-throw redirect errors (Next.js uses throw for redirects)
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     if ((error as any)?.digest?.startsWith?.("NEXT_REDIRECT")) throw error;
     logger.error("[PipelinePage] Error:", error);
   }

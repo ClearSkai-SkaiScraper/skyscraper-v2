@@ -218,6 +218,7 @@ Write in a professional, objective tone. Be specific and reference observable fa
 /**
  * Convert scope to estimator-friendly JSON format
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function generateEstimateJson(scope: Scope): Record<string, any> {
   return {
     version: "1.0",

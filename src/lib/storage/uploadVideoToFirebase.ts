@@ -20,6 +20,7 @@ export async function uploadVideoToFirebase(
 
     const url = await getDownloadURL(storageRef);
     return url;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (err: any) {
     console.error("[FIREBASE_VIDEO] Upload error", { error: err.message });
     throw new Error("Failed to upload video to Firebase");

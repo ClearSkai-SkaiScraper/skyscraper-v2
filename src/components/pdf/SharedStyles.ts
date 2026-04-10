@@ -79,8 +79,11 @@ export const baseStyles = StyleSheet.create({
 
 export function getThemeColors(data: ReportData) {
   return {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     primary: (data.org as any).primaryColor ?? "#111827",
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     secondary: (data.org as any).secondaryColor ?? "#4B5563",
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     accent: (data.org as any).accentColor ?? "#2563EB",
   };
 }

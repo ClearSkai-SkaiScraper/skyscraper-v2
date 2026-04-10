@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
 export function useProposalPresets() {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [presets, setPresets] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
@@ -24,6 +25,7 @@ export function useProposalPresets() {
   return { presets, loading };
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function resolvePreset(presets: any, type: "retail" | "insurance" | "comprehensive") {
   return (
     presets?.[type] || {

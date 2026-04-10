@@ -35,7 +35,9 @@ interface Rule {
   id: string;
   name: string;
   description: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   trigger: any; // DSL object
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   action: any; // DSL object
   priority: number;
   enabled: boolean;
@@ -98,6 +100,7 @@ export function AdminRulesPanel({ orgId }: AdminRulesPanelProps) {
       toast.success("Success", {
         description: `Rule ${enabled ? "enabled" : "disabled"}`,
       });
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (_err) {
       toast.error("Error", {
         description: "Failed to update rule",
@@ -121,6 +124,7 @@ export function AdminRulesPanel({ orgId }: AdminRulesPanelProps) {
       toast.success("Success", {
         description: "Rule deleted",
       });
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (_err) {
       toast.error("Error", {
         description: "Failed to delete rule",
@@ -343,6 +347,7 @@ function RuleEditor({ rule, onSave, onCancel }: RuleEditorProps) {
       // API call would go here
       // For now, just return the data
       onSave(ruleData);
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (_err) {
       toast.error("Invalid JSON", {
         description: "Please check your DSL syntax",

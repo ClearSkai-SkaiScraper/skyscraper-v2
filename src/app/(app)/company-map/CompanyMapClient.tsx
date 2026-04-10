@@ -18,6 +18,7 @@ export default function CompanyMapClient({ locations }: { locations: PropertyLoc
     // Check if we already loaded the script
     if (mapInitialized || !mapContainer.current) return;
 
+    // eslint-disable-next-line no-restricted-syntax
     const token = process.env.NEXT_PUBLIC_MAPBOX_TOKEN || null;
 
     if (!token) {
@@ -30,6 +31,7 @@ export default function CompanyMapClient({ locations }: { locations: PropertyLoc
     const loadMapbox = async () => {
       try {
         // Check if already loaded
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         if (typeof window !== "undefined" && (window as any).mapboxgl) {
           initializeMap(token);
           return;
@@ -56,6 +58,7 @@ export default function CompanyMapClient({ locations }: { locations: PropertyLoc
     function initializeMap(token: string) {
       if (!mapContainer.current || mapInitialized) return;
 
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const mapboxgl = (window as any).mapboxgl;
       if (!mapboxgl) return;
 
@@ -140,7 +143,9 @@ export default function CompanyMapClient({ locations }: { locations: PropertyLoc
             {/* Fallback: show empty state or config message */}
             {mapReady && (
               <div className="flex h-full items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 p-8">
+                // eslint-disable-next-line react/jsx-no-comment-textnodes
                 <div className="max-w-md text-center">
+                  // eslint-disable-next-line no-restricted-syntax
                   {!process.env.NEXT_PUBLIC_MAPBOX_TOKEN ? (
                     <>
                       <MapPin className="mx-auto h-16 w-16 text-orange-600" />

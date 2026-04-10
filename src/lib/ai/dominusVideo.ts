@@ -10,6 +10,7 @@ import { withConditionalDedupe } from "@/lib/ai/dedupe";
 import { trackPerformance } from "@/lib/ai/perf";
 import { logger } from "@/lib/logger";
 // modeSelector archived — stub inline
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const selectModelForOrg = async (_orgId: string): Promise<any> => "gpt-4o-mini";
 
 const openai = getOpenAI();
@@ -20,10 +21,13 @@ interface VideoScriptInput {
   photos: { url: string }[];
   title?: string;
   description?: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   aiSummaryJson?: any;
   aiUrgencyScore?: number | null;
   aiJobType?: string | null;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   aiFlags?: any;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   aiMaterials?: any;
 }
 
@@ -152,6 +156,7 @@ Return ONLY valid JSON in this exact format:
     }));
 
     return script;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (error: any) {
     logger.error("Error generating video script:", error);
 

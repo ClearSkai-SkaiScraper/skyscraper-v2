@@ -5,6 +5,7 @@ export const revalidate = 0;
 
 export default async function NotesPage() {
   const supabase = await getAnonClient();
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const { data: notes, error } = await (supabase as any)
     .from("notes")
     .select("id,title,inserted_at");

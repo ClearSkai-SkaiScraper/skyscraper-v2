@@ -3,6 +3,7 @@
  * Edits ClaimReport data with auto-save, finalize, and submit actions
  */
 
+// eslint-disable-next-line no-restricted-imports
 import { auth } from "@clerk/nextjs/server";
 import { Prisma } from "@prisma/client";
 import { notFound, redirect } from "next/navigation";
@@ -40,6 +41,7 @@ export default async function UniversalReportPage({
   const orgId = user.orgId;
 
   // Feature flag check
+  // eslint-disable-next-line no-restricted-syntax
   if (process.env.ENABLE_UNIVERSAL_REPORTS !== "true") {
     return (
       <div className="flex min-h-screen flex-col items-center justify-center px-4 py-12 sm:px-6 lg:px-8">

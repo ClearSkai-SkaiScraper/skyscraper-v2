@@ -12,10 +12,12 @@ interface ActivityLog {
   action: string;
   description: string;
   userId: string | null;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   metadata: Record<string, any>;
   createdAt: string;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const ACTION_ICONS: Record<string, any> = {
   claim_created: FileText,
   claim_updated: FileText,

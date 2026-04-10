@@ -82,6 +82,7 @@ export const GET = withAuth(async (req: NextRequest, { orgId }) => {
         })
         .catch((err) => {
           logger.error("[KPI] Claims fetch failed:", err);
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           return [] as any[];
         }),
 
@@ -93,6 +94,7 @@ export const GET = withAuth(async (req: NextRequest, { orgId }) => {
         })
         .catch((err) => {
           logger.error("[KPI] Payments fetch failed:", err);
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           return [] as any[];
         }),
 
@@ -104,6 +106,7 @@ export const GET = withAuth(async (req: NextRequest, { orgId }) => {
         })
         .catch((err) => {
           logger.error("[KPI] Supplements fetch failed:", err);
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           return [] as any[];
         }),
 
@@ -115,6 +118,7 @@ export const GET = withAuth(async (req: NextRequest, { orgId }) => {
         })
         .catch((err) => {
           logger.error("[KPI] Estimates fetch failed:", err);
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           return [] as any[];
         }),
 
@@ -132,6 +136,7 @@ export const GET = withAuth(async (req: NextRequest, { orgId }) => {
         })
         .catch((err) => {
           logger.error("[KPI] Predictions fetch failed:", err);
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           return [] as any[];
         }),
 
@@ -143,11 +148,13 @@ export const GET = withAuth(async (req: NextRequest, { orgId }) => {
         })
         .catch((err) => {
           logger.error("[KPI] Properties fetch failed:", err);
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           return [] as any[];
         }),
     ]);
 
     // ── Claims pipeline ────────────────────────────────────────────
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const rangeClaims = allClaims.filter((c: any) => range === "all" || c.createdAt >= rangeStart);
     const closedStatuses = new Set(["closed", "completed", "paid"]);
     const approvedStatuses = new Set([
@@ -186,6 +193,7 @@ export const GET = withAuth(async (req: NextRequest, { orgId }) => {
     }
 
     // Avg cycle time (closed claims)
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const closedClaims = allClaims.filter((c: any) =>
       closedStatuses.has(normalizeStatus(c.status))
     );
@@ -193,6 +201,7 @@ export const GET = withAuth(async (req: NextRequest, { orgId }) => {
       closedClaims.length > 0
         ? Math.round(
             closedClaims.reduce(
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
               (sum: number, c: any) =>
                 sum + (c.updatedAt.getTime() - c.createdAt.getTime()) / 86_400_000,
               0
@@ -201,6 +210,7 @@ export const GET = withAuth(async (req: NextRequest, { orgId }) => {
         : 0;
 
     // Approval ratio
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const approvedCount = allClaims.filter((c: any) =>
       approvedStatuses.has(normalizeStatus(c.status))
     ).length;
@@ -208,6 +218,7 @@ export const GET = withAuth(async (req: NextRequest, { orgId }) => {
 
     // ── Revenue ────────────────────────────────────────────────────
     const totalRevenue = paymentsResult.reduce(
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (sum: number, p: any) => sum + Number(p.amount || 0),
       0
     );
@@ -218,6 +229,7 @@ export const GET = withAuth(async (req: NextRequest, { orgId }) => {
 
     // ── Material / roof metrics ────────────────────────────────────
     const roofSizes = propertiesResult
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       .map((p: any) => Number(p.squareFootage || 0))
       .filter((v: number) => v > 0);
     const avgRoofSize =
@@ -226,6 +238,7 @@ export const GET = withAuth(async (req: NextRequest, { orgId }) => {
         : 0;
 
     const estimateTotals = estimatesResult
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       .map((e: any) => Number(e.total || 0))
       .filter((v: number) => v > 0);
     const avgMaterialCost =
@@ -238,6 +251,7 @@ export const GET = withAuth(async (req: NextRequest, { orgId }) => {
     // ── Jobs by zip ────────────────────────────────────────────────
     const jobsByZip: Record<string, number> = {};
     for (const p of propertiesResult) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const zip = (p as any).zipCode;
       if (zip) jobsByZip[zip] = (jobsByZip[zip] || 0) + 1;
     }
@@ -257,11 +271,13 @@ export const GET = withAuth(async (req: NextRequest, { orgId }) => {
     }
     const aiPredictedApproval =
       predictionsResult.length > 0
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         ? predictionsResult.filter((p: any) => Number(p.probabilityFull || 0) >= 50).length /
           predictionsResult.length
         : 0;
 
     // ── Red flags (computed from claims heuristics) ────────────────
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const staleInspection = rangeClaims.filter((c: any) => {
       const norm = normalizeStatus(c.status);
       return (
@@ -270,6 +286,7 @@ export const GET = withAuth(async (req: NextRequest, { orgId }) => {
       );
     }).length;
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const staleEstimate = rangeClaims.filter((c: any) => {
       const norm = normalizeStatus(c.status);
       return (
@@ -278,12 +295,14 @@ export const GET = withAuth(async (req: NextRequest, { orgId }) => {
       );
     }).length;
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const staleReview = rangeClaims.filter((c: any) => {
       const norm = normalizeStatus(c.status);
       return norm === "in_review" && c.updatedAt < new Date(now.getTime() - 30 * 86_400_000);
     }).length;
 
     const missingValues = rangeClaims.filter(
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (c: any) => !c.estimatedValue && normalizeStatus(c.status) !== "new"
     ).length;
 

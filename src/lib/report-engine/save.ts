@@ -52,6 +52,7 @@ export async function saveGeneratedReportToDb({
 
       // Store the full GeneratedReport JSON in sections field
       // (We can also split this into sections/summary/meta if needed later)
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       sections: report as any,
 
       // Meta can hold addon toggles and other generation config
@@ -60,6 +61,7 @@ export async function saveGeneratedReportToDb({
         audience: report.audience,
         generatedAt: new Date().toISOString(),
       },
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } as any,
   });
 

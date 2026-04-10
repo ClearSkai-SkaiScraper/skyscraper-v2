@@ -26,6 +26,7 @@ export async function GET() {
       health.status === "unhealthy" ? 503 : health.status === "degraded" ? 207 : 200;
 
     return NextResponse.json(health, { status: statusCode });
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   } catch (_error) {
     return NextResponse.json(
       {

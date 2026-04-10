@@ -41,6 +41,7 @@ interface Lead {
 /**
  * Parse and normalize scope JSON from ClaimWriter
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function parseScope(scopeJson: any): ParsedScope {
   try {
     const items = Array.isArray(scopeJson?.items) ? scopeJson.items : [];
@@ -131,6 +132,7 @@ export function buildSymbilityJson(
   scope: ParsedScope,
   lead: Lead,
   pricing?: Array<{ code: string; unitPrice: number; tax: number; op: number; total: number }>
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 ): Record<string, any> {
   return {
     ClaimInfo: {

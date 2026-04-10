@@ -68,6 +68,7 @@ export default function PhotoUploader({
         setPhotos(newPhotos);
         onPhotosChange(newPhotos);
         toast.success(`${urls.length} photo(s) uploaded successfully`);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } catch (error: any) {
         logger.error("Upload error:", error);
         toast.error(error.message || "Failed to upload photos");

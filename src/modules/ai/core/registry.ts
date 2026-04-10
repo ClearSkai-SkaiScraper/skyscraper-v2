@@ -13,6 +13,7 @@ export const AIEngineRegistry: Record<string, AIEngineConfig> = {
     name: "AI Damage Builder",
     bucket: "mockup",
     tokensPerRun: 10,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     runSection: async (reportId: string, sectionKey: AISectionKey, context?: any) => {
       return await runDamageBuilder(reportId, sectionKey, context);
     },
@@ -21,6 +22,7 @@ export const AIEngineRegistry: Record<string, AIEngineConfig> = {
     name: "AI Weather Verification",
     bucket: "weather",
     tokensPerRun: 2,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     runSection: async (reportId: string, sectionKey: AISectionKey, context?: any) => {
       return await runWeather(reportId, sectionKey, context);
     },
@@ -29,6 +31,7 @@ export const AIEngineRegistry: Record<string, AIEngineConfig> = {
     name: "AI Code Compliance",
     bucket: "dol",
     tokensPerRun: 5,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     runSection: async (reportId: string, sectionKey: AISectionKey, context?: any) => {
       return await runCodes(reportId, sectionKey, context);
     },
@@ -37,6 +40,7 @@ export const AIEngineRegistry: Record<string, AIEngineConfig> = {
     name: "AI Photo Grouping",
     bucket: "mockup",
     tokensPerRun: 3,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     runSection: async (reportId: string, sectionKey: AISectionKey, context?: any) => {
       return await runPhotoGrouping(reportId, sectionKey, context);
     },
@@ -57,6 +61,7 @@ export async function runEngine(
   engineName: string,
   reportId: string,
   sectionKey: AISectionKey,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   context?: any
 ): Promise<AISectionState> {
   const engine = getEngine(engineName);
@@ -71,6 +76,7 @@ export async function runEngine(
  */
 export async function runAllEngines(
   reportId: string,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   context?: any
 ): Promise<Record<AISectionKey, AISectionState>> {
   const results: Record<string, AISectionState> = {};
@@ -86,6 +92,7 @@ export async function runAllEngines(
   for (const [engineName, sectionKey] of engineMappings) {
     try {
       results[sectionKey] = await runEngine(engineName, reportId, sectionKey, context);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       results[sectionKey] = {
         sectionKey,

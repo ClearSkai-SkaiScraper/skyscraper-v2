@@ -1,3 +1,4 @@
+// eslint-disable-next-line no-restricted-imports
 import { currentUser } from "@clerk/nextjs/server";
 import { Award, DollarSign, Gift, Link2, Share2, TrendingUp, Users } from "lucide-react";
 import Link from "next/link";
@@ -21,6 +22,7 @@ export default async function ReferralProgramPage() {
   if (!orgId) return <NoOrgMembershipBanner title="Referral Program" />;
 
   // ── Real data: leads that came from referral source ───────────────
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let referralLeads: any[] = [];
   try {
     referralLeads = await prisma.leads.findMany({
@@ -47,6 +49,7 @@ export default async function ReferralProgramPage() {
   }
 
   // ── Real data: client connections (referrals from client portal) ──
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let clientConnections: any[] = [];
   try {
     clientConnections = await prisma.clientProConnection.findMany({

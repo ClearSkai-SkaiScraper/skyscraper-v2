@@ -29,7 +29,9 @@ interface ReportPreset {
   name: string;
   description: string | null;
   type: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   sections: any;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   options: any;
   isDefault: boolean;
 }
@@ -38,6 +40,7 @@ interface PresetSelectorProps {
   reportType: string;
   onLoadPreset: (preset: ReportPreset) => void;
   currentSections: string[];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   currentOptions: any;
 }
 

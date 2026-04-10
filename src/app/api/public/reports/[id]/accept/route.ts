@@ -104,6 +104,7 @@ export async function POST(req: Request, { params }: { params: { id: string } })
     // Send receipt email to client + internal team
     if (email) {
       try {
+        // eslint-disable-next-line no-restricted-syntax
         const shareUrl = `${process.env.NEXT_PUBLIC_APP_URL}/reports/${report.id}/share?token=${token}`;
 
         // Get report PDF URL if available

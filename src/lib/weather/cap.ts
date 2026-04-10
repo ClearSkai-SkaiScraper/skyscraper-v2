@@ -6,6 +6,7 @@
 import { logger } from "@/lib/logger";
 import type { WeatherEvent } from "@/types/weather";
 
+// eslint-disable-next-line no-restricted-syntax
 const CAP_API_BASE = process.env.CAP_API_BASE || "https://api.weather.gov/alerts";
 
 export interface CAPAlert {

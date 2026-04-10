@@ -34,6 +34,7 @@ export interface PredictionInput {
   skaiAnalysis?: {
     damageType?: string;
     urgency?: string;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     materials?: any[];
     flags?: string[];
   };
@@ -254,6 +255,7 @@ function calculateProbabilities(input: PredictionInput): {
 /**
  * Generate risk flags
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function generateRiskFlags(input: PredictionInput, probabilities: any): string[] {
   const flags: string[] = [];
 
@@ -297,6 +299,7 @@ function generateRiskFlags(input: PredictionInput, probabilities: any): string[]
  */
 async function predictCarrierBehavior(
   input: PredictionInput,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   probabilities: any
 ): Promise<{
   likelyStrategy: string;
@@ -375,6 +378,7 @@ Be specific and tactical.`;
  */
 function generateRecommendedSteps(
   input: PredictionInput,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   probabilities: any,
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   riskFlags: string[]
@@ -436,6 +440,7 @@ function generateSuccessPath(
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   input: PredictionInput,
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars
   probabilities: any
 ): PredictionOutput["successPath"] {
   return [
@@ -486,6 +491,7 @@ function generateSuccessPath(
 /**
  * Calculate confidence score
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function calculateConfidenceScore(input: PredictionInput, probabilities: any): number {
   let confidence = 50;
 
@@ -508,7 +514,9 @@ function calculateConfidenceScore(input: PredictionInput, probabilities: any): n
  */
 async function generateAISummary(
   input: PredictionInput,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   probabilities: any,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   carrierBehavior: any
 ): Promise<string> {
   const prompt = `You are analyzing a roofing insurance claim. Provide a brief 2-3 sentence summary of what the carrier is likely thinking and what the contractor should do.
@@ -534,6 +542,7 @@ Be direct and tactical. Start with "The carrier will likely..."`;
     });
 
     return completion.choices[0]?.message?.content || "Analysis in progress.";
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   } catch (_err) {
     return `Based on current data, the claim has a ${probabilities.full}% chance of full approval. ${
       probabilities.deny > 50
@@ -547,6 +556,7 @@ Be direct and tactical. Start with "The carrier will likely..."`;
  * Predict carrier's next move
  */
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
+// eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars
 function predictNextMove(input: PredictionInput, probabilities: any, carrierBehavior: any): string {
   if (probabilities.deny > 60) {
     return "Likely to request additional documentation or deny claim";

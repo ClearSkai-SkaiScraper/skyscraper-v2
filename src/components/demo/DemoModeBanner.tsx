@@ -17,6 +17,7 @@ interface DemoModeBannerProps {
  */
 export function DemoModeBanner({ variant = "full", className = "" }: DemoModeBannerProps) {
   // Check if demo mode is enabled (client-side)
+  // eslint-disable-next-line no-restricted-syntax
   const isDemoMode = process.env.NEXT_PUBLIC_DEMO_MODE === "true";
 
   if (!isDemoMode) return null;
@@ -53,6 +54,7 @@ export function withDemoGuard<P extends object>(
   restrictedAction: string
 ) {
   return function GuardedComponent(props: P) {
+    // eslint-disable-next-line no-restricted-syntax
     const isDemoMode = process.env.NEXT_PUBLIC_DEMO_MODE === "true";
 
     if (isDemoMode) {

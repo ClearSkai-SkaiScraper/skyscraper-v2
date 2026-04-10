@@ -40,9 +40,13 @@ export interface CorrelationAnalysis {
 
 export interface CorrelationRequest {
   claimId: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   weather?: any;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   damage?: any;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   specs?: any;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   codes?: any;
 }
 

@@ -5,6 +5,7 @@ export const dynamic = "force-dynamic";
  * Creates a connection request from client to a pro
  */
 
+// eslint-disable-next-line no-restricted-imports
 import { auth, currentUser } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";

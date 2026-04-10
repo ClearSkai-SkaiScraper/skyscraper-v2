@@ -32,6 +32,7 @@ async function renderTOC(
   page: PDFPage,
   _context: ReportContext,
   sections: Section[],
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   fonts: { font: any; fontBold: any },
   colors: {
     brandRgb: { r: number; g: number; b: number };
@@ -215,6 +216,7 @@ export async function exportReport(options: ExportOptions): Promise<ExportResult
     }
 
     return result;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (error: any) {
     console.error("[Export Orchestrator] Error:", error);
 
@@ -320,7 +322,9 @@ async function renderSection(
   section: Section,
   context: ReportContext,
   fonts: {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     font: any;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     fontBold: any;
     brandRgb: { r: number; g: number; b: number };
     accentRgb: { r: number; g: number; b: number };
@@ -393,6 +397,7 @@ async function renderSection(
   /** Draw a text line and advance yPos */
   const drawText = (
     text: string,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     opts?: { bold?: boolean; size?: number; color?: any; indent?: number }
   ) => {
     const fontSize = opts?.size || FONT_SIZE.BODY;
@@ -410,6 +415,7 @@ async function renderSection(
   /** Draw wrapped paragraph */
   const drawParagraph = (
     text: string,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     opts?: { size?: number; color?: any; indent?: number; bold?: boolean }
   ) => {
     const fontSize = opts?.size || FONT_SIZE.BODY;
@@ -1116,7 +1122,9 @@ async function renderSection(
  */
 function addPageNumbers(
   pdfDoc: PDFDocument,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   font: any,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   fontBold: any,
   brandRgb: { r: number; g: number; b: number }
 ) {

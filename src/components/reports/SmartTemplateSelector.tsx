@@ -123,9 +123,11 @@ export function SmartTemplateSelector({
             topConfidence: recs[0]?.score,
             recommendationCount: recs.length,
             missingFieldCount: recs[0]?.missingInputs?.length ?? 0,
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             context: context as any,
           });
         }
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       } catch (_err) {
         setError("Could not load recommendations");
         setRecommendations([]);
@@ -147,6 +149,7 @@ export function SmartTemplateSelector({
     trackRecommendationEvent({
       eventType: "style_selected",
       styleCategory: selected.key,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       context: context as any,
     });
     if (!showRecommendation) {
@@ -167,6 +170,7 @@ export function SmartTemplateSelector({
         acceptedTopPick: isTopPick,
         missingFieldCount: rec.missingInputs.length,
         recommendationCount: recommendations.length,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         context: context as any,
       });
       onSelect(rec.templateId, rec.slug);

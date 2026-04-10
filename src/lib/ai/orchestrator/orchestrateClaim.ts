@@ -83,6 +83,7 @@ export async function orchestrateClaim(input: OrchestratorInput): Promise<Orches
   // 4. Get next actions from planner
   const nextActions = getNextActionsForClaim({
     claimId: input.claimId,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     state: currentState as any,
     rules: triggeredRules,
   });
@@ -174,7 +175,9 @@ export async function orchestrateClaim(input: OrchestratorInput): Promise<Orches
  */
 async function calculateClaimIntelligence(params: {
   claimId: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   triggeredRules: any[];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   similarClaims: any[];
   currentState: string;
 }): Promise<ClaimIntelligence> {
@@ -261,6 +264,7 @@ export async function shouldTakeAction(claimId: string): Promise<boolean> {
   // Check if there are pending actions
   const actions = getNextActionsForClaim({
     claimId,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     state: currentState as any,
     rules: [],
   });

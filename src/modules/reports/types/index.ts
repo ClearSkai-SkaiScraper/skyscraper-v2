@@ -123,7 +123,9 @@ export interface ReportContext {
   supplements?: SupplementItem[];
   adjusterNotes?: string;
   executiveSummary?: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   testCutsData?: any;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   pricingComparison?: any;
   attachments?: Array<{ name: string; url: string }>;
   homeowner?: { name?: string; email?: string; phone?: string };

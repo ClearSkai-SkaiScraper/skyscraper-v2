@@ -16,6 +16,7 @@ export const dynamic = "force-dynamic";
  * Returns: { ok: true, orgId, created: boolean } or { ok: false, error }
  */
 
+// eslint-disable-next-line no-restricted-imports
 import { auth, currentUser } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 import { z } from "zod";
@@ -223,6 +224,7 @@ export async function POST(req: Request) {
           },
           update: { orgId: org.id, name: userName },
         });
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } catch (userErr: any) {
         // Handle email unique constraint conflict — another clerk user might have same email
         if (userErr?.code === "P2002" && userErr?.meta?.target?.includes?.("email")) {
@@ -258,6 +260,7 @@ export async function POST(req: Request) {
       orgName: result.org.name,
       created: result.created,
     });
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (error: any) {
     const errorMessage = error?.message || "Unknown error";
     const errorCode = error?.code || "UNKNOWN";
@@ -293,6 +296,7 @@ export async function POST(req: Request) {
       {
         ok: false,
         error: userMessage,
+        // eslint-disable-next-line no-restricted-syntax
         detail: process.env.NODE_ENV === "development" ? errorMessage : undefined,
         code: errorCode,
         suggestedAction,

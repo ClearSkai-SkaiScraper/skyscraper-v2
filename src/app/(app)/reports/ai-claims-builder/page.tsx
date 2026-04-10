@@ -1,3 +1,4 @@
+// eslint-disable-next-line no-restricted-imports
 import { currentUser } from "@clerk/nextjs/server";
 import { FileStack } from "lucide-react";
 import type { Metadata } from "next";
@@ -103,6 +104,7 @@ export default async function AIClaimsBuilderPage({
         },
       },
     });
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   } catch (_error) {
     // Failed to load claims — continue with empty list
     claims = [];

@@ -8,7 +8,9 @@ import type { AuditAction } from "@/modules/audit/core/logger";
 export async function recordScopeEdit(params: {
   claimId: string;
   userId: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   before: any;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   after: any;
 }) {
   // activity_events model doesn't exist in schema
@@ -24,6 +26,7 @@ export interface AuditEvent {
   jobId: string;
   userId?: string;
   userName?: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   payload?: Record<string, any>;
 }
 

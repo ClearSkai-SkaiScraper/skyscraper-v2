@@ -39,8 +39,10 @@ export async function GET(request: Request) {
         level: "error",
         contexts: { drift: { missing, present } },
       });
+      // eslint-disable-next-line no-restricted-syntax
       if (process.env.SLACK_ALERT_WEBHOOK_URL) {
         try {
+          // eslint-disable-next-line no-restricted-syntax
           await fetch(process.env.SLACK_ALERT_WEBHOOK_URL, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -48,6 +50,7 @@ export async function GET(request: Request) {
               text: `:warning: Schema drift detected (users table) missing columns: ${missing.join(", ")}`,
             }),
           });
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         } catch (_e) {
           Sentry.captureMessage("Slack notification failed (schema drift)", { level: "warning" });
         }

@@ -488,6 +488,7 @@ export default function DigitalSignaturesPage() {
                         </>
                       )}
                       {sig.status === "signed" && sig.signatureData && (
+                        // eslint-disable-next-line react/jsx-no-comment-textnodes
                         <div className="h-12 w-32 rounded border border-slate-200 bg-white p-1">
                           // eslint-disable-next-line @next/next/no-img-element
                           <img

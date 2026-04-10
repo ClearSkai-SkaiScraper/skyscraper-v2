@@ -30,7 +30,9 @@ export interface AutomationResult {
   success: boolean;
   triggersDetected: DetectedTrigger[];
   actionsExecuted: number;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   results: any[];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   errors: any[];
 }
 
@@ -44,7 +46,9 @@ export async function runSkaiAutomations(
 ): Promise<AutomationResult> {
   logger.debug(`\n🔥 [SKAI] Starting automation pipeline for claim ${claimId}\n`);
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const results: any[] = [];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const errors: any[] = [];
 
   try {
@@ -204,7 +208,9 @@ async function executeAction(
   actionType: ActionType,
   claimId: string,
   orgId: string,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   config: any
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 ): Promise<any> {
   switch (actionType) {
     case "GENERATE_FINANCIAL":

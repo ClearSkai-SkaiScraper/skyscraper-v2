@@ -64,6 +64,7 @@ export function ACHImportModal({ orgId: _orgId, onClose, onImportComplete }: ACH
       setPayments(data.payments || []);
       setErrors(data.errors || []);
       setStep("preview");
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       console.error("Error parsing CSV:", error);
       alert(error.message || "Failed to parse CSV");
@@ -115,6 +116,7 @@ export function ACHImportModal({ orgId: _orgId, onClose, onImportComplete }: ACH
       alert(`Successfully imported ${data.created} payments`);
       onImportComplete();
       onClose();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       console.error("Error importing payments:", error);
       alert(error.message || "Failed to import payments");

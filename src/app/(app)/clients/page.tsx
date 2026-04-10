@@ -25,10 +25,12 @@ export default async function ClientsPage({ searchParams }: PageProps) {
     return <NoOrgMembershipBanner title="Clients" />;
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let clients: any[] = [];
   let hasError = false;
 
   try {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const whereClause: any = { orgId };
 
     // Add search filter if provided

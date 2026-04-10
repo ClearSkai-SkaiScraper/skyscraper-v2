@@ -58,7 +58,9 @@ export function TemplateCard({ template, onSetDefault, onDuplicate, onDelete }: 
   return (
     <>
       <div className="group overflow-hidden rounded-xl border border-[color:var(--border)] bg-[color:var(--surface-2)] transition hover:bg-[color:var(--surface-3)] hover:shadow-lg">
+        // eslint-disable-next-line react/jsx-no-comment-textnodes
         {/* Thumbnail */}
+        // eslint-disable-next-line react/jsx-no-comment-textnodes
         <div className="relative h-32 bg-slate-100">
           // eslint-disable-next-line @next/next/no-img-element
           <img

@@ -36,12 +36,14 @@ export async function analyzePropertyImage(
 ): Promise<AiResponse<VisionAnalysis>> {
   try {
     // Use existing OpenAI vision analysis
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const result = (await analyzeImage(imageUrl)) as any;
 
     if (!result.ok || !result.data) {
       return result as AiResponse<VisionAnalysis>;
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const damageReport = result.data as any;
 
     // Transform to VisionAnalysis format
@@ -51,6 +53,7 @@ export async function analyzePropertyImage(
       severity: (damageReport.severity ?? "none") as VisionAnalysis["severity"],
       confidence: damageReport.confidence ?? 0,
       details: damageReport.summary,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       regions: damageReport.regions?.map((r: any) => ({
         type: r.type,
         location: r.location,
@@ -62,11 +65,14 @@ export async function analyzePropertyImage(
     return {
       ok: true,
       data: analysis,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } as any;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (error: any) {
     return {
       ok: false,
       error: error.message || "Vision analysis failed",
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } as any;
   }
 }

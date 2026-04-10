@@ -228,7 +228,9 @@ export default function EnhancedReviewsTab({
               {/* Header */}
               <div className="mb-3 flex items-start justify-between">
                 <div className="flex items-center gap-3">
+                  // eslint-disable-next-line react/jsx-no-comment-textnodes
                   {/* Author Avatar */}
+                  // eslint-disable-next-line react/jsx-no-comment-textnodes
                   <div className="flex h-10 w-10 items-center justify-center overflow-hidden rounded-full bg-slate-100">
                     // eslint-disable-next-line @next/next/no-img-element
                     {review.authorAvatar ? (
@@ -280,6 +282,7 @@ export default function EnhancedReviewsTab({
 
               {/* Photos */}
               {review.photos && review.photos.length > 0 && (
+                // eslint-disable-next-line react/jsx-no-comment-textnodes
                 <div className="mb-3 flex flex-wrap gap-2">
                   // eslint-disable-next-line @next/next/no-img-element
                   {review.photos.map((photo, i) => (

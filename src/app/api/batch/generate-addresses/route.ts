@@ -30,8 +30,10 @@ export async function POST(req: NextRequest) {
     // Extract center point from polygon for city/zip
     const coordinates = polygon.coordinates || [];
     const centerLat =
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       coordinates.reduce((sum: number, p: any) => sum + (p[1] || 0), 0) / coordinates.length;
     const centerLng =
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       coordinates.reduce((sum: number, p: any) => sum + (p[0] || 0), 0) / coordinates.length;
 
     // Determine city/state/zip from coordinates (mock logic)

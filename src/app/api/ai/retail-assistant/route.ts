@@ -53,6 +53,7 @@ Key facts:
 Provide actionable, specific advice. Use markdown formatting for clarity. Keep responses under 200 words.`;
 
     const contextMessages =
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       history?.slice(-5).map((msg: any) => ({
         role: msg.role,
         content: msg.content,

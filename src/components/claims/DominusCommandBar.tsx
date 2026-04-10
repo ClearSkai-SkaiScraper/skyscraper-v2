@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 export function DominusCommandBar({ claimId }: { claimId: string }) {
   const [loading, setLoading] = useState<string | null>(null);
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   async function run(path: string, label: string, body: any = {}) {
     try {
       setLoading(label);
@@ -20,6 +21,7 @@ export function DominusCommandBar({ claimId }: { claimId: string }) {
       if (!res.ok) throw new Error(await res.text());
 
       toast.success(`${label} completed successfully`);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       console.error(err);
       toast.error(`${label} failed: ${err.message}`);

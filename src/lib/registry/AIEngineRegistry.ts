@@ -3,7 +3,9 @@ export type AIModuleKey = "ai.summary" | "ai.captions" | "ai.codes" | "ai.weathe
 export type AIModule = {
   key: AIModuleKey;
   cost: number; // tokens
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   trigger: (ctx: any) => boolean;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   run: (ctx: any) => Promise<any>;
 };
 
@@ -19,6 +21,7 @@ export const AIEngineRegistry: Record<AIModuleKey, AIModule> = {
     key: "ai.captions",
     cost: 1,
     trigger: (ctx) => Array.isArray(ctx?.photos) && ctx.photos.length > 0,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     run: async (ctx) => ({ captions: ctx.photos.map((_: any, i: number) => `Caption ${i + 1}`) }),
   },
   "ai.codes": {

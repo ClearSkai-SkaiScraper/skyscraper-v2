@@ -20,6 +20,7 @@ export async function GET(req: NextRequest) {
     const claimId = searchParams.get("claimId");
     const type = searchParams.get("type");
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const where: any = { orgId: orgResult.orgId };
     if (claimId) where.claimId = claimId;
     if (type) where.type = type;

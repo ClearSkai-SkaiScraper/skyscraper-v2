@@ -35,6 +35,7 @@ export function GenericErrorBoundary({
   reset,
   title = "Something went wrong",
   description,
+  // eslint-disable-next-line no-restricted-syntax
   showDetails = process.env.NODE_ENV === "development",
 }: GenericErrorBoundaryProps) {
   useEffect(() => {

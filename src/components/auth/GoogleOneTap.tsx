@@ -10,6 +10,7 @@ import { supabase } from "@/integrations/supabase/client";
  * Only shows when user is not authenticated.
  */
 export default function GoogleOneTap() {
+  // eslint-disable-next-line no-restricted-syntax
   const clientId = process.env.NEXT_PUBLIC_GOOGLE_WEB_CLIENT_ID as string;
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 

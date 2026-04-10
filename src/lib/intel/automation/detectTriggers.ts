@@ -33,6 +33,7 @@ export type TriggerType =
 export interface DetectedTrigger {
   type: TriggerType;
   severity: "CRITICAL" | "HIGH" | "MEDIUM" | "LOW";
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   payload: any;
   reason: string;
 }
@@ -101,6 +102,7 @@ export async function detectTriggersForClaim(
   // TRIGGER 2: WEATHER CORRELATION HIGH
   // ========================================
   if (latestWeatherReport) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const attachments = latestWeatherReport.attachments as any;
     const parsed = safeJsonParse(latestWeatherReport.content);
     const confidence =
@@ -190,6 +192,7 @@ export async function detectTriggersForClaim(
   return triggers;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function safeJsonParse(value: string): any {
   try {
     return JSON.parse(value);

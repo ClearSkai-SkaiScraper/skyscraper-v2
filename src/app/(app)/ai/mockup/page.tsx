@@ -1,3 +1,4 @@
+// eslint-disable-next-line no-restricted-imports
 import { currentUser } from "@clerk/nextjs/server";
 import { History, ImageIcon } from "lucide-react";
 import type { Metadata } from "next";

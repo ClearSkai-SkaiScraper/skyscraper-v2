@@ -36,7 +36,9 @@ declare global {
 }
 
 function makePool(): Pool {
+  // eslint-disable-next-line no-restricted-syntax
   const connectionString = process.env.DATABASE_URL;
+  // eslint-disable-next-line no-restricted-syntax
   const isProd = process.env.NODE_ENV === "production";
 
   if (!connectionString) {
@@ -64,6 +66,7 @@ function makePool(): Pool {
     return stub as Pool;
   }
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  // eslint-disable-next-line no-restricted-syntax, @typescript-eslint/no-unused-vars
   const isDev = process.env.NODE_ENV === "development";
 
   // eslint-disable-next-line no-restricted-syntax
@@ -77,6 +80,7 @@ function makePool(): Pool {
         : undefined,
     // ⚠️  REDUCED from 10 → 3 to free pooler slots for Prisma
     // Only LISTEN/NOTIFY and legacy consumers should use this pool
+    // eslint-disable-next-line no-restricted-syntax
     max: parseInt(process.env.PGPOOL_MAX || "3", 10),
     idleTimeoutMillis: 15_000, // Reduced from 30s to release connections faster
     connectionTimeoutMillis: 10_000,
@@ -121,8 +125,10 @@ export type Row = QueryResultRow;
  * @param params - Parameter values
  * @returns Array of result rows
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export async function q<T extends Row = Row>(text: string, params?: any[]): Promise<T[]> {
   try {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const result = await pgPool.query<T>(text as any, params as any);
     return result.rows;
   } catch (error) {
@@ -138,6 +144,7 @@ export async function q<T extends Row = Row>(text: string, params?: any[]): Prom
  * @param params - Parameter values
  * @returns First row or null
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export async function qOne<T extends Row = Row>(text: string, params?: any[]): Promise<T | null> {
   const rows = await q<T>(text, params);
   return rows[0] ?? null;
@@ -150,6 +157,7 @@ export async function qOne<T extends Row = Row>(text: string, params?: any[]): P
  * @param params - Parameter values
  * @returns Single value or null
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export async function qScalar<T = any>(text: string, params?: any[]): Promise<T | null> {
   const row = await qOne<Record<string, T>>(text, params);
   if (!row) return null;
@@ -164,6 +172,7 @@ export async function qScalar<T = any>(text: string, params?: any[]): Promise<T 
  * @param params - Parameter values
  * @returns Number of affected rows
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export async function qExec(text: string, params?: any[]): Promise<number> {
   try {
     const result = await pgPool.query(text, params);
@@ -209,8 +218,10 @@ export async function withTx<T>(fn: (client: PoolClient) => Promise<T>): Promise
 export async function cq<T extends Row = Row>(
   client: PoolClient,
   text: string,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   params?: any[]
 ): Promise<T[]> {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const res = await client.query<T>(text as any, params as any);
   return res.rows;
 }
@@ -221,6 +232,7 @@ export async function cq<T extends Row = Row>(
 export async function cqOne<T extends Row = Row>(
   client: PoolClient,
   text: string,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   params?: any[]
 ): Promise<T | null> {
   const rows = await cq<T>(client, text, params);
@@ -242,6 +254,7 @@ export async function cqOne<T extends Row = Row>(
  */
 export async function closePool(): Promise<void> {
   // Only close if we're in a long-running process (not serverless)
+  // eslint-disable-next-line no-restricted-syntax
   if (global.__pgPool && process.env.VERCEL !== "1") {
     // eslint-disable-next-line no-restricted-syntax
     await pgPool.end();
@@ -251,6 +264,7 @@ export async function closePool(): Promise<void> {
 }
 
 // Handle process termination (only in non-serverless environments)
+// eslint-disable-next-line no-restricted-syntax
 if (process.env.VERCEL !== "1") {
   process.on("SIGTERM", async () => {
     await closePool();

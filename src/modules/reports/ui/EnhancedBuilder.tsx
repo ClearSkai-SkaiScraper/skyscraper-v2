@@ -88,6 +88,7 @@ export default function EnhancedBuilder() {
       a.download = `contractor-packet-${Date.now()}.${exportFormat}`;
       a.click();
       URL.revokeObjectURL(url);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       setError(err.message);
     } finally {
@@ -100,8 +101,10 @@ export default function EnhancedBuilder() {
       await runAI({
         reportId,
         engine: "damageBuilder", // Map section to engine
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         sectionKey: sectionKey as any, // Cast for now - TODO: proper mapping
       });
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       setError(err.message);
     }
@@ -111,8 +114,10 @@ export default function EnhancedBuilder() {
     try {
       await approveFields({
         reportId,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         sectionKey: sectionKey as any, // Cast for now - TODO: proper mapping
       });
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       setError(err.message);
     }

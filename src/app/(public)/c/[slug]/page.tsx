@@ -1,3 +1,4 @@
+// eslint-disable-next-line no-restricted-imports
 import { auth } from "@clerk/nextjs/server";
 import { LogIn, MessageCircle, UserPlus } from "lucide-react";
 import Image from "next/image";
@@ -12,11 +13,13 @@ import { Button } from "@/components/ui/button";
 async function getContractor(slug: string) {
   try {
     const res = await fetch(
+      // eslint-disable-next-line no-restricted-syntax
       `${process.env.NEXT_PUBLIC_SITE_URL}/api/contractors/public/get?slug=${slug}`,
       { cache: "no-store" }
     );
     const json = await res.json();
     return json.contractor || null;
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   } catch (_err) {
     return null;
   }

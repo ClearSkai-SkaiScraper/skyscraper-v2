@@ -30,6 +30,7 @@ export const GET = withAuth(async (req: NextRequest, { userId }) => {
         SELECT id, endpoint, device_type as "platform", active as "isActive", created_at as "createdAt"
         FROM push_subscriptions
         WHERE user_id = ${user.id} AND active = true
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       `) as any[];
 
       return NextResponse.json({

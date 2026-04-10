@@ -22,6 +22,7 @@ import { logger } from "@/lib/logger";
 
 interface QuickAIActionsProps {
   claimId: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   onActionComplete?: (action: string, result: any) => void;
 }
 

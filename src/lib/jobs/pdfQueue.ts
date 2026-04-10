@@ -5,9 +5,12 @@
 
 import { Redis } from "@upstash/redis";
 
+// eslint-disable-next-line no-restricted-syntax
 const redis = process.env.UPSTASH_REDIS_REST_URL
   ? new Redis({
+      // eslint-disable-next-line no-restricted-syntax
       url: process.env.UPSTASH_REDIS_REST_URL,
+      // eslint-disable-next-line no-restricted-syntax
       token: process.env.UPSTASH_REDIS_REST_TOKEN!,
     })
   : null;

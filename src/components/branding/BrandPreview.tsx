@@ -5,6 +5,7 @@ import DefaultBrand from "@/config/brandingDefaults";
 export default function BrandPreview() {
   const b = DefaultBrand;
   return (
+    // eslint-disable-next-line react/jsx-no-comment-textnodes
     <div style={{ display: "flex", gap: 16, alignItems: "center", padding: 16 }}>
       // eslint-disable-next-line @next/next/no-img-element
       <img src={`/branding/${b.org_id}/logo.svg`} alt="logo" style={{ height: 64 }} />
@@ -19,7 +20,9 @@ export default function BrandPreview() {
         </div>
         <div style={{ marginTop: 6, fontSize: 12, color: "#888" }}>
           {b.service_area} • {b.roc}
+        // eslint-disable-next-line react/jsx-no-comment-textnodes
         </div>
+      // eslint-disable-next-line react/jsx-no-comment-textnodes
       </div>
       // eslint-disable-next-line @next/next/no-img-element
       <img

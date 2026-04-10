@@ -10,6 +10,7 @@ export interface ReportDTO {
   updatedAt: string;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function mapReport(report: any): ReportDTO {
   return {
     id: report.id,
@@ -29,6 +30,7 @@ export async function getReportById(id: string, orgId: string): Promise<ReportDT
 
 export async function listReports(params: { orgId: string; type?: string; limit?: number; offset?: number }): Promise<{ reports: ReportDTO[]; total: number; limit: number; offset: number }> {
   const { orgId, type, limit = 50, offset = 0 } = params;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const where: any = { orgId };
   if (type) where.type = type;
   const [reports, total] = await Promise.all([

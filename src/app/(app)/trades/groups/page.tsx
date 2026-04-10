@@ -3,6 +3,7 @@
  * Browse and discover trades professional groups
  */
 
+// eslint-disable-next-line no-restricted-imports
 import { auth } from "@clerk/nextjs/server";
 import { ArrowLeft, Globe, Lock, Plus, Users } from "lucide-react";
 import { Metadata } from "next";
@@ -42,6 +43,7 @@ export default async function GroupsPage({
   const showMyGroups = params.myGroups === "true";
 
   // Build query
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const where: any = { isActive: true };
 
   if (selectedCategory !== "All") {

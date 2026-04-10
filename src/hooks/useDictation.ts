@@ -58,6 +58,7 @@ export function useDictation({ lang = "en-US", interim = true }: UseDictationOpt
       if (results && typeof results === "object") {
         const len = typeof results.length === "number" ? results.length : 0;
         for (let i = start; i < len; i++) {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           const item = (results as any)[i] as { 0?: { transcript?: string } } | undefined;
           const t = item?.[0]?.transcript;
           if (typeof t === "string") acc += t;

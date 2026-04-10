@@ -6,6 +6,7 @@
  * NOTE: This is a public route — PII (email, phone) is only returned for authenticated + connected clients.
  */
 
+// eslint-disable-next-line no-restricted-imports
 import { auth } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
 

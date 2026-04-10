@@ -20,6 +20,7 @@ export default function ContactForm() {
       if (!res.ok) throw new Error("Failed");
       setStatus("Message sent. We'll follow up soon.");
       form.reset();
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (_err) {
       setStatus("Something went wrong. Please try again.");
     } finally {

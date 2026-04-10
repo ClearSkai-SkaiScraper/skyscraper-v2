@@ -52,6 +52,7 @@ export function ClientConnectionDropdown({ jobId, contactId }: ClientConnectionD
         const res = await fetch("/api/company/connections?limit=100");
         if (res.ok) {
           const data = await res.json();
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           const conns: Connection[] = (data.connections || []).map((c: any) => ({
             id: c.id,
             name: c.name || `${c.firstName || ""} ${c.lastName || ""}`.trim() || "Unknown",
@@ -130,6 +131,7 @@ export function ClientConnectionDropdown({ jobId, contactId }: ClientConnectionD
       });
       setSelectedId("");
       toast.success("Client connected to job!");
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       logger.error("[RetailClientDropdown] attach failed:", error);
       toast.error(error.message || "Failed to connect client");

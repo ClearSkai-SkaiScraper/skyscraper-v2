@@ -68,6 +68,7 @@ export function PdfTemplateSelect(props: {
           primary.length > 0 || !reportType ? primary : await fetchTemplates(`/api/templates/list`);
 
         if (!cancelled) setTemplates(resolved);
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       } catch (_e) {
         if (!cancelled) setTemplates([]);
       } finally {

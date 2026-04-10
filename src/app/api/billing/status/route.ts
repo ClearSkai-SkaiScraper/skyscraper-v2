@@ -121,6 +121,7 @@ export const GET = withAuth(async (req: NextRequest, { orgId, userId }) => {
 });
 
 function getPlanLimits(planKey: string) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const limits: Record<string, any> = {
     free: {
       claimsLimit: 3,

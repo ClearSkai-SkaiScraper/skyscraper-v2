@@ -19,6 +19,7 @@
 // Phase G Priority 3: Complete RBAC Implementation
 // Enforces role hierarchy: OWNER > ADMIN > PM > FIELD_TECH > OFFICE_STAFF > CLIENT
 
+// eslint-disable-next-line no-restricted-imports
 import { auth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 

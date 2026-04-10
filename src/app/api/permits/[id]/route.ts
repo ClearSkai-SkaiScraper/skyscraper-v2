@@ -32,6 +32,7 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
     }
 
     return apiOk({ permit });
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (err: any) {
     return apiError(500, "INTERNAL_ERROR", err.message);
   }
@@ -68,6 +69,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
       return apiError(400, "VALIDATION_ERROR", "Validation failed", parsed.error.errors);
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const update: any = { updatedAt: new Date() };
     const data = parsed.data;
 
@@ -93,6 +95,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     if (!updated) return apiError(404, "NOT_FOUND", "Permit not found (race)");
 
     return apiOk({ permit: updated });
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (err: any) {
     return apiError(500, "INTERNAL_ERROR", err.message);
   }

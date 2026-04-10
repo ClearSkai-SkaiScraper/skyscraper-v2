@@ -266,6 +266,7 @@ export async function POST(req: NextRequest) {
           analysis.indicators && analysis.indicators.length > 0
             ? analysis.indicators
                 .map(
+                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
                   (ind: any, idx: number) => `
           <div class="indicator">
             <div class="indicator-header">

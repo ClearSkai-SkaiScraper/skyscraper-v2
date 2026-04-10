@@ -471,6 +471,7 @@ export function ClientOnboardingWizard({ onComplete, onSkip }: ClientOnboardingW
                 {data.photoUrls.length > 0 && (
                   <div className="grid grid-cols-5 gap-3">
                     {data.photoUrls.map((url, index) => (
+                      // eslint-disable-next-line react/jsx-no-comment-textnodes
                       <div key={index} className="group relative aspect-square">
                         // eslint-disable-next-line @next/next/no-img-element
                         <img

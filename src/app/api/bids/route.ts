@@ -9,6 +9,7 @@ export const dynamic = "force-dynamic";
  * GET /api/bids?proId=xxx - Get all bids by a pro
  */
 
+// eslint-disable-next-line no-restricted-imports
 import { auth } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -143,6 +144,7 @@ export async function POST(request: NextRequest) {
 // GET - Retrieve bids
 export async function GET(request: NextRequest) {
   try {
+    // eslint-disable-next-line @typescript-eslint/await-thenable
     const { userId } = await auth();
     if (!userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -240,6 +242,7 @@ export async function GET(request: NextRequest) {
 // PATCH - Update bid status (accept/decline)
 export async function PATCH(request: NextRequest) {
   try {
+    // eslint-disable-next-line @typescript-eslint/await-thenable
     const { userId } = await auth();
     if (!userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });

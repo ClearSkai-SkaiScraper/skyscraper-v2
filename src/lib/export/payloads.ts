@@ -9,6 +9,7 @@ import prisma from "@/lib/prisma";
 
 export interface ExportPayload {
   type: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   data: Record<string, any>;
   format: "pdf" | "xlsx" | "csv" | "docx";
   filename: string;
@@ -25,8 +26,11 @@ export interface EmailDraftPayload {
 }
 
 export interface EstimatePacketPayload {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   claim: any;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   estimates: any;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   lineItems: any[];
   subtotal: number;
   taxRate: number;
@@ -38,23 +42,34 @@ export interface EstimatePacketPayload {
 }
 
 export interface ReportPacketPayload {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   claim: any;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   report: any;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   damageAssessments: any[];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   weatherReports: any[];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   estimates: any[];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   supplements: any[];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   scopes: any[];
 }
 
 export interface SupplementPacketPayload {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   claim: any;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   supplements: any;
   headline: string;
   summary: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   keyItems: any[];
   totalRequested: number;
   nextSteps: string[];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   lineItems: any[];
   subtotal: number;
   taxRate: number;
@@ -66,6 +81,7 @@ export interface SupplementPacketPayload {
 }
 
 export interface HomeownerReportPayload {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   claim: any;
   headline: string;
   summary: string;
@@ -77,6 +93,7 @@ export interface HomeownerReportPayload {
  * Generate estimate email draft payload
  */
 export function generateEstimateDraftPayload(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   estimate: Record<string, any>,
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   options?: { includeAttachments?: boolean }
@@ -92,6 +109,7 @@ export function generateEstimateDraftPayload(
 /**
  * Generate export payload
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function generateExportPayload(type: string, data: Record<string, any>): ExportPayload {
   return {
     type,
@@ -136,8 +154,10 @@ export async function buildEstimatePacketPayload(
   }
 
   // Parse line items from estimate data
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const data = (estimate.scopeItems as any) || {};
   const lineItems = data.lineItems || [];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const subtotal = lineItems.reduce((sum: number, item: any) => sum + (item.total || 0), 0);
   const taxRate = data.taxRate || 0;
   const taxAmount = subtotal * (taxRate / 100);
@@ -164,7 +184,9 @@ export async function buildEstimatePacketPayload(
  * Build adjuster packet payload for export
  */
 export function buildAdjusterPacketPayload(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   claim: Record<string, any>,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   adjusterInfo: Record<string, any>,
   options?: { includePhotos?: boolean; includeDocs?: boolean }
 ): ExportPayload {
@@ -208,6 +230,7 @@ export async function buildHomeownerSummaryPayload(
     };
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const meta = (report.meta as any) || {};
 
   return {
@@ -306,9 +329,11 @@ export async function buildSupplementPacketPayload(
     };
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const scopeData = (supplement.scope_items as any) || {};
   const lineItems = supplement.supplement_items || [];
   const subtotal =
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     lineItems.reduce((sum: number, item: any) => sum + (item.amount_cents || 0), 0) / 100;
   const taxRate = supplement.tax_rate || 0;
   const taxAmount = subtotal * (taxRate / 100);

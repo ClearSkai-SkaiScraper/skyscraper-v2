@@ -42,6 +42,7 @@ export async function POST(req: Request) {
   const expiresAt = new Date(Date.now() + expiresInDays * 24 * 60 * 60 * 1000);
 
   const base = (
+    // eslint-disable-next-line no-restricted-syntax
     process.env.NEXT_PUBLIC_SITE_URL ?? `https://${process.env.VERCEL_URL ?? "localhost:3000"}`
   ).replace(/\/$/, "");
 

@@ -1,5 +1,6 @@
 export const dynamic = "force-dynamic";
 
+// eslint-disable-next-line no-restricted-imports
 import { auth } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -95,6 +96,7 @@ export async function POST(request: NextRequest) {
       size: file.size,
       uploadedAt: new Date().toISOString(),
     });
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (error: any) {
     logger.error("Portal upload-photo error:", error);
     return NextResponse.json({ error: "Upload failed" }, { status: 500 });

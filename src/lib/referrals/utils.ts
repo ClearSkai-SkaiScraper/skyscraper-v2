@@ -46,6 +46,7 @@ export async function ensureOrgReferralCode(orgId: string): Promise<string> {
       orgId: org.id,
       refCode: code,
       status: "invited",
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } as any,
   });
 
@@ -67,6 +68,7 @@ export async function awardReferralMonth(
       monthsAwarded: 1,
       tokensAwarded: 0,
       sourceReferral: referralId,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } as any,
   });
 

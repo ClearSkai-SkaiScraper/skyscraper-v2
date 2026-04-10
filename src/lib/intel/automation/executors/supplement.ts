@@ -18,8 +18,10 @@ export async function executeSupplementPacket(claimId: string, orgId: string) {
   const { claim, supplements, damageAssessments } = payload;
 
   // Collect missing items
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const missingItems: any[] = [];
   if (damageAssessments[0]?.metadata) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const metadata = damageAssessments[0].metadata as any;
     missingItems.push(...(metadata.missingItems || []));
   }

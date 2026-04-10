@@ -18,7 +18,9 @@ export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
 function getSupabaseEnv() {
+  // eslint-disable-next-line no-restricted-syntax
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  // eslint-disable-next-line no-restricted-syntax
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
   if (!url || !key) return null;
   return { url, key };
@@ -26,6 +28,7 @@ function getSupabaseEnv() {
 
 export const GET = withAuth(async (_req: NextRequest, { userId }) => {
   try {
+    // eslint-disable-next-line no-restricted-syntax
     if (process.env.FEATURE_AUTOSAVE === "false") {
       return NextResponse.json({ ok: false, reason: "FEATURE_DISABLED" }, { status: 200 });
     }

@@ -10,6 +10,7 @@ import { logger } from "@/lib/logger";
 
 interface ClaimMaterialForensicsProps {
   claimId: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   data?: any; // Pre-loaded forensic data
 }
 
@@ -19,6 +20,7 @@ interface FailureLikelihood {
 }
 
 export default function ClaimMaterialForensics({ claimId, data: initialData }: ClaimMaterialForensicsProps) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [data, setData] = useState<any>(initialData);
   const [loading, setLoading] = useState(!initialData);
   const [generating, setGenerating] = useState(false);

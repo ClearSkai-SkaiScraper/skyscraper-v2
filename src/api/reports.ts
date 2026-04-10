@@ -5,6 +5,7 @@ export type NewReport = {
   mode: "insurance" | "retail" | "inspection";
   address?: string;
   summary_md?: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   data?: Record<string, any>;
 };
 
@@ -71,6 +72,7 @@ export type PhotoAnnot = {
   file: File;
   caption?: string;
   ai_labels?: string[];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   ai_boxes?: any[];
   sort_order?: number;
 };

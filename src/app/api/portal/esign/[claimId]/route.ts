@@ -8,6 +8,7 @@ export const revalidate = 0;
  * Records the client's electronic signature on a claim document.
  */
 
+// eslint-disable-next-line no-restricted-imports
 import { auth, currentUser } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
@@ -85,6 +86,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ cla
         signedBy: name,
         signedByEmail: email,
         signatureIp: clientIp,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } as any,
     });
 

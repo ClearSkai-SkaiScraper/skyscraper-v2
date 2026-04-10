@@ -183,6 +183,7 @@ export function OnboardingChecklist({
 
       {/* Steps List */}
       {isExpanded && (
+        // eslint-disable-next-line react/jsx-no-comment-textnodes
         <div className="border-t">
           // eslint-disable-next-line @typescript-eslint/no-unused-vars
           {steps.map((step, idx) => (

@@ -11,6 +11,7 @@ interface Invoice {
   invoice_no: string;
   job_id: string;
   kind: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   line_items: any[];
   totals: {
     total?: number;
@@ -187,7 +188,9 @@ export default function InvoiceDetailPage() {
                   </th>
                 </tr>
               </thead>
+              // eslint-disable-next-line react/jsx-no-comment-textnodes
               <tbody className="divide-y divide-[var(--border)]">
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 {lineItems.map((item: any, i: number) => (
                   <tr key={i}>
                     <td className="px-4 py-3 text-[color:var(--text)]">

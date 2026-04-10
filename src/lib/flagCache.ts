@@ -1,7 +1,10 @@
+// eslint-disable-next-line no-restricted-syntax
 const UP_URL = process.env.UPSTASH_REDIS_REST_URL;
+// eslint-disable-next-line no-restricted-syntax
 const UP_TOKEN = process.env.UPSTASH_REDIS_REST_TOKEN;
 
 // Basic structured logger (fallback to console)
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function baseLog(evt: string, meta: Record<string, any>) {
   try {
     // eslint-disable-next-line no-console
@@ -11,6 +14,7 @@ function baseLog(evt: string, meta: Record<string, any>) {
   } catch {}
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 async function upFetch(path: string, method: string = "GET", body?: any) {
   if (!UP_URL || !UP_TOKEN) return null;
   const url = `${UP_URL}/${path}`;

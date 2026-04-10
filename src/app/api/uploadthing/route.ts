@@ -15,7 +15,9 @@ import { ourFileRouter } from "./core";
 
 // Check env vars at runtime and fail gracefully if missing
 function checkEnvVars() {
+  // eslint-disable-next-line no-restricted-syntax
   const UPLOADTHING_SECRET = process.env.UPLOADTHING_SECRET;
+  // eslint-disable-next-line no-restricted-syntax
   const UPLOADTHING_APP_ID = process.env.UPLOADTHING_APP_ID;
 
   if (!UPLOADTHING_SECRET || !UPLOADTHING_APP_ID) {

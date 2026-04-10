@@ -147,6 +147,7 @@ async function handleAddEvent(
       id: crypto.randomUUID(),
       claim_id: claimId,
       user_id: userId,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       type: activityType as any,
       message: input.description ? `${input.title}: ${input.description}` : input.title,
       metadata: { title: input.title, eventType: input.eventType },

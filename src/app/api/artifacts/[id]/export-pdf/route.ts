@@ -56,8 +56,10 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     // Generate PDF document using available fields
     const pdfDoc = generatePdfDocument({
       title: artifact.title,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       type: artifact.type as any,
       version: 1, // No version field in schema, default to 1
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       status: artifact.status as any,
       createdAt: artifact.createdAt,
       contentText: artifact.content,

@@ -41,6 +41,7 @@ interface AITask {
   lastRun?: Date;
   confidence?: number;
   status?: "idle" | "running" | "success" | "error";
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   result?: any;
 }
 
@@ -99,6 +100,7 @@ export function AIControlPanel({
     },
   ]);
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [analysis, setAnalysis] = useState<any>(null);
   const [loading, setLoading] = useState(false);
   const [generatingReport, setGeneratingReport] = useState(false);
@@ -124,6 +126,7 @@ export function AIControlPanel({
     }
   };
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const updateTasksFromAnalysis = (analysis: any) => {
     setTasks((prev) =>
       prev.map((task) => {
@@ -178,6 +181,7 @@ export function AIControlPanel({
       } else {
         throw new Error(data.error);
       }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       logger.error(`[AIControlPanel] Task ${taskId} failed:`, error);
       setTasks((prev) =>
@@ -243,6 +247,7 @@ export function AIControlPanel({
 
       // Map to photo URLs (handle both photoUrl and publicUrl field names)
       const images =
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         photosData.photos?.map((p: any) => p.publicUrl || p.photoUrl).filter(Boolean) || [];
 
       if (images.length === 0) {
@@ -288,6 +293,7 @@ export function AIControlPanel({
 
       // Cleanup object URL after a delay
       setTimeout(() => URL.revokeObjectURL(url), 10000);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       logger.error("[AIControlPanel] Report generation failed:", error);
       alert(
@@ -347,6 +353,7 @@ export function AIControlPanel({
 
       // Cleanup object URL after a delay
       setTimeout(() => URL.revokeObjectURL(url), 10000);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       logger.error("[AIControlPanel] Enhanced report generation failed:", error);
       alert(
@@ -546,6 +553,7 @@ export function AIControlPanel({
                     {analysis.history?.length
                       ? Math.round(
                           (analysis.history.reduce(
+                            // eslint-disable-next-line @typescript-eslint/no-explicit-any
                             (sum: number, h: any) => sum + (h.confidence || 0),
                             0
                           ) /

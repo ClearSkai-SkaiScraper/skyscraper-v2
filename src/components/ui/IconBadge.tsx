@@ -3,6 +3,7 @@ export function IconBadge({
   count,
   className = "",
 }: {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   icon: any;
   count?: number;
   className?: string;

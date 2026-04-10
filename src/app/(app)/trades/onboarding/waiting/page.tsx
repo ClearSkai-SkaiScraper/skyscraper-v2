@@ -16,6 +16,7 @@ import { logger } from "@/lib/logger";
 export default function WaitingPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [status, setStatus] = useState<any>(null);
   const [inviteLink, setInviteLink] = useState("");
 

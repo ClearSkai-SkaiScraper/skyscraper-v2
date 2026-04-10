@@ -16,7 +16,9 @@ export interface GeneratedReport {
   id: string;
   reportUrl?: string;
   executiveSummary: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   keyFindings: any[];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   priorityActions: any[];
 }
 
@@ -51,11 +53,13 @@ export async function generateAnnualReport(data: AnnualReportData): Promise<Gene
       executiveSummary,
       keyFindings,
       priorityActions,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } as any,
   });
 
   return {
     id: report.id,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     reportUrl: (report as any).reportUrl || undefined,
     executiveSummary,
     keyFindings,

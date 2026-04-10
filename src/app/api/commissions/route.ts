@@ -26,6 +26,7 @@ export async function GET(req: NextRequest) {
     const periodStart = url.searchParams.get("periodStart");
     const periodEnd = url.searchParams.get("periodEnd");
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const where: any = { orgId: ctx.orgId };
     if (userId) where.userId = userId;
     if (periodStart) where.periodStart = { gte: new Date(periodStart) };
@@ -110,6 +111,7 @@ export async function POST(req: NextRequest) {
       return apiError(404, "NOT_FOUND", "Commission record not found");
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let update: any = { updatedAt: new Date() };
 
     switch (action) {

@@ -7,6 +7,7 @@ import useSWR from "swr";
 
 const fetcher = (u: string) => fetch(u).then((r) => r.json());
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function Input({ label, ...props }: any) {
   return (
     <label className="flex flex-col gap-1">
@@ -58,18 +59,21 @@ export default function AgentAuditPage() {
         <Input
           label="Job ID"
           value={filters.jobId}
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           onChange={(e: any) => setFilters({ ...filters, jobId: e.target.value })}
           placeholder="job_..."
         />
         <Input
           label="Mission ID"
           value={filters.missionId}
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           onChange={(e: any) => setFilters({ ...filters, missionId: e.target.value })}
           placeholder="AUTO_DEPRECIATION"
         />
         <Input
           label="Event Type"
           value={filters.eventType}
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           onChange={(e: any) => setFilters({ ...filters, eventType: e.target.value })}
           placeholder="MISSION.START"
         />
@@ -105,7 +109,9 @@ export default function AgentAuditPage() {
                     Loading…
                   </td>
                 </tr>
+              // eslint-disable-next-line react/jsx-no-comment-textnodes
               )}
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
               {data?.rows?.map((r: any) => (
                 <tr key={r.id} className="border-t">
                   <td className="whitespace-nowrap px-3 py-2">

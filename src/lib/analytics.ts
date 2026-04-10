@@ -208,6 +208,7 @@ export const analytics = {
 // Add gtag types to window
 declare global {
   interface Window {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     gtag?: (command: string, targetId: string, config?: Record<string, any>) => void;
   }
 }

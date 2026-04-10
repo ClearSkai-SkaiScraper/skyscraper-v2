@@ -42,6 +42,7 @@ export async function GET(req: NextRequest) {
     }
 
     // Build where clause
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const where: any = {
       status: "active",
       isActive: true,

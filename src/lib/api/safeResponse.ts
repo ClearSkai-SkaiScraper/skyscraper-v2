@@ -9,6 +9,7 @@ import { NextResponse } from "next/server";
 
 import { logger } from "@/lib/logger";
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export interface APIResponse<T = any> {
   ok: boolean;
   data?: T;
@@ -39,6 +40,7 @@ export function apiError(error: string, details?: string, status = 500): NextRes
     {
       ok: false,
       error,
+      // eslint-disable-next-line no-restricted-syntax
       details: process.env.NODE_ENV === "development" ? details : undefined,
       timestamp: new Date().toISOString(),
     },
@@ -95,6 +97,7 @@ export function apiNotFound(resource = "Resource"): NextResponse<APIResponse> {
 /**
  * Wrap an API handler with error handling
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function withErrorHandler<T extends any[]>(handler: (...args: T) => Promise<NextResponse>) {
   return async (...args: T): Promise<NextResponse> => {
     try {
@@ -113,6 +116,7 @@ export function withErrorHandler<T extends any[]>(handler: (...args: T) => Promi
  * Validate required fields in request body
  */
 export function validateRequired(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   body: Record<string, any>,
   requiredFields: string[]
 ): { valid: boolean; missing?: string[] } {

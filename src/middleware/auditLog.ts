@@ -9,7 +9,9 @@ export interface AuditLogEntry {
   action: string;
   resource: string;
   resourceId?: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   changes?: Record<string, any>;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   metadata?: Record<string, any>;
   ipAddress?: string;
   userAgent?: string;
@@ -25,7 +27,9 @@ export async function logCreate(
   _orgId: string,
   _resource: string,
   _resourceId: string,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   _data: Record<string, any>,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   _metadata?: Record<string, any>
 ): Promise<void> {
   // Feature disabled. Intentionally no-op.
@@ -37,8 +41,11 @@ export async function logUpdate(
   _orgId: string,
   _resource: string,
   _resourceId: string,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   _before: Record<string, any>,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   _after: Record<string, any>,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   _metadata?: Record<string, any>
 ): Promise<void> {
   // Feature disabled. Intentionally no-op.
@@ -50,7 +57,9 @@ export async function logDelete(
   _orgId: string,
   _resource: string,
   _resourceId: string,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   _data: Record<string, any>,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   _metadata?: Record<string, any>
 ): Promise<void> {
   // Feature disabled. Intentionally no-op.
@@ -62,6 +71,7 @@ export async function logSensitiveAction(
   _orgId: string,
   _action: string,
   _resource: string,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   _metadata?: Record<string, any>
 ): Promise<void> {
   // Feature disabled. Intentionally no-op.
@@ -73,6 +83,7 @@ export async function getAuditLogs(
   _resource?: string,
   _resourceId?: string,
   _limit: number = 100
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 ): Promise<any[]> {
   // Feature disabled.
   return [];
@@ -82,6 +93,7 @@ export async function getUserActivity(
   _userId: string,
   _orgId: string,
   _limit: number = 50
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 ): Promise<any[]> {
   // Feature disabled.
   return [];
@@ -97,6 +109,7 @@ export async function searchAuditLogs(
     endDate?: Date;
   },
   _limit: number = 100
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 ): Promise<any[]> {
   // Feature disabled.
   return [];

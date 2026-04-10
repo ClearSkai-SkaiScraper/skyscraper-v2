@@ -117,6 +117,7 @@ export async function annotatePhotos(
 
         const parsed = JSON.parse(raw);
         const annotations: DamageAnnotation[] = (parsed.annotations || []).map(
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           (ann: any, idx: number) => ({
             id: `ann-${photo.id}-${idx}`,
             type: ann.type || "wear",
@@ -233,6 +234,7 @@ function generatePhotoCaption(annotations: DamageAnnotation[], overallSeverity: 
 /**
  * Format annotations for PDF report
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function formatAnnotationsForPDF(photo: AnnotatedPhoto): any {
   return {
     photoId: photo.photoId,

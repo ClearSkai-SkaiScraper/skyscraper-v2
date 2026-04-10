@@ -60,6 +60,7 @@ export const POST = withAuth(async (req: NextRequest, { orgId }, routeParams) =>
           estimatedValue: lead.value || 0,
           propertyId: undefined, // Would need to create property from contact address
           dateOfLoss: new Date().toISOString().split("T")[0],
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } as any,
       });
     }

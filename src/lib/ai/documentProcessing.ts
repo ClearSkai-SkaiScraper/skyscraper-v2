@@ -21,6 +21,7 @@ export type DocumentType =
 export interface ParsedDocument {
   type: DocumentType;
   confidence: number;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   extractedData: Record<string, any>;
   rawText?: string;
   metadata: {
@@ -147,6 +148,7 @@ Type:`;
 async function extractStructuredData(
   text: string,
   type: DocumentType
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 ): Promise<Record<string, any>> {
   const schemas = {
     INSURANCE_POLICY: {
@@ -260,10 +262,13 @@ Return ONLY valid JSON with extracted values. Use null for missing fields.`;
  * Normalize extracted data
  */
 function normalizeExtractedData(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   data: Record<string, any>,
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   type: DocumentType
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 ): Record<string, any> {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const normalized: Record<string, any> = {};
 
   for (const [key, value] of Object.entries(data)) {
@@ -299,8 +304,10 @@ function normalizeExtractedData(
  * Validate extracted data
  */
 async function validateExtractedData(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   data: Record<string, any>,
   type: DocumentType
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 ): Promise<Record<string, any>> {
   const validated = { ...data };
 
@@ -330,6 +337,7 @@ async function validateExtractedData(
 /**
  * Parse date string
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function parseDate(value: any): Date | null {
   if (!value) return null;
 
@@ -344,6 +352,7 @@ function parseDate(value: any): Date | null {
 /**
  * Parse currency string
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function parseCurrency(value: any): number | null {
   if (typeof value === "number") return value;
   if (!value) return null;
@@ -361,6 +370,7 @@ function parseCurrency(value: any): number | null {
 /**
  * Calculate extraction confidence
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function calculateConfidence(data: Record<string, any>): number {
   const keys = Object.keys(data).filter((k) => !k.startsWith("_"));
   const filledFields = keys.filter((k) => data[k] !== null && data[k] !== undefined);

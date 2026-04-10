@@ -9,6 +9,7 @@ import { getAllTrackedProperties,saveDailyResultToDB } from "./store";
 
 export async function runDailyWeatherIngest() {
   const properties = await getAllTrackedProperties();
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const results: any[] = [];
 
   for (const prop of properties) {

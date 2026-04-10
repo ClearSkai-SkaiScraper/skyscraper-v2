@@ -65,6 +65,7 @@ export function MoveJobDropdown({
       toast.success(`Moved to ${CATEGORY_CONFIG[newCategory].label}`);
       onMoved?.(newCategory);
       router.refresh();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       toast.error(error.message || "Failed to move job");
     } finally {
@@ -132,6 +133,7 @@ export function ArchiveButton({ itemId, itemType, onArchived }: ArchiveButtonPro
       toast.success("Item archived successfully");
       onArchived?.();
       router.refresh();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       toast.error(error.message || "Failed to archive");
     } finally {

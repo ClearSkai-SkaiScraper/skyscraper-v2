@@ -8,6 +8,7 @@ type OrgActiveResponse = {
 
 const fetcher = async (url: string): Promise<OrgActiveResponse> => {
   const res = await fetch(url, { headers: { accept: "application/json" } });
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let json: any = null;
   try {
     json = await res.json();

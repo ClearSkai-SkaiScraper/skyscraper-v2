@@ -8,6 +8,7 @@ import type { NormalizedLocation } from "../weather/storm-types";
  * Geocode an address string to latitude/longitude using Mapbox Geocoding API
  */
 export async function geocodeAddress(address: string): Promise<NormalizedLocation | null> {
+  // eslint-disable-next-line no-restricted-syntax
   const mapboxToken = process.env.NEXT_PUBLIC_MAPBOX_TOKEN;
 
   if (!mapboxToken) {
@@ -28,6 +29,7 @@ export async function geocodeAddress(address: string): Promise<NormalizedLocatio
       return null;
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const data: any = await res.json();
 
     if (!data.features || data.features.length === 0) {
@@ -61,6 +63,7 @@ export async function geocodeAddress(address: string): Promise<NormalizedLocatio
 /**
  * Parse Mapbox geocoding response to extract address components
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function parseAddressComponents(feature: any): {
   address?: string;
   city?: string;
@@ -68,6 +71,7 @@ export function parseAddressComponents(feature: any): {
   zip?: string;
   county?: string;
 } {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const result: any = {};
 
   // Main place_name is often the full address

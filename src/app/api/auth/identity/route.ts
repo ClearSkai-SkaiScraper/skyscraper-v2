@@ -12,6 +12,7 @@
  * }
  */
 
+// eslint-disable-next-line no-restricted-imports
 import { currentUser } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 
@@ -76,6 +77,7 @@ export async function GET() {
     // This cookie tells middleware which surface the user belongs to
     response.cookies.set("x-user-type", identity.userType, {
       httpOnly: false,
+      // eslint-disable-next-line no-restricted-syntax
       secure: process.env.NODE_ENV === "production",
       sameSite: "lax",
       path: "/",

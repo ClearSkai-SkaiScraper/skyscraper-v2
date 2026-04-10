@@ -2,6 +2,7 @@ import { pgPool as _pgPool } from "@/lib/db/index";
 import _prisma from "@/lib/prisma";
 
 export const db = {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   query: async (text: string, params?: any[]) => {
     return _pgPool.query(text, params);
   },

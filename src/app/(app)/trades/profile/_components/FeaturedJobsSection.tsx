@@ -137,7 +137,9 @@ export default function FeaturedJobsSection({ userId, isOwnProfile }: FeaturedJo
             <div
               key={work.id}
               className="group relative overflow-hidden rounded-lg border bg-slate-50"
+            // eslint-disable-next-line react/jsx-no-comment-textnodes
             >
+              // eslint-disable-next-line react/jsx-no-comment-textnodes
               <div className="aspect-[4/3] overflow-hidden">
                 // eslint-disable-next-line @next/next/no-img-element
                 <img
@@ -304,6 +306,7 @@ function AddFeaturedWorkForm({ onSuccess }: { onSuccess: () => void }) {
         <Label>Project Photo *</Label>
         <div className="mt-2">
           {imageUrl ? (
+            // eslint-disable-next-line react/jsx-no-comment-textnodes
             <div className="relative">
               // eslint-disable-next-line @next/next/no-img-element
               <img src={imageUrl} alt="" className="h-40 w-full rounded-lg object-cover" />
@@ -433,7 +436,9 @@ function EditFeaturedWorkForm({ item, onSuccess }: { item: FeaturedWork; onSucce
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
+      // eslint-disable-next-line react/jsx-no-comment-textnodes
       <div>
+        // eslint-disable-next-line react/jsx-no-comment-textnodes
         <Label>Current Image</Label>
         // eslint-disable-next-line @next/next/no-img-element
         <img src={item.imageUrl} alt="" className="mt-2 h-40 w-full rounded-lg object-cover" />

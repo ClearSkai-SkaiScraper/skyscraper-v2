@@ -71,6 +71,7 @@ export default async function CompanyBrandingPreview() {
             <div
               className="flex h-20 w-20 items-center justify-center overflow-hidden rounded-xl border-2 shadow-lg"
               style={{ borderColor: branding.colorPrimary || "#e2e8f0" }}
+            // eslint-disable-next-line react/jsx-no-comment-textnodes
             >
               // eslint-disable-next-line @next/next/no-img-element
               <img
@@ -227,7 +228,9 @@ export default async function CompanyBrandingPreview() {
       {/* Team Photo Preview */}
       {branding?.teamPhotoUrl && (
         <div className="space-y-3">
+          // eslint-disable-next-line react/jsx-no-comment-textnodes
           <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-300">Team Photo</h3>
+          // eslint-disable-next-line react/jsx-no-comment-textnodes
           <div className="overflow-hidden rounded-xl border border-slate-200 shadow-md dark:border-slate-700">
             // eslint-disable-next-line @next/next/no-img-element
             <img src={branding.teamPhotoUrl} alt="Team" className="h-48 w-full object-cover" />

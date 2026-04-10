@@ -84,7 +84,9 @@ function isPrismaError(err: unknown): err is { code: string; message: string } {
     typeof err === "object" &&
     err !== null &&
     "code" in err &&
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     typeof (err as any).code === "string" &&
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (err as any).code.startsWith("P")
   );
 }

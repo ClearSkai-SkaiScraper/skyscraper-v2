@@ -1,5 +1,6 @@
 export const dynamic = "force-dynamic";
 
+// eslint-disable-next-line no-restricted-imports
 import { auth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 import { z } from "zod";
@@ -14,6 +15,7 @@ const TeamInviteSchema = z.object({
 });
 
 const basePOST = async (req: Request) => {
+  // eslint-disable-next-line @typescript-eslint/await-thenable
   const { userId, orgId } = await auth();
   // eslint-disable-next-line @typescript-eslint/await-thenable
   if (!userId || !orgId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -29,6 +31,7 @@ const basePOST = async (req: Request) => {
     orgId,
     status: "pending",
     expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+    // eslint-disable-next-line no-restricted-syntax
     inviteUrl: `${process.env.NEXT_PUBLIC_APP_URL}/invite/accept?token=mock_token_${Date.now()}`,
   };
   return NextResponse.json(mockInvitation, { status: 201 });

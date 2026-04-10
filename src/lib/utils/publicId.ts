@@ -12,6 +12,7 @@ export function generatePublicId(): string {
 }
 
 export function generateShareUrl(publicId: string): string {
+  // eslint-disable-next-line no-restricted-syntax
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://skaiscrape.com";
   return `${baseUrl}/watch/${publicId}`;
 }

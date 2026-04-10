@@ -159,7 +159,9 @@ export function NextBestActionPanel({ claimId, onActionClick }: NextBestActionPa
                     <Icon className={`text- mt-0.5 h-5 w-5 flex-shrink-0${config.color}-600`} />
                     <div className="min-w-0 flex-1">
                       <div className="mb-1 flex items-center gap-2">
+                        // eslint-disable-next-line react/jsx-no-comment-textnodes
                         <h4 className="text-sm font-semibold">{action.label}</h4>
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
                         <Badge variant={config.color as any} className="text-xs">
                           {action.priority.toUpperCase()}
                         </Badge>

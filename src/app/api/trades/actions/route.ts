@@ -304,6 +304,7 @@ async function handleBlock(userId: string, input: Extract<ActionInput, { action:
       INSERT INTO trades_blocks (id, "blockerId", "blockedId", reason, "createdAt")
       VALUES (gen_random_uuid(), ${profile.id}, ${input.profileId}, ${input.reason || null}, NOW())
     `;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (err: any) {
     // If table doesn't exist, skip blocking for now
     if (err?.code === "42P01" || err?.message?.includes("does not exist")) {
@@ -349,6 +350,7 @@ async function handleUnblock(userId: string, input: Extract<ActionInput, { actio
     if (result === 0) {
       return NextResponse.json({ error: "User is not blocked" }, { status: 404 });
     }
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (err: any) {
     // If table doesn't exist, user wasn't blocked
     if (err?.code === "42P01" || err?.message?.includes("does not exist")) {
@@ -470,13 +472,16 @@ async function handleConvertLead(
     data: { stage: "converted" },
   });
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let claim: any = null;
   if (input.claimData) {
     claim = await prisma.claims.create({
       data: {
         id: crypto.randomUUID(),
         orgId,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         ...(input.claimData as any),
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } as any,
     });
   }

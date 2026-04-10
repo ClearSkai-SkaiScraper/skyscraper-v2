@@ -7,6 +7,7 @@ export type PortalDbResult<T> =
   | { ok: true; data: T }
   | { ok: false; reason: PortalDbIssue; message: string };
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function classifyPrismaError(error: any): { ok: false; reason: PortalDbIssue; message: string } {
   const message = typeof error?.message === "string" ? error.message : "Unknown error";
   const code = (error as PrismaClientKnownRequestError)?.code;
@@ -27,6 +28,7 @@ export async function safePortalQuery<T>(fn: () => Promise<T>): Promise<PortalDb
   try {
     const data = await fn();
     return { ok: true, data };
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (error: any) {
     const classification = classifyPrismaError(error);
     logger.error("[PORTAL_DB]", {

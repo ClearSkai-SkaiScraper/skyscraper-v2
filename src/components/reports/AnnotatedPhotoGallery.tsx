@@ -117,7 +117,9 @@ export function AnnotatedPhotoGallery({ photos, onExport }: AnnotatedPhotoGaller
               onClick={() => handlePhotoClick(photo)}
               className="group relative overflow-hidden rounded-lg border border-slate-200 bg-white transition-all hover:shadow-lg"
             >
+              // eslint-disable-next-line react/jsx-no-comment-textnodes
               {/* Photo */}
+              // eslint-disable-next-line react/jsx-no-comment-textnodes
               <div className="relative aspect-video w-full overflow-hidden bg-slate-100">
                 // eslint-disable-next-line @next/next/no-img-element
                 <img
@@ -171,7 +173,9 @@ export function AnnotatedPhotoGallery({ photos, onExport }: AnnotatedPhotoGaller
               onClick={() => handlePhotoClick(photo)}
               className="flex w-full gap-4 rounded-lg border border-slate-200 bg-white p-4 text-left transition-all hover:shadow-md"
             >
+              // eslint-disable-next-line react/jsx-no-comment-textnodes
               {/* Thumbnail */}
+              // eslint-disable-next-line react/jsx-no-comment-textnodes
               <div className="relative h-24 w-36 flex-shrink-0 overflow-hidden rounded-md bg-slate-100">
                 // eslint-disable-next-line @next/next/no-img-element
                 <img
@@ -275,7 +279,9 @@ export function AnnotatedPhotoGallery({ photos, onExport }: AnnotatedPhotoGaller
             <ChevronRight className="h-6 w-6" />
           </button>
 
+          // eslint-disable-next-line react/jsx-no-comment-textnodes
           {/* Photo */}
+          // eslint-disable-next-line react/jsx-no-comment-textnodes
           <div className="relative max-h-[80vh] max-w-[80vw] overflow-auto">
             // eslint-disable-next-line @next/next/no-img-element
             <img

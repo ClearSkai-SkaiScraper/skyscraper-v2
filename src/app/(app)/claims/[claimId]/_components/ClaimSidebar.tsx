@@ -36,6 +36,7 @@ export default function ClaimSidebar({ claim }: ClaimSidebarProps) {
     setCoverPhotoUrl(url);
   };
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const saveUpdates = async (updates: Record<string, any>) => {
     const res = await fetch(`/api/claims/${claim.id}/update`, {
       method: "PATCH",

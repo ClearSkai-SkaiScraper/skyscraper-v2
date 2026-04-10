@@ -121,6 +121,7 @@ export function PacketGenerationPanel({ claimId, className }: PacketGenerationPa
         setError(data.error || "Generation failed");
         failPacketGeneration(data.error || "Failed");
         if (data.suggestedActions) {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           setResponse(data as any);
         }
       }

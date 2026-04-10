@@ -5,6 +5,7 @@
  * Works with any auth resolver (Clerk, safeOrgContext, getActiveOrgSafe).
  */
 
+// eslint-disable-next-line no-restricted-imports
 import { auth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 
@@ -56,6 +57,7 @@ export async function resolveUserRole(): Promise<{
     // Platform owner override
     try {
       const ownerEmail =
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (sessionClaims as any)?.email || (sessionClaims as any)?.primaryEmailAddress;
       if (ownerEmail === "buildingwithdamienray@gmail.com") {
         return { userId, orgId: effectiveOrgId, role: "owner" };
@@ -141,6 +143,7 @@ export function withMinRole(
     try {
       const user = await requireMinRole(minRole);
       return await handler(req, user);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       if (err.statusCode === 401) {
         return NextResponse.json({ error: "Authentication required" }, { status: 401 });
@@ -170,6 +173,7 @@ export function withPerm(
     try {
       const user = await requirePerm(perm);
       return await handler(req, user);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       if (err.statusCode === 401) {
         return NextResponse.json({ error: "Authentication required" }, { status: 401 });

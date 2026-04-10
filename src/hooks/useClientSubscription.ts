@@ -6,6 +6,7 @@ export default function useClientSubscription() {
   const [loading, setLoading] = useState(true);
   const [hasSubscription, setHasSubscription] = useState(false);
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars
   const [orgRow, setOrgRow] = useState<any | null>(null);
 
   useEffect(() => {
@@ -29,6 +30,7 @@ export default function useClientSubscription() {
           setHasSubscription(true);
           setLoading(false);
         }
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       } catch (_e) {
         if (mounted) {
           setHasSubscription(false);

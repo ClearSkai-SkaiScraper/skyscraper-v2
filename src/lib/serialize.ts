@@ -1,4 +1,5 @@
 // Utility to produce Flight-safe plain JSON structures
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function toPlainJSON(value: any): any {
   if (value === null || value === undefined) return value === undefined ? null : value;
 
@@ -21,6 +22,7 @@ export function toPlainJSON(value: any): any {
     }
 
     // Plain objects — recurse into each key
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const result: Record<string, any> = {};
     for (const [k, v] of Object.entries(value)) {
       const cleaned = toPlainJSON(v);

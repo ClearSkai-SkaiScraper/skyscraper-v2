@@ -77,6 +77,7 @@ export function CompletionChecklist({ claimId, onStatusChange }: CompletionCheck
       }
 
       if (onStatusChange) onStatusChange();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       toast.error(`Failed to update: ${error.message}`);
     } finally {

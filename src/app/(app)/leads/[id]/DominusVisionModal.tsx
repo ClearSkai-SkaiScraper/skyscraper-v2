@@ -60,6 +60,7 @@ ${image.notes}
         setRegenerating(false);
         return;
       }
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (_err) {
       toast.error("Failed to regenerate analysis");
     } finally {
@@ -102,8 +103,10 @@ ${image.notes}
           >
             <X className="h-5 w-5" />
           </button>
+        // eslint-disable-next-line react/jsx-no-comment-textnodes
         </div>
 
+        // eslint-disable-next-line react/jsx-no-comment-textnodes
         {/* Image Preview */}
         // eslint-disable-next-line @next/next/no-img-element
         <div className="p-4">

@@ -12,6 +12,7 @@ export interface AiUsageParams {
   orgId: string;
   feature: string;
   tokens: number;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   metadata?: Record<string, any>;
 }
 
@@ -24,6 +25,7 @@ export interface AiUsageParams {
 export async function trackAiUsage(params: AiUsageParams): Promise<void> {
   // BETA MODE: Skip all usage tracking
   // Users get unlimited AI access during beta testing
+  // eslint-disable-next-line no-restricted-syntax
   if (process.env.BETA_MODE !== "false") {
     return; // No-op during beta
   }

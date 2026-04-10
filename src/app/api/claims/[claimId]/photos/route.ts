@@ -191,7 +191,9 @@ export const POST = withAuth(
       await getOrgClaimOrThrow(orgId, claimId);
 
       const { createClient } = await import("@supabase/supabase-js");
+      // eslint-disable-next-line no-restricted-syntax
       const url = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL;
+      // eslint-disable-next-line no-restricted-syntax
       const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
       if (!url || !key) {
         return NextResponse.json({ error: "Storage not configured" }, { status: 500 });

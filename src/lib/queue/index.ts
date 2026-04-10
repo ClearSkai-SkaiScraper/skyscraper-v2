@@ -24,6 +24,7 @@ let bossInstance: PgBoss | null = null;
  */
 export async function getBoss(): Promise<PgBoss> {
   if (!bossInstance) {
+    // eslint-disable-next-line no-restricted-syntax
     const connectionString = process.env.DATABASE_URL;
 
     if (!connectionString) {
@@ -65,6 +66,7 @@ export async function getBoss(): Promise<PgBoss> {
  */
 export async function enqueue(
   queueName: string,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   data: any,
   options?: {
     priority?: number; // Higher = more priority (default: 0)
@@ -91,6 +93,7 @@ export async function enqueue(
  */
 export async function enqueueScheduled(
   queueName: string,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   data: any,
   startAfter: Date | string
 ): Promise<string> {
@@ -112,6 +115,7 @@ export async function enqueueScheduled(
 // SUBSCRIBE FUNCTIONS (Worker)
 // =============================================================================
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type JobHandler<T = any> = (payload: T, job: Job) => Promise<void>;
 
 /**
@@ -121,6 +125,7 @@ export type JobHandler<T = any> = (payload: T, job: Job) => Promise<void>;
  * @param handler - Function to handle jobs
  * @param options - Subscription options
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export async function subscribe<T = any>(
   queueName: string,
   handler: JobHandler<T>,

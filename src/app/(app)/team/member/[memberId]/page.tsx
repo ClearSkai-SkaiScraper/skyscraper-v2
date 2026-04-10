@@ -52,6 +52,7 @@ export default async function TeamMemberProfilePage({ params }: PageProps) {
   const orgId = ctx.orgId;
 
   // Fetch team member with extended profile data (headshotUrl optional)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let member = null as any;
   try {
     member = await prisma.users.findFirst({

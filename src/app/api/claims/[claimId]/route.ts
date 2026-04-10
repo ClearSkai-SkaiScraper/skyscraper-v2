@@ -149,6 +149,7 @@ export const PATCH = withOrgScope(
       // 🛡️ RBAC: Check permission to edit claims
       try {
         await requirePermission("claims:edit");
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       } catch (_error) {
         return createForbiddenResponse("You don't have permission to edit claims", {
           requiredPermission: "claims:edit",
@@ -206,6 +207,7 @@ export const PATCH = withOrgScope(
       } = parsed.data;
 
       // Build update data
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const updateData: any = {};
       if (title !== undefined) updateData.title = title;
       if (description !== undefined) updateData.description = description;
@@ -300,6 +302,7 @@ export const DELETE = withOrgScope(
       // 🛡️ RBAC: Check permission to delete claims
       try {
         await requirePermission("claims:delete");
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       } catch (_error) {
         return createForbiddenResponse("You don't have permission to delete claims", {
           requiredPermission: "claims:delete",

@@ -129,6 +129,7 @@ export function useWeatherIntegration() {
   );
 
   const getWeatherAnalysis = useCallback(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     async (location: string, dateRange: { start: string; end: string }): Promise<any> => {
       if (!location.trim() || !dateRange.start || !dateRange.end) {
         setError("Location and date range are required");

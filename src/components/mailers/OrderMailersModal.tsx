@@ -114,6 +114,7 @@ export function OrderMailersModal({
 
       onSuccess?.();
       onOpenChange(false);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       setError(err.message || "Failed to send mailers");
     } finally {

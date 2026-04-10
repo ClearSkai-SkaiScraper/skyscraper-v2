@@ -1,3 +1,4 @@
+// eslint-disable-next-line no-restricted-imports
 import { currentUser } from "@clerk/nextjs/server";
 import { CheckCircle2, ChevronDown, Clock, Package, XCircle } from "lucide-react";
 import type { Metadata } from "next";

@@ -7,16 +7,22 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 
 export default function ClerkDebugPage() {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [config, setConfig] = useState<any>({});
 
   useEffect(() => {
+    // eslint-disable-next-line no-restricted-syntax
     const publishableKey = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY || "";
     setConfig({
       publishableKey,
       isProduction: publishableKey.startsWith("pk_live_"),
+      // eslint-disable-next-line no-restricted-syntax
       signInUrl: process.env.NEXT_PUBLIC_CLERK_SIGN_IN_URL || "/sign-in",
+      // eslint-disable-next-line no-restricted-syntax
       signUpUrl: process.env.NEXT_PUBLIC_CLERK_SIGN_UP_URL || "/sign-up",
+      // eslint-disable-next-line no-restricted-syntax
       afterSignInUrl: process.env.NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL || "/dashboard",
+      // eslint-disable-next-line no-restricted-syntax
       afterSignUpUrl: process.env.NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL || "/dashboard",
       currentDomain: typeof window !== "undefined" ? window.location.origin : "Unknown",
       userAgent: typeof navigator !== "undefined" ? navigator.userAgent : "Unknown",

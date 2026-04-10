@@ -17,6 +17,7 @@ export async function issueToken(orgId: string, scopes: string[]) {
 export async function validateToken(raw: string, requiredScopes: string[]) {
   const token_hash = hashToken(raw);
   // 🔒 SECURITY FIX: Use $queryRaw tagged template instead of $queryRawUnsafe
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const rows: any[] = await prisma.$queryRaw(
     Prisma.sql`SELECT id, org_id, scopes FROM app.api_tokens WHERE token_hash = ${token_hash} LIMIT 1`
   );
@@ -41,6 +42,7 @@ export async function getApiToken(
   requiredScopes: string[] = []
 ): Promise<ApiTokenRow | null> {
   const token_hash = hashToken(raw);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const rows: any[] =
     await prisma.$queryRaw`SELECT id, org_id, scopes FROM app.api_tokens WHERE token_hash = ${token_hash} LIMIT 1`;
   const token = rows[0];

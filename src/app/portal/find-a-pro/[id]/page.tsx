@@ -130,6 +130,7 @@ export default function ProProfilePage() {
         const data = await res.json();
         // Check by company ID since connections store company IDs
         // Also check by member ID or pro name as fallback
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const connection = data.connections?.find((c: any) => {
           // c.id is the TradesCompany ID from connections API
           const companyIdMatch = pro?.companyId && c.id === pro.companyId;
@@ -166,6 +167,7 @@ export default function ProProfilePage() {
 
       setConnectionStatus("pending");
       toast.success("Connection request sent! 🎉");
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (_err) {
       toast.error("Failed to send connection request");
     } finally {

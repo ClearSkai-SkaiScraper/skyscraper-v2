@@ -165,6 +165,7 @@ export function CoverPhotoPicker({
                           ? "border-blue-600 ring-2 ring-blue-200"
                           : "border-slate-200 hover:border-blue-300"
                       }`}
+                    // eslint-disable-next-line react/jsx-no-comment-textnodes
                     >
                       // eslint-disable-next-line @next/next/no-img-element
                       <img

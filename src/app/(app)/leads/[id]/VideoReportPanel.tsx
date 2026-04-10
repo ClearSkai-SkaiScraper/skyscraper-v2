@@ -265,6 +265,7 @@ export function VideoReportPanel({ leadId }: VideoReportPanelProps) {
     try {
       await navigator.clipboard.writeText(shareUrl);
       toast.success("Share link copied to clipboard!");
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (__err) {
       toast.error("Could not copy to clipboard");
     }
@@ -649,6 +650,7 @@ export function VideoReportPanel({ leadId }: VideoReportPanelProps) {
                                 shareUrl.replace("/watch/", "/packet/")
                               );
                               toast.success("Adjuster packet link copied to clipboard!");
+                            // eslint-disable-next-line @typescript-eslint/no-unused-vars
                             } catch (_err) {
                               toast.error("Could not copy to clipboard");
                             }

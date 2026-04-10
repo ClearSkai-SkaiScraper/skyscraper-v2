@@ -26,6 +26,7 @@ export async function uploadPDFToFirebase(
   await file.save(pdfBuffer, {
     contentType: "application/pdf",
     metadata: {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       customMetadata: meta as any,
     },
   });

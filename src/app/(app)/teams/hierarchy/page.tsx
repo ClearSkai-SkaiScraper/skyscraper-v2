@@ -49,6 +49,7 @@ export default async function HierarchyPage() {
   const orgId = orgCtx.orgId;
 
   /* ── Fetch company members ───────────────────────────────────── */
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let members: any[] = [];
   let companyName = "Your Company";
 

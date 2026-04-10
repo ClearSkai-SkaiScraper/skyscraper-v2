@@ -134,6 +134,7 @@ export async function addClaimEvent(input: AddClaimEventInput) {
       id: crypto.randomUUID(),
       claim_id: claimId,
       user_id: userId,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       type: (typeMap[eventType || "note"] || "NOTE") as any,
       message: description ? `${title}: ${description}` : title,
       metadata: { title, eventType },

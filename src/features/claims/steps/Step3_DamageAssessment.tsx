@@ -37,6 +37,7 @@ const AFFECTED_AREAS = [
 ];
 
 export function Step3_DamageAssessment({ data, onChange }: Step3Props) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const updateField = (field: keyof Step3Data, value: any) => {
     onChange({ ...data, [field]: value });
   };

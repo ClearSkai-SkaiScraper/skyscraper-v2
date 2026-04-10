@@ -15,6 +15,7 @@ export const POST = withAuth(async (req: NextRequest, { orgId, userId }, routePa
     const { id: invitationId } = await routeParams.params;
 
     // Find invitation (team_invitations is a raw SQL table, not in Prisma schema)
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const invitation = await (prisma as any).team_invitations.findUnique({
       where: { id: invitationId },
     });
@@ -29,6 +30,7 @@ export const POST = withAuth(async (req: NextRequest, { orgId, userId }, routePa
     }
 
     // Update status to revoked
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     await (prisma as any).team_invitations.update({
       where: { id: invitationId },
       data: {

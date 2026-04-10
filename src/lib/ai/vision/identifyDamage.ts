@@ -14,12 +14,14 @@ export async function identifyDamage(options: {
   orgId: string;
   claimId: string;
   photoIds: string[];
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 }): Promise<{ damages: any; riskFlags: any; meta: { cached?: boolean } }> {
   const redis = upstash;
   const jobKey = `aiq:damage:${options.claimId}`;
   if (redis) {
     try {
       const cached = await redis.get(jobKey);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       if (cached) return { ...(cached as any), meta: { cached: true } };
     } catch {}
   }

@@ -175,6 +175,7 @@ export async function seedDemoData(orgId: string, userId: string): Promise<SeedR
           type: "homeowner",
           notes: DEMO_MARKER,
           createdBy: userId,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } as any,
       });
       contactCount++;
@@ -191,6 +192,7 @@ export async function seedDemoData(orgId: string, userId: string): Promise<SeedR
           zipCode: addr.zip,
           propertyType: i % 3 === 0 ? "commercial" : "residential",
           notes: DEMO_MARKER,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } as any,
       });
       propertyCount++;
@@ -218,6 +220,7 @@ export async function seedDemoData(orgId: string, userId: string): Promise<SeedR
           jobValueStatus: i < 4 ? "approved" : i < 8 ? "pending" : "draft",
           dateOfLoss,
           createdBy: userId,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } as any,
       });
       claimCount++;
@@ -234,6 +237,7 @@ export async function seedDemoData(orgId: string, userId: string): Promise<SeedR
           status: i < 6 ? "converted" : i < 10 ? "qualified" : "new",
           notes: DEMO_MARKER,
           createdBy: userId,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } as any,
       });
       leadCount++;

@@ -1,5 +1,6 @@
 import { finishJobRun, startJobRun } from "@/lib/telemetry";
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 type JsonValue = any;
 
 export async function runJob<T>(params: {
@@ -37,6 +38,7 @@ export async function runJob<T>(params: {
     }
 
     return result;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (error: any) {
     if (id) {
       await finishJobRun({

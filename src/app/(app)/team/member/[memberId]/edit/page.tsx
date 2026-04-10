@@ -170,6 +170,7 @@ export default function ProfileEditPage({ params }: { params: { memberId: string
     ]);
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   function updateJobEntry(index: number, field: keyof JobEntry, value: any) {
     const updated = [...jobHistory];
     updated[index] = { ...updated[index], [field]: value };
@@ -203,6 +204,7 @@ export default function ProfileEditPage({ params }: { params: { memberId: string
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars
   function updateTestimonial(index: number, field: keyof Testimonial, value: any) {
     const updated = [...testimonials];
     updated[index] = { ...updated[index], [field]: value };

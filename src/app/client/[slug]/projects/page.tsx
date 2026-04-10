@@ -12,6 +12,7 @@ export const dynamic = "force-dynamic";
 export default async function ClientProjectsPage({ params }: ClientProjectsPageProps) {
   const { slug } = params;
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let projects: any[] = [];
 
   try {

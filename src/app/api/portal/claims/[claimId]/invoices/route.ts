@@ -64,12 +64,16 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ clai
     const invoices: Array<{
       id: string;
       invoiceNumber: string;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       items: any;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       totals: any;
       kind: string;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       createdAt: any;
       jobId: string | null;
     }> = crmJobs.flatMap((job) =>
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       job.contractor_invoices.map((inv: any) => ({
         id: inv.id,
         invoiceNumber: inv.invoice_no,

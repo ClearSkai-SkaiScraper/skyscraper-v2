@@ -26,6 +26,7 @@ export const GET = withAuth(async (req: NextRequest, { orgId }) => {
       take: 200,
     });
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const claimsLite = claims.map((c: any) => {
       const street = c.properties?.street || null;
       const city = c.properties?.city || null;

@@ -42,7 +42,9 @@ interface ContractorDetailClientProps {
     logoUrl: string | null;
     coverImageUrl: string | null;
     primaryTrade: string | null;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     services: any;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     serviceAreas: any;
     phone: string | null;
     email: string | null;

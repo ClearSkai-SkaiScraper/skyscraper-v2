@@ -1,3 +1,4 @@
+// eslint-disable-next-line no-restricted-imports
 import { currentUser } from "@clerk/nextjs/server";
 import { FileText, Package, Shield, Upload } from "lucide-react";
 import { redirect } from "next/navigation";

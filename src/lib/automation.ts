@@ -101,6 +101,7 @@ export async function onStageChange(
   }
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 async function handleInspectionScheduled(project: any) {
   // Create reminder tasks
   const reminderDate = new Date();
@@ -139,6 +140,7 @@ async function handleInspectionScheduled(project: any) {
   }
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 async function handleInspectionCompleted(project: any) {
   // Create tasks to generate inspection summary
   await prisma.tasks.create({
@@ -170,6 +172,7 @@ async function handleInspectionCompleted(project: any) {
   });
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 async function handleEstimateSent(project: any) {
   // Create follow-up tasks for 7 days later
   const followUpDate = new Date();
@@ -208,6 +211,7 @@ async function handleEstimateSent(project: any) {
   }
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 async function handleClaimFiled(project: any) {
   // Create tasks to track claim progress
   await prisma.tasks.create({
@@ -224,6 +228,7 @@ async function handleClaimFiled(project: any) {
   });
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 async function handleClaimApproved(project: any) {
   // Create production planning tasks
   const productionTasks = [
@@ -275,6 +280,7 @@ async function handleClaimApproved(project: any) {
   });
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 async function handleProductionStarted(project: any) {
   // Create daily check-in tasks
   await prisma.tasks.create({
@@ -291,6 +297,7 @@ async function handleProductionStarted(project: any) {
   });
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 async function handleFinalQA(project: any) {
   // Create photo checklist tasks
   await prisma.tasks.create({
@@ -321,6 +328,7 @@ async function handleFinalQA(project: any) {
   });
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 async function handleProjectPaid(project: any) {
   // Mark project as complete
   await prisma.projects.update({

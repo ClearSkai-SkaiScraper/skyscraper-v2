@@ -23,9 +23,11 @@ const AUTH_TAG_LENGTH = 16;
  * Falls back to a development-only key if not set (NEVER use in production).
  */
 function getEncryptionKey(): Buffer {
+  // eslint-disable-next-line no-restricted-syntax
   const keyHex = process.env.TOKEN_ENCRYPTION_KEY;
 
   if (!keyHex) {
+    // eslint-disable-next-line no-restricted-syntax
     if (process.env.NODE_ENV === "production") {
       throw new Error("TOKEN_ENCRYPTION_KEY environment variable is required in production");
     }

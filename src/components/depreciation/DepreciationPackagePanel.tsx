@@ -10,6 +10,7 @@ import { Label } from "@/components/ui/label";
 
 interface DepreciationPackagePanelProps {
   claimId: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   packageData?: any;
   onPackageGenerated?: () => void;
 }
@@ -44,6 +45,7 @@ export function DepreciationPackagePanel({
       );
 
       if (onPackageGenerated) onPackageGenerated();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       toast.error(`Failed to generate package: ${error.message}`);
     } finally {
@@ -80,6 +82,7 @@ export function DepreciationPackagePanel({
       const data = await res.json();
       toast.success(`✅ ${data.message}`);
       setRecipientEmail("");
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       toast.error(`Failed to send: ${error.message}`);
     } finally {

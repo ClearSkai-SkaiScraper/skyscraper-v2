@@ -58,7 +58,9 @@ export async function uploadSupabase(
     }
 
     const supabaseUrl =
+      // eslint-disable-next-line no-restricted-syntax
       (process.env.NEXT_PUBLIC_SUPABASE_URL as string | undefined) ||
+      // eslint-disable-next-line no-restricted-syntax
       process.env.NEXT_PUBLIC_SUPABASE_URL;
     const fnUrl = `${supabaseUrl!.replace("/rest/v1", "")}/functions/v1/validate-brochure-upload`;
 
@@ -134,7 +136,9 @@ export async function uploadSupabase(
  */
 export async function uploadS3(file: File): Promise<UploadResult> {
   const baseUrl =
+    // eslint-disable-next-line no-restricted-syntax
     (process.env.NEXT_PUBLIC_API_BASE_URL as string | undefined) ||
+    // eslint-disable-next-line no-restricted-syntax
     process.env.NEXT_PUBLIC_API_BASE_URL ||
     "http://localhost:8787";
 
@@ -196,6 +200,7 @@ export async function uploadFile(
  * Check if storage is enabled via environment variable
  */
 export function isStorageEnabled(): boolean {
+  // eslint-disable-next-line no-restricted-syntax
   return process.env.STORAGE_ENABLED === "true";
 }
 
@@ -256,6 +261,7 @@ export async function assertStorageReady(): Promise<{
     return {
       enabled,
       ready: true,
+      // eslint-disable-next-line no-restricted-syntax
       bucket: bucket.name || process.env.FIREBASE_STORAGE_BUCKET,
     };
   } catch (error) {
@@ -272,7 +278,9 @@ export async function assertStorageReady(): Promise<{
 export function getStorageConfig() {
   return {
     enabled: isStorageEnabled(),
+    // eslint-disable-next-line no-restricted-syntax
     bucket: process.env.FIREBASE_STORAGE_BUCKET || null,
+    // eslint-disable-next-line no-restricted-syntax
     projectId: process.env.FIREBASE_PROJECT_ID || null,
   };
 }

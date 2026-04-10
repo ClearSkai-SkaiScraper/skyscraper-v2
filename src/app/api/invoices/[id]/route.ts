@@ -75,6 +75,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
       return apiError(404, "NOT_FOUND", "Invoice not found");
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const totals = invoice.totals as any;
     const { action, paidAmount, customerEmail } = parsed.data;
 
@@ -133,6 +134,7 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
       return apiError(404, "NOT_FOUND", "Invoice not found");
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const totals = invoice.totals as any;
     if (totals.status !== "draft") {
       return apiError(400, "INVALID_STATE", "Only draft invoices can be deleted");

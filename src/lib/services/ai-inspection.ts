@@ -212,10 +212,15 @@ function parseAIInspectionResponse(
 
       // Calculate issue counts
       const issuesSummary = {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         leaksDetected: parsed.detections.filter((d: any) => d.type === "leak").length,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         damageDetected: parsed.detections.filter((d: any) => d.type === "damage").length,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         cracksDetected: parsed.detections.filter((d: any) => d.type === "crack").length,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         rustDetected: parsed.detections.filter((d: any) => d.type === "rust").length,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         hazardsDetected: parsed.detections.filter((d: any) => d.type === "hazard").length,
       };
 

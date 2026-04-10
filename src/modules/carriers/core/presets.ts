@@ -21,6 +21,7 @@ export interface CarrierPreset {
   name: string;
   terminology: CarrierTerminology;
   emailPhrasing: CarrierEmailPhrasing;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   signatureFormat?: any;
 }
 

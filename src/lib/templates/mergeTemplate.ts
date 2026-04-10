@@ -14,6 +14,7 @@ import prisma from "@/lib/prisma";
  * Merge template HTML with data
  * Replaces placeholders in the format {{path.to.value}} with actual data
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function mergeTemplate(templateHtml: string, data: Record<string, any>): string {
   if (!templateHtml) return "";
 
@@ -27,6 +28,7 @@ export function mergeTemplate(templateHtml: string, data: Record<string, any>): 
     }
 
     // Navigate through nested object using dot notation
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const value = trimmedPath.split(".").reduce((acc: any, key: string) => {
       if (acc === null || acc === undefined) return undefined;
       return acc[key];
@@ -57,11 +59,13 @@ export function mergeTemplate(templateHtml: string, data: Record<string, any>): 
 /**
  * Process {{#each array}}...{{/each}} blocks
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function processEachBlocks(html: string, data: Record<string, any>): string {
   const eachRegex = /\{\{#each\s+([^}]+)\}\}([\s\S]*?)\{\{\/each\}\}/g;
 
   return html.replace(eachRegex, (match, arrayPath, template) => {
     const trimmedPath = arrayPath.trim();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const array = trimmedPath.split(".").reduce((acc: any, key: string) => {
       if (acc === null || acc === undefined) return undefined;
       return acc[key];
@@ -95,6 +99,7 @@ function processEachBlocks(html: string, data: Record<string, any>): string {
           }
 
           // Navigate to value
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           const value = trimmed.split(".").reduce((acc: any, key: string) => {
             if (acc === null || acc === undefined) return undefined;
             return acc[key];
@@ -110,6 +115,7 @@ function processEachBlocks(html: string, data: Record<string, any>): string {
 /**
  * Process {{#if condition}}...{{/if}} and {{#if condition}}...{{else}}...{{/if}} blocks
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function processIfBlocks(html: string, data: Record<string, any>): string {
   // Handle if-else blocks
   const ifElseRegex = /\{\{#if\s+([^}]+)\}\}([\s\S]*?)\{\{else\}\}([\s\S]*?)\{\{\/if\}\}/g;
@@ -131,7 +137,9 @@ function processIfBlocks(html: string, data: Record<string, any>): string {
 /**
  * Evaluate a condition path to a truthy/falsy value
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function evaluateCondition(conditionPath: string, data: Record<string, any>): boolean {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const value = conditionPath.split(".").reduce((acc: any, key: string) => {
     if (acc === null || acc === undefined) return undefined;
     return acc[key];
@@ -153,6 +161,7 @@ interface TemplateLayout {
     type: string;
     enabled: boolean;
     order: number;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     config?: Record<string, any>;
   }>;
   footer: {
@@ -234,6 +243,7 @@ export async function getMergedTemplate(
     }
 
     // Get base layout
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const baseLayout = (template as any).baseLayoutJson || template.defaults || {};
 
     // Fetch company branding
@@ -335,6 +345,7 @@ export async function reapplyBrandingToAllTemplates(orgId: string): Promise<numb
     let updated = 0;
 
     for (const template of templates) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const baseLayout = template.defaults as any;
 
       if (!baseLayout) continue;

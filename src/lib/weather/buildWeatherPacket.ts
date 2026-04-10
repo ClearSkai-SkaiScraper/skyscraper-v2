@@ -51,6 +51,7 @@ export async function buildWeatherPacket(input: WeatherPacketInputType) {
  * Purpose: Carrier-safe documentation of meteorological events
  */
 function buildClaimsPacket(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   weather: any,
   address: string,
   dateOfLoss: string,
@@ -141,6 +142,7 @@ function buildClaimsPacket(
  * Purpose: Easy-to-understand weather explanation
  */
 function buildHomeownerPacket(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   weather: any,
   address: string,
   dateOfLoss: string,
@@ -202,6 +204,7 @@ function buildHomeownerPacket(
  * Purpose: Fast weather verification for team
  */
 function buildQuickPacket(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   weather: any,
   address: string,
   dateOfLoss: string,
@@ -244,6 +247,7 @@ function buildQuickPacket(
  * Purpose: Comprehensive weather documentation for disputes
  */
 function buildPublicAdjusterPacket(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   weather: any,
   address: string,
   dateOfLoss: string,

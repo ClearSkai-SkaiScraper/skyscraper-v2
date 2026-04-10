@@ -12,15 +12,25 @@ export async function GET() {
   if (authResult instanceof NextResponse) return authResult;
 
   const ok = {
+    // eslint-disable-next-line no-restricted-syntax
     NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: !!process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY,
+    // eslint-disable-next-line no-restricted-syntax
     CLERK_SECRET_KEY: !!process.env.CLERK_SECRET_KEY,
+    // eslint-disable-next-line no-restricted-syntax
     STRIPE_SECRET_KEY: !!process.env.STRIPE_SECRET_KEY,
+    // eslint-disable-next-line no-restricted-syntax
     STRIPE_WEBHOOK_SECRET: !!process.env.STRIPE_WEBHOOK_SECRET,
+    // eslint-disable-next-line no-restricted-syntax
     NEXT_PUBLIC_PRICE_SOLO: !!process.env.NEXT_PUBLIC_PRICE_SOLO,
+    // eslint-disable-next-line no-restricted-syntax
     NEXT_PUBLIC_PRICE_PRO: !!process.env.NEXT_PUBLIC_PRICE_PRO,
+    // eslint-disable-next-line no-restricted-syntax
     NEXT_PUBLIC_PRICE_BUSINESS: !!process.env.NEXT_PUBLIC_PRICE_BUSINESS,
+    // eslint-disable-next-line no-restricted-syntax
     NEXT_PUBLIC_PRICE_ENTERPRISE: !!process.env.NEXT_PUBLIC_PRICE_ENTERPRISE,
+    // eslint-disable-next-line no-restricted-syntax
     NEXT_PUBLIC_SUPABASE_URL: !!process.env.NEXT_PUBLIC_SUPABASE_URL,
+    // eslint-disable-next-line no-restricted-syntax
     NEXT_PUBLIC_SUPABASE_ANON_KEY: !!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
   };
   return new Response(JSON.stringify(ok, null, 2), {

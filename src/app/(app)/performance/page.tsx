@@ -51,6 +51,7 @@ export default async function PerformanceMonitoringPage() {
   ]);
 
   // Recent activity: last 10 updated claims
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let recentActivity: any[] = [];
   try {
     recentActivity = await prisma.claims.findMany({

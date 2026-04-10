@@ -196,6 +196,7 @@ export default function ProjectPlanBuilderPage() {
           const data = await res.json();
           if (Array.isArray(data)) {
             setSavedPlans(
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
               data.map((a: any) => ({
                 id: a.id,
                 title: a.title || "Untitled Plan",

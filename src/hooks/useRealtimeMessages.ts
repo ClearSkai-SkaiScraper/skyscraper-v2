@@ -61,6 +61,7 @@ export function useRealtimeMessages(conversationId: string | null | undefined) {
         const data = await res.json();
         if (!cancelled) {
           // API returns thread with nested Message array
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           const msgs: RealtimeMessage[] = (data.messages ?? data.Message ?? []).map((m: any) => ({
             id: m.id,
             threadId: m.threadId ?? conversationId,
@@ -109,6 +110,7 @@ export function useRealtimeMessages(conversationId: string | null | undefined) {
           filter: `threadId=eq.${conversationId}`,
         },
         (payload) => {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           const row = payload.new as Record<string, any>;
           const incoming: RealtimeMessage = {
             id: row.id,
@@ -141,6 +143,7 @@ export function useRealtimeMessages(conversationId: string | null | undefined) {
           filter: `threadId=eq.${conversationId}`,
         },
         (payload) => {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           const row = payload.new as Record<string, any>;
           setMessages((prev) =>
             prev.map((m) => (m.id === row.id ? { ...m, read: row.read ?? m.read } : m))

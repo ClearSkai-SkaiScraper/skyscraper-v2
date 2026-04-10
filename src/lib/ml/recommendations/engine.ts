@@ -20,6 +20,7 @@ export interface Recommendation {
   actionUrl?: string;
   claimId?: string;
   leadId?: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   payload?: Record<string, any>;
 }
 

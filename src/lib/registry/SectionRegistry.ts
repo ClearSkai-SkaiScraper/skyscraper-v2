@@ -16,6 +16,7 @@ export type SectionConfig = {
   auto?: boolean;
   dedupe?: boolean;
   requires?: Array<"branding" | "latlng" | "photos" | "vendor">;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   render: (ctx: any) => Promise<void> | void; // hook for PDF/React renderer
 };
 
@@ -87,6 +88,7 @@ export const SectionRegistry = {
 };
 
 // Simple composer that enforces no-duplicate-pages and auto-injection
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function composeSections(baseKeys: SectionKey[], ctx: any): SectionKey[] {
   const seen = new Set<SectionKey>();
   const out: SectionKey[] = [];

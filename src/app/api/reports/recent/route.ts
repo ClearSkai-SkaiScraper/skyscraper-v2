@@ -20,6 +20,7 @@ export const GET = withAuth(async (req: NextRequest, { orgId }) => {
     const limit = Math.min(50, parseInt(searchParams.get("limit") || "10", 10) || 10);
 
     // Try to fetch from generated_artifacts or reports table
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let artifacts: any[] = [];
 
     try {
@@ -42,6 +43,7 @@ export const GET = withAuth(async (req: NextRequest, { orgId }) => {
         take: limit,
       });
 
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       artifacts = artifacts.map((r: any) => ({
         id: r.id,
         title: r.title || "Untitled Report",

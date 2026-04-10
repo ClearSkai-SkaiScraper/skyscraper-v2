@@ -38,6 +38,7 @@ export default function MessageView({
     );
     for (const msg of unreadIncoming) {
       // Find thread ID from the message context
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const threadId = (msg as any).threadId;
       if (threadId) {
         fetch(`/api/messages/${threadId}/${msg.id}/read`, { method: "PATCH" }).catch(() => {});

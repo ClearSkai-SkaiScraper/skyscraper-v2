@@ -86,6 +86,7 @@ export const POST = withAuth(async (req: NextRequest, { userId, orgId }) => {
           lineItems,
           opEnabled,
           ...(meta ?? {}),
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } as any,
         updatedAt: new Date(),
       },

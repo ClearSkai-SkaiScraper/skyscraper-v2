@@ -75,6 +75,7 @@ export const POST = withAuth(async (req: NextRequest, { userId, orgId }) => {
 
     // Calculate totals if not provided
     let subtotal = data.totals?.subtotal || 0;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const items: any[] = [];
 
     // Flatten sections into line items

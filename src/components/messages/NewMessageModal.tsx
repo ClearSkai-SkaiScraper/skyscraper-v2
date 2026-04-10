@@ -42,9 +42,13 @@ export default function NewMessageModal({
   initialContactId,
   initialProProfileId,
 }: NewMessageModalProps) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [contacts, setContacts] = useState<any[]>([]);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [claims, setClaims] = useState<any[]>([]);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [connectedPros, setConnectedPros] = useState<any[]>([]);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [teamMembers, setTeamMembers] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -97,6 +101,7 @@ export default function NewMessageModal({
       ]);
 
       // Build contacts list from CRM contacts + connected clients independently
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       let allContacts: any[] = [];
 
       if (contactsRes.ok) {
@@ -111,11 +116,13 @@ export default function NewMessageModal({
         const clientData = await clientConnectionsRes.json();
         const connectedClients = (clientData.clients || [])
           .filter(
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             (c: any) =>
               c.connection?.status === "connected" ||
               c.connection?.status === "ACCEPTED" ||
               c.connection?.status === "accepted"
           )
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           .map((c: any) => ({
             id: c.id,
             firstName: c.firstName || c.name?.split(" ")[0] || c.name || "Client",
@@ -127,11 +134,14 @@ export default function NewMessageModal({
 
         // Dedupe by ID and email — prefer the client connection version
         // so isClientConnection flag is preserved for correct routing
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const clientIds = new Set(connectedClients.map((c: any) => c.id));
         const clientEmails = new Set(
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           connectedClients.map((c: any) => c.email?.toLowerCase()).filter(Boolean)
         );
         // Remove CRM contacts that overlap with connected clients
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         allContacts = allContacts.filter((c: any) => {
           if (clientIds.has(c.id)) return false;
           if (c.email && clientEmails.has(c.email.toLowerCase())) return false;
@@ -154,6 +164,7 @@ export default function NewMessageModal({
         // list-lite: address=street, propertyAddress=formatted
         // ClaimLabelInput: address=formatted, street=raw street
         setClaims(
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           (claimsData.claims || []).map((c: any) => ({
             ...c,
             street: c.address,
@@ -175,6 +186,7 @@ export default function NewMessageModal({
           const allMembers = teamData.members || [];
           const currentId = teamData.currentUserId;
           setTeamMembers(
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             currentId ? allMembers.filter((m: any) => m.id !== currentId) : allMembers
           );
         }
@@ -215,6 +227,7 @@ export default function NewMessageModal({
     setSubmitting(true);
     try {
       // Determine which endpoint to use based on recipient
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const selectedContact = contacts.find((c: any) => c.id === formData.contactId);
       const isClientConnection = selectedContact?.isClientConnection;
 
@@ -222,6 +235,7 @@ export default function NewMessageModal({
 
       if (recipientType === "team") {
         // Internal team message via messages/create
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const member = teamMembers.find((m: any) => m.id === formData.teamMemberId);
         res = await fetch("/api/messages/create", {
           method: "POST",
@@ -289,6 +303,7 @@ export default function NewMessageModal({
       });
       onOpenChange(false);
       onSuccess?.();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       logger.error("Failed to send message:", error);
       toast.error(error.message || "Failed to send message");
@@ -414,6 +429,7 @@ export default function NewMessageModal({
                     {claims.length === 0 ? (
                       <div className="p-2 text-sm text-slate-500">No claims found</div>
                     ) : (
+                      // eslint-disable-next-line @typescript-eslint/no-explicit-any
                       claims.map((claim: any) => (
                         <SelectItem key={claim.id} value={claim.id}>
                           {buildClaimLabelShort(claim)}

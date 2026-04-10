@@ -68,6 +68,7 @@ export function ImageLibraryCard({ onSelectImage, onSelectAsBackground }: ImageL
       const { image } = await res.json();
       setImages((prev) => [image, ...prev]);
       toast.success("Image uploaded to library");
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (__error) {
       toast.error("Failed to upload image");
     } finally {
@@ -87,6 +88,7 @@ export function ImageLibraryCard({ onSelectImage, onSelectAsBackground }: ImageL
         setImages((prev) => prev.filter((img) => img.id !== imageId));
         toast.success("Image deleted");
       }
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (__error) {
       toast.error("Failed to delete image");
     }
@@ -159,6 +161,7 @@ export function ImageLibraryCard({ onSelectImage, onSelectAsBackground }: ImageL
                       }
                     }}
                     title={`${img.filename}\nClick: Add to canvas\nRight-click: Set as background`}
+                  // eslint-disable-next-line react/jsx-no-comment-textnodes
                   >
                     // eslint-disable-next-line @next/next/no-img-element
                     <img src={img.url} alt={img.filename} className="h-full w-full object-cover" />

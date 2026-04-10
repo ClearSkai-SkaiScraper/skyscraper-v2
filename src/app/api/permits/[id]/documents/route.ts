@@ -44,6 +44,7 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
         sizeBytes: d.sizeBytes ? Number(d.sizeBytes) : null,
       })),
     });
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (err: any) {
     return apiError(500, "INTERNAL_ERROR", err.message);
   }
@@ -120,6 +121,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
         sizeBytes: doc.sizeBytes ? Number(doc.sizeBytes) : null,
       },
     });
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (err: any) {
     return apiError(500, "INTERNAL_ERROR", err.message);
   }
@@ -170,6 +172,7 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
     }
 
     return apiOk({ deleted: true });
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (err: any) {
     return apiError(500, "INTERNAL_ERROR", err.message);
   }

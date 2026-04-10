@@ -56,6 +56,7 @@ export function useAiFill(report: ReportRow, target: FillTarget, fillFn: FillFn)
 
         await supabase
           .from("reports")
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           .update({ report_data: nextData as any })
           .eq("id", report.id);
         prevRef.current = report?.report_data?.[target];
@@ -74,6 +75,7 @@ export function useAiFill(report: ReportRow, target: FillTarget, fillFn: FillFn)
     nextData[target] = prevRef.current;
     await supabase
       .from("reports")
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       .update({ report_data: nextData as any })
       .eq("id", report.id);
   }, [report?.id, report?.report_data, target]);

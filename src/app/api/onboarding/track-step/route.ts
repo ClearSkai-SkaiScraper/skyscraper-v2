@@ -32,8 +32,10 @@ export async function POST(req: Request) {
         data: {
           ...(step > 0 ? { onboardingStep: step } : {}),
           ...(complete ? { onboardingComplete: true } : {}),
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } as any, // Fields may not be in generated client yet
       })
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       .catch((e: any) => {
         // Fields may not exist yet — fall back to raw SQL
         logger.debug("[TRACK_STEP] Prisma update failed, trying raw SQL:", e.message);

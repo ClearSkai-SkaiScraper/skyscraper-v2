@@ -42,6 +42,7 @@ export default async function ReportViewerPage({ params }: PageProps) {
   }
 
   // Parse the content field as JSON to get the GeneratedReport
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let reportJson: any = null;
   try {
     reportJson = report.content ? JSON.parse(report.content) : null;

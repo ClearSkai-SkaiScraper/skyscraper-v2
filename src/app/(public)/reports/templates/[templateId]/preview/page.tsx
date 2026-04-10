@@ -61,6 +61,7 @@ export default function PublicTemplatePreviewPage() {
           const data = await res.json();
           if (data.ok && data.templates) {
             setAllTemplates(
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
               data.templates.map((t: any) => ({
                 slug: t.slug,
                 title: t.title,
@@ -108,6 +109,7 @@ export default function PublicTemplatePreviewPage() {
               name: idData.templates[0].title,
               description: idData.templates[0].description,
               previewPdfUrl: idData.templates[0].previewPdfUrl,
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             } as any);
             setLoading(false);
             return;

@@ -14,6 +14,7 @@ export const GET = withOrgScope(async (req: Request, { orgId }) => {
     const trade = searchParams.get("trade");
 
     // Build query
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const where: any = { orgId };
     if (trade) {
       where.trade = trade;
@@ -50,6 +51,7 @@ export const POST = withOrgScope(async (req: Request, { orgId }) => {
         website: website || null,
         address: address || null,
         notes: notes || null,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } as any,
     });
 

@@ -30,6 +30,7 @@ export async function POST() {
     });
 
     return NextResponse.json({ ok: true });
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (error: any) {
     logger.error("[RemoteView] Stop failed:", error);
     return NextResponse.json({ ok: true }); // Always succeed — clearing is best-effort

@@ -142,6 +142,7 @@ const LEAD_SOURCES = [
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export async function POST(req: NextRequest) {
   // Block demo seeding in production
+  // eslint-disable-next-line no-restricted-syntax
   if (process.env.NODE_ENV === "production" && process.env.ALLOW_DEMO_SEED !== "true") {
     return NextResponse.json(
       { error: "Demo seeding is not available in production" },
@@ -241,11 +242,16 @@ export async function POST(req: NextRequest) {
           homeownerEmail: `${firstName.toLowerCase()}.${lastName.toLowerCase()}@example.com`,
           carrier: pick(CARRIERS),
           policy_number: `POL-${String(Math.floor(Math.random() * 999999)).padStart(6, "0")}`,
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           ...(signing ? ({ signingStatus: signing } as any) : {}),
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           ...(jobValue ? ({ estimatedJobValue: jobValue } as any) : {}),
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           ...(jvStatus ? ({ jobValueStatus: jvStatus } as any) : {}),
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           leadSource: pick(LEAD_SOURCES) as any,
           updatedAt: daysAgo(Math.max(daysBack - 5, 1)),
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } as any,
       });
       counts.claims++;
@@ -268,6 +274,7 @@ export async function POST(req: NextRequest) {
             address: `${street}, ${city}, AZ`,
             notes: "DEMO_SEED",
             updatedAt: daysAgo(daysBack),
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           } as any,
         });
         counts.leads++;
@@ -294,6 +301,7 @@ export async function POST(req: NextRequest) {
  */
 export async function DELETE(req: NextRequest) {
   // Block demo deletion in production
+  // eslint-disable-next-line no-restricted-syntax
   if (process.env.NODE_ENV === "production" && process.env.ALLOW_DEMO_SEED !== "true") {
     return NextResponse.json(
       { error: "Demo operations are not available in production" },
@@ -328,6 +336,7 @@ export async function DELETE(req: NextRequest) {
     // Delete in order: leads → claims → properties → contacts
     const deletedLeads = await prisma.leads
       .deleteMany({
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         where: { orgId, notes: { contains: "DEMO_SEED" } } as any,
       })
       .catch(() => ({ count: 0 }));

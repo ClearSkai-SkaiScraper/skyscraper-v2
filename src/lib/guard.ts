@@ -11,6 +11,7 @@ import { requireOrg } from "./org";
  * Uses `org.planKey` (from Org model) — NOT the deprecated token system.
  */
 export async function assertPaidAccess(minPlan: "Solo" | "Business" | "Enterprise" = "Solo") {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const org = (await requireOrg()) as any;
 
   const plan = org.Plan?.name ?? org.planKey ?? "FREE";

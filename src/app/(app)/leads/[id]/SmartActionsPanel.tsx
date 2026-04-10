@@ -144,6 +144,7 @@ export function SmartActionsPanel({ leadId }: SmartActionsPanelProps) {
         type: "smart-action",
         action: action.id,
       });
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (__err) {
       // Error handled by useAIStream
     }

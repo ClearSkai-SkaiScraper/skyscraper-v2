@@ -43,6 +43,7 @@ interface EstimateExportPanelProps {
 interface ExportData {
   id: string;
   xml: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   symbility: any;
   summary: string;
   downloadZipUrl?: string;

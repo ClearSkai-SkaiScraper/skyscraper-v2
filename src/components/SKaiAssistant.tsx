@@ -19,6 +19,7 @@ export function openSkaiAssistant(seedPrompt?: string) {
     }
   }
   // Warn in console for any lingering calls.
+  // eslint-disable-next-line no-restricted-syntax
   if (process.env.NODE_ENV === "development") {
     logger.warn("openSkaiAssistant() called. Skai Assistant is deprecated; redirected to Ask Dominus widget.");
   }

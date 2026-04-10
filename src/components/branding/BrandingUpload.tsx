@@ -61,6 +61,7 @@ export function BrandingUpload({ type, currentUrl, onUploadComplete }: BrandingU
       } else {
         throw new Error("No URL returned from upload");
       }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       logger.error("[BrandingUpload] Error:", err);
       setError(err.message || "Upload failed");

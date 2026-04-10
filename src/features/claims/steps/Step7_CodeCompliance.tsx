@@ -20,6 +20,7 @@ interface Step7Props {
 }
 
 export function Step7_CodeCompliance({ data, onChange }: Step7Props) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const updateField = (field: keyof Step7Data, value: any) => {
     onChange({ ...data, [field]: value });
   };

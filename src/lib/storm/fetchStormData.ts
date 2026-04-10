@@ -76,6 +76,7 @@ export async function fetchNOAAStorms(
 
   // NOAA API endpoint (replace with actual token)
   const apiUrl = `https://www.ncdc.noaa.gov/cdo-web/api/v2/data`;
+  // eslint-disable-next-line no-restricted-syntax
   const token = process.env.NOAA_API_TOKEN || "demo_token";
 
   try {
@@ -94,6 +95,7 @@ export async function fetchNOAAStorms(
     const data = await response.json();
 
     // Parse NOAA response (mock structure for now)
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const events: StormEvent[] = (data.results || []).map((event: any) => ({
       eventId: event.id,
       eventType: event.event_type,

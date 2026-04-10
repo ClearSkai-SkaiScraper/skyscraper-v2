@@ -3,6 +3,7 @@ import React, { useEffect,useState } from "react";
 
 
 export default function TeamLibraryTab({ orgId }: { orgId?: string }) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [tiles, setTiles] = useState<any[]>([]);
   useEffect(() => {
     // TODO: Team members functionality requires proper table setup
@@ -47,6 +48,7 @@ export default function TeamLibraryTab({ orgId }: { orgId?: string }) {
       </div>
       <div className="mt-4 grid grid-cols-4 gap-4">
         {tiles.slice(0, 12).map((t) => (
+          // eslint-disable-next-line react/jsx-no-comment-textnodes
           <div key={t.id} className="border p-2">
             // eslint-disable-next-line @next/next/no-img-element
             <img

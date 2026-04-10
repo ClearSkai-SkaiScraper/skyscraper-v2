@@ -193,6 +193,7 @@ export default function TradesNetworkDashboard({ userProfile, stats }: Dashboard
           const data = await feedRes.json();
           if (data.posts && data.posts.length > 0) {
             setFeedPosts(
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
               data.posts.map((p: any) => ({
                 id: p.id,
                 authorId: p.profileId,

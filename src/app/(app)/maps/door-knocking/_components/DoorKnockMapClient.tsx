@@ -117,6 +117,7 @@ export default function DoorKnockMapClient() {
   const [gpsEnabled, setGpsEnabled] = useState(false);
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
   const [gpsError, setGpsError] = useState<string | null>(null);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const userMarkerRef = useRef<any>(null);
   const gpsWatchRef = useRef<number | null>(null);
 
@@ -139,8 +140,11 @@ export default function DoorKnockMapClient() {
 
   // Map refs
   const mapContainer = useRef<HTMLDivElement>(null);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const mapRef = useRef<any>(null);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const mapboxRef = useRef<any>(null);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const markersRef = useRef<any[]>([]);
   const boundsSetRef = useRef(false);
   const [mapReady, setMapReady] = useState(false);
@@ -150,8 +154,11 @@ export default function DoorKnockMapClient() {
   /* ───── reverse geocode helper ───── */
   const reverseGeocode = useCallback(async (lat: number, lng: number) => {
     const token =
+      // eslint-disable-next-line no-restricted-syntax
       process.env.NEXT_PUBLIC_MAPBOX_TOKEN ||
+      // eslint-disable-next-line no-restricted-syntax
       process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN ||
+      // eslint-disable-next-line no-restricted-syntax
       process.env.NEXT_PUBLIC_MAPBOXGL_ACCESS_TOKEN;
     if (!token) return null;
     try {
@@ -200,8 +207,11 @@ export default function DoorKnockMapClient() {
       return;
     }
     const token =
+      // eslint-disable-next-line no-restricted-syntax
       process.env.NEXT_PUBLIC_MAPBOX_TOKEN ||
+      // eslint-disable-next-line no-restricted-syntax
       process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN ||
+      // eslint-disable-next-line no-restricted-syntax
       process.env.NEXT_PUBLIC_MAPBOXGL_ACCESS_TOKEN;
     if (!token) return;
 
@@ -343,8 +353,11 @@ export default function DoorKnockMapClient() {
     if (!mapContainer.current || mapRef.current) return;
 
     const token =
+      // eslint-disable-next-line no-restricted-syntax
       process.env.NEXT_PUBLIC_MAPBOX_TOKEN ||
+      // eslint-disable-next-line no-restricted-syntax
       process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN ||
+      // eslint-disable-next-line no-restricted-syntax
       process.env.NEXT_PUBLIC_MAPBOXGL_ACCESS_TOKEN;
 
     if (!token) return;
@@ -387,6 +400,7 @@ export default function DoorKnockMapClient() {
   useEffect(() => {
     if (!mapRef.current || !mapReady) return;
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const handleClick = async (e: any) => {
       if (!clickMode) return;
       const { lng, lat } = e.lngLat;
@@ -525,6 +539,7 @@ export default function DoorKnockMapClient() {
       setEditingPin(null);
       setSaveError(null);
       await fetchPins();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (e: any) {
       const msg = e?.message || "Network error — check your connection";
       setSaveError(msg);

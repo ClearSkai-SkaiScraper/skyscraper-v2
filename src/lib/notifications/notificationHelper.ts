@@ -14,6 +14,7 @@ export interface NotificationData {
   title: string;
   body?: string;
   link?: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   metadata?: Record<string, any>;
 }
 
@@ -65,6 +66,7 @@ export async function getUnreadCount(orgId: string): Promise<number> {
     return await prisma.projectNotification.count({
       where: { orgId, read: false },
     });
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   } catch (_error) {
     return 0;
   }

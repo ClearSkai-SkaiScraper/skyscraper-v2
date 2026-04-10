@@ -17,6 +17,7 @@ export async function GET(req: Request, { params }: { params: { token: string } 
     // The token encodes which report to show — we iterate recent shared reports
     // to find the one whose HMAC matches (prevents ID enumeration).
     const crypto = await import("crypto");
+    // eslint-disable-next-line no-restricted-syntax
     const secret = process.env.WEATHER_SHARE_SECRET || "skaiscraper-weather-share-default";
 
     // Try to find the report by looking up recent shared reports and checking HMAC

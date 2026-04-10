@@ -223,10 +223,12 @@ export const POST = withAuth(async (req: NextRequest, { orgId, userId }) => {
         totalDoors:
           aiAnalysis.metrics?.totalDoors ||
           rawDetections.doors.length ||
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           (aiAnalysis.doors || []).reduce((sum: number, d: any) => sum + (d.count || 1), 0),
         totalWindows:
           aiAnalysis.metrics?.totalWindows ||
           rawDetections.windows.length ||
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           (aiAnalysis.windows || []).reduce((sum: number, w: any) => sum + (w.count || 1), 0),
         estimatedSquareFootage: aiAnalysis.metrics?.estimatedSquareFootage,
         stories: aiAnalysis.metrics?.stories,

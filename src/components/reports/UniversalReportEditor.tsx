@@ -269,6 +269,7 @@ function ExecutiveSummaryEditor({
 
 // Placeholder editors for other sections (implement similarly)
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
+// eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars
 function DamageSummaryEditor({ report }: { report: UniversalClaimsReport; setReport: any }) {
   return (
     <Card className="p-6">
@@ -278,6 +279,7 @@ function DamageSummaryEditor({ report }: { report: UniversalClaimsReport; setRep
   );
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function PhotosEditor({ report }: { report: UniversalClaimsReport; setReport: any }) {
   return (
     <Card className="p-6">
@@ -300,6 +302,7 @@ function PhotosEditor({ report }: { report: UniversalClaimsReport; setReport: an
 }
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
+// eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars
 function WeatherVerificationEditor({ report }: { report: UniversalClaimsReport; setReport: any }) {
   return (
     <Card className="p-6">
@@ -310,6 +313,7 @@ function WeatherVerificationEditor({ report }: { report: UniversalClaimsReport; 
 }
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
+// eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars
 function CodeComplianceEditor({ report }: { report: UniversalClaimsReport; setReport: any }) {
   return (
     <Card className="p-6">
@@ -320,6 +324,7 @@ function CodeComplianceEditor({ report }: { report: UniversalClaimsReport; setRe
 }
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
+// eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars
 function SystemFailureEditor({ report }: { report: UniversalClaimsReport; setReport: any }) {
   return (
     <Card className="p-6">
@@ -330,6 +335,7 @@ function SystemFailureEditor({ report }: { report: UniversalClaimsReport; setRep
 }
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
+// eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars
 function ScopeOfWorkEditor({ report }: { report: UniversalClaimsReport; setReport: any }) {
   return (
     <Card className="p-6">
@@ -340,6 +346,7 @@ function ScopeOfWorkEditor({ report }: { report: UniversalClaimsReport; setRepor
 }
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
+// eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars
 function ProfessionalOpinionEditor({ report }: { report: UniversalClaimsReport; setReport: any }) {
   return (
     <Card className="p-6">
@@ -350,6 +357,7 @@ function ProfessionalOpinionEditor({ report }: { report: UniversalClaimsReport; 
 }
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
+// eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars
 function SignaturesEditor({ report }: { report: UniversalClaimsReport; setReport: any }) {
   return (
     <Card className="p-6">

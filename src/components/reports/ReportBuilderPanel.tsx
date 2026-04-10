@@ -292,6 +292,7 @@ export function ReportBuilderPanel({
         toast.success("Report generated successfully!");
         void fetchRecent(); // Refresh the list
       }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       setGenerationStatus("error");
       toast.error(error.message || "Failed to generate report");

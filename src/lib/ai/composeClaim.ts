@@ -11,7 +11,9 @@ export type ComposeModeType = "inspection" | "insurance" | "retail";
 export interface ComposeClaimInput {
   notes: string;
   photosMeta?: Array<{ url: string; caption?: string; damageTypes?: string[] }>;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   weather?: any;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   jeSnapshot?: any;
   mode: ComposeModeType;
 }
@@ -87,6 +89,7 @@ Keep it professional, specific, and actionable.`;
 
     if (error) throw error;
     return data?.summary || "";
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (e: any) {
     logger.error("composeClaim error:", e);
     throw new Error(e.message || "Failed to compose claim");

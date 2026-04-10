@@ -56,6 +56,7 @@ export default function ScopeEditorHub() {
         const res = await fetch("/api/claims?limit=200");
         if (res.ok) {
           const data = await res.json();
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           const opts: ClaimOption[] = (data.claims || []).map((c: any) => ({
             id: c.id,
             title: c.title || c.claimNumber || "Untitled Claim",

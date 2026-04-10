@@ -30,15 +30,25 @@ interface UniversalReportEditorClientProps {
     claimId: string;
     version: number;
     status: string;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     coverPage: any;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     executiveSummary: any;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     damageSummary: any;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     damagePhotos: any;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     weatherVerification: any;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     codeCompliance: any;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     systemFailure: any;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     scopeOfWork: any;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     professionalOpinion: any;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     signatures: any;
     pdfUrl: string | null;
     pdfGeneratedAt: string | null;
@@ -65,6 +75,7 @@ export function UniversalReportEditorClient({
 
   // Auto-save function
   const handleSave = useCallback(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     async (reportData: any) => {
       if (isReadOnly) {
         toast.error("Cannot edit a submitted report");
@@ -317,7 +328,9 @@ export function UniversalReportEditorClient({
         report={{
           ...initialReport,
           status: initialReport.status as "draft" | "finalized" | "submitted" | "under_review",
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           systemFailureAnalysis: initialReport.systemFailure as any,
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           signaturesAndContact: initialReport.signatures as any,
           finalizedAt: initialReport.finalizedAt ?? undefined,
           submittedAt: initialReport.submittedAt ?? undefined,

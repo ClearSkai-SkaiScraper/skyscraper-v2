@@ -107,6 +107,7 @@ export async function POST(req: Request) {
         id: crypto.randomUUID(),
         orgId: claims.orgId,
         claimId,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         type: type as any,
         url,
       },

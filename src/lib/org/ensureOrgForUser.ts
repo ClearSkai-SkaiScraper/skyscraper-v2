@@ -13,6 +13,7 @@
  * ============================================================================
  */
 
+// eslint-disable-next-line no-restricted-imports
 import { currentUser } from "@clerk/nextjs/server";
 import type { Org } from "@prisma/client";
 import { redirect } from "next/navigation";

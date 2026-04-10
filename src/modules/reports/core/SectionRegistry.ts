@@ -246,6 +246,7 @@ export function validateSectionData(
 
   sections.forEach((section) => {
     section.requiredDataKeys.forEach((key) => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       if (!(context as any)[key]) {
         missing.push(`${section.title} requires: ${key}`);
       }

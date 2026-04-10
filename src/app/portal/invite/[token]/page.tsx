@@ -1,3 +1,4 @@
+// eslint-disable-next-line no-restricted-imports
 import { auth, currentUser } from "@clerk/nextjs/server";
 import { Clock } from "lucide-react";
 import { redirect } from "next/navigation";

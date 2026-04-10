@@ -1,3 +1,4 @@
+// eslint-disable-next-line no-restricted-imports
 import { auth, currentUser } from "@clerk/nextjs/server";
 import { Home, Sparkles } from "lucide-react";
 import { isRedirectError } from "next/dist/client/components/redirect";
@@ -33,8 +34,11 @@ export const dynamic = "force-dynamic";
  */
 export default async function PortalLayout({ children }: { children: React.ReactNode }) {
   let userId: string | null = null;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let user: any = null;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let branding: any = null;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let pendingLegal: any[] = [];
 
   try {

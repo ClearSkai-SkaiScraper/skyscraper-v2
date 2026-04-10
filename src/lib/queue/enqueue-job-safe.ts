@@ -14,6 +14,7 @@ import { logger } from "@/lib/logger";
 
 export async function enqueueJobSafe(
   queueName: string,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   payload: Record<string, any>
 ): Promise<void> {
   // S1-01: NO LONGER A SILENT NO-OP

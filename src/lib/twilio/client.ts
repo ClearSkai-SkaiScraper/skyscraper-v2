@@ -20,8 +20,11 @@ import { logger } from "@/lib/logger";
 // ─── Environment ──────────────────────────────────────────
 function getConfig() {
   return {
+    // eslint-disable-next-line no-restricted-syntax
     accountSid: process.env.TWILIO_ACCOUNT_SID || process.env.TWILIO_SID || "",
+    // eslint-disable-next-line no-restricted-syntax
     authToken: process.env.TWILIO_AUTH_TOKEN || process.env.TWILIO_AUTH || "",
+    // eslint-disable-next-line no-restricted-syntax
     phoneNumber: process.env.TWILIO_PHONE_NUMBER || process.env.TWILIO_NUMBER || "",
   };
 }

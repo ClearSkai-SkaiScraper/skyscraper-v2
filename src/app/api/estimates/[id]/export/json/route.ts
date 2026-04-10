@@ -22,6 +22,7 @@ export const GET = withAuth(async (req: NextRequest, { orgId, userId }, routePar
       return NextResponse.json({ error: "Estimate not found" }, { status: 404 });
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const ai = (estimates as any).aiEstimateJson ?? {};
     const items = Array.isArray(ai.lineItems) ? ai.lineItems : [];
 
@@ -39,6 +40,7 @@ export const GET = withAuth(async (req: NextRequest, { orgId, userId }, routePar
       profitPercent: estimates.profit_percent,
       oAndPEnabled: estimates.o_and_p_enabled,
       createdAt: estimates.createdAt,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       lineItems: items.map((it: any, idx: number) => ({
         index: idx + 1,
         code: it.code ?? "",

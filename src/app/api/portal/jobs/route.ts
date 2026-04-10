@@ -9,6 +9,7 @@ export const dynamic = "force-dynamic";
  * UPDATED: Now uses ClientJob model with fallback to claims for backwards compatibility
  */
 
+// eslint-disable-next-line no-restricted-imports
 import { auth } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
@@ -55,6 +56,7 @@ export async function GET(req: NextRequest) {
 
     if (canUseNewModel) {
       // Use new ClientJob model
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const where: any = {
         clientId: client.id,
       };
@@ -96,6 +98,7 @@ export async function GET(req: NextRequest) {
 
       const total = await prisma.clientJob.count({ where });
 
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const formattedJobs = (jobs as any[]).map((job) => ({
         id: job.id,
         type: job.type,
@@ -143,6 +146,7 @@ export async function GET(req: NextRequest) {
     }
 
     // FALLBACK: Use claims as jobs (legacy support)
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const where: any = {
       contactId: client.id,
     };

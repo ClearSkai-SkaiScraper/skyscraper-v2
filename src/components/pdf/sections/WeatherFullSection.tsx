@@ -8,6 +8,7 @@ import { SectionHeader } from "../SectionHeader";
 import { baseStyles } from "../SharedStyles";
 
 export function WeatherFullSection({ data }: { data: ReportData }) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const full = (data.weather as any)?.fullReport;
 
   if (!full) {

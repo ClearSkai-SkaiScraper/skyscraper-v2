@@ -29,8 +29,11 @@ export async function GET(req: NextRequest) {
     }
 
     // Find all claim accesses for this user via ALL access systems
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let accesses: any[] = [];
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let linkedClaims: any[] = [];
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let directClaimsList: any[] = [];
     try {
       // System 1: email-based client_access
@@ -117,6 +120,7 @@ export async function GET(req: NextRequest) {
 
         // Add direct claims to the map (these are the ones from attach-contact)
         for (const claim of directClaims) {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           if (!directClaimsList.some((c: any) => c.id === claim.id)) {
             directClaimsList.push(claim);
           }
@@ -133,6 +137,7 @@ export async function GET(req: NextRequest) {
     }
 
     // Format and merge claims from all access systems (deduplicate by id)
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const claimMap = new Map<string, any>();
 
     // Add claims from client_access (email-based)

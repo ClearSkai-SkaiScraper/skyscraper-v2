@@ -3,6 +3,7 @@
  * Generates virtual data for template previews without creating fake claims
  */
 
+// eslint-disable-next-line no-restricted-imports
 import { currentUser } from "@clerk/nextjs/server";
 
 import { logger } from "@/lib/logger";

@@ -231,6 +231,7 @@ export async function getRadarForEvent(
  * Falls back to OpenStreetMap static tile if no Mapbox token is available.
  */
 export function buildPropertyMapUrl(lat: number, lng: number): string | undefined {
+  // eslint-disable-next-line no-restricted-syntax
   const mapboxToken = process.env.NEXT_PUBLIC_MAPBOX_TOKEN || process.env.MAPBOX_ACCESS_TOKEN;
 
   if (mapboxToken) {
@@ -253,6 +254,7 @@ export async function fetchVisualCrossingWeather(
   lng: number,
   date: string
 ): Promise<WeatherCondition[]> {
+  // eslint-disable-next-line no-restricted-syntax
   const apiKey = process.env.VISUALCROSSING_API_KEY || process.env.VISUAL_CROSSING_API_KEY;
 
   if (!apiKey) {
@@ -281,6 +283,7 @@ export async function fetchVisualCrossingWeather(
     const data = await response.json();
     const days = data.days || [];
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const conditions: WeatherCondition[] = days.map((day: any) => ({
       datetime: day.datetime,
       tempmax: day.tempmax,

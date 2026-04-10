@@ -93,6 +93,7 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
   }
 
   // Fetch related claims for this client (if any)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let claims: any[] = [];
   try {
     claims = await prisma.claims.findMany({

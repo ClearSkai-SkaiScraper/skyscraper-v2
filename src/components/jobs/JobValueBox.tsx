@@ -17,6 +17,7 @@ interface JobValueBoxProps {
   jobValueApprovedBy: string | null;
   jobValueApprovalNotes: string | null;
   /** Callback when values change (optimistic update) */
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   onUpdate: (updates: Record<string, any>) => void;
 }
 
@@ -48,6 +49,7 @@ export function JobValueBox({
     entityType === "claim" ? `/api/claims/${entityId}/update` : `/api/leads/${entityId}`;
 
   const sendPatch = useCallback(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     async (body: Record<string, any>) => {
       const res = await fetch(patchEndpoint, {
         method: "PATCH",

@@ -71,6 +71,7 @@ export function CarrierIntelligencePanel({ compact }: Props) {
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
       setPlaybooks(data.playbooks || []);
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (_err) {
       setError("Failed to load carrier playbooks");
     } finally {

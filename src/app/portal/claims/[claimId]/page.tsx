@@ -114,6 +114,7 @@ export default function PortalClaimDetailPage() {
         const data = await invoicesRes.json();
         if (data.invoices?.length > 0) {
           setInvoices(
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             data.invoices.map((inv: any) => ({
               id: inv.id,
               number: inv.invoiceNumber,
@@ -121,6 +122,7 @@ export default function PortalClaimDetailPage() {
               status: inv.kind === "final" ? "paid" : "pending",
               dueDate: inv.createdAt,
               items: Array.isArray(inv.items)
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 ? inv.items.map((item: any) => ({
                     description: item.description || item.name || "Line item",
                     quantity: item.quantity || 1,
@@ -137,6 +139,7 @@ export default function PortalClaimDetailPage() {
         const data = await signaturesRes.json();
         if (data.signatures?.length > 0) {
           setSignedDocs(
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             data.signatures.map((sig: any) => ({
               id: sig.id,
               name: sig.name,

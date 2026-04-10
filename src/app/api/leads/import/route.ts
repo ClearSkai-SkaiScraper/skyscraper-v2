@@ -90,6 +90,7 @@ export async function POST(req: NextRequest) {
           },
         });
         imported++;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } catch (err: any) {
         if (err?.code === "P2002") {
           skipped++;

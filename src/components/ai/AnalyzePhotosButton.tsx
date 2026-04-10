@@ -13,6 +13,7 @@ import { logger } from "@/lib/logger";
 
 interface AnalyzePhotosButtonProps {
   claimId: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   onComplete?: (result: any) => void;
   variant?: "primary" | "secondary" | "outline";
   size?: "sm" | "md" | "lg";
@@ -45,6 +46,7 @@ export function AnalyzePhotosButton({
       }
 
       onComplete?.(data.result);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       logger.error("[AnalyzePhotos] Error:", err);
       setError(err.message);

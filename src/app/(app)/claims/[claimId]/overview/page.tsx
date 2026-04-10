@@ -196,11 +196,13 @@ export default function OverviewPage() {
     }>
   >([]);
   const [selectedInspectorId, setSelectedInspectorId] = useState<string | null>(null);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const saveQueueRef = useRef<{ [key: string]: any }>({});
   const saveTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   // Autosave handler - debounces saves by 2 seconds
   const queueSave = useCallback(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (field: string, value: any) => {
       saveQueueRef.current[field] = value;
 
@@ -306,6 +308,7 @@ export default function OverviewPage() {
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
       toast.success("Weather Verification PDF downloaded!");
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       logger.error("[WeatherVerify] Error:", err);
       toast.error(err.message || "Failed to generate weather verification");
@@ -355,6 +358,7 @@ export default function OverviewPage() {
         const members = data.members || data.users || [];
         setTeamMembers(members);
         // Auto-select default inspector if none is set
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const defaultInsp = members.find((m: any) => m.is_default_inspector);
         if (defaultInsp && !selectedInspectorId) {
           setSelectedInspectorId(defaultInsp.clerkUserId || defaultInsp.id);

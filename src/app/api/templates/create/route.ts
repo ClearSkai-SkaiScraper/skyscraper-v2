@@ -26,6 +26,7 @@ export const POST = withAuth(async (req: NextRequest, { orgId, userId }) => {
         name,
         created_by: userId,
         section_order: sections,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         section_enabled: sections.reduce((acc: any, key: string) => {
           acc[key] = true;
           return acc;

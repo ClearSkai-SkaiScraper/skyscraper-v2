@@ -366,7 +366,9 @@ export function DamageReportPreview({
                 <div className="p-4">
                   {/* Photo thumbnail + findings side by side */}
                   <div className="flex gap-4">
+                    // eslint-disable-next-line react/jsx-no-comment-textnodes
                     {/* Thumbnail */}
+                    // eslint-disable-next-line react/jsx-no-comment-textnodes
                     <div className="w-48 shrink-0">
                       // eslint-disable-next-line @next/next/no-img-element
                       <img

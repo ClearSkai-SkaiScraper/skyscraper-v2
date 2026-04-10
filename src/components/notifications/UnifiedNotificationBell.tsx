@@ -73,7 +73,9 @@ export default function UnifiedNotificationBell({
       });
       if (res.ok) {
         const data = await res.json();
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const raw: any[] = Array.isArray(data) ? data : data.notifications || [];
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const mapped: Notification[] = raw.map((n: any) => ({
           id: n.id,
           type: n.type || "info",

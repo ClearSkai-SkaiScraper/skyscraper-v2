@@ -347,6 +347,7 @@ export function LineItemEditor({
   onAddCustom,
 }: {
   lineItems: LineItem[];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   onUpdate: (index: number, field: keyof LineItem, value: any) => void;
   onRemove: (index: number) => void;
   onAddCustom: () => void;
@@ -487,6 +488,7 @@ export function AnalyzePhotosButton({
   photos: File[];
   claimId: string;
   isAnalyzing: boolean;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   onAnalyze: (photos: File[], claimId: string) => Promise<any>;
 }) {
   return (

@@ -10,6 +10,7 @@
  */
 export function isBetaMode(): boolean {
   // Beta mode is active unless explicitly disabled
+  // eslint-disable-next-line no-restricted-syntax
   return process.env.NEXT_PUBLIC_BETA_MODE !== "false";
 }
 

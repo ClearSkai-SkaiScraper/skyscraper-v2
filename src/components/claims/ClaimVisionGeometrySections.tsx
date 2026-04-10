@@ -4,6 +4,7 @@ import { GeometryAnalyzerPanel } from "@/components/geometry/GeometryAnalyzerPan
 import { VisionAnalyzerPanel } from "@/components/vision/VisionAnalyzerPanel";
 import { logger } from "@/lib/logger";
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function ClaimVisionSection({ claim }: { claim: any }) {
   return (
     <div className="space-y-6">
@@ -26,8 +27,10 @@ export function ClaimVisionSection({ claim }: { claim: any }) {
   );
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function ClaimGeometrySection({ claim }: { claim: any }) {
   // Get existing damage assessments to pass to geometry analyzer
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const existingDamages = claim.damage_assessments?.flatMap((assessment: any) => 
     assessment.damages || []
   ) || [];

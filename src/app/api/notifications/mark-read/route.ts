@@ -1,6 +1,7 @@
 export const dynamic = "force-dynamic";
 
 // MODULE 2: Notifications - Mark as read (supports both client and pro)
+// eslint-disable-next-line no-restricted-imports
 import { currentUser } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";

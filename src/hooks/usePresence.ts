@@ -53,6 +53,7 @@ export function usePresence(
         setOnlineUsers((prev) => {
           const next = new Set(prev);
           for (const p of newPresences) {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             if ((p as any).userId) next.add((p as any).userId);
           }
           return next;
@@ -62,6 +63,7 @@ export function usePresence(
         setOnlineUsers((prev) => {
           const next = new Set(prev);
           for (const p of leftPresences) {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             if ((p as any).userId) next.delete((p as any).userId);
           }
           return next;

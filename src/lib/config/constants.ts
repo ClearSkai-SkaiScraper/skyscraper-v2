@@ -11,6 +11,7 @@ export const DOMAIN_CONFIG = {
   // Canonical domain (NO "R" - it's skaiscrape not skaiscraper)
   canonical: "skaiscrape.com",
   protocol: "https",
+  // eslint-disable-next-line no-restricted-syntax
   baseUrl: process.env.NEXT_PUBLIC_BASE_URL || "https://www.skaiscrape.com",
 } as const;
 
@@ -29,6 +30,7 @@ export function absoluteUrl(path: string): string {
  * Email configuration (no "r" typo)
  */
 export const EMAIL_CONFIG = {
+  // eslint-disable-next-line no-restricted-syntax
   default: process.env.RESEND_FROM_EMAIL || "claims@skaiscrape.com",
   support: "support@skaiscrape.com",
   noreply: "noreply@skaiscrape.com",
@@ -39,5 +41,6 @@ export const EMAIL_CONFIG = {
  */
 export const SERVICE_CONFIG = {
   name: "skaiscrape-core", // No "r"
+  // eslint-disable-next-line no-restricted-syntax
   tradesServiceUrl: process.env.TRADES_SERVICE_URL || "https://trades.skaiscrape.com",
 } as const;

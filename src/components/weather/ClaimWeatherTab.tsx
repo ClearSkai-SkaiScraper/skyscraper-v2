@@ -22,6 +22,7 @@ export function ClaimWeatherTab({ claimId, propertyAddress, currentDol }: ClaimW
   const [activeTab, setActiveTab] = useState("quick-dol");
   const router = useRouter();
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const handleSelectDate = async (date: string, candidate: any) => {
     try {
       // Update the claim's DOL

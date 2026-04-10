@@ -298,6 +298,7 @@ export default function MyJobsPage() {
                     <div className="flex items-start justify-between">
                       <div className="flex items-center gap-3">
                         {claim.contractor?.logo ? (
+                          // eslint-disable-next-line react/jsx-no-comment-textnodes
                           <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-slate-100 dark:bg-slate-800">
                             // eslint-disable-next-line @next/next/no-img-element
                             <img
@@ -399,6 +400,7 @@ export default function MyJobsPage() {
                     <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                       <div className="flex items-start gap-4">
                         {wr.contractor?.logo ? (
+                          // eslint-disable-next-line react/jsx-no-comment-textnodes
                           <div className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-800 dark:to-slate-700">
                             // eslint-disable-next-line @next/next/no-img-element
                             <img

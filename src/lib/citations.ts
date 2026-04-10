@@ -70,6 +70,7 @@ export function formatFootnote(c: Citation, idx: number): string {
 /**
  * Extract citation from tool result
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function extractCitationFromTool(toolName: string, result: any): Citation | null {
   if (!result) return null;
 

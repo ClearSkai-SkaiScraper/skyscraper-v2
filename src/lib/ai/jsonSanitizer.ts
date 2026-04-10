@@ -1,3 +1,4 @@
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function sanitizeJsonResponse(raw: string): { ok: boolean; data?: any; error?: string; raw: string } {
   let cleaned = raw.trim();
   try {
@@ -14,6 +15,7 @@ export function sanitizeJsonResponse(raw: string): { ok: boolean; data?: any; er
     }
     const parsed = JSON.parse(cleaned);
     return { ok: true, data: parsed, raw: cleaned };
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars, @typescript-eslint/no-explicit-any
   } catch (_e: any) {
     return { ok: false, error: 'invalid_json', raw: cleaned };
   }

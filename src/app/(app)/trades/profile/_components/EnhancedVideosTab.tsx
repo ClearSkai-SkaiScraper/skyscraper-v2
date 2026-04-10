@@ -156,7 +156,9 @@ export default function EnhancedVideosTab({
             key={video.id}
             onClick={() => openVideo(video)}
             className="group cursor-pointer overflow-hidden rounded-lg border bg-slate-100 transition hover:shadow-lg"
+          // eslint-disable-next-line react/jsx-no-comment-textnodes
           >
+            // eslint-disable-next-line react/jsx-no-comment-textnodes
             {/* Thumbnail */}
             // eslint-disable-next-line @next/next/no-img-element
             <div className="relative aspect-video bg-slate-900">

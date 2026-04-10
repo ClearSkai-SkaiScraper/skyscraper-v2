@@ -48,6 +48,7 @@ export const POST = withManager(async (req: NextRequest, { orgId, userId }) => {
         cancellationFeedback: feedback || null,
         cancellationRequestedAt: new Date(),
         cancellationRequestedBy: userId,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } as any,
     });
 

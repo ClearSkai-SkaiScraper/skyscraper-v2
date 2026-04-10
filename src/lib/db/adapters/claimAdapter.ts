@@ -193,14 +193,18 @@ export function adaptProperty(row: properties): PropertyDTO {
  * Convert a raw Prisma contacts row to a ContactDTO
  */
 export function adaptContact(row: contacts): ContactDTO {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const firstName = (row as any).firstName ?? (row as any).first_name ?? undefined;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const lastName = (row as any).lastName ?? (row as any).last_name ?? undefined;
 
   return {
     id: row.id,
     firstName,
     lastName,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     email: (row as any).email ?? undefined,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     phone: (row as any).phone ?? undefined,
     fullName: [firstName, lastName].filter(Boolean).join(" ") || "Unknown",
   };

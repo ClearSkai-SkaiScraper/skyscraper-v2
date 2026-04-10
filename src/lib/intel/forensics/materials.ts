@@ -22,12 +22,17 @@ import { getOpenAI } from "@/lib/openai";
 
 export interface MaterialForensicsInput {
   materialType: string; // "3-tab asphalt", "architectural shingles", "tile", "TPO", "metal", etc.
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   damage?: any; // Damage assessment findings
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   weather?: any; // Weather report data
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   specs?: any; // Manufacturer specifications
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   codes?: any; // Building code requirements
   propertyAge?: number; // Age of roof/property
   inspectionNotes?: string; // Field observations
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   photos?: any[]; // Photo documentation
 }
 

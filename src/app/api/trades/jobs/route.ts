@@ -97,6 +97,7 @@ export const GET = withAuth(async (request: NextRequest, { userId, orgId }) => {
       }
 
       if (!claimStatusMap.has(claimId)) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const data = event.metadata as any;
         claimStatusMap.set(claimId, {
           status:

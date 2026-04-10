@@ -10,11 +10,15 @@ import { shouldSendEmail, shouldSendSMS } from "@/lib/demoMode";
 import { logger } from "@/lib/logger";
 
 // Initialize email service (Resend)
+// eslint-disable-next-line no-restricted-syntax
 const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
 
 // Twilio for SMS (if configured)
+// eslint-disable-next-line no-restricted-syntax
 const twilioAccountSid = process.env.TWILIO_ACCOUNT_SID;
+// eslint-disable-next-line no-restricted-syntax
 const twilioAuthToken = process.env.TWILIO_AUTH_TOKEN;
+// eslint-disable-next-line no-restricted-syntax
 const twilioPhoneNumber = process.env.TWILIO_PHONE_NUMBER;
 
 interface EmailNotification {

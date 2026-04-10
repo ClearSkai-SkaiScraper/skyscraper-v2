@@ -24,6 +24,7 @@ import { logger } from "@/lib/logger";
 
 interface AIResult {
   task: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   output: any;
   confidence: number;
   executionTime: number;
@@ -72,6 +73,7 @@ export function AIResultsPanel({
 
       setAnalysis(data.analysis);
       setError(null);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       logger.error("[AIResultsPanel] Error:", err);
       setError(err.message);

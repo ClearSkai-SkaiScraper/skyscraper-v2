@@ -7,6 +7,7 @@ import { logger } from "@/lib/logger";
 
 export interface EstimateResult {
   total: number;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   lineItems: any[];
 }
 

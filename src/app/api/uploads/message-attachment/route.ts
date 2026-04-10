@@ -79,7 +79,9 @@ export const POST = withAuth(async (req: NextRequest, { userId, orgId }) => {
     // Try Supabase storage first
     try {
       const { createClient } = await import("@supabase/supabase-js");
+      // eslint-disable-next-line no-restricted-syntax
       const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+      // eslint-disable-next-line no-restricted-syntax
       const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
       if (supabaseUrl && supabaseKey) {

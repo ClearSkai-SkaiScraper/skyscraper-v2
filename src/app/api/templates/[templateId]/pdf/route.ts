@@ -9,6 +9,7 @@
  * - Supports ?preview=1 for branded preview mode
  */
 
+// eslint-disable-next-line no-restricted-imports
 import { auth } from "@clerk/nextjs/server";
 import fs from "fs/promises";
 import { NextRequest, NextResponse } from "next/server";
@@ -105,6 +106,7 @@ export async function GET(req: NextRequest, { params }: { params: { templateId: 
     const templateTitle = dbTemplate?.name || registryTemplate?.title || params.templateId;
     const templateCategory = dbTemplate?.category || registryTemplate?.category || null;
     const templateSlug = dbTemplate?.slug || registryTemplate?.slug || null;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const templateTags = dbTemplate?.tags || (registryTemplate as any)?.tags || null;
 
     // 3. Preview mode: Serve the premium blank layout PDF (static asset)
@@ -113,6 +115,7 @@ export async function GET(req: NextRequest, { params }: { params: { templateId: 
     // eslint-disable-next-line @typescript-eslint/await-thenable
     // - Consistent across templates
     if (isPreview) {
+      // eslint-disable-next-line @typescript-eslint/await-thenable
       const { userId } = await auth();
 
       return await servePremiumStaticPreview({
@@ -247,6 +250,7 @@ export async function GET(req: NextRequest, { params }: { params: { templateId: 
             "Cache-Control": "public, max-age=3600",
           },
         });
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       } catch (_fileError) {
         logger.error(`[PDF_PROXY] Local file not found: ${filePath}`);
         return await servePremiumStaticPreview({

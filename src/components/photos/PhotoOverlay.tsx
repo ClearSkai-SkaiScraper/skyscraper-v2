@@ -151,6 +151,7 @@ export default function PhotoOverlay({
   };
 
   return (
+    // eslint-disable-next-line react/jsx-no-comment-textnodes
     <div className="relative inline-block">
       // eslint-disable-next-line @next/next/no-img-element
       <img

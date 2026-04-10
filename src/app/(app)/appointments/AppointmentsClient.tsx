@@ -299,6 +299,7 @@ export function AppointmentsClient({
   orgId: _orgId,
 }: AppointmentsClientProps) {
   const router = useRouter();
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [appointments, setAppointments] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);

@@ -116,6 +116,7 @@ export default function NewClientMessageModal({
       setMessage("");
       onClose();
       onSuccess?.();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       logger.error("Failed to send message:", error);
       toast.error(error.message || "Failed to send message");

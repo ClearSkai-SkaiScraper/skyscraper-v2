@@ -25,6 +25,7 @@ interface TrackEventOptions {
   orgId: string;
   userId?: string;
   eventName: ProductEventName;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   payload?: Record<string, any>;
 }
 
@@ -42,6 +43,7 @@ export async function trackProductEvent({
   payload,
 }: TrackEventOptions): Promise<void> {
   // Respect analytics disable flag
+  // eslint-disable-next-line no-restricted-syntax
   if (process.env.NEXT_PUBLIC_ANALYTICS_DISABLED === "true") {
     return;
   }

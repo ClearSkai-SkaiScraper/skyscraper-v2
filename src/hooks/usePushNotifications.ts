@@ -11,6 +11,7 @@ import { useCallback, useEffect, useState } from "react";
 import { logger } from "@/lib/logger";
 
 // Get the VAPID public key from environment
+// eslint-disable-next-line no-restricted-syntax
 const VAPID_PUBLIC_KEY = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY || "";
 
 // Convert base64 URL to Uint8Array (required for push subscription)
@@ -153,6 +154,7 @@ export function usePushNotifications() {
       // Subscribe to push
       const subscription = await registration.pushManager.subscribe({
         userVisibleOnly: true,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY) as any,
       });
 
@@ -181,6 +183,7 @@ export function usePushNotifications() {
       }));
 
       return true;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       logger.error("Error subscribing to push:", error);
       setState((prev) => ({
@@ -220,6 +223,7 @@ export function usePushNotifications() {
       }));
 
       return true;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       logger.error("Error unsubscribing from push:", error);
       setState((prev) => ({

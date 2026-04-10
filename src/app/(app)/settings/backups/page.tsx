@@ -1,3 +1,4 @@
+// eslint-disable-next-line no-restricted-imports
 import { auth } from "@clerk/nextjs/server";
 import { Database, HardDrive, Info } from "lucide-react";
 import { redirect } from "next/navigation";

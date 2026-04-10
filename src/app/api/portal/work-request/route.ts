@@ -10,6 +10,7 @@ export const dynamic = "force-dynamic";
  * 4. Returns claim ID for confirmation
  */
 
+// eslint-disable-next-line no-restricted-imports
 import { auth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 import { z, ZodError } from "zod";

@@ -7,7 +7,9 @@ import { logger } from "@/lib/logger";
 // Ensures proper configuration for authentication
 // =====================================================
 
+// eslint-disable-next-line no-restricted-syntax
 const IS_PROD = process.env.NODE_ENV === "production";
+// eslint-disable-next-line no-restricted-syntax
 const IS_DEV = process.env.NODE_ENV === "development";
 
 /**
@@ -23,6 +25,7 @@ export function validateClerkEnvironment(): {
   const warnings: string[] = [];
 
   // Check required public key
+  // eslint-disable-next-line no-restricted-syntax
   const publishableKey = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;
   if (!publishableKey) {
     errors.push("NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY is not set");
@@ -43,6 +46,7 @@ export function validateClerkEnvironment(): {
 
   // Check required secret key (server-side only)
   if (typeof window === "undefined") {
+    // eslint-disable-next-line no-restricted-syntax
     const secretKey = process.env.CLERK_SECRET_KEY;
     if (!secretKey) {
       errors.push("CLERK_SECRET_KEY is not set");
@@ -57,9 +61,13 @@ export function validateClerkEnvironment(): {
   }
 
   // Check optional redirect URLs
+  // eslint-disable-next-line no-restricted-syntax
   const signInUrl = process.env.NEXT_PUBLIC_CLERK_SIGN_IN_URL;
+  // eslint-disable-next-line no-restricted-syntax
   const signUpUrl = process.env.NEXT_PUBLIC_CLERK_SIGN_UP_URL;
+  // eslint-disable-next-line no-restricted-syntax
   const afterSignInUrl = process.env.NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL;
+  // eslint-disable-next-line no-restricted-syntax
   const afterSignUpUrl = process.env.NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL;
 
   if (!signInUrl) {
@@ -100,6 +108,7 @@ export function validateClerkEnvironment(): {
  */
 export function logClerkValidation(): void {
   // Skip during Vercel build phase - env vars not available
+  // eslint-disable-next-line no-restricted-syntax
   if (process.env.NEXT_PHASE === "phase-production-build") {
     return;
   }

@@ -124,6 +124,7 @@ export default function BidOpportunitiesPage() {
 
       // Merge and dedupe
       const allProjects: Project[] = [
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         ...(jobsData.jobs || []).map((j: any) => ({
           id: j.id,
           title: j.title,
@@ -136,6 +137,7 @@ export default function BidOpportunitiesPage() {
           client: { name: j.client?.name || "Client" },
           isSpecialtyMatch: j.isSpecialtyMatch,
         })),
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         ...(projectsData.projects || []).map((p: any) => ({
           id: p.id,
           title: p.title,

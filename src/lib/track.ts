@@ -65,6 +65,7 @@ export async function track(
       userId: user.id,
       report_id: payload.report_id || null,
       props: payload.props || null,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } as any);
   } catch (error: unknown) {
     const e = error instanceof Error ? error : new Error(String(error));
@@ -102,6 +103,7 @@ export async function logError({
       code: code || null,
       message,
       context: sanitizeErrorContext(context),
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } as any);
   } catch (error: unknown) {
     const e = error instanceof Error ? error : new Error(String(error));

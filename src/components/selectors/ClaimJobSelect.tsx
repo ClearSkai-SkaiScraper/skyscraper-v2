@@ -67,7 +67,9 @@ export function ClaimJobSelect(props: {
 
         const mappedClaims: ClaimLite[] = Array.isArray(claimsArr)
           ? claimsArr
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
               .filter((c: any) => c && typeof c.id === "string")
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
               .map((c: any) => ({
                 id: String(c.id),
                 claimNumber: c.claimNumber ?? null,
@@ -86,7 +88,9 @@ export function ClaimJobSelect(props: {
 
         const mappedJobs: JobLite[] = Array.isArray(jobsArr)
           ? jobsArr
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
               .filter((j: any) => j && typeof j.id === "string")
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
               .map((j: any) => ({
                 id: String(j.id),
                 title: String(j.title || ""),

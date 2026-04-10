@@ -75,6 +75,7 @@ export const PATCH = withAuth(
       const body = parsed.data;
 
       // Build update data from body fields
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const updateData: Record<string, any> = {};
       const allowedFields = [
         "title",
@@ -256,6 +257,7 @@ export const PATCH = withAuth(
             submittedByUserId: userId,
             entityType: "claim",
             entityId: claimId,
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             entityTitle: (updated as any)?.title || "Claim",
             estimatedValue: body.estimatedJobValue,
           });
@@ -276,6 +278,7 @@ export const PATCH = withAuth(
         body.propertyAddress !== undefined;
 
       if (hasPropertyUpdate) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const propertyId = (updated as any)?.propertyId;
         if (propertyId) {
           const propertyUpdateData: Record<string, string> = {};

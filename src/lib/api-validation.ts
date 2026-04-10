@@ -8,6 +8,7 @@ import { z } from "zod";
 import { logger } from "@/lib/logger";
 
 export class ValidationError extends Error {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   constructor(public errors: any) {
     super("Validation failed");
     this.name = "ValidationError";

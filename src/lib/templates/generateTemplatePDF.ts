@@ -52,6 +52,7 @@ export async function generateTemplatePDF(options: PDFGenerationOptions): Promis
     logger.info(`[PDF_GENERATION] PDF generated successfully (${pdfBuffer.length} bytes)`);
 
     return pdfBuffer;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (error: any) {
     logger.error(`[PDF_GENERATION] Error generating PDF`, {
       templateId,
@@ -66,8 +67,10 @@ export async function generateTemplatePDF(options: PDFGenerationOptions): Promis
  * Generate PDF using jsPDF — serverless-safe, no Chromium required.
  */
 async function generatePDFWithJsPDF(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   mergedTemplate: any,
   orgId: string,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   claimData?: any
 ): Promise<Buffer> {
   const doc = new jsPDF({ format: "letter" });

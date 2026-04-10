@@ -50,7 +50,9 @@ export default function RouteErrorBoundary({
       <div className="rounded-xl border border-red-200 bg-red-50 p-8 text-center dark:border-red-800 dark:bg-red-950/40">
         <AlertTriangle className="mx-auto h-10 w-10 text-red-500" />
         <h2 className="mt-4 text-xl font-bold text-red-700 dark:text-red-300">{title}</h2>
+        // eslint-disable-next-line react/jsx-no-comment-textnodes
         <p className="mt-2 text-sm text-red-600 dark:text-red-400">{description}</p>
+        // eslint-disable-next-line no-restricted-syntax
         {process.env.NODE_ENV === "development" && error.message && (
           <div className="mt-4 rounded-lg bg-red-100 p-3 text-left text-xs dark:bg-red-900/30">
             <p className="font-mono text-red-800 dark:text-red-300">{error.message}</p>

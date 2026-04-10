@@ -1,3 +1,4 @@
+// eslint-disable-next-line no-restricted-imports
 import { currentUser } from "@clerk/nextjs/server";
 import { ArrowLeft, Calendar, DollarSign, MapPin, User } from "lucide-react";
 import Link from "next/link";

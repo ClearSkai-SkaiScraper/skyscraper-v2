@@ -98,6 +98,7 @@ export default function LeadsSettingsClient({ orgId, initialSettings }: LeadsSet
 
       toast.success("Settings saved successfully!");
       setActiveModal(null);
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (_error) {
       toast.error("Failed to save settings");
     } finally {

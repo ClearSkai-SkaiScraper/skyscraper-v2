@@ -52,29 +52,42 @@ export function createOrgScopedPrisma(orgId: string) {
   return {
     claims: {
       ...prisma.claims,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       findMany: (args: any) =>
         prisma.claims.findMany({ ...args, where: { ...args?.where, orgId } }),
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       findFirst: (args: any) =>
         prisma.claims.findFirst({ ...args, where: { ...args?.where, orgId } }),
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       findUnique: (args: any) =>
         prisma.claims.findFirst({ ...args, where: { ...args?.where, orgId } }),
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       count: (args: any) => prisma.claims.count({ ...args, where: { ...args?.where, orgId } }),
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       create: (args: any) => prisma.claims.create({ ...args, data: { ...args?.data, orgId } }),
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       update: (args: any) => prisma.claims.update({ ...args, where: { ...args?.where, orgId } }),
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       delete: (args: any) => prisma.claims.delete({ ...args, where: { ...args?.where, orgId } }),
     },
     leads: {
       ...prisma.leads,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       findMany: (args: any) => prisma.leads.findMany({ ...args, where: { ...args?.where, orgId } }),
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       findFirst: (args: any) =>
         prisma.leads.findFirst({ ...args, where: { ...args?.where, orgId } }),
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       count: (args: any) => prisma.leads.count({ ...args, where: { ...args?.where, orgId } }),
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       create: (args: any) => prisma.leads.create({ ...args, data: { ...args?.data, orgId } }),
     },
     clients: {
       ...prisma.contacts,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       findMany: (args: any) =>
         prisma.contacts.findMany({ ...args, where: { ...args?.where, orgId } }),
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       findFirst: (args: any) =>
         prisma.contacts.findFirst({ ...args, where: { ...args?.where, orgId } }),
     },

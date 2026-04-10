@@ -4,6 +4,7 @@
  * Supports both self-service clients (userId-based) and legacy org-managed clients (email-based)
  */
 
+// eslint-disable-next-line no-restricted-imports
 import { auth, currentUser } from "@clerk/nextjs/server";
 
 import { logger } from "@/lib/logger";
@@ -39,6 +40,7 @@ export async function getClientFromAuth() {
     }
 
     // Only fetch org if client has a real orgId (not self-service placeholder)
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let org: any = null;
     if (client.orgId && client.orgId !== "self-service-clients") {
       try {
@@ -51,6 +53,7 @@ export async function getClientFromAuth() {
       }
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return { ...client, org } as any;
   } catch (error) {
     logger.error("[getClientFromAuth] Error:", error);

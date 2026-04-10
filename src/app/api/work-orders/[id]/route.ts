@@ -25,6 +25,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
   });
   if (!existing) return apiError(404, "NOT_FOUND", "Work order not found");
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const updateData: any = { updatedAt: new Date() };
   if (body.status) updateData.status = body.status;
   if (body.title) updateData.title = body.title;

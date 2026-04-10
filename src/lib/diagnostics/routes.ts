@@ -23,6 +23,7 @@ export function collectRoutes(appDir = path.join(process.cwd(), "src", "app")): 
   const files: string[] = [];
   try {
     walk(appDir, files);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   } catch (_e) {
     return { pages: [], api: [], totalPages: 0, totalApi: 0, scannedAt: new Date().toISOString() };
   }

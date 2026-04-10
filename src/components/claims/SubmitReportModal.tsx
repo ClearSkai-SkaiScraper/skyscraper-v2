@@ -53,6 +53,7 @@ export function SubmitReportModal({
       toast.success("Report submitted to carrier successfully");
       onSuccess?.();
       onClose();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       logger.error("Submit error:", error);
       toast.error(error.message || "Failed to submit report");

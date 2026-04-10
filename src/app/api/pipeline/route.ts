@@ -173,6 +173,7 @@ export async function PUT(request: NextRequest) {
           description: `Project moved from ${oldStage || project.status} to ${newStage}`,
           userId,
           userName,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } as any,
       });
 

@@ -10,14 +10,17 @@ import prisma from "@/lib/prisma";
 
 export type PersistResult = { ok: true } | { ok: false; error: string };
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export async function persistJobState(..._args: any[]): Promise<PersistResult> {
   return { ok: true };
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export async function loadJobState<T = any>(..._args: any[]): Promise<T | null> {
   return null;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export async function deleteJobState(..._args: any[]): Promise<PersistResult> {
   return { ok: true };
 }
@@ -25,6 +28,7 @@ export async function deleteJobState(..._args: any[]): Promise<PersistResult> {
 /**
  * Get a saved AI section from a report's attachments JSONB
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export async function getAISection(sectionKey: string, reportId: string): Promise<any | null> {
   try {
     const report = await prisma.ai_reports.findUnique({
@@ -32,6 +36,7 @@ export async function getAISection(sectionKey: string, reportId: string): Promis
       select: { attachments: true },
     });
     if (!report) return null;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const attachments = (report.attachments as any) || {};
     return attachments.sections?.[sectionKey] || null;
   } catch (err) {
@@ -46,6 +51,7 @@ export async function getAISection(sectionKey: string, reportId: string): Promis
 export async function saveAISection(
   reportId: string,
   sectionKey: string,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   data: any
 ): Promise<{ ok: boolean }> {
   try {
@@ -57,6 +63,7 @@ export async function saveAISection(
       logger.warn("[AI Persist] saveAISection: report not found", { reportId });
       return { ok: false };
     }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const attachments = (report.attachments as any) || {};
     const sections = attachments.sections || {};
     sections[sectionKey] = {
@@ -83,6 +90,7 @@ export async function saveAISection(
 /**
  * Get all saved AI sections for a report
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export async function getAllAISections(reportId: string): Promise<any[]> {
   try {
     const report = await prisma.ai_reports.findUnique({
@@ -90,10 +98,12 @@ export async function getAllAISections(reportId: string): Promise<any[]> {
       select: { attachments: true },
     });
     if (!report) return [];
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const attachments = (report.attachments as any) || {};
     const sections = attachments.sections || {};
     return Object.entries(sections).map(([key, value]) => ({
       sectionKey: key,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       ...(value as any),
     }));
   } catch (err) {

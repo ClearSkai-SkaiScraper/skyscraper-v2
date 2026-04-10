@@ -36,12 +36,16 @@ export const PRISMA_MODELS = {
 export type PrismaModelKey = keyof typeof PRISMA_MODELS;
 
 // Helper: returns a *typed* delegate when it exists, else null
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function prismaModel<K extends PrismaModelKey>(key: K): any {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   return (prisma as any)[key];
 }
 
 // Helper: allows “maybe model” usage for legacy model names (string input)
 // Use this ONLY when you’re trying to gracefully degrade features.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function prismaMaybeModel(key: string): any | null {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   return (prisma as any)[key] ?? null;
 }

@@ -54,8 +54,10 @@ export const POST = withAuth(async (req: NextRequest, { userId }) => {
 
     // Upsert all acceptances
     logger.debug(`[Legal Accept] Upserting ${documents.length} acceptances...`);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const acceptances: any[] = [];
     for (const doc of documents) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const acceptance = await (prisma.legal_acceptances as any).upsert({
         where: {
           userId_documentId_version: {
@@ -74,6 +76,7 @@ export const POST = withAuth(async (req: NextRequest, { userId }) => {
           acceptedAt: new Date(),
         },
       });
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       acceptances.push(acceptance as any);
     }
 

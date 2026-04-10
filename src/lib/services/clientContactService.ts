@@ -45,6 +45,7 @@ export async function createClientContactFromTrades(params: CreateClientContactF
     });
   } else {
     // Create new client
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     client = await (prisma as any).Client.create({
       data: {
         slug: `client-${Date.now()}`,
@@ -87,6 +88,7 @@ export async function getOrCreateClient(params: {
   });
 
   if (!client) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     client = await (prisma as any).Client.create({
       data: {
         slug: `client-${Date.now()}`,

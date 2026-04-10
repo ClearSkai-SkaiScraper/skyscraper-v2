@@ -28,11 +28,13 @@ const MAP: Record<ErrorCode, TaxonomyEntry> = {
   ERR_FEATURE_DISABLED: { code: 'ERR_FEATURE_DISABLED', http: 403, message: 'Feature disabled' }
 };
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function errorResponse(code: ErrorCode, extras?: Record<string, any>) {
   const entry = MAP[code];
   return Response.json({ error: entry.message, code: entry.code, ...extras }, { status: entry.http });
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function wrapTry<T>(fn: () => Promise<T>, onError?: (e: any) => ErrorCode): Promise<T | Response> {
   return fn().catch(e => {
     const code = onError ? onError(e) : 'ERR_INTERNAL';

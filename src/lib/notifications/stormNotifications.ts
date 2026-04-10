@@ -145,12 +145,14 @@ export async function notifyStormEnded(stormEventId: string, orgId: string): Pro
       mediumRisk: 0,
       lowRisk: 0,
       affectedZipCodes: [],
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       primaryCity: String((storm.affectedCities as any)?.[0] ?? "your area"),
     });
 
     for (const userId of users) {
       await sendTemplatedNotification("STORM_ENDED", userId, {
         stormType: formatStormType(storm.eventType),
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         city: String((storm.affectedCities as any)?.[0] ?? "your area"),
         duration,
         propertyCount: impactCount,
@@ -248,6 +250,7 @@ export async function notifyWeatherEvidenceReady(
 // HELPER FUNCTIONS
 // ============================================================================
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 async function getPropertyImpacts(orgId: string, storm: any): Promise<PropertyImpactSummary> {
   // Get affected ZIP codes from storm
   const affectedZips = (storm.affectedZipCodes as string[]) ?? [];
@@ -331,6 +334,7 @@ async function createPropertyImpactRecords(
   orgId: string,
   stormEventId: string,
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars
   storm: any
 ): Promise<void> {
   // NOTE: The property_impacts model requires extensive data including
@@ -359,6 +363,7 @@ function formatStormType(eventType: string): string {
   return typeMap[eventType?.toUpperCase()] ?? eventType?.toLowerCase() ?? "weather";
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function getRecommendedAction(storm: any): string {
   const hailSize = Number(storm.hailSizeMax ?? 0);
   const windSpeed = storm.windSpeedMax ?? 0;

@@ -51,6 +51,7 @@ export function ClaimIntelligencePanel({ claimId }: Props) {
         if (!cancelled) {
           setData(json);
         }
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } catch (err: any) {
         if (!cancelled) {
           setError(err.message ?? "Unknown error");
@@ -105,6 +106,7 @@ export function ClaimIntelligencePanel({ claimId }: Props) {
         const json = await refreshRes.json();
         setData(json);
       }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       alert(`❌ Error: ${err.message}`);
     } finally {

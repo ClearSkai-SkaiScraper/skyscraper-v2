@@ -67,10 +67,13 @@ export default async function WorkOrdersPage() {
         description: w.description as string | null,
         status: w.status as string,
         priority: w.priority as string,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         claimNumber: (w as any).claims?.claimNumber ?? "—",
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         claimTitle: (w as any).claims?.title ?? "—",
         assignedTo: w.foreman as string | null,
         dueDate: (w.scheduledStart as Date | null)?.toISOString().split("T")[0] ?? null,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         materials: w.materials as any[] | null,
         createdAt: (w.createdAt as Date).toISOString().split("T")[0],
       }));

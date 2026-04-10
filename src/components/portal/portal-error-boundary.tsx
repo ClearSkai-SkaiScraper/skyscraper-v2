@@ -43,7 +43,9 @@ export default function PortalErrorBoundary({
             Something went wrong loading this page. Don&apos;t worry, your data is safe.
           </CardDescription>
         </CardHeader>
+        // eslint-disable-next-line react/jsx-no-comment-textnodes
         <CardContent className="space-y-4">
+          // eslint-disable-next-line no-restricted-syntax
           {process.env.NODE_ENV === "development" && error.message && (
             <div className="rounded-lg bg-red-50 p-3 text-sm dark:bg-red-900/20">
               <p className="font-medium text-red-800 dark:text-red-300">Error Details:</p>

@@ -239,7 +239,9 @@ export default function GettingStartedCard() {
         </div>
       )}
 
+      // eslint-disable-next-line react/jsx-no-comment-textnodes
       {/* Reset Link (hidden, for testing) */}
+      // eslint-disable-next-line no-restricted-syntax
       {process.env.NODE_ENV === "development" && (
         <button
           onClick={resetOnboarding}

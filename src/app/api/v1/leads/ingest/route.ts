@@ -90,6 +90,7 @@ export async function POST(req: NextRequest) {
     const orgId = apiKey.org_id;
 
     // 3. Upsert contact by email or phone (deduplicate)
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let contact: any = null;
     if (data.email) {
       contact = await prisma.contacts.findFirst({

@@ -10,9 +10,11 @@ import { baseStyles } from "../SharedStyles";
 export function RetailPricingSection({ data }: { data: ReportData }) {
   // Extract pricing data with safe fallbacks
   const claim = data.claim || {};
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const estimate = (data as any).estimate || {};
 
   // Calculate pricing (use estimate or claim fields)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const basePrice = estimate.retailTotal || estimate.total || (claim as any).estimatedValue || 0;
   const upgradeTotal = estimate.upgradeTotal || 0;
   const subtotal = basePrice + upgradeTotal;
@@ -21,7 +23,9 @@ export function RetailPricingSection({ data }: { data: ReportData }) {
   const total = subtotal + tax;
 
   // Financing info
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const financingAvailable = (claim as any).financingType || (data as any).financingType;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const financingTerm = (claim as any).financingTerm || (data as any).financingTerm;
 
   // Calculate monthly payment if financing

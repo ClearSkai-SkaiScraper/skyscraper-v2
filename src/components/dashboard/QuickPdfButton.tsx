@@ -15,6 +15,7 @@ export default function QuickPdfButton() {
 
       // Open the report in a new tab
       window.open(data.url, "_blank");
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       alert(`Error: ${error.message}`);
     } finally {

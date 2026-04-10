@@ -248,6 +248,7 @@ async function gatherWeatherEvents(
     }
 
     // Create synthetic event from report data
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const raw = report.providerRaw as any;
     if (raw && report.dol) {
       if (raw.maxHailInches && raw.maxHailInches > 0) {

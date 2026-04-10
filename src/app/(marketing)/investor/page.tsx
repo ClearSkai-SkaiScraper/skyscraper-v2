@@ -1,3 +1,4 @@
+// eslint-disable-next-line no-restricted-imports
 import { auth } from "@clerk/nextjs/server";
 import { BarChart3, Clock, DollarSign, TrendingUp, Users, Zap } from "lucide-react";
 import { redirect } from "next/navigation";

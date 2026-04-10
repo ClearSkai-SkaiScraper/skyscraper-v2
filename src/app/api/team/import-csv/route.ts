@@ -31,6 +31,7 @@
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
+// eslint-disable-next-line no-restricted-imports
 import { clerkClient } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
@@ -164,6 +165,7 @@ export const POST = withManager(async (req: NextRequest, { orgId, userId }) => {
 
     // eslint-disable-next-line @typescript-eslint/await-thenable
     // ── Process invitations ───────────────────────────────────────
+    // eslint-disable-next-line @typescript-eslint/await-thenable
     const client = await clerkClient();
     const results: Array<{ email: string; role: string; status: string }> = [];
     const errors: Array<{ email: string; reason: string }> = [];

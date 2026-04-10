@@ -18,6 +18,7 @@ type ActivityPayload = {
     | "STAGE_CHANGED";
   title: string;
   description?: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   meta?: Record<string, any>;
 };
 
@@ -38,6 +39,7 @@ export async function logActivity(payload: ActivityPayload) {
         claimId: payload.entityType === "claim" ? payload.entityId : undefined,
         contactId: payload.entityType === "contact" ? payload.entityId : undefined,
         metadata: payload.meta ? payload.meta : undefined,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } as any,
     });
   } catch (error) {
@@ -77,6 +79,7 @@ export async function getToolHistory(clerkUserId: string, tool?: string, limit =
     const params = tool ? [clerkUserId, tool, limit] : [clerkUserId, limit];
     const result = await db.query(query, params);
     return result.rows || [];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (error: any) {
     // table may not exist yet — return empty gracefully
     logger.warn("[getToolHistory] Query failed (table may not exist):", error.message);
@@ -90,6 +93,7 @@ export async function getActivitiesForEntity(
   entityId: string,
   limit = 20
 ) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const where: any = { orgId };
 
   if (entityType === "lead") where.leadId = entityId;

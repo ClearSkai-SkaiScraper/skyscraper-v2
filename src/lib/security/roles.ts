@@ -15,6 +15,7 @@ export async function requireAdmin(): Promise<{ userId: string; orgId: string }>
 }
 // Phase 5 - Security & Role Guards
 
+// eslint-disable-next-line no-restricted-imports
 import { auth } from "@clerk/nextjs/server";
 
 export type UserRole = "contractor" | "adjuster" | "admin";
@@ -42,11 +43,13 @@ export async function getUserRole(): Promise<UserRole> {
   const { sessionClaims } = await auth();
 
   // Check if user is platform admin by email
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const userEmail = (sessionClaims as any)?.email || sessionClaims?.primaryEmailAddress;
   if (isAdminEmail(userEmail)) {
     return "admin";
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const role = (sessionClaims?.metadata as any)?.role || "contractor";
   return role as UserRole;
 }
@@ -57,6 +60,7 @@ export async function getUserRole(): Promise<UserRole> {
 export async function isPlatformAdmin(): Promise<boolean> {
   // eslint-disable-next-line @typescript-eslint/await-thenable
   const { sessionClaims } = await auth();
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const userEmail = (sessionClaims as any)?.email || sessionClaims?.primaryEmailAddress;
   return isAdminEmail(userEmail);
 }

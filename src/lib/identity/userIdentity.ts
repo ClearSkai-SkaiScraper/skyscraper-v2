@@ -10,6 +10,7 @@
  *   if (identity.userType === 'client') { ... }
  */
 
+// eslint-disable-next-line no-restricted-imports
 import { currentUser } from "@clerk/nextjs/server";
 
 import { logger } from "@/lib/logger";
@@ -210,6 +211,7 @@ export async function loadProContext(clerkUserId: string): Promise<ProContext> {
     companyId: proMember.companyId,
     displayName:
       identity.displayName ||
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (proMember as any).name ||
       `${proMember.firstName} ${proMember.lastName}`.trim(),
     email: identity.email || proMember.email,
@@ -319,6 +321,7 @@ export async function registerUser(
       avatarUrl: result.avatarUrl,
       createdAt: result.createdAt,
       lastSeenAt: result.lastSeenAt,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       onboardingComplete: (result as any).onboardingComplete ?? false,
     };
   } catch (error) {

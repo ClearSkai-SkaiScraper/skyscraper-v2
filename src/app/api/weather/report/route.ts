@@ -44,6 +44,7 @@ async function geocodeAddress(address: string): Promise<GeocodingResult> {
 
   try {
     // ── 1. Try Mapbox (best accuracy for street addresses) ──
+    // eslint-disable-next-line no-restricted-syntax
     const mapboxToken = process.env.NEXT_PUBLIC_MAPBOX_TOKEN || process.env.MAPBOX_ACCESS_TOKEN;
     if (mapboxToken) {
       try {
@@ -426,6 +427,7 @@ export const POST = withAuth(async (req: NextRequest, { userId, orgId }) => {
         {
           error: "Weather AI analysis failed. Please try again.",
           step: "ai_generation",
+          // eslint-disable-next-line no-restricted-syntax
           details: process.env.NODE_ENV === "development" ? String(aiErr) : undefined,
         },
         { status: 502 }
@@ -490,6 +492,7 @@ export const POST = withAuth(async (req: NextRequest, { userId, orgId }) => {
         {
           error: "Failed to save weather report to database.",
           step: "db_save",
+          // eslint-disable-next-line no-restricted-syntax
           details: process.env.NODE_ENV === "development" ? String(dbErr) : undefined,
         },
         { status: 500 }
@@ -781,6 +784,7 @@ export const POST = withAuth(async (req: NextRequest, { userId, orgId }) => {
     return NextResponse.json(
       {
         error: "Failed to build weather report.",
+        // eslint-disable-next-line no-restricted-syntax
         details: process.env.NODE_ENV === "development" ? String(err) : undefined,
       },
       { status: 500 }

@@ -35,6 +35,7 @@ export function UseTemplateModal({
   const [loadingClaims, setLoadingClaims] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [generatedArtifact, setGeneratedArtifact] = useState<any>(null);
 
   // Load claims on mount

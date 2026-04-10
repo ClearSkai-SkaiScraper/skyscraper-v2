@@ -69,6 +69,7 @@ export default function NewReportPage() {
   }, []);
 
   // ✅ PHASE R: Load preset callback
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const handleLoadPreset = (preset: any) => {
     setSelectedAddons(preset.sections || []);
     // Load other preset options if needed

@@ -62,6 +62,7 @@ export default function AccuLynxMigration() {
 
       if (!res.ok || !data.ok) {
         setStep("error");
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         setErrorMsg((data as any).error || `Migration failed (HTTP ${res.status})`);
         setResult(data);
         return;
@@ -69,6 +70,7 @@ export default function AccuLynxMigration() {
 
       setResult(data);
       setStep("done");
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       setStep("error");
       setErrorMsg(err.message || "Network error — check your connection");

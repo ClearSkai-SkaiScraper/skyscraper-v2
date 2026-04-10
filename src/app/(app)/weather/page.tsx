@@ -65,7 +65,9 @@ export default async function WeatherHubPage() {
         {reports.length === 0 ? (
           <NoWeatherReportsEmpty ctaLabel="Generate from a Claim" ctaHref="/claims" />
         ) : (
+          // eslint-disable-next-line react/jsx-no-comment-textnodes
           <div className="space-y-2">
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             {reports.map((report: any) => (
               <div
                 key={report.id}

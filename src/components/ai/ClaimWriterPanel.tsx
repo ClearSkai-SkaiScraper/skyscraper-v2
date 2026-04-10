@@ -276,8 +276,10 @@ export function ClaimWriterPanel({ leadId }: ClaimWriterPanelProps) {
               <div className="text-center">
                 <h3 className="mb-2 text-lg font-semibold">Generating Your Claim...</h3>
                 <p className="text-sm text-muted-foreground">This will take about 30-60 seconds</p>
+              // eslint-disable-next-line react/jsx-no-comment-textnodes
               </div>
 
+              // eslint-disable-next-line react/jsx-no-comment-textnodes
               <div className="mx-auto max-w-md space-y-4">
                 // eslint-disable-next-line @typescript-eslint/no-unused-vars
                 {stages.map((stage, index) => (
@@ -344,6 +346,7 @@ export function ClaimWriterPanel({ leadId }: ClaimWriterPanelProps) {
                   } else {
                     toast.error("Export Failed", { description: data.error });
                   }
+                // eslint-disable-next-line @typescript-eslint/no-unused-vars
                 } catch (_error) {
                   toast.error("Export Failed", { description: "Network error" });
                 }

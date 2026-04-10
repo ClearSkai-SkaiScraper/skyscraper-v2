@@ -40,6 +40,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ clai
     const { searchParams } = new URL(req.url);
     const type = (searchParams.get("type") || "all") as AssetType;
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const result: Record<string, any> = {};
 
     // Fetch generated artifacts (AI reports, packets, summaries)
@@ -126,6 +127,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ clai
     }
 
     return NextResponse.json(result);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (error: any) {
     logger.error("[Portal Claims Assets] Error:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
@@ -235,6 +237,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ cla
         caption,
       },
     });
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (error: any) {
     logger.error("[Portal Claims Assets Upload] Error:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });

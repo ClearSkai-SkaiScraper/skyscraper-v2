@@ -90,7 +90,9 @@ export function ContractorCard({
         </div>
       )}
 
+      // eslint-disable-next-line react/jsx-no-comment-textnodes
       <div className="p-4">
+        // eslint-disable-next-line react/jsx-no-comment-textnodes
         <div className="flex items-start gap-4">
           // eslint-disable-next-line @next/next/no-img-element
           {/* Logo */}

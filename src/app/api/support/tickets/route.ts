@@ -90,6 +90,7 @@ export async function POST(req: Request) {
             <p><strong>Title:</strong> ${title}</p>
             <p><strong>Description:</strong> ${description}</p>
             <p>Our team will review your request and respond within 24-48 hours during weekdays.</p>
+            // eslint-disable-next-line no-restricted-syntax
             <p><a href="${process.env.NEXT_PUBLIC_APP_URL}/support">View Support Tickets</a></p>
           `,
         }).catch((err) => logger.error("Failed to send ticket confirmation email:", err));

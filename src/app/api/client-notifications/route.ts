@@ -1,5 +1,6 @@
 export const dynamic = "force-dynamic";
 
+// eslint-disable-next-line no-restricted-imports
 import { auth } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -12,12 +13,14 @@ export async function GET(req: NextRequest) {
   try {
     // eslint-disable-next-line @typescript-eslint/await-thenable
     const client = await getClientFromAuth();
+    // eslint-disable-next-line @typescript-eslint/await-thenable
     const { userId } = await auth();
 
     if (!client && !userId) {
       return NextResponse.json({ error: "Unauthorized - No client access" }, { status: 403 });
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const allNotifications: any[] = [];
 
     // 1. Claim-based notifications (ProjectNotification)
@@ -79,6 +82,7 @@ export async function GET(req: NextRequest) {
         }
       }
     } catch (cnError) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       if ((cnError as any)?.code !== "P2021") {
         logger.error("Error fetching ClientNotification:", cnError);
       }

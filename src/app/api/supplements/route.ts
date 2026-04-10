@@ -62,6 +62,7 @@ export async function POST(req: NextRequest) {
         status:
           validated.status.toUpperCase() === "DRAFT"
             ? "REQUESTED"
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             : (validated.status.toUpperCase() as any),
         data: {
           title: validated.title || `Supplement - ${new Date().toLocaleDateString()}`,
@@ -148,6 +149,7 @@ export async function GET(req: NextRequest) {
     const claimIds = claims.map((c) => c.id);
 
     // Build where clause
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const where: any = {
       claim_id: claimId ? claimId : { in: claimIds },
     };

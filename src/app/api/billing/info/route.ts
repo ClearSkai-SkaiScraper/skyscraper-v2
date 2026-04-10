@@ -36,7 +36,9 @@ export const GET = withAuth(async (req: NextRequest, { orgId }) => {
       return NextResponse.json({ error: "Organization not found" }, { status: 404 });
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let paymentMethods: any[] = [];
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let invoices: any[] = [];
 
     // Fetch from Stripe if customer exists

@@ -22,6 +22,7 @@ export async function recordJobEvent(
   job: Job,
   status: string,
   message?: string,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   result?: any
 ): Promise<void> {
   const query = `
@@ -36,6 +37,7 @@ export async function recordJobEvent(
     message || null,
     job.data || {},
     result || {},
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (job as any).attempts || 0,
   ]);
 

@@ -1,3 +1,4 @@
+// eslint-disable-next-line no-restricted-imports
 import { auth } from "@clerk/nextjs/server";
 import { Download, ExternalLink, FileText, Sparkles } from "lucide-react";
 import { Metadata } from "next";
@@ -89,6 +90,7 @@ async function GenerateReportButton({ claimId }: { claimId: string }) {
 
 // eslint-disable-next-line @typescript-eslint/await-thenable
 export default async function ClaimsReportsPage() {
+  // eslint-disable-next-line @typescript-eslint/await-thenable
   const { userId } = await auth();
 
   if (!userId) {

@@ -123,9 +123,13 @@ export default async function ActivityPage() {
   if (!orgCtx.ok) throw new Error("Unreachable: mode required should redirect");
   const orgId = orgCtx.orgId;
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let recentClaims: any[] = [];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let recentLeads: any[] = [];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let recentReports: any[] = [];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let recentInspections: any[] = [];
 
   try {
@@ -155,6 +159,7 @@ export default async function ActivityPage() {
         select: { id: true, type: true, createdAt: true, status: true },
       }),
     ]);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (err: any) {
     return (
       <PageContainer>

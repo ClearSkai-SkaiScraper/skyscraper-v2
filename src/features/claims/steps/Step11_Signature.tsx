@@ -19,6 +19,7 @@ interface Step11Props {
 }
 
 export function Step11_Signature({ data, onChange }: Step11Props) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const updateField = (field: keyof Step11Data, value: any) => {
     onChange({ ...data, [field]: value });
   };

@@ -43,8 +43,11 @@ export default function MapViewV2({
     if (!mapContainer.current || map.current) return;
 
     const token =
+      // eslint-disable-next-line no-restricted-syntax
       process.env.NEXT_PUBLIC_MAPBOX_TOKEN ||
+      // eslint-disable-next-line no-restricted-syntax
       process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN ||
+      // eslint-disable-next-line no-restricted-syntax
       process.env.NEXT_PUBLIC_MAPBOXGL_ACCESS_TOKEN;
 
     if (!token) {

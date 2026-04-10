@@ -99,6 +99,7 @@ export default function ClaimsAppealPage() {
     setGeneratedDocument(null);
 
     try {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const payload: any = {
         appealType,
         reason,

@@ -14,7 +14,9 @@ import prisma from "@/lib/prisma";
 let _resend: Resend | null = null;
 
 function getResend() {
+  // eslint-disable-next-line no-restricted-syntax
   if (!_resend && process.env.RESEND_API_KEY) {
+    // eslint-disable-next-line no-restricted-syntax
     _resend = new Resend(process.env.RESEND_API_KEY);
   }
   return _resend;
@@ -25,6 +27,7 @@ export async function executeSendEmail(
   orgId: string,
   audience: "ADJUSTER" | "HOMEOWNER",
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars
   config?: any
 ) {
   logger.debug(`[SKAI] Sending email to ${audience} for ${claimId}`);

@@ -10,9 +10,11 @@ import { useDebounce } from "use-debounce";
 
 interface AutosaveOptions {
   reportId: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   data: any;
   enabled?: boolean;
   interval?: number; // milliseconds
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   onSave?: (data: any) => Promise<void>;
   onError?: (error: Error) => void;
 }
@@ -30,6 +32,7 @@ export function useAutosave({
   const isSaving = useRef(false);
 
   const saveDraft = useCallback(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     async (dataToSave: any) => {
       if (!enabled || isSaving.current) return;
 
@@ -55,6 +58,7 @@ export function useAutosave({
 
         lastSaved.current = dataString;
         if (onSave) await onSave(dataToSave);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } catch (error: any) {
         console.error("[Autosave]", error);
         if (onError) onError(error);

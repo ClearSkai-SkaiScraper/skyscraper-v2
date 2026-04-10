@@ -136,6 +136,7 @@ export async function POST(req: Request) {
     logger.info("[COVER_PAGE_POST]", { orgId, elementsCount: elements.length });
 
     return NextResponse.json({ success: true });
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (e: any) {
     logger.error("[COVER_PAGE_POST]", e);
     return apiError(500, "INTERNAL_ERROR", "Failed to save cover page");

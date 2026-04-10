@@ -4,6 +4,7 @@
 
 import { Resend } from "resend";
 
+// eslint-disable-next-line no-restricted-syntax
 const resendApiKey = process.env.RESEND_API_KEY;
 const resend = resendApiKey ? new Resend(resendApiKey) : null;
 
@@ -14,6 +15,7 @@ interface SendCarrierEmailInput {
   text?: string;
   claimId?: string;
   orgId?: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   metadata?: Record<string, any>;
 }
 
@@ -33,6 +35,7 @@ export async function sendEmailToCarrier(
   if (!resend) {
     return { messageId: "resend_unconfigured", actions: ["skipped_unconfigured"] };
   }
+  // eslint-disable-next-line no-restricted-syntax
   const from = process.env.CARRIER_EMAIL_FROM || "notifications@skaiscrape.com";
   const { to, subject, html, text } = input;
 

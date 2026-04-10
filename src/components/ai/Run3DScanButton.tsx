@@ -13,6 +13,7 @@ import { logger } from "@/lib/logger";
 
 interface Run3DScanButtonProps {
   claimId: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   onComplete?: (result: any) => void;
   variant?: "primary" | "secondary" | "outline";
   size?: "sm" | "md" | "lg";
@@ -48,6 +49,7 @@ export function Run3DScanButton({
       }
 
       onComplete?.(data);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       logger.error("[Run3DScan] Error:", err);
       setError(err.message);

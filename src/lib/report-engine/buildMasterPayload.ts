@@ -29,6 +29,7 @@ import { collectInternalClaimDataset } from "./collectors/internal";
 
 interface BuildMasterPayloadParams {
   claimId: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   addonPayload?: Record<string, any>;
   orgId?: string;
 }
@@ -86,6 +87,7 @@ export async function buildPayloadForClaim(claimId: string, orgId?: string) {
 /**
  * Type-safe helper to build master payload with custom addons
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export async function buildPayloadWithAddons(claimId: string, addonPayload: Record<string, any>, orgId?: string) {
   return buildMasterReportPayload({ claimId, addonPayload, orgId });
 }

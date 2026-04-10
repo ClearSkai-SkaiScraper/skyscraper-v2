@@ -179,6 +179,7 @@ const basePATCH = async (request: Request, { params }: { params: { id: string } 
     }
 
     // Build update data
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const updateData: any = {};
     if (title !== undefined) updateData.title = title;
     if (description !== undefined) updateData.description = description;

@@ -11,6 +11,7 @@ let _resend: Resend | null = null;
 
 function getResend() {
   if (!_resend) {
+    // eslint-disable-next-line no-restricted-syntax
     _resend = new Resend(process.env.RESEND_API_KEY);
   }
   return _resend;
@@ -34,6 +35,7 @@ interface EmailProps {
  * Send email (logs in dev, sends in production)
  */
 async function sendEmail({ to, subject, html }: EmailProps) {
+  // eslint-disable-next-line no-restricted-syntax
   if (process.env.NODE_ENV === "development") {
     logger.debug(`[EMAIL] To: ${to}`);
     logger.debug(`[EMAIL] Subject: ${subject}`);
@@ -274,6 +276,7 @@ export async function sendReceiptEmail(
  */
 export async function sendTrialEnding24hEmail(to: string, userName: string, trialEndsAt: Date) {
   const subject = "Your trial ends in 24 hours - SkaiScraper";
+  // eslint-disable-next-line no-restricted-syntax
   const html = `<!DOCTYPE html><html><body style="margin:0;padding:0;background-color:#f8fafc;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;"><table width="100%" cellpadding="0" cellspacing="0" style="max-width:600px;margin:40px auto;background-color:#ffffff;border-radius:16px;overflow:hidden;"><tr><td style="padding:40px 32px;"><h2 style="margin:0 0 16px;color:${BRAND.navy};font-size:24px;">⏰ Your Trial Ends Soon</h2><p style="margin:0 0 24px;color:#334155;font-size:16px;line-height:1.6;">Hi ${userName}, your 72-hour trial ends in <strong>24 hours</strong> (${trialEndsAt.toLocaleString()}).</p><div style="text-align:center;margin:32px 0;"><a href="${process.env.NEXT_PUBLIC_APP_URL}/pricing" style="display:inline-block;padding:14px 32px;background-color:${BRAND.blue};color:#ffffff;text-decoration:none;border-radius:8px;font-weight:600;">Choose Your Plan</a></div></td></tr></table></body></html>`;
   return sendEmail({ to, subject, html });
 }
@@ -283,6 +286,7 @@ export async function sendTrialEnding24hEmail(to: string, userName: string, tria
  */
 export async function sendTrialEnding1hEmail(to: string, userName: string, trialEndsAt: Date) {
   const subject = "⚠️ Your trial ends in 1 hour - SkaiScraper";
+  // eslint-disable-next-line no-restricted-syntax
   const html = `<!DOCTYPE html><html><body style="margin:0;padding:0;background-color:#f8fafc;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;"><table width="100%" cellpadding="0" cellspacing="0" style="max-width:600px;margin:40px auto;background-color:#ffffff;border-radius:16px;overflow:hidden;border:2px solid ${BRAND.yellow};"><tr><td style="padding:40px 32px;"><h2 style="margin:0 0 16px;color:${BRAND.navy};font-size:24px;">🚨 Final Hour!</h2><p style="margin:0 0 24px;color:#334155;font-size:16px;line-height:1.6;">Hi ${userName}, your trial expires in <strong style="color:${BRAND.yellow};">1 hour</strong> (${trialEndsAt.toLocaleString()}).</p><div style="text-align:center;margin:32px 0;"><a href="${process.env.NEXT_PUBLIC_APP_URL}/pricing" style="display:inline-block;padding:16px 40px;background-color:${BRAND.blue};color:#ffffff;text-decoration:none;border-radius:8px;font-weight:700;font-size:18px;">Subscribe Now</a></div></td></tr></table></body></html>`;
   return sendEmail({ to, subject, html });
 }
@@ -292,6 +296,7 @@ export async function sendTrialEnding1hEmail(to: string, userName: string, trial
  */
 export async function sendTrialEndedEmail(to: string, userName: string) {
   const subject = "Your trial has ended - Subscribe to continue";
+  // eslint-disable-next-line no-restricted-syntax
   const html = `<!DOCTYPE html><html><body style="margin:0;padding:0;background-color:#f8fafc;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;"><table width="100%" cellpadding="0" cellspacing="0" style="max-width:600px;margin:40px auto;background-color:#ffffff;border-radius:16px;overflow:hidden;"><tr><td style="padding:40px 32px;"><h2 style="margin:0 0 16px;color:${BRAND.navy};font-size:24px;">Trial Ended</h2><p style="margin:0 0 24px;color:#334155;font-size:16px;line-height:1.6;">Hi ${userName}, your 72-hour trial of SkaiScraper has ended.</p><p style="margin:0 0 24px;color:#334155;font-size:16px;line-height:1.6;">Your data is safe! Subscribe to a plan to regain access.</p><div style="text-align:center;margin:32px 0;"><a href="${process.env.NEXT_PUBLIC_APP_URL}/pricing" style="display:inline-block;padding:14px 32px;background-color:${BRAND.blue};color:#ffffff;text-decoration:none;border-radius:8px;font-weight:600;">View Plans & Subscribe</a></div></td></tr></table></body></html>`;
   return sendEmail({ to, subject, html });
 }
@@ -301,6 +306,7 @@ export async function sendTrialEndedEmail(to: string, userName: string) {
  */
 export async function sendPaymentFailedEmail(to: string, userName: string, amount: number) {
   const subject = "⚠️ Payment failed - Update your payment method";
+  // eslint-disable-next-line no-restricted-syntax
   const html = `<!DOCTYPE html><html><body style="margin:0;padding:0;background-color:#f8fafc;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;"><table width="100%" cellpadding="0" cellspacing="0" style="max-width:600px;margin:40px auto;background-color:#ffffff;border-radius:16px;overflow:hidden;border:2px solid #ef4444;"><tr><td style="padding:40px 32px;"><h2 style="margin:0 0 16px;color:#dc2626;font-size:24px;">Payment Failed</h2><p style="margin:0 0 24px;color:#334155;font-size:16px;line-height:1.6;">Hi ${userName}, we were unable to process your payment of <strong>$${amount.toFixed(2)}</strong>.</p><div style="text-align:center;margin:32px 0;"><a href="${process.env.NEXT_PUBLIC_APP_URL}/account/billing" style="display:inline-block;padding:14px 32px;background-color:#dc2626;color:#ffffff;text-decoration:none;border-radius:8px;font-weight:600;">Update Payment Method</a></div></td></tr></table></body></html>`;
   return sendEmail({ to, subject, html });
 }

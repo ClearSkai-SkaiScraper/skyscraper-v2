@@ -20,6 +20,7 @@ export default async function RetailProposalPage({
   const orgId = ctx.orgId;
   const { leads, claims } = await safeRetailContext(orgId);
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   return <RetailProposalClient leads={leads as any} claims={claims as any} />;
 }
 

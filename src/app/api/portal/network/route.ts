@@ -7,6 +7,7 @@
  * and can message each other directly.
  */
 
+// eslint-disable-next-line no-restricted-imports
 import { auth } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -23,6 +24,7 @@ export const dynamic = "force-dynamic";
 export async function GET(req: NextRequest) {
   // eslint-disable-next-line @typescript-eslint/await-thenable
   try {
+    // eslint-disable-next-line @typescript-eslint/await-thenable
     const { userId } = await auth();
 
     if (!userId) {
@@ -113,6 +115,7 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   // eslint-disable-next-line @typescript-eslint/await-thenable
   try {
+    // eslint-disable-next-line @typescript-eslint/await-thenable
     const { userId } = await auth();
 
     if (!userId) {

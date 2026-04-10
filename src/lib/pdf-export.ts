@@ -12,6 +12,7 @@ import jsPDF from "jspdf";
 // Extend jsPDF with autoTable plugin type
 declare module "jspdf" {
   interface jsPDF {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     autoTable: (options: any) => jsPDF;
   }
 }
@@ -202,6 +203,7 @@ export function generateClaimPDF(data: ClaimPDFData): Blob {
  * Use this from client components where server-only PDF generation isn't needed.
  */
 export async function downloadClaimPDF(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   claimData: Record<string, any>,
   filename?: string
 ): Promise<{ success: boolean; error?: string }> {
@@ -231,6 +233,7 @@ export async function downloadClaimPDF(
     URL.revokeObjectURL(url);
 
     return { success: true };
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (err: any) {
     return { success: false, error: err.message };
   }

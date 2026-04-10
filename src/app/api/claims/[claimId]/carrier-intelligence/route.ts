@@ -139,6 +139,7 @@ Be specific, practical, and actionable. Focus on information that helps contract
 
       // Redirect back to carrier tab
       return NextResponse.redirect(new URL(`/claims/${claimId}/carrier`, req.url), 303);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       logger.error("[CARRIER_INTELLIGENCE] Error", { error: err.message, claimId });
       return apiError(500, "INTERNAL_ERROR", "Failed to generate carrier intelligence.");

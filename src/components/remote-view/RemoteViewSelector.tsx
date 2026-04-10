@@ -58,6 +58,7 @@ export function RemoteViewSelector() {
       if (!res.ok) throw new Error("Failed to load team");
       const data = await res.json();
       setMembers(data.members || []);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       toast.error(err.message || "Failed to load team members");
     } finally {
@@ -77,6 +78,7 @@ export function RemoteViewSelector() {
       };
       await startRemoteView(target);
       setOpen(false);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       toast.error(err.message || "Failed to start Remote View");
     } finally {

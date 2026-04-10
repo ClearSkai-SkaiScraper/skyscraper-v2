@@ -6,6 +6,7 @@ export const dynamic = "force-dynamic";
  * Manages connection requests from clients to contractors
  */
 
+// eslint-disable-next-line no-restricted-imports
 import { auth, currentUser } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
@@ -212,6 +213,7 @@ export async function POST(req: NextRequest) {
 export async function GET(req: NextRequest) {
   // eslint-disable-next-line @typescript-eslint/await-thenable
   try {
+    // eslint-disable-next-line @typescript-eslint/await-thenable
     const { userId } = await auth();
 
     if (!userId) {

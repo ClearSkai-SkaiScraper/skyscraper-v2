@@ -26,11 +26,13 @@ export default function MapboxMap({ properties }: MapboxMapProps) {
 
     // eslint-disable-next-line no-console
     console.log("[MapboxMap] Initializing map", {
+      // eslint-disable-next-line no-restricted-syntax
       hasToken: !!process.env.NEXT_PUBLIC_MAPBOX_TOKEN,
       propertyCount: properties.length,
     });
 
     // Use token from environment
+    // eslint-disable-next-line no-restricted-syntax
     const token = process.env.NEXT_PUBLIC_MAPBOX_TOKEN || null;
 
     if (!token) {
@@ -71,6 +73,7 @@ export default function MapboxMap({ properties }: MapboxMapProps) {
         setError("Map temporarily unavailable");
         setIsLoading(false);
       });
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       logger.error("[MapboxMap] Initialization failed:", err);
       setError("Map temporarily unavailable");

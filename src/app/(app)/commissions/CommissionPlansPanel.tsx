@@ -24,6 +24,7 @@ interface Plan {
   name: string;
   description: string | null;
   ruleType: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   structure: any;
   isActive: boolean;
   isDefault: boolean;
@@ -60,6 +61,7 @@ const ruleTypeLabels: Record<string, { label: string; icon: React.ReactNode; col
   },
 };
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function describeStructure(ruleType: string, structure: any): string {
   switch (ruleType) {
     case "percentage_revenue":
@@ -70,6 +72,7 @@ function describeStructure(ruleType: string, structure: any): string {
       return (
         structure.tiers
           ?.map(
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             (t: any) =>
               `${(t.rate * 100).toFixed(0)}% ($${(t.min / 1000).toFixed(0)}k–${t.max ? `$${(t.max / 1000).toFixed(0)}k` : "∞"})`
           )

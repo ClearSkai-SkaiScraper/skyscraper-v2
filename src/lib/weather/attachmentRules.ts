@@ -27,6 +27,7 @@ export interface WeatherAttachment {
   title: string;
   description: string;
   url?: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   data?: any;
   priority: number;
   required: boolean;

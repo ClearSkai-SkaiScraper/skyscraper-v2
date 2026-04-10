@@ -65,6 +65,7 @@ export default function ContractorsPage() {
         // Filter by connection status — normalize to lowercase for safety
         setConnectedPros(
           connections
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             .filter((c: any) => {
               const s = (c.status || "").toLowerCase();
               return s === "connected" || s === "accepted";
@@ -73,6 +74,7 @@ export default function ContractorsPage() {
         );
         setPendingInvites(
           connections
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             .filter((c: any) => (c.status || "").toLowerCase() === "pending")
             .map(mapConnectionToPro)
         );
@@ -91,6 +93,7 @@ export default function ContractorsPage() {
     }
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   function mapConnectionToPro(connection: any): ConnectedPro {
     const proData = connection.pro || connection.contractor || {};
     return {
@@ -125,6 +128,7 @@ export default function ContractorsPage() {
 
       setSavedPros((prev) => prev.filter((p) => p.id !== proId));
       toast.success("Pro removed from your collection");
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (_error) {
       toast.error("Failed to remove pro");
     } finally {

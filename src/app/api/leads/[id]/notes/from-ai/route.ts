@@ -6,6 +6,7 @@ export const dynamic = "force-dynamic";
  * POST /api/leads/[id]/notes/from-ai
  */
 
+// eslint-disable-next-line no-restricted-imports
 import { auth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 

@@ -25,6 +25,7 @@ const DEFAULT_TTL = 60 * 60 * 24 * 7; // 7 days in seconds
  * Generate deterministic hash from input
  * Uses SHA256 for consistent hashing across requests
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function hashInput(input: any): string {
   const normalized = JSON.stringify(input, Object.keys(input).sort());
   return createHash("sha256").update(normalized).digest("hex");
@@ -34,6 +35,7 @@ export function hashInput(input: any): string {
  * Build cache key with namespace
  * Format: ai:<route>:<hash>
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function buildAIKey(routeName: string, inputObj: any): string {
   const hash = hashInput(inputObj);
   return `ai:${routeName}:${hash}`;
@@ -149,6 +151,7 @@ export async function getCacheStats(): Promise<{
  */
 export async function withCache<T>(
   routeName: string,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   inputObj: any,
   fn: () => Promise<T>,
   ttl?: number
@@ -175,6 +178,7 @@ export async function withCache<T>(
  */
 export async function withConditionalCache<T>(
   routeName: string,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   inputObj: any,
   fn: () => Promise<T>,
   options: {

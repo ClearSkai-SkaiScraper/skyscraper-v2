@@ -51,6 +51,7 @@ export function Step6_Warranty({ data, updateData }: Step6Props) {
           </Label>
           <Select
             value={data.warrantyOption || ""}
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             onValueChange={(value) => updateData({ warrantyOption: value as any })}
           >
             <SelectTrigger id="warrantyOption" className="w-full">

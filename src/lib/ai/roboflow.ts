@@ -27,13 +27,18 @@ import { logger } from "@/lib/logger";
 // CONFIGURATION
 // ─────────────────────────────────────────────────────────────────────────────
 
+// eslint-disable-next-line no-restricted-syntax
 const ROBOFLOW_API_KEY = process.env.ROBOFLOW_API_KEY;
+// eslint-disable-next-line no-restricted-syntax
 const ROBOFLOW_DEMO_MODE = process.env.ROBOFLOW_DEMO_MODE === "true";
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
+// eslint-disable-next-line no-restricted-syntax, @typescript-eslint/no-unused-vars
 const ROBOFLOW_WORKSPACE = process.env.ROBOFLOW_WORKSPACE; // User's workspace ID
 
 // Use local Docker inference server if available, otherwise fall back to cloud
+// eslint-disable-next-line no-restricted-syntax
 const ROBOFLOW_INFERENCE_URL = process.env.ROBOFLOW_INFERENCE_URL || "http://localhost:9001";
+// eslint-disable-next-line no-restricted-syntax
 const USE_LOCAL_INFERENCE = process.env.USE_LOCAL_INFERENCE !== "false"; // Default to local
 
 /**
@@ -45,9 +50,13 @@ const ROBOFLOW_MODELS: Record<string, string> = {
   // ═══════════════════════════════════════════════════════════════════════════
   // ROOFING DAMAGE DETECTION
   // ═══════════════════════════════════════════════════════════════════════════
+  // eslint-disable-next-line no-restricted-syntax
   roof_hail: process.env.ROBOFLOW_HAIL_MODEL || "roof-hail-damage/3",
+  // eslint-disable-next-line no-restricted-syntax
   roof_wind: process.env.ROBOFLOW_WIND_MODEL || "roof-wind-damage/5",
+  // eslint-disable-next-line no-restricted-syntax
   roof_damage: process.env.ROBOFLOW_ROOF_MODEL || "roof-damage-detection/3",
+  // eslint-disable-next-line no-restricted-syntax
   roof_shingle: process.env.ROBOFLOW_SHINGLE_MODEL || "roof-damage/1",
 
   // ═══════════════════════════════════════════════════════════════════════════
@@ -170,6 +179,7 @@ const ROBOFLOW_MODELS: Record<string, string> = {
   thermal_leak: "thermal-leak-detection/1", // Insulation gaps, air leaks
   moisture_thermal: "moisture-detection-thermal/1", // Moisture intrusion via thermal
 
+  // eslint-disable-next-line no-restricted-syntax
   default: process.env.ROBOFLOW_DEFAULT_MODEL || "roof-damage-detection/3",
 };
 

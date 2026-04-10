@@ -81,6 +81,7 @@ export default function TasksPage() {
         if (res.ok) {
           const data = await res.json();
           // Normalize API response (Prisma stores UPPERCASE) to frontend lowercase
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           const normalized = (data.tasks || []).map((t: any) => ({
             ...t,
             status: fromApiStatus(t.status || "TODO"),
@@ -305,6 +306,7 @@ export default function TasksPage() {
         <div className="mt-3">
           <Select
             value={task.status}
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             onValueChange={(value: string) => handleStatusChange(task.id, value as any)}
           >
             <SelectTrigger className="h-8 text-xs">

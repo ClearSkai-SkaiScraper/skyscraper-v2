@@ -192,6 +192,7 @@ export default function ProMyBidsPage() {
         if (res.ok) {
           const data = await res.json();
           // Map API response to MyBid interface
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           const mappedBids: MyBid[] = (data.bids || []).map((b: any) => ({
             id: b.id,
             project: {

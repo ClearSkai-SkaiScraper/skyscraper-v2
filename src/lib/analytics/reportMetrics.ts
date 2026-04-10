@@ -28,6 +28,7 @@ export interface ReportMetrics {
 export async function getReportMetrics(orgId: string): Promise<ReportMetrics> {
   try {
     // Get all reports for the org using raw query to avoid Prisma client cache issues
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const allReports = await prisma.$queryRaw<any[]>`
       SELECT cr.*, c."createdAt" as claim_created_at
       FROM claim_reports cr

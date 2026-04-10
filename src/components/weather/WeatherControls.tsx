@@ -46,6 +46,7 @@ export function WeatherControls({ lat, lon, orgId, propertyId }: WeatherControls
       toast.success("Success", {
         description: "Quick DOL pulled successfully (365-day scan)",
       });
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (_err) {
       toast.error("Error", {
         description: error || "Failed to pull Quick DOL",
@@ -59,6 +60,7 @@ export function WeatherControls({ lat, lon, orgId, propertyId }: WeatherControls
       toast.success("Success", {
         description: "PDF generated successfully",
       });
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (_err) {
       toast.error("Error", {
         description: error || "Failed to generate PDF",

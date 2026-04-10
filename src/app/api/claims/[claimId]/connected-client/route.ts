@@ -24,6 +24,7 @@ export const GET = withAuth(
       // Verify claim belongs to org
       const claim = await getOrgClaimOrThrow(orgId, claimId);
 
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const clientId = (claim as any).clientId;
 
       // ── Try 0: Check ClaimClientLink first (invite-based connections never set clientId) ──

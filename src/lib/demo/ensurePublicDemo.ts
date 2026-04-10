@@ -15,6 +15,7 @@ export async function ensurePublicDemoOrg(): Promise<string | null> {
       ? existing.id
       : (
           await prisma.org.create({
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             data: { name: "Public Demo", clerkOrgId: "public_demo" } as any,
             select: { id: true },
           })
@@ -23,9 +24,11 @@ export async function ensurePublicDemoOrg(): Promise<string | null> {
     // Ensure demo data exists; swallow errors to avoid RSC digest
     try {
       await ensureDemoDataForOrg({ orgId });
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (__) {}
 
     return orgId;
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   } catch (__) {
     return null;
   }

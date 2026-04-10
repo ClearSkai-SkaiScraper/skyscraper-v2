@@ -14,7 +14,9 @@ export default async function ClientSharedPage({ params }: ClientSharedPageProps
   const { slug } = params;
 
   // Fetch client-visible documents for this network
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let documents: any[] = [];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let reports: any[] = [];
 
   try {

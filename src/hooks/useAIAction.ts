@@ -13,6 +13,7 @@ import { toast } from "sonner";
 
 export interface UseAIActionOptions {
   endpoint: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   onSuccess?: (result: any) => void;
   onError?: (error: Error) => void;
   successMessage?: string;
@@ -22,7 +23,9 @@ export interface UseAIActionOptions {
 export interface AIActionState {
   isLoading: boolean;
   error: Error | null;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   result: any | null;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   history: any[];
 }
 
@@ -43,6 +46,7 @@ export function useAIAction(options: UseAIActionOptions) {
   });
 
   const execute = useCallback(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     async (payload: any) => {
       setState((prev) => ({
         ...prev,

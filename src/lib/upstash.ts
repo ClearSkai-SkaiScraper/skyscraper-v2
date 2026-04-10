@@ -12,7 +12,9 @@ let client: Redis | null | undefined = undefined; // undefined = uninitialized s
 
 export function createRedisClientSafely(): Redis | null {
   if (client !== undefined) return client;
+  // eslint-disable-next-line no-restricted-syntax
   const url = process.env.UPSTASH_REDIS_REST_URL;
+  // eslint-disable-next-line no-restricted-syntax
   const token = process.env.UPSTASH_REDIS_REST_TOKEN;
   if (!url || !token) {
     client = null;

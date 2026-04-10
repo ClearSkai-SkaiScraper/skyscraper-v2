@@ -11,6 +11,7 @@ export type ClaimNarratives = {
 
 export async function generateClaimNarratives(input: {
   claimId: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   analysis: any; // ClaimAnalysisView
   weather?: { hail?: string; wind?: string; eventDate?: string; severity?: string } | null;
 }): Promise<ClaimNarratives> {
@@ -51,7 +52,9 @@ export async function generateClaimNarratives(input: {
 3. Code Summary as 6-10 bullet items referencing manufacturer or code items implied by damage (starter, drip edge, I&W barrier, ventilation, flashing, pipe boots, valley metal).
 
 DATA:
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 Slopes: ${analysis.slopes?.map((s: any) => `${s.label}: ${s.damageTypes?.map((d: any) => d.type + "(" + d.count + ")").join(", ")}`).join(" | ") || "No slopes"}
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 Trades: ${analysis.trades?.map((t: any) => `${t.trade}(${t.severity})`).join(", ") || "No trades"}
 Risk: ${analysis.riskNotes?.join("; ") || "None"}
 CodeFlags: ${analysis.codeFlags?.join(", ") || "None"}
@@ -75,9 +78,11 @@ Return JSON {overview: string, adjusterTalkingPoints: string[], codeSummary: str
 
     // Fallback simple heuristic
     return {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       overview: `Claim ${claimId} exhibits damage across slopes: ${analysis.slopes?.length || 0}. Trades impacted: ${analysis.trades?.map((t: any) => t.trade).join(", ") || "None"}.`,
       adjusterTalkingPoints:
         analysis.trades?.map(
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           (t: any) =>
             `${t.trade} shows ${t.severity?.toLowerCase() || "unknown"} impact requiring evaluation.`
         ) || [],

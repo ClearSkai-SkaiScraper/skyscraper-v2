@@ -57,8 +57,11 @@ export async function generateBaseMap(
   height: number = 720
 ): Promise<string> {
   const mapboxToken =
+    // eslint-disable-next-line no-restricted-syntax
     process.env.MAPBOX_ACCESS_TOKEN ||
+    // eslint-disable-next-line no-restricted-syntax
     process.env.NEXT_PUBLIC_MAPBOX_TOKEN ||
+    // eslint-disable-next-line no-restricted-syntax
     process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN;
 
   if (!mapboxToken) {

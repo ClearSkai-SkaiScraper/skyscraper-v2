@@ -1,5 +1,6 @@
 import { getOpenAI } from "@/lib/ai/client";
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export async function aiDraftReply(claimData: any) {
   const client = getOpenAI();
   const prompt = `You are a claims coordinator. Draft a short, friendly update for the homeowner based on this claim JSON:\n${JSON.stringify(claimData, null, 2)}`;

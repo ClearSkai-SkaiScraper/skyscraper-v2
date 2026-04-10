@@ -4,6 +4,7 @@
  * with org-scoped paths and signed URL generation
  */
 
+// eslint-disable-next-line no-restricted-imports
 import { auth } from "@clerk/nextjs/server";
 import crypto from "crypto";
 

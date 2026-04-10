@@ -80,6 +80,7 @@ const baseGET = async (request: Request) => {
     const limit = parseInt(searchParams.get("limit") || "50");
     const offset = parseInt(searchParams.get("offset") || "0");
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const where: any = { orgId };
     if (stage) where.stage = stage;
     if (source) where.source = source;

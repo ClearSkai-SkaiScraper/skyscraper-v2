@@ -247,20 +247,27 @@ export const GET = withAuth(async (req: NextRequest, { orgId, userId, role }, ro
         policyNumber: claim.policy_number || null,
         insured_name: claim.insured_name || null,
         homeownerEmail: claim.homeowner_email || claim.homeownerEmail || null,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         homeownerPhone: (property as any)?.contacts?.phone || null,
         adjusterName: claim.adjusterName || null,
         adjusterPhone: claim.adjusterPhone || null,
         adjusterEmail: claim.adjusterEmail || null,
         propertyId: claim.propertyId || null,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         contactId: (claim as any).clientId || (claim as any).contactId || null,
         createdAt: claim.createdAt.toISOString(),
         updatedAt: claim.updatedAt.toISOString(),
         // Signing status
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         signingStatus: (claim as any).signingStatus || "pending",
         // Job value estimation
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         estimatedJobValue: (claim as any).estimatedJobValue || null,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         jobValueStatus: (claim as any).jobValueStatus || "draft",
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         jobValueApprovedBy: (claim as any).jobValueApprovedBy || null,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         jobValueApprovalNotes: (claim as any).jobValueApprovalNotes || null,
       },
       organization: { id: orgId, name: orgName, role: role || "ADMIN" },

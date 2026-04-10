@@ -40,6 +40,7 @@ export const WeatherIntelSchema = z.object({
 
 export type WeatherIntel = z.infer<typeof WeatherIntelSchema>;
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export async function runWeatherIntel(payload: any): Promise<WeatherIntel> {
   const openai = getOpenAI();
 

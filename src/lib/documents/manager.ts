@@ -134,6 +134,7 @@ export async function updateDocumentStatus(
     fileUrl?: string;
     fileSizeBytes?: number;
     checksum?: string;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     generatedContent?: any;
     tokensUsed?: number;
     estimatedCostCents?: number;
@@ -141,6 +142,7 @@ export async function updateDocumentStatus(
   }
 ): Promise<void> {
   const fields: string[] = ["status = $2", "updated_at = NOW()"];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const values: any[] = [documentId, status];
   let paramIndex = 3;
 
@@ -218,6 +220,7 @@ export async function getDocumentHistory(params: {
   const { organizationId, claimId, proposalId, type } = params;
 
   const whereConditions: string[] = ["organization_id = $1"];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const values: any[] = [organizationId];
   let paramIndex = 2;
 
@@ -280,6 +283,7 @@ export async function getLatestDocumentVersion(params: {
   const { organizationId, type, claimId, proposalId } = params;
 
   const whereConditions: string[] = ["organization_id = $1", "type = $2", "status != 'error'"];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const values: any[] = [organizationId, type];
   let paramIndex = 3;
 

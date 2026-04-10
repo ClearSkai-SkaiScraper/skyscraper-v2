@@ -136,7 +136,9 @@ async function generateRebuttalAsync(params: {
   generatedDocumentId: string;
   claimId: string;
   denialReason: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   claimData: any;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   evidenceReferences?: any;
   orgId: string;
   userId: string;
@@ -220,6 +222,7 @@ async function generateRebuttalAsync(params: {
     };
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars
     const stream = await renderToStream(<RebuttalPDFDocument data={pdfData as any} />);
 
     // TODO: Upload PDF to storage and get fileUrl

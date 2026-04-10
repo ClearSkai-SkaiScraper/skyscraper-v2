@@ -59,6 +59,7 @@ export async function recordWeatherEvent(event: {
   magnitude?: number;
   distanceMiles?: number;
   geometryJson: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   metadataJson?: any;
 }) {
   return await prisma.weather_events.create({
@@ -104,7 +105,9 @@ export async function createWeatherDocument(doc: {
 export async function saveDailyResultToDB(
   property_id: string,
   data: {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     scored: any[];
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     dol: any;
   }
 ) {

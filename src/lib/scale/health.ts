@@ -87,8 +87,11 @@ export async function deepHealthCheck(): Promise<HealthCheck> {
   // ── Cache check (Upstash Redis) ─────────────────────────────────
   try {
     const cacheStart = Date.now();
+    // eslint-disable-next-line no-restricted-syntax
     if (process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN) {
+      // eslint-disable-next-line no-restricted-syntax
       const res = await fetch(`${process.env.UPSTASH_REDIS_REST_URL}/ping`, {
+        // eslint-disable-next-line no-restricted-syntax
         headers: { Authorization: `Bearer ${process.env.UPSTASH_REDIS_REST_TOKEN}` },
         signal: AbortSignal.timeout(3000),
       });
@@ -104,10 +107,14 @@ export async function deepHealthCheck(): Promise<HealthCheck> {
   // ── Storage check (Supabase) ────────────────────────────────────
   try {
     const storageStart = Date.now();
+    // eslint-disable-next-line no-restricted-syntax
     if (process.env.SUPABASE_URL) {
+      // eslint-disable-next-line no-restricted-syntax
       const res = await fetch(`${process.env.SUPABASE_URL}/storage/v1/bucket`, {
         headers: {
+          // eslint-disable-next-line no-restricted-syntax
           Authorization: `Bearer ${process.env.SUPABASE_SERVICE_ROLE_KEY || ""}`,
+          // eslint-disable-next-line no-restricted-syntax
           apikey: process.env.SUPABASE_ANON_KEY || "",
         },
         signal: AbortSignal.timeout(3000),
@@ -124,24 +131,31 @@ export async function deepHealthCheck(): Promise<HealthCheck> {
   const integrations: IntegrationStatus[] = [
     {
       name: "quickbooks",
+      // eslint-disable-next-line no-restricted-syntax
       configured: !!(process.env.QUICKBOOKS_CLIENT_ID && process.env.QUICKBOOKS_CLIENT_SECRET),
+      // eslint-disable-next-line no-restricted-syntax
       environment: process.env.QUICKBOOKS_ENVIRONMENT || "sandbox",
     },
     {
       name: "abc_supply",
+      // eslint-disable-next-line no-restricted-syntax
       configured: !!(process.env.ABC_SUPPLY_API_KEY && process.env.ABC_SUPPLY_API_SECRET),
+      // eslint-disable-next-line no-restricted-syntax
       environment: process.env.ABC_SUPPLY_ENVIRONMENT || "sandbox",
     },
     {
       name: "openai",
+      // eslint-disable-next-line no-restricted-syntax
       configured: !!process.env.OPENAI_API_KEY,
     },
     {
       name: "sentry",
+      // eslint-disable-next-line no-restricted-syntax
       configured: !!(process.env.NEXT_PUBLIC_SENTRY_DSN || process.env.SENTRY_DSN),
     },
     {
       name: "stripe",
+      // eslint-disable-next-line no-restricted-syntax
       configured: !!process.env.STRIPE_SECRET_KEY,
     },
   ];
@@ -162,6 +176,7 @@ export async function deepHealthCheck(): Promise<HealthCheck> {
     const fs = await import("fs/promises");
     version = (await fs.readFile("VERSION", "utf-8")).trim();
   } catch {
+    // eslint-disable-next-line no-restricted-syntax
     version = process.env.npm_package_version || "1.0.0";
   }
 

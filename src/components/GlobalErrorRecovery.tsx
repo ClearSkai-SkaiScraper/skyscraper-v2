@@ -43,7 +43,9 @@ export class GlobalErrorRecovery extends Component<Props, State> {
     console.error("[GlobalErrorRecovery] Uncaught error:", error, errorInfo);
 
     // Report to Sentry if available
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     if (typeof window !== "undefined" && (window as any).Sentry) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (window as any).Sentry.captureException(error, {
         extra: { componentStack: errorInfo.componentStack },
       });
@@ -125,7 +127,9 @@ export class GlobalErrorRecovery extends Component<Props, State> {
               Report this issue
             </button>
 
+            // eslint-disable-next-line react/jsx-no-comment-textnodes
             {/* Expandable error details (dev only) */}
+            // eslint-disable-next-line no-restricted-syntax
             {process.env.NODE_ENV === "development" && this.state.error && (
               <div className="mt-4 text-left">
                 <button

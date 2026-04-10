@@ -8,6 +8,7 @@ import { Document, Page, StyleSheet, Text, View } from "@react-pdf/renderer";
 // These types were removed from @prisma/client — defined locally
 type ArtifactStatus = "draft" | "generating" | "ready" | "error";
 type ArtifactType = "report" | "proposal" | "invoice" | "letter";
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 type UniversalTemplate = { id: string; name: string; sections: any[] };
 
 interface PdfDocumentOptions {
@@ -17,6 +18,7 @@ interface PdfDocumentOptions {
   status: ArtifactStatus;
   createdAt: Date;
   contentText?: string | null;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   contentJson?: any;
   sourceTemplate?: UniversalTemplate | null;
   artifactId: string;

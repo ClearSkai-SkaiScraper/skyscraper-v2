@@ -6,6 +6,7 @@ import { btn, card, glow } from "@/lib/theme";
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export default function ClaimFiles({ claimId }: { claimId: string }) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [files, setFiles] = useState<any[]>([]);
   const [uploading, setUploading] = useState(false);
 

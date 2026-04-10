@@ -91,6 +91,7 @@ export function ClientConnectSection({ claimId, currentClientId }: ClientConnect
       const res = await fetch("/api/company/connections?limit=100");
       if (res.ok) {
         const data = await res.json();
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const conns: Connection[] = (data.connections || []).map((c: any) => ({
           id: c.id,
           name: c.name || `${c.firstName || ""} ${c.lastName || ""}`.trim() || "Unknown",
@@ -167,6 +168,7 @@ export function ClientConnectSection({ claimId, currentClientId }: ClientConnect
       toast.success("Client attached successfully!");
       // Refresh attached client from API to get authoritative data
       void fetchAttachedClient();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       logger.error("Attach from connection failed:", error);
       toast.error(error.message || "Failed to attach client");
@@ -212,6 +214,7 @@ export function ClientConnectSection({ claimId, currentClientId }: ClientConnect
       setSearchQuery("");
       setSearchResults([]);
       toast.success("Client attached successfully!");
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       logger.error("Attach client failed:", error);
       toast.error(error.message || "Failed to attach client");
@@ -250,6 +253,7 @@ export function ClientConnectSection({ claimId, currentClientId }: ClientConnect
       toast.success("Invite sent successfully!");
       setInviteEmail("");
       setInviteName("");
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       logger.error("Send invite failed:", error);
       toast.error(error.message || "Failed to send invite");

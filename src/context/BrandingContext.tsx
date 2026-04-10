@@ -1,5 +1,6 @@
 import React, { createContext, ReactNode,useContext, useEffect, useState } from "react";
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 type TemplateDefaults = Record<string, any> | null;
 
 export type Branding = {

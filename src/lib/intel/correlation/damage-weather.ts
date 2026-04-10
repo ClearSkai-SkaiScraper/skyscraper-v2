@@ -36,6 +36,7 @@ export async function correlateDamageWithWeather({
   damage,
   specs,
   codes,
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 }: any): Promise<CorrelationResult> {
   const prompt = buildCorrelationPrompt(weather, damage, specs, codes);
   const openai = getOpenAI();
@@ -153,9 +154,13 @@ export async function correlateDamageWithWeather({
 }
 
 function buildCorrelationPrompt(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   weather: any,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   damage: any,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   specs: any,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   codes: any
 ): string {
   return `

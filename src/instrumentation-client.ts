@@ -10,6 +10,7 @@ import * as Sentry from "@sentry/nextjs";
 // 1. BUILD_PHASE Network Fetch Guard (Client-side)
 // ═══════════════════════════════════════════════════════════════════════
 // During static generation we stub external fetch calls to avoid ECONNRESET noise
+// eslint-disable-next-line no-restricted-syntax
 if (typeof window !== "undefined" && process.env.BUILD_PHASE) {
   const originalFetch = window.fetch;
   window.fetch = async (input: RequestInfo | URL, init?: RequestInit): Promise<Response> => {

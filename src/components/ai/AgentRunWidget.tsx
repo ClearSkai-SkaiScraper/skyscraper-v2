@@ -34,6 +34,7 @@ export function AgentRunWidget() {
         }
         const data = await res.json();
         if (active) setRuns(data.runs || []);
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars, @typescript-eslint/no-explicit-any
       } catch (_e: any) {
         if (active) setError("");
       } finally {

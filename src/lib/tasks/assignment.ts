@@ -136,6 +136,7 @@ export async function getUserTasks(
   }
 ): Promise<Task[]> {
   try {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const where: any = {
       assigneeId: userId,
     };
@@ -176,6 +177,7 @@ export async function getTeamTasks(
   }
 ): Promise<Task[]> {
   try {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const where: any = {
       orgId,
     };

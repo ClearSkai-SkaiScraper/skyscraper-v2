@@ -88,6 +88,7 @@ export async function GET(req: NextRequest, { params }: { params: { slug: string
       template: {
         ...template,
         // Map name to title for frontend consistency
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         title: (template as any).name,
         thumbnailUrl: `/api/templates/${template.id}/thumbnail`,
         previewPdfUrl: `/api/templates/marketplace/${template.slug}/preview-pdf`,

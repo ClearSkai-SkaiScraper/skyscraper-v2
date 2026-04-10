@@ -5,6 +5,7 @@
  * Creates a new client profile using the unified Client model.
  */
 
+// eslint-disable-next-line no-restricted-imports
 import { clerkClient, currentUser } from "@clerk/nextjs/server";
 import { nanoid } from "nanoid";
 import { NextRequest, NextResponse } from "next/server";

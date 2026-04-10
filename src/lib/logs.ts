@@ -9,6 +9,7 @@ import prisma from "@/lib/prisma";
 
 export async function getAdminLogs(orgId: string, limit = 200) {
   // Fetch report events (always available)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let events: any[] = [];
   try {
     events = (await prisma.$queryRaw`
@@ -17,6 +18,7 @@ export async function getAdminLogs(orgId: string, limit = 200) {
       WHERE org_id = ${orgId}::uuid
       ORDER BY created_at DESC
       LIMIT ${limit}
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     `) as any[];
   } catch (error) {
     logger.error("Failed to fetch report events:", error);
@@ -24,6 +26,7 @@ export async function getAdminLogs(orgId: string, limit = 200) {
   }
 
   // Attempt to fetch audit logs (may not exist yet)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let audits: any[] = [];
   try {
     audits = (await prisma.$queryRaw`
@@ -32,13 +35,16 @@ export async function getAdminLogs(orgId: string, limit = 200) {
       WHERE org_id = ${orgId}::uuid
       ORDER BY created_at DESC
       LIMIT ${limit}
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     `) as any[];
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   } catch (_error) {
     // Table doesn't exist yet, that's ok
     audits = [];
   }
 
   // Attempt to fetch webhook logs (may not exist yet)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let webhooks: any[] = [];
   try {
     webhooks = (await prisma.$queryRaw`
@@ -47,7 +53,9 @@ export async function getAdminLogs(orgId: string, limit = 200) {
       WHERE org_id = ${orgId}::uuid
       ORDER BY created_at DESC
       LIMIT ${limit}
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     `) as any[];
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   } catch (_error) {
     // Table doesn't exist yet, that's ok
     webhooks = [];
@@ -64,6 +72,7 @@ export async function logAuditEvent(
   orgId: string,
   userId: string,
   event: string,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   meta?: Record<string, any>
 ) {
   try {
@@ -81,6 +90,7 @@ export async function logWebhookEvent(
   orgId: string,
   kind: string,
   statusCode: number,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   payload?: Record<string, any>
 ) {
   try {

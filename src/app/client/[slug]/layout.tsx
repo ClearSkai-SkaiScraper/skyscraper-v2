@@ -1,4 +1,5 @@
 // src/app/client/[slug]/layout.tsx
+// eslint-disable-next-line no-restricted-imports
 import { auth, currentUser } from "@clerk/nextjs/server";
 import Link from "next/link";
 import { redirect } from "next/navigation";

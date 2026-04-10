@@ -80,7 +80,9 @@ export async function GET(req: NextRequest) {
       createdAt: Date;
       claimId: string | null;
       leadId: string | null;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       candidateDates: any;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       events: any;
     }> = [];
     try {
@@ -120,6 +122,7 @@ export async function GET(req: NextRequest) {
           where: { orgId },
           select: { propertyId: true },
         });
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         orgPropertyIds = orgClaims.map((c: any) => c.propertyId).filter(Boolean) as string[];
       } catch {
         // Non-fatal

@@ -42,6 +42,7 @@ export default async function VendorDetailPage({ params }: Props) {
         vendor_programs: { where: { isActive: true }, take: 50 },
       },
     });
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   } catch (_err) {
     // Prisma query error — vendor not found
     return notFound();

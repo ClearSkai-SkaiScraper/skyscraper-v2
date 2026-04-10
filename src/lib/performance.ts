@@ -55,6 +55,7 @@ export function logPerformanceMetric(
   value: number,
   threshold: number
 ) {
+  // eslint-disable-next-line no-restricted-syntax
   if (process.env.NODE_ENV === 'development') {
     const status = value <= threshold ? '✅' : '⚠️';
     logger.debug(`${status} Performance [${metric}]: ${value}ms (target: ${threshold}ms)`);

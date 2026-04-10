@@ -144,6 +144,7 @@ function getActionsFromRules(rules: RuleDefinition[], ctx: PlannerContext): Next
 
   for (const rule of rules) {
     if (rule.action && typeof rule.action === "object") {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const ruleAction = rule.action as any;
 
       if (ruleAction.type === "flag_risk") {

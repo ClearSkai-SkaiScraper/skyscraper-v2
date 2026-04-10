@@ -110,6 +110,7 @@ export class JobNimbusMigrationEngine extends BaseMigrationEngine {
         const mapped = mapContact(jnContact);
 
         // Check for existing (upsert logic)
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const existing = await (prisma.leads as any).findFirst({
           where: {
             orgId: this.config.orgId,
@@ -119,6 +120,7 @@ export class JobNimbusMigrationEngine extends BaseMigrationEngine {
 
         if (existing) {
           // Update existing
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           await (prisma.leads as any).update({
             where: { id: existing.id },
             data: {
@@ -134,6 +136,7 @@ export class JobNimbusMigrationEngine extends BaseMigrationEngine {
           await this.recordItem("CONTACT", mapped.externalId, existing.id);
         } else {
           // Create new
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           const lead = await (prisma.leads as any).create({
             data: {
               orgId: this.config.orgId,
@@ -152,6 +155,7 @@ export class JobNimbusMigrationEngine extends BaseMigrationEngine {
         }
 
         this.stats.contactsImported++;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } catch (error: any) {
         this.recordError("CONTACT", jnContact.jnid, error.message);
       }
@@ -195,6 +199,7 @@ export class JobNimbusMigrationEngine extends BaseMigrationEngine {
         }
 
         // Create claim
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const claim = await (prisma as any).claims.create({
           data: {
             orgId: this.config.orgId,
@@ -213,6 +218,7 @@ export class JobNimbusMigrationEngine extends BaseMigrationEngine {
 
         await this.recordItem("JOB", mapped.externalId, claim.id);
         this.stats.jobsImported++;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } catch (error: any) {
         this.recordError("JOB", jnJob.jnid, error.message);
       }
@@ -257,6 +263,7 @@ export class JobNimbusMigrationEngine extends BaseMigrationEngine {
         // Create task (using claim_tasks or similar table)
         // For now, we'll store as claim notes with type TASK
         if (claimId) {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           await (prisma as any).claim_timeline_events.create({
             data: {
               claim_id: claimId,
@@ -273,6 +280,7 @@ export class JobNimbusMigrationEngine extends BaseMigrationEngine {
 
         await this.recordItem("TASK", mapped.externalId, claimId || "orphan");
         this.stats.tasksImported++;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } catch (error: any) {
         this.recordError("TASK", jnTask.jnid, error.message);
       }
@@ -310,6 +318,7 @@ export class JobNimbusMigrationEngine extends BaseMigrationEngine {
           const mapped = mapFile(file);
 
           // Store file reference (actual download would be separate)
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           await (prisma as any).documents.create({
             data: {
               claimId: jobItem.internalId,
@@ -331,6 +340,7 @@ export class JobNimbusMigrationEngine extends BaseMigrationEngine {
           const mapped = mapActivity(activity);
           if (!mapped) continue;
 
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           await (prisma as any).claim_timeline_events.create({
             data: {
               claim_id: jobItem.internalId,
@@ -350,6 +360,7 @@ export class JobNimbusMigrationEngine extends BaseMigrationEngine {
 
         // Rate limit between jobs
         await this.sleep(500);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } catch (error: any) {
         this.recordError("DOCUMENT", jobItem.externalId, error.message);
       }

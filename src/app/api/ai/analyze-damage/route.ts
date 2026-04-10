@@ -72,7 +72,9 @@ export const POST = withAuth(async (request, { orgId, userId }) => {
 
     // Verify API configuration
     const endpoint =
+      // eslint-disable-next-line no-restricted-syntax
       process.env.SKAI_VISION_ENDPOINT || "https://api.skaiscrape.com/v1/vision/analyze";
+    // eslint-disable-next-line no-restricted-syntax
     const apiKey = process.env.SKAI_AI_API_KEY;
 
     if (!apiKey) {

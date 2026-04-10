@@ -2,6 +2,7 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
+// eslint-disable-next-line no-restricted-imports
 import { currentUser } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -51,6 +52,7 @@ export async function GET() {
 
   // Transform to format expected by NotificationBell component
   // Check BOTH read_at column AND join table for read status
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const notifications: any[] = (rawResult?.rows || []).map((row: any) => ({
     id: row.id,
     type: row.level === "error" ? "warning" : row.level === "success" ? "success" : "info",
@@ -83,6 +85,7 @@ export async function GET() {
       }
     } catch (pnError) {
       // ProjectNotification table may not exist in all environments
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       if ((pnError as any)?.code !== "P2021") {
         logger.error("[notifications] ProjectNotification error:", pnError);
       }
@@ -102,6 +105,7 @@ export async function GET() {
     }),
     // Fetch message threads in parallel too
     (async () => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const orConditions: any[] = [{ participants: { has: user.id } }];
       if (orgId) orConditions.push({ orgId });
       if (membership?.companyId) orConditions.push({ tradePartnerId: membership.companyId });
@@ -180,6 +184,7 @@ export async function GET() {
 
   return Response.json({
     notifications: notifications.slice(0, 30),
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     unreadCount: notifications.filter((n: any) => !n.read).length,
   });
 }

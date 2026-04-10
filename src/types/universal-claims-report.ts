@@ -266,9 +266,13 @@ export interface ReportGenerationContext {
   userId: string;
 
   // Data Sources
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   claimData: any; // Full claim record
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   photos: any[]; // All claim photos
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   weatherData: any; // Weather API data for DOL
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   organizationProfile: any; // Company branding & info
 
   // AI Preferences

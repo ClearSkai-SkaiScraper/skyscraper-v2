@@ -15,6 +15,7 @@ import prisma from "@/lib/prisma";
 export async function GET() {
   try {
     // Check if DATABASE_URL is configured
+    // eslint-disable-next-line no-restricted-syntax
     if (!process.env.DATABASE_URL) {
       return NextResponse.json(
         {
@@ -31,6 +32,7 @@ export async function GET() {
         { status: 503 }
       );
     }
+    // eslint-disable-next-line no-restricted-syntax
     const hasDb = process.env.DATABASE_URL && process.env.DATABASE_URL.startsWith('postgres');
     if (!hasDb) {
       return NextResponse.json({

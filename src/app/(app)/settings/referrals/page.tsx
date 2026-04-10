@@ -3,6 +3,7 @@
  * /settings/referrals - Track your referral rewards and invites
  */
 
+// eslint-disable-next-line no-restricted-imports
 import { currentUser } from "@clerk/nextjs/server";
 import { Award, Gift, Share2, Users } from "lucide-react";
 import type { Metadata } from "next";

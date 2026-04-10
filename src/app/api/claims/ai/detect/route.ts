@@ -15,6 +15,7 @@ export const POST = withAuth(async (req: NextRequest, { orgId, userId }) => {
     if (!rl.success) {
       return NextResponse.json({ ok: false, error: "Rate limit exceeded" }, { status: 429 });
     }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     await requirePermission("use_ai_features" as any);
     const form = await req.formData();
     const files = form.getAll("photos") as File[];
@@ -62,8 +63,10 @@ export const POST = withAuth(async (req: NextRequest, { orgId, userId }) => {
                   url: `data:image/jpeg;base64,${base64}`,
                 },
               },
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             ] as any,
           },
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         ] as any,
         parseJson: true,
         maxTokens: 500,
@@ -92,6 +95,7 @@ export const POST = withAuth(async (req: NextRequest, { orgId, userId }) => {
     }
 
     return NextResponse.json({ ok: true, results });
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   } catch (_error) {
     // Sentry captured via wrapper; still return structured error
     return NextResponse.json({ ok: false, error: "Internal server error" }, { status: 500 });

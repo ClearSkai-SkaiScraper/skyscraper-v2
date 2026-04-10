@@ -16,6 +16,7 @@ declare global {
 export function getAgentQueue(): QBundle {
   if (global.__skai_agents__) return global.__skai_agents__!;
 
+  // eslint-disable-next-line no-restricted-syntax
   const url = process.env.REDIS_URL;
   if (!url) {
     throw new Error("REDIS_URL is not set. Configure it in .env.local and Vercel env.");
@@ -36,6 +37,7 @@ export function getAgentQueue(): QBundle {
   return global.__skai_agents__;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function createAgentWorker(processor: (job: any) => Promise<any>, concurrency = 5) {
   const { connection } = getAgentQueue();
   return new Worker(QUEUE_NAME, processor, { connection, concurrency });

@@ -57,6 +57,7 @@ export async function fetchWeatherData(claimId: string): Promise<WeatherCauseOfL
       description?: string;
       peril?: string;
     }>;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const weatherSources = topEvents.slice(0, 5).map((e: any) => ({
       source: e.source || "NOAA Storm Reports",
       data: e.description || `${e.type || e.peril || "Event"} on ${e.date || "unknown date"}`,
@@ -288,6 +289,7 @@ export async function fetchSupplementsData(claimId: string): Promise<{
       status: s.status || "pending",
       totalAmount: (s.total as number) || 0,
       lineItems:
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         s.supplement_items?.map((item: any) => ({
           description: item.description || "",
           amount: (item.amount as number) || 0,

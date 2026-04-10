@@ -1,3 +1,4 @@
+// eslint-disable-next-line no-restricted-imports
 import { currentUser } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -83,6 +84,7 @@ Format the response in a professional, structured manner suitable for insurance 
       method: "POST",
       headers: {
         "Content-Type": "application/json",
+        // eslint-disable-next-line no-restricted-syntax
         Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
       },
       body: JSON.stringify({

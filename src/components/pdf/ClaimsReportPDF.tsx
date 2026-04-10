@@ -93,7 +93,9 @@ export function ClaimsReportPDF({ data, sections }: Props) {
       {(sections.includes("MATERIALS") || sections.includes("CODE_REQUIREMENTS")) && (
         <Page size="A4" style={baseStyles.page}>
           <PageHeader data={data} titleOverride="Materials & Code Requirements" />
+          // eslint-disable-next-line react/jsx-no-comment-textnodes
           {sections.includes("MATERIALS") && <MaterialsSection data={data} />}
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           {sections.includes("CODE_REQUIREMENTS") && <CodeRequirementsSection data={data as any} />}
           <PageFooter data={data} />
         </Page>

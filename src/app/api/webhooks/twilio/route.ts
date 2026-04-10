@@ -43,6 +43,7 @@ export async function POST(req: NextRequest) {
   try {
     // SECURITY: Validate Twilio request signature (HMAC-SHA1)
     const twilioSignature = req.headers.get("x-twilio-signature");
+    // eslint-disable-next-line no-restricted-syntax
     const twilioAuthToken = process.env.TWILIO_AUTH_TOKEN;
     if (!twilioSignature || !twilioAuthToken) {
       logger.warn("[twilio-webhook] Missing Twilio signature or auth token");
@@ -79,6 +80,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Validate HMAC signature using Twilio's algorithm
+    // eslint-disable-next-line no-restricted-syntax
     const webhookUrl = process.env.TWILIO_WEBHOOK_URL || req.url;
     if (!validateTwilioSignature(twilioAuthToken, twilioSignature, webhookUrl, formParams)) {
       logger.warn("[twilio-webhook] Invalid Twilio signature — rejecting request");

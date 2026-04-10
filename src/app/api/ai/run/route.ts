@@ -122,6 +122,7 @@ async function POST_INNER(req: NextRequest, ctx: AiBillingContext) {
     const jobId = await enqueue({
       reportId,
       engine,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       sectionKey: (sectionKey || engine) as any,
       context,
     });

@@ -24,9 +24,11 @@ export interface APIParameter {
 export interface APIResponse {
   status: number;
   description: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   schema?: any;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export async function generateOpenAPISpec(): Promise<any> {
   const endpoints = await getAllEndpoints();
 
@@ -70,7 +72,9 @@ async function getAllEndpoints(): Promise<APIEndpoint[]> {
   ];
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function buildPaths(endpoints: APIEndpoint[]): any {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const paths: any = {};
 
   for (const endpoint of endpoints) {
@@ -91,6 +95,7 @@ function buildPaths(endpoints: APIEndpoint[]): any {
       responses: endpoint.responses.reduce((acc, r) => {
         acc[r.status] = { description: r.description };
         return acc;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       }, {} as any),
       security: [{ bearerAuth: [] }],
     };

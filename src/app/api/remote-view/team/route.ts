@@ -35,6 +35,7 @@ export async function GET() {
       select: { id: true, companyId: true },
     });
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let companyMembers: any[] = [];
 
     if (callerMember?.companyId) {
@@ -121,6 +122,7 @@ export async function GET() {
     }));
 
     return NextResponse.json({ members });
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (error: any) {
     logger.error("[RemoteView] Team fetch failed:", error);
     return NextResponse.json({ error: "Failed to load team members" }, { status: 500 });

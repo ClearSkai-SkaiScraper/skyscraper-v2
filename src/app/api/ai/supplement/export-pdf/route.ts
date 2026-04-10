@@ -246,6 +246,7 @@ export async function POST(req: NextRequest) {
           <tbody>
             ${items
               .map(
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 (item: any) => `
               <tr>
                 <td>${item.description}</td>

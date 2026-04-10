@@ -347,6 +347,7 @@ async function getClaimPhotos(claimId: string): Promise<PhotoMetadata[]> {
 
   // Process file_assets
   for (const asset of fileAssets) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const metadata = asset.metadata as any;
     photos.push({
       id: asset.id,
@@ -363,6 +364,7 @@ async function getClaimPhotos(claimId: string): Promise<PhotoMetadata[]> {
 
   // Process reports for photo references
   for (const report of reports) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const payload = report.meta as any;
     if (payload?.photos && Array.isArray(payload.photos)) {
       for (const photo of payload.photos) {

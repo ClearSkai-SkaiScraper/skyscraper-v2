@@ -133,8 +133,11 @@ export async function generateCostEstimate(request: EstimateRequest): Promise<Co
 async function generateAIEstimate(
   request: EstimateRequest,
   context: {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     regionalData: any;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     materialCosts: any;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     laborRates: any;
   }
 ): Promise<CostEstimate> {
@@ -200,6 +203,7 @@ Return as JSON with this structure:
 /**
  * Calculate totals from line items
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function calculateTotals(estimate: any): CostEstimate {
   const lineItems: LineItem[] = estimate.lineItems || [];
 

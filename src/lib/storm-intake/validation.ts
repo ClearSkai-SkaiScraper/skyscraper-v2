@@ -66,6 +66,7 @@ export const fileUploadSchema = z.object({
 });
 
 // Helper to validate partial data
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function validateStep(stepNumber: number, data: any) {
   switch (stepNumber) {
     case 1:

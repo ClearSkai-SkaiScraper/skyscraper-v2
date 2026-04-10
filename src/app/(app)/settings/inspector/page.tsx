@@ -163,6 +163,7 @@ export default function InspectorProfilePage() {
         specialties: data.profile.specialties || [],
         is_default_inspector: data.profile.is_default_inspector || false,
       });
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (_err) {
       toast.error("Failed to load inspector profile");
     } finally {
@@ -189,6 +190,7 @@ export default function InspectorProfilePage() {
       const data = await res.json();
       setProfile((prev) => (prev ? { ...prev, ...data.profile } : prev));
       toast.success("Inspector profile saved!");
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (_err) {
       toast.error("Failed to save profile");
     } finally {

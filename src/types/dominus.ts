@@ -6,12 +6,14 @@
 
 // Lead AI Data
 export interface SkaiLeadAIData {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   aiSummaryJson: any;
   aiUrgencyScore: number;
   aiNextActions: string[];
   aiJobType: string;
   aiMaterials: string[];
   aiFlags: string[];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   aiImages: any[];
   aiConfidence: number;
 }
@@ -124,6 +126,7 @@ export interface AdjusterPacket {
     affectedMaterials: string[];
     confidenceLevel: string;
   };
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   damageSummary: any;
   urgencyAndSafety: {
     urgencyLevel: "Low" | "Medium" | "High";

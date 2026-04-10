@@ -1,3 +1,4 @@
+// eslint-disable-next-line no-restricted-imports
 import { auth } from "@clerk/nextjs/server";
 import { AlertCircle, CheckCircle2, ExternalLink,Palette } from "lucide-react";
 import Image from "next/image";

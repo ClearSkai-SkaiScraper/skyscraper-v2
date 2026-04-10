@@ -11,6 +11,7 @@ import { logger } from "@/lib/logger";
 
 interface WebhookPayload {
   event: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   data: any;
   timestamp: string;
   orgId: string;
@@ -69,6 +70,7 @@ export class WebhookService {
   }
 
   // Stubbed: Webhook models not yet in schema
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   static async sendWebhook(_event: string, _data: any, _orgId: string): Promise<void> {
     // Enhancement: Implement when Webhook and WebhookLog models are added to schema
     // For now, log and return silently
@@ -81,6 +83,7 @@ export class WebhookService {
     await this.sendWebhook("claim.created", { claimId }, orgId);
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   static async sendClaimUpdated(claimId: string, changes: any, orgId: string) {
     await this.sendWebhook("claim.updated", { claimId, changes }, orgId);
   }

@@ -128,6 +128,7 @@ export async function saveClaimEmbeddings(params: {
   sourceId?: string;
   title: string;
   content: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   metadata?: Record<string, any>;
 }): Promise<{ chunksCreated: number; chunkIds: string[] }> {
   // claimsMemoryChunk model doesn't exist in schema

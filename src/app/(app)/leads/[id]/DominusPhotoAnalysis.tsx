@@ -42,6 +42,7 @@ export function DominusPhotoAnalysis({ leadId, images }: DominusPhotoAnalysisPro
             key={idx}
             onClick={() => setSelectedImage(image)}
             className="group relative aspect-square overflow-hidden rounded-lg border-2 border-gray-200 transition-all hover:border-purple-500"
+          // eslint-disable-next-line react/jsx-no-comment-textnodes
           >
             // eslint-disable-next-line @next/next/no-img-element
             <img

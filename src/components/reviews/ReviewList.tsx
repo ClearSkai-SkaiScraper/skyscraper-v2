@@ -202,6 +202,7 @@ export function ReviewList({ contractorId, limit = 10 }: ReviewListProps) {
           <button
             onClick={() => setSelectedPhoto(null)}
             className="absolute right-4 top-4 text-3xl text-white hover:text-gray-300"
+          // eslint-disable-next-line react/jsx-no-comment-textnodes
           >
             ×
           // eslint-disable-next-line @next/next/no-img-element

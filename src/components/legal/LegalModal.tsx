@@ -61,6 +61,7 @@ export function LegalModal({ document, onAccepted }: LegalModalProps) {
       await new Promise((resolve) => setTimeout(resolve, 300));
 
       onAccepted();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       logger.error("[LegalModal] ❌ Failed to accept:", error);
       setError(error.message || "Could not record your acceptance. Please try again.");

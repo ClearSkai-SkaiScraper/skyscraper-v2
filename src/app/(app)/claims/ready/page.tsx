@@ -55,6 +55,7 @@ export default async function ClaimsReadyPage() {
   const organizationId = orgCtx.orgId;
 
   // Fetch claims that are "ready" — approved status or lifecycle COMPLETED/APPROVED
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let readyClaims: any[] = [];
   let fetchError: string | null = null;
 
@@ -77,6 +78,7 @@ export default async function ClaimsReadyPage() {
       orderBy: { updatedAt: "desc" },
     });
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     readyClaims = claims.map((claim: any) => ({
       ...claim,
       createdAt: claim.createdAt?.toISOString() || null,

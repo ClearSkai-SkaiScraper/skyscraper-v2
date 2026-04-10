@@ -8,6 +8,7 @@
  * 3. Whether they have claims in their org
  */
 
+// eslint-disable-next-line no-restricted-imports
 import { auth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 
@@ -165,6 +166,7 @@ export async function GET() {
 
 function generateHints(
   orgResult: Awaited<ReturnType<typeof getActiveOrgSafe>>,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   memberships: any[],
   claimCount: number,
   orphanedCount: number

@@ -68,6 +68,7 @@ export async function GET(req: NextRequest) {
     }
 
     // Aggregate job_financials
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const whereClause: any = { jobId: { in: jobIds } };
     if (since) {
       whereClause.updatedAt = { gte: since };
@@ -147,6 +148,7 @@ export async function GET(req: NextRequest) {
       jobCount: financials.length,
       range,
     });
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (err: any) {
     logger.error("[financial-reports]", err);
     return apiError(500, "INTERNAL_ERROR", err.message);

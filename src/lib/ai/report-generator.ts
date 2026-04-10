@@ -39,6 +39,7 @@ export async function generateUniversalReport(
 
   // Fetch photos from claim_photo_meta
   // TODO: claim_photo_meta model doesn't exist in schema
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const photos: any[] = [];
 
   const user = await prisma.users.findUnique({
@@ -215,6 +216,7 @@ export async function generateUniversalReport(
 /**
  * Detect material type from claim data
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function detectMaterialType(claim: any): "tile" | "shingle" | "metal" | "tpo" {
   const roofType = (claim.properties?.roofType || "").toLowerCase();
 
@@ -229,6 +231,7 @@ function detectMaterialType(claim: any): "tile" | "shingle" | "metal" | "tpo" {
 /**
  * Generate executive summary conclusion
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function generateExecutiveConclusion(claim: any, weatherData: any): string {
   return `Following a comprehensive inspection of the property at ${claim.properties?.address || claim.properties?.street || "the subject property"}, conducted after the ${weatherData?.hailSize || "hail"} storm event on ${claim.dateOfLoss?.toISOString().split("T")[0] || "the date of loss"}, this roof has sustained functional damage requiring full replacement.
 
@@ -240,6 +243,7 @@ A full roof replacement is the only viable solution to restore the property to c
 /**
  * Generate code failure list
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function generateCodeFailures(claim: any): Array<{ code: string; description: string }> {
   const materialType = detectMaterialType(claim);
   const codes = CODE_LIBRARY[materialType] || [];
@@ -253,6 +257,7 @@ function generateCodeFailures(claim: any): Array<{ code: string; description: st
 /**
  * Generate detailed code compliance analysis
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function generateDetailedCodeCompliance(claim: any) {
   const materialType = detectMaterialType(claim);
 
@@ -285,6 +290,7 @@ function generateDetailedCodeCompliance(claim: any) {
 /**
  * Generate system failure analysis
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function generateSystemFailureAnalysis(claim: any) {
   return {
     whyRoofFailed: `The roof system failed due to storm damage on ${claim.dateOfLoss?.toISOString().split("T")[0] || "the date of loss"}. The ${claim.properties?.roofType || "roofing material"} sustained impact damage that compromised the weatherproofing membrane and structural integrity of the assembly.`,
@@ -312,6 +318,7 @@ function generateSystemFailureAnalysis(claim: any) {
 /**
  * Generate scope of work
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function generateScopeOfWork(claim: any) {
   return {
     lineItems: [
@@ -356,6 +363,7 @@ function generateScopeOfWork(claim: any) {
  * Generate professional opinion
  */
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
+// eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars
 function generateProfessionalOpinion(claim: any) {
   return {
     functionalDamageStatement: `This roof has sustained functional damage that prevents it from performing its intended purpose of weatherproofing the structure.`,

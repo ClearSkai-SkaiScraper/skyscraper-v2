@@ -9,6 +9,7 @@ export async function copyToClipboard(text: string, label?: string): Promise<boo
     await navigator.clipboard.writeText(text);
     toast.success(label ? `${label} copied to clipboard` : "Copied to clipboard");
     return true;
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   } catch (_error) {
     // Fallback for older browsers
     try {
@@ -23,6 +24,7 @@ export async function copyToClipboard(text: string, label?: string): Promise<boo
 
       toast.success(label ? `${label} copied to clipboard` : "Copied to clipboard");
       return true;
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (_fallbackError) {
       toast.error("Could not copy to clipboard");
       return false;

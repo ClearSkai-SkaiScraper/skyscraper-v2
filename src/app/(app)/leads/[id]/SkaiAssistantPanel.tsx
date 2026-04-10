@@ -22,12 +22,14 @@ interface SkaiAssistantPanelProps {
 }
 
 interface AIData {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   aiSummaryJson: any;
   aiUrgencyScore: number;
   aiNextActions: string[];
   aiJobType: string;
   aiMaterials: string[];
   aiFlags: string[];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   aiImages: any[];
   aiConfidence: number;
 }
@@ -78,6 +80,7 @@ export function SkaiAssistantPanel({ leadId }: SkaiAssistantPanelProps) {
       } else {
         setError(data.error || "Failed to load AI data");
       }
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (_err) {
       setError("Network error loading AI data");
     } finally {
@@ -96,6 +99,7 @@ export function SkaiAssistantPanel({ leadId }: SkaiAssistantPanelProps) {
         leadId,
         type: "lead-analysis",
       });
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (_err) {
       // Error handled by useAIStream hook
     }

@@ -17,6 +17,7 @@ import prisma from "@/lib/prisma";
 
 interface AIResult {
   task: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   output: any;
   confidence: number;
   executionTime: number;

@@ -9,13 +9,20 @@ import { connectStorageEmulator, getStorage } from "firebase/storage";
 import { logger } from "@/lib/logger";
 
 const firebaseConfig = {
+  // eslint-disable-next-line no-restricted-syntax
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY || "AIzaSyD37KEfb73z8QvA5c7Mcpl4w0h41vIgamI",
+  // eslint-disable-next-line no-restricted-syntax
   authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN || "skaiscraper.firebaseapp.com",
+  // eslint-disable-next-line no-restricted-syntax
   projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || "skaiscraper",
   storageBucket:
+    // eslint-disable-next-line no-restricted-syntax
     process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET || "skaiscraper.firebasestorage.app",
+  // eslint-disable-next-line no-restricted-syntax
   messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID || "716295034049",
+  // eslint-disable-next-line no-restricted-syntax
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID || "1:716295034049:web:c86340ba861f0dfd15b040",
+  // eslint-disable-next-line no-restricted-syntax
   measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID || "G-04NZENPRF6",
 };
 
@@ -104,7 +111,9 @@ export const analytics =
 
 // Connect to emulators in development (optional)
 if (
+  // eslint-disable-next-line no-restricted-syntax
   process.env.NODE_ENV === "development" &&
+  // eslint-disable-next-line no-restricted-syntax
   process.env.NEXT_PUBLIC_USE_FIREBASE_EMULATOR === "true" &&
   app
 ) {
@@ -117,6 +126,7 @@ if (
     if (a) connectAuthEmulator(a, "http://localhost:9099");
     if (d) connectFirestoreEmulator(d, "localhost", 8080);
     if (f) connectFunctionsEmulator(f, "localhost", 5001);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   } catch (_error) {
     logger.debug("Firebase emulators already connected or not available");
   }

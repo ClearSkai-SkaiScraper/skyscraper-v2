@@ -19,6 +19,7 @@ export async function uploadPdfToFirebase(
 
     const url = await getDownloadURL(storageRef);
     return url;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (err: any) {
     console.error("[FIREBASE_PDF] Upload error", { error: err.message });
     throw new Error("Failed to upload PDF to Firebase");

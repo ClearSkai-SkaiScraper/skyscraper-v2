@@ -101,6 +101,7 @@ interface ProfileData {
 export default function PublicProfilePage({ params }: { params: { id: string } }) {
   const [profile, setProfile] = useState<ProfileData | null>(null);
   const [loading, setLoading] = useState(true);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [posts, setPosts] = useState<any[]>([]);
 
   useEffect(() => {
@@ -569,7 +570,9 @@ export default function PublicProfilePage({ params }: { params: { id: string } }
                   <MessageCircle className="mr-2 h-6 w-6" />
                   Recent Activity
                 </h2>
+                // eslint-disable-next-line react/jsx-no-comment-textnodes
                 <div className="space-y-6">
+                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
                   {posts.map((post: any) => (
                     <div key={post.id} className="border-l-2 border-blue-600 pl-4">
                       <p className="mb-2 text-gray-700">{post.content}</p>
@@ -637,6 +640,7 @@ export default function PublicProfilePage({ params }: { params: { id: string } }
                     <div
                       key={i}
                       className="group relative aspect-square overflow-hidden rounded-lg"
+                    // eslint-disable-next-line react/jsx-no-comment-textnodes
                     >
                       // eslint-disable-next-line @next/next/no-img-element
                       <img

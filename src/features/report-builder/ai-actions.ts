@@ -68,6 +68,7 @@ export async function generateFullReport(
  * BUILD SCOPE FROM PHOTOS
  * Generates Xactimate-compatible scope from photo analysis
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export async function buildScopeFromPhotos(projectId: string): Promise<any> {
   // eslint-disable-next-line no-console
   console.log(`[AI] Building scope from photos for project ${projectId}...`);
@@ -89,6 +90,7 @@ export async function fetchWeatherData(
   latitude: number,
   longitude: number,
   dateOfLoss: string
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 ): Promise<any> {
   // eslint-disable-next-line no-console
   console.log(`[AI] Fetching weather data for ${latitude},${longitude} on ${dateOfLoss}...`);

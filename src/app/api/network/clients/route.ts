@@ -105,7 +105,9 @@ export const POST = withAuth(async (req: NextRequest, { orgId }) => {
       if (normalizedContacts.length > 0) {
         await tx.client_contacts.createMany({
           data: normalizedContacts
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             .filter((c: any) => Boolean(c?.name))
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             .map((c: any) => ({
               id: newId(),
               clientNetworkId: client.id,

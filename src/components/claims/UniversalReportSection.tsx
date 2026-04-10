@@ -7,6 +7,7 @@ import { useState } from "react";
 import { logger } from "@/lib/logger";
 
 interface UniversalReportSectionProps {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   claim: any;
   claimReport?: {
     id: string;
@@ -49,6 +50,7 @@ export function UniversalReportSection({ claim, claimReport }: UniversalReportSe
   const [isDownloading, setIsDownloading] = useState(false);
 
   // Check if feature is enabled
+  // eslint-disable-next-line no-restricted-syntax
   const isEnabled = process.env.NEXT_PUBLIC_ENABLE_UNIVERSAL_REPORTS !== "false";
 
   if (!isEnabled) {

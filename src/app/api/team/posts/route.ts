@@ -45,6 +45,7 @@ export const GET = withAuth(async (req: NextRequest, { userId }) => {
       })
       .catch(() => []);
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const formatted = posts.map((p: any) => ({
       id: p.id,
       authorId: p.authorId,

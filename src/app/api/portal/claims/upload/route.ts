@@ -23,7 +23,9 @@ const MAX_SIZE = 25 * 1024 * 1024; // 25MB
 const ALLOWED_TYPES = ["image/jpeg", "image/jpg", "image/png", "image/webp", "image/heic"];
 
 function getSupabaseAdmin() {
+  // eslint-disable-next-line no-restricted-syntax
   const url = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL;
+  // eslint-disable-next-line no-restricted-syntax
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
   if (!url || !key) return null;
   return createClient(url, key, { auth: { persistSession: false } });

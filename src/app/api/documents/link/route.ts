@@ -32,6 +32,7 @@ export async function GET(req: NextRequest) {
     const sourceType = url.searchParams.get("sourceType");
     const sourceId = url.searchParams.get("sourceId");
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const where: any = { orgId: ctx.orgId };
 
     if (jobId) where.jobId = jobId;
@@ -55,6 +56,7 @@ export async function GET(req: NextRequest) {
         sizeBytes: d.sizeBytes ? Number(d.sizeBytes) : null,
       })),
     });
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (err: any) {
     return apiError(500, "INTERNAL_ERROR", err.message);
   }
@@ -105,6 +107,7 @@ export async function POST(req: NextRequest) {
         sizeBytes: link.sizeBytes ? Number(link.sizeBytes) : null,
       },
     });
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (err: any) {
     return apiError(500, "INTERNAL_ERROR", err.message);
   }
@@ -130,6 +133,7 @@ export async function DELETE(req: NextRequest) {
 
     await prisma.document_links.delete({ where: { id } });
     return apiOk({ deleted: true });
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (err: any) {
     return apiError(500, "INTERNAL_ERROR", err.message);
   }

@@ -20,6 +20,7 @@ export async function evaluateClaimRules(
   actions: string[];
 }> {
   // If no context provided, build it from claim data
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let context: any = claimContext;
   if (!context) {
     context = await buildClaimContext(claimId);

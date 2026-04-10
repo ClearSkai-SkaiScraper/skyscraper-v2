@@ -89,6 +89,7 @@ export function DepreciationModal(props: DepreciationModalProps) {
         typeof initialValues?.recoverable === "boolean"
           ? initialValues.recoverable
           : true,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       holdbackRule: (initialValues?.holdbackRule as any) ?? "after_final_invoice",
       notes: initialValues?.notes ?? "",
       carrier: carrierName,
@@ -125,6 +126,7 @@ export function DepreciationModal(props: DepreciationModalProps) {
         typeof initialValues?.recoverable === "boolean"
           ? initialValues.recoverable
           : true,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       holdbackRule: (initialValues?.holdbackRule as any) ?? "after_final_invoice",
       notes: initialValues?.notes ?? "",
       carrier: carrierName,
@@ -180,6 +182,7 @@ export function DepreciationModal(props: DepreciationModalProps) {
             <Label>Holdback Rule</Label>
             <Select
               value={form.watch("holdbackRule")}
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
               onValueChange={(v) => form.setValue("holdbackRule", v as any)}
             >
               <SelectTrigger>

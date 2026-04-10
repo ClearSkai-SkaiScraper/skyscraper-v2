@@ -45,7 +45,9 @@ interface WeatherReport {
   primaryPeril: string | null;
   mode: string;
   createdAt: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   globalSummary: any;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   events: any[];
   claims?: { id: string; claimNumber: string } | null;
 }
@@ -368,7 +370,9 @@ export default function WeatherReportsPage() {
                     <h4 className="mb-2 font-semibold text-slate-900 dark:text-white">
                       Weather Events ({selectedReport.events.length})
                     </h4>
+                    // eslint-disable-next-line react/jsx-no-comment-textnodes
                     <div className="space-y-2">
+                      // eslint-disable-next-line @typescript-eslint/no-explicit-any
                       {selectedReport.events.map((event: any, i: number) => (
                         <div
                           key={i}

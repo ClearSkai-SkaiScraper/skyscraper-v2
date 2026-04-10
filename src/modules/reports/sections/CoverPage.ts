@@ -11,6 +11,7 @@ export async function renderCoverPage(
   page: PDFPage,
   context: ReportContext,
   fonts: { font: PDFFont; fontBold: PDFFont },
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   colors: { brandRgb: any; accentRgb: any }
 ) {
   const { width, height } = page.getSize();

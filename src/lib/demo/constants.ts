@@ -26,6 +26,7 @@ export const PUBLIC_DEMO_CLERK_ORG_ID = "public_demo";
  * Falls back to the canonical PUBLIC_DEMO_ORG_ID.
  */
 export function getDemoOrgId(): string {
+  // eslint-disable-next-line no-restricted-syntax
   return process.env.DEMO_ORG_ID || process.env.BETA_DEMO_ORG_ID || PUBLIC_DEMO_ORG_ID;
 }
 

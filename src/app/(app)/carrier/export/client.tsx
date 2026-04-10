@@ -39,6 +39,7 @@ export default function CarrierExportClient() {
   const [loading, setLoading] = useState(false);
   const [carrier, setCarrier] = useState("");
   const [format, setFormat] = useState("");
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [result, setResult] = useState<any>(null);
 
   const handleExport = async () => {

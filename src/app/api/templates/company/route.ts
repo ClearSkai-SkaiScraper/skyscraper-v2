@@ -49,6 +49,7 @@ export const GET = withAuth(async (req: NextRequest, { orgId }) => {
       templates: templatesWithDetails,
       count: templatesWithDetails.length,
     });
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   } catch (_error) {
     return NextResponse.json(
       {

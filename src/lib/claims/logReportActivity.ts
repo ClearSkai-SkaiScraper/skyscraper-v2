@@ -23,6 +23,7 @@ interface LogReportActivityParams {
   type: ReportActivityType;
   title: string;
   body?: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   metadata?: Record<string, any>;
   visibleToClient?: boolean;
 }

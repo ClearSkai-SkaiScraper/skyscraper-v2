@@ -129,6 +129,7 @@ export function RemoteViewProvider({ children }: { children: React.ReactNode }) 
 
       // Full page reload to re-fetch all data scoped to the viewed user
       window.location.reload();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       setState({ active: false, target: null, loading: false });
       throw err;

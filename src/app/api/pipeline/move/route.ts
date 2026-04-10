@@ -75,6 +75,7 @@ export const POST = withAuth(async (req: NextRequest, { orgId: userOrgId, userId
         where: { id: claimId, orgId: userOrgId },
         data: {
           status: newStatus,
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           ...(newLifecycle ? { lifecycle_stage: newLifecycle as any } : {}),
           updatedAt: new Date(),
         },

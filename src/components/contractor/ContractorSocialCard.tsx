@@ -24,7 +24,9 @@ interface ContractorSocialCardProps {
     logoUrl?: string | null;
     coverImageUrl?: string | null;
     primaryTrade?: string | null;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     services: string[] | any;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     serviceAreas: string[] | any;
     phone?: string | null;
     email?: string | null;

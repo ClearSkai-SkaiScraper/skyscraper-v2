@@ -27,6 +27,7 @@ import { logger } from "@/lib/logger";
 interface UseAutoSaveProps {
   mode: "retail" | "claims";
   step: number;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   data: Record<string, any>;
   enabled?: boolean; // Default: true
 }

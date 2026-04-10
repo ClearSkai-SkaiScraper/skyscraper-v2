@@ -76,6 +76,7 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ cla
     }
 
     // ClaimIQ score (overallScore from readiness assessment, 0-100)
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const claimIQScore = (claimIQData as any)?.overallScore ?? (claimIQData as any)?.score ?? null;
 
     // Simulation score (approvalProbability, 0-100)

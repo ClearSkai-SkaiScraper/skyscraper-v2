@@ -59,6 +59,7 @@ export function parseXactimateXML(content: string): XactimateParseResult {
 /**
  * Convert Xactimate line items to claim format
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function convertToClaimFormat(items: XactimateLineItem[]): Record<string, any>[] {
   return items.map((item) => ({
     description: item.description,

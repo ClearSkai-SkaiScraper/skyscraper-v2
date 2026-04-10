@@ -47,6 +47,7 @@ export async function sendPacketEmail(params: SendPacketEmailParams) {
     to: recipients,
     subject,
     html: htmlMessage,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } as any);
 
   return result;

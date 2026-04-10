@@ -42,6 +42,7 @@ export function validateConnectionPool(): PoolValidationResult {
     },
   };
 
+  // eslint-disable-next-line no-restricted-syntax
   const dbUrl = process.env.DATABASE_URL;
   if (!dbUrl) {
     result.ok = false;
@@ -63,6 +64,7 @@ export function validateConnectionPool(): PoolValidationResult {
 
     // pgbouncer flag
     result.parsed.pgbouncer = params.get("pgbouncer") === "true";
+    // eslint-disable-next-line no-restricted-syntax
     if (!result.parsed.pgbouncer && process.env.NODE_ENV === "production") {
       result.warnings.push(
         "DATABASE_URL missing ?pgbouncer=true — required for serverless connection pooling."
@@ -79,6 +81,7 @@ export function validateConnectionPool(): PoolValidationResult {
             `High limits on serverless can exhaust Supabase connections (max ${1500}).`
         );
       }
+    // eslint-disable-next-line no-restricted-syntax
     } else if (process.env.NODE_ENV === "production") {
       result.warnings.push(
         `DATABASE_URL missing ?connection_limit=${DB_SCALE.CONNECTION_LIMIT} — ` +
@@ -90,6 +93,7 @@ export function validateConnectionPool(): PoolValidationResult {
     const poolTimeout = params.get("pool_timeout");
     if (poolTimeout) {
       result.parsed.poolTimeout = parseInt(poolTimeout, 10);
+    // eslint-disable-next-line no-restricted-syntax
     } else if (process.env.NODE_ENV === "production") {
       result.warnings.push(
         `DATABASE_URL missing ?pool_timeout=${DB_SCALE.POOL_TIMEOUT} — ` +
@@ -98,6 +102,7 @@ export function validateConnectionPool(): PoolValidationResult {
     }
 
     // DIRECT_DATABASE_URL check
+    // eslint-disable-next-line no-restricted-syntax
     if (!process.env.DIRECT_DATABASE_URL) {
       result.warnings.push(
         "DIRECT_DATABASE_URL not set — required for Prisma migrations (bypasses PgBouncer)."

@@ -15,12 +15,14 @@ export async function classifyMaterials(options: {
   orgId: string;
   claimId: string;
   photoIds: string[];
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 }): Promise<{ materials: any; meta: { cached?: boolean } }> {
   const redis = upstash;
   const jobKey = `aiq:materials:${options.claimId}`;
   if (redis) {
     try {
       const cached = await redis.get(jobKey);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       if (cached) return { ...(cached as any), meta: { cached: true } };
     } catch {}
   }

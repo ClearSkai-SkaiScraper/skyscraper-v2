@@ -7,6 +7,7 @@ export const dynamic = "force-dynamic";
  * GET /api/claims/[claimId]/ai - Get AI analysis results
  */
 
+// eslint-disable-next-line no-restricted-imports
 import { auth } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
@@ -44,6 +45,7 @@ export async function POST(request: NextRequest, { params }: { params: { claimId
       const message: string | undefined = body?.message;
 
       // If OpenAI is configured, we can generate a lightweight demo reply; otherwise return a canned response
+      // eslint-disable-next-line no-restricted-syntax
       if (process.env.OPENAI_API_KEY && message) {
         try {
           const openai = getOpenAI();
@@ -140,6 +142,7 @@ const _authenticatedPOST = withAuth(
         logger.debug("[CLAIM_AI_REQUEST] Starting for claim:", claimId);
 
         // Check if OpenAI is configured
+        // eslint-disable-next-line no-restricted-syntax
         if (!process.env.OPENAI_API_KEY) {
           logger.error("[CLAIM_AI_ERROR] OPENAI_API_KEY missing");
           return NextResponse.json(

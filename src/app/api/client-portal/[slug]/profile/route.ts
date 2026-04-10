@@ -9,6 +9,7 @@ export const dynamic = "force-dynamic";
  * Uses the Client model (not client_networks) for profile management.
  */
 
+// eslint-disable-next-line no-restricted-imports
 import { currentUser } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 

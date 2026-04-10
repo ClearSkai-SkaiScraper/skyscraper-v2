@@ -24,6 +24,7 @@ import { BRAND_PRIMARY } from "@/lib/constants/branding";
 import { type BrandingData, fetchBrandingData } from "@/lib/pdf/brandedHeader";
 
 const openai = getOpenAI();
+// eslint-disable-next-line no-restricted-syntax
 const replicate = new Replicate({ auth: process.env.REPLICATE_API_TOKEN });
 
 // ===========================

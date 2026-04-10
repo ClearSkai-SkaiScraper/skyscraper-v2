@@ -61,6 +61,7 @@ export const POST = withOrgScope(
                 title: `Task Completed: ${task.title}`,
                 taskId: task.id,
                 completedAt: new Date().toISOString(),
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
               } as unknown as any,
             },
           });

@@ -8,6 +8,7 @@ interface SectionCardProps {
 }
 
 export default function SectionCard({ sectionId }: SectionCardProps) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const section = SectionRegistry.getSection(sectionId as any);
   if (!section) return null;
 

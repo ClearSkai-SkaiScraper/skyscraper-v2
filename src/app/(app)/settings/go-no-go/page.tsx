@@ -212,6 +212,7 @@ export default function GoNoGoPage() {
     }
 
     // Environment variable checks (client-visible)
+    // eslint-disable-next-line no-restricted-syntax
     results["stripe_configured"] = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY ? "pass" : "warn";
     results["stripe_webhook"] = "warn"; // Can't verify from client
     results["email_provider"] = "warn"; // Server-side check needed

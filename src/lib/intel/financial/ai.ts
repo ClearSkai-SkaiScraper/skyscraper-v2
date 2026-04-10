@@ -4,9 +4,13 @@ import { getOpenAI } from "@/lib/openai";
 import { FinancialAnalysisResult,FinancialInput } from "./engine";
 
 export interface AIFinancialAnalysisInput extends FinancialInput {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   weatherData?: any;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   damageAssessment?: any;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   manufacturerSpecs?: any;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   codeRequirements?: any;
 }
 

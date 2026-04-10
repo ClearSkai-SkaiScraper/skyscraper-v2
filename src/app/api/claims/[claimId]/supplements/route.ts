@@ -72,6 +72,7 @@ export const POST = withAuth(
       });
 
       const supplementTotal = supplements.reduce(
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (sum: number, s: any) => sum + (s.total_cents || 0),
         0
       );

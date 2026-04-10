@@ -36,6 +36,7 @@ export function useGoogleOneTap({ clientId, disabled }: UseGoogleOneTapOptions) 
       // @ts-ignore
       window.google.accounts.id.initialize({
         clientId: clientId,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         callback: async (response: any) => {
           try {
             const token = response?.credential;

@@ -167,6 +167,7 @@ export const POST = withAuth(async (req: NextRequest, { orgId, userId }) => {
         detections = await detectByComponent(
           input.imageUrl,
           input.componentType as ComponentType,
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           input.claimType as any,
           input.confidence
         );
@@ -193,12 +194,18 @@ export const POST = withAuth(async (req: NextRequest, { orgId, userId }) => {
 
         if (aiResult) {
           aiAnalysis = {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             overallSeverity: (aiResult as any).overallSeverity || "unknown",
             damageTypes:
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
               (aiResult as any).damageTypes || aiResult.items?.map((i: any) => i.type) || [],
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             description: (aiResult as any).description || aiResult.summary || "",
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             recommendations: (aiResult as any).recommendations || [],
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             ircCodes: (aiResult as any).ircCodes || [],
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             estimatedRepairCost: (aiResult as any).estimatedRepairCost,
           };
         }

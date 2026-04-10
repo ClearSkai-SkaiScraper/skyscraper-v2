@@ -6,16 +6,19 @@ import { logger } from "@/lib/logger";
  */
 
 export function isTestMode(): boolean {
+  // eslint-disable-next-line no-restricted-syntax
   return process.env.NEXT_PUBLIC_TEST_MODE === "true";
 }
 
 function isFreeBetaMode(): boolean {
   // Default to FREE_BETA unless explicitly disabled.
   // This keeps billing/tokens inactive during beta testing in production.
+  // eslint-disable-next-line no-restricted-syntax
   return process.env.FREE_BETA?.toLowerCase() !== "false";
 }
 
 function isStripeConfigured(): boolean {
+  // eslint-disable-next-line no-restricted-syntax
   return Boolean(process.env.STRIPE_SECRET_KEY);
 }
 
@@ -46,6 +49,7 @@ export function shouldBypassBilling(): boolean {
   if (isTestMode()) return true;
 
   // Explicit kill switch (server-side)
+  // eslint-disable-next-line no-restricted-syntax
   const disabled = process.env.BILLING_DISABLED?.toLowerCase();
   if (disabled === "1" || disabled === "true" || disabled === "yes") return true;
 

@@ -10,6 +10,7 @@ const limiter: Ratelimit | null = upstash
   : null;
 
 // ApiHandler uses Request (not NextRequest) for compatibility with withOrgScope
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type ApiHandler = (req: Request, ctx: any) => Promise<Response>;
 
 export function withSentryApi(handler: ApiHandler): ApiHandler {
@@ -32,6 +33,7 @@ export function withSentryApi(handler: ApiHandler): ApiHandler {
       }
 
       return await handler(req, ctx);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       Sentry.captureException(err, {
         tags: {
@@ -60,6 +62,7 @@ export function withRateLimit(handler: ApiHandler): ApiHandler {
       res.headers.set("x-ratelimit-remaining", remaining.toString());
       res.headers.set("x-ratelimit-reset", reset.toString());
       return res;
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (_e) {
       // Fail open if rate limiter errors
       return handler(req, ctx);

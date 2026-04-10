@@ -49,6 +49,7 @@ export function validateMapping(mappings: FieldMapping[]): {
 export function autoMatchLineItems(
   items: Array<{ description: string; code?: string }>,
   categories: string[]
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 ): Array<{ item: any; match: string | null; confidence: number }> {
   logger.debug(
     `[AUTO_MATCHER] Stub: Would auto-match ${items.length} items to ${categories.length} categories`
@@ -60,11 +61,14 @@ export function autoMatchLineItems(
  * Apply matched mappings to data
  */
 export function applyMatches(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   data: Record<string, any>[],
   mappings: FieldMapping[]
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 ): Record<string, any>[] {
   logger.debug(`[AutoMatcher] Applying ${mappings.length} mappings to ${data.length} rows`);
   return data.map((row) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const mapped: Record<string, any> = {};
     for (const m of mappings) {
       if (row[m.sourceField] !== undefined) {

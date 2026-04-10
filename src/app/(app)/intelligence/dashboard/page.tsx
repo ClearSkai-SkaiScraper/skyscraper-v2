@@ -82,6 +82,7 @@ export default function IntelligenceDashboardPage() {
 
       // Refresh status after batch
       await fetchStatus();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       toast.error(err.message || "Failed to run batch embedding");
     } finally {

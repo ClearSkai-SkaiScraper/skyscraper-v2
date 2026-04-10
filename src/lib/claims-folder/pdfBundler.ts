@@ -681,6 +681,7 @@ export async function renderPDFBytes(document: PDFDocument): Promise<Uint8Array>
   const FOOTER_H = 28;
 
   /** Wrap text to fit a given width */
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const wrapText = (text: string, f: any, size: number, maxW: number): string[] => {
     const words = text.split(/\s+/);
     const lines: string[] = [];

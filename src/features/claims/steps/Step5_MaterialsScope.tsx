@@ -45,6 +45,7 @@ export function Step5_MaterialsScope({ data, onChange }: Step5Props) {
     onChange({ ...data, [field]: value });
   };
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const handleAddMaterial = (product: any) => {
     const newMaterial: SelectedMaterial = {
       id: product.id,

@@ -31,8 +31,11 @@ export async function GET(request: NextRequest) {
     const offset = (page - 1) * limit;
 
     const results: {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       companies: any[];
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       members: any[];
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       vendors: any[];
       total: number;
     } = {
@@ -44,10 +47,12 @@ export async function GET(request: NextRequest) {
 
     // Build company search conditions
     if (type === "companies" || type === "all") {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const companyWhere: any = {
         isActive: true,
       };
 
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const companyOrConditions: any[] = [];
 
       if (query.trim()) {
@@ -121,10 +126,12 @@ export async function GET(request: NextRequest) {
 
     // Build member search conditions
     if (type === "members" || type === "all") {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const memberWhere: any = {
         status: "active",
       };
 
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const memberOrConditions: any[] = [];
 
       if (query.trim()) {
@@ -190,10 +197,12 @@ export async function GET(request: NextRequest) {
     // Also search the Vendor table (material suppliers, manufacturers)
     // ================================================================
     {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const vendorWhere: any = {
         isActive: true,
       };
 
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const vendorOrConditions: any[] = [];
 
       if (query.trim()) {

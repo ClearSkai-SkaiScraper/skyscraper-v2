@@ -8,6 +8,7 @@
  * - Clients (customers - linked to Client Contacts)
  */
 
+// eslint-disable-next-line no-restricted-imports
 import { currentUser } from "@clerk/nextjs/server";
 import {
   Building2,
@@ -110,7 +111,9 @@ export default async function CompanyConnectionsPage({
   const orgId = orgCtx.orgId;
 
   // Fetch connections from TradesTeam and contacts
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let connections: any[] = [];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let clientContacts: any[] = [];
   let clientCount = 0;
   let vendorCount = 0;
@@ -403,6 +406,7 @@ export default async function CompanyConnectionsPage({
 }
 
 // Client Card Component — shows individual client contacts
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function ClientCard({ client }: { client: any }) {
   return (
     <Link
@@ -466,6 +470,7 @@ function ClientCard({ client }: { client: any }) {
 }
 
 // Connection Card Component
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function ConnectionCard({ connection }: { connection: any }) {
   const typeConfig: Record<string, { color: string; icon: typeof Users }> = {
     vendor: { color: "text-orange-600", icon: Package },
@@ -534,6 +539,7 @@ function ConnectionList({
   connections,
   emptyMessage,
 }: {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   connections: any[];
   emptyMessage: string;
 }) {

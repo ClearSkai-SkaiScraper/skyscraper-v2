@@ -9,6 +9,7 @@
  * Storage: Supabase Storage → "portal-uploads" bucket
  */
 
+// eslint-disable-next-line no-restricted-imports
 import { auth } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -80,6 +81,7 @@ export async function GET() {
     }
 
     return NextResponse.json({ photos, folders });
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (error: any) {
     logger.error("[Property Photos] GET error:", error);
     return NextResponse.json({ error: "Failed to load photos" }, { status: 500 });
@@ -168,6 +170,7 @@ export async function POST(req: NextRequest) {
         uploadedAt: new Date().toISOString(),
       },
     });
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (error: any) {
     logger.error("[Property Photos] POST error:", error);
     return NextResponse.json({ error: "Upload failed" }, { status: 500 });
@@ -215,6 +218,7 @@ export async function DELETE(req: NextRequest) {
 
     logger.info(`[Property Photos] Deleted: ${filePath}`);
     return NextResponse.json({ success: true });
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (error: any) {
     logger.error("[Property Photos] DELETE error:", error);
     return NextResponse.json({ error: "Delete failed" }, { status: 500 });

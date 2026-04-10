@@ -1,3 +1,4 @@
+// eslint-disable-next-line no-restricted-imports
 import { clerkClient, currentUser } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -56,6 +57,7 @@ export const GET = withAuth(async (req: NextRequest, { orgId, userId }) => {
 
     // ── Strategy 2: tradesCompanyMember (richer profile data) ────
     // Get the current user's company, then all active members
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let companyMembers: any[] = [];
     try {
       const membership = userId

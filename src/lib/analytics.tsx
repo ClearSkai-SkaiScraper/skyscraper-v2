@@ -7,7 +7,9 @@ import { useEffect } from "react";
 import { getAnalyticsConsent } from "@/lib/analytics/consent";
 
 if (typeof window !== "undefined") {
+  // eslint-disable-next-line no-restricted-syntax
   posthog.init(process.env.NEXT_PUBLIC_POSTHOG_KEY!, {
+    // eslint-disable-next-line no-restricted-syntax
     api_host: process.env.NEXT_PUBLIC_POSTHOG_HOST || "https://us.i.posthog.com",
     person_profiles: "identified_only",
     capture_pageview: false, // Disable automatic pageview capture, as we capture manually
@@ -104,6 +106,7 @@ export const analytics = {
   },
 
   // User identification
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   identify: (userId: string, properties?: Record<string, any>) => {
     posthog?.identify(userId, properties);
   },

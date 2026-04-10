@@ -164,6 +164,7 @@ async function resilientFetch<T = unknown>(
       if (!isRetryable(response.status)) {
         return {
           ok: false,
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           error: (data as any)?.error || response.statusText || "Request failed",
           data,
           status: response.status,
@@ -172,6 +173,7 @@ async function resilientFetch<T = unknown>(
 
       // Retryable error — continue to retry logic
       lastError = new ApiError(
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (data as any)?.error || `HTTP ${response.status}`,
         response.status,
         data

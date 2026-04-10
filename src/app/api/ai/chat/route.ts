@@ -172,6 +172,7 @@ Recent Activity:
 ${
   contextData.recentActivity.jobs.length > 0
     ? `Recent Jobs: ${contextData.recentActivity.jobs
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         .map((j: any) => `${j.title} (${j.status})`)
         .join(", ")}`
     : "No recent jobs"
@@ -179,6 +180,7 @@ ${
 ${
   contextData.recentActivity.claims.length > 0
     ? `Recent Claims: ${contextData.recentActivity.claims
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         .map((c: any) => `${c.carrier} claim (${c.status})`)
         .join(", ")}`
     : "No recent claims"

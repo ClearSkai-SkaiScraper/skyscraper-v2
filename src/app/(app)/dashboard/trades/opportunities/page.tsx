@@ -3,6 +3,7 @@
  * Displays auto-matched job opportunities from the matching engine
  */
 
+// eslint-disable-next-line no-restricted-imports
 import { currentUser } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 

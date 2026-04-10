@@ -9,6 +9,7 @@ export interface TemplateData {
   name: string;
   sectionOrder: string[];
   sectionEnabled: Record<string, boolean>;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   defaults?: any;
 }
 
@@ -102,6 +103,7 @@ export async function applyTemplate(
     };
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const json = template.sections as any;
   return {
     sectionOrder: json.sectionOrder || [],

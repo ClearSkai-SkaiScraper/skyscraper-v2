@@ -133,7 +133,9 @@ export async function getHealthStatus(): Promise<HealthStatus> {
     },
     metadata: {
       uptime: process.uptime(),
+      // eslint-disable-next-line no-restricted-syntax
       version: process.env.npm_package_version || "1.0.0",
+      // eslint-disable-next-line no-restricted-syntax
       environment: process.env.NODE_ENV || "development",
     },
   };

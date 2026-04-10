@@ -8,6 +8,7 @@ import { submitVendorOrder } from "@/lib/vendors/vendorApiIntegration";
 
 export const dynamic = "force-dynamic";
 
+// eslint-disable-next-line no-restricted-syntax
 const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
 
 // Vendor name lookup

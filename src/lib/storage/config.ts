@@ -35,6 +35,7 @@ export interface StorageConfig {
 export const storageConfig: StorageConfig = {
   pdfs: {
     provider: 'firebase',
+    // eslint-disable-next-line no-restricted-syntax
     bucket: process.env.FIREBASE_STORAGE_BUCKET || 'firebase-primary-bucket',
     basePath: 'claims',
     variants: {

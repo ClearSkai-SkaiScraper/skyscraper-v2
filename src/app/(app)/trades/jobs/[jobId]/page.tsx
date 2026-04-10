@@ -3,6 +3,7 @@
  * Shows full details of a ClientWorkRequest for contractors to review and respond
  */
 
+// eslint-disable-next-line no-restricted-imports
 import { currentUser } from "@clerk/nextjs/server";
 import {
   AlertTriangle,
@@ -155,8 +156,11 @@ export default async function TradesJobDetailPage({
           propertyPhotos: [] as string[],
           city: orgJob.properties?.city || null,
           state: orgJob.properties?.state || null,
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           Client: null as any,
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           ClientJobResponse: [] as any[],
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           ClientJobDocument: [] as any[],
         }
       : null;

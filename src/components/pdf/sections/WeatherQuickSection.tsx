@@ -8,6 +8,7 @@ import { SectionHeader } from "../SectionHeader";
 import { baseStyles } from "../SharedStyles";
 
 export function WeatherQuickSection({ data }: { data: ReportData }) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const w = (data.weather as any)?.quickDol;
 
   if (!w) {

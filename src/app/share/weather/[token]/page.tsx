@@ -2,8 +2,10 @@
 
 import { useEffect, useState } from "react";
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export default function WeatherSharePage({ params }: any) {
   const { token } = params;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [report, setReport] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -109,6 +111,7 @@ export default function WeatherSharePage({ params }: any) {
   );
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function DataSection({ title, data }: any) {
   if (!data || Object.keys(data).length === 0) return null;
 
@@ -117,6 +120,7 @@ function DataSection({ title, data }: any) {
       <h2 className="mb-4 text-2xl font-semibold text-slate-100">{title}</h2>
       <div className="space-y-2">
         {Object.entries(data).map(
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           ([key, value]: any) =>
             value && (
               <div key={key} className="flex justify-between border-b border-slate-700 pb-2">

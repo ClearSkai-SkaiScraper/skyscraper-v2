@@ -78,12 +78,15 @@ interface ValidationError {
   externalId: string;
   field: string;
   error: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   value: any;
 }
 
 interface SampleMapping {
   type: "contact" | "job";
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   external: Record<string, any>;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   internal: Record<string, any>;
 }
 
@@ -145,7 +148,9 @@ async function runDryRun(
   let totalContacts = 0;
   let totalJobs = 0;
   let totalDocuments = 0;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let contactsData: any[] = [];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let jobsData: any[] = [];
 
   // Fetch sample data based on source

@@ -33,6 +33,7 @@ export async function fetchOpenMeteoWeather(query: WeatherQuery): Promise<Normal
   const { lat, lng, startDate, endDate } = query;
 
   // Redis cache check stubbed (cache functions archived)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const cached: any = null; // getCachedWeather archived
   if (cached) {
     logger.debug("[OpenMeteo] Cache HIT", { lat, lng, startDate });
@@ -80,6 +81,7 @@ export async function fetchOpenMeteoWeather(query: WeatherQuery): Promise<Normal
  * Normalize Open-Meteo response to our standard format
  */
 function normalizeOpenMeteoResponse(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   data: any,
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   startDate: string,

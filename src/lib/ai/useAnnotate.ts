@@ -13,7 +13,9 @@ export async function annotateImage(
   imageUrl: string
 ): Promise<{ boxes: AIBoundingBox[]; captions: string[] }> {
   const url = `${
+    // eslint-disable-next-line no-restricted-syntax
     (process.env.NEXT_PUBLIC_SUPABASE_URL as string | undefined) ||
+    // eslint-disable-next-line no-restricted-syntax
     process.env.NEXT_PUBLIC_SUPABASE_URL
   }/functions/v1/ai-annotate`;
   const {

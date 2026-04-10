@@ -3,12 +3,17 @@ import { cert, getApps, initializeApp as initializeAdminApp } from "firebase-adm
 import { getStorage } from "firebase-admin/storage";
 
 const firebaseAdminConfig = {
+  // eslint-disable-next-line no-restricted-syntax
   projectId: process.env.FIREBASE_PROJECT_ID!,
   credential: cert({
+    // eslint-disable-next-line no-restricted-syntax
     projectId: process.env.FIREBASE_PROJECT_ID!,
+    // eslint-disable-next-line no-restricted-syntax
     clientEmail: process.env.FIREBASE_CLIENT_EMAIL!,
+    // eslint-disable-next-line no-restricted-syntax
     privateKey: process.env.FIREBASE_PRIVATE_KEY!.replace(/\\n/g, "\n"),
   }),
+  // eslint-disable-next-line no-restricted-syntax
   storageBucket: process.env.FIREBASE_STORAGE_BUCKET!,
 };
 

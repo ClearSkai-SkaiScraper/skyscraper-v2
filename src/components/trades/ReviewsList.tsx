@@ -49,6 +49,7 @@ export function ReviewsList({ proId, limit }: ReviewsListProps) {
       } else {
         throw new Error(data.error || "Failed to load reviews");
       }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       logger.error("Failed to load reviews:", error);
       toast.error(error.message || "Failed to load reviews");

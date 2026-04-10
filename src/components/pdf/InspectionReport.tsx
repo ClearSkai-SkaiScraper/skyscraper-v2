@@ -29,6 +29,7 @@ interface InspectionReportProps {
     name: string;
   };
   modules?: Record<string, boolean>;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   aiAnalysis?: any;
   products?: Array<{
     id: string;

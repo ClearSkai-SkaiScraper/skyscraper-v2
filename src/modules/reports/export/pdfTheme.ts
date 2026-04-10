@@ -122,6 +122,7 @@ export function wordWrap(
  * Draw a thin horizontal rule (divider line)
  */
 export function drawDivider(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   page: any,
   y: number,
   color: Color = COLOR.DIVIDER,
@@ -140,6 +141,7 @@ export function drawDivider(
  * Draw a rounded rectangle panel background
  */
 export function drawPanel(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   page: any,
   x: number,
   y: number,

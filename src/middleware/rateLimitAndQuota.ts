@@ -51,6 +51,7 @@ export async function middleware(req: NextRequest) {
       startOfMonth.setDate(1);
       startOfMonth.setHours(0, 0, 0, 0);
 
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const meter = await prisma.$queryRaw<any[]>`
         SELECT count, quota_limit FROM usage_meters
         WHERE org_id = ${userId}

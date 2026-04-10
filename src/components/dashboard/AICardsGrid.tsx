@@ -75,6 +75,7 @@ let cards: AICard[] = [
 ];
 
 // Ensure deterministic card visibility in test mode so Playwright can assert titles
+// eslint-disable-next-line no-restricted-syntax
 if (process.env.TEST_AUTH_BYPASS === "1") {
   // No-op now; placeholder for any future test-only augmentation
   cards = [...cards];

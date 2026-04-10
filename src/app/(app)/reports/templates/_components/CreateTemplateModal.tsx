@@ -123,7 +123,9 @@ export function CreateTemplateModal({
                   {existingTemplates.map((t) => (
                     <SelectItem key={t.id} value={t.id}>
                       {t.name}
+                      // eslint-disable-next-line react/jsx-no-comment-textnodes
                       {t.is_default && " (Default)"}
+                      // eslint-disable-next-line @typescript-eslint/no-explicit-any
                       {(t as any).templateType === "SYSTEM" && " [SYSTEM]"}
                     </SelectItem>
                   ))}

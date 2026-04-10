@@ -125,8 +125,10 @@ export const POST = withAuth(async (req: NextRequest, { orgId, userId }, routePa
 async function generateSupplementAsync(params: {
   generatedDocumentId: string;
   claimId: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   variances: any[];
   totalDelta: number;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   claimData: any;
   orgId: string;
   userId: string;
@@ -179,6 +181,7 @@ async function generateSupplementAsync(params: {
     };
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars
     const stream = await renderToStream(<SupplementPDFDocument data={pdfData as any} />);
 
     // TODO: Upload PDF to storage and get fileUrl

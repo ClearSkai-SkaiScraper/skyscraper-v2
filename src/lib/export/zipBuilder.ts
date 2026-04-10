@@ -27,6 +27,7 @@ export async function createZip(entries: ZipEntry[]): Promise<Buffer> {
  * Add file to ZIP archive
  */
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
+// eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars
 export function addFileToZip(archive: any, name: string, content: Buffer | string): void {
   logger.debug(`[ZipBuilder] Stub: Would add ${name} to ZIP`);
 }
@@ -35,6 +36,7 @@ export function addFileToZip(archive: any, name: string, content: Buffer | strin
  * Finalize and get ZIP buffer
  */
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
+// eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars
 export async function finalizeZip(archive: any): Promise<Buffer> {
   logger.debug("[ZipBuilder] Stub: Would finalize ZIP");
   return Buffer.from([]);

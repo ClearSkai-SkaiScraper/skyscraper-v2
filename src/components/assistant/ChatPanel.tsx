@@ -7,7 +7,9 @@ export interface ChatPanelProps {
   onSendToReport?: (text: string) => void;
   onSendToReportHtml?: (html: string) => void;
   onExport?: (mode: "inspection" | "insurance" | "retail") => void;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   onAddCitation?: (citation: any) => void; // Citation type deprecated here
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   citations?: any[];
   mode?: "inspection" | "insurance" | "retail";
 }

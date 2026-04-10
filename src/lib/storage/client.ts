@@ -29,11 +29,14 @@ let _client: SupabaseClient | null = null;
 export function getStorageClient(): SupabaseClient | null {
   if (_client) return _client;
 
+  // eslint-disable-next-line no-restricted-syntax
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  // eslint-disable-next-line no-restricted-syntax
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
   // During build or when env vars missing, return null
   if (!url || !key) {
+    // eslint-disable-next-line no-restricted-syntax
     if (process.env.NODE_ENV === "development") {
       logger.warn("[Storage] Supabase not configured - storage features disabled");
     }

@@ -23,15 +23,18 @@ if (!fs.existsSync(LOG_DIR)) {
 export interface AILogEntry {
   timestamp: string;
   task: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   payload: any;
   result?: {
     success: boolean;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     data?: any;
     error?: string;
   };
   executionTime: number;
   claimId?: string;
   userId?: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   metadata?: Record<string, any>;
 }
 
@@ -62,9 +65,12 @@ export function logAIOperation(entry: AILogEntry): void {
  */
 export function logSuccess(
   task: string,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   payload: any,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   data: any,
   executionTime: number,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   metadata?: Record<string, any>
 ): void {
   logAIOperation({
@@ -85,9 +91,11 @@ export function logSuccess(
  */
 export function logError(
   task: string,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   payload: any,
   error: string,
   executionTime: number,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   metadata?: Record<string, any>
 ): void {
   logAIOperation({

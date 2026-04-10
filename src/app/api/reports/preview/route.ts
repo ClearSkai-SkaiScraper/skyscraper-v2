@@ -68,6 +68,7 @@ export const POST = withAuth(async (req: NextRequest, { orgId }) => {
     ]);
 
     // ── 3. Resolve template ──────────────────────────────────────────────
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let templateInfo: { title: string; sections: any } = { title: "Default Report", sections: [] };
     if (orgTemplateId) {
       const orgTemplate = await prisma.orgTemplate.findFirst({
@@ -100,6 +101,7 @@ export const POST = withAuth(async (req: NextRequest, { orgId }) => {
     }
 
     // ── 5. Damage assessments + findings ─────────────────────────────────
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let findings: any[] = [];
     try {
       const assessments = await prisma.damage_assessments.findMany({
@@ -123,6 +125,7 @@ export const POST = withAuth(async (req: NextRequest, { orgId }) => {
     }
 
     // ── 6. Weather ───────────────────────────────────────────────────────
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let weather: any = null;
     try {
       weather = await prisma.weather_reports.findFirst({
@@ -141,6 +144,7 @@ export const POST = withAuth(async (req: NextRequest, { orgId }) => {
     }
 
     // ── 7. Scopes ────────────────────────────────────────────────────────
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let scopeData: any[] = [];
     try {
       const scopes = await prisma.scopes.findMany({
@@ -175,6 +179,7 @@ export const POST = withAuth(async (req: NextRequest, { orgId }) => {
           .join(", ")
       : null;
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const mergedData: Record<string, any> = {
       claim: {
         id: claim.id,

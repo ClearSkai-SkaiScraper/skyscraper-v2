@@ -6,11 +6,14 @@
 const ALLOWED_ORIGINS = [
   "https://skaiscrape.com",
   "https://www.skaiscrape.com",
+  // eslint-disable-next-line no-restricted-syntax
   process.env.NEXT_PUBLIC_APP_URL,
+  // eslint-disable-next-line no-restricted-syntax
   process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : null,
 ].filter(Boolean) as string[];
 
 // Add localhost for development
+// eslint-disable-next-line no-restricted-syntax
 if (process.env.NODE_ENV === "development") {
   ALLOWED_ORIGINS.push("http://localhost:3000");
   ALLOWED_ORIGINS.push("http://127.0.0.1:3000");

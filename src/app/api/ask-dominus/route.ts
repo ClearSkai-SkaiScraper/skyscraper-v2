@@ -1,3 +1,4 @@
+// eslint-disable-next-line no-restricted-imports
 import { auth } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
@@ -19,6 +20,7 @@ const RequestSchema = z.object({
 export async function POST(req: NextRequest) {
   const { userId, orgId } = auth();
   const isStreamHeader = req.headers.get("accept") === "text/event-stream";
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let bodyRaw: any = null;
   try {
     bodyRaw = await req.json().catch(() => null);

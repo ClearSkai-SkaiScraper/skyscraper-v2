@@ -25,6 +25,7 @@ export const POST = withAuth(async (req: NextRequest) => {
     logRecommendationEvent(body);
 
     return NextResponse.json({ ok: true });
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   } catch (_error) {
     return NextResponse.json({ ok: false, error: "Failed to log analytics" }, { status: 500 });
   }

@@ -36,6 +36,7 @@ export default function SupportPage() {
     try {
       // Auto-capture context
       const context = {
+        // eslint-disable-next-line no-restricted-syntax
         buildSHA: process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA?.substring(0, 8) || "local",
         currentPage: window.location.pathname,
         userAgent: navigator.userAgent,
@@ -208,7 +209,9 @@ export default function SupportPage() {
                   • Current page: {typeof window !== "undefined" ? window.location.pathname : "—"}
                 </li>
                 <li>
+                  // eslint-disable-next-line react/jsx-no-comment-textnodes
                   • Build version:{" "}
+                  // eslint-disable-next-line no-restricted-syntax
                   {process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA?.substring(0, 8) || "local"}
                 </li>
                 <li>

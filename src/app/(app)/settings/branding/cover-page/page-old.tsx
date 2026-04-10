@@ -119,6 +119,7 @@ export default function CoverPageBuilderPage() {
         setData((prev) => ({ ...prev, backgroundUrl: url }));
       }
       toast.success(`${type === "logo" ? "Logo" : "Background"} uploaded!`);
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (_e) {
       toast.error("Failed to upload file");
     } finally {
@@ -180,6 +181,7 @@ export default function CoverPageBuilderPage() {
       pdf.addImage(imgData, "PNG", 0, 0, canvas.width, canvas.height);
       pdf.save("cover-page.pdf");
       toast.success("PDF exported!");
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (e: any) {
       logger.error("[CoverPage] PDF export error:", e);
       toast.error("Failed to export PDF");

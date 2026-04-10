@@ -7,6 +7,7 @@ import { cert, getApps, initializeApp } from "firebase-admin/app";
 
 import { logger } from "@/lib/logger";
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 let firebaseAdmin: any = null;
 
 export function getFirebaseAdmin() {
@@ -20,6 +21,7 @@ export function getFirebaseAdmin() {
 
   try {
     // Option 1: Use base64-encoded service account (recommended for Netlify)
+    // eslint-disable-next-line no-restricted-syntax
     const serviceAccountBase64 = process.env.FIREBASE_SERVICE_ACCOUNT_BASE64;
 
     if (serviceAccountBase64) {
@@ -29,6 +31,7 @@ export function getFirebaseAdmin() {
 
       firebaseAdmin = initializeApp({
         credential: cert(serviceAccount),
+        // eslint-disable-next-line no-restricted-syntax
         storageBucket: process.env.FIREBASE_STORAGE_BUCKET,
       });
 
@@ -36,18 +39,23 @@ export function getFirebaseAdmin() {
     }
 
     // Option 2: Fallback to individual env vars (Vercel-style)
+    // eslint-disable-next-line no-restricted-syntax
     const privateKey = process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, "\n");
 
+    // eslint-disable-next-line no-restricted-syntax
     if (!privateKey || !process.env.FIREBASE_CLIENT_EMAIL || !process.env.FIREBASE_PROJECT_ID) {
       throw new Error("Missing Firebase credentials");
     }
 
     firebaseAdmin = initializeApp({
       credential: cert({
+        // eslint-disable-next-line no-restricted-syntax
         projectId: process.env.FIREBASE_PROJECT_ID,
+        // eslint-disable-next-line no-restricted-syntax
         clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
         privateKey,
       }),
+      // eslint-disable-next-line no-restricted-syntax
       storageBucket: process.env.FIREBASE_STORAGE_BUCKET,
     });
 

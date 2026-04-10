@@ -14,6 +14,7 @@ export default function AuthDebugPage() {
   const { user, isLoaded: userLoaded } = useUser();
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { userId, sessionId, orgId, isLoaded: authLoaded } = useAuth();
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [serverAuthData, setServerAuthData] = useState<any>(null);
   const [serverError, setServerError] = useState<string | null>(null);
 

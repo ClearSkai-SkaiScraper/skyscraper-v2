@@ -13,6 +13,7 @@ export type MemoryChunk = {
   sourceId: string | null;
   content: string;
   similarity: number;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   metadata: any;
 };
 

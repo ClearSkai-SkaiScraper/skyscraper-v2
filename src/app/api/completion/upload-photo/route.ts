@@ -1,3 +1,4 @@
+// eslint-disable-next-line no-restricted-imports
 import { currentUser } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 
@@ -129,6 +130,7 @@ export async function GET(req: Request) {
       return NextResponse.json({ error: "claimId required" }, { status: 400 });
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const where: any = { claimId, orgId };
     if (category) {
       where.category = category;

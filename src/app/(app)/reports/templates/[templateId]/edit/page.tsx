@@ -51,6 +51,7 @@ export default async function EditTemplatePage({ params }: { params: { templateI
   }
 
   // Parse sections from the Template JSON so the editor can pre-select them
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let rawSections: any[] = [];
   try {
     rawSections = Array.isArray(template.sections)
@@ -66,6 +67,7 @@ export default async function EditTemplatePage({ params }: { params: { templateI
     id: template.id,
     name: orgTemplate?.customName || template.name,
     description: template.description || "",
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     sections: rawSections.map((s: any) => ({
       sectionKey: s.sectionKey || s.type || s.key || "",
     })),

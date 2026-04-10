@@ -16,6 +16,7 @@ export const POST = withAuth(async (req: NextRequest, { orgId, userId }, routePa
     const { id: invitationId } = await routeParams.params;
 
     // Find invitation (team_invitations is a raw SQL table, not in Prisma schema)
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const invitation = await (prisma as any).team_invitations.findUnique({
       where: { id: invitationId },
     });
@@ -40,6 +41,7 @@ export const POST = withAuth(async (req: NextRequest, { orgId, userId }, routePa
     // Extend expiration by 7 more days
     const newExpiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     await (prisma as any).team_invitations.update({
       where: { id: invitationId },
       data: {
@@ -85,6 +87,7 @@ export const POST = withAuth(async (req: NextRequest, { orgId, userId }, routePa
 
     return NextResponse.json({
       success: true,
+      // eslint-disable-next-line no-restricted-syntax
       inviteUrl: `${process.env.NEXT_PUBLIC_APP_URL}/invite/${invitation.token}`,
     });
   } catch (error) {

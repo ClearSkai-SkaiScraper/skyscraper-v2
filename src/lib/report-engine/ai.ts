@@ -19,6 +19,7 @@ export async function runReportBuilder({
   claimId: string;
   reportType: ReportKind;
   audience: ReportAudience;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   addonPayload: any;
   address: string;
   roofType?: string;

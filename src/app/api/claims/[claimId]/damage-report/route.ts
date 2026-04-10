@@ -478,6 +478,7 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
     const companyName = branding?.companyName || "Storm Restoration Report";
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const companyLocation: string | null =
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (branding as any)?.companyAddress || branding?.business_state || null;
     const primaryColor = branding?.colorPrimary
       ? hexToRgb(branding.colorPrimary)
@@ -820,10 +821,15 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
     y -= 18;
     // Inspector name — use real profile data
     const inspectorName = user?.name || "Inspector";
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const inspectorTitle = (user as any)?.title || "Certified Roof Inspector";
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const inspectorPhone = (user as any)?.phone || null;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const inspectorLicense = (user as any)?.license_number || branding?.license || null;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const inspectorLicenseState = (user as any)?.license_state || null;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const inspectorCerts = (user as any)?.certifications || [];
 
     page.drawText(inspectorName, {
@@ -1681,7 +1687,9 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
     drawHR(page, y, rgb(0.3, 0.3, 0.3));
     y -= 14;
     const certInspectorName = user?.name || "Inspector Signature";
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const certInspectorTitle = (user as any)?.title || "";
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const certLicense = (user as any)?.license_number || branding?.license || null;
     page.drawText(certInspectorName, {
       x: MARGIN,

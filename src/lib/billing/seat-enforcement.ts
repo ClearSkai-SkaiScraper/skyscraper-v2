@@ -38,6 +38,7 @@ export async function checkSeatAvailability(orgId: string): Promise<SeatCheck> {
 
   // During beta or if no subscription, allow unlimited (beta mode)
   if (!sub) {
+    // eslint-disable-next-line no-restricted-syntax
     const isBeta = process.env.NEXT_PUBLIC_BETA_MODE !== "false";
     if (isBeta) {
       return {

@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
 export default function LogosTab({ orgId }: { orgId?: string }) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [branding, setBranding] = useState<any>(null);
   useEffect(() => {
     void (async () => {
@@ -19,11 +20,13 @@ export default function LogosTab({ orgId }: { orgId?: string }) {
     const { error } = await supabase.storage
       .from("branding")
       .upload(path, file, { cacheControl: "3600", upsert: true })
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       .catch((e: any) => ({ error: e }));
     if (error) return alert("Upload failed");
     const { data: urlData } = supabase.storage.from("branding").getPublicUrl(path);
     const publicURL = urlData.publicUrl;
     await supabase.from("org_branding").upsert({ org_id: orgId, [key]: publicURL });
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     setBranding((b: any) => ({ ...b, [key]: publicURL }));
   }
 

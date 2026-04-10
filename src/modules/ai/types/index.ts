@@ -19,6 +19,7 @@ export type AISectionKey =
 
 export type AIGenerationStatus = "idle" | "running" | "succeeded" | "failed";
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export interface AIField<T = any> {
   value: T;
   aiGenerated: boolean;
@@ -31,6 +32,7 @@ export interface AIField<T = any> {
 export interface AISectionState {
   sectionKey: AISectionKey;
   status: AIGenerationStatus;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   fields: Record<string, AIField<any>>;
   error?: string;
   updatedAt?: string;
@@ -73,6 +75,7 @@ export interface AIEngineConfig {
   runSection: (
     reportId: string,
     sectionKey: AISectionKey,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     context?: any
   ) => Promise<AISectionState>;
 }

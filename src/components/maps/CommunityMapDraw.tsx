@@ -10,6 +10,7 @@ import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 
 interface CommunityMapProps {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   onPolygonComplete?: (polygon: any, estimatedHomes: number) => void;
   initialCenter?: [number, number];
 }
@@ -32,6 +33,7 @@ export function CommunityMapDraw({
     if (!mapContainer.current || map.current) return;
 
     // Initialize map
+    // eslint-disable-next-line no-restricted-syntax
     mapboxgl.accessToken = process.env.NEXT_PUBLIC_MAPBOX_TOKEN || "";
 
     map.current = new mapboxgl.Map({
@@ -64,6 +66,7 @@ export function CommunityMapDraw({
   }, []);
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars
   const handlePolygonCreate = (e: any) => {
     if (!draw.current) return;
 

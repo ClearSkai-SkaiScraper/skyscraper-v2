@@ -49,14 +49,17 @@ export async function POST(req: NextRequest) {
 
     // Gather weather events
     // B-03: Scope by org's property IDs to prevent cross-tenant data leakage
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let recentEvents: any[] = [];
     try {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       let propertyFilter: any = {};
       if (orgId) {
         const orgClaims = await prisma.claims.findMany({
           where: { orgId },
           select: { propertyId: true },
         });
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const orgPropertyIds = orgClaims.map((c: any) => c.propertyId).filter(Boolean) as string[];
         if (orgPropertyIds.length > 0) {
           propertyFilter = { propertyId: { in: orgPropertyIds } };
@@ -91,6 +94,7 @@ export async function POST(req: NextRequest) {
           select: { id: true, damageType: true, dateOfLoss: true, propertyId: true },
           take: 100,
         });
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const propertyIds = claims.map((c: any) => c.propertyId).filter(Boolean) as string[];
         if (propertyIds.length > 0) {
           const properties = await prisma.properties.findMany({
@@ -98,6 +102,7 @@ export async function POST(req: NextRequest) {
             select: { street: true, city: true, state: true, zipCode: true },
           });
           // eslint-disable-next-line @typescript-eslint/no-unused-vars
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars
           claimAddresses = properties.map((p: any) =>
             `${p.street || ""}, ${p.city || ""}, ${p.state || ""} ${p.zipCode || ""}`.trim()
           );

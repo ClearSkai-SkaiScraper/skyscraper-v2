@@ -35,6 +35,7 @@ export const POST = withManager(async (req: NextRequest, { orgId, userId }) => {
 
     // Create portal session
     const returnUrl = `${
+      // eslint-disable-next-line no-restricted-syntax
       process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"
     }/account/billing`;
 

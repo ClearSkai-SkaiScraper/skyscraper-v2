@@ -290,6 +290,7 @@ async function handleCaptureSignature(
     update: {
       ...sigFields,
       updated_at: new Date(),
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } as any, // Dynamic field names require cast
     create: {
       id: (await import("@paralleldrive/cuid2")).createId(),
@@ -299,6 +300,7 @@ async function handleCaptureSignature(
       status: "docs_uploaded",
       ...sigFields,
       updated_at: new Date(),
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } as any, // Dynamic field names require cast
   });
 

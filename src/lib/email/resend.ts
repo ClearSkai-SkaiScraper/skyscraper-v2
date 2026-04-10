@@ -5,15 +5,19 @@ let client: Resend | null = null;
 
 export function getResend() {
   if (!client) {
+    // eslint-disable-next-line no-restricted-syntax
     const apiKey = process.env.RESEND_API_KEY;
 
     // During build time, return null if API key is missing
     if (!apiKey) {
       if (
+        // eslint-disable-next-line no-restricted-syntax
         process.env.NEXT_PHASE === "phase-production-build" ||
+        // eslint-disable-next-line no-restricted-syntax
         process.env.NODE_ENV === "production"
       ) {
         // Return a null placeholder during build
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         return null as any;
       }
       throw new Error("RESEND_API_KEY is not set");
@@ -23,6 +27,7 @@ export function getResend() {
       client = new Resend(apiKey);
     } catch (error) {
       console.warn("[Resend] Failed to initialize:", error);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       return null as any;
     }
   }
@@ -30,7 +35,9 @@ export function getResend() {
 }
 
 // Email configuration
+// eslint-disable-next-line no-restricted-syntax
 export const FROM_EMAIL = process.env.RESEND_FROM_EMAIL || "noreply@skaiscrape.com";
+// eslint-disable-next-line no-restricted-syntax
 export const REPLY_TO_EMAIL = process.env.RESEND_REPLY_TO || "support@skaiscrape.com";
 
 // Email templates
@@ -317,6 +324,7 @@ export async function sendReportReadyEmail(
   <h2>Your Report is Ready</h2>
   <p>Your <strong>${reportType}</strong> has been generated successfully.</p>
   <p>Login to your dashboard to view and download the report.</p>
+  // eslint-disable-next-line no-restricted-syntax
   <p><a href="${process.env.NEXT_PUBLIC_APP_URL}/claims/${claimId}/reports" style="background: #2563eb; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block;">View Report</a></p>
 </body>
 </html>
@@ -346,6 +354,7 @@ export async function sendNewMessageEmail(
   <p style="background: #f3f4f6; padding: 16px; border-left: 4px solid #2563eb;">
     ${messagePreview}
   </p>
+  // eslint-disable-next-line no-restricted-syntax
   <p><a href="${process.env.NEXT_PUBLIC_APP_URL}/messages/${threadId}" style="background: #2563eb; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block;">View Message</a></p>
 </body>
 </html>

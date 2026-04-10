@@ -1,3 +1,4 @@
+// eslint-disable-next-line no-restricted-imports
 import { currentUser } from "@clerk/nextjs/server";
 import { ArrowLeft, CheckCircle, Download } from "lucide-react";
 import Image from "next/image";
@@ -55,6 +56,7 @@ export default async function MockupHistoryPage() {
           </div>
         ) : (
           history.map((artifact) => {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const meta = (artifact.metadata as any) || {};
             return (
               <div

@@ -49,7 +49,9 @@ export const GET = withAuth(async (req: NextRequest, { userId }) => {
     });
 
     // Get engagement data for current user
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const postIds = posts.map((p: any) => p.id);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const engagements: any[] = postIds.length
       ? await prisma.trades_feed_engagement
           .findMany({
@@ -61,8 +63,10 @@ export const GET = withAuth(async (req: NextRequest, { userId }) => {
           .catch(() => [])
       : [];
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const engagementMap = new Map(engagements.map((e: any) => [e.post_id, e]));
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const formattedPosts = posts.map((post: any) => {
       const engagement = engagementMap.get(post.id);
       return {
@@ -105,6 +109,7 @@ export const POST = withAuth(async (req: NextRequest, { userId }) => {
     const safeTitle = (title || content.trim().slice(0, 100) || "Post").trim();
 
     // Get the user's company membership
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let member: any = null;
     try {
       member = await prisma.tradesCompanyMember.findFirst({
@@ -180,6 +185,7 @@ export const POST = withAuth(async (req: NextRequest, { userId }) => {
       : `${member?.firstName || ""} ${member?.lastName || ""}`.trim() || "You";
 
     // Create the post — use try-catch for actionable error messages
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let post: any;
     try {
       post = await prisma.tradesPost.create({

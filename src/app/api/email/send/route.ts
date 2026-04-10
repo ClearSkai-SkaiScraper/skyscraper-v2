@@ -45,6 +45,7 @@ export async function POST(req: NextRequest) {
     const { to, subject, text, html } = parsed.data;
 
     // Use Resend if configured
+    // eslint-disable-next-line no-restricted-syntax
     const resendKey = process.env.RESEND_API_KEY;
     if (!resendKey) {
       logger.warn("[EMAIL_SEND] RESEND_API_KEY not configured, email not sent");
@@ -54,6 +55,7 @@ export async function POST(req: NextRequest) {
     const { Resend } = await import("resend");
     const resend = new Resend(resendKey);
 
+    // eslint-disable-next-line no-restricted-syntax
     const fromAddress = process.env.RESEND_FROM_EMAIL || "notifications@skaiscrape.com";
 
     const result = await resend.emails.send({

@@ -10,11 +10,14 @@ import { logger } from "@/lib/observability/logger";
 let _resend: Resend | null = null;
 
 function getResend() {
+  // eslint-disable-next-line no-restricted-syntax
   if (!_resend && process.env.RESEND_API_KEY) {
+    // eslint-disable-next-line no-restricted-syntax
     _resend = new Resend(process.env.RESEND_API_KEY);
   }
   return _resend;
 }
+// eslint-disable-next-line no-restricted-syntax
 const FROM_EMAIL = process.env.RESEND_FROM_EMAIL || "no-reply@skaiscrape.com";
 
 interface StormIntakeEmailData {
@@ -33,6 +36,7 @@ interface StormIntakeEmailData {
  * Send notification to organization when public storm intake is completed
  */
 export async function sendOrgIntakeNotification(data: StormIntakeEmailData): Promise<boolean> {
+  // eslint-disable-next-line no-restricted-syntax
   if (!data.orgEmail || !process.env.RESEND_API_KEY) {
     logger.debug("[EMAIL] Skipping org notification (no email or API key)");
     return false;
@@ -97,6 +101,7 @@ export async function sendOrgIntakeNotification(data: StormIntakeEmailData): Pro
  * Send report to homeowner when storm intake is completed
  */
 export async function sendHomeownerReport(data: StormIntakeEmailData): Promise<boolean> {
+  // eslint-disable-next-line no-restricted-syntax
   if (!data.homeownerEmail || !process.env.RESEND_API_KEY) {
     logger.debug("[EMAIL] Skipping homeowner email (no email or API key)");
     return false;

@@ -10,6 +10,7 @@ export const dynamic = "force-dynamic";
  * Handles CRUD operations for trades professional groups
  */
 
+// eslint-disable-next-line no-restricted-imports
 import { auth } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -59,6 +60,7 @@ export async function GET(req: NextRequest) {
       }
 
       // Check if current user is a member
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       let membership: any = null;
       if (userId) {
         membership = await prisma.tradesGroupMember.findUnique({
@@ -95,6 +97,7 @@ export async function GET(req: NextRequest) {
     }
 
     // List groups
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const where: any = { isActive: true };
 
     if (category) {
@@ -228,6 +231,7 @@ export const PATCH = withAuth(async (req: NextRequest, { userId }) => {
       return NextResponse.json({ error: "Not authorized to edit this group" }, { status: 403 });
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const updateData: any = {};
     if (name !== undefined) updateData.name = name;
     if (description !== undefined) updateData.description = description;

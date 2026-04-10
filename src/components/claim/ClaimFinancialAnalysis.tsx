@@ -32,6 +32,7 @@ export default function ClaimFinancialAnalysis({
       if (!res.ok) throw new Error(data.error);
 
       setAnalysis(data.analysis);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       alert(err.message);
     } finally {
@@ -89,6 +90,7 @@ export default function ClaimFinancialAnalysis({
         ].map((tab) => (
           <button
             key={tab.key}
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             onClick={() => setActiveTab(tab.key as any)}
             className={`px-4 py-2 font-medium ${
               activeTab === tab.key

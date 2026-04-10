@@ -21,6 +21,7 @@ export async function safeLeadsSelect(orgId: string, take = 100) {
       data: { count: leads.length, orgId },
     });
     return leads;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (e: any) {
     const msg = String(e?.message || "").toLowerCase();
     const drift =
@@ -58,6 +59,7 @@ export async function safeLeadsSelect(orgId: string, take = 100) {
         data: { count: mapped.length },
       });
       return mapped;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (fallbackErr: any) {
       Sentry.captureMessage("safeLeadsSelect: fallback failed", {
         level: "error",

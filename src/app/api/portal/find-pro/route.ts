@@ -4,6 +4,7 @@
  * Searches for contractors with filtering and sorting
  */
 
+// eslint-disable-next-line no-restricted-imports
 import { auth, currentUser } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
 

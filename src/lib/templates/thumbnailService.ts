@@ -135,9 +135,11 @@ export async function generateTemplateThumbnail(
     }
 
     // 3. Generate HTML from template
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const templateJson = (template as any).sections;
     if (!templateJson) {
       // Generate a simple preview placeholder
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       return await generatePlaceholderThumbnail({ ...template, title: template.name } as any, {
         width,
         height,
@@ -334,6 +336,7 @@ async function renderHtmlToThumbnail(
  * Upload thumbnail to Supabase storage
  */
 async function uploadThumbnailToStorage(templateId: string, buffer: Buffer): Promise<string> {
+  // eslint-disable-next-line no-restricted-syntax
   const bucket = process.env.SUPABASE_STORAGE_BUCKET_TEMPLATES || "template-assets";
   const timestamp = Date.now();
   const path = `thumbnails/${templateId}/${timestamp}.png`;

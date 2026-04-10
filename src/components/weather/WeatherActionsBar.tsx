@@ -1,5 +1,6 @@
 "use client";
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export default function ReportActionsBar({ reportId }: any) {
   async function sendEmail() {
     const res = await fetch("/api/weather/send-email", {

@@ -81,6 +81,7 @@ export function LegalGate({ initialPending, children }: LegalGateProps) {
       }
 
       toast.success("Welcome! All agreements accepted.");
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       logger.error("[LegalGate] Accept all failed:", error);
       toast.error("Something went wrong. Please try again.");

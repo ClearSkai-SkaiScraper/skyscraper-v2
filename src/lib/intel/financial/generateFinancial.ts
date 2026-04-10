@@ -12,6 +12,7 @@ export interface FinancialAnalysis {
   ourACV: number;
   underpayment: number;
   depreciationWithheld: number;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   [key: string]: any;
 }
 

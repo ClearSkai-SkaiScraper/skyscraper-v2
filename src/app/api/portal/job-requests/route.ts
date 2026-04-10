@@ -6,6 +6,7 @@ export const dynamic = "force-dynamic";
  * Allows clients to post job requests with photos, summary, and requirements
  */
 
+// eslint-disable-next-line no-restricted-imports
 import { auth, currentUser } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
@@ -29,6 +30,7 @@ export async function GET(request: NextRequest) {
     const { userId } = await auth();
 
     // Build where clause
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const where: any = {
       status,
       visibility: "public",

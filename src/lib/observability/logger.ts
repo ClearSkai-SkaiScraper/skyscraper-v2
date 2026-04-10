@@ -18,6 +18,7 @@ export interface LogContext {
   /** Request ID (for tracing) */
   requestId?: string;
   /** Additional metadata */
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   [key: string]: any;
 }
 
@@ -39,6 +40,7 @@ class StructuredLogger {
 
   private constructor() {
     // Set min level from environment
+    // eslint-disable-next-line no-restricted-syntax
     const envLevel = process.env.LOG_LEVEL?.toLowerCase();
     if (
       envLevel === "debug" ||

@@ -417,6 +417,7 @@ export default function Builder() {
       } else if (result.jobIds && result.jobIds.length > 0) {
         setCurrentJobId(result.jobIds[0]);
       }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       setError(err.message);
     } finally {
@@ -473,6 +474,7 @@ export default function Builder() {
         setWeatherStatus("error");
         setError("Weather data fetch failed. Try running Weather Verification from AI controls.");
       }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       setWeatherStatus("error");
       setError(err.message || "Failed to pull weather data.");
@@ -511,6 +513,7 @@ export default function Builder() {
         setMaterialStatus("error");
         setError("Material estimate generation failed. Ensure roof measurements are available.");
       }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       setMaterialStatus("error");
       setError(err.message || "Failed to generate material estimate.");
@@ -549,6 +552,7 @@ export default function Builder() {
         setMockupStatus("error");
         setError("Mockup generation failed. Ensure property photo is uploaded.");
       }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       setMockupStatus("error");
       setError(err.message || "Failed to generate mockup.");
@@ -585,6 +589,7 @@ export default function Builder() {
         setTimelineStatus("error");
         setError("Timeline generation failed. Ensure scope is defined.");
       }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       setTimelineStatus("error");
       setError(err.message || "Failed to generate timeline.");
@@ -662,6 +667,7 @@ export default function Builder() {
       if (attempts >= maxAttempts) {
         throw new Error("Generation timed out. Please check status later.");
       }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       console.error("[Builder] Export failed:", err);
       setError(err.message || "Export failed. Please try again.");

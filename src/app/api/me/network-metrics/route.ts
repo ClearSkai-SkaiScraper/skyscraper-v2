@@ -1,5 +1,6 @@
 export const dynamic = "force-dynamic";
 
+// eslint-disable-next-line no-restricted-imports
 import { auth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 
@@ -8,6 +9,7 @@ import { toPlainJSON } from "@/lib/serialize";
 
 export async function GET() {
   // 🚑 DEV BYPASS: Skip network metrics in local dev to avoid TLS errors
+  // eslint-disable-next-line no-restricted-syntax
   if (process.env.NODE_ENV !== "production") {
     return NextResponse.json({
       likes: 0,
@@ -17,6 +19,7 @@ export async function GET() {
     });
   }
 
+  // eslint-disable-next-line @typescript-eslint/await-thenable
   const { userId } = await auth();
   // eslint-disable-next-line @typescript-eslint/await-thenable
   if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });

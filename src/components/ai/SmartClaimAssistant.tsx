@@ -61,6 +61,7 @@ export default function SmartClaimAssistant({ claimId }: { claimId?: string }) {
       };
 
       setMessages((prev) => [...prev, assistantMessage]);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       logger.error("Assistant error:", error);
       setMessages((prev) => [

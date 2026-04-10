@@ -8,10 +8,12 @@ import { ZodSchema } from "zod";
 import { logger } from "@/lib/logger";
 
 export interface ValidateAndRetryOptions<T> {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   call: () => Promise<any>;
   schema: ZodSchema<T>;
   retries?: number;
   fallback: T;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   onError?: (error: any, attempt: number) => void;
 }
 
@@ -71,6 +73,7 @@ export async function validateAndRetry<T>({
  */
 export async function validateBatch<T>(
   calls: Array<{
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     call: () => Promise<any>;
     schema: ZodSchema<T>;
     fallback: T;

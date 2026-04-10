@@ -59,6 +59,7 @@ export const POST = withAuth(async (req: NextRequest, { userId }) => {
 
     // Create invite token
     const token = randomUUID();
+    // eslint-disable-next-line no-restricted-syntax
     const inviteLink = `${process.env.NEXT_PUBLIC_APP_URL || "https://skaiscrape.com"}/trades/join?token=${token}`;
 
     if (existing && existing.status === "pending") {

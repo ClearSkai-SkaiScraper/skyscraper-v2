@@ -63,6 +63,7 @@ export const GET = withAuth(async (req: NextRequest, { orgId, userId }, routePar
     const branding = await getOrgBranding(db, orgId);
     const generatedContent = document.generated_content;
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let stream: any;
     let filename: string;
 

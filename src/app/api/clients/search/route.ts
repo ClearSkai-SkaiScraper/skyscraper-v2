@@ -32,6 +32,7 @@ export async function GET(req: NextRequest) {
     const offset = parseInt(searchParams.get("offset") || "0");
 
     // Build where clause - only show public clients from other orgs
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const where: any = {
       isPublic: true,
       orgId: { not: orgId }, // Don't show own clients

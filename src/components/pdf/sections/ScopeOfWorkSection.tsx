@@ -9,18 +9,25 @@ import { baseStyles } from "../SharedStyles";
 
 export function ScopeOfWorkSection({ data }: { data: ReportData }) {
   const claim = data.claim || {};
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const property = (data as any).property || {};
 
   // Extract relevant fields with fallbacks
   const propertyAddress = claim.propertyAddress || property.address || "the property";
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const roofType = (claim as any).roof_type || (claim as any).roofType || "asphalt shingle";
   const structureType =
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (claim as any).structure_type || (claim as any).structureType || "single-family";
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const squareFootage = (claim as any).square_footage || (claim as any).squareFootage;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const stories = (claim as any).stories || 1;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const slope = (claim as any).slope || "standard pitch";
 
   // Check if we have AI-generated scope
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const aiSummary = (data as any).aiSummary || (data as any).aiReport?.summary;
   const hasCustomScope = !!aiSummary;
 

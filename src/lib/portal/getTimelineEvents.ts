@@ -9,6 +9,7 @@ export async function getClaimTimelineEventsSafe(claimId: string) {
       orderBy: { occurred_at: "asc" },
     });
     return events;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (err: any) {
     const msg = err?.message || "";
     if (/relation .*claim_timeline_events.* does not exist/i.test(msg)) {

@@ -6,11 +6,13 @@ export const TemplateSchema = z.object({
   bodyHtml: z.string().default("<p>Template body</p>"),
 });
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function renderTemplateHtml(templateJson: unknown, sampleData: Record<string, any>) {
   const t = TemplateSchema.parse(templateJson);
 
   // extremely simple merge example — replace with your real merge engine
   const mergedBody = t.bodyHtml.replace(/\{\{(\w+(\.\w+)*)\}\}/g, (_, path) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const value = path.split(".").reduce((acc: any, k: string) => acc?.[k], sampleData);
     return value == null ? "" : String(value);
   });

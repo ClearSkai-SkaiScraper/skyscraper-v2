@@ -31,6 +31,7 @@ export type ActionType =
 export interface MappedAction {
   type: ActionType;
   priority: number; // Lower number = higher priority
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   config?: any; // Action-specific configuration
 }
 

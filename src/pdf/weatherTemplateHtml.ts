@@ -10,7 +10,9 @@ export function htmlTemplate({
 }: {
   lat: number;
   lon: number;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   dol: any;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   scored: any[];
   summary: string;
   branding?: {

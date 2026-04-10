@@ -98,6 +98,7 @@ export default function ContractorProfilePage() {
         }
         const data = await res.json();
         setProfile(data.contractor);
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       } catch (_err) {
         setError("Failed to load profile");
       } finally {

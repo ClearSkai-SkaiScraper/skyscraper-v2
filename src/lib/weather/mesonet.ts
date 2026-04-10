@@ -7,6 +7,7 @@ import { logger } from "@/lib/logger";
 import type { WeatherEvent } from "@/types/weather";
 
 const MESONET_API_BASE =
+  // eslint-disable-next-line no-restricted-syntax
   process.env.MESONET_API_BASE || "https://mesonet.agron.iastate.edu/geojson";
 
 export interface MesonetFeature {

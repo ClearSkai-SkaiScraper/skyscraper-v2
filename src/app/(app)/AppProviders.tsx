@@ -22,6 +22,7 @@ export function AppProviders({
 }: {
   children: React.ReactNode;
   orgId: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   pendingLegal?: any[];
 }) {
   // Fire presence heartbeat on every page load + every 2 minutes

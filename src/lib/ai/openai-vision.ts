@@ -155,6 +155,7 @@ export async function analyzeImageEnvelope(
       model: options.model || "gpt-4o-mini",
       durationMs: Date.now() - start,
     });
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (err: any) {
     const { message, code } = classifyOpenAiError(err);
     return aiFail(

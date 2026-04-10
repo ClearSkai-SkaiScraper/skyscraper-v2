@@ -29,9 +29,12 @@ import { logger } from "@/lib/logger";
 
 // Initialize Upstash Redis client
 const redis =
+  // eslint-disable-next-line no-restricted-syntax
   process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN
     ? new Redis({
+        // eslint-disable-next-line no-restricted-syntax
         url: process.env.UPSTASH_REDIS_REST_URL,
+        // eslint-disable-next-line no-restricted-syntax
         token: process.env.UPSTASH_REDIS_REST_TOKEN,
       })
     : null;

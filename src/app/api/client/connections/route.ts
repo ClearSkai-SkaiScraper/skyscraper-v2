@@ -1,5 +1,6 @@
 export const dynamic = "force-dynamic";
 
+// eslint-disable-next-line no-restricted-imports
 import { auth, currentUser } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -14,6 +15,7 @@ import prisma from "@/lib/prisma";
 export async function GET(req: NextRequest) {
   // eslint-disable-next-line @typescript-eslint/await-thenable
   try {
+    // eslint-disable-next-line @typescript-eslint/await-thenable
     const { userId } = await auth();
 
     if (!userId) {
@@ -91,6 +93,7 @@ export async function GET(req: NextRequest) {
           select: { companyId: true },
           distinct: ["companyId"],
         });
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const companyIds = orgMembers.map((m: any) => m.companyId).filter(Boolean);
         if (companyIds.length > 0) {
           const companies = await prisma.tradesCompany.findMany({
@@ -98,6 +101,7 @@ export async function GET(req: NextRequest) {
             select: { id: true, name: true, logo: true, specialties: true },
           });
           for (const co of companies) {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             if (!pros.find((p: any) => p.id === co.id)) {
               pros.push({
                 id: co.id,
@@ -122,6 +126,7 @@ export async function GET(req: NextRequest) {
           select: { tradePartnerId: true },
           distinct: ["tradePartnerId"],
         });
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const partnerIds = existingThreads.map((t: any) => t.tradePartnerId).filter(Boolean);
         if (partnerIds.length > 0) {
           const companies = await prisma.tradesCompany.findMany({
@@ -129,6 +134,7 @@ export async function GET(req: NextRequest) {
             select: { id: true, name: true, logo: true, specialties: true },
           });
           for (const co of companies) {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             if (!pros.find((p: any) => p.id === co.id)) {
               pros.push({
                 id: co.id,

@@ -17,6 +17,7 @@ import { NextRequest, NextResponse } from "next/server";
  */
 export async function GET(req: NextRequest) {
   // Block in production
+  // eslint-disable-next-line no-restricted-syntax
   if (process.env.NODE_ENV === "production" && process.env.VERCEL_ENV === "production") {
     return NextResponse.json({ error: "Not available in production" }, { status: 403 });
   }
@@ -46,7 +47,9 @@ export async function GET(req: NextRequest) {
       ok: true,
       mode: "handled",
       detail: "Sentry.captureException sent — check Sentry dashboard for error event",
+      // eslint-disable-next-line no-restricted-syntax
       dsn: process.env.NEXT_PUBLIC_SENTRY_DSN ? "configured" : "MISSING",
+      // eslint-disable-next-line no-restricted-syntax
       environment: process.env.SENTRY_ENVIRONMENT || process.env.VERCEL_ENV || process.env.NODE_ENV,
     });
   }

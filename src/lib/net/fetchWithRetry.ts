@@ -9,6 +9,7 @@ export interface RetryOptions {
   retryOnStatus?: number[]; // e.g. [429, 500, 502, 503, 504]
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const isTransient = (error: any) => {
   if (!error) return false;
   const msg = String(error.message || error);
@@ -34,6 +35,7 @@ export async function fetchWithRetry(input: RequestInfo | URL, init?: RequestIni
         continue;
       }
       return res;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       if (attempt >= retries || !isTransient(err)) throw err;
       await delay(calcDelay(attempt, baseDelayMs, maxDelayMs, jitter));

@@ -193,6 +193,7 @@ export abstract class BaseMigrationEngine {
         errors: this.errors,
         duration: Date.now() - this.startTime.getTime(),
       };
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       logger.error("[Migration] Fatal error:", error);
       await this.updateJob({ status: "FAILED", errors: [error.message] });
@@ -250,6 +251,7 @@ export abstract class BaseMigrationEngine {
 
       await this.updateJob({ status: "CANCELLED" });
       this.emitProgress("CANCELLED", "Rollback complete", 100);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       logger.error("[Migration] Rollback failed:", error);
       await this.updateJob({ status: "FAILED", errors: [error.message] });
@@ -289,6 +291,7 @@ export abstract class BaseMigrationEngine {
       skippedRecords: number;
       errorRecords: number;
       errors: string[];
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       stats: Record<string, any>;
       completedAt: Date;
     }>

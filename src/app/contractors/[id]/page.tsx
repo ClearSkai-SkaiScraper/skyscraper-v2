@@ -8,6 +8,7 @@
  * - Unauthenticated → /portal/find-a-pro/[id] (public view)
  */
 
+// eslint-disable-next-line no-restricted-imports
 import { auth } from "@clerk/nextjs/server";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";

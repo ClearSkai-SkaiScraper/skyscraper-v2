@@ -53,6 +53,7 @@ interface Contact {
 
 interface NetworkClientProps {
   contacts: Contact[];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   contractors: any[];
   stats: {
     totalContacts: number;
@@ -65,6 +66,7 @@ interface NetworkClientProps {
 // Contact type badge colors and icons
 const CONTACT_TYPE_CONFIG: Record<
   ContactType,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   { label: string; color: string; icon: any }
 > = {
   CONTRACTOR: {
@@ -156,6 +158,7 @@ export default function NetworkClient({ contacts, contractors, stats }: NetworkC
   const filteredContacts = getFilteredContacts(selectedTab);
 
   // Group contact types for tabs
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const contactTypeTabs: Array<{ type: ContactType | "all"; label: string; icon: any }> = [
     { type: "all", label: "All Contacts", icon: Users },
     { type: "CONTRACTOR", label: "Contractors", icon: Building2 },

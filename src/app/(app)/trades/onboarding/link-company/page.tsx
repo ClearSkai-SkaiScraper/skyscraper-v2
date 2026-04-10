@@ -21,6 +21,7 @@ export default function LinkCompanyPage() {
   const [companyName, setCompanyName] = useState("");
   const [joinToken, setJoinToken] = useState("");
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars
   const [onboardingStatus, setOnboardingStatus] = useState<any>(null);
 
   useEffect(() => {

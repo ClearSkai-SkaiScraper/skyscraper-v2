@@ -35,6 +35,7 @@ export const dynamic = "force-dynamic";
 interface RetailPacket {
   id: string;
   current_step: number;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   data: any;
   created_at: string;
   updated_at: string;
@@ -59,6 +60,7 @@ export default function RetailProjectsPage() {
         } else {
           setError(result.error || "Failed to load packets");
         }
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       } catch (_err) {
         setError("Network error");
       } finally {

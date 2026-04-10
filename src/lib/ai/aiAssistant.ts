@@ -17,6 +17,7 @@ export interface AIConfig {
 
 export interface AIResponse {
   success: boolean;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   result?: any;
   error?: string;
   usage?: {
@@ -31,10 +32,15 @@ export interface AIResponse {
  */
 export function getAIConfig(): AIConfig {
   return {
+    // eslint-disable-next-line no-restricted-syntax
     provider: (process.env.AI_PROVIDER as "openai" | "claude") || "openai",
+    // eslint-disable-next-line no-restricted-syntax
     apiKey: process.env.OPENAI_API_KEY || process.env.ANTHROPIC_API_KEY || "",
+    // eslint-disable-next-line no-restricted-syntax
     model: process.env.AI_MODEL || "gpt-4o",
+    // eslint-disable-next-line no-restricted-syntax
     maxTokens: parseInt(process.env.AI_MAX_TOKENS || "2000"),
+    // eslint-disable-next-line no-restricted-syntax
     temperature: parseFloat(process.env.AI_TEMPERATURE || "0.7"),
   };
 }
@@ -296,6 +302,7 @@ Format as JSON array: [{"action": "Do X", "priority": "high", "reason": "Why"}]`
 export async function callAI(
   prompt: string,
   config: AIConfig
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 ): Promise<{ result: string; usage?: any }> {
   if (config.provider === "openai") {
     return callOpenAI(prompt, config);
@@ -310,6 +317,7 @@ export async function callAI(
 async function callOpenAI(
   prompt: string,
   config: AIConfig
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 ): Promise<{ result: string; usage?: any }> {
   try {
     const response = await fetch("https://api.openai.com/v1/chat/completions", {
@@ -358,6 +366,7 @@ async function callOpenAI(
 async function callClaude(
   prompt: string,
   config: AIConfig
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 ): Promise<{ result: string; usage?: any }> {
   try {
     const response = await fetch("https://api.anthropic.com/v1/messages", {

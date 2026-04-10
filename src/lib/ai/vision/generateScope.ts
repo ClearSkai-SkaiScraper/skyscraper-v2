@@ -12,16 +12,22 @@ import { upstash } from '@/lib/upstash';
 export async function generateScope(options: {
   orgId: string;
   claimId: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   components: any;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   damages: any;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   materials: any;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   codeFlags?: any;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 }): Promise<{ scope: any; meta: { cached?: boolean } }> {
   const redis = upstash;
   const jobKey = `aiq:scope:${options.claimId}`;
   if (redis) {
     try {
       const cached = await redis.get(jobKey);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       if (cached) return { ...(cached as any), meta: { cached: true } };
     } catch {}
   }

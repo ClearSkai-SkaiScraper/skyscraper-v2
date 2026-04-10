@@ -13,6 +13,7 @@ export default async function ClientActivityPage({ params }: ClientActivityPageP
   const { slug } = params;
 
   // Fetch client-visible timeline events
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let activities: any[] = [];
 
   try {

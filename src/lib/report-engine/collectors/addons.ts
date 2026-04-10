@@ -5,6 +5,7 @@
  * These are the toggles the user chooses in the UI
  * They control what gets included in the final report/proposal
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function collectAddonSelections(addonPayload: any) {
   return {
     // Weather & climate

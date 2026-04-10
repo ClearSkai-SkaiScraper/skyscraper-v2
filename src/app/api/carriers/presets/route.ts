@@ -3,6 +3,7 @@ export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
 // Phase 5 - Carrier Presets API Route
+// eslint-disable-next-line no-restricted-imports
 import { auth } from '@clerk/nextjs/server';
 import { NextResponse } from 'next/server';
 

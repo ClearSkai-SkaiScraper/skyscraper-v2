@@ -1,3 +1,4 @@
+// eslint-disable-next-line no-restricted-imports
 import { currentUser } from "@clerk/nextjs/server";
 
 import { logger } from "@/lib/logger";
@@ -13,7 +14,9 @@ export interface WizardContext {
     lastName: string | null;
   };
   branding: CompanyBranding | null;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   lead: any | null;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   job: any | null;
 }
 

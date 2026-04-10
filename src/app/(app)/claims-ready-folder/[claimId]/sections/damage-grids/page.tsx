@@ -126,6 +126,7 @@ export default function DamageGridsPage() {
     }
   };
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const updateElevation = (index: number, field: keyof ElevationDamage, value: any) => {
     setData((prev) => {
       if (!prev) return null;

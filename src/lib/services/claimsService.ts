@@ -15,6 +15,7 @@ export interface ClaimDTO {
   propertyId?: string | null;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function mapClaim(claim: any): ClaimDTO {
   return {
     id: claim.id,
@@ -28,6 +29,7 @@ function mapClaim(claim: any): ClaimDTO {
     carrier: claim.carrier || null,
     createdAt: claim.createdAt?.toISOString() || new Date().toISOString(),
     updatedAt: claim.updatedAt?.toISOString() || new Date().toISOString(),
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     propertyId: (claim as any).propertyId || (claim as any).property_id || null,
   };
 }
@@ -54,6 +56,7 @@ export async function createClaim(data: {
     status: data.status || "new",
     ...data,
   };
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const claim = await prisma.claims.create({ data: enriched as any });
   return mapClaim(claim);
 }
@@ -67,6 +70,7 @@ export async function listClaims(params: {
   visibleUserIds?: string[] | null;
 }): Promise<{ claims: ClaimDTO[]; total: number; limit: number; offset: number }> {
   const { orgId, limit = 50, offset = 0, stage, search, visibleUserIds } = params;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const where: any = { orgId };
   if (stage) where.status = stage; // status field in schema
   if (search) {

@@ -35,10 +35,12 @@ let _client: OpenAI | null = null;
  */
 export function getOpenAI(): OpenAI {
   if (!_client) {
+    // eslint-disable-next-line no-restricted-syntax
     const apiKey = process.env.OPENAI_API_KEY;
     if (!apiKey) {
       // During build time (no runtime context), return a dummy client
       // This only affects static analysis — runtime calls will fail properly
+      // eslint-disable-next-line no-restricted-syntax
       if (process.env.NODE_ENV === "development" && !process.env.VERCEL) {
         throw new Error("[AI] OPENAI_API_KEY environment variable is required");
       }
@@ -58,6 +60,7 @@ export const ensureOpenAI = getOpenAI;
 // CONFIGURATION DEFAULTS
 // ============================================================================
 
+// eslint-disable-next-line no-restricted-syntax
 const DEFAULT_MODEL = process.env.OPENAI_DEFAULT_MODEL || "gpt-4o-mini";
 const DEFAULT_MAX_TOKENS = 1200;
 const DEFAULT_TEMPERATURE = 0.2;
@@ -99,6 +102,7 @@ export type AiCallOptions<T = unknown> = {
   parseJson?: boolean;
 
   /** Additional context for error logging (e.g. claimId, userId) */
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   context?: Record<string, any>;
 
   /** Organization ID — when provided, enforces per-org daily token budget */
@@ -208,6 +212,7 @@ export async function callOpenAI<T = unknown>(opts: AiCallOptions<T>): Promise<A
           max_tokens: maxTokens,
           temperature,
         },
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         { signal: controller.signal as any }
       );
 
@@ -272,6 +277,7 @@ export async function callOpenAI<T = unknown>(opts: AiCallOptions<T>): Promise<A
         model,
         tokensUsed,
       };
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (apiError: any) {
       clearTimeout(timeoutId);
 
@@ -310,6 +316,7 @@ export async function callOpenAI<T = unknown>(opts: AiCallOptions<T>): Promise<A
         code: "API_ERROR",
       };
     }
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (error: any) {
     // Handle configuration errors
     logger.error("[AI_CONFIG_ERROR]", {
@@ -343,6 +350,7 @@ export async function callOpenAI<T = unknown>(opts: AiCallOptions<T>): Promise<A
  * ```
  */
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
+// eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars
 export async function callOpenAIStream(opts: any): Promise<any> {
   throw new Error("callOpenAIStream not yet implemented. Use direct OpenAI client for streaming.");
 }

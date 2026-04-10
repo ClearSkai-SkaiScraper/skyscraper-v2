@@ -95,7 +95,9 @@ export function useOnboardingTracking() {
       }
 
       // PostHog tracking (if available)
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       if (typeof window !== "undefined" && (window as any).posthog) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (window as any).posthog.capture("onboarding_step_completed", {
           step_id: stepId,
           duration_ms: durationMs,

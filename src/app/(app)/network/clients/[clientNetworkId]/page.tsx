@@ -73,7 +73,9 @@ export default async function ClientNetworkDetailPage({ params }: ClientNetworkP
                           <p className="mt-1 text-sm text-muted-foreground">{a.message}</p>
                         ) : null}
                       </div>
+                      // eslint-disable-next-line react/jsx-no-comment-textnodes
                       <p className="whitespace-nowrap text-xs text-muted-foreground">
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
                         {new Date(a.createdAt as any).toLocaleString()}
                       </p>
                     </div>

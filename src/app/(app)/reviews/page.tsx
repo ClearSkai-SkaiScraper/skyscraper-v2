@@ -37,6 +37,7 @@ function CustomerReviewsPage() {
       if (res.ok) {
         const data = await res.json();
         // Map API response to Review interface
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const mapped = (data.reviews || []).map((r: any) => ({
           id: r.id,
           customerName: r.reviewerName || r.clientName || "Anonymous",

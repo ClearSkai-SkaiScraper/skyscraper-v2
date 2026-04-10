@@ -64,6 +64,7 @@ export function EditableField({
       // Flash a brief saved indicator
       setJustSaved(true);
       setTimeout(() => setJustSaved(false), 1500);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       setError(err.message || "Failed to save");
       setTimeout(() => setError(null), 3000);

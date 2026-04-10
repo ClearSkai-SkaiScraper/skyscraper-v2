@@ -279,6 +279,7 @@ export const GET = withAuth(async (req: NextRequest, { orgId, userId }) => {
     // Check if company page is unlocked
     let companyPageUnlocked = false;
     let unlockReason: string | null = null;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let requirementsToUnlock: Record<string, any> | null = null;
     let planKey = "solo";
 
@@ -296,6 +297,7 @@ export const GET = withAuth(async (req: NextRequest, { orgId, userId }) => {
         select: { planKey: true },
       });
       planKey = org?.planKey || "solo";
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (_e) {
       // Org lookup may fail for edge cases, use default
     }
@@ -364,6 +366,7 @@ export const GET = withAuth(async (req: NextRequest, { orgId, userId }) => {
               company: {
                 ...existingCompany,
                 coverPhoto: existingCompany.coverimage || null,
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 members: existingCompany.members.map((m: any) => ({
                   ...m,
                   avatar: m.avatar || m.profilePhoto || null,
@@ -423,6 +426,7 @@ export const GET = withAuth(async (req: NextRequest, { orgId, userId }) => {
               ...newCompany,
               coverPhoto: newCompany.coverimage || null,
               // Merge profilePhoto fallback into avatar for each member
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
               members: newCompany.members.map((m: any) => ({
                 ...m,
                 avatar: m.avatar || m.profilePhoto || null,
@@ -498,6 +502,7 @@ export const GET = withAuth(async (req: NextRequest, { orgId, userId }) => {
         // Map coverimage -> coverPhoto for frontend
         coverPhoto: companyCoverPhoto,
         // Merge profilePhoto fallback into avatar so team photos always render
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         members: membership.company.members.map((m: any) => ({
           ...m,
           avatar: m.avatar || m.profilePhoto || null,
@@ -583,6 +588,7 @@ export const PATCH = withAuth(async (req: NextRequest, { orgId, userId }) => {
     }
 
     // Build update data for TradesCompany — only include provided fields
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const updateData: Record<string, any> = {
       updatedAt: new Date(),
     };
@@ -610,6 +616,7 @@ export const PATCH = withAuth(async (req: NextRequest, { orgId, userId }) => {
     });
 
     // Also update member-level extended fields (tagline, hours, etc.)
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const memberUpdate: Record<string, any> = {};
     if (tagline !== undefined) memberUpdate.tagline = tagline;
     if (aboutCompany !== undefined) memberUpdate.aboutCompany = aboutCompany;

@@ -112,6 +112,7 @@ export default function DenialResponsePanel({ claimId }: { claimId: string }) {
 
         const data = await response.json();
         setDenialResponse(data);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } catch (err: any) {
         logger.error("Error generating appeal:", err);
         setError(err.message || "Failed to generate appeal");

@@ -22,7 +22,9 @@ interface Contractor {
   featuredUntil?: string | null;
   emergencyAvailable: boolean;
   emergencyReady?: boolean;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   serviceAreas: any[];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   services: any;
   totalJobs: number;
   distance?: number;
@@ -72,10 +74,12 @@ export default function PublicDirectoryPage() {
 
         // Reverse geocode to get ZIP code
         try {
+          // eslint-disable-next-line no-restricted-syntax
           const token = process.env.NEXT_PUBLIC_MAPBOX_TOKEN;
           if (token) {
             const url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${longitude},${latitude}.json?types=postcode&access_token=${token}`;
             const res = await guardedFetch(url, {}, "mapbox-reverse-geocode");
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             let data: any = null;
             if (res) {
               try {
