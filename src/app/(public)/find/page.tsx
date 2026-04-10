@@ -74,7 +74,6 @@ export default function PublicDirectoryPage() {
 
         // Reverse geocode to get ZIP code
         try {
-          // eslint-disable-next-line no-restricted-syntax
           const token = process.env.NEXT_PUBLIC_MAPBOX_TOKEN;
           if (token) {
             const url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${longitude},${latitude}.json?types=postcode&access_token=${token}`;

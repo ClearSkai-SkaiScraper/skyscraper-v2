@@ -1,3 +1,4 @@
+/* eslint-disable react/jsx-no-comment-textnodes */
 import Link from "next/link";
 
 /**
@@ -39,11 +40,8 @@ export default function ShowcasePage() {
         </p>
         <div className="grid gap-4 sm:grid-cols-2">
           <div className="rounded-lg border p-4">
-            // eslint-disable-next-line react/jsx-no-comment-textnodes
             <div className="mb-2 text-sm text-gray-500">Primary Logo</div>
-            // eslint-disable-next-line react/jsx-no-comment-textnodes
             <div className="flex h-24 items-center justify-center rounded bg-gray-50">
-              // eslint-disable-next-line @next/next/no-img-element
               <img src="/logo.svg" alt="SkaiScraper" className="h-12" />
             </div>
           </div>

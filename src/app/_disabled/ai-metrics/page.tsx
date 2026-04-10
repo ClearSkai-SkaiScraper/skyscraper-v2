@@ -100,7 +100,6 @@ export default function AIMetricsDashboard() {
     if (!autoRefresh) return;
     const interval = setInterval(fetchMetrics, 10000); // Every 10s
     return () => clearInterval(interval);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [autoRefresh]);
 
   if (!isLoaded || !isSignedIn) {

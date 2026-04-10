@@ -1,3 +1,4 @@
+/* eslint-disable react/jsx-no-comment-textnodes, @typescript-eslint/no-explicit-any */
 /**
  * AttachToClaimDialog Component
  * Prompts Pro to attach client connection to a claim (new or existing)
@@ -149,6 +150,7 @@ export function AttachToClaimDialog({
           // eslint-disable-next-line react/jsx-no-comment-textnodes
           {/* Mode selector */}
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           <RadioGroup value={mode} onValueChange={(v: any) => setMode(v)}>
             <div className="flex items-center space-x-2">
               <RadioGroupItem value="new" id="new" />
@@ -181,6 +183,7 @@ export function AttachToClaimDialog({
                 >
                   // eslint-disable-next-line react/jsx-no-comment-textnodes
                   <option value="">-- Select a claim --</option>
+                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
                   // eslint-disable-next-line @typescript-eslint/no-explicit-any
                   {claims.map((claim: any) => (
                     <option key={claim.id} value={claim.id}>

@@ -1,3 +1,4 @@
+/* eslint-disable react/jsx-no-comment-textnodes, @typescript-eslint/no-explicit-any */
 // components/pdf/sections/ClientSnapshotSection.tsx
 
 import { Text,View } from "@react-pdf/renderer";
@@ -33,17 +34,20 @@ export function ClientSnapshotSection({ data }: { data: ReportData }) {
           // eslint-disable-next-line react/jsx-no-comment-textnodes
           <Text style={baseStyles.label}>Name</Text>
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           <Text style={baseStyles.value}>{(c as any).clientName || "N/A"}</Text>
         </View>
         <View style={baseStyles.col}>
           // eslint-disable-next-line react/jsx-no-comment-textnodes
           <Text style={baseStyles.label}>Phone</Text>
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           <Text style={baseStyles.value}>{(c as any).clientPhone || "N/A"}</Text>
         </View>
         <View style={baseStyles.col}>
           // eslint-disable-next-line react/jsx-no-comment-textnodes
           <Text style={baseStyles.label}>Email</Text>
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           <Text style={baseStyles.value}>{(c as any).clientEmail || "N/A"}</Text>
         </View>

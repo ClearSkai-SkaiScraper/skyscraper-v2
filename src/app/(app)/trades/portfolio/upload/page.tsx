@@ -145,9 +145,7 @@ export default function PortfolioUploadPage() {
             {previews.length > 0 && (
               <div className="mb-4 grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
                 {previews.map((preview, i) => (
-                  // eslint-disable-next-line react/jsx-no-comment-textnodes
                   <div key={i} className="group relative aspect-square overflow-hidden rounded-lg">
-                    // eslint-disable-next-line @next/next/no-img-element
                     <img
                       src={preview}
                       alt={`Photo ${i + 1}`}

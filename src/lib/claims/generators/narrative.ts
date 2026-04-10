@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /**
  * PHASE 50 - SELF-WRITING CLAIM ENGINE
  * Narrative Generator - Auto-generates carrier-ready claim narratives

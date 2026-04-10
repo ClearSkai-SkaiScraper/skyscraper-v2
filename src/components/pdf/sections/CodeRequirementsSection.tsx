@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 // components/pdf/sections/CodeRequirementsSection.tsx
 
 import { StyleSheet, Text, View } from "@react-pdf/renderer";

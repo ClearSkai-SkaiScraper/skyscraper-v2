@@ -314,7 +314,6 @@ export default function CoverPageBuilderPage() {
                     onClick={() => logoInputRef.current?.click()}
                   >
                     {data.logoUrl ? (
-                      // eslint-disable-next-line @next/next/no-img-element
                       <img src={data.logoUrl} alt="Logo" className="h-full w-full object-contain" />
                     ) : uploading === "logo" ? (
                       <Loader2 className="h-6 w-6 animate-spin text-slate-400" />
@@ -353,7 +352,6 @@ export default function CoverPageBuilderPage() {
                     onClick={() => bgInputRef.current?.click()}
                   >
                     {data.backgroundUrl ? (
-                      // eslint-disable-next-line @next/next/no-img-element
                       <img
                         src={data.backgroundUrl}
                         alt="Background"
@@ -456,7 +454,6 @@ export default function CoverPageBuilderPage() {
                   {/* Top - Logo */}
                   <div className="flex flex-col items-center">
                     {data.logoUrl ? (
-                      // eslint-disable-next-line @next/next/no-img-element
                       <img
                         src={data.logoUrl}
                         alt="Logo"

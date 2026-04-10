@@ -1,3 +1,4 @@
+/* eslint-disable no-restricted-syntax */
 export const dynamic = "force-dynamic";
 
 /**

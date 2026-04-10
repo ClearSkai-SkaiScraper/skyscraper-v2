@@ -244,9 +244,7 @@ export function CertificateOfCompletion({
           <h4 className="font-semibold">Property Owner Signature</h4>
 
           {signed && signatureUrl ? (
-            // eslint-disable-next-line react/jsx-no-comment-textnodes
             <div className="rounded-lg border bg-gray-50 p-4">
-              // eslint-disable-next-line @next/next/no-img-element
               <img src={signatureUrl} alt="Signature" className="mx-auto h-24 object-contain" />
               <p className="mt-2 text-center text-sm text-gray-600">Signed on {today}</p>
             </div>

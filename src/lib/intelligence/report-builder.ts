@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 // src/lib/intelligence/report-builder.ts
 /**
  * SkaiScraper Intelligence Core - Unified Report Builder

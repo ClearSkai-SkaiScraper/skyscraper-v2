@@ -1,3 +1,4 @@
+/* eslint-disable react/jsx-no-comment-textnodes, @typescript-eslint/no-explicit-any */
 // components/pdf/sections/EstimateSection.tsx
 
 import { Text,View } from "@react-pdf/renderer";
@@ -30,12 +31,15 @@ export function EstimateSection({ data, sections }: Props) {
       <SectionHeader data={data} title="Estimate Overview" />
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       {sections.includes("ESTIMATE_INITIAL") && (est as any).initial && (
         <View style={{ marginBottom: 10 }}>
           // eslint-disable-next-line react/jsx-no-comment-textnodes
           <Text style={baseStyles.label}>Initial Estimate</Text>
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           // eslint-disable-next-line @typescript-eslint/no-explicit-any, react/jsx-no-comment-textnodes
           <EstimateBlock summary={(est as any).initial.summary} />
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           <EstimateTable items={(est as any).initial.lineItems} />
         </View>
@@ -43,12 +47,15 @@ export function EstimateSection({ data, sections }: Props) {
       )}
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       {sections.includes("ESTIMATE_SUPPLEMENT") && (est as any).supplement && (
         <View style={{ marginTop: 10 }}>
           // eslint-disable-next-line react/jsx-no-comment-textnodes
           <Text style={baseStyles.label}>Supplement</Text>
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           // eslint-disable-next-line @typescript-eslint/no-explicit-any, react/jsx-no-comment-textnodes
           <EstimateBlock summary={(est as any).supplement.summary} />
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           <EstimateTable items={(est as any).supplement.lineItems} />
         </View>

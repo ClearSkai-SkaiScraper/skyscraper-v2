@@ -8,7 +8,6 @@ export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
 export default async function RetailProposalPage({
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   searchParams,
 }: {
   searchParams: Record<string, string | undefined>;

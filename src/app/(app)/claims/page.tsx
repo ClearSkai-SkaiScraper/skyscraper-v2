@@ -1,3 +1,4 @@
+/* eslint-disable react/jsx-no-comment-textnodes, @typescript-eslint/no-explicit-any */
 import {
   AlertTriangle,
   CheckCircle,
@@ -103,7 +104,6 @@ export default async function ClaimsPage({ searchParams }: ClaimsPageProps) {
       const searchTerm = params.search ? `%${params.search}%` : null;
 
       if (params.stage && searchTerm) {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         rawClaims = await prisma.$queryRaw<any[]>`
           SELECT 
             c.id, c."orgId", c.title, c."claimNumber", c.status, c."damageType",
@@ -125,7 +125,6 @@ export default async function ClaimsPage({ searchParams }: ClaimsPageProps) {
             AND ("claimNumber" ILIKE ${searchTerm} OR title ILIKE ${searchTerm})
         `;
       } else if (params.stage) {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         rawClaims = await prisma.$queryRaw<any[]>`
           SELECT 
             c.id, c."orgId", c.title, c."claimNumber", c.status, c."damageType",
@@ -142,7 +141,6 @@ export default async function ClaimsPage({ searchParams }: ClaimsPageProps) {
           SELECT COUNT(*)::int as count FROM claims WHERE "orgId" = ${organizationId} AND status = ${params.stage.toLowerCase()}
         `;
       } else if (searchTerm) {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         rawClaims = await prisma.$queryRaw<any[]>`
           SELECT 
             c.id, c."orgId", c.title, c."claimNumber", c.status, c."damageType",
@@ -162,7 +160,6 @@ export default async function ClaimsPage({ searchParams }: ClaimsPageProps) {
             AND ("claimNumber" ILIKE ${searchTerm} OR title ILIKE ${searchTerm})
         `;
       } else {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         rawClaims = await prisma.$queryRaw<any[]>`
           SELECT 
             c.id, c."orgId", c.title, c."claimNumber", c.status, c."damageType",
@@ -220,7 +217,6 @@ export default async function ClaimsPage({ searchParams }: ClaimsPageProps) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let allOrgClaims: any[] = [];
     try {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       allOrgClaims = await prisma.$queryRaw<any[]>`
         SELECT status, "estimatedValue" FROM claims WHERE "orgId" = ${organizationId}
       `;
@@ -232,7 +228,6 @@ export default async function ClaimsPage({ searchParams }: ClaimsPageProps) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let signingData: any[] = [];
     try {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       signingData = await prisma.$queryRaw<any[]>`
         SELECT "signingStatus" FROM claims WHERE "orgId" = ${organizationId}
       `;
@@ -246,13 +241,9 @@ export default async function ClaimsPage({ searchParams }: ClaimsPageProps) {
       0
     );
     const claimsByStatus = {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       new: allOrgClaims.filter((c: any) => c.status === "new"),
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       in_progress: allOrgClaims.filter((c: any) => c.status === "in_progress"),
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       pending: allOrgClaims.filter((c: any) => c.status === "pending"),
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       approved: allOrgClaims.filter((c: any) => c.status === "approved"),
     };
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -375,9 +366,7 @@ export default async function ClaimsPage({ searchParams }: ClaimsPageProps) {
         ) : (
           <div className="space-y-4">
             <h2 className="text-lg font-semibold">Recent Claims</h2>
-            // eslint-disable-next-line react/jsx-no-comment-textnodes
             <div className="grid gap-3">
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
               {claims.map((claim: any) => {
                 const statusColor =
                   claim.status === "new"

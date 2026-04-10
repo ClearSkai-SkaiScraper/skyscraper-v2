@@ -216,7 +216,6 @@ export default function ProductsPage() {
   useEffect(() => {
     const debounce = setTimeout(fetchManufacturers, 300);
     return () => clearTimeout(debounce);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [search, filterTrade]);
 
   const toggleExpand = (id: string) => {

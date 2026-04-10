@@ -31,7 +31,6 @@ function RemoteSigningContent() {
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [envelope, setEnvelope] = useState<any>(null);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [signer, setSigner] = useState<any>(null);
   const [printedName, setPrintedName] = useState("");
   const [loading, setLoading] = useState(true);

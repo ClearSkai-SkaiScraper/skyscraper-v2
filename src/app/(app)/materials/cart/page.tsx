@@ -23,7 +23,6 @@ import { SUPPLIER_CONFIG } from "@/lib/suppliers/types";
 // Cart items loaded from localStorage (no mock data)
 
 export default function MaterialsCartPage() {
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { user, isLoaded } = useUser();
   const [items, setItems] = useState<SupplierCartItem[]>([]);
   const [linkedJob, setLinkedJob] = useState<string | null>(null);

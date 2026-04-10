@@ -379,7 +379,6 @@ export default async function RetailJobWorkspacePage({
             <div className="flex items-center gap-3">
               {/* Value Badge */}
               {(() => {
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 const val = (job as any).estimatedJobValue || job.value;
                 if (!val || val <= 0) return null;
                 const dollars = val / 100;
@@ -621,7 +620,6 @@ export default async function RetailJobWorkspacePage({
                       <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4">
                         {photos.map((photo) => (
                           <div
-                            // eslint-disable-next-line @next/next/no-img-element
                             key={photo.id}
                             className="group relative aspect-square overflow-hidden rounded-lg border border-slate-200 dark:border-slate-700"
                           >

@@ -1,3 +1,4 @@
+/* eslint-disable react/jsx-no-comment-textnodes, @typescript-eslint/no-explicit-any */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export default function ClaimCorrelationSection({ correlation }: any) {
   if (!correlation) {
@@ -43,6 +44,7 @@ export default function ClaimCorrelationSection({ correlation }: any) {
         <h3 className="mb-3 text-xl font-semibold">📋 Recommendations</h3>
         // eslint-disable-next-line react/jsx-no-comment-textnodes
         <ul className="ml-6 list-disc space-y-2">
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           {c.recommendations?.map((r: any, i: number) => (
             <li key={i} className="text-gray-700">{r}</li>
@@ -92,6 +94,7 @@ function LikelihoodBlock({ title, data }: any) {
           <h4 className="mb-2 font-semibold text-gray-800">Evidence:</h4>
           // eslint-disable-next-line react/jsx-no-comment-textnodes
           <ul className="ml-6 list-disc space-y-1">
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             {data.evidence.map((e: any, i: number) => (
               <li key={i} className="text-gray-600">{e}</li>

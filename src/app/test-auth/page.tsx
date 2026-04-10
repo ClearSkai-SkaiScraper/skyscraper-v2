@@ -8,7 +8,6 @@ import { useEffect, useState } from "react";
 
 export default function TestAuthPage() {
   const [status, setStatus] = useState<string>("Checking...");
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [data, setData] = useState<any>(null);
 
   useEffect(() => {

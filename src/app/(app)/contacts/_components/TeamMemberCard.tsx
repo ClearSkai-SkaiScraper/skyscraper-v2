@@ -65,7 +65,6 @@ export function TeamMemberCard({ member }: TeamMemberCardProps) {
         <div className="mb-4 flex items-start gap-3">
           {/* Avatar */}
           {avatarUrl ? (
-            // eslint-disable-next-line @next/next/no-img-element
             <img
               src={avatarUrl}
               alt={displayName}

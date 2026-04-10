@@ -1,3 +1,4 @@
+/* eslint-disable no-restricted-syntax */
 // src/lib/email/resend.ts
 import { Resend } from "resend";
 

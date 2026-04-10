@@ -45,7 +45,6 @@ export default async function ContractorDetailPage({ params }: ContractorPagePro
               className={`flex h-32 w-32 items-center justify-center overflow-hidden rounded-xl bg-[var(--surface-1)] shadow-lg ${contractor.premium ? "ring-4 ring-amber-300" : ""}`}
             >
               {contractor.profilePhotoUrl ? (
-                // eslint-disable-next-line @next/next/no-img-element
                 <img
                   src={contractor.profilePhotoUrl}
                   alt={contractor.companyName || "Contractor"}

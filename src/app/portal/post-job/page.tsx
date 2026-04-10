@@ -100,7 +100,6 @@ const REQUIREMENTS_OPTIONS = [
 ];
 
 export default function PostJobRequestPage() {
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { user, isLoaded } = useUser();
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);

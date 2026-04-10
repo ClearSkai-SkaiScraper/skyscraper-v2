@@ -39,11 +39,9 @@ export default function JobDetailPage() {
   const [project, setProject] = useState<WorkspaceProject | null>(null);
   const [photos, setPhotos] = useState<WorkspacePhoto[]>([]);
   const [documents, setDocuments] = useState<WorkspaceDocument[]>([]);
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [signedDocs, setSignedDocs] = useState<WorkspaceSignedDoc[]>([]);
   const [invoices, setInvoices] = useState<WorkspaceInvoice[]>([]);
   const [timeline, setTimeline] = useState<WorkspaceTimelineEvent[]>([]);
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [messages, setMessages] = useState<WorkspaceMessage[]>([]);
 
   const loadJobData = useCallback(async () => {

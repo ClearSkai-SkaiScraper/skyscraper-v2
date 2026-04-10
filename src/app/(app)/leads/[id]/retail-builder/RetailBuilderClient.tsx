@@ -32,7 +32,6 @@ interface Material {
 }
 
 interface RetailBuilderClientProps {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   lead: any;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   contact: any;

@@ -17,7 +17,6 @@ interface Skill {
 }
 
 export default function SkillsCertificationsPage() {
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const router = useRouter();
   const [initialLoading, setInitialLoading] = useState(true);
   const [skills, setSkills] = useState<Skill[]>([]);

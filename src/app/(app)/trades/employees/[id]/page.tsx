@@ -64,7 +64,6 @@ export default async function EmployeeProfilePage({ params }: EmployeeProfilePag
               {/* Avatar */}
               <div className="h-32 w-32 flex-shrink-0 overflow-hidden rounded-2xl bg-gradient-to-br from-blue-500 to-blue-600 shadow-lg">
                 {employee.avatar ? (
-                  // eslint-disable-next-line @next/next/no-img-element
                   <img
                     src={employee.avatar}
                     alt={displayName}
@@ -94,7 +93,6 @@ export default async function EmployeeProfilePage({ params }: EmployeeProfilePag
                     className="mb-4 inline-flex items-center gap-2 text-blue-600 hover:underline"
                   >
                     {employee.company.logo ? (
-                      // eslint-disable-next-line @next/next/no-img-element
                       <img
                         src={employee.company.logo}
                         alt={employee.company.name}

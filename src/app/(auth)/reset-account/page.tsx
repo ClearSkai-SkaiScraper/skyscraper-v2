@@ -1,3 +1,4 @@
+/* eslint-disable react/jsx-no-comment-textnodes, @typescript-eslint/no-explicit-any */
 /**
  * /reset-account - Direct account reset page
  *
@@ -20,7 +21,6 @@ export default function ResetAccountPage() {
     "idle"
   );
   const [error, setError] = useState<string | null>(null);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [debugInfo, setDebugInfo] = useState<any>(null);
 
   useEffect(() => {
@@ -109,9 +109,7 @@ export default function ResetAccountPage() {
             <div>User: {debugInfo.userId || "Not authenticated"}</div>
             <div>Total Memberships: {debugInfo.totalMemberships ?? "?"}</div>
             <div>Valid: {debugInfo.validMemberships ?? "?"}</div>
-            // eslint-disable-next-line react/jsx-no-comment-textnodes
             <div className="text-red-600">Orphaned: {debugInfo.orphanedMemberships ?? "?"}</div>
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             {debugInfo.memberships?.map((m: any, i: number) => (
               <div key={i} className={m.orgExists ? "text-green-600" : "text-red-600"}>
                 • {m.orgName} ({m.orgExists ? "OK" : "DELETED"})

@@ -1,4 +1,5 @@
 "use client";
+/* eslint-disable react/jsx-no-comment-textnodes, @typescript-eslint/no-unused-vars */
 import {
   ClipboardList,
   CloudRain,
@@ -1339,6 +1340,7 @@ function GroupedScopeAccordion({
                 </thead>
                 // eslint-disable-next-line react/jsx-no-comment-textnodes
                 <tbody>
+                  // eslint-disable-next-line @typescript-eslint/no-unused-vars
                   // eslint-disable-next-line @typescript-eslint/no-unused-vars
                   {g.items.map((li, idx) => {
                     const globalIdx = lineItems.indexOf(li);

@@ -1,4 +1,5 @@
 "use client";
+/* eslint-disable react/jsx-no-comment-textnodes, no-restricted-syntax */
 
 import { useUser } from "@clerk/nextjs";
 import { Bug, Lightbulb, Mail, MessageCircle, Send } from "lucide-react";
@@ -16,7 +17,6 @@ import { logger } from "@/lib/logger";
 type TicketType = "bug" | "feature" | "support" | "other";
 
 export default function SupportPage() {
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { user } = useUser();
   const [type, setType] = useState<TicketType>("bug");
   const [title, setTitle] = useState("");
@@ -36,7 +36,6 @@ export default function SupportPage() {
     try {
       // Auto-capture context
       const context = {
-        // eslint-disable-next-line no-restricted-syntax
         buildSHA: process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA?.substring(0, 8) || "local",
         currentPage: window.location.pathname,
         userAgent: navigator.userAgent,
@@ -209,9 +208,7 @@ export default function SupportPage() {
                   • Current page: {typeof window !== "undefined" ? window.location.pathname : "—"}
                 </li>
                 <li>
-                  // eslint-disable-next-line react/jsx-no-comment-textnodes
                   • Build version:{" "}
-                  // eslint-disable-next-line no-restricted-syntax
                   {process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA?.substring(0, 8) || "local"}
                 </li>
                 <li>

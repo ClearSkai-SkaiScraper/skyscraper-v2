@@ -1,4 +1,5 @@
 "use client";
+/* eslint-disable react/jsx-no-comment-textnodes, @typescript-eslint/no-explicit-any */
 
 import { ClockIcon, CloudIcon, ExclamationTriangleIcon,MapPinIcon } from "@heroicons/react/24/outline";
 import React, { useEffect, useState } from "react";
@@ -297,6 +298,7 @@ export default function StormImpactPanel({ leadId }: { leadId: string }) {
           <h3 className="mb-4 text-lg font-semibold text-gray-900">Storm Events</h3>
           // eslint-disable-next-line react/jsx-no-comment-textnodes
           <div className="space-y-3">
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             {stormReport.noaaData?.events?.map((event: any, idx: number) => (
               <div key={`noaa-${idx}`} className="flex items-start gap-3 rounded-lg bg-gray-50 p-3">

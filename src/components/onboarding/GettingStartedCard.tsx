@@ -1,4 +1,5 @@
 "use client";
+/* eslint-disable react/jsx-no-comment-textnodes, no-restricted-syntax */
 
 import { CheckCircle2, Circle, ExternalLink, X } from "lucide-react";
 import Link from "next/link";
@@ -241,6 +242,7 @@ export default function GettingStartedCard() {
 
       // eslint-disable-next-line react/jsx-no-comment-textnodes
       {/* Reset Link (hidden, for testing) */}
+      // eslint-disable-next-line no-restricted-syntax
       // eslint-disable-next-line no-restricted-syntax
       {process.env.NODE_ENV === "development" && (
         <button

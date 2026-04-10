@@ -47,7 +47,6 @@ interface Pro {
  * Manage saved and connected contractors
  */
 export default function MyProsPage() {
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { userId } = useAuth();
   const [savedPros, setSavedPros] = useState<Pro[]>([]);
   const [connectedPros, setConnectedPros] = useState<Pro[]>([]);

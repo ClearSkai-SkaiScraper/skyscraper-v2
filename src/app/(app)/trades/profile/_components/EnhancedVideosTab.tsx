@@ -1,3 +1,4 @@
+/* eslint-disable react/jsx-no-comment-textnodes */
 /**
  * Enhanced Videos Tab Component
  * Video gallery with player, categories, and upload
@@ -33,7 +34,6 @@ interface EnhancedVideosTabProps {
 }
 
 export default function EnhancedVideosTab({
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   userId,
   isOwnProfile,
   videos,
@@ -158,9 +158,7 @@ export default function EnhancedVideosTab({
             className="group cursor-pointer overflow-hidden rounded-lg border bg-slate-100 transition hover:shadow-lg"
           // eslint-disable-next-line react/jsx-no-comment-textnodes
           >
-            // eslint-disable-next-line react/jsx-no-comment-textnodes
             {/* Thumbnail */}
-            // eslint-disable-next-line @next/next/no-img-element
             <div className="relative aspect-video bg-slate-900">
               {video.thumbnail ? (
                 <img

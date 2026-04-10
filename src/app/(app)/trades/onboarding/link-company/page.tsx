@@ -25,7 +25,6 @@ export default function LinkCompanyPage() {
   const [onboardingStatus, setOnboardingStatus] = useState<any>(null);
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     void checkStatus();
   }, []);
 

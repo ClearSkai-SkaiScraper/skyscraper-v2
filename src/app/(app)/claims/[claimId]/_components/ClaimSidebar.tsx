@@ -88,7 +88,6 @@ export default function ClaimSidebar({ claim }: ClaimSidebarProps) {
       <div className="space-y-2">
         <div className="relative aspect-video w-full overflow-hidden rounded-xl border border-slate-200 bg-slate-50 dark:border-slate-800 dark:bg-slate-900">
           {coverPhotoUrl ? (
-            // eslint-disable-next-line @next/next/no-img-element
             <img
               src={coverPhotoUrl}
               alt="Property cover photo"

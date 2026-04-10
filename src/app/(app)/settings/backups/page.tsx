@@ -14,7 +14,6 @@ export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
 export default async function BackupsExportPage() {
-  // eslint-disable-next-line @typescript-eslint/await-thenable
   const { userId } = await auth();
   if (!userId) redirect("/sign-in");
 

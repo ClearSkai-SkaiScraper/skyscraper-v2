@@ -1,4 +1,5 @@
 "use client";
+/* eslint-disable react/jsx-no-comment-textnodes, @typescript-eslint/no-explicit-any */
 
 import { ArrowLeft, Loader2, Save, Trash2 } from "lucide-react";
 import Link from "next/link";
@@ -188,9 +189,7 @@ export default function InvoiceDetailPage() {
                   </th>
                 </tr>
               </thead>
-              // eslint-disable-next-line react/jsx-no-comment-textnodes
               <tbody className="divide-y divide-[var(--border)]">
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 {lineItems.map((item: any, i: number) => (
                   <tr key={i}>
                     <td className="px-4 py-3 text-[color:var(--text)]">

@@ -387,7 +387,6 @@ export default function CompanyEditPage() {
           <div className="relative overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
             <div className="relative h-48 overflow-hidden rounded-t-xl bg-gradient-to-r from-[#117CFF] to-[#00C2FF]">
               {coverPreview && (
-                // eslint-disable-next-line @next/next/no-img-element
                 <img src={coverPreview} alt="Cover" className="h-full w-full object-cover" />
               )}
               <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent" />
@@ -424,7 +423,6 @@ export default function CompanyEditPage() {
                 onClick={() => logoInputRef.current?.click()}
               >
                 {logoPreview ? (
-                  // eslint-disable-next-line @next/next/no-img-element
                   <img src={logoPreview} alt="Logo" className="h-full w-full object-contain p-2" />
                 ) : (
                   <Building2 className="h-8 w-8 text-gray-400" />

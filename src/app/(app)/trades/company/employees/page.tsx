@@ -1,4 +1,5 @@
 "use client";
+/* eslint-disable react/jsx-no-comment-textnodes */
 
 import {
   ArrowLeft,
@@ -396,9 +397,7 @@ export default function ManageEmployeesPage() {
                     className="flex items-center gap-4 rounded-lg border border-gray-200 bg-white p-4 dark:border-slate-700 dark:bg-slate-900"
                   // eslint-disable-next-line react/jsx-no-comment-textnodes
                   >
-                    // eslint-disable-next-line react/jsx-no-comment-textnodes
                     <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center overflow-hidden rounded-full bg-gradient-to-br from-blue-500 to-blue-600 text-lg font-bold text-white">
-                      // eslint-disable-next-line @next/next/no-img-element
                       {employee.avatar ? (
                         <img
                           src={employee.avatar}
@@ -640,11 +639,8 @@ export default function ManageEmployeesPage() {
                     key={employee.id}
                     className="flex items-center gap-4 rounded-lg border border-gray-200 bg-white p-4"
                   >
-                    // eslint-disable-next-line react/jsx-no-comment-textnodes
                     {/* Avatar */}
-                    // eslint-disable-next-line react/jsx-no-comment-textnodes
                     <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center overflow-hidden rounded-full bg-gradient-to-br from-blue-500 to-blue-600 text-lg font-bold text-white">
-                      // eslint-disable-next-line @next/next/no-img-element
                       {employee.avatar ? (
                         <img
                           src={employee.avatar}

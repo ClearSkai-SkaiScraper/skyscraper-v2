@@ -1,4 +1,5 @@
 "use client";
+/* eslint-disable @typescript-eslint/no-explicit-any */
 
 import { useAuth } from "@clerk/nextjs";
 import { ArrowLeft, CheckCircle2, Clock, MessageCircle, MessageSquare } from "lucide-react";
@@ -25,9 +26,7 @@ export default function ThreadDetailPage() {
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [thread, setThread] = useState<any | null>(null);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [messages, setMessages] = useState<any[]>([]);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [threads, setThreads] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedThreadId, setSelectedThreadId] = useState<string | null>(threadId || null);
@@ -219,9 +218,7 @@ export default function ThreadDetailPage() {
               </p>
             </div>
           ) : (
-            // eslint-disable-next-line react/jsx-no-comment-textnodes
             <div className="space-y-4">
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
               {messages.map((message: any) => {
                 const isOwn = message.senderId === userId;
                 return (

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 // eslint-disable-next-line no-restricted-imports
 import { auth } from "@clerk/nextjs/server";
 import { ArrowLeftIcon, LayoutGrid, List, Plus, Settings } from "lucide-react";
@@ -107,7 +108,6 @@ async function getClaimsForPipeline(orgId: string) {
 }
 
 export default async function ClaimsTrackerPage() {
-  // eslint-disable-next-line @typescript-eslint/await-thenable
   const { userId } = await auth();
 
   if (!userId) {
@@ -225,7 +225,6 @@ export default async function ClaimsTrackerPage() {
           }
         // eslint-disable-next-line react/jsx-no-comment-textnodes
         >
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           <ClaimsPipeline claims={claims as any} />
         </Suspense>
 

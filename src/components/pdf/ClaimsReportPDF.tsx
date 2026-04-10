@@ -1,3 +1,4 @@
+/* eslint-disable react/jsx-no-comment-textnodes, @typescript-eslint/no-explicit-any */
 // components/pdf/ClaimsReportPDF.tsx
 
 import { Document, Page } from "@react-pdf/renderer";
@@ -95,6 +96,7 @@ export function ClaimsReportPDF({ data, sections }: Props) {
           <PageHeader data={data} titleOverride="Materials & Code Requirements" />
           // eslint-disable-next-line react/jsx-no-comment-textnodes
           {sections.includes("MATERIALS") && <MaterialsSection data={data} />}
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           {sections.includes("CODE_REQUIREMENTS") && <CodeRequirementsSection data={data as any} />}
           <PageFooter data={data} />

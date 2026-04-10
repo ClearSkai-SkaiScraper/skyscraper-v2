@@ -82,7 +82,6 @@ export default function ClaimsGeneratePage() {
       logger.error("Error creating claim:", error);
       // Handle Zod validation errors
       if (error && typeof error === "object" && "errors" in error) {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         toast.error(formatZodError(error as any));
       } else {
         toast.error(error instanceof Error ? error.message : "Failed to create claim");

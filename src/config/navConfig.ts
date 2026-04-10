@@ -60,7 +60,7 @@ export const navSections: NavSection[] = [
       { label: "Depreciation Builder", href: "/ai/tools/depreciation" },
       { label: "Rebuttal Builder", href: "/ai/tools/rebuttal" },
       { label: "Bad Faith Analysis", href: "/ai/bad-faith" },
-      { label: "Weather Hub", href: "/weather-report" },
+      { label: "Weather Reports", href: "/weather" },
     ],
   },
   {

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 // app/(app)/claims/[claimId]/automation/page.tsx
 /**
  * 🔥 SKAI AUTOMATIONS PAGE
@@ -20,7 +21,6 @@ interface AutomationPageProps {
 }
 
 export default function ClaimAutomationPage({ params }: AutomationPageProps) {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [intelligence, setIntelligence] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
@@ -179,9 +179,7 @@ export default function ClaimAutomationPage({ params }: AutomationPageProps) {
         <h2 className="mb-4 text-xl font-bold">📊 Automation History</h2>
         <div className="rounded-lg border bg-gray-50 p-4">
           {intelligence?.triggers?.length > 0 ? (
-            // eslint-disable-next-line react/jsx-no-comment-textnodes
             <div className="space-y-2">
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
               {intelligence.triggers.map((trigger: any) => (
                 <div key={trigger.id} className="flex items-center gap-3 text-sm">
                   <span className="text-gray-500">

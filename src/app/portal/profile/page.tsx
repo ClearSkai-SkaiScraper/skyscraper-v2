@@ -1,3 +1,4 @@
+/* eslint-disable react/jsx-no-comment-textnodes, @typescript-eslint/no-explicit-any */
 /**
  * Client Profile Page - Social-Style Layout
  * Beautiful Facebook/LinkedIn-style profile with cover photo, avatar, bio,
@@ -385,9 +386,7 @@ function PropertyPhotoGallery() {
 
 // Connections Section Component
 function ConnectionsSection() {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [connections, setConnections] = useState<any[]>([]);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [pendingConnections, setPendingConnections] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -445,9 +444,7 @@ function ConnectionsSection() {
             <CardDescription>Connection requests awaiting response</CardDescription>
           </CardHeader>
           <CardContent>
-            // eslint-disable-next-line react/jsx-no-comment-textnodes
             <div className="space-y-3">
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
               {pendingConnections.map((conn: any) => (
                 <div
                   key={conn.id}
@@ -481,9 +478,7 @@ function ConnectionsSection() {
         </CardHeader>
         <CardContent>
           {connections.length > 0 ? (
-            // eslint-disable-next-line react/jsx-no-comment-textnodes
             <div className="space-y-3">
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
               {connections.map((conn: any) => (
                 <div
                   key={conn.id}

@@ -1,4 +1,5 @@
 "use client";
+/* eslint-disable react/jsx-no-comment-textnodes */
 
 import { Copy, Edit, Eye, FileText, MoreVertical, Sparkles, Star, Trash2 } from "lucide-react";
 import { useState } from "react";
@@ -115,11 +116,8 @@ export function TemplatePreviewCard({
           </div>
         )}
       </div>
-      // eslint-disable-next-line react/jsx-no-comment-textnodes
       {/* Thumbnail Preview */}
-      // eslint-disable-next-line react/jsx-no-comment-textnodes
       <div className="relative h-48 cursor-pointer bg-slate-100" onClick={onClick}>
-        // eslint-disable-next-line @next/next/no-img-element
         <img
           src={thumbnailUrl}
           alt={template.name}

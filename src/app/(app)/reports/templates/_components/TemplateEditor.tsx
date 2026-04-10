@@ -23,7 +23,6 @@ export function TemplateEditor({ orgId, userId, existingTemplate }: TemplateEdit
   const [name, setName] = useState(existingTemplate?.name || "");
   const [description, setDescription] = useState(existingTemplate?.description || "");
   const [selectedSections, setSelectedSections] = useState<string[]>(
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     existingTemplate?.sections?.map((s: any) => s.sectionKey) || []
   );
   const [saving, setSaving] = useState(false);

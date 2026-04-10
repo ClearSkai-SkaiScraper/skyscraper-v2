@@ -1,4 +1,5 @@
 "use client";
+/* eslint-disable @typescript-eslint/no-explicit-any */
 
 import { useUser } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
@@ -109,9 +110,7 @@ export default function AgentAuditPage() {
                     Loading…
                   </td>
                 </tr>
-              // eslint-disable-next-line react/jsx-no-comment-textnodes
               )}
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
               {data?.rows?.map((r: any) => (
                 <tr key={r.id} className="border-t">
                   <td className="whitespace-nowrap px-3 py-2">

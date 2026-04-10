@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /**
  * 🏠 CLIENT PORTAL DASHBOARD
  *
@@ -105,7 +106,6 @@ export default async function ClientPortalPage() {
         // Sync userType to Clerk publicMetadata for middleware routing
         // eslint-disable-next-line @typescript-eslint/await-thenable
         try {
-          // eslint-disable-next-line @typescript-eslint/await-thenable
           const clerk = await clerkClient();
           await clerk.users.updateUserMetadata(user.id, {
             publicMetadata: {
@@ -254,7 +254,6 @@ export default async function ClientPortalPage() {
 
   // Fetch real local contractors from the DB
   try {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const clientCity = client && "city" in client ? (client as { city: string | null }).city : null;
     const clientState =
       client && "state" in client ? (client as { state: string | null }).state : null;
@@ -690,9 +689,7 @@ export default async function ClientPortalPage() {
                   </Link>
                 </div>
               ) : (
-                // eslint-disable-next-line react/jsx-no-comment-textnodes
                 <div className="space-y-3">
-                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
                   {recentProjects.map((proj: any) => (
                     <Link
                       key={proj.id}

@@ -1,3 +1,4 @@
+/* eslint-disable react/jsx-no-comment-textnodes, @typescript-eslint/no-explicit-any */
 // components/pdf/sections/RetailSignatureSection.tsx
 
 import { Text, View } from "@react-pdf/renderer";
@@ -232,6 +233,7 @@ export function RetailSignatureSection({ data }: { data: ReportData }) {
         // eslint-disable-next-line react/jsx-no-comment-textnodes
         </Text>
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         {(org as any).licenseNumber && (
           <Text
             style={[
@@ -240,6 +242,7 @@ export function RetailSignatureSection({ data }: { data: ReportData }) {
             ]}
           // eslint-disable-next-line react/jsx-no-comment-textnodes
           >
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             License #{(org as any).licenseNumber}
           </Text>

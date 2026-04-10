@@ -363,7 +363,6 @@ export default function CreateInvoicePage() {
                   className="group relative overflow-hidden rounded-xl border border-slate-200 bg-slate-50 dark:border-slate-600 dark:bg-slate-800"
                 >
                   {receipt.preview ? (
-                    // eslint-disable-next-line @next/next/no-img-element
                     <img
                       src={receipt.preview}
                       alt={receipt.name}

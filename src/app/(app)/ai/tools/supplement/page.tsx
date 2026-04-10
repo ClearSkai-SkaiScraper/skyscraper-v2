@@ -215,7 +215,6 @@ function SupplementBuilderInner() {
       const disputedItems = (data.lineItems || [])
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         .filter((item: any) => item.disputed)
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         .map((item: any) => ({
           id: `disp-${Date.now()}-${item.id}`,
           category: item.category || "Other",

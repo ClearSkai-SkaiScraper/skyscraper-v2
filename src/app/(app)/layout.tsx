@@ -1,3 +1,4 @@
+/* eslint-disable react/jsx-no-comment-textnodes, no-restricted-syntax */
 // eslint-disable-next-line no-restricted-imports
 import { currentUser } from "@clerk/nextjs/server";
 import type { Metadata } from "next";
@@ -164,9 +165,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
                   brandingCompleted={brandingCompleted}
                   onboardingCompleted={onboardingCompleted}
                 />
-                // eslint-disable-next-line react/jsx-no-comment-textnodes
                 {/* Demo Mode Banner */}
-                // eslint-disable-next-line no-restricted-syntax
                 {process.env.NEXT_PUBLIC_DEMO_MODE === "true" && (
                   <div className="mb-6">
                     <DemoModeBanner variant="full" />

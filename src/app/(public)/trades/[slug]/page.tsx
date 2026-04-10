@@ -101,7 +101,6 @@ export default async function PublicProfilePage({ params }: ProfilePageProps) {
           <div className="flex items-start gap-6">
             <div className="flex h-24 w-24 flex-shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-500 to-blue-600 shadow-lg">
               {profile.logoUrl ? (
-                // eslint-disable-next-line @next/next/no-img-element
                 <img
                   src={profile.logoUrl}
                   alt={profile.contactName}
@@ -228,7 +227,6 @@ export default async function PublicProfilePage({ params }: ProfilePageProps) {
                       {post.images && post.images.length > 0 && (
                         <div className="mb-3 grid grid-cols-2 gap-2 sm:grid-cols-3">
                           {post.images.slice(0, 3).map((img: string, i: number) => (
-                            // eslint-disable-next-line @next/next/no-img-element
                             <img
                               key={i}
                               src={img}

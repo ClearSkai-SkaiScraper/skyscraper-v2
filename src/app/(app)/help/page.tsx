@@ -94,6 +94,7 @@ export default function HelpSupportPage() {
       color: "bg-green-500",
       onClick: () => {
         // Trigger Intercom or chat widget if available
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         if (typeof window !== "undefined" && (window as any).Intercom) {
           (window as any).Intercom("show");
         } else {

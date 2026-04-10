@@ -1,4 +1,5 @@
 "use client";
+/* eslint-disable @typescript-eslint/no-explicit-any */
 
 import { Activity, AlertCircle, Clock, Database, TrendingUp, Zap } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -12,7 +13,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 const fetcher = (url: string) => fetch(url).then((r) => r.json());
 
 export default function OpsPage() {
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { data: healthData, error: healthError } = useSWR("/api/health", fetcher, {
     refreshInterval: 10000, // Refresh every 10s
   });
@@ -130,9 +130,7 @@ export default function OpsPage() {
             </CardHeader>
             <CardContent>
               {errors?.items && errors.items.length > 0 ? (
-                // eslint-disable-next-line react/jsx-no-comment-textnodes
                 <div className="space-y-2">
-                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
                   {errors.items.map((error: any, idx: number) => (
                     <div key={idx} className="rounded-lg border p-3 text-sm">
                       <div className="flex items-start justify-between">
@@ -230,7 +228,6 @@ export default function OpsPage() {
             <CardContent>
               <div className="space-y-4">
                 {funnelStats?.events && funnelStats.events.length > 0 ? (
-                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
                   funnelStats.events.map((event: any, idx: number) => (
                     <div key={idx} className="flex items-center justify-between">
                       <span className="text-sm">{event.eventName.replace(/_/g, " ")}</span>

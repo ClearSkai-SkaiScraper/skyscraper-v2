@@ -1,4 +1,5 @@
 "use client";
+/* eslint-disable react/jsx-no-comment-textnodes, no-restricted-syntax */
 
 import { useEffect } from "react";
 
@@ -39,9 +40,7 @@ export default function GlobalError({
         <h2 className="mb-2 text-lg font-semibold text-white">Something went wrong</h2>
         <p className="mb-4 text-sm text-slate-400">
           An unexpected error occurred. Please try again.
-        // eslint-disable-next-line react/jsx-no-comment-textnodes
         </p>
-        // eslint-disable-next-line no-restricted-syntax
         {process.env.NODE_ENV === "development" && (
           <pre className="mb-4 overflow-auto rounded bg-slate-800 p-2 text-left text-xs text-slate-300">
             {error.message}

@@ -11,7 +11,6 @@ export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
 export default async function NewProjectPage() {
-  // eslint-disable-next-line @typescript-eslint/await-thenable
   const { userId } = await auth();
   const user = await currentUser();
 
@@ -22,7 +21,6 @@ export default async function NewProjectPage() {
   // Get client profile if exists
   const email = user?.emailAddresses?.[0]?.emailAddress;
   let clientProfile: Awaited<ReturnType<typeof prisma.client.findFirst>> = null;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let connectedContractors: any[] = [];
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let savedPros: any[] = [];

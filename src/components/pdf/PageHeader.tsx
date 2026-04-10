@@ -1,3 +1,4 @@
+/* eslint-disable react/jsx-no-comment-textnodes, @typescript-eslint/no-explicit-any */
 // components/pdf/PageHeader.tsx
 
 import { Image, StyleSheet, Text, View } from "@react-pdf/renderer";
@@ -38,6 +39,7 @@ export function PageHeader({ data, titleOverride }: PageHeaderProps) {
       {/* RIGHT: Team Photo / Agent Headshot */}
       // eslint-disable-next-line react/jsx-no-comment-textnodes
       <View style={styles.rightSection}>
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         {(data.org as any).teamPhotoUrl ? (
           // eslint-disable-next-line @typescript-eslint/no-explicit-any

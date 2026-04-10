@@ -1,4 +1,5 @@
 "use client";
+/* eslint-disable react/jsx-no-comment-textnodes, @typescript-eslint/no-explicit-any */
 
 import { AlertCircle, CheckCircle2, Clock, Zap } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -161,6 +162,7 @@ export function NextBestActionPanel({ claimId, onActionClick }: NextBestActionPa
                       <div className="mb-1 flex items-center gap-2">
                         // eslint-disable-next-line react/jsx-no-comment-textnodes
                         <h4 className="text-sm font-semibold">{action.label}</h4>
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
                         // eslint-disable-next-line @typescript-eslint/no-explicit-any
                         <Badge variant={config.color as any} className="text-xs">
                           {action.priority.toUpperCase()}

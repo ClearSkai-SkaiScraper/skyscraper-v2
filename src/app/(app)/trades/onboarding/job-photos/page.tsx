@@ -1,4 +1,5 @@
 "use client";
+/* eslint-disable react/jsx-no-comment-textnodes */
 
 import { Camera, Loader2, Upload, X } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -198,11 +199,8 @@ export default function JobPhotosOnboardingPage() {
               </h3>
               <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
                 {photos.map((photo) => (
-                  // eslint-disable-next-line react/jsx-no-comment-textnodes
                   <div key={photo.id} className="group relative rounded-lg border bg-white p-2">
-                    // eslint-disable-next-line react/jsx-no-comment-textnodes
                     <div className="relative aspect-video overflow-hidden rounded-lg">
-                      // eslint-disable-next-line @next/next/no-img-element
                       <img
                         src={photo.preview}
                         alt="Preview"

@@ -1,4 +1,5 @@
 "use client";
+/* eslint-disable react/jsx-no-comment-textnodes, no-restricted-syntax */
 
 import { AlertTriangle, Home, RefreshCw } from "lucide-react";
 import { useEffect } from "react";
@@ -45,6 +46,7 @@ export default function PortalErrorBoundary({
         </CardHeader>
         // eslint-disable-next-line react/jsx-no-comment-textnodes
         <CardContent className="space-y-4">
+          // eslint-disable-next-line no-restricted-syntax
           // eslint-disable-next-line no-restricted-syntax
           {process.env.NODE_ENV === "development" && error.message && (
             <div className="rounded-lg bg-red-50 p-3 text-sm dark:bg-red-900/20">

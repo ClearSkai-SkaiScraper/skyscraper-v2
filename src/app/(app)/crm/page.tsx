@@ -184,7 +184,6 @@ export default function CRMPage() {
       {branding && (
         <div className="flex items-center gap-6 rounded-2xl border bg-card p-6">
           {branding.logoUrl && (
-            // eslint-disable-next-line @next/next/no-img-element
             <img
               src={branding.logoUrl}
               alt={branding.companyName || "Company Logo"}

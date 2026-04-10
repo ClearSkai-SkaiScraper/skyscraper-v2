@@ -1,4 +1,5 @@
 "use client";
+/* eslint-disable react/jsx-no-comment-textnodes, no-restricted-syntax */
 
 import { SignIn } from "@clerk/nextjs";
 import { useEffect, useState } from "react";
@@ -58,9 +59,7 @@ export default function ClerkTestPage() {
 
           <div className="mt-4">
             <h3 className="font-semibold">Environment:</h3>
-            // eslint-disable-next-line react/jsx-no-comment-textnodes
             <p className="font-mono text-sm">
-              // eslint-disable-next-line no-restricted-syntax
               Publishable Key: {process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY?.substring(0, 20)}...
             </p>
           </div>

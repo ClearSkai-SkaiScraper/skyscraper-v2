@@ -228,7 +228,6 @@ export default function TradesSetupPage() {
                     className="group relative cursor-pointer"
                   >
                     {avatarPreview ? (
-                      // eslint-disable-next-line @next/next/no-img-element
                       <img
                         src={avatarPreview}
                         alt="Profile"

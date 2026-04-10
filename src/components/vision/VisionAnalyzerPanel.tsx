@@ -1,4 +1,5 @@
 "use client";
+/* eslint-disable react/jsx-no-comment-textnodes */
 
 import { AlertTriangle, Download, Loader2, Upload } from "lucide-react";
 import { useRef, useState } from "react";

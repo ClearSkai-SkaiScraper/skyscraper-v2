@@ -12,7 +12,6 @@ import { generateBulkCarrierExport, generateCarrierExport } from "./actions";
 export default function CarrierExportClient({ projects }: { projects: ExportProject[] }) {
   const [selectedProjects, setSelectedProjects] = useState<Set<string>>(new Set());
   const [exporting, setExporting] = useState<string | null>(null);
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [bulkExporting, setBulkExporting] = useState(false);
 
   const toggleProject = (projectId: string) => {

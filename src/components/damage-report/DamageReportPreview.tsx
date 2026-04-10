@@ -1,4 +1,5 @@
 "use client";
+/* eslint-disable react/jsx-no-comment-textnodes */
 
 import { AlertCircle, Edit3, FileText, Loader2 } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";

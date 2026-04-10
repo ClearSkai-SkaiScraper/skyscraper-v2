@@ -291,7 +291,6 @@ export default function JoinCompanyPage() {
                     <CardContent className="flex items-center gap-4 p-4">
                       <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-lg bg-blue-100">
                         {company.logo ? (
-                          // eslint-disable-next-line @next/next/no-img-element
                           <img
                             src={company.logo}
                             alt={company.name}

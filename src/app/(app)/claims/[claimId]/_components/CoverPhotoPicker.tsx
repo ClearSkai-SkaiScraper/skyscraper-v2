@@ -167,7 +167,6 @@ export function CoverPhotoPicker({
                       }`}
                     // eslint-disable-next-line react/jsx-no-comment-textnodes
                     >
-                      // eslint-disable-next-line @next/next/no-img-element
                       <img
                         src={photo.publicUrl}
                         alt={photo.title}

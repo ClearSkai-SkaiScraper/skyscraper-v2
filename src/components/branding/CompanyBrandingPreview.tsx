@@ -1,3 +1,4 @@
+/* eslint-disable react/jsx-no-comment-textnodes */
 /* eslint-disable react/forbid-dom-props */
 // CompanyBrandingPreview.tsx
 // Full-featured company branding preview card with live preview of all branding details

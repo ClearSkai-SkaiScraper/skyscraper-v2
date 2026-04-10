@@ -44,7 +44,6 @@ export function DominusPhotoAnalysis({ leadId, images }: DominusPhotoAnalysisPro
             className="group relative aspect-square overflow-hidden rounded-lg border-2 border-gray-200 transition-all hover:border-purple-500"
           // eslint-disable-next-line react/jsx-no-comment-textnodes
           >
-            // eslint-disable-next-line @next/next/no-img-element
             <img
               src={image.imageUrl}
               alt={`Analysis ${idx + 1}`}

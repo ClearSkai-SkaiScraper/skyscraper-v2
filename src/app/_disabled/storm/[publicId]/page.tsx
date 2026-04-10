@@ -1,3 +1,4 @@
+/* eslint-disable react/jsx-no-comment-textnodes, @typescript-eslint/no-explicit-any */
 import {
   ClockIcon,
   CloudIcon,
@@ -124,11 +125,8 @@ export default async function PublicStormPage({ params }: { params: { publicId: 
         {/* Heatmap Overlay */}
         {stormReport.heatmapUrl && (
           <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
-            // eslint-disable-next-line react/jsx-no-comment-textnodes
             <h2 className="mb-4 text-xl font-bold text-gray-900">Storm Impact Overlay</h2>
-            // eslint-disable-next-line react/jsx-no-comment-textnodes
             <div className="overflow-hidden rounded-lg border border-gray-300">
-              // eslint-disable-next-line @next/next/no-img-element
               <img src={stormReport.heatmapUrl} alt="Storm Impact Heatmap" className="w-full" />
             </div>
           </div>
@@ -137,11 +135,8 @@ export default async function PublicStormPage({ params }: { params: { publicId: 
         {/* Radar Image */}
         {stormReport.radarImageUrl && (
           <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
-            // eslint-disable-next-line react/jsx-no-comment-textnodes
             <h2 className="mb-4 text-xl font-bold text-gray-900">NWS Radar Image</h2>
-            // eslint-disable-next-line react/jsx-no-comment-textnodes
             <div className="overflow-hidden rounded-lg border border-gray-300">
-              // eslint-disable-next-line @next/next/no-img-element
               <img src={stormReport.radarImageUrl} alt="NWS Radar" className="w-full" />
             </div>
           </div>
@@ -161,9 +156,7 @@ export default async function PublicStormPage({ params }: { params: { publicId: 
         {(stormReport.noaaData || stormReport.nwsData || stormReport.iaDolData) && (
           <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
             <h2 className="mb-4 text-xl font-bold text-gray-900">Storm Events</h2>
-            // eslint-disable-next-line react/jsx-no-comment-textnodes
             <div className="space-y-3">
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
               {(stormReport.noaaData as any)?.events?.map((event: any, idx: number) => (
                 <div
                   key={`noaa-${idx}`}
@@ -196,9 +189,7 @@ export default async function PublicStormPage({ params }: { params: { publicId: 
           <div className="flex items-center justify-between text-sm text-gray-600">
             <div>
               <p>Report Generated: {new Date(stormReport.createdAt).toLocaleString()}</p>
-              // eslint-disable-next-line react/jsx-no-comment-textnodes
               <p className="mt-1">
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 Storm Date: {new Date(stormReport.stormDate as any).toLocaleDateString()}
               </p>
             </div>

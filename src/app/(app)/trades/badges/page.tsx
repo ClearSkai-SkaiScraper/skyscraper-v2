@@ -45,7 +45,6 @@ type BadgeDef = {
 };
 
 type BadgeContext = {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   member: any;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   company: any;

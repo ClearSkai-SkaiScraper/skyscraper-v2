@@ -1,4 +1,5 @@
 "use client";
+/* eslint-disable react/jsx-no-comment-textnodes, no-restricted-syntax */
 
 import * as Sentry from "@sentry/nextjs";
 import { AlertTriangle, ArrowLeft, RotateCcw } from "lucide-react";
@@ -37,6 +38,7 @@ export function makeSectionError(tag: string, label: string) {
             We couldn&apos;t load {label.toLowerCase()}. This is usually temporary.
           // eslint-disable-next-line react/jsx-no-comment-textnodes
           </p>
+          // eslint-disable-next-line no-restricted-syntax
           // eslint-disable-next-line no-restricted-syntax
           {error.message && process.env.NODE_ENV === "development" && (
             <p className="mt-2 rounded bg-red-100 p-2 font-mono text-xs text-red-800 dark:bg-red-900/50 dark:text-red-300">

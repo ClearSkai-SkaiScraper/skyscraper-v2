@@ -73,7 +73,6 @@ export default function ContractorPublicPage({ contractor }: { contractor: Contr
         <div className="mx-auto flex max-w-5xl flex-col gap-4 px-4 py-6 md:flex-row md:items-end">
           <div className="flex items-center gap-4">
             {contractor.logoUrl ? (
-              // eslint-disable-next-line @next/next/no-img-element
               <img
                 src={contractor.logoUrl}
                 alt={contractor.businessName}
@@ -161,9 +160,7 @@ export default function ContractorPublicPage({ contractor }: { contractor: Contr
               <h2 className="mb-2 text-sm font-semibold">Project Gallery</h2>
               <div className="grid gap-3 md:grid-cols-3">
                 {contractor.gallery.slice(0, 6).map((g, idx) => (
-                  // eslint-disable-next-line react/jsx-no-comment-textnodes
                   <figure key={idx} className="space-y-1">
-                    // eslint-disable-next-line @next/next/no-img-element
                     <img
                       src={g.url}
                       alt={g.caption || "Project photo"}

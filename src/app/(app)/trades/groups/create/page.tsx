@@ -116,7 +116,6 @@ export default function CreateGroupPage() {
                 onClick={() => document.getElementById("cover-upload")?.click()}
               >
                 {formData.coverImage ? (
-                  // eslint-disable-next-line @next/next/no-img-element
                   <img
                     src={formData.coverImage}
                     alt="Cover"

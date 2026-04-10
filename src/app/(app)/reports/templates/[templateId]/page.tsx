@@ -103,7 +103,6 @@ export default async function TemplateDetailPage({ params }: { params: { templat
                 {sections
                   // eslint-disable-next-line @typescript-eslint/no-explicit-any
                   .sort((a: any, b: any) => (a.order || 0) - (b.order || 0))
-                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
                   .map((section: any, index: number) => (
                     <div key={index} className="rounded-lg border border-slate-200 bg-slate-50 p-4">
                       <div className="flex items-center justify-between">

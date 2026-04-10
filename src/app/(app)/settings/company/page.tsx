@@ -12,7 +12,6 @@ import { CompanySettingsClient } from "./CompanySettingsClient";
 export const dynamic = "force-dynamic";
 
 export default async function CompanySettingsPage() {
-  // eslint-disable-next-line @typescript-eslint/await-thenable
   const { userId } = await auth();
 
   if (!userId) {

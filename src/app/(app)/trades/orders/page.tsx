@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /**
  * Trades — Create New Order / Order Management
  *
@@ -273,9 +274,7 @@ export default function TradesOrdersPage() {
                 </Button>
               </Card>
             ) : (
-              // eslint-disable-next-line react/jsx-no-comment-textnodes
               <div className="space-y-3">
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 {orders.map((order: any) => {
                   const statusStyle = ORDER_STATUSES.find((s) => s.value === order.status);
                   const vendorInfo = VENDORS.find((v) => v.id === order.vendorId);

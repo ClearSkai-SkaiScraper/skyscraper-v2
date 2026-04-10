@@ -1,3 +1,4 @@
+/* eslint-disable react/jsx-no-comment-textnodes */
 /**
  * Enhanced Photos Tab Component
  * Full-featured photo gallery with lightbox, categories, and upload
@@ -184,7 +185,6 @@ export default function EnhancedPhotosTab({
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [lightboxOpen, filteredPhotos.length]);
 
   const handleShare = (photo: Photo) => {
@@ -270,11 +270,8 @@ export default function EnhancedPhotosTab({
               }}
               className="group relative overflow-hidden rounded-xl border border-slate-200 bg-white transition-all hover:shadow-lg"
             >
-              // eslint-disable-next-line react/jsx-no-comment-textnodes
               {/* Album Cover */}
-              // eslint-disable-next-line react/jsx-no-comment-textnodes
               <div className="aspect-square overflow-hidden bg-slate-100">
-                // eslint-disable-next-line @next/next/no-img-element
                 {albumPhotos.length > 0 ? (
                   <img
                     src={albumPhotos[0].url}
@@ -372,7 +369,6 @@ export default function EnhancedPhotosTab({
                   viewMode === "masonry" ? "mb-3 break-inside-avoid" : "aspect-square"
                 }`}
                 onClick={() => openLightbox(index)}
-              // eslint-disable-next-line @next/next/no-img-element
               >
                 <img
                   src={photo.url}
@@ -443,12 +439,9 @@ export default function EnhancedPhotosTab({
             aria-label="Next photo"
           >
             <ChevronRight className="h-6 w-6 text-white" />
-          // eslint-disable-next-line react/jsx-no-comment-textnodes
           </button>
 
-          // eslint-disable-next-line react/jsx-no-comment-textnodes
           {/* Image */}
-          // eslint-disable-next-line @next/next/no-img-element
           <div className="max-h-[85vh] max-w-[85vw]">
             <img
               src={filteredPhotos[currentIndex]?.url}

@@ -1,4 +1,5 @@
 "use client";
+/* eslint-disable react/jsx-no-comment-textnodes, no-restricted-syntax */
 
 import { MapPin, Navigation } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
@@ -143,9 +144,7 @@ export default function CompanyMapClient({ locations }: { locations: PropertyLoc
             {/* Fallback: show empty state or config message */}
             {mapReady && (
               <div className="flex h-full items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 p-8">
-                // eslint-disable-next-line react/jsx-no-comment-textnodes
                 <div className="max-w-md text-center">
-                  // eslint-disable-next-line no-restricted-syntax
                   {!process.env.NEXT_PUBLIC_MAPBOX_TOKEN ? (
                     <>
                       <MapPin className="mx-auto h-16 w-16 text-orange-600" />

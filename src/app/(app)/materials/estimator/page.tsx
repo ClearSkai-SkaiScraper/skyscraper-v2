@@ -409,7 +409,6 @@ export default function MaterialEstimatorPage() {
   const [aiChatMessages, setAiChatMessages] = useState<
     Array<{ role: "user" | "ai"; text: string; time: string }>
   >([]);
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [aiChatLoading, setAiChatLoading] = useState(false);
   const chatEndRef = useRef<HTMLDivElement>(null);
 

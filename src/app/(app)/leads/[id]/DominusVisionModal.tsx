@@ -1,4 +1,5 @@
 "use client";
+/* eslint-disable react/jsx-no-comment-textnodes */
 
 import { AlertCircle, Copy, RefreshCw, X } from "lucide-react";
 import { useState } from "react";
@@ -103,12 +104,9 @@ ${image.notes}
           >
             <X className="h-5 w-5" />
           </button>
-        // eslint-disable-next-line react/jsx-no-comment-textnodes
         </div>
 
-        // eslint-disable-next-line react/jsx-no-comment-textnodes
         {/* Image Preview */}
-        // eslint-disable-next-line @next/next/no-img-element
         <div className="p-4">
           <img src={image.imageUrl} alt="Analysis" className="w-full rounded-lg border" />
         </div>

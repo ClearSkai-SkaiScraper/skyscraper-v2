@@ -1,3 +1,4 @@
+/* eslint-disable react/jsx-no-comment-textnodes, @typescript-eslint/no-explicit-any */
 /**
  * PHASE D: Redesigned 5-Step Claim Intake Wizard
  *
@@ -1002,7 +1003,6 @@ function StepFiveDateOfLoss(props: {
               <button
                 type="button"
                 onClick={() => {
-                  // eslint-disable-next-line @typescript-eslint/no-unused-vars
                   props.photos.forEach((_, i) => props.removePhoto(0));
                 }}
                 className="text-xs text-red-600 hover:text-red-700"
@@ -1229,9 +1229,7 @@ function ScopeOfWorkScanner({
                   <summary className="cursor-pointer text-sm font-medium text-slate-700">
                     📄 {sowResult.lineItems.length} line items extracted
                   </summary>
-                  // eslint-disable-next-line react/jsx-no-comment-textnodes
                   <div className="mt-2 max-h-48 space-y-1 overflow-y-auto">
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     {sowResult.lineItems.map((item: any, i: number) => (
                       <div
                         key={i}

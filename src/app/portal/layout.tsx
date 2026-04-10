@@ -42,7 +42,6 @@ export default async function PortalLayout({ children }: { children: React.React
   let pendingLegal: any[] = [];
 
   try {
-    // eslint-disable-next-line @typescript-eslint/await-thenable
     const authResult = await auth();
     userId = authResult.userId;
 

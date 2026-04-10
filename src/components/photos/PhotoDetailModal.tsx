@@ -1,4 +1,5 @@
 "use client";
+/* eslint-disable react/jsx-no-comment-textnodes */
 
 import { Download, Edit3, Layers, Loader2, Sparkles } from "lucide-react";
 import { useCallback, useState } from "react";

@@ -1,4 +1,5 @@
 "use client";
+/* eslint-disable react/jsx-no-comment-textnodes */
 
 import { httpsCallable } from "firebase/functions";
 import { motion } from "framer-motion";
@@ -180,12 +181,9 @@ export default function AnnotationViewer() {
                   >
                     {showOriginal ? "Show Annotations" : "Show Original"}
                   </button>
-                // eslint-disable-next-line react/jsx-no-comment-textnodes
                 </div>
 
-                // eslint-disable-next-line react/jsx-no-comment-textnodes
                 <div className="relative">
-                  // eslint-disable-next-line @next/next/no-img-element
                   <img
                     src={
                       showOriginal ? annotationData.image_url : annotationData.annotated_image_url

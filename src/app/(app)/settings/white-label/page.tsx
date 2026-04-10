@@ -122,7 +122,6 @@ export default function SettingsWhiteLabelPage() {
                 <Label>Company Logo</Label>
                 <div className="cursor-pointer rounded-lg border-2 border-dashed p-8 text-center transition-colors hover:border-primary/50">
                   {settings.logoUrl ? (
-                    // eslint-disable-next-line @next/next/no-img-element
                     <img src={settings.logoUrl} alt="Logo" className="mx-auto max-h-16" />
                   ) : (
                     <>
@@ -139,7 +138,6 @@ export default function SettingsWhiteLabelPage() {
                 <Label>Favicon</Label>
                 <div className="cursor-pointer rounded-lg border-2 border-dashed p-8 text-center transition-colors hover:border-primary/50">
                   {settings.faviconUrl ? (
-                    // eslint-disable-next-line @next/next/no-img-element
                     <img src={settings.faviconUrl} alt="Favicon" className="mx-auto max-h-8" />
                   ) : (
                     <>

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Calendar, Clock, HardHat, Users } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
@@ -120,9 +121,7 @@ export default async function CrewsPage() {
     total: schedules.length,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     scheduled: schedules.filter((s: any) => s.status === "scheduled").length,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     inProgress: schedules.filter((s: any) => s.status === "in_progress").length,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     completed: schedules.filter((s: any) => s.status === "completed").length,
   };
 
@@ -200,9 +199,7 @@ export default async function CrewsPage() {
               No crew schedules yet. Use the buttons above to schedule labor or deliveries.
             </p>
           </div>
-        // eslint-disable-next-line react/jsx-no-comment-textnodes
         )}
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         {(schedules as any[]).map((s) => (
           <CrewScheduleCard key={s.id} schedule={s} teamMembers={teamMembers} />
         ))}

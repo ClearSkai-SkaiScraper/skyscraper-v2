@@ -27,7 +27,6 @@ export default async function DeploymentStatusPage() {
 
   // Feature flags status
   const featureFlags = {
-    // eslint-disable-next-line no-restricted-syntax
     pdfGenerationEnabled: process.env.FEATURE_PDF_GENERATION !== "false",
     // eslint-disable-next-line no-restricted-syntax
     aiAnalysisEnabled: process.env.FEATURE_AI_ANALYSIS !== "false",
@@ -39,7 +38,6 @@ export default async function DeploymentStatusPage() {
 
   // Timeout configs
   const timeouts = {
-    // eslint-disable-next-line no-restricted-syntax
     pdfGeneration: process.env.TIMEOUT_PDF_GENERATION || "25000",
     // eslint-disable-next-line no-restricted-syntax
     aiAnalysis: process.env.TIMEOUT_AI_ANALYSIS || "30000",

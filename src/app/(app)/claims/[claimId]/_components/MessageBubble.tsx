@@ -24,7 +24,6 @@ export default function MessageBubble({ content, sender, sentAt, isOwn }: Messag
         }`}
       >
         {sender.avatar ? (
-          // eslint-disable-next-line @next/next/no-img-element
           <img src={sender.avatar} alt={sender.name} className="h-8 w-8 rounded-full" />
         ) : (
           <User className="h-4 w-4 text-slate-600 dark:text-slate-400" />

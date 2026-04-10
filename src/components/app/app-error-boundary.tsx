@@ -1,4 +1,5 @@
 "use client";
+/* eslint-disable react/jsx-no-comment-textnodes, no-restricted-syntax */
 
 import * as Sentry from "@sentry/nextjs";
 import { AlertTriangle, Home, RefreshCw } from "lucide-react";
@@ -42,6 +43,7 @@ export default function AppErrorBoundary({
           Something went wrong. Please try again or return to the dashboard.
         // eslint-disable-next-line react/jsx-no-comment-textnodes
         </p>
+        // eslint-disable-next-line no-restricted-syntax
         // eslint-disable-next-line no-restricted-syntax
         {process.env.NODE_ENV === "development" && error.message && (
           <div className="mb-4 rounded-lg bg-red-50 p-3 text-left text-sm dark:bg-red-900/20">

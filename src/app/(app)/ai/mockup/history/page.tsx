@@ -56,7 +56,6 @@ export default async function MockupHistoryPage() {
           </div>
         ) : (
           history.map((artifact) => {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const meta = (artifact.metadata as any) || {};
             return (
               <div

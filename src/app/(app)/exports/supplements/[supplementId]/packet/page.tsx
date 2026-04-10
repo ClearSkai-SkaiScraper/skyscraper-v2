@@ -1,3 +1,4 @@
+/* eslint-disable react/jsx-no-comment-textnodes, @typescript-eslint/no-explicit-any */
 // src/app/(app)/exports/supplements/[supplementId]/packet/page.tsx
 import { redirect } from "next/navigation";
 
@@ -78,9 +79,7 @@ export default async function SupplementPacketPage({ params }: PageProps) {
       {codeCitations.length > 0 && (
         <section className="space-y-2 text-sm">
           <h2 className="border-b pb-1 text-lg font-semibold">Code &amp; Manufacturer Support</h2>
-          // eslint-disable-next-line react/jsx-no-comment-textnodes
           <ul className="list-inside list-disc space-y-1">
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             {codeCitations.map((c: any, idx: number) => (
               <li key={idx}>
                 {c.code ? <strong>{c.code}: </strong> : null}

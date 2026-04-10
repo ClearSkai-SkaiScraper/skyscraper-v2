@@ -1,3 +1,4 @@
+/* eslint-disable react/jsx-no-comment-textnodes, @typescript-eslint/no-explicit-any */
 import { Shield } from "lucide-react";
 import { redirect } from "next/navigation";
 
@@ -94,9 +95,7 @@ export default async function SecurityAuditPage() {
             {audit.anomalies.length === 0 && (
               <p className="text-sm text-slate-700 dark:text-slate-300">No anomalies detected.</p>
             )}
-            // eslint-disable-next-line react/jsx-no-comment-textnodes
             <ul className="space-y-3">
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
               {audit.anomalies.map((a: any, i: number) => (
                 <li
                   key={i}

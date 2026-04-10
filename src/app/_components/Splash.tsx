@@ -1,4 +1,5 @@
 "use client";
+/* eslint-disable react/jsx-no-comment-textnodes */
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 
@@ -43,9 +44,7 @@ export default function Splash() {
         }}
       // eslint-disable-next-line react/jsx-no-comment-textnodes
       >
-        // eslint-disable-next-line react/jsx-no-comment-textnodes
         {/* Replace with your SVG/Logo component */}
-        // eslint-disable-next-line @next/next/no-img-element
         <img
           src="/brand/pro_portal_logo.png"
           alt="SkaiScraper"

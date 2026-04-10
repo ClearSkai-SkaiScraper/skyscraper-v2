@@ -181,8 +181,6 @@ export default function OverviewPage() {
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [pendingSaves, setPendingSaves] = useState<Set<string>>(new Set());
   const [generatingWeather, setGeneratingWeather] = useState(false);
   const [attachedClient, setAttachedClient] = useState<UniversalContact | null>(null);
@@ -196,7 +194,6 @@ export default function OverviewPage() {
     }>
   >([]);
   const [selectedInspectorId, setSelectedInspectorId] = useState<string | null>(null);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const saveQueueRef = useRef<{ [key: string]: any }>({});
   const saveTimerRef = useRef<NodeJS.Timeout | null>(null);
 

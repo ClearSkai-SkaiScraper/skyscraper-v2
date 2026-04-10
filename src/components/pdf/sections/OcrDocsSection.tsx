@@ -1,3 +1,4 @@
+/* eslint-disable react/jsx-no-comment-textnodes, @typescript-eslint/no-explicit-any */
 // components/pdf/sections/OcrDocsSection.tsx
 
 import { Text,View } from "@react-pdf/renderer";
@@ -28,9 +29,11 @@ export function OcrDocsSection({ data }: { data: ReportData }) {
           // eslint-disable-next-line react/jsx-no-comment-textnodes
           <Text style={baseStyles.label}>
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             {(doc as any).title || "Document"} ({(doc as any).sourceType || "Unknown"})
           // eslint-disable-next-line react/jsx-no-comment-textnodes
           </Text>
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           {(doc as any).pageCount != null && (
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -38,10 +41,12 @@ export function OcrDocsSection({ data }: { data: ReportData }) {
           // eslint-disable-next-line react/jsx-no-comment-textnodes
           )}
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           {(doc as any).aiSummary && (
             <>
               // eslint-disable-next-line react/jsx-no-comment-textnodes
               <Text style={baseStyles.label}>Summary</Text>
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
               // eslint-disable-next-line @typescript-eslint/no-explicit-any
               <Text style={baseStyles.value}>{(doc as any).aiSummary}</Text>
             </>

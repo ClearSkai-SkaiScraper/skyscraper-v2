@@ -1,3 +1,4 @@
+/* eslint-disable react/jsx-no-comment-textnodes */
 // ...existing code...
 "use client";
 

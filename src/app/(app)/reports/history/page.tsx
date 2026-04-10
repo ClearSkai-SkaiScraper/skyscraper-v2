@@ -110,7 +110,6 @@ export default async function ReportHistoryPage({
 
       // Unified fetch
       unified = await getAllUserReports({
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         type: (typeFilter as any) || undefined,
         from,
         to,

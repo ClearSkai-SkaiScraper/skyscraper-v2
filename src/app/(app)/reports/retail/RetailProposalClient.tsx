@@ -1,4 +1,5 @@
 "use client";
+/* eslint-disable react/jsx-no-comment-textnodes, @typescript-eslint/no-explicit-any */
 import { Loader2 } from "lucide-react";
 import { useState } from "react";
 
@@ -152,9 +153,7 @@ export default function RetailProposalClient({
               {Array.isArray(result.lineItems) && (
                 <div className="rounded-lg border p-4">
                   <h3 className="mb-2 font-medium">Line Items</h3>
-                  // eslint-disable-next-line react/jsx-no-comment-textnodes
                   <ul className="space-y-2 text-sm">
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     {result.lineItems.map((li: any, i: number) => (
                       <li key={i} className="flex justify-between rounded-md border p-2">
                         <span>{li.item}</span>

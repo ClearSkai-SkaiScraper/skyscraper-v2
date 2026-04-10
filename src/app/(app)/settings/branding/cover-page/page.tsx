@@ -1,4 +1,5 @@
 "use client";
+/* eslint-disable react/jsx-no-comment-textnodes */
 
 import {
   ArrowLeft,
@@ -471,7 +472,6 @@ export default function AdvancedCoverPageBuilder() {
                     {uploading ? (
                       <Loader2 className="h-8 w-8 animate-spin text-slate-400" />
                     ) : backgroundImage ? (
-                      // eslint-disable-next-line @next/next/no-img-element
                       <img
                         src={backgroundImage}
                         alt="Background"
@@ -518,11 +518,8 @@ export default function AdvancedCoverPageBuilder() {
               {branding?.logoUrl && (
                 <div>
                   <Label className="text-xs">Company Logo</Label>
-                  // eslint-disable-next-line react/jsx-no-comment-textnodes
                   <div className="mt-2 flex items-center gap-3">
-                    // eslint-disable-next-line react/jsx-no-comment-textnodes
                     <div className="h-16 w-16 overflow-hidden rounded-lg border bg-white p-2">
-                      // eslint-disable-next-line @next/next/no-img-element
                       <img
                         src={branding.logoUrl}
                         alt="Logo"
@@ -559,11 +556,8 @@ export default function AdvancedCoverPageBuilder() {
               {branding?.teamPhotoUrl && (
                 <div>
                   <Label className="text-xs">Team Photo</Label>
-                  // eslint-disable-next-line react/jsx-no-comment-textnodes
                   <div className="mt-2 flex items-center gap-3">
-                    // eslint-disable-next-line react/jsx-no-comment-textnodes
                     <div className="h-16 w-20 overflow-hidden rounded-lg border">
-                      // eslint-disable-next-line @next/next/no-img-element
                       <img
                         src={branding.teamPhotoUrl}
                         alt="Team"

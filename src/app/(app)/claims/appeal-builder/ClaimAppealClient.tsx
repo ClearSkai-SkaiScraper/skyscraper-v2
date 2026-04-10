@@ -1,4 +1,5 @@
 "use client";
+/* eslint-disable react/jsx-no-comment-textnodes, @typescript-eslint/no-explicit-any */
 import { Loader2 } from "lucide-react";
 import { useState } from "react";
 
@@ -91,9 +92,7 @@ export default function ClaimAppealClient({ claims, initialClaimId }: { claims: 
               {Array.isArray(result.sections) && (
                 <div className="rounded-lg border p-4">
                   <h3 className="mb-2 font-medium">Sections</h3>
-                  // eslint-disable-next-line react/jsx-no-comment-textnodes
                   <ul className="space-y-2 text-sm">
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     {result.sections.map((s:any,i:number)=>(
                       <li key={i} className="rounded-md border p-2">
                         <div className="flex justify-between"><span className="font-semibold">{s.title}</span><span className="text-xs uppercase tracking-wide text-muted-foreground">{s.strength}</span></div>

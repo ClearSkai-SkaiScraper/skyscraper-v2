@@ -1,3 +1,4 @@
+/* eslint-disable react/jsx-no-comment-textnodes, @typescript-eslint/no-unused-vars */
 /**
  * Claim Writer Panel Component
  *
@@ -281,6 +282,7 @@ export function ClaimWriterPanel({ leadId }: ClaimWriterPanelProps) {
 
               // eslint-disable-next-line react/jsx-no-comment-textnodes
               <div className="mx-auto max-w-md space-y-4">
+                // eslint-disable-next-line @typescript-eslint/no-unused-vars
                 // eslint-disable-next-line @typescript-eslint/no-unused-vars
                 {stages.map((stage, index) => (
                   <div key={stage.name} className="flex items-center gap-3">

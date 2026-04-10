@@ -85,7 +85,6 @@ export default async function InvoicesPage() {
         });
 
         return data.map((inv) => {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           const totals = inv.totals as any;
           const job = jobMap.get(inv.job_id);
           return {

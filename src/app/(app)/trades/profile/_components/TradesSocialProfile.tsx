@@ -1,3 +1,4 @@
+/* eslint-disable react/jsx-no-comment-textnodes */
 /**
  * Trades Social Profile Component
  * Beautiful social-like profile with photos, videos, reviews, testimonials
@@ -55,7 +56,6 @@ import FeaturedJobsSection from "./FeaturedJobsSection";
 import RecentActivityFeed from "./RecentActivityFeed";
 
 interface TradesSocialProfileProps {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   member: any;
   isOwnProfile: boolean;
   editEmployeeHref?: string | null;
@@ -179,7 +179,6 @@ function ConnectionsTab({ isOwnProfile, memberId }: { isOwnProfile: boolean; mem
                   <div className="flex items-center gap-3">
                     <div className="h-12 w-12 flex-shrink-0 overflow-hidden rounded-full bg-gradient-to-br from-blue-500 to-blue-600">
                       {connection.avatar ? (
-                        // eslint-disable-next-line @next/next/no-img-element
                         <img
                           src={connection.avatar}
                           alt={connection.name}
@@ -267,7 +266,6 @@ function ConnectionsTab({ isOwnProfile, memberId }: { isOwnProfile: boolean; mem
                   <div className="flex items-center gap-3">
                     <div className="h-12 w-12 flex-shrink-0 overflow-hidden rounded-full bg-gradient-to-br from-emerald-500 to-emerald-600">
                       {connection.avatar ? (
-                        // eslint-disable-next-line @next/next/no-img-element
                         <img
                           src={connection.avatar}
                           alt={connection.name}
@@ -453,7 +451,6 @@ function ActivityNotificationsWidget() {
             >
               <div className="h-10 w-10 flex-shrink-0 overflow-hidden rounded-full bg-gradient-to-br from-blue-500 to-purple-600">
                 {activity.fromAvatar ? (
-                  // eslint-disable-next-line @next/next/no-img-element
                   <img
                     src={activity.fromAvatar}
                     alt={activity.fromName}
@@ -535,7 +532,6 @@ export default function TradesSocialProfile({
   const [posts, setPosts] = useState<Post[]>([]);
   const [portfolio, setPortfolio] = useState<PortfolioItem[]>([]);
   const [reviews, setReviews] = useState<Review[]>([]);
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [loading, setLoading] = useState(true);
   const [avatarUrl, setAvatarUrl] = useState<string | null>(member?.avatar || null);
   const [coverUrl, setCoverUrl] = useState<string | null>(member?.coverPhoto || null);
@@ -645,7 +641,6 @@ export default function TradesSocialProfile({
 
         const { url } = await res.json();
         setPostImages((prev) => [...prev, url]);
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       } catch (_error) {
         toast.error("Failed to upload image");
       }
@@ -854,7 +849,6 @@ export default function TradesSocialProfile({
       // eslint-disable-next-line react/jsx-no-comment-textnodes
       />
 
-      // eslint-disable-next-line @next/next/no-img-element
       {/* Cover Photo — bigger hero banner like LinkedIn */}
       <div className="relative h-56 overflow-hidden rounded-t-xl bg-gradient-to-r from-[#117CFF] via-[#0098FF] to-[#00C2FF] md:h-72">
         {coverUrl && <img src={coverUrl} alt="Cover" className="h-full w-full object-cover" />}
@@ -1132,11 +1126,8 @@ export default function TradesSocialProfile({
         <div className="-mt-10 mb-6 md:-mt-12">
           {/* Top row: Avatar + Name block */}
           <div className="flex flex-col items-center gap-4 rounded-b-2xl bg-white px-4 pb-4 pt-8 shadow-sm dark:bg-slate-900 sm:flex-row sm:items-end sm:gap-5">
-            // eslint-disable-next-line react/jsx-no-comment-textnodes
             {/* Avatar */}
-            // eslint-disable-next-line react/jsx-no-comment-textnodes
             <div className="relative z-10 shrink-0">
-              // eslint-disable-next-line @next/next/no-img-element
               <div className="h-36 w-36 overflow-hidden rounded-2xl bg-gradient-to-br from-blue-500 to-blue-600 shadow-xl md:h-44 md:w-44">
                 {avatarUrl ? (
                   <img src={avatarUrl} alt={displayName} className="h-full w-full object-cover" />
@@ -1463,7 +1454,6 @@ export default function TradesSocialProfile({
                           className="flex cursor-pointer items-center gap-4 rounded-lg border border-dashed border-slate-200 p-4 transition-colors hover:border-blue-300 hover:bg-blue-50/50"
                         // eslint-disable-next-line react/jsx-no-comment-textnodes
                         >
-                          // eslint-disable-next-line @next/next/no-img-element
                           <div className="h-10 w-10 flex-shrink-0 overflow-hidden rounded-full bg-gradient-to-br from-blue-500 to-blue-600">
                             {avatarUrl ? (
                               <img
@@ -1490,11 +1480,8 @@ export default function TradesSocialProfile({
                           </div>
                         </div>
                       ) : (
-                        // eslint-disable-next-line react/jsx-no-comment-textnodes
                         <div className="space-y-4">
-                          // eslint-disable-next-line react/jsx-no-comment-textnodes
                           <div className="flex items-start gap-3">
-                            // eslint-disable-next-line @next/next/no-img-element
                             <div className="h-10 w-10 flex-shrink-0 overflow-hidden rounded-full bg-gradient-to-br from-blue-500 to-blue-600">
                               {avatarUrl ? (
                                 <img
@@ -1532,9 +1519,7 @@ export default function TradesSocialProfile({
 
                           {/* Image Previews */}
                           {postImages.length > 0 && (
-                            // eslint-disable-next-line react/jsx-no-comment-textnodes
                             <div className="flex flex-wrap gap-2">
-                              // eslint-disable-next-line @next/next/no-img-element
                               {postImages.map((img, idx) => (
                                 <div key={idx} className="relative">
                                   <img
@@ -1658,11 +1643,8 @@ export default function TradesSocialProfile({
                   <div className="space-y-4">
                     {posts.map((post) => (
                       <Card key={post.id}>
-                        // eslint-disable-next-line react/jsx-no-comment-textnodes
                         <CardContent className="p-4">
-                          // eslint-disable-next-line react/jsx-no-comment-textnodes
                           <div className="mb-3 flex items-center gap-3">
-                            // eslint-disable-next-line @next/next/no-img-element
                             <div className="h-10 w-10 overflow-hidden rounded-full bg-gradient-to-br from-blue-500 to-blue-600">
                               {member.avatar ? (
                                 <img
@@ -1700,9 +1682,7 @@ export default function TradesSocialProfile({
                           </div>
                           <p className="mb-4 text-slate-700">{post.content}</p>
                           {post.mediaUrls && post.mediaUrls.length > 0 && (
-                            // eslint-disable-next-line react/jsx-no-comment-textnodes
                             <div className="mb-4 grid grid-cols-2 gap-2 sm:grid-cols-3">
-                              // eslint-disable-next-line @next/next/no-img-element
                               {post.mediaUrls.slice(0, 6).map((url, i) => (
                                 <div key={i} className="aspect-square overflow-hidden rounded-lg">
                                   <img

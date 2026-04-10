@@ -7,11 +7,9 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 
 export default function ClerkDebugPage() {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [config, setConfig] = useState<any>({});
 
   useEffect(() => {
-    // eslint-disable-next-line no-restricted-syntax
     const publishableKey = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY || "";
     setConfig({
       publishableKey,

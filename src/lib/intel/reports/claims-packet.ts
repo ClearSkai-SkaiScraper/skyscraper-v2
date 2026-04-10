@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 // lib/intel/reports/claims-packet.ts
 /**
  * 🔥 PHASE 9: CLAIMS-READY REPORT PACKET

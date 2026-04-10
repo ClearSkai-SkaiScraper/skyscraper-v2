@@ -1,3 +1,4 @@
+/* eslint-disable react/jsx-no-comment-textnodes, @typescript-eslint/no-explicit-any */
 // eslint-disable-next-line no-restricted-imports
 import { currentUser } from "@clerk/nextjs/server";
 import { Search as SearchIcon } from "lucide-react";
@@ -143,9 +144,7 @@ export default async function SearchPage({
                 <CardTitle>Claims ({results.claims.length})</CardTitle>
               </CardHeader>
               <CardContent>
-                // eslint-disable-next-line react/jsx-no-comment-textnodes
                 <div className="space-y-2">
-                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
                   {results.claims.map((claim: any) => (
                     <Link
                       key={claim.id}
@@ -175,9 +174,7 @@ export default async function SearchPage({
                 <CardTitle>Leads ({results.leads.length})</CardTitle>
               </CardHeader>
               <CardContent>
-                // eslint-disable-next-line react/jsx-no-comment-textnodes
                 <div className="space-y-2">
-                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
                   {results.leads.map((lead: any) => (
                     <Link
                       key={lead.id}
@@ -205,9 +202,7 @@ export default async function SearchPage({
                 <CardTitle>Jobs ({results.jobs.length})</CardTitle>
               </CardHeader>
               <CardContent>
-                // eslint-disable-next-line react/jsx-no-comment-textnodes
                 <div className="space-y-2">
-                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
                   {results.jobs.map((job: any) => (
                     <Link
                       key={job.id}
@@ -235,9 +230,7 @@ export default async function SearchPage({
                 <CardTitle>Clients ({results.clients.length})</CardTitle>
               </CardHeader>
               <CardContent>
-                // eslint-disable-next-line react/jsx-no-comment-textnodes
                 <div className="space-y-2">
-                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
                   {results.clients.map((client: any) => (
                     <Link
                       key={client.id}

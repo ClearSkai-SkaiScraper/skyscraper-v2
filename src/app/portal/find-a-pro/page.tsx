@@ -142,7 +142,6 @@ interface Job {
 // No demo profile - show real contractors only
 
 export default function FindAProPage() {
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { user } = useUser();
 
   // Search state
@@ -818,7 +817,6 @@ function ProCard({
       : null;
 
   const handleSaveClick = async () => {
-    // eslint-disable-next-line @typescript-eslint/await-thenable
     setSaving(true);
     // eslint-disable-next-line @typescript-eslint/await-thenable
     await onSave();
@@ -826,7 +824,6 @@ function ProCard({
   };
 
   const handleConnectClick = async () => {
-    // eslint-disable-next-line @typescript-eslint/await-thenable
     setConnecting(true);
     // eslint-disable-next-line @typescript-eslint/await-thenable
     await onConnect();

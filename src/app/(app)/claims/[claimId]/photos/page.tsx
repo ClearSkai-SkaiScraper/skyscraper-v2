@@ -1055,7 +1055,6 @@ export default function PhotosPage() {
                           className="flex items-start gap-2 rounded-lg bg-white/60 p-2 text-sm dark:bg-slate-800/60"
                         // eslint-disable-next-line react/jsx-no-comment-textnodes
                         >
-                          // eslint-disable-next-line @next/next/no-img-element
                           <img
                             src={p.publicUrl}
                             alt={p.filename}
@@ -1167,9 +1166,7 @@ export default function PhotosPage() {
                   the full view (which shows the complete uncropped image).
                   This is intentional for visual consistency in the grid. */}
                 {photo.analyzed && photo.damageBoxes && photo.damageBoxes.length > 0 ? (
-                  // eslint-disable-next-line react/jsx-no-comment-textnodes
                   <div className="relative h-full w-full">
-                    // eslint-disable-next-line @next/next/no-img-element
                     <img
                       src={photo.publicUrl}
                       alt={photo.filename}
@@ -1178,7 +1175,6 @@ export default function PhotosPage() {
                     <DamageBoxOverlay boxes={photo.damageBoxes} mode="compact" />
                   </div>
                 ) : (
-                  // eslint-disable-next-line @next/next/no-img-element
                   <img
                     src={photo.publicUrl}
                     alt={photo.filename}
@@ -1298,10 +1294,8 @@ export default function PhotosPage() {
                           <Square className="h-4 w-4 text-slate-400" />
                         )}
                       </button>
-                    // eslint-disable-next-line react/jsx-no-comment-textnodes
                     )}
 
-                    // eslint-disable-next-line @next/next/no-img-element
                     <img
                       src={photo.publicUrl}
                       alt={photo.filename}
@@ -1360,7 +1354,6 @@ export default function PhotosPage() {
                     showControls={false}
                   />
                 ) : (
-                  // eslint-disable-next-line @next/next/no-img-element
                   <img
                     src={photo.publicUrl}
                     alt={photo.filename}
@@ -1521,7 +1514,6 @@ export default function PhotosPage() {
                         }}
                       />
                     ) : (
-                      // eslint-disable-next-line @next/next/no-img-element
                       <img
                         src={selectedPhoto.publicUrl}
                         alt={selectedPhoto.filename}

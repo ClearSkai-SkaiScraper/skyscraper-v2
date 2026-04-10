@@ -163,7 +163,6 @@ export default async function Settings() {
             {/* Avatar */}
             <div className="flex-shrink-0">
               {userAvatar ? (
-                // eslint-disable-next-line @next/next/no-img-element
                 <img
                   src={userAvatar}
                   alt={userFullName}

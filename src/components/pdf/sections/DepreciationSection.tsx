@@ -1,3 +1,4 @@
+/* eslint-disable react/jsx-no-comment-textnodes, @typescript-eslint/no-explicit-any */
 // components/pdf/sections/DepreciationSection.tsx
 
 import { Text,View } from "@react-pdf/renderer";
@@ -35,6 +36,7 @@ export function DepreciationSection({ data }: { data: ReportData }) {
           <Text style={baseStyles.tableHeaderCell}>ACV</Text>
         // eslint-disable-next-line react/jsx-no-comment-textnodes
         </View>
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         {((dep as any).items || []).map((i: any, idx: number) => (
           <View style={baseStyles.tableRow} key={idx}>

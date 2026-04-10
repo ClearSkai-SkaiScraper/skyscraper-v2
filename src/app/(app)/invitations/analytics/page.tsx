@@ -67,7 +67,6 @@ export default function InvitationAnalytics() {
     // Auto-refresh every 30 seconds for real-time updates
     const interval = setInterval(loadAnalytics, 30000);
     return () => clearInterval(interval);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [period]);
 
   const loadAnalytics = async () => {

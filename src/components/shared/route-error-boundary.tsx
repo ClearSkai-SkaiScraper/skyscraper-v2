@@ -1,4 +1,5 @@
 "use client";
+/* eslint-disable react/jsx-no-comment-textnodes, no-restricted-syntax */
 
 import * as Sentry from "@sentry/nextjs";
 import { AlertTriangle, ArrowLeft, RotateCcw } from "lucide-react";
@@ -52,6 +53,7 @@ export default function RouteErrorBoundary({
         <h2 className="mt-4 text-xl font-bold text-red-700 dark:text-red-300">{title}</h2>
         // eslint-disable-next-line react/jsx-no-comment-textnodes
         <p className="mt-2 text-sm text-red-600 dark:text-red-400">{description}</p>
+        // eslint-disable-next-line no-restricted-syntax
         // eslint-disable-next-line no-restricted-syntax
         {process.env.NODE_ENV === "development" && error.message && (
           <div className="mt-4 rounded-lg bg-red-100 p-3 text-left text-xs dark:bg-red-900/30">

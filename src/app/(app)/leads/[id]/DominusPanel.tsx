@@ -22,7 +22,6 @@ interface DominusPanelProps {
 }
 
 interface AIData {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   aiSummaryJson: any;
   aiUrgencyScore: number;
   aiNextActions: string[];
@@ -48,7 +47,6 @@ export function DominusPanel({ leadId }: DominusPanelProps) {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     error: streamError,
   } = useAIStream({
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     onComplete: async (fullText) => {
       await loadAIData();
       toast.success("Analysis Complete!", {

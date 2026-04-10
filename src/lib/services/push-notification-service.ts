@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /**
  * Push Notification Service
  * Handles web push notifications for network activity

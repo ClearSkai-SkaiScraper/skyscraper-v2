@@ -250,7 +250,6 @@ export default function GroupFeed({ groupId, canPost, isMember, groupPrivacy }: 
                 {post.images.length > 0 && (
                   <div className="mt-3 grid gap-2">
                     {post.images.map((img, i) => (
-                      // eslint-disable-next-line @next/next/no-img-element
                       <img key={i} src={img} alt="" className="max-h-96 rounded-lg object-cover" />
                     ))}
                   </div>

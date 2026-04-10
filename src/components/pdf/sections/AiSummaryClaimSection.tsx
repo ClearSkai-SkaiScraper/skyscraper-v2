@@ -1,3 +1,4 @@
+/* eslint-disable react/jsx-no-comment-textnodes, @typescript-eslint/no-explicit-any */
 // components/pdf/sections/AiSummaryClaimSection.tsx
 
 import { Text,View } from "@react-pdf/renderer";
@@ -22,9 +23,11 @@ export function AiSummaryClaimSection({ data }: { data: ReportData }) {
   return (
     // eslint-disable-next-line react/jsx-no-comment-textnodes
     <View style={baseStyles.section}>
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       // eslint-disable-next-line @typescript-eslint/no-explicit-any, react/jsx-no-comment-textnodes
       <SectionHeader data={data} title={(s as any).headline || "Executive Claim Summary"} />
 
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       {(s as any).bullets?.length > 0 &&
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -36,9 +39,11 @@ export function AiSummaryClaimSection({ data }: { data: ReportData }) {
         ))}
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       {(s as any).bodyParagraph && (
         // eslint-disable-next-line react/jsx-no-comment-textnodes
         <View style={{ marginTop: 8 }}>
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           <Text style={baseStyles.value}>{(s as any).bodyParagraph}</Text>
         </View>

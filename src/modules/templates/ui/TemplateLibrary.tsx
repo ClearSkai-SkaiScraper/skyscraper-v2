@@ -1,4 +1,5 @@
 "use client";
+/* eslint-disable @typescript-eslint/no-explicit-any */
 
 // ============================================================================
 // TEMPLATE LIBRARY - Phase 5 Feature 5: Template Save/Apply/Delete

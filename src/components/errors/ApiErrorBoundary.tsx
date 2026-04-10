@@ -1,4 +1,5 @@
 "use client";
+/* eslint-disable react/jsx-no-comment-textnodes, no-restricted-syntax */
 
 import { motion } from "framer-motion";
 import Link from "next/link";
@@ -119,6 +120,7 @@ export default function ApiErrorBoundary({ error, reset }: ApiErrorBoundaryProps
         // eslint-disable-next-line react/jsx-no-comment-textnodes
         </div>
 
+        // eslint-disable-next-line no-restricted-syntax
         // eslint-disable-next-line no-restricted-syntax
         {process.env.NODE_ENV === "development" && (
           <details className="mt-8 text-left">

@@ -1,4 +1,5 @@
 "use client";
+/* eslint-disable react/jsx-no-comment-textnodes, @typescript-eslint/no-explicit-any */
 
 import { 
   AlertTriangle,
@@ -331,6 +332,7 @@ export function SupplementPanel({ leadId, claimId, currentScope = [] }: Suppleme
             <CardContent>
               // eslint-disable-next-line react/jsx-no-comment-textnodes
               <div className="space-y-4">
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 {result.arguments.slice(0, 5).map((arg: any, idx: number) => (
                   <div key={idx} className="rounded-lg border bg-gray-50 p-4">

@@ -1,4 +1,5 @@
 "use client";
+/* eslint-disable react/jsx-no-comment-textnodes, @typescript-eslint/no-explicit-any */
 
 import {
   AlertCircle,
@@ -628,9 +629,7 @@ export function JobScheduleClient({
             </SelectContent>
           </Select>
         </div>
-        // eslint-disable-next-line react/jsx-no-comment-textnodes
         <div className="flex items-center gap-2">
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           <Tabs value={viewMode} onValueChange={(v: any) => setViewMode(v)}>
             <TabsList>
               <TabsTrigger value="calendar" className="gap-2">

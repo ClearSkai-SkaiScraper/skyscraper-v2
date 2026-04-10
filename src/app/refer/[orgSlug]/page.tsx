@@ -47,7 +47,6 @@ export default async function ReferralLandingPage({ params }: { params: { orgSlu
         {/* Logo */}
         <div className="text-center">
           {org.brandLogoUrl ? (
-            // eslint-disable-next-line @next/next/no-img-element
             <img src={org.brandLogoUrl} alt={org.name} className="mx-auto mb-4 h-16 w-auto" />
           ) : (
             <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 text-2xl font-bold text-white">

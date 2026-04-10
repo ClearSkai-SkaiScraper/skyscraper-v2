@@ -1,3 +1,4 @@
+/* eslint-disable react/jsx-no-comment-textnodes, @typescript-eslint/no-explicit-any */
 import { Plus } from "lucide-react";
 import Link from "next/link";
 
@@ -84,6 +85,7 @@ export default function ClaimsPage({ mode = "public", initialClaims = [] }: Prop
       // eslint-disable-next-line react/jsx-no-comment-textnodes
       </div>
 
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       <ClaimsGrid claims={hydratedClaims as any} publicMode={mode === "public"} />
     </div>

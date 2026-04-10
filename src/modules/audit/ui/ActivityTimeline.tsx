@@ -1,4 +1,5 @@
 'use client';
+/* eslint-disable @typescript-eslint/no-explicit-any */
 
 // ============================================================================
 // ACTIVITY TIMELINE - Phase 5 Feature 6: Audit Trail UI

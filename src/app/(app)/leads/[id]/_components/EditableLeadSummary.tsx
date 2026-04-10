@@ -33,7 +33,6 @@ function EditableField({ label, value, field, onUpdate, type = "text", icon }: E
   const handleSave = async () => {
     setSaving(true);
     try {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       let processedValue: any = editValue;
       if (type === "number") {
         processedValue = editValue ? parseInt(editValue, 10) : null;

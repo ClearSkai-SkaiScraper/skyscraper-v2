@@ -236,7 +236,6 @@ export default function PermitDetailPage() {
   const handleSave = async () => {
     setSaving(true);
     try {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const body: Record<string, any> = {
         status: form.status,
         inspectionNotes: form.inspectionNotes || null,

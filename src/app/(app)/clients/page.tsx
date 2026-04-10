@@ -30,7 +30,6 @@ export default async function ClientsPage({ searchParams }: PageProps) {
   let hasError = false;
 
   try {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const whereClause: any = { orgId };
 
     // Add search filter if provided

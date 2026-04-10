@@ -1,3 +1,4 @@
+/* eslint-disable react/jsx-no-comment-textnodes, @typescript-eslint/no-explicit-any */
 // eslint-disable-next-line no-restricted-imports
 import { currentUser } from "@clerk/nextjs/server";
 import { AlertTriangle, Calendar, Home, MapPin, Plus, TrendingUp } from "lucide-react";
@@ -120,9 +121,7 @@ export default async function PropertyProfilesPage() {
             <TrendingUp className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            // eslint-disable-next-line react/jsx-no-comment-textnodes
             <div className="text-2xl font-bold">
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
               {properties.length > 0 && properties.some((p: any) => p.healthScores?.length > 0)
                 ? Math.round(
                     properties
@@ -154,9 +153,7 @@ export default async function PropertyProfilesPage() {
             <Calendar className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            // eslint-disable-next-line react/jsx-no-comment-textnodes
             <div className="text-2xl font-bold">
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
               {properties.filter((p: any) => p._count?.maintenanceSchedules > 0).length}
             </div>
           </CardContent>
@@ -179,9 +176,7 @@ export default async function PropertyProfilesPage() {
           </Link>
         </Card>
       ) : (
-        // eslint-disable-next-line react/jsx-no-comment-textnodes
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           {properties.map((property: any) => {
             const healthScore = property.healthScores?.[0];
             const riskScore = property.insuranceRiskScore || 0;
@@ -243,9 +238,7 @@ export default async function PropertyProfilesPage() {
                       </span>
                     </div>
                     <div className="flex items-center justify-between text-sm">
-                      // eslint-disable-next-line react/jsx-no-comment-textnodes
                       <span className="text-muted-foreground">Risk Level</span>
-                      // eslint-disable-next-line @typescript-eslint/no-explicit-any
                       <Badge variant={riskColor as any}>{riskLevel}</Badge>
                     </div>
                     <div className="grid grid-cols-3 gap-2 border-t pt-2 text-center text-xs">

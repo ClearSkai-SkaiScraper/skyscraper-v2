@@ -7,7 +7,6 @@ import { PageHero } from "@/components/layout/PageHero";
 import { TradesFeed } from "@/components/trades/TradesFeed";
 
 export default async function TradesFeedPage() {
-  // eslint-disable-next-line @typescript-eslint/await-thenable
   const { userId } = await auth();
 
   return (

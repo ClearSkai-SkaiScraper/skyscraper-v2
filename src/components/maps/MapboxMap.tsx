@@ -1,4 +1,5 @@
 "use client";
+/* eslint-disable react/jsx-no-comment-textnodes, no-restricted-syntax */
 
 import "mapbox-gl/dist/mapbox-gl.css";
 
@@ -184,6 +185,7 @@ export default function MapboxMap({
             <h3 className="mb-2 text-lg font-semibold text-foreground">Map Unavailable</h3>
             // eslint-disable-next-line react/jsx-no-comment-textnodes
             <p className="text-sm text-muted-foreground">{error}</p>
+            // eslint-disable-next-line no-restricted-syntax
             // eslint-disable-next-line no-restricted-syntax
             {!process.env.NEXT_PUBLIC_MAPBOX_TOKEN &&
               // eslint-disable-next-line no-restricted-syntax

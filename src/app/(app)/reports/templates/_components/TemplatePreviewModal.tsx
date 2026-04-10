@@ -1,4 +1,5 @@
 "use client";
+/* eslint-disable react/jsx-no-comment-textnodes */
 
 /**
  * Template Preview Modal - Shows template with company branding applied
@@ -205,11 +206,8 @@ export function TemplatePreviewModal({ template, onClose }: TemplatePreviewModal
             <div className="template-preview-modal-paper mx-auto max-w-3xl rounded-lg border border-slate-300 bg-white shadow-xl">
               {/* Header */}
               {header && (
-                // eslint-disable-next-line react/jsx-no-comment-textnodes
                 <div className="template-preview-modal-header border-b p-8">
-                  // eslint-disable-next-line react/jsx-no-comment-textnodes
                   <div className="flex items-center justify-between">
-                    // eslint-disable-next-line @next/next/no-img-element
                     {header.showLogo && styles.logoUrl && (
                       <img
                         src={styles.logoUrl}
@@ -236,9 +234,7 @@ export function TemplatePreviewModal({ template, onClose }: TemplatePreviewModal
                 {sections
                   // eslint-disable-next-line @typescript-eslint/no-explicit-any
                   .filter((s: any) => s.enabled !== false)
-                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
                   .sort((a: any, b: any) => (a.order || 0) - (b.order || 0))
-                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
                   .map((section: any, index: number) => (
                     <div key={index} className="rounded-lg border border-slate-200 bg-slate-50 p-6">
                       <h3 className="template-preview-modal-section-title mb-4 text-lg font-semibold">

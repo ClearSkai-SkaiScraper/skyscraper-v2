@@ -1,4 +1,5 @@
 "use client";
+/* eslint-disable react/jsx-no-comment-textnodes */
 import { useState } from "react";
 import { toast } from "sonner";
 

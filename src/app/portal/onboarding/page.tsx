@@ -496,7 +496,6 @@ export default function ClientOnboardingPage() {
                   onClick={() => coverInputRef.current?.click()}
                 >
                   {coverPreview ? (
-                    // eslint-disable-next-line @next/next/no-img-element
                     <img src={coverPreview} alt="Cover" className="h-full w-full object-cover" />
                   ) : (
                     <div className="flex h-full items-center justify-center">
@@ -524,7 +523,6 @@ export default function ClientOnboardingPage() {
                   onClick={() => avatarInputRef.current?.click()}
                 >
                   {avatarPreview ? (
-                    // eslint-disable-next-line @next/next/no-img-element
                     <img src={avatarPreview} alt="Avatar" className="h-full w-full object-cover" />
                   ) : (
                     <div className="flex h-full w-full items-center justify-center text-2xl font-bold text-white">

@@ -1,4 +1,5 @@
 "use client";
+/* eslint-disable react/jsx-no-comment-textnodes */
 
 import {
   AlertCircle,
@@ -1313,7 +1314,6 @@ function SignatureRequestModal({
 }
 
 function PhotosSection({ claimId }: { claimId: string }) {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [photos, setPhotos] = React.useState<any[]>([]);
   const [uploading, setUploading] = React.useState(false);
   const [dragActive, setDragActive] = React.useState(false);
@@ -1829,7 +1829,6 @@ function PhotosSection({ claimId }: { claimId: string }) {
                 >
                   {/* Show damage box overlays for analyzed photos */}
                   {photo.analyzed && photo.damageBoxes && photo.damageBoxes.length > 0 ? (
-                    // eslint-disable-next-line @next/next/no-img-element
                     <div className="relative h-32 w-full">
                       <img
                         src={photo.publicUrl}
@@ -1838,7 +1837,6 @@ function PhotosSection({ claimId }: { claimId: string }) {
                       />
                       <DamageBoxOverlay boxes={photo.damageBoxes} mode="compact" />
                     </div>
-                  // eslint-disable-next-line @next/next/no-img-element
                   ) : (
                     <img
                       src={photo.publicUrl}
@@ -1929,9 +1927,7 @@ function PhotosSection({ claimId }: { claimId: string }) {
             aria-label="Close photo preview"
           // eslint-disable-next-line react/jsx-no-comment-textnodes
           >
-            // eslint-disable-next-line react/jsx-no-comment-textnodes
             <X className="h-8 w-8" />
-          // eslint-disable-next-line @next/next/no-img-element
           </button>
           <img
             src={selectedPhoto.url}
@@ -2248,7 +2244,6 @@ function FinancialsSection({
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 function TimelineSection({ claimId }: { claimId: string }) {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [events, setEvents] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 

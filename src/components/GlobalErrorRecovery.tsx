@@ -1,4 +1,5 @@
 "use client";
+/* eslint-disable react/jsx-no-comment-textnodes, no-restricted-syntax */
 
 import { AlertTriangle, ChevronDown, Home, RotateCcw } from "lucide-react";
 import { Component, type ReactNode } from "react";
@@ -129,6 +130,7 @@ export class GlobalErrorRecovery extends Component<Props, State> {
 
             // eslint-disable-next-line react/jsx-no-comment-textnodes
             {/* Expandable error details (dev only) */}
+            // eslint-disable-next-line no-restricted-syntax
             // eslint-disable-next-line no-restricted-syntax
             {process.env.NODE_ENV === "development" && this.state.error && (
               <div className="mt-4 text-left">

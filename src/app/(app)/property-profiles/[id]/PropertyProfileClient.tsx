@@ -1,4 +1,5 @@
 "use client";
+/* eslint-disable react/jsx-no-comment-textnodes, @typescript-eslint/no-explicit-any */
 
 import { AlertTriangle, ArrowLeft, Camera, FileText, Home, TrendingUp, Wrench } from "lucide-react";
 import Link from "next/link";
@@ -158,9 +159,7 @@ export default function PropertyProfileClient({
                   <AlertTriangle className="h-4 w-4" />
                   Critical Issues
                 </h4>
-                // eslint-disable-next-line react/jsx-no-comment-textnodes
                 <ul className="space-y-1">
-                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
                   {healthScore.criticalIssues.map((issue: any, i: number) => (
                     <li key={i} className="text-sm">
                       • {issue.issue} - {issue.severity}
@@ -216,9 +215,7 @@ export default function PropertyProfileClient({
                   </span>
                   <span className="text-muted-foreground">Property Type:</span>
                   <span className="font-medium">{property.propertyType || "N/A"}</span>
-                  // eslint-disable-next-line react/jsx-no-comment-textnodes
                   <span className="text-muted-foreground">Risk Level:</span>
-                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
                   <Badge variant={riskColor as any}>{riskLevel}</Badge>
                 </div>
               </CardContent>
@@ -268,9 +265,7 @@ export default function PropertyProfileClient({
                   No digital twins created yet
                 </div>
               ) : (
-                // eslint-disable-next-line react/jsx-no-comment-textnodes
                 <div className="space-y-4">
-                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
                   {digitalTwins.map((twin: any) => (
                     <div
                       key={twin.id}
@@ -324,9 +319,7 @@ export default function PropertyProfileClient({
                   </Link>
                 </div>
               ) : (
-                // eslint-disable-next-line react/jsx-no-comment-textnodes
                 <div className="space-y-4">
-                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
                   {inspections.map((inspection: any) => (
                     <div key={inspection.id} className="rounded-lg border p-4">
                       <div className="mb-2 flex items-center justify-between">

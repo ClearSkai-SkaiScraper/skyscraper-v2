@@ -38,7 +38,6 @@ export default function PortalClaimDetailPage() {
   const [signedDocs, setSignedDocs] = useState<WorkspaceSignedDoc[]>([]);
   const [invoices, setInvoices] = useState<WorkspaceInvoice[]>([]);
   const [timeline, setTimeline] = useState<WorkspaceTimelineEvent[]>([]);
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [messages, setMessages] = useState<WorkspaceMessage[]>([]);
   const [canUpload, setCanUpload] = useState(false);
 

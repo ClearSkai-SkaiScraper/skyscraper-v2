@@ -21,7 +21,6 @@ export function SettingsForm({
   initialTimezone,
   initialNotifications,
 }: SettingsFormProps) {
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const router = useRouter();
   const [displayName, setDisplayName] = useState(initialDisplayName);
   const [orgName, setOrgName] = useState(initialOrgName);

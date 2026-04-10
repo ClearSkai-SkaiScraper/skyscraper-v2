@@ -141,7 +141,6 @@ export default function RequestServicePage({ params }: { params: { slug: string 
     <div className="mx-auto max-w-3xl space-y-8 p-6">
       <div className="flex items-center gap-4">
         {contractor.logoUrl && (
-          // eslint-disable-next-line @next/next/no-img-element
           <img
             src={contractor.logoUrl}
             alt={contractor.businessName}

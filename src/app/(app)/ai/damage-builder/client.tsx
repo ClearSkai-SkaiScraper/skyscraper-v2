@@ -494,9 +494,7 @@ export default function DamageBuilderClient({ leadId, jobId }: DamageBuilderClie
                     idx === selectedPhotoIndex ? "ring-2 ring-[#117CFF] ring-offset-2" : ""
                   }`}
                   onClick={() => setSelectedPhotoIndex(idx)}
-                // eslint-disable-next-line react/jsx-no-comment-textnodes
                 >
-                  // eslint-disable-next-line @next/next/no-img-element
                   <img
                     src={photo.preview}
                     alt={`Photo ${idx + 1}`}
@@ -606,9 +604,7 @@ export default function DamageBuilderClient({ leadId, jobId }: DamageBuilderClie
         <div className="flex flex-col md:col-span-8 lg:col-span-6">
           <div className="relative flex aspect-[4/3] min-h-[250px] flex-1 items-center justify-center overflow-hidden rounded-2xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-700 dark:bg-slate-800/50 sm:p-6">
             {photos.length > 0 && selectedPhoto ? (
-              // eslint-disable-next-line react/jsx-no-comment-textnodes
               <>
-                // eslint-disable-next-line @next/next/no-img-element
                 <img
                   src={selectedPhoto.preview}
                   alt={`Photo ${selectedPhotoIndex + 1}`}

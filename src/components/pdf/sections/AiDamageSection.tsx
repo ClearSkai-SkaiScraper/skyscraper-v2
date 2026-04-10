@@ -1,3 +1,4 @@
+/* eslint-disable react/jsx-no-comment-textnodes, @typescript-eslint/no-explicit-any */
 // components/pdf/sections/AiDamageSection.tsx
 
 import { Text,View } from "@react-pdf/renderer";
@@ -33,6 +34,7 @@ export function AiDamageSection({ data }: { data: ReportData }) {
           <Text style={baseStyles.tableHeaderCell}>Recommendation</Text>
         // eslint-disable-next-line react/jsx-no-comment-textnodes
         </View>
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         {((dmg as any).photos || []).map((p: any, idx: number) => (
           <View style={baseStyles.tableRow} key={idx}>

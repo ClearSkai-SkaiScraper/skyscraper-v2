@@ -1,3 +1,4 @@
+/* eslint-disable react/jsx-no-comment-textnodes, @typescript-eslint/no-explicit-any */
 // components/pdf/sections/TimelineSection.tsx
 
 import { Text,View } from "@react-pdf/renderer";
@@ -25,9 +26,11 @@ export function TimelineSection({ data }: { data: ReportData }) {
   return (
     // eslint-disable-next-line react/jsx-no-comment-textnodes
     <View style={baseStyles.section}>
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       // eslint-disable-next-line @typescript-eslint/no-explicit-any, react/jsx-no-comment-textnodes
       <SectionHeader data={data} title={(t as any).aiTimelineTitle || "Project Timeline"} />
 
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       {((t as any).aiTimelineSteps || []).map((step: any, idx: number) => (
         <View key={idx} style={{ marginBottom: 6 }}>

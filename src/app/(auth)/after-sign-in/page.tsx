@@ -20,7 +20,6 @@ import { logger } from "@/lib/logger";
 
 async function setUserTypeCookie(type: "pro" | "client") {
   try {
-    // eslint-disable-next-line @typescript-eslint/await-thenable
     const cookieStore = await cookies();
     cookieStore.set("x-user-type", type, {
       httpOnly: false,
@@ -43,7 +42,6 @@ async function setUserTypeCookie(type: "pro" | "client") {
  */
 async function syncClerkMetadata(clerkUserId: string, userType: "pro" | "client") {
   try {
-    // eslint-disable-next-line @typescript-eslint/await-thenable
     const clerk = await clerkClient();
     await clerk.users.updateUserMetadata(clerkUserId, {
       publicMetadata: { userType },
@@ -58,7 +56,6 @@ async function syncClerkMetadata(clerkUserId: string, userType: "pro" | "client"
 /** Direct Clerk REST API — bypasses SDK entirely */
 async function getClerkUserTypeDirect(clerkUserId: string): Promise<"pro" | "client" | null> {
   try {
-    // eslint-disable-next-line no-restricted-syntax
     const sk = process.env.CLERK_SECRET_KEY;
     if (!sk) return null;
     const r = await fetch(`https://api.clerk.com/v1/users/${clerkUserId}`, {
