@@ -92,6 +92,7 @@ export function ContractorCard({
 
       <div className="p-4">
         <div className="flex items-start gap-4">
+          // eslint-disable-next-line @next/next/no-img-element
           {/* Logo */}
           <Link href={`/c/${slug}`} className="shrink-0">
             {logoUrl ? (

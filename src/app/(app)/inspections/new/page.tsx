@@ -275,6 +275,7 @@ function NewInspectionContent() {
               <div className="grid grid-cols-2 gap-4 md:grid-cols-3">
                 {previews.map((preview, index) => (
                   <div key={index} className="group relative">
+                    // eslint-disable-next-line @next/next/no-img-element
                     <img
                       src={preview}
                       alt={`Preview ${index + 1}`}

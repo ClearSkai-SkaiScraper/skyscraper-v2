@@ -183,6 +183,7 @@ export const GET = withAuth(async (req: NextRequest, { orgId, userId }) => {
         (m) => !m.name || m.name === "Unknown" || m.name === "You"
       );
       if (membersNeedingEnrichment.length > 0) {
+        // eslint-disable-next-line @typescript-eslint/await-thenable
         const clerk = await clerkClient();
         const clerkUsers = await clerk.users.getUserList({
           userId: membersNeedingEnrichment.map((m) => m.id),

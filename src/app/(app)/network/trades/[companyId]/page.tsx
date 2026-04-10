@@ -12,6 +12,7 @@ interface TradesCompanyDetailPageProps {
 }
 
 export default async function TradesCompanyDetailPage({ params }: TradesCompanyDetailPageProps) {
+  // eslint-disable-next-line @typescript-eslint/await-thenable
   const { userId } = await auth();
   if (!userId) redirect("/sign-in");
 

@@ -123,6 +123,7 @@ export default function ContractorsSearchPage({
               className="flex flex-col gap-3 rounded-xl border bg-white p-4 shadow-sm transition-shadow hover:shadow-md"
             >
               <div className="flex items-center gap-3">
+                // eslint-disable-next-line @next/next/no-img-element
                 {c.logoUrl ? (
                   <img
                     src={c.logoUrl}

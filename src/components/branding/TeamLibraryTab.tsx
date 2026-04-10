@@ -48,6 +48,7 @@ export default function TeamLibraryTab({ orgId }: { orgId?: string }) {
       <div className="mt-4 grid grid-cols-4 gap-4">
         {tiles.slice(0, 12).map((t) => (
           <div key={t.id} className="border p-2">
+            // eslint-disable-next-line @next/next/no-img-element
             <img
               src={t.photo_url}
               alt={t.display_name}

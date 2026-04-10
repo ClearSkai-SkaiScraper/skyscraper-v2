@@ -200,6 +200,7 @@ export default function JobPhotosOnboardingPage() {
                 {photos.map((photo) => (
                   <div key={photo.id} className="group relative rounded-lg border bg-white p-2">
                     <div className="relative aspect-video overflow-hidden rounded-lg">
+                      // eslint-disable-next-line @next/next/no-img-element
                       <img
                         src={photo.preview}
                         alt="Preview"

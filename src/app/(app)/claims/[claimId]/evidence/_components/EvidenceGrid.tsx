@@ -84,6 +84,7 @@ export function EvidenceGrid({ assets, claimId, onAssetUpdated }: EvidenceGridPr
           >
             {/* Thumbnail */}
             <div className="flex aspect-square items-center justify-center bg-gray-100">
+              // eslint-disable-next-line @next/next/no-img-element
               {thumbnailUrls[asset.id] ? (
                 <img
                   src={thumbnailUrls[asset.id]}

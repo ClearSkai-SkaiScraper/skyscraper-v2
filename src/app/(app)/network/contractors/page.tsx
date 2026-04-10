@@ -163,6 +163,7 @@ function ContractorCard({
       <div className="flex items-start gap-4">
         <div className="flex h-16 w-16 flex-shrink-0 items-center justify-center overflow-hidden rounded-lg bg-gradient-to-br from-emerald-100 to-teal-100">
           {contractor.profilePhotoUrl ? (
+            // eslint-disable-next-line @next/next/no-img-element
             <img
               src={contractor.profilePhotoUrl}
               alt={contractor.companyName || "Contractor"}

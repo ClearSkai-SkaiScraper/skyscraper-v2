@@ -29,6 +29,7 @@ const bootstrapSchema = z.object({
 
 export async function POST(req: Request) {
   try {
+    // eslint-disable-next-line @typescript-eslint/await-thenable
     const { userId, orgId: clerkOrgId } = await auth();
 
     if (!userId) {

@@ -248,6 +248,7 @@ export function AiMatchClient() {
 
                     {/* Logo */}
                     {m.vendor.logo ? (
+                      // eslint-disable-next-line @next/next/no-img-element
                       <img
                         src={m.vendor.logo}
                         alt={m.vendor.name}

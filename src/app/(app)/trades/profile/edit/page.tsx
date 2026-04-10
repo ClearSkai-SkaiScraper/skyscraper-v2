@@ -407,6 +407,7 @@ export default function EditProfilePage() {
                 onClick={() => fileInputRef.current?.click()}
               >
                 {headshotPreview ? (
+                  // eslint-disable-next-line @next/next/no-img-element
                   <img src={headshotPreview} alt="Preview" className="h-full w-full object-cover" />
                 ) : (
                   <Camera className="h-8 w-8 text-gray-400" />

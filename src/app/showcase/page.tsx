@@ -41,6 +41,7 @@ export default function ShowcasePage() {
           <div className="rounded-lg border p-4">
             <div className="mb-2 text-sm text-gray-500">Primary Logo</div>
             <div className="flex h-24 items-center justify-center rounded bg-gray-50">
+              // eslint-disable-next-line @next/next/no-img-element
               <img src="/logo.svg" alt="SkaiScraper" className="h-12" />
             </div>
           </div>

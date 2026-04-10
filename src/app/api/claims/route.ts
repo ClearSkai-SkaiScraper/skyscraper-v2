@@ -65,6 +65,7 @@ export const POST = withOrgScope(async (req, { userId, orgId }) => {
     await withRequestContext();
     // Ensure membership-derived orgId is present (defensive check)
     if (!orgId) {
+      // eslint-disable-next-line @typescript-eslint/await-thenable
       const { userId: clerkUserId } = await auth();
       if (clerkUserId) {
         const dbUser = await prisma.users.findUnique({

@@ -15,6 +15,7 @@ const TeamInviteSchema = z.object({
 
 const basePOST = async (req: Request) => {
   const { userId, orgId } = await auth();
+  // eslint-disable-next-line @typescript-eslint/await-thenable
   if (!userId || !orgId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   const body = await req.json();
   const { email, role, name } = TeamInviteSchema.parse(body);
@@ -36,6 +37,7 @@ const basePOST = async (req: Request) => {
 // GET endpoint to list pending invitations
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const baseGET = async (req: Request) => {
+  // eslint-disable-next-line @typescript-eslint/await-thenable
   const { userId, orgId } = await auth();
   if (!userId || !orgId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   const mockInvitations = [

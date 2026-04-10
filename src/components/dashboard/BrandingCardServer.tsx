@@ -10,6 +10,7 @@ import { getBranding, isBrandingComplete } from "@/lib/branding";
  * Displays real branding data from database with no client-side caching
  */
 export async function BrandingCardServer() {
+  // eslint-disable-next-line @typescript-eslint/await-thenable
   const { userId, orgId } = await auth();
   const resolvedOrgId = orgId || userId || "";
 

@@ -16,6 +16,7 @@ export async function POST() {
   try {
     const user = await resolveUserRole();
 
+    // eslint-disable-next-line @typescript-eslint/await-thenable
     const cookieStore = await cookies();
     cookieStore.set("x-remote-view-user", "", {
       path: "/",

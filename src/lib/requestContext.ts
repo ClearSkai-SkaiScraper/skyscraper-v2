@@ -21,6 +21,7 @@ import { logger } from "@/lib/logger";
  * Returns the requestId for use in response payloads or downstream calls.
  */
 export async function withRequestContext(): Promise<string> {
+  // eslint-disable-next-line @typescript-eslint/await-thenable
   const headersList = await headers();
   const requestId = headersList.get("x-request-id") ?? "unknown";
   logger.setContext({ requestId });

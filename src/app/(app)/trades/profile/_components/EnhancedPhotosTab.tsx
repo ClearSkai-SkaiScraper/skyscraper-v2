@@ -272,6 +272,7 @@ export default function EnhancedPhotosTab({
             >
               {/* Album Cover */}
               <div className="aspect-square overflow-hidden bg-slate-100">
+                // eslint-disable-next-line @next/next/no-img-element
                 {albumPhotos.length > 0 ? (
                   <img
                     src={albumPhotos[0].url}
@@ -369,6 +370,7 @@ export default function EnhancedPhotosTab({
                   viewMode === "masonry" ? "mb-3 break-inside-avoid" : "aspect-square"
                 }`}
                 onClick={() => openLightbox(index)}
+              // eslint-disable-next-line @next/next/no-img-element
               >
                 <img
                   src={photo.url}
@@ -442,6 +444,7 @@ export default function EnhancedPhotosTab({
           </button>
 
           {/* Image */}
+          // eslint-disable-next-line @next/next/no-img-element
           <div className="max-h-[85vh] max-w-[85vw]">
             <img
               src={filteredPhotos[currentIndex]?.url}
@@ -501,6 +504,7 @@ export default function EnhancedPhotosTab({
                   i === currentIndex ? "ring-2 ring-white" : "opacity-60 hover:opacity-100"
                 }`}
                 aria-label={`View photo ${i + 1}`}
+              // eslint-disable-next-line @next/next/no-img-element
               >
                 <img src={photo.url} alt="" className="h-full w-full object-cover" />
               </button>

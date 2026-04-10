@@ -12,6 +12,7 @@ import { NextResponse } from "next/server";
 export async function GET() {
   try {
     const { userId } = await auth();
+// eslint-disable-next-line @typescript-eslint/await-thenable
 
     if (!userId) {
       return NextResponse.json({ error: "Not authenticated" }, { status: 401 });

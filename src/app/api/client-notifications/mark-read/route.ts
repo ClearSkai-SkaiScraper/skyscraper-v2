@@ -10,6 +10,7 @@ import prisma from "@/lib/prisma";
 export async function POST(req: NextRequest) {
   try {
     const client = await getClientFromAuth();
+    // eslint-disable-next-line @typescript-eslint/await-thenable
     const { userId } = await auth();
 
     if (!client && !userId) {

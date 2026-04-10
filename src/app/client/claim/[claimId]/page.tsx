@@ -11,6 +11,7 @@ export default async function ClientClaimPage({
   searchParams: { email?: string };
 }) {
   // SECURITY: Require authentication
+  // eslint-disable-next-line @typescript-eslint/await-thenable
   const { userId } = await auth();
   if (!userId) redirect("/client/sign-in");
 

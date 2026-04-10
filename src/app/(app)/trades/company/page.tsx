@@ -439,6 +439,7 @@ export default function CompanyPage() {
       {/* Cover Photo — native img, no next/image */}
       <div className="relative h-60 overflow-hidden rounded-t-xl bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-700 md:h-72">
         {company.coverPhoto && (
+          // eslint-disable-next-line @next/next/no-img-element
           <img src={company.coverPhoto} alt="Cover" className="h-full w-full object-cover" />
         )}
         <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-black/10 to-transparent" />
@@ -462,6 +463,7 @@ export default function CompanyPage() {
             {/* Logo */}
             <div className="relative mx-auto -mt-6 h-28 w-28 shrink-0 overflow-hidden rounded-xl border-4 border-white bg-white shadow-lg sm:mx-0 sm:-mt-10 sm:h-36 sm:w-36 md:h-44 md:w-44">
               {company.logo ? (
+                // eslint-disable-next-line @next/next/no-img-element
                 <img src={company.logo} alt={company.name} className="h-full w-full object-cover" />
               ) : (
                 <div className="flex h-full items-center justify-center">

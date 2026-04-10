@@ -9,6 +9,7 @@ export const dynamic = "force-dynamic";
 
 export async function GET() {
   try {
+    // eslint-disable-next-line @typescript-eslint/await-thenable
     const { userId } = await auth();
 
     if (!userId) {

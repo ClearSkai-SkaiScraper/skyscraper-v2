@@ -293,6 +293,7 @@ export function BATFPanel({ leadId, claimId }: BATFPanelProps) {
           {/* Photo Preview Grid */}
           {uploadedPhotos.length > 0 && (
             <div className="grid grid-cols-5 gap-4">
+              // eslint-disable-next-line @next/next/no-img-element
               {uploadedPhotos.map((photo, idx) => (
                 <div key={idx} className="group relative">
                   <img
@@ -370,6 +371,7 @@ export function BATFPanel({ leadId, claimId }: BATFPanelProps) {
           {/* Image Carousel */}
           <div className="grid grid-cols-2 gap-4">
             {currentReport.damageOverlay && (
+              // eslint-disable-next-line @next/next/no-img-element
               <div>
                 <p className="mb-2 text-sm font-medium text-gray-700">Damage Overlay</p>
                 <img
@@ -380,6 +382,7 @@ export function BATFPanel({ leadId, claimId }: BATFPanelProps) {
               </div>
             )}
             {currentReport.severityMap && (
+              // eslint-disable-next-line @next/next/no-img-element
               <div>
                 <p className="mb-2 text-sm font-medium text-gray-700">Severity Heatmap</p>
                 <img
@@ -390,6 +393,7 @@ export function BATFPanel({ leadId, claimId }: BATFPanelProps) {
               </div>
             )}
             {currentReport.aiBeforeUrl && (
+              // eslint-disable-next-line @next/next/no-img-element
               <div>
                 <p className="mb-2 text-sm font-medium text-gray-700">AI Before (Perfect)</p>
                 <img
@@ -400,6 +404,7 @@ export function BATFPanel({ leadId, claimId }: BATFPanelProps) {
               </div>
             )}
             {currentReport.aiAfterUrl && (
+              // eslint-disable-next-line @next/next/no-img-element
               <div>
                 <p className="mb-2 text-sm font-medium text-gray-700">AI After (Repaired)</p>
                 <img

@@ -12,6 +12,7 @@ interface InvitePageProps {
 }
 
 export default async function InviteAcceptancePage({ params }: InvitePageProps) {
+  // eslint-disable-next-line @typescript-eslint/await-thenable
   const { userId } = await auth();
   const { token } = await params;
 

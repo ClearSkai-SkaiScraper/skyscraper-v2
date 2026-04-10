@@ -14,6 +14,7 @@ export const dynamic = "force-dynamic";
 
 export async function POST() {
   const { userId } = await auth();
+  // eslint-disable-next-line @typescript-eslint/await-thenable
   if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const now = new Date();

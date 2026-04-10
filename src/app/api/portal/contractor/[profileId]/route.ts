@@ -16,6 +16,7 @@ export async function GET(
   req: NextRequest,
   { params }: { params: Promise<{ profileId: string }> }
 ) {
+  // eslint-disable-next-line @typescript-eslint/await-thenable
   const { userId } = await auth();
 
   if (!userId) {

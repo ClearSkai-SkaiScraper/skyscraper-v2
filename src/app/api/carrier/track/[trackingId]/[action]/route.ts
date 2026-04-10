@@ -24,6 +24,7 @@ export async function GET(
 
   if (action === "pixel.gif") {
     // Record email open
+    // eslint-disable-next-line @typescript-eslint/await-thenable
     await recordEmailOpen(trackingId);
 
     // Return 1x1 transparent GIF
@@ -43,6 +44,7 @@ export async function GET(
     const { searchParams } = new URL(req.url);
     const linkUrl = searchParams.get("url") || "";
 
+    // eslint-disable-next-line @typescript-eslint/await-thenable
     await recordLinkClick(trackingId, linkUrl);
 
     // Redirect to actual URL

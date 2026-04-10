@@ -126,6 +126,7 @@ export default async function PublicStormPage({ params }: { params: { publicId: 
           <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
             <h2 className="mb-4 text-xl font-bold text-gray-900">Storm Impact Overlay</h2>
             <div className="overflow-hidden rounded-lg border border-gray-300">
+              // eslint-disable-next-line @next/next/no-img-element
               <img src={stormReport.heatmapUrl} alt="Storm Impact Heatmap" className="w-full" />
             </div>
           </div>
@@ -136,6 +137,7 @@ export default async function PublicStormPage({ params }: { params: { publicId: 
           <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
             <h2 className="mb-4 text-xl font-bold text-gray-900">NWS Radar Image</h2>
             <div className="overflow-hidden rounded-lg border border-gray-300">
+              // eslint-disable-next-line @next/next/no-img-element
               <img src={stormReport.radarImageUrl} alt="NWS Radar" className="w-full" />
             </div>
           </div>

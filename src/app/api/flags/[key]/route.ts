@@ -22,6 +22,7 @@ export const GET = withSentryApi(async (req, { params }: { params: { key: string
         reason: "DATABASE_URL not configured for postgres",
       });
     }
+    // eslint-disable-next-line @typescript-eslint/await-thenable
     const { userId, orgId: clerkOrgId } = await auth();
     let orgId = clerkOrgId;
     if (!userId) {
@@ -51,6 +52,7 @@ export const POST = withSentryApi(
         reason: "DATABASE_URL not configured for postgres",
       });
     }
+    // eslint-disable-next-line @typescript-eslint/await-thenable
     const { userId, orgId: clerkOrgId } = await auth();
     let effectiveOrgId = clerkOrgId;
     if (!userId) {

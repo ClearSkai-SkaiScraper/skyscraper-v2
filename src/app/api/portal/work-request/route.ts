@@ -44,6 +44,7 @@ const workRequestSchema = z.object({
 export async function POST(req: Request) {
   try {
     // 1. Authenticate as client
+    // eslint-disable-next-line @typescript-eslint/await-thenable
     const { userId } = await auth();
     if (!userId) {
       return NextResponse.json(

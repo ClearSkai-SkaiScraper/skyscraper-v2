@@ -818,12 +818,14 @@ function ProCard({
       : null;
 
   const handleSaveClick = async () => {
+    // eslint-disable-next-line @typescript-eslint/await-thenable
     setSaving(true);
     await onSave();
     setSaving(false);
   };
 
   const handleConnectClick = async () => {
+    // eslint-disable-next-line @typescript-eslint/await-thenable
     setConnecting(true);
     await onConnect();
     setConnecting(false);

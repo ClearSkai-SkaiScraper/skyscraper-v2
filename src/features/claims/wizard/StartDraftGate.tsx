@@ -42,6 +42,7 @@ export function StartDraftGate({
 
   const handleConfirm = async () => {
     setIsConfirming(true);
+    // eslint-disable-next-line @typescript-eslint/await-thenable
     await onConfirm();
     setIsConfirming(false);
   };

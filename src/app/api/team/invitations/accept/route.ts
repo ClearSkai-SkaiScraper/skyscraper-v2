@@ -30,6 +30,7 @@ const Activity = prismaMaybeModel("claim_activities");
 export async function POST(req: NextRequest) {
   try {
     // ── 1. Auth check (raw Clerk — user may have no org yet) ──────────
+    // eslint-disable-next-line @typescript-eslint/await-thenable
     const { userId } = await auth();
     if (!userId) {
       return NextResponse.json({ error: "Authentication required" }, { status: 401 });
@@ -76,6 +77,7 @@ export async function POST(req: NextRequest) {
 
     // ── 2b. Verify accepting user's email matches the invitation ──────
     const { clerkClient } = await import("@clerk/nextjs/server");
+    // eslint-disable-next-line @typescript-eslint/await-thenable
     const client = await clerkClient();
     const clerkUser = await client.users.getUser(userId);
     const userEmails = clerkUser.emailAddresses.map((e) => e.emailAddress.toLowerCase());

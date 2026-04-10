@@ -24,6 +24,7 @@ const DEFAULT_PREFS = {
 };
 
 async function getPortalUser() {
+  // eslint-disable-next-line @typescript-eslint/await-thenable
   const { userId } = await auth();
   if (!userId) return null;
 

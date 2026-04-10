@@ -211,6 +211,7 @@ export default function PublicProfilePage({ params }: { params: { id: string } }
               {/* Avatar */}
               <div className="-mt-20 mb-4">
                 {profile.avatar ? (
+                  // eslint-disable-next-line @next/next/no-img-element
                   <img
                     src={profile.avatar}
                     alt={`${profile.firstName} ${profile.lastName}`}
@@ -575,6 +576,7 @@ export default function PublicProfilePage({ params }: { params: { id: string } }
                       {post.images && post.images.length > 0 && (
                         <div className="mb-3 grid grid-cols-2 gap-2 sm:grid-cols-3">
                           {post.images.slice(0, 3).map((img: string, i: number) => (
+                            // eslint-disable-next-line @next/next/no-img-element
                             <img
                               key={i}
                               src={img}
@@ -636,6 +638,7 @@ export default function PublicProfilePage({ params }: { params: { id: string } }
                       key={i}
                       className="group relative aspect-square overflow-hidden rounded-lg"
                     >
+                      // eslint-disable-next-line @next/next/no-img-element
                       <img
                         src={url}
                         alt={`Project ${i + 1}`}

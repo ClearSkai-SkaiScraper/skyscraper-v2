@@ -36,6 +36,7 @@ export async function safeOrgContext(): Promise<SafeOrgContext> {
   let userId: string | null = null;
   try {
     // Clerk v5 requires await
+    // eslint-disable-next-line @typescript-eslint/await-thenable
     const a = await auth();
     userId = a.userId ?? null;
   } catch {

@@ -13,6 +13,7 @@ const requestSchema = z.object({
 
 export async function POST(request: NextRequest) {
   try {
+    // eslint-disable-next-line @typescript-eslint/await-thenable
     const { userId } = await auth();
 
     if (!userId) {

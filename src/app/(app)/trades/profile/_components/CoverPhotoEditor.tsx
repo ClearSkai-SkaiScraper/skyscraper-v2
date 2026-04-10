@@ -174,6 +174,7 @@ export default function CoverPhotoEditor({ imageUrl, onSave, onCancel }: CoverPh
             className="relative h-64 cursor-move overflow-hidden rounded-lg bg-slate-100 md:h-80"
             onMouseDown={handleMouseDown}
             onTouchStart={handleMouseDown}
+          // eslint-disable-next-line @next/next/no-img-element
           >
             <img
               ref={imageRef}

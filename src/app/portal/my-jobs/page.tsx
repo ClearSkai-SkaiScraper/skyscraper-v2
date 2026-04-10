@@ -299,6 +299,7 @@ export default function MyJobsPage() {
                       <div className="flex items-center gap-3">
                         {claim.contractor?.logo ? (
                           <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-slate-100 dark:bg-slate-800">
+                            // eslint-disable-next-line @next/next/no-img-element
                             <img
                               src={claim.contractor.logo}
                               alt=""
@@ -399,6 +400,7 @@ export default function MyJobsPage() {
                       <div className="flex items-start gap-4">
                         {wr.contractor?.logo ? (
                           <div className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-800 dark:to-slate-700">
+                            // eslint-disable-next-line @next/next/no-img-element
                             <img
                               src={wr.contractor.logo}
                               alt=""

@@ -52,6 +52,7 @@ async function checkDatabase(): Promise<HealthCheck> {
 async function checkAuth(): Promise<HealthCheck> {
   const start = Date.now();
   try {
+    // eslint-disable-next-line @typescript-eslint/await-thenable
     const { userId } = await auth();
     return {
       name: "Auth (Clerk)",

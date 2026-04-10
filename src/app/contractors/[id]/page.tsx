@@ -18,11 +18,13 @@ export default async function ContractorRedirectPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
+  // eslint-disable-next-line @typescript-eslint/await-thenable
   const { userId, sessionClaims } = await auth();
 
   // Get user type from session claims or cookie
   const clerkUserType = (sessionClaims as { publicMetadata?: { userType?: string } } | null)
     ?.publicMetadata?.userType;
+  // eslint-disable-next-line @typescript-eslint/await-thenable
   const cookieStore = await cookies();
   const cookieUserType = cookieStore.get("x-user-type")?.value;
   const userType = clerkUserType || cookieUserType;

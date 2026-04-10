@@ -11,6 +11,7 @@ import { BUILT_IN_CARRIERS } from '@/modules/carriers/core/presets';
 
 export async function GET() {
   try {
+    // eslint-disable-next-line @typescript-eslint/await-thenable
     const { userId } = await auth();
     if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });

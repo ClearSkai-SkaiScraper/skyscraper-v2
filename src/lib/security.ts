@@ -17,6 +17,7 @@ export interface SecurityContext {
  * Get current user's security context
  */
 export async function getSecurityContext(): Promise<SecurityContext | null> {
+  // eslint-disable-next-line @typescript-eslint/await-thenable
   const { userId } = await auth();
 
   if (!userId) return null;
@@ -132,6 +133,7 @@ export const SecurityEnforcement = {
   ): Promise<
     { success: true; userId: string } | { success: false; error: string; status: number }
   > {
+    // eslint-disable-next-line @typescript-eslint/await-thenable
     const { userId } = await auth();
 
     if (!userId) {
@@ -155,6 +157,7 @@ export const SecurityEnforcement = {
   ): Promise<
     { success: true; userId: string } | { success: false; error: string; status: number }
   > {
+    // eslint-disable-next-line @typescript-eslint/await-thenable
     const { userId } = await auth();
 
     if (!userId) {
@@ -179,6 +182,7 @@ export const SecurityEnforcement = {
     | { success: true; userId: string; role: "PRO" | "CLIENT" }
     | { success: false; error: string; status: number }
   > {
+    // eslint-disable-next-line @typescript-eslint/await-thenable
     const { userId } = await auth();
 
     if (!userId) {

@@ -472,6 +472,7 @@ export function ClientOnboardingWizard({ onComplete, onSkip }: ClientOnboardingW
                   <div className="grid grid-cols-5 gap-3">
                     {data.photoUrls.map((url, index) => (
                       <div key={index} className="group relative aspect-square">
+                        // eslint-disable-next-line @next/next/no-img-element
                         <img
                           src={url}
                           alt={`Upload ${index + 1}`}

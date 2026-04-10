@@ -164,6 +164,7 @@ export default function NewDamageAssessmentPage() {
                 {photos.map((photo) => (
                   <div
                     key={photo.id}
+                    // eslint-disable-next-line @next/next/no-img-element
                     className="flex aspect-square items-center justify-center overflow-hidden rounded-lg bg-muted"
                   >
                     <img

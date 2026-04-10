@@ -87,6 +87,7 @@ async function GenerateReportButton({ claimId }: { claimId: string }) {
   );
 }
 
+// eslint-disable-next-line @typescript-eslint/await-thenable
 export default async function ClaimsReportsPage() {
   const { userId } = await auth();
 

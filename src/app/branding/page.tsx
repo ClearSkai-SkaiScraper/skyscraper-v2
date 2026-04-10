@@ -86,6 +86,7 @@ export default function BrandingPage() {
           {saving ? "Saving…" : "Save Branding"}
         </button>
         {p.logo_url ? (
+          // eslint-disable-next-line @next/next/no-img-element
           <img src={p.logo_url} alt="Logo preview" className="h-10 rounded-lg" />
         ) : null}
       </div>

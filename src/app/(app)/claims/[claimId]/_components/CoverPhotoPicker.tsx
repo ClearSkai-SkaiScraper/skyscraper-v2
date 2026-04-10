@@ -166,6 +166,7 @@ export function CoverPhotoPicker({
                           : "border-slate-200 hover:border-blue-300"
                       }`}
                     >
+                      // eslint-disable-next-line @next/next/no-img-element
                       <img
                         src={photo.publicUrl}
                         alt={photo.title}

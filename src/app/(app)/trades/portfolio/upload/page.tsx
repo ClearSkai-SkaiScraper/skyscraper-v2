@@ -146,6 +146,7 @@ export default function PortfolioUploadPage() {
               <div className="mb-4 grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
                 {previews.map((preview, i) => (
                   <div key={i} className="group relative aspect-square overflow-hidden rounded-lg">
+                    // eslint-disable-next-line @next/next/no-img-element
                     <img
                       src={preview}
                       alt={`Photo ${i + 1}`}

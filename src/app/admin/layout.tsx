@@ -11,6 +11,7 @@ export const fetchCache = "force-no-store";
 export const runtime = "nodejs";
 
 export default async function AdminLayout({ children }: { children: ReactNode }) {
+  // eslint-disable-next-line @typescript-eslint/await-thenable
   const { userId } = await auth();
   if (!userId) redirect("/sign-in");
 

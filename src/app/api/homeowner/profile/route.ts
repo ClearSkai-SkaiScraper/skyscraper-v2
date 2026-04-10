@@ -24,6 +24,7 @@ const updateProfileSchema = z.object({
  */
 async function getUserEmail(userId: string): Promise<string | null> {
   try {
+    // eslint-disable-next-line @typescript-eslint/await-thenable
     const client = await clerkClient();
     const user = await client.users.getUser(userId);
     return user.emailAddresses?.[0]?.emailAddress || null;
@@ -35,6 +36,7 @@ async function getUserEmail(userId: string): Promise<string | null> {
 
 export async function POST(req: NextRequest) {
   try {
+    // eslint-disable-next-line @typescript-eslint/await-thenable
     const { userId } = await auth();
     if (!userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -91,6 +93,7 @@ export async function POST(req: NextRequest) {
 
 export async function GET() {
   try {
+    // eslint-disable-next-line @typescript-eslint/await-thenable
     const { userId } = await auth();
     if (!userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });

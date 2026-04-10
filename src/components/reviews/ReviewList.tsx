@@ -140,6 +140,7 @@ export function ReviewList({ contractorId, limit = 10 }: ReviewListProps) {
                     key={idx}
                     onClick={() => setSelectedPhoto(photo)}
                     className="h-20 w-20 overflow-hidden rounded-lg border transition hover:border-blue-500"
+                  // eslint-disable-next-line @next/next/no-img-element
                   >
                     <img
                       src={photo}
@@ -203,6 +204,7 @@ export function ReviewList({ contractorId, limit = 10 }: ReviewListProps) {
             className="absolute right-4 top-4 text-3xl text-white hover:text-gray-300"
           >
             ×
+          // eslint-disable-next-line @next/next/no-img-element
           </button>
           <img
             src={selectedPhoto}

@@ -24,6 +24,7 @@ const connectSchema = z.object({
 
 export async function POST(req: Request) {
   try {
+    // eslint-disable-next-line @typescript-eslint/await-thenable
     const { userId } = await auth();
     if (!userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -165,6 +166,7 @@ export async function POST(req: Request) {
 // GET /api/client/connect - Get client's connections
 export async function GET(req: Request) {
   try {
+    // eslint-disable-next-line @typescript-eslint/await-thenable
     const { userId } = await auth();
     if (!userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });

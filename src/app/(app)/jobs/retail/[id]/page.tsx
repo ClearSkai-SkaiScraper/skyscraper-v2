@@ -618,6 +618,7 @@ export default async function RetailJobWorkspacePage({
                       <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4">
                         {photos.map((photo) => (
                           <div
+                            // eslint-disable-next-line @next/next/no-img-element
                             key={photo.id}
                             className="group relative aspect-square overflow-hidden rounded-lg border border-slate-200 dark:border-slate-700"
                           >

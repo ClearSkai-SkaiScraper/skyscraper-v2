@@ -284,6 +284,7 @@ function PhotosEditor({ report }: { report: UniversalClaimsReport; setReport: an
       <h2 className="mb-6 text-2xl font-bold">Photo Documentation</h2>
       <div className="grid grid-cols-3 gap-4">
         {report.damagePhotos.map((photo) => (
+          // eslint-disable-next-line @next/next/no-img-element
           <div key={photo.photoNumber} className="rounded-lg border p-2">
             <img
               src={photo.thumbnailUrl || photo.imageUrl}

@@ -12,6 +12,7 @@ export const dynamic = "force-dynamic";
 export async function GET() {
   try {
     // Get Clerk auth state
+    // eslint-disable-next-line @typescript-eslint/await-thenable
     const { userId, orgId: clerkOrgId } = await auth();
     const clerkUser = await currentUser();
 

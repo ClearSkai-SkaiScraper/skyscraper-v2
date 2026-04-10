@@ -24,6 +24,7 @@ async function getContractor(slug: string) {
 
 export default async function ContractorPage({ params }: { params: { slug: string } }) {
   const contractor = await getContractor(params.slug);
+  // eslint-disable-next-line @typescript-eslint/await-thenable
   const { userId } = await auth();
 
   if (!contractor) return notFound();

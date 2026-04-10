@@ -368,6 +368,7 @@ export function DamageReportPreview({
                   <div className="flex gap-4">
                     {/* Thumbnail */}
                     <div className="w-48 shrink-0">
+                      // eslint-disable-next-line @next/next/no-img-element
                       <img
                         src={photo.publicUrl}
                         alt={photo.filename}

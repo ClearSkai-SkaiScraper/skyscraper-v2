@@ -13,6 +13,7 @@ import prisma from "@/lib/prisma";
  */
 export async function GET() {
   try {
+    // eslint-disable-next-line @typescript-eslint/await-thenable
     const { userId } = await auth();
 
     if (!userId) {
@@ -49,6 +50,7 @@ export async function GET() {
  */
 export async function POST(request: Request) {
   try {
+    // eslint-disable-next-line @typescript-eslint/await-thenable
     const { userId } = await auth();
 
     if (!userId) {
@@ -154,6 +156,7 @@ export async function POST(request: Request) {
  */
 export async function DELETE() {
   try {
+    // eslint-disable-next-line @typescript-eslint/await-thenable
     const { userId } = await auth();
 
     if (!userId) {

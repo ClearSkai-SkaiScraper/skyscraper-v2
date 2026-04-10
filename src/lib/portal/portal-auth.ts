@@ -11,6 +11,7 @@ import prisma from "@/lib/prisma";
  * @throws Error with message "FORBIDDEN" if no access to claim
  */
 export async function getPortalClaim(claimId: string) {
+  // eslint-disable-next-line @typescript-eslint/await-thenable
   const { userId } = await auth();
 
   if (!userId) {

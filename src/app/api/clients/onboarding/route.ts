@@ -27,6 +27,7 @@ const CLIENT_TYPE_MAP: Record<string, string> = {
 
 export async function POST(request: Request) {
   try {
+    // eslint-disable-next-line @typescript-eslint/await-thenable
     const { userId } = await auth();
     const user = await currentUser();
 
@@ -106,6 +107,7 @@ export async function POST(request: Request) {
 
     // Sync to Clerk publicMetadata for middleware routing
     try {
+      // eslint-disable-next-line @typescript-eslint/await-thenable
       const clerk = await clerkClient();
       await clerk.users.updateUserMetadata(userId, {
         publicMetadata: {
@@ -133,6 +135,7 @@ export async function POST(request: Request) {
 
 export async function GET() {
   try {
+    // eslint-disable-next-line @typescript-eslint/await-thenable
     const { userId } = await auth();
 
     if (!userId) {

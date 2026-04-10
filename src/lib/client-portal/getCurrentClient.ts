@@ -5,6 +5,7 @@ import { safePortalQuery } from "@/lib/portal/safePortalQuery";
 import prisma from "@/lib/prisma";
 
 export async function getCurrentClient() {
+  // eslint-disable-next-line @typescript-eslint/await-thenable
   const { userId } = await auth();
   const user = await currentUser();
   if (!user || !userId) return null;

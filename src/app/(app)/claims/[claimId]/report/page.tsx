@@ -19,6 +19,7 @@ export default async function UniversalReportPage({
 }: {
   params: Promise<{ claimId: string }>;
 }) {
+  // eslint-disable-next-line @typescript-eslint/await-thenable
   const { userId: clerkUserId } = await auth();
   const { claimId } = await params;
 

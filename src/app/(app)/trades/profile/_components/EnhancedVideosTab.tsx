@@ -158,6 +158,7 @@ export default function EnhancedVideosTab({
             className="group cursor-pointer overflow-hidden rounded-lg border bg-slate-100 transition hover:shadow-lg"
           >
             {/* Thumbnail */}
+            // eslint-disable-next-line @next/next/no-img-element
             <div className="relative aspect-video bg-slate-900">
               {video.thumbnail ? (
                 <img

@@ -12,6 +12,7 @@ export type Plan = "solo" | "business" | "enterprise";
  */
 export async function userRole(): Promise<Role> {
   try {
+    // eslint-disable-next-line @typescript-eslint/await-thenable
     const { orgRole } = await auth();
     if (!orgRole) return "member";
 
@@ -31,6 +32,7 @@ export async function userRole(): Promise<Role> {
  */
 export async function userPlan(): Promise<Plan> {
   try {
+    // eslint-disable-next-line @typescript-eslint/await-thenable
     const { orgId } = await auth();
     if (!orgId) return "solo";
 

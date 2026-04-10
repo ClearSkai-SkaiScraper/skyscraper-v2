@@ -16,6 +16,7 @@ import { notifyConnectionRequest } from "@/lib/services/tradesNotifications";
 
 export async function POST(req: NextRequest) {
   try {
+    // eslint-disable-next-line @typescript-eslint/await-thenable
     const { userId } = await auth();
     const user = await currentUser();
 
@@ -234,6 +235,7 @@ export async function POST(req: NextRequest) {
 // GET - Check connection status with a pro
 export async function GET(req: NextRequest) {
   try {
+    // eslint-disable-next-line @typescript-eslint/await-thenable
     const { userId } = await auth();
     const user = await currentUser();
 

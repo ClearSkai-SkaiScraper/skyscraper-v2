@@ -16,6 +16,7 @@ export async function middleware(req: NextRequest) {
     return NextResponse.next();
   }
 
+  // eslint-disable-next-line @typescript-eslint/await-thenable
   const { userId } = await auth();
   if (!userId) {
     return NextResponse.next(); // Let auth handle it

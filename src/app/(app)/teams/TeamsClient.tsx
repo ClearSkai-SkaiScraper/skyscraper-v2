@@ -108,6 +108,7 @@ export default function TeamsClient({
               <div className="flex items-center gap-4">
                 <div className="relative">
                   {member.headshotUrl || member.imageUrl || member.avatarUrl ? (
+                    // eslint-disable-next-line @next/next/no-img-element
                     <img
                       src={(member.headshotUrl || member.imageUrl || member.avatarUrl) as string}
                       alt={member.name || member.email}

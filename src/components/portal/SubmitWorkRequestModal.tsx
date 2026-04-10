@@ -357,6 +357,7 @@ export function SubmitWorkRequestModal({ isOpen, onClose, slug }: SubmitWorkRequ
             {photos.length > 0 && (
               <div className="mt-3 flex flex-wrap gap-2">
                 {photos.map((photo, index) => (
+                  // eslint-disable-next-line @next/next/no-img-element
                   <div key={index} className="relative h-20 w-20 overflow-hidden rounded-lg border">
                     <img
                       src={URL.createObjectURL(photo)}

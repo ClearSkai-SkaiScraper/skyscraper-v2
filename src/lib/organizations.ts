@@ -113,6 +113,7 @@ export async function getOrCreateCurrentOrganization(
   options: OrgHelperOptions = {}
 ): Promise<any | null> {
   const { requireOrg = true, bootstrapIfMissing = true } = options;
+  // eslint-disable-next-line @typescript-eslint/await-thenable
   const { userId } = await auth();
   if (!userId) {
     if (requireOrg) return null;

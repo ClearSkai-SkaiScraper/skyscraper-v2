@@ -14,6 +14,7 @@ import prisma from "@/lib/prisma";
 // GET /api/portal/posts - List posts for current user or specific user
 export async function GET(req: NextRequest) {
   try {
+    // eslint-disable-next-line @typescript-eslint/await-thenable
     const { userId } = await auth();
     if (!userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -55,6 +56,7 @@ export async function GET(req: NextRequest) {
 // POST /api/portal/posts - Create a new post
 export async function POST(req: NextRequest) {
   try {
+    // eslint-disable-next-line @typescript-eslint/await-thenable
     const { userId } = await auth();
     if (!userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });

@@ -167,6 +167,7 @@ export function ClientClaimView({ claimId }: ClientClaimViewProps) {
                     <div
                       key={photo.id}
                       className="group relative aspect-square overflow-hidden rounded-lg bg-slate-100 dark:bg-slate-800"
+                    // eslint-disable-next-line @next/next/no-img-element
                     >
                       <img
                         src={photo.photoUrl}

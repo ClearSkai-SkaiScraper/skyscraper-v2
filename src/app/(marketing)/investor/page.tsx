@@ -137,6 +137,7 @@ async function MetricsDisplay() {
 
 export default async function InvestorDashboard() {
   // SECURITY: Require auth to view production metrics
+  // eslint-disable-next-line @typescript-eslint/await-thenable
   const { userId } = await auth();
   if (!userId) {
     redirect("/sign-in");

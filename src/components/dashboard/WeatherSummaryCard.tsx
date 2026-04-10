@@ -36,6 +36,7 @@ export function WeatherSummaryCard({ weather }: Props) {
         </div>
         {weather.iconUrl && (
           <img
+            // eslint-disable-next-line @next/next/no-img-element
             src={weather.iconUrl}
             alt={weather.condition}
             className="h-12 w-12 rounded-full bg-background/60 p-1"

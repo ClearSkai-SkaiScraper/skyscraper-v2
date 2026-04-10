@@ -189,6 +189,7 @@ export async function GET(req: Request) {
       email: string | null;
     }> = [];
     try {
+      // eslint-disable-next-line @typescript-eslint/await-thenable
       const clerk = await clerkClient();
       const orgMemberList = await clerk.organizations.getOrganizationMembershipList({
         organizationId: ctx.orgId!,

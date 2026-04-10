@@ -35,6 +35,7 @@ export default async function GroupsPage({
 }: {
   searchParams: Promise<{ category?: string; myGroups?: string }>;
 }) {
+  // eslint-disable-next-line @typescript-eslint/await-thenable
   const { userId } = await auth();
   const params = await searchParams;
   const selectedCategory = params.category || "All";

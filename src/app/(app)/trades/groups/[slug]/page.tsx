@@ -39,6 +39,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function GroupDetailPage({ params }: Props) {
   const { slug } = await params;
+  // eslint-disable-next-line @typescript-eslint/await-thenable
   const { userId } = await auth();
 
   const group = await prisma.tradesGroup.findUnique({

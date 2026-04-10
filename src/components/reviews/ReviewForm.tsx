@@ -173,6 +173,7 @@ export function ReviewForm({
 
           {photos.map((photo, idx) => (
             <div key={idx} className="relative h-20 w-20">
+              // eslint-disable-next-line @next/next/no-img-element
               <img
                 src={photo}
                 alt={`Upload ${idx + 1}`}

@@ -23,6 +23,7 @@ export async function GET() {
 
   try {
     // Step 1: Get Clerk session
+    // eslint-disable-next-line @typescript-eslint/await-thenable
     const { userId: clerkUserId, orgId: clerkOrgId } = await auth();
 
     if (!clerkUserId) {

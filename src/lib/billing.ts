@@ -13,6 +13,7 @@ export interface UserPlanAndTokens {
 }
 
 export async function getUserPlanAndTokens(userId?: string): Promise<UserPlanAndTokens> {
+  // eslint-disable-next-line @typescript-eslint/await-thenable
   const { userId: authUserId, orgId } = await auth();
   const targetUserId = userId || authUserId;
 

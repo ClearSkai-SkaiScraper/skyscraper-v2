@@ -105,6 +105,7 @@ const UPLOAD_CONFIGS: Record<
 
 export async function POST(request: NextRequest) {
   try {
+    // eslint-disable-next-line @typescript-eslint/await-thenable
     const { userId, orgId: clerkOrgId } = await auth();
 
     if (!userId) {

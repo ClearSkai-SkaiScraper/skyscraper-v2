@@ -320,6 +320,7 @@ export default function VendorConnect() {
                     >
                       <div className="flex items-start gap-4">
                         {vendor.logoUrl ? (
+                          // eslint-disable-next-line @next/next/no-img-element
                           <img
                             src={vendor.logoUrl}
                             alt={`${vendor.name} logo`}

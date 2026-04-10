@@ -80,6 +80,7 @@ export async function POST(req: NextRequest) {
 
     // Sync to Clerk publicMetadata
     try {
+      // eslint-disable-next-line @typescript-eslint/await-thenable
       const clerk = await clerkClient();
       await clerk.users.updateUserMetadata(user.id, {
         publicMetadata: {

@@ -148,6 +148,7 @@ export function hasMinimumRole(userRole: Role, minimumRole: Role): boolean {
  * Middleware wrapper for API routes - checks permission
  */
 export async function requirePermission(permission: Permission) {
+  // eslint-disable-next-line @typescript-eslint/await-thenable
   const { userId, orgId } = await auth();
 
   if (!userId || !orgId) {
@@ -174,6 +175,7 @@ export async function requirePermission(permission: Permission) {
  * Middleware wrapper for API routes - checks minimum role
  */
 export async function requireRole(minimumRole: Role) {
+  // eslint-disable-next-line @typescript-eslint/await-thenable
   const { userId, orgId } = await auth();
 
   if (!userId || !orgId) {
@@ -200,6 +202,7 @@ export async function requireRole(minimumRole: Role) {
  * Get user context with role info
  */
 export async function getRoleContext() {
+  // eslint-disable-next-line @typescript-eslint/await-thenable
   const { userId, orgId } = await auth();
 
   if (!userId || !orgId) {

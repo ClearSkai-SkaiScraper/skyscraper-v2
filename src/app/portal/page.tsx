@@ -102,6 +102,7 @@ export default async function ClientPortalPage() {
         needsOnboarding = true;
 
         // Sync userType to Clerk publicMetadata for middleware routing
+        // eslint-disable-next-line @typescript-eslint/await-thenable
         try {
           const clerk = await clerkClient();
           await clerk.users.updateUserMetadata(user.id, {

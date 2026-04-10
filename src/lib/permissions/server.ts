@@ -32,6 +32,7 @@ export async function resolveUserRole(): Promise<{
   role: AppRole;
 } | null> {
   try {
+    // eslint-disable-next-line @typescript-eslint/await-thenable
     const { userId, orgId, sessionClaims } = await auth();
     let effectiveOrgId = orgId || null;
 

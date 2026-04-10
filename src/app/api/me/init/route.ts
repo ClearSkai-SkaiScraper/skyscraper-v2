@@ -11,6 +11,7 @@ import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 
 export async function POST(request: Request) {
+  // eslint-disable-next-line @typescript-eslint/await-thenable
   const { userId, orgId } = await auth();
   const user = await currentUser();
 

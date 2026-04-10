@@ -464,6 +464,7 @@ export function AIClaimsBuilderWizard({
                         type="button"
                         onClick={() => setSelectedPhotoIdx(i)}
                         className="aspect-video w-full overflow-hidden"
+                      // eslint-disable-next-line @next/next/no-img-element
                       >
                         <img
                           src={URL.createObjectURL(p.file)}
@@ -538,6 +539,7 @@ export function AIClaimsBuilderWizard({
                       key={a.id}
                       className="flex flex-col gap-2 rounded-md border border-[color:var(--border)] bg-[var(--surface-2)] p-2"
                     >
+                      // eslint-disable-next-line @next/next/no-img-element
                       <div className="aspect-video overflow-hidden rounded-sm border border-[color:var(--border)]">
                         <img src={a.url} alt={a.filename} className="h-full w-full object-cover" />
                       </div>

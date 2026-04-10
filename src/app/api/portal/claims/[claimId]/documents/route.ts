@@ -60,6 +60,7 @@ async function verifyClaimAccess(
  */
 export async function GET(req: NextRequest, context: RouteContext) {
   try {
+    // eslint-disable-next-line @typescript-eslint/await-thenable
     const { userId } = await auth();
     if (!userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -119,6 +120,7 @@ export async function GET(req: NextRequest, context: RouteContext) {
  */
 export async function POST(req: NextRequest, context: RouteContext) {
   try {
+    // eslint-disable-next-line @typescript-eslint/await-thenable
     const { userId } = await auth();
     if (!userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });

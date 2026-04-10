@@ -32,6 +32,7 @@ export async function GET(req: NextRequest) {
     // ──────────────────────────────────────────────────────────────
     // LAYER 1: Raw Clerk data
     // ──────────────────────────────────────────────────────────────
+    // eslint-disable-next-line @typescript-eslint/await-thenable
     const { userId: clerkUserId, orgId: clerkOrgId, sessionClaims } = await auth();
     const clerkUser = clerkUserId ? await currentUser() : null;
 

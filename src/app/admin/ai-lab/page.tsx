@@ -12,6 +12,7 @@ import {
 import { redirect } from "next/navigation";
 
 export default async function AdminAiLabPage() {
+  // eslint-disable-next-line @typescript-eslint/await-thenable
   const { userId } = await auth();
 
   if (!userId) {

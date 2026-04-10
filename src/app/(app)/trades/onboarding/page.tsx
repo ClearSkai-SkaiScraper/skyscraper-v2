@@ -246,6 +246,7 @@ export default function TradesOnboardingPage() {
               className="relative h-48 cursor-pointer overflow-hidden rounded-lg border-2 border-dashed border-gray-300 bg-gray-50 transition hover:border-blue-500"
               onClick={() => coverInputRef.current?.click()}
             >
+              // eslint-disable-next-line @next/next/no-img-element
               {coverPreview ? (
                 <img src={coverPreview} alt="Cover" className="h-full w-full object-cover" />
               ) : (
@@ -275,6 +276,7 @@ export default function TradesOnboardingPage() {
                 className="flex h-32 w-32 cursor-pointer items-center justify-center overflow-hidden rounded-full border-4 border-dashed border-gray-300 bg-gray-50 transition hover:border-blue-500"
                 onClick={() => avatarInputRef.current?.click()}
               >
+                // eslint-disable-next-line @next/next/no-img-element
                 {avatarPreview ? (
                   <img src={avatarPreview} alt="Avatar" className="h-full w-full object-cover" />
                 ) : (
@@ -424,6 +426,7 @@ export default function TradesOnboardingPage() {
                   className="flex h-20 w-20 cursor-pointer items-center justify-center overflow-hidden rounded-lg border-2 border-dashed border-gray-300 bg-gray-50 transition hover:border-blue-500"
                   onClick={() => logoInputRef.current?.click()}
                 >
+                  // eslint-disable-next-line @next/next/no-img-element
                   {logoPreview ? (
                     <img src={logoPreview} alt="Logo" className="h-full w-full object-contain" />
                   ) : (

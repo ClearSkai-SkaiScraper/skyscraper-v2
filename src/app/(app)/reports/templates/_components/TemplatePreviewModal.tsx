@@ -207,6 +207,7 @@ export function TemplatePreviewModal({ template, onClose }: TemplatePreviewModal
               {header && (
                 <div className="template-preview-modal-header border-b p-8">
                   <div className="flex items-center justify-between">
+                    // eslint-disable-next-line @next/next/no-img-element
                     {header.showLogo && styles.logoUrl && (
                       <img
                         src={styles.logoUrl}

@@ -6,6 +6,7 @@ import { safeOrgContext } from "@/lib/safeOrgContext";
 export const dynamic = "force-dynamic";
 
 export default async function DebugAuthPage() {
+  // eslint-disable-next-line @typescript-eslint/await-thenable
   const clerkAuth = await auth();
   const orgCtx = await safeOrgContext();
 

@@ -60,6 +60,7 @@ export function TemplateCard({ template, onSetDefault, onDuplicate, onDelete }: 
       <div className="group overflow-hidden rounded-xl border border-[color:var(--border)] bg-[color:var(--surface-2)] transition hover:bg-[color:var(--surface-3)] hover:shadow-lg">
         {/* Thumbnail */}
         <div className="relative h-32 bg-slate-100">
+          // eslint-disable-next-line @next/next/no-img-element
           <img
             src={thumbnailUrl}
             alt={template.name}

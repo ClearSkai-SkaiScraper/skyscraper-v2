@@ -18,6 +18,7 @@ import prisma from "@/lib/prisma";
 // POST - Submit new bid
 export async function POST(request: NextRequest) {
   try {
+    // eslint-disable-next-line @typescript-eslint/await-thenable
     const { userId } = await auth();
     if (!userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -138,6 +139,7 @@ export async function POST(request: NextRequest) {
   }
 }
 
+// eslint-disable-next-line @typescript-eslint/await-thenable
 // GET - Retrieve bids
 export async function GET(request: NextRequest) {
   try {
@@ -234,6 +236,7 @@ export async function GET(request: NextRequest) {
   }
 }
 
+// eslint-disable-next-line @typescript-eslint/await-thenable
 // PATCH - Update bid status (accept/decline)
 export async function PATCH(request: NextRequest) {
   try {

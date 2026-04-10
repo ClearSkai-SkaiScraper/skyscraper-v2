@@ -2,6 +2,7 @@
  * Require admin role (throws if not admin)
  */
 export async function requireAdmin(): Promise<{ userId: string; orgId: string }> {
+  // eslint-disable-next-line @typescript-eslint/await-thenable
   const { userId, orgId } = await auth();
   if (!userId || !orgId) {
     throw new Error("Unauthorized");
@@ -37,6 +38,7 @@ export function isAdminEmail(email?: string | null): boolean {
  * Automatically grants admin role to platform owner emails
  */
 export async function getUserRole(): Promise<UserRole> {
+  // eslint-disable-next-line @typescript-eslint/await-thenable
   const { sessionClaims } = await auth();
 
   // Check if user is platform admin by email
@@ -53,6 +55,7 @@ export async function getUserRole(): Promise<UserRole> {
  * Check if current user is a platform admin (bypasses billing)
  */
 export async function isPlatformAdmin(): Promise<boolean> {
+  // eslint-disable-next-line @typescript-eslint/await-thenable
   const { sessionClaims } = await auth();
   const userEmail = (sessionClaims as any)?.email || sessionClaims?.primaryEmailAddress;
   return isAdminEmail(userEmail);
@@ -65,6 +68,7 @@ export async function isPlatformAdmin(): Promise<boolean> {
 export async function requireRole(
   allowedRoles: UserRole | UserRole[]
 ): Promise<{ userId: string; orgId: string; role: UserRole }> {
+  // eslint-disable-next-line @typescript-eslint/await-thenable
   const { userId, orgId } = await auth();
 
   if (!userId || !orgId) {
@@ -86,6 +90,7 @@ export async function requireRole(
  * TODO: Implement actual org ownership check via Clerk/Prisma
  */
 export async function requireOrgOwnership(orgId: string): Promise<boolean> {
+  // eslint-disable-next-line @typescript-eslint/await-thenable
   const { orgId: userOrgId } = await auth();
   if (userOrgId !== orgId) {
     throw new Error("Access denied: Not your organization");

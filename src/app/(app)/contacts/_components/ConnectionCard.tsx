@@ -124,6 +124,7 @@ export function ConnectionCard({ conn, onRemoved }: ConnectionCardProps) {
         <div className="mb-4 flex items-start justify-between">
           <div className="flex items-center gap-3">
             {conn.logo ? (
+              // eslint-disable-next-line @next/next/no-img-element
               <img src={conn.logo} alt="" className="h-10 w-10 rounded-full object-cover" />
             ) : (
               <div className="flex h-10 w-10 items-center justify-center rounded-full bg-amber-100 dark:bg-amber-900/30">

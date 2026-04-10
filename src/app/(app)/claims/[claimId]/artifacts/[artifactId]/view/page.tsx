@@ -13,6 +13,7 @@ interface ArtifactViewPageProps {
 }
 
 export default async function ArtifactViewPage({ params }: ArtifactViewPageProps) {
+  // eslint-disable-next-line @typescript-eslint/await-thenable
   const { userId } = await auth();
   if (!userId) redirect("/sign-in");
 

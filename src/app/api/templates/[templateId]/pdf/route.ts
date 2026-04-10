@@ -110,6 +110,7 @@ export async function GET(req: NextRequest, { params }: { params: { templateId: 
     // 3. Preview mode: Serve the premium blank layout PDF (static asset)
     // - Deterministic
     // - No customer data
+    // eslint-disable-next-line @typescript-eslint/await-thenable
     // - Consistent across templates
     if (isPreview) {
       const { userId } = await auth();

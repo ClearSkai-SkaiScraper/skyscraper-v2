@@ -18,6 +18,7 @@ type Props = {
  */
 export default async function JobDetailPage({ params }: Props) {
   // SECURITY: Require auth + org context
+  // eslint-disable-next-line @typescript-eslint/await-thenable
   const { userId } = await auth();
   if (!userId) redirect("/sign-in");
   const orgCtx = await requireSafeOrg("/onboarding/start");

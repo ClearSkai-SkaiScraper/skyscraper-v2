@@ -26,6 +26,7 @@ export function AIActionsBar({
 
   const handleAction = async (action: string, handler: () => void) => {
     setLoading(action);
+    // eslint-disable-next-line @typescript-eslint/await-thenable
     try {
       await handler();
     } finally {

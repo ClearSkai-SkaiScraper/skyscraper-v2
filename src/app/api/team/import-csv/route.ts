@@ -162,6 +162,7 @@ export const POST = withManager(async (req: NextRequest, { orgId, userId }) => {
       return true;
     });
 
+    // eslint-disable-next-line @typescript-eslint/await-thenable
     // ── Process invitations ───────────────────────────────────────
     const client = await clerkClient();
     const results: Array<{ email: string; role: string; status: string }> = [];

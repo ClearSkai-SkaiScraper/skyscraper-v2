@@ -65,6 +65,7 @@ export function TemplateBrandPreview({ template, onBrandingUpdate }: TemplateBra
           </div>
           {logoUrl && (
             <div className="mt-2 rounded-lg border border-[color:var(--border)] bg-white p-2">
+              // eslint-disable-next-line @next/next/no-img-element
               <img src={logoUrl} alt="Logo preview" className="h-12 object-contain" />
             </div>
           )}
@@ -119,6 +120,7 @@ export function TemplateBrandPreview({ template, onBrandingUpdate }: TemplateBra
           >
             {logoUrl && (
               <div className="mb-4 flex justify-center">
+                // eslint-disable-next-line @next/next/no-img-element
                 <img src={logoUrl} alt="Logo" className="h-16 object-contain" />
               </div>
             )}

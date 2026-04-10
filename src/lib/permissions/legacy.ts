@@ -142,6 +142,7 @@ const ROLE_PERMISSIONS: Record<Role, Permission[]> = {
  * Get current user's role and permissions
  */
 export async function getCurrentUserPermissions() {
+  // eslint-disable-next-line @typescript-eslint/await-thenable
   let { userId } = await auth();
 
   // Test bypass: provide synthetic user/org context without real Clerk when running Playwright.

@@ -34,6 +34,7 @@ type Props = {
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { contactId } = await params;
+  // eslint-disable-next-line @typescript-eslint/await-thenable
   const { userId } = await auth();
   const orgCtx = await safeOrgContext();
   const organizationId = orgCtx.ok ? orgCtx.orgId : null;
@@ -189,6 +190,7 @@ function InfoRow({
 
 export default async function ContactDetailPage({ params }: Props) {
   const { contactId } = await params;
+  // eslint-disable-next-line @typescript-eslint/await-thenable
   const { userId } = await auth();
   const orgCtx = await safeOrgContext();
   const organizationId = orgCtx.ok ? orgCtx.orgId : null;

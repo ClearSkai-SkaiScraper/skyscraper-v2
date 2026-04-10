@@ -25,6 +25,7 @@ export async function GET(request: NextRequest) {
     const limit = parseInt(searchParams.get("limit") || "20");
     const offset = parseInt(searchParams.get("offset") || "0");
 
+    // eslint-disable-next-line @typescript-eslint/await-thenable
     const { userId } = await auth();
 
     // Build where clause
@@ -88,6 +89,7 @@ export async function GET(request: NextRequest) {
 // POST - Create a new job request
 export async function POST(request: NextRequest) {
   try {
+    // eslint-disable-next-line @typescript-eslint/await-thenable
     const { userId } = await auth();
     const user = await currentUser();
 

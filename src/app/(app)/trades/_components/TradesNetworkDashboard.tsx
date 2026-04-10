@@ -435,6 +435,7 @@ export default function TradesNetworkDashboard({ userProfile, stats }: Dashboard
             <Card className="overflow-hidden rounded-xl">
               <div className="relative h-20 rounded-t-xl bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-700">
                 {userProfile?.coverPhotoUrl ? (
+                  // eslint-disable-next-line @next/next/no-img-element
                   <img
                     src={userProfile.coverPhotoUrl}
                     alt="Cover"

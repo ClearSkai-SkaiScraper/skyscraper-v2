@@ -43,6 +43,7 @@ export default function PhotoUploadWidget({ onImagesChange }: PhotoUploadWidgetP
             const url = URL.createObjectURL(f);
             return (
               <div key={f.name + f.lastModified} className="group relative overflow-hidden rounded border border-[color:var(--border)] bg-[var(--surface-1)]">
+                // eslint-disable-next-line @next/next/no-img-element
                 <img src={url} alt={f.name} className="h-28 w-full object-cover" />
                 <button
                   type="button"

@@ -117,6 +117,7 @@ export function TemplatePreviewCard({
       </div>
       {/* Thumbnail Preview */}
       <div className="relative h-48 cursor-pointer bg-slate-100" onClick={onClick}>
+        // eslint-disable-next-line @next/next/no-img-element
         <img
           src={thumbnailUrl}
           alt={template.name}

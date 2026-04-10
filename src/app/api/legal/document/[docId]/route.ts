@@ -38,6 +38,7 @@ export async function GET(request: Request, { params }: Params) {
 
     // Read and parse markdown
     const markdown = fs.readFileSync(docPath, "utf-8");
+    // eslint-disable-next-line @typescript-eslint/await-thenable
     const html = await marked(markdown);
 
     return NextResponse.json({

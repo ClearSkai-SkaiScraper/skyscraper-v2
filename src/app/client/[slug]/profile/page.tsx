@@ -309,6 +309,7 @@ export default function ClientProfilePage() {
                   type="file"
                   accept="image/*"
                   className="hidden"
+                  // eslint-disable-next-line @next/next/no-img-element
                   onChange={handleAvatarUpload}
                 />
                 {profile?.avatarUrl ? (

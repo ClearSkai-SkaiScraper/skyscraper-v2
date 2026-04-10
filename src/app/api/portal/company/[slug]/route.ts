@@ -63,6 +63,7 @@ export async function GET(
     // Check if the caller is authenticated and connected to this company
     let isConnectedClient = false;
     try {
+      // eslint-disable-next-line @typescript-eslint/await-thenable
       const { userId } = await auth();
       if (userId) {
         const client = await prisma.client.findFirst({

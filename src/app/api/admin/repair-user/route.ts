@@ -56,6 +56,7 @@ export const POST = withAdmin(async (req: NextRequest, { orgId, userId: adminUse
       try {
         // Try to clear Clerk's active org metadata
         try {
+          // eslint-disable-next-line @typescript-eslint/await-thenable
           const client = await clerkClient();
           const clerkUser = await client.users.getUser(userId);
           await client.users.updateUser(userId, {
@@ -81,6 +82,7 @@ export const POST = withAdmin(async (req: NextRequest, { orgId, userId: adminUse
     if (action === "refresh_memberships" || action === "full_repair") {
       try {
         // Fetch current memberships from Clerk
+        // eslint-disable-next-line @typescript-eslint/await-thenable
         const client = await clerkClient();
         const clerkMemberships = await client.users.getOrganizationMembershipList({
           userId,
@@ -142,6 +144,7 @@ export const POST = withAdmin(async (req: NextRequest, { orgId, userId: adminUse
     if (action === "clear_invites" || action === "full_repair") {
       try {
         // Get user email
+        // eslint-disable-next-line @typescript-eslint/await-thenable
         const client = await clerkClient();
         const user = await client.users.getUser(userId);
         const email = user.primaryEmailAddress?.emailAddress;
@@ -172,6 +175,7 @@ export const POST = withAdmin(async (req: NextRequest, { orgId, userId: adminUse
     // ─── Resync Metadata ───
     if (action === "resync_metadata" || action === "full_repair") {
       try {
+        // eslint-disable-next-line @typescript-eslint/await-thenable
         const client = await clerkClient();
         const user = await client.users.getUser(userId);
 
@@ -222,6 +226,7 @@ export const GET = withAdmin(async (req: NextRequest, { userId: adminUserId }) =
     const searchParams = req.nextUrl.searchParams;
     const targetUserId = searchParams.get("userId") || adminUserId;
 
+    // eslint-disable-next-line @typescript-eslint/await-thenable
     const client = await clerkClient();
 
     // Fetch from Clerk

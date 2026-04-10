@@ -29,6 +29,7 @@ function generateSlug(name: string): string {
 // GET - List groups or get single group
 export async function GET(req: NextRequest) {
   try {
+    // eslint-disable-next-line @typescript-eslint/await-thenable
     const { userId } = await auth();
     const { searchParams } = new URL(req.url);
     const groupId = searchParams.get("id");

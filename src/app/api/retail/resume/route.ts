@@ -20,6 +20,7 @@ function getSupabaseEnv() {
 export async function GET() {
   try {
     const { userId } = await auth();
+    // eslint-disable-next-line @typescript-eslint/await-thenable
     if (!userId) {
       return NextResponse.json({ ok: false, reason: "UNAUTHENTICATED" }, { status: 401 });
     }

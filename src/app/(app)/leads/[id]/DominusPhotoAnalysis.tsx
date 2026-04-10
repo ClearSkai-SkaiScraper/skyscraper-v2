@@ -43,6 +43,7 @@ export function DominusPhotoAnalysis({ leadId, images }: DominusPhotoAnalysisPro
             onClick={() => setSelectedImage(image)}
             className="group relative aspect-square overflow-hidden rounded-lg border-2 border-gray-200 transition-all hover:border-purple-500"
           >
+            // eslint-disable-next-line @next/next/no-img-element
             <img
               src={image.imageUrl}
               alt={`Analysis ${idx + 1}`}

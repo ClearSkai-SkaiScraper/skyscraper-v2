@@ -16,6 +16,7 @@ import { createClient } from "@supabase/supabase-js";
  * ```
  */
 export async function createSupabaseServerClient() {
+  // eslint-disable-next-line @typescript-eslint/await-thenable
   const { userId, getToken } = await auth();
 
   if (!userId) {

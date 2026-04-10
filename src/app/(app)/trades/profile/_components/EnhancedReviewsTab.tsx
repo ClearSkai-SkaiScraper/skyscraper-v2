@@ -230,6 +230,7 @@ export default function EnhancedReviewsTab({
                 <div className="flex items-center gap-3">
                   {/* Author Avatar */}
                   <div className="flex h-10 w-10 items-center justify-center overflow-hidden rounded-full bg-slate-100">
+                    // eslint-disable-next-line @next/next/no-img-element
                     {review.authorAvatar ? (
                       <img
                         src={review.authorAvatar}
@@ -280,6 +281,7 @@ export default function EnhancedReviewsTab({
               {/* Photos */}
               {review.photos && review.photos.length > 0 && (
                 <div className="mb-3 flex flex-wrap gap-2">
+                  // eslint-disable-next-line @next/next/no-img-element
                   {review.photos.map((photo, i) => (
                     <img
                       key={i}

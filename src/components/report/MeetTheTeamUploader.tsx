@@ -56,6 +56,7 @@ export default function MeetTheTeamUploader({
       {Array.from({ length: 3 }).map((_, i) => (
         <div key={i} className="flex items-center gap-2">
           <div className="h-16 w-16 overflow-hidden rounded bg-muted">
+            // eslint-disable-next-line @next/next/no-img-element
             {items[i]?.photoUrl ? (
               <img src={items[i].photoUrl} alt="team" className="h-full w-full object-cover" />
             ) : null}

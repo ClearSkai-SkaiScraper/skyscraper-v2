@@ -12,6 +12,7 @@ const f = createUploadthing();
  * Falls back to Clerk orgId if available, otherwise looks up user_organizations
  */
 async function getUploadContext() {
+  // eslint-disable-next-line @typescript-eslint/await-thenable
   const { userId, orgId: clerkOrgId } = await auth();
   if (!userId) throw new UploadThingError("Unauthorized");
 

@@ -57,6 +57,7 @@ export async function uploadEvidence(
   const { orgId, claimId, file, originalName } = options;
 
   // Verify authentication
+  // eslint-disable-next-line @typescript-eslint/await-thenable
   const { userId } = await auth();
   if (!userId) {
     throw new Error("Authentication required to upload evidence");

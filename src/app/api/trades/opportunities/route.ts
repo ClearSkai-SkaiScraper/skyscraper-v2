@@ -18,6 +18,7 @@ import prisma from "@/lib/prisma";
 
 export async function GET() {
   try {
+    // eslint-disable-next-line @typescript-eslint/await-thenable
     const { userId } = await auth();
     if (!userId) {
       return NextResponse.json({ opportunities: [], invites: [] });

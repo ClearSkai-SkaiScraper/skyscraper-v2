@@ -108,6 +108,7 @@ export const POST = withAuth(async (req: NextRequest, { userId, orgId }) => {
       // Fallback: Check Clerk directly for org membership (handles cases where user_organizations table is out of sync)
       if (!recipient) {
         try {
+          // eslint-disable-next-line @typescript-eslint/await-thenable
           const clerk = await clerkClient();
           // recipientUserId could be a Clerk user ID — verify they belong to this org
           const memberships = await clerk.organizations.getOrganizationMembershipList({

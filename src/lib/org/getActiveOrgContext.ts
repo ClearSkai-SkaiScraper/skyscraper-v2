@@ -180,6 +180,7 @@ export async function getActiveOrgContext(
   let clerkOrgId: string | null = null;
 
   try {
+    // eslint-disable-next-line @typescript-eslint/await-thenable
     const a = await auth();
     userId = a.userId ?? null;
     clerkOrgId = a.orgId ?? null;

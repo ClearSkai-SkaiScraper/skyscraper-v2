@@ -19,6 +19,7 @@ import { logger } from "@/lib/logger";
 
 async function setUserTypeCookie(type: "pro" | "client") {
   try {
+    // eslint-disable-next-line @typescript-eslint/await-thenable
     const cookieStore = await cookies();
     cookieStore.set("x-user-type", type, {
       httpOnly: false,
@@ -40,6 +41,7 @@ async function setUserTypeCookie(type: "pro" | "client") {
  */
 async function syncClerkMetadata(clerkUserId: string, userType: "pro" | "client") {
   try {
+    // eslint-disable-next-line @typescript-eslint/await-thenable
     const clerk = await clerkClient();
     await clerk.users.updateUserMetadata(clerkUserId, {
       publicMetadata: { userType },

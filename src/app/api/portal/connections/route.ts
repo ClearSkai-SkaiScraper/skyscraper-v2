@@ -19,6 +19,7 @@ import { notifyConnectionRequest } from "@/lib/services/tradesNotifications";
  */
 export async function POST(req: NextRequest) {
   try {
+    // eslint-disable-next-line @typescript-eslint/await-thenable
     const { userId } = await auth();
     const user = await currentUser();
 
@@ -209,6 +210,7 @@ export async function POST(req: NextRequest) {
  */
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export async function GET(req: NextRequest) {
+  // eslint-disable-next-line @typescript-eslint/await-thenable
   try {
     const { userId } = await auth();
 

@@ -19,6 +19,7 @@ export default async function AiClaimsReportPage({
 }: {
   searchParams: { claimId?: string };
 }) {
+  // eslint-disable-next-line @typescript-eslint/await-thenable
   const { userId } = await auth();
   if (!userId) redirect("/sign-in");
   const orgCtx = await safeOrgContext();

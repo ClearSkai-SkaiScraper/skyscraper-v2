@@ -38,6 +38,7 @@ type ActionInput = z.infer<typeof ActionSchema>;
 
 export async function POST(req: NextRequest, { params }: { params: Promise<{ jobId: string }> }) {
   try {
+    // eslint-disable-next-line @typescript-eslint/await-thenable
     const { userId } = await auth();
     if (!userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });

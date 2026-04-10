@@ -109,6 +109,7 @@ export function Step7_Photos({ data, updateData }: Step7Props) {
                 <div className="flex aspect-square items-center justify-center overflow-hidden rounded-lg border border-gray-200 bg-gray-100">
                   {photo.url ? (
                     <img
+                      // eslint-disable-next-line @next/next/no-img-element
                       src={photo.url}
                       alt={photo.caption || `Photo ${index + 1}`}
                       className="h-full w-full object-cover"

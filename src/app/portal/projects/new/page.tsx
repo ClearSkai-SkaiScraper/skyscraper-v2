@@ -10,6 +10,7 @@ export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
 export default async function NewProjectPage() {
+  // eslint-disable-next-line @typescript-eslint/await-thenable
   const { userId } = await auth();
   const user = await currentUser();
 

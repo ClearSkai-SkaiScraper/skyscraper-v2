@@ -161,6 +161,7 @@ export function GeometryAnalyzerPanel({
       {/* Image Display */}
       {imageUrl && (
         <Card className="p-6">
+          // eslint-disable-next-line @next/next/no-img-element
           <h3 className="mb-4 text-lg font-semibold">Uploaded Image</h3>
           <img
             src={imageUrl}

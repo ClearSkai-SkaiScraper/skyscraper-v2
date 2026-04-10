@@ -19,6 +19,7 @@ export const metadata: Metadata = {
 };
 
 export default async function LeadsSettingsPage() {
+  // eslint-disable-next-line @typescript-eslint/await-thenable
   const { userId } = await auth();
   if (!userId) {
     redirect("/sign-in?redirect_url=/leads/settings");

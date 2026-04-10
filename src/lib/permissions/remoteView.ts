@@ -46,6 +46,7 @@ export async function getEffectiveUserId(): Promise<{
   }
 
   // Check for Remote View cookie
+  // eslint-disable-next-line @typescript-eslint/await-thenable
   const cookieStore = await cookies();
   const remoteViewUserId = cookieStore.get(COOKIE_NAME)?.value;
 
@@ -139,6 +140,7 @@ export async function getEffectiveUserId(): Promise<{
  * Use this at the top of POST/PUT/PATCH/DELETE handlers.
  */
 export async function blockIfRemoteView(): Promise<void> {
+  // eslint-disable-next-line @typescript-eslint/await-thenable
   const cookieStore = await cookies();
   const remoteViewUserId = cookieStore.get(COOKIE_NAME)?.value;
   if (remoteViewUserId) {

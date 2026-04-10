@@ -100,6 +100,7 @@ export async function getResolvedAccountContext(): Promise<ResolvedAccountContex
   // ── 1. Authentication check ─────────────────────────────────────────
   let userId: string | null = null;
   try {
+    // eslint-disable-next-line @typescript-eslint/await-thenable
     const a = await auth();
     userId = a.userId ?? null;
   } catch {

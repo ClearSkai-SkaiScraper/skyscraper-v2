@@ -52,6 +52,7 @@ export default async function PublicCompanyPage({ params }: CompanyPageProps) {
           <div className="flex items-start gap-6">
             <div className="flex h-24 w-24 flex-shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 shadow-lg">
               {company.logo ? (
+                // eslint-disable-next-line @next/next/no-img-element
                 <img
                   src={company.logo}
                   alt={company.name}

@@ -182,6 +182,7 @@ export default function AnnotationViewer() {
                 </div>
 
                 <div className="relative">
+                  // eslint-disable-next-line @next/next/no-img-element
                   <img
                     src={
                       showOriginal ? annotationData.image_url : annotationData.annotated_image_url

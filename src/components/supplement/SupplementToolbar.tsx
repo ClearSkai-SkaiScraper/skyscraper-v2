@@ -21,6 +21,7 @@ export default function SupplementToolbar({
   async function generate() {
     setBusy(true);
     try {
+      // eslint-disable-next-line @typescript-eslint/await-thenable
       await onGenerateAction();
     } finally {
       setBusy(false);

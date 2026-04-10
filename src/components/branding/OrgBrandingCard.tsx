@@ -171,9 +171,11 @@ export default async function OrgBrandingCard() {
         </div>
       )}
       {(branding?.logoUrl || branding?.teamPhotoUrl) && (
+        // eslint-disable-next-line @next/next/no-img-element
         <div className="flex gap-4 border-t border-slate-100 pt-4 dark:border-slate-800">
           {branding.logoUrl && (
             <img src={branding.logoUrl} alt="Logo" className="h-12 w-auto object-contain" />
+          // eslint-disable-next-line @next/next/no-img-element
           )}
           {branding.teamPhotoUrl && (
             <img

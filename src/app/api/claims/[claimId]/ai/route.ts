@@ -37,6 +37,7 @@ export async function POST(request: NextRequest, { params }: { params: { claimId
 
   // Public demo: allow unauthenticated requests for claimId "test" with safe handling
   if (claimId === "test") {
+    // eslint-disable-next-line @typescript-eslint/await-thenable
     const { userId } = await auth();
     if (!userId) {
       const body = await request.json().catch(() => ({}));

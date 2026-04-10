@@ -481,6 +481,7 @@ function ConnectionCard({ connection }: { connection: any }) {
       <div className="mb-3 flex items-start justify-between">
         <div className="flex items-center gap-3">
           {connection.logo ? (
+            // eslint-disable-next-line @next/next/no-img-element
             <img
               src={connection.logo}
               alt={connection.name}

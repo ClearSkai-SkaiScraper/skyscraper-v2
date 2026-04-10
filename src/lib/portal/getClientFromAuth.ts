@@ -11,6 +11,7 @@ import prisma from "@/lib/prisma";
 
 export async function getClientFromAuth() {
   try {
+    // eslint-disable-next-line @typescript-eslint/await-thenable
     const { userId } = await auth();
     if (!userId) {
       return null;

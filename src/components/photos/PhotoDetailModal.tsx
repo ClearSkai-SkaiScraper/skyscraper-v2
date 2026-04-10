@@ -397,6 +397,7 @@ export function PhotoDetailModal({
             {/* Image + overlay wrapper — sized to actual image bounds */}
             <div className="flex items-center justify-center overflow-hidden rounded-lg bg-slate-100 dark:bg-slate-800">
               <div className="relative inline-block">
+                // eslint-disable-next-line @next/next/no-img-element
                 <img
                   src={photo.publicUrl}
                   alt={photo.filename}

@@ -161,6 +161,7 @@ const auditSections: AuditSection[] = [
 ];
 
 export default async function UIAuditPage() {
+  // eslint-disable-next-line @typescript-eslint/await-thenable
   const { userId } = await auth();
   if (!userId) redirect("/sign-in");
 

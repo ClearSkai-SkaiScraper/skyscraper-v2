@@ -26,6 +26,7 @@ export const maxDuration = 60;
 
 export async function POST(request: NextRequest) {
   try {
+    // eslint-disable-next-line @typescript-eslint/await-thenable
     const { userId } = await auth();
     if (!userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -142,6 +143,7 @@ export async function POST(request: NextRequest) {
  * GET /api/ai/debug/yolo — quick config check (no image required)
  */
 export async function GET() {
+  // eslint-disable-next-line @typescript-eslint/await-thenable
   const { userId } = await auth();
   if (!userId) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });

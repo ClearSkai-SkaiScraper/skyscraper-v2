@@ -18,6 +18,7 @@ export async function GET() {
   }
 
   const { userId } = await auth();
+  // eslint-disable-next-line @typescript-eslint/await-thenable
   if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   try {

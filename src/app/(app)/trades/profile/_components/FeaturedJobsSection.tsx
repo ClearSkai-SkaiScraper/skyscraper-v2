@@ -139,6 +139,7 @@ export default function FeaturedJobsSection({ userId, isOwnProfile }: FeaturedJo
               className="group relative overflow-hidden rounded-lg border bg-slate-50"
             >
               <div className="aspect-[4/3] overflow-hidden">
+                // eslint-disable-next-line @next/next/no-img-element
                 <img
                   src={work.imageUrl}
                   alt={work.title}
@@ -304,6 +305,7 @@ function AddFeaturedWorkForm({ onSuccess }: { onSuccess: () => void }) {
         <div className="mt-2">
           {imageUrl ? (
             <div className="relative">
+              // eslint-disable-next-line @next/next/no-img-element
               <img src={imageUrl} alt="" className="h-40 w-full rounded-lg object-cover" />
               <button
                 type="button"
@@ -433,6 +435,7 @@ function EditFeaturedWorkForm({ item, onSuccess }: { item: FeaturedWork; onSucce
     <form onSubmit={handleSubmit} className="space-y-4">
       <div>
         <Label>Current Image</Label>
+        // eslint-disable-next-line @next/next/no-img-element
         <img src={item.imageUrl} alt="" className="mt-2 h-40 w-full rounded-lg object-cover" />
       </div>
 

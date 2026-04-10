@@ -251,6 +251,7 @@ export default function StormImpactPanel({ leadId }: { leadId: string }) {
       </div>
 
       {/* Heatmap Overlay */}
+      // eslint-disable-next-line @next/next/no-img-element
       {stormReport.heatmapUrl && (
         <div className="rounded-lg border border-gray-200 bg-white p-4">
           <h3 className="mb-4 text-lg font-semibold text-gray-900">Storm Impact Overlay</h3>
@@ -263,6 +264,7 @@ export default function StormImpactPanel({ leadId }: { leadId: string }) {
       )}
 
       {/* Radar Image */}
+      // eslint-disable-next-line @next/next/no-img-element
       {stormReport.radarImageUrl && (
         <div className="rounded-lg border border-gray-200 bg-white p-4">
           <h3 className="mb-4 text-lg font-semibold text-gray-900">NWS Radar Image</h3>

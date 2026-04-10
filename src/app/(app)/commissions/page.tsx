@@ -178,6 +178,7 @@ export default async function CommissionsPage() {
                 <td className="px-6 py-4">
                   <div className="flex items-center gap-3">
                     {r.user?.headshot_url ? (
+                      // eslint-disable-next-line @next/next/no-img-element
                       <img
                         src={r.user.headshot_url}
                         alt=""

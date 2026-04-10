@@ -105,6 +105,7 @@ ${image.notes}
         </div>
 
         {/* Image Preview */}
+        // eslint-disable-next-line @next/next/no-img-element
         <div className="p-4">
           <img src={image.imageUrl} alt="Analysis" className="w-full rounded-lg border" />
         </div>

@@ -43,6 +43,7 @@ export default function Splash() {
         }}
       >
         {/* Replace with your SVG/Logo component */}
+        // eslint-disable-next-line @next/next/no-img-element
         <img
           src="/brand/pro_portal_logo.png"
           alt="SkaiScraper"

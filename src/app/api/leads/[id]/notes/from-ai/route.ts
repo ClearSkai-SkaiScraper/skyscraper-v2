@@ -16,6 +16,7 @@ import prisma from "@/lib/prisma";
 
 const basePOST = async (req: Request, { params }: { params: { id: string } }) => {
   try {
+    // eslint-disable-next-line @typescript-eslint/await-thenable
     const { userId, orgId } = await auth();
     if (!userId || !orgId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });

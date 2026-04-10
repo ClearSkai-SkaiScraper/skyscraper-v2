@@ -1054,6 +1054,7 @@ export default function PhotosPage() {
                           key={p.id}
                           className="flex items-start gap-2 rounded-lg bg-white/60 p-2 text-sm dark:bg-slate-800/60"
                         >
+                          // eslint-disable-next-line @next/next/no-img-element
                           <img
                             src={p.publicUrl}
                             alt={p.filename}
@@ -1166,6 +1167,7 @@ export default function PhotosPage() {
                   This is intentional for visual consistency in the grid. */}
                 {photo.analyzed && photo.damageBoxes && photo.damageBoxes.length > 0 ? (
                   <div className="relative h-full w-full">
+                    // eslint-disable-next-line @next/next/no-img-element
                     <img
                       src={photo.publicUrl}
                       alt={photo.filename}
@@ -1174,6 +1176,7 @@ export default function PhotosPage() {
                     <DamageBoxOverlay boxes={photo.damageBoxes} mode="compact" />
                   </div>
                 ) : (
+                  // eslint-disable-next-line @next/next/no-img-element
                   <img
                     src={photo.publicUrl}
                     alt={photo.filename}
@@ -1295,6 +1298,7 @@ export default function PhotosPage() {
                       </button>
                     )}
 
+                    // eslint-disable-next-line @next/next/no-img-element
                     <img
                       src={photo.publicUrl}
                       alt={photo.filename}
@@ -1353,6 +1357,7 @@ export default function PhotosPage() {
                     showControls={false}
                   />
                 ) : (
+                  // eslint-disable-next-line @next/next/no-img-element
                   <img
                     src={photo.publicUrl}
                     alt={photo.filename}
@@ -1513,6 +1518,7 @@ export default function PhotosPage() {
                         }}
                       />
                     ) : (
+                      // eslint-disable-next-line @next/next/no-img-element
                       <img
                         src={selectedPhoto.publicUrl}
                         alt={selectedPhoto.filename}

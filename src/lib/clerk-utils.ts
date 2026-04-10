@@ -22,6 +22,7 @@ export async function getUserName(userId: string): Promise<string> {
     }
 
     // Fetch from Clerk
+    // eslint-disable-next-line @typescript-eslint/await-thenable
     const client = await clerkClient();
     const user = await client.users.getUser(userId);
     const name =

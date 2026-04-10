@@ -516,6 +516,7 @@ function TemplateCard({
     <Card className="group flex flex-col overflow-hidden transition-all hover:shadow-lg dark:hover:shadow-slate-900/50">
       {/* Thumbnail with style overlay */}
       <div className="relative">
+        // eslint-disable-next-line @next/next/no-img-element
         <img
           src={primaryThumbnail}
           alt={template.title}

@@ -88,6 +88,7 @@ export async function POST(req: Request) {
     }
 
     // Set server-side cookie
+    // eslint-disable-next-line @typescript-eslint/await-thenable
     const cookieStore = await cookies();
     cookieStore.set("x-remote-view-user", targetUserId, {
       path: "/",

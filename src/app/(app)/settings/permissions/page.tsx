@@ -66,6 +66,7 @@ function PermCheck({ allowed }: { allowed: boolean }) {
 /* ── Page ── */
 
 export default async function PermissionsPage() {
+  // eslint-disable-next-line @typescript-eslint/await-thenable
   const { userId } = await auth();
   if (!userId) redirect("/sign-in");
 

@@ -18,6 +18,7 @@ const saveProSchema = z.object({
  */
 export async function POST(request: NextRequest) {
   try {
+    // eslint-disable-next-line @typescript-eslint/await-thenable
     const { userId } = await auth();
 
     if (!userId) {
@@ -127,6 +128,7 @@ export async function POST(request: NextRequest) {
  */
 export async function GET() {
   try {
+    // eslint-disable-next-line @typescript-eslint/await-thenable
     const { userId } = await auth();
 
     if (!userId) {

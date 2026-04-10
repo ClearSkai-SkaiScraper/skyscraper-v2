@@ -336,6 +336,7 @@ export function CrewScheduleCard({ schedule: s, teamMembers }: CrewScheduleCardP
         <span className="text-xs font-medium uppercase text-slate-500">Crew Lead:</span>
         <div className="flex items-center gap-2">
           {s.crewLead?.headshot_url ? (
+            // eslint-disable-next-line @next/next/no-img-element
             <img
               src={s.crewLead.headshot_url}
               alt=""
