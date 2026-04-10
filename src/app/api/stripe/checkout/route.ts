@@ -67,7 +67,7 @@ const handleCheckout = withManager(async (request: NextRequest, { userId, orgId 
             clerkOrgId: `org_${orgId}`,
             name: "Beta Organization",
             planId: plan,
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
           } as any,
         });
       }
@@ -94,6 +94,12 @@ const handleCheckout = withManager(async (request: NextRequest, { userId, orgId 
         },
       });
       customerId = customer.id;
+
+      // CRITICAL: Persist stripeCustomerId on Org so webhook can find it
+      await prisma.org.update({
+        where: { id: orgId },
+        data: { stripeCustomerId: customer.id },
+      });
     }
 
     // Get price ID from environment variable (set during deployment)

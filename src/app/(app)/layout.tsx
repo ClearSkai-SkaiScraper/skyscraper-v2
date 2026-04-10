@@ -151,7 +151,22 @@ export default async function AppLayout({ children }: { children: React.ReactNod
     // Platform admins bypass this (handled inside hasActiveSubscription)
     // The /settings/billing page must remain accessible even without subscription
     let subscriptionActive = true; // Default to true to avoid blocking on errors
-    if (!isBuildPhase() && orgId !== "temp" && !isBetaMode()) {
+
+    // 🛡️ Platform admin email bypass — check email directly before subscription check
+    const userEmail = user?.primaryEmailAddress?.emailAddress?.toLowerCase();
+    const isPlatformAdminByEmail =
+      userEmail &&
+      [
+        "buildwithdamienray@gmail.com",
+        "buildingwithdamienray@gmail.com",
+        "damien@skaiscrape.com",
+        "damien.willingham@outlook.com",
+      ].includes(userEmail);
+
+    if (isPlatformAdminByEmail) {
+      // Platform admins always have full access
+      subscriptionActive = true;
+    } else if (!isBuildPhase() && orgId !== "temp" && !isBetaMode()) {
       try {
         subscriptionActive = await hasActiveSubscription(orgId);
       } catch (subError) {

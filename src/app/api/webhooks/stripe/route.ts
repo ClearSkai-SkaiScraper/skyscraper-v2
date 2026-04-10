@@ -179,6 +179,35 @@ export async function POST(req: Request) {
       case "checkout.session.completed": {
         const cs = event.data.object as Stripe.Checkout.Session;
 
+        // Provision subscription: save stripeCustomerId on Org so subsequent
+        // subscription.created/updated webhooks can find the Org.
+        // The checkout route already saves it, but this is a safety net.
+        if (cs.metadata?.orgId && cs.customer) {
+          const csCustomerId = typeof cs.customer === "string" ? cs.customer : cs.customer.id;
+          try {
+            await prisma.org.update({
+              where: { id: cs.metadata.orgId },
+              data: {
+                stripeCustomerId: csCustomerId,
+                planId: cs.metadata.planId || undefined,
+              },
+            });
+            logger.debug(
+              `[CHECKOUT:PROVISION] Linked customer ${csCustomerId} to Org ${cs.metadata.orgId}`
+            );
+          } catch (provisionError) {
+            logger.error(`[CHECKOUT:PROVISION] Failed to link customer to Org`, {
+              orgId: cs.metadata.orgId,
+              customerId: csCustomerId,
+              error: provisionError,
+            });
+            Sentry.captureException(provisionError, {
+              tags: { component: "stripe-webhook-checkout" },
+              extra: { orgId: cs.metadata.orgId, customerId: csCustomerId },
+            });
+          }
+        }
+
         // Send welcome email for new subscriptions
         if (cs.customer_details?.email) {
           const emailContent = createWelcomeEmail({
@@ -209,9 +238,26 @@ export async function POST(req: Request) {
         // Find Org by stripeCustomerId
         const customerId = typeof sub.customer === "string" ? sub.customer : sub.customer.id;
 
-        const Org = await prisma.org.findFirst({
+        let Org = await prisma.org.findFirst({
           where: { stripeCustomerId: customerId },
         });
+
+        // Fallback: look up by orgId from subscription metadata (checkout flow)
+        if (!Org && sub.metadata?.orgId) {
+          Org = await prisma.org.findUnique({
+            where: { id: sub.metadata.orgId },
+          });
+          if (Org) {
+            // Backfill stripeCustomerId so future lookups work
+            await prisma.org.update({
+              where: { id: Org.id },
+              data: { stripeCustomerId: customerId },
+            });
+            logger.info(
+              `[SUBSCRIPTION:BACKFILL] Linked customer ${customerId} to Org ${Org.id} via metadata`
+            );
+          }
+        }
 
         if (Org) {
           // Map Stripe status to our schema
