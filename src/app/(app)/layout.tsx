@@ -30,6 +30,7 @@ import { isBuildPhase } from "@/lib/buildPhase";
 import { getPendingLegalForUser } from "@/lib/legal/getPendingLegal";
 import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
+import { isAdminEmail } from "@/lib/security/roles";
 
 // Replaced legacy UnifiedNavigation with new AppSidebar for consistent two-tone design
 import { AppSidebar } from "./_components/AppSidebar";
@@ -152,16 +153,10 @@ export default async function AppLayout({ children }: { children: React.ReactNod
     // The /settings/billing page must remain accessible even without subscription
     let subscriptionActive = true; // Default to true to avoid blocking on errors
 
-    // 🛡️ Platform admin email bypass — check email directly before subscription check
-    const userEmail = user?.primaryEmailAddress?.emailAddress?.toLowerCase();
+    // 🛡️ Platform admin email bypass — check ALL email addresses on user account
+    // Uses shared isAdminEmail() which checks against PLATFORM_ADMIN_EMAILS
     const isPlatformAdminByEmail =
-      userEmail &&
-      [
-        "buildwithdamienray@gmail.com",
-        "buildingwithdamienray@gmail.com",
-        "damien@skaiscrape.com",
-        "damien.willingham@outlook.com",
-      ].includes(userEmail);
+      user?.emailAddresses?.some((e) => isAdminEmail(e.emailAddress)) ?? false;
 
     if (isPlatformAdminByEmail) {
       // Platform admins always have full access

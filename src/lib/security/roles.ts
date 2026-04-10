@@ -40,13 +40,27 @@ export function isAdminEmail(email?: string | null): boolean {
  */
 export async function getUserRole(): Promise<UserRole> {
   // eslint-disable-next-line @typescript-eslint/await-thenable
-  const { sessionClaims } = await auth();
+  const { sessionClaims, userId } = await auth();
 
-  // Check if user is platform admin by email
+  // Check if user is platform admin by email (session claims first)
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const userEmail = (sessionClaims as any)?.email || sessionClaims?.primaryEmailAddress;
+  const userEmail = (sessionClaims as any)?.email || (sessionClaims as any)?.primaryEmailAddress;
   if (isAdminEmail(userEmail)) {
     return "admin";
+  }
+
+  // Fallback: check full user email addresses from Clerk API
+  if (userId) {
+    try {
+      // eslint-disable-next-line no-restricted-imports
+      const { currentUser } = await import("@clerk/nextjs/server");
+      const user = await currentUser();
+      if (user?.emailAddresses?.some((e) => isAdminEmail(e.emailAddress))) {
+        return "admin";
+      }
+    } catch {
+      // Fall through to metadata check
+    }
   }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -56,13 +70,32 @@ export async function getUserRole(): Promise<UserRole> {
 
 /**
  * Check if current user is a platform admin (bypasses billing)
+ * Uses multiple fallbacks because Clerk JWT claims don't include email by default.
  */
 export async function isPlatformAdmin(): Promise<boolean> {
   // eslint-disable-next-line @typescript-eslint/await-thenable
-  const { sessionClaims } = await auth();
+  const { sessionClaims, userId } = await auth();
+
+  // Fast path: check session claims (works if Clerk session token template includes email)
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const userEmail = (sessionClaims as any)?.email || sessionClaims?.primaryEmailAddress;
-  return isAdminEmail(userEmail);
+  const claimEmail = (sessionClaims as any)?.email || (sessionClaims as any)?.primaryEmailAddress;
+  if (isAdminEmail(claimEmail)) return true;
+
+  // Fallback: fetch full user from Clerk API — checks ALL email addresses
+  if (userId) {
+    try {
+      // eslint-disable-next-line no-restricted-imports
+      const { currentUser } = await import("@clerk/nextjs/server");
+      const user = await currentUser();
+      if (user?.emailAddresses?.some((e) => isAdminEmail(e.emailAddress))) {
+        return true;
+      }
+    } catch {
+      // Not in a request context or Clerk API unavailable — fall through
+    }
+  }
+
+  return false;
 }
 
 /**
