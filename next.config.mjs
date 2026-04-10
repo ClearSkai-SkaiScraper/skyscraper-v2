@@ -317,8 +317,8 @@ const nextConfig = {
 const configWithBundleAnalyzer = bundleAnalyzer(nextConfig);
 
 export default withSentryConfig(configWithBundleAnalyzer, {
-  org: process.env.SENTRY_ORG || "skaiscraper",
-  project: process.env.SENTRY_PROJECT || "preloss-vision",
+  org: process.env.SENTRY_ORG || "clearskai-technologies",
+  project: process.env.SENTRY_PROJECT || "javascript-nextjs",
   authToken: process.env.SENTRY_AUTH_TOKEN,
   silent: !process.env.CI,
   widenClientFileUpload: true,
