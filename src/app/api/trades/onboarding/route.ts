@@ -177,6 +177,7 @@ export const POST = withAuth(async (req: NextRequest, { userId, orgId }) => {
         foundedYear,
         rocNumber,
         companyLicense,
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         isLicensed,
         isBonded,
         isInsured,
@@ -434,8 +435,10 @@ export const POST = withAuth(async (req: NextRequest, { userId, orgId }) => {
         city,
         state,
         zip,
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         businessType,
         licenseNumber,
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         licenseState,
         specialties,
         yearsInBusiness,

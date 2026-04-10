@@ -492,6 +492,7 @@ export function MissingDataHighlighter({
 function CompactHighlighter({
   claimId,
   stats,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   onAction,
   className,
 }: {

@@ -15,6 +15,7 @@ interface SendPacketEmailParams {
  * Includes the packet URL as a clickable link in the message
  */
 export async function sendPacketEmail(params: SendPacketEmailParams) {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { to, cc, subject, message, packetUrl, from } = params;
 
   // Convert plain text message to HTML with packet link
@@ -37,6 +38,7 @@ export async function sendPacketEmail(params: SendPacketEmailParams) {
     </div>
   `;
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const textMessage = `${message}\n\nView Packet:\n${packetUrl}\n\n---\nSent via SkaiScraper`;
 
   const recipients = cc ? `${to}, ${cc}` : to;

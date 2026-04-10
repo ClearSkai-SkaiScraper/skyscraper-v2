@@ -108,6 +108,7 @@ export async function uploadFileServer(
   }
 
   // Upload to storage
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { data, error } = await supabase.storage
     .from(bucket)
     .upload(path, buffer, {
@@ -228,6 +229,7 @@ export async function createSignedUploadUrlServer(
   bucket: string,
   orgId: string,
   fileName: string,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   expiresIn: number = 300
 ): Promise<{ signedUrl: string; path: string }> {
   const supabase = getSupabaseServerClient();

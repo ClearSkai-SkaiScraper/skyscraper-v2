@@ -31,6 +31,7 @@ export interface XactimateParseResult {
  * Parse Xactimate ESX file
  * Stub implementation
  */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export async function parseXactimateFile(file: File | Blob): Promise<XactimateParseResult> {
   logger.debug("[XactimateParser] Stub: Would parse Xactimate file");
   return {
@@ -44,6 +45,7 @@ export async function parseXactimateFile(file: File | Blob): Promise<XactimatePa
 /**
  * Parse Xactimate XML content
  */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export function parseXactimateXML(content: string): XactimateParseResult {
   logger.debug("[XactimateParser] Stub: Would parse Xactimate XML");
   return {

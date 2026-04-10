@@ -17,7 +17,9 @@ interface SmartActionModalProps {
 export function SmartActionModal({
   title,
   content,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   action,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   leadId,
   onClose,
   onRegenerate,

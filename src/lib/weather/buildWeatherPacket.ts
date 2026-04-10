@@ -144,6 +144,7 @@ function buildHomeownerPacket(
   weather: any,
   address: string,
   dateOfLoss: string,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   peril: string
 ) {
   return {
@@ -246,6 +247,7 @@ function buildPublicAdjusterPacket(
   weather: any,
   address: string,
   dateOfLoss: string,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   peril: string
 ) {
   return {

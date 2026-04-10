@@ -1,6 +1,6 @@
 "use client";
 
-import { Download, FileText, Lock, Send } from "lucide-react";
+import { Download, FileText, Lock } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 

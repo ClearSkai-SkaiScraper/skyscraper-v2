@@ -14,6 +14,7 @@ type Message = {
   };
 };
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export default function ClaimMessages({ claimId }: { claimId: string }) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState("");

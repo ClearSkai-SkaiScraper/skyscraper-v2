@@ -26,6 +26,7 @@ interface Notification {
 }
 
 /** Icon for notification type */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function NotifIcon({ type, title }: { type: string; title: string }) {
   const t = (title || "").toLowerCase();
   if (t.includes("message") || t.includes("💬"))

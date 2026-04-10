@@ -38,6 +38,7 @@ export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
 // Connection type configuration
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const CONNECTION_TYPES = [
   { id: "all", label: "All", icon: Users },
   { id: "client", label: "Clients", icon: UserCheck },

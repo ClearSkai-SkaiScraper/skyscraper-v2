@@ -165,6 +165,7 @@ export default function TimelineNotesSection({
     }
   };
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const handleExportSummary = async () => {
     try {
       const claimData = {

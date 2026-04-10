@@ -105,6 +105,7 @@ export async function getClaimStateHistory(
  * Get average time spent in each state (for analytics)
  */
 export async function getStateTimingAnalytics(
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   orgId: string
 ): Promise<Record<ClaimStateEnum, number>> {
   // This would aggregate timing data across all claims

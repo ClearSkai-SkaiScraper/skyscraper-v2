@@ -160,6 +160,7 @@ export async function getReportMetrics(orgId: string): Promise<ReportMetrics> {
 export async function trackReportEvent(
   event: "created" | "finalized" | "submitted" | "pdf_generated",
   claimId: string,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   orgId: string
 ): Promise<void> {
   try {

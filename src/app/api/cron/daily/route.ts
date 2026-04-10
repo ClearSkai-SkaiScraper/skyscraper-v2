@@ -43,7 +43,7 @@ export async function GET(req: Request) {
         },
       });
       tasks.push({ task: "webhook_events_cleanup", deleted: deleted.count });
-    } catch (e) {
+    } catch (_e) {
       tasks.push({ task: "webhook_events_cleanup", error: "failed" });
     }
 
@@ -57,7 +57,7 @@ export async function GET(req: Request) {
         },
       });
       tasks.push({ task: "claim_activities_cleanup", deleted: deleted.count });
-    } catch (e) {
+    } catch (_e) {
       tasks.push({ task: "claim_activities_cleanup", error: "failed" });
     }
 

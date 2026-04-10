@@ -10,7 +10,6 @@ import {
   RefreshCw,
   XCircle,
 } from "lucide-react";
-import Link from "next/link";
 import { useState } from "react";
 
 import { Badge } from "@/components/ui/badge";
@@ -43,6 +42,7 @@ interface ReportHistoryListProps {
   orgId: string;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export function ReportHistoryList({ documents, orgId }: ReportHistoryListProps) {
   const [filterType, setFilterType] = useState<string | null>(null);
   const [filterStatus, setFilterStatus] = useState<string | null>(null);

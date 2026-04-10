@@ -58,7 +58,9 @@ const CATEGORIES = [
 export function JobCategoryActions({
   leadId,
   currentCategory,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   contactId,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   contactName,
 }: JobCategoryActionsProps) {
   const router = useRouter();

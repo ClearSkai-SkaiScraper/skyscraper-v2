@@ -64,6 +64,7 @@ export default async function TradesJobDetailPage({
   if (!user) redirect("/sign-in");
 
   const { jobId } = await params;
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { action } = await searchParams;
 
   // Get the contractor's profile

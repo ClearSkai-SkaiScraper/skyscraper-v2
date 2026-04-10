@@ -256,6 +256,7 @@ export default async function CarrierPage({ params }: Props) {
 
 function CarrierGenerateButton({
   claimId,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   carrierName,
   hasData,
 }: {

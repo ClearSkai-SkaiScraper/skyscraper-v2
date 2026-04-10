@@ -5,7 +5,6 @@ import { useState } from "react";
 import { AvatarUploader } from "@/components/profile/AvatarUploader";
 import { ProfileForm } from "@/components/profile/ProfileForm";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
 
 interface ProfileSettingsClientProps {
   user: {

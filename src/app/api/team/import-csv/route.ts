@@ -39,6 +39,7 @@ import { withManager } from "@/lib/auth/withAuth";
 import { logger } from "@/lib/logger";
 
 // ── Validation ────────────────────────────────────────────────────────────
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const VALID_ROLES = ["member", "admin", "org:member", "org:admin"] as const;
 
 const RowSchema = z.object({

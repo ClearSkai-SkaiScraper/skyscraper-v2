@@ -34,6 +34,7 @@ interface TemplateListProps {
   orgId: string;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export function TemplateList({ initialTemplates, orgId }: TemplateListProps) {
   const [templates, setTemplates] = useState<OrgTemplateData[]>(initialTemplates);
   const [isLoading, setIsLoading] = useState(false);

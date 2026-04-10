@@ -44,11 +44,13 @@ export default async function OrgBrandingCard() {
   // NOTE: brandingCompleted field may not exist in org table - use field checks as fallback
   let brandingCompleted = false;
   try {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const org = await prisma.org.findUnique({
       where: { id: orgId },
       select: { id: true },
     });
     // brandingCompleted field may not exist - we'll check branding fields instead
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     brandingCompleted = false;
   } catch {
     // Org lookup failed - continue with branding check

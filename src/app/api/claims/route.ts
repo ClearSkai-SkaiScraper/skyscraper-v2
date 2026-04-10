@@ -88,7 +88,7 @@ export const POST = withOrgScope(async (req, { userId, orgId }) => {
     // 🛡️ RBAC: Check permission to create claims
     try {
       await requirePermission("claims:create");
-    } catch (error) {
+    } catch (_error) {
       return createForbiddenResponse("You don't have permission to create claims", {
         requiredPermission: "claims:create",
       });
@@ -183,6 +183,7 @@ export const POST = withOrgScope(async (req, { userId, orgId }) => {
     // Handle contact/insured name
     let insured_name = "";
     if (validated.newContact) {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       insured_name = `${validated.newContact.firstName} ${validated.newContact.lastName}`.trim();
       // ENHANCEMENT: Optionally create contact record when contacts table supports auto-creation
     }

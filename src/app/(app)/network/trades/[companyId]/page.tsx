@@ -47,6 +47,7 @@ export default async function TradesCompanyDetailPage({ params }: TradesCompanyD
   const pendingMembers = company.members.filter((m) => m.onboardingStep === "pending_admin");
 
   // tradesCompany doesn't have projects, so we skip that section
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const projects: any[] = [];
 
   return (

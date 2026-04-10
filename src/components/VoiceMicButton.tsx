@@ -2,8 +2,11 @@ import { useState } from "react";
 
 // VoiceRecorder module removed — stub inline
 const VoiceRecorder = ({
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   relatedType,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   relatedId,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   onSaved,
 }: {
   relatedType?: string;

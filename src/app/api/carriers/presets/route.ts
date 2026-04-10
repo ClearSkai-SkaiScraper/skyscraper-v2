@@ -7,7 +7,7 @@ import { auth } from '@clerk/nextjs/server';
 import { NextResponse } from 'next/server';
 
 import { logger } from "@/lib/logger";
-import { BUILT_IN_CARRIERS, getCarrierPreset } from '@/modules/carriers/core/presets';
+import { BUILT_IN_CARRIERS } from '@/modules/carriers/core/presets';
 
 export async function GET() {
   try {

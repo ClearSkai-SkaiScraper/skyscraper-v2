@@ -2,7 +2,6 @@ export const dynamic = "force-dynamic";
 
 import { NextResponse } from "next/server";
 
-import { logger } from "@/lib/logger";
 
 // Stripe pricing guard: returns configured price IDs or graceful empty set.
 export async function GET() {
@@ -24,7 +23,7 @@ export async function GET() {
       count: presentCount,
       missing: priceKeys.filter((k) => !prices[k]),
     });
-  } catch (e) {
+  } catch (_e) {
     return NextResponse.json({ ok: false, error: "server-error" }, { status: 500 });
   }
 }

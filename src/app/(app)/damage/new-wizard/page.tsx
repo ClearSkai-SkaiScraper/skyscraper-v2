@@ -16,6 +16,8 @@ import { logger } from "@/lib/logger";
 
 export default function NewDamageAssessmentPage() {
   const router = useRouter();
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { isLoaded, isSignedIn } = useUser();
 
   // Step 1: Context

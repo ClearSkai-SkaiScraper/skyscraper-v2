@@ -7,7 +7,7 @@
 
 "use client";
 
-import { ChevronLeft, ChevronRight, Download,Maximize2, X, ZoomIn, ZoomOut } from "lucide-react";
+import { ChevronLeft, ChevronRight, Download,X, ZoomIn, ZoomOut } from "lucide-react";
 import { useState } from "react";
 
 import type { AnnotatedPhoto } from "@/lib/ai/photo-annotator";

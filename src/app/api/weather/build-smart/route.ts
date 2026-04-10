@@ -20,6 +20,7 @@ import { GeneratedWeatherReport, WeatherWizardSchema } from "@/lib/weather/types
  *
  * For Phase 1, we return a placeholder response with the expected structure
  */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export const POST = withAuth(async (req: NextRequest, { userId, orgId }) => {
   try {
     // Rate limiting check (20 requests per minute for weather endpoints)

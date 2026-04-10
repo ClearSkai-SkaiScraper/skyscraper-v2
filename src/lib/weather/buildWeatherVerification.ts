@@ -150,6 +150,7 @@ async function fetchRadarLoops(request: WeatherRequest): Promise<{
 } | null> {
   try {
     const date = new Date(request.dateOfLoss);
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const timestamp = date.getTime();
 
     // Use NOAA radar imagery
@@ -194,6 +195,7 @@ function parseHailReports(csv: string, lat: number, lng: number): string[] {
   const lines = csv.split("\n").slice(1); // Skip header
 
   for (const line of lines) {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const [time, size, location, county, state, reportLat, reportLng] = line.split(",");
 
     if (!size || !location) continue;

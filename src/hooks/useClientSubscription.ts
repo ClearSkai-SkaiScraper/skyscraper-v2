@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 export default function useClientSubscription() {
   const [loading, setLoading] = useState(true);
   const [hasSubscription, setHasSubscription] = useState(false);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [orgRow, setOrgRow] = useState<any | null>(null);
 
   useEffect(() => {
@@ -28,7 +29,7 @@ export default function useClientSubscription() {
           setHasSubscription(true);
           setLoading(false);
         }
-      } catch (e) {
+      } catch (_e) {
         if (mounted) {
           setHasSubscription(false);
           setLoading(false);

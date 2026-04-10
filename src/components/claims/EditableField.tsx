@@ -80,6 +80,7 @@ export function EditableField({
   }, [value]);
 
   const handleBlur = useCallback(
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     (e: React.FocusEvent) => {
       // When the input loses focus, auto-save if the value changed
       // Small delay to allow Tab to work before we close the field

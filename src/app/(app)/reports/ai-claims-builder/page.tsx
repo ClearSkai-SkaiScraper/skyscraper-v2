@@ -27,6 +27,7 @@ export default async function AIClaimsBuilderPage({
   searchParams: { claimId?: string };
 }) {
   const user = await currentUser();
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const userId = user?.id || null;
 
   // Use robust org resolver (auto-bootstrap if missing)
@@ -102,7 +103,7 @@ export default async function AIClaimsBuilderPage({
         },
       },
     });
-  } catch (error) {
+  } catch (_error) {
     // Failed to load claims — continue with empty list
     claims = [];
   }

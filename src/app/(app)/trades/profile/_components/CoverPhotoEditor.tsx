@@ -27,6 +27,7 @@ export default function CoverPhotoEditor({ imageUrl, onSave, onCancel }: CoverPh
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
   const [saving, setSaving] = useState(false);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [imageLoaded, setImageLoaded] = useState(false);
 
   // Handle mouse/touch drag

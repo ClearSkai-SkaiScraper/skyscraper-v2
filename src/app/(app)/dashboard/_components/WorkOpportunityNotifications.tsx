@@ -67,7 +67,7 @@ export default function WorkOpportunityNotifications() {
 
       toast.success(accept ? "Invitation accepted!" : "Invitation declined");
       void mutate();
-    } catch (err) {
+    } catch (_err) {
       toast.error("Failed to respond to invitation");
     } finally {
       setProcessing(null);

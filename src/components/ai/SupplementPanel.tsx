@@ -10,6 +10,7 @@ import {
   Loader2,
   Mail,
   MessageSquare,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   Upload, 
 } from "lucide-react";
 import { useState } from "react";
@@ -57,6 +58,7 @@ interface SupplementResult {
   emailDraft: string;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export function SupplementPanel({ leadId, claimId, currentScope = [] }: SupplementPanelProps) {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<SupplementResult | null>(null);

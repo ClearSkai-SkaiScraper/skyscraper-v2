@@ -385,6 +385,7 @@ async function handleUpdateInfo(
   companyId: string,
   input: Extract<ActionInput, { action: "update_info" }>
 ) {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { action, ...updateData } = input;
 
   await prisma.tradesCompany.update({

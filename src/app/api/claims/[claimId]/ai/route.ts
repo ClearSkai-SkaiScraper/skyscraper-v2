@@ -314,6 +314,7 @@ Your goal: Help adjusters maximize accurate claim value while maintaining profes
  * GET - Retrieve AI analysis results
  */
 export const GET = withAuth(
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   async (request: NextRequest, { userId, orgId }, routeParams: { params: { claimId: string } }) => {
     try {
       const { claimId } = routeParams.params;

@@ -137,6 +137,7 @@ function downloadTemplate() {
 export function CSVUploadDialog() {
   const [open, setOpen] = useState(false);
   const [step, setStep] = useState<Step>("upload");
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [rawCSV, setRawCSV] = useState("");
   const [parsedRows, setParsedRows] = useState<ParsedRow[]>([]);
   const [result, setResult] = useState<ImportResult | null>(null);

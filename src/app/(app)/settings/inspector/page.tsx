@@ -163,7 +163,7 @@ export default function InspectorProfilePage() {
         specialties: data.profile.specialties || [],
         is_default_inspector: data.profile.is_default_inspector || false,
       });
-    } catch (err) {
+    } catch (_err) {
       toast.error("Failed to load inspector profile");
     } finally {
       setLoading(false);
@@ -189,7 +189,7 @@ export default function InspectorProfilePage() {
       const data = await res.json();
       setProfile((prev) => (prev ? { ...prev, ...data.profile } : prev));
       toast.success("Inspector profile saved!");
-    } catch (err) {
+    } catch (_err) {
       toast.error("Failed to save profile");
     } finally {
       setSaving(false);

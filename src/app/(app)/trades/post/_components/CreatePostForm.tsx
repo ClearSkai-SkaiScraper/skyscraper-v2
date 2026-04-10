@@ -1,10 +1,9 @@
 "use client";
 
-import { Briefcase, X } from "lucide-react";
+import { Briefcase } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
-import { Button } from "@/components/ui/button";
 import { StandardButton } from "@/components/ui/StandardButton";
 
 interface CreatePostFormProps {
@@ -12,6 +11,7 @@ interface CreatePostFormProps {
   profileId: string | null;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export function CreatePostForm({ userId, profileId }: CreatePostFormProps) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);

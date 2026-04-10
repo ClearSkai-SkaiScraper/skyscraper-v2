@@ -29,6 +29,8 @@ export default function EvidencePage() {
   const { isLoaded, isSignedIn } = useUser();
   const [files, setFiles] = useState<File[]>([]);
   const [uploading, setUploading] = useState(false);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [uploadProgress, setUploadProgress] = useState<Record<string, number>>({});
   const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([]);
   const [uploadErrors, setUploadErrors] = useState<string[]>([]);

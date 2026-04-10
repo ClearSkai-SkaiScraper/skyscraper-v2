@@ -121,7 +121,7 @@ export function ClaimTradesCard({ claimId }: ClaimTradesCardProps) {
       } else {
         throw new Error("Failed to unlink");
       }
-    } catch (error) {
+    } catch (_error) {
       toast.error("Error", {
         description: "Failed to remove trade partner",
       });

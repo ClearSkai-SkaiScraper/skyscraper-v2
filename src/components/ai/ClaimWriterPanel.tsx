@@ -279,6 +279,7 @@ export function ClaimWriterPanel({ leadId }: ClaimWriterPanelProps) {
               </div>
 
               <div className="mx-auto max-w-md space-y-4">
+                // eslint-disable-next-line @typescript-eslint/no-unused-vars
                 {stages.map((stage, index) => (
                   <div key={stage.name} className="flex items-center gap-3">
                     <div className="flex-shrink-0">{getStageIcon(stage.status)}</div>
@@ -343,7 +344,7 @@ export function ClaimWriterPanel({ leadId }: ClaimWriterPanelProps) {
                   } else {
                     toast.error("Export Failed", { description: data.error });
                   }
-                } catch (error) {
+                } catch (_error) {
                   toast.error("Export Failed", { description: "Network error" });
                 }
               }}

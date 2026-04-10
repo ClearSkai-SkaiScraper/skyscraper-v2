@@ -34,6 +34,7 @@ type BugSeverity = "critical" | "high" | "medium" | "low";
  * Posts to /api/support/tickets
  */
 export function BugReportButton({ className }: { className?: string }) {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { userId, orgId } = useAuth();
   const pathname = usePathname();
 

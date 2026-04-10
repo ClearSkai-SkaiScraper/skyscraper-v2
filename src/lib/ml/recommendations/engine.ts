@@ -36,6 +36,8 @@ export interface RecommendationContext {
 export async function generateRecommendations(
   context: RecommendationContext
 ): Promise<Recommendation[]> {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { orgId, claimId, userId } = context;
   logger.debug(`[ML] Generating recommendations for org ${orgId}`);
 

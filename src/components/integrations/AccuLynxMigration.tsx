@@ -127,6 +127,7 @@ export default function AccuLynxMigration() {
           { key: "running", label: "Importing" },
           { key: "done", label: "Complete" },
         ].map((s, i) => {
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
           const active =
             step === s.key ||
             (step === "error" && s.key === "running") ||

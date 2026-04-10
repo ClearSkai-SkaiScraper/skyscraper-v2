@@ -25,6 +25,7 @@ export function CompletionUploadZone({
 }: CompletionUploadZoneProps) {
   const [uploading, setUploading] = useState(false);
   const [uploadedFiles, setUploadedFiles] = useState<any[]>([]);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [progress, setProgress] = useState(0);
 
   const uploadType = type === "document" ? "claimDocuments" : "completionPhotos";

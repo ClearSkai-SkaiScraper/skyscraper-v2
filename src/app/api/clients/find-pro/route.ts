@@ -81,7 +81,7 @@ export async function GET(req: Request) {
         primaryColor: branding?.colorPrimary || "#117CFF",
       },
     });
-  } catch (error) {
+  } catch (_error) {
     log.error("[clients/find-pro] Search failed", { error: "Internal server error" });
     return NextResponse.json({ error: "Search failed" }, { status: 500 });
   }
@@ -169,7 +169,7 @@ export async function POST(req: Request) {
       status: "pending",
       message: "Connection request sent! The contractor will review your request.",
     });
-  } catch (error) {
+  } catch (_error) {
     log.error("[clients/find-pro] Connection request failed", { error: "Internal server error" });
     return NextResponse.json({ error: "Request failed" }, { status: 500 });
   }

@@ -95,6 +95,7 @@ export function ClaimIntelligencePanel({ claimId }: Props) {
         throw new Error(`Failed to run ${type}`);
       }
 
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const result = await res.json();
       alert(`✅ ${type.toUpperCase()} automation complete!`);
 

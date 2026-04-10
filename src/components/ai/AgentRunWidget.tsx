@@ -34,7 +34,7 @@ export function AgentRunWidget() {
         }
         const data = await res.json();
         if (active) setRuns(data.runs || []);
-      } catch (e: any) {
+      } catch (_e: any) {
         if (active) setError("");
       } finally {
         if (active) setLoading(false);

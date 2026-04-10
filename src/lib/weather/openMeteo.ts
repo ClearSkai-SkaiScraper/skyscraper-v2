@@ -81,7 +81,9 @@ export async function fetchOpenMeteoWeather(query: WeatherQuery): Promise<Normal
  */
 function normalizeOpenMeteoResponse(
   data: any,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   startDate: string,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   endDate: string
 ): NormalizedWeatherFacts {
   const daily = data.daily || {};

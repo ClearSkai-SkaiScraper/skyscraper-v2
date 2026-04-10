@@ -97,6 +97,7 @@ export async function embedTextBatch(texts: string[]): Promise<number[][]> {
 /**
  * Convert number[] embedding to Buffer (bytea) for Postgres storage
  */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function embeddingToBuffer(embedding: number[]): Buffer {
   const buffer = Buffer.allocUnsafe(embedding.length * 4); // 4 bytes per float32
   for (let i = 0; i < embedding.length; i++) {

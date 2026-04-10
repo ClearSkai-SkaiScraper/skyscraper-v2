@@ -87,6 +87,7 @@ export const POST = withAuth(async (req: NextRequest, { orgId, userId }) => {
       colorAccent,
       logoUrl,
       teamPhotoUrl,
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       coverPhotoUrl,
       companyAddress,
     } = body;

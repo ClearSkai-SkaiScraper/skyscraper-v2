@@ -1,6 +1,6 @@
 import { AnimatePresence,motion } from "framer-motion";
 import { ArrowLeft,ArrowRight, X } from "lucide-react";
-import React, { useEffect, useRef } from "react";
+import React, { useEffect } from "react";
 
 import { Button } from "@/components/ui/button";
 import { useOnboardingStore } from "@/stores/onboardingStore";

@@ -71,7 +71,7 @@ export function CarrierIntelligencePanel({ compact }: Props) {
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
       setPlaybooks(data.playbooks || []);
-    } catch (err) {
+    } catch (_err) {
       setError("Failed to load carrier playbooks");
     } finally {
       setLoading(false);

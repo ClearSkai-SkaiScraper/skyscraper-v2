@@ -80,6 +80,7 @@ export const POST = withAuth(async (req: NextRequest, { orgId, userId }) => {
 });
 
 // GET /api/contractor-packet - List recent contractor packets
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export const GET = withAuth(async (req: NextRequest, { orgId, userId }) => {
   try {
     const packetsRes = await db.query(
@@ -121,6 +122,7 @@ async function generateContractorPacketAsync(
   sections: string[],
   format: string,
   claimId?: string,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   jobId?: string
 ) {
   logger.debug(`[Contractor Packet] Starting generation for ${packetId}`);

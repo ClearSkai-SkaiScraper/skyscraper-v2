@@ -31,6 +31,7 @@ const profileSchema = z.object({
  * POST - Save/update homeowner profile
  */
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export async function GET(req: NextRequest) {
   try {
     const authResult = await requirePortalAuth();

@@ -250,6 +250,7 @@ function ListSection({ title, items, icon, color }: { title: string; items: stri
 }
 
 // Forensic likelihood score card
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function ForensicLikelihood({ title, data, color }: { title: string; data: FailureLikelihood; color: string }) {
   const getScoreColor = (score: number) => {
     if (score >= 80) return "text-red-700 bg-red-100 border-red-300";

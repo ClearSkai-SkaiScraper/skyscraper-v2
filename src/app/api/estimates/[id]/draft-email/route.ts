@@ -9,6 +9,7 @@ import type { PacketRecipientType } from "@/lib/email/types";
 import { buildEstimatePacketPayload } from "@/lib/export/payloads";
 import { logger } from "@/lib/logger";
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export const POST = withAuth(async (req: NextRequest, { orgId, userId }, routeParams) => {
   const { id: estimateId } = await routeParams.params;
   try {

@@ -15,6 +15,8 @@ interface TemplateEditorProps {
   existingTemplate?: any;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export function TemplateEditor({ orgId, userId, existingTemplate }: TemplateEditorProps) {
   const router = useRouter();
   const [name, setName] = useState(existingTemplate?.name || "");

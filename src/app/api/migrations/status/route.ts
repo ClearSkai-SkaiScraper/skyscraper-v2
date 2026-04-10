@@ -18,6 +18,7 @@ export const dynamic = "force-dynamic";
  * GET /api/migrations/status
  * List all migrations for the authenticated org
  */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export const GET = withAuth(async (request: NextRequest, { orgId, userId }) => {
   try {
     const migrations = await prisma.migration_jobs.findMany({

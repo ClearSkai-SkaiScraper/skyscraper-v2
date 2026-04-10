@@ -34,6 +34,7 @@ interface SignupAgreementsProps {
  * accept all terms, plus opt-in/out of marketing communications.
  */
 export function SignupAgreements({ userType, onComplete, redirectTo }: SignupAgreementsProps) {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { user } = useUser();
   const router = useRouter();
   const [loading, setLoading] = useState(true);

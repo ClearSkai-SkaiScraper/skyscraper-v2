@@ -80,6 +80,7 @@ export const POST = withAuth(async (req: NextRequest, { userId }) => {
 });
 
 // DELETE /api/notifications/push - Unsubscribe from push notifications
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export const DELETE = withAuth(async (req: NextRequest, { userId }) => {
   try {
     const body = await req.json();

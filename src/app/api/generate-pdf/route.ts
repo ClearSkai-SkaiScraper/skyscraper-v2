@@ -8,6 +8,7 @@ import { makePdfContent } from "@/lib/ai";
 import { withAuth } from "@/lib/auth/withAuth";
 import { logger } from "@/lib/logger";
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export const POST = withAuth(async (req: NextRequest, { userId }) => {
   const body = await req.json().catch(() => ({}));
   const prompt =

@@ -112,6 +112,7 @@ const circuitBreakerState = new Map<
 
 export function checkCircuitBreaker(
   key: string,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   maxFailures: number = 5,
   resetTimeMs: number = 60000
 ): void {

@@ -16,8 +16,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
 import {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   APPLICABLE_CODES,
   BLANK_PACKET,
   ClaimPacketData,

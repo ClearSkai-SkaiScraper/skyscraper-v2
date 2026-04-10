@@ -33,7 +33,7 @@ export async function getAdminLogs(orgId: string, limit = 200) {
       ORDER BY created_at DESC
       LIMIT ${limit}
     `) as any[];
-  } catch (error) {
+  } catch (_error) {
     // Table doesn't exist yet, that's ok
     audits = [];
   }
@@ -48,7 +48,7 @@ export async function getAdminLogs(orgId: string, limit = 200) {
       ORDER BY created_at DESC
       LIMIT ${limit}
     `) as any[];
-  } catch (error) {
+  } catch (_error) {
     // Table doesn't exist yet, that's ok
     webhooks = [];
   }

@@ -49,6 +49,7 @@ interface Vendor {
   };
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function LegacyVendorsPage() {
   const [vendors, setVendors] = useState<Vendor[]>([]);
   const [loading, setLoading] = useState(true);
@@ -80,6 +81,7 @@ function LegacyVendorsPage() {
     vendor.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const categories = Array.from(
     new Set(vendors.map((v) => v.category).filter(Boolean))
   ) as string[];

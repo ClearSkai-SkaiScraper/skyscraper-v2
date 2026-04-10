@@ -30,6 +30,7 @@ import prisma from "@/lib/prisma";
 export const GET = withAuth(
   async (
     req: NextRequest,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     { userId, orgId },
     routeParams: { params: Promise<{ claimId: string }> }
   ) => {

@@ -30,6 +30,7 @@ import { logger } from "@/lib/logger";
  * Real messaging interface with contractors
  */
 export default function ClientMessagesPage() {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { userId } = useAuth();
   const searchParams = useSearchParams();
   const contractorParam = searchParams?.get("contractor");

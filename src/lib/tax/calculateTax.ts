@@ -36,6 +36,7 @@ const STATE_TAX_RATES: Record<string, number> = {
 export async function getOrgTaxRate(orgId: string): Promise<TaxConfig> {
   try {
     // Try to get org-specific tax rate from branding settings
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const branding = await prisma.org_branding.findFirst({
       where: { orgId },
       select: {

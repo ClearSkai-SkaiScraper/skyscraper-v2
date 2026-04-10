@@ -20,6 +20,7 @@ export default function LinkCompanyPage() {
   const [mode, setMode] = useState<"create" | "join">("create");
   const [companyName, setCompanyName] = useState("");
   const [joinToken, setJoinToken] = useState("");
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [onboardingStatus, setOnboardingStatus] = useState<any>(null);
 
   useEffect(() => {

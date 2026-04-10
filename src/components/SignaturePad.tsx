@@ -18,6 +18,7 @@ function SignaturePad({ onChange }: SignaturePadProps) {
     if (!canvas) return;
 
     const dpr = window.devicePixelRatio || 1;
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const rect = canvas.getBoundingClientRect();
 
     canvas.width = 600 * dpr;

@@ -72,6 +72,7 @@ export type AIMessage = {
   content: string;
 };
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export type AiCallOptions<T = unknown> = {
   /** OpenAI model to use. Defaults to gpt-4o-mini or OPENAI_DEFAULT_MODEL env var */
   model?: string;
@@ -341,6 +342,7 @@ export async function callOpenAI<T = unknown>(opts: AiCallOptions<T>): Promise<A
  * });
  * ```
  */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export async function callOpenAIStream(opts: any): Promise<any> {
   throw new Error("callOpenAIStream not yet implemented. Use direct OpenAI client for streaming.");
 }

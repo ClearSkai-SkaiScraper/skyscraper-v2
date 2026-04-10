@@ -14,6 +14,7 @@ interface TemplateSelectorProps {
 
 export function TemplateSelector({
   reportType,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   currentSections,
   onApplyTemplate,
 }: TemplateSelectorProps) {

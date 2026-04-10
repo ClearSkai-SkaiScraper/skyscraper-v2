@@ -8,6 +8,7 @@ import prisma from "@/lib/prisma";
 import { safeOrgContext } from "@/lib/safeOrgContext";
 
 // PATCH /api/messages/:threadId/:messageId/read - Mark message as read
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export const PATCH = withAuth(async (req: NextRequest, { orgId, userId }, routeParams) => {
   try {
     const { threadId, messageId } = await routeParams.params;

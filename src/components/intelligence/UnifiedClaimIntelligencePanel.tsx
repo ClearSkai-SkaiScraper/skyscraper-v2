@@ -325,8 +325,10 @@ function EngineCard({
   icon,
   title,
   score,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   maxScore,
   subtitle,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   color,
   suffix = "",
 }: {
@@ -361,6 +363,7 @@ function EngineCard({
   );
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function ScoreBar({ label, score, color }: { label: string; score: number; color: string }) {
   const barColor = score >= 70 ? "bg-emerald-500" : score >= 40 ? "bg-amber-500" : "bg-red-500";
 

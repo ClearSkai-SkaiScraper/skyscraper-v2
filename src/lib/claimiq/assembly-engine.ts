@@ -275,10 +275,12 @@ export async function assessClaimReadiness(
 
   const hasPhotos = photos > 0;
   const hasAnalyzedPhotos = analyzedPhotos > 0;
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const photoCompleteness = photos >= 10 ? 100 : photos >= 5 ? 75 : photos >= 1 ? 40 : 0;
 
   const hasCodes = codeItems > 0;
   const hasScope = scopeItems > 0;
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const hasSupplements = supplements > 0;
   const hasSignatures = signatures > 0;
   const hasActivities = activities > 0;

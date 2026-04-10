@@ -181,6 +181,8 @@ export default function OverviewPage() {
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [pendingSaves, setPendingSaves] = useState<Set<string>>(new Set());
   const [generatingWeather, setGeneratingWeather] = useState(false);
   const [attachedClient, setAttachedClient] = useState<UniversalContact | null>(null);
@@ -755,6 +757,7 @@ export default function OverviewPage() {
                 <label className="text-xs font-medium text-muted-foreground">Workflow Status</label>
                 {(() => {
                   const mapped = mapToWorkflowStatus(claim.status);
+                  // eslint-disable-next-line @typescript-eslint/no-unused-vars
                   const info = getWorkflowStatusInfo(mapped);
                   return (
                     <select

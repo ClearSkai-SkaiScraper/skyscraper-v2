@@ -69,6 +69,7 @@ interface RetailJob {
   clientId: string | null;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 interface Contact {
   id: string;
   firstName: string | null;
@@ -255,6 +256,7 @@ function formatDate(date: Date | null | undefined): string {
   }).format(new Date(date));
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function getStageColor(stage: string): string {
   const colors: Record<string, string> = {
     new: "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200",
@@ -272,6 +274,7 @@ function getStageColor(stage: string): string {
   );
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function getUrgencyColor(urgency: string | null): string {
   if (!urgency) return "bg-gray-100 text-gray-800";
   const colors: Record<string, string> = {

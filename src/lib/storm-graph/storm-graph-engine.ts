@@ -122,6 +122,7 @@ export interface AddressPreQualification {
 // ─────────────────────────────────────────────────────────────────────────────
 
 const CLUSTER_RADIUS_MILES = 10;
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const CORROBORATION_RADIUS_MILES = 5;
 const MAX_TIMELINE_ENTRIES = 50;
 const PREQUAL_RADIUS_MILES = 8;
@@ -438,6 +439,7 @@ function buildClusters(
   claims: NearbyClaimResult[],
   impacts: NearbyImpactResult[],
   stormEvents: StormEventRow[],
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   orgId: string
 ): StormCluster[] {
   const clusters: StormCluster[] = [];

@@ -3,7 +3,6 @@ import { NextResponse } from "next/server";
 import { compose, withRateLimit, withSentryApi } from "@/lib/api/wrappers";
 import { createForbiddenResponse, requirePermission } from "@/lib/auth/rbac";
 import { withOrgScope } from "@/lib/auth/tenant";
-import { logger } from "@/lib/logger";
 import { getCurrentUserPermissions } from "@/lib/permissions";
 import prisma from "@/lib/prisma";
 
@@ -11,6 +10,7 @@ import prisma from "@/lib/prisma";
  * GET /api/clients
  * List all client contacts for the org
  */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const baseGET = async (req: Request) => {
   const { orgId, userId } = await getCurrentUserPermissions();
 
@@ -48,6 +48,7 @@ const basePOST = async (req: Request) => {
   }
 
   const body = await req.json();
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { name, email, phone, category, notes } = body;
 
   if (!name) {

@@ -65,6 +65,7 @@ export function BATFPanel({ leadId, claimId }: BATFPanelProps) {
   const [progress, setProgress] = useState<string>("");
   const [error, setError] = useState<string>("");
   const [currentReport, setCurrentReport] = useState<BATFReport | null>(null);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [reports, setReports] = useState<BATFReport[]>([]);
 
   // File upload handler
@@ -176,6 +177,7 @@ export function BATFPanel({ leadId, claimId }: BATFPanelProps) {
   };
 
   // Fetch existing reports
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const fetchReports = async () => {
     try {
       const response = await fetch(`/api/batf/${leadId}`);
@@ -213,7 +215,7 @@ export function BATFPanel({ leadId, claimId }: BATFPanelProps) {
           `Public link: ${data.publicUrl}\nExpires: ${new Date(data.expiresAt).toLocaleString()}`
         );
       }
-    } catch (err) {
+    } catch (_err) {
       setError("Failed to create public link");
     }
   };

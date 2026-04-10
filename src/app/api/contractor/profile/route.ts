@@ -18,6 +18,7 @@ export const dynamic = "force-dynamic";
 // Types
 // ============================================================================
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 interface ContractorProfile {
   id: string;
   userId: string;

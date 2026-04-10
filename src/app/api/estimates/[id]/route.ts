@@ -10,6 +10,7 @@ import prisma from "@/lib/prisma";
  * GET /api/estimates/[id]
  * Get a single estimates with all line items
  */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export const GET = withAuth(async (req: NextRequest, { orgId, userId }, routeParams) => {
   const { id } = await routeParams.params;
   try {
@@ -83,6 +84,7 @@ export const GET = withAuth(async (req: NextRequest, { orgId, userId }, routePar
  * PUT /api/estimates/[id]
  * Update an estimates
  */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export const PUT = withAuth(async (req: NextRequest, { orgId, userId }, routeParams) => {
   const { id } = await routeParams.params;
   try {
@@ -142,6 +144,7 @@ export const PUT = withAuth(async (req: NextRequest, { orgId, userId }, routePar
  * DELETE /api/estimates/[id]
  * Delete an estimates
  */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export const DELETE = withAuth(async (req: NextRequest, { orgId, userId }, routeParams) => {
   const { id } = await routeParams.params;
   try {

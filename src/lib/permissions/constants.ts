@@ -183,6 +183,7 @@ export function hasMinRole(userRole: AppRole, requiredRole: AppRole): boolean {
 }
 
 /** Action hierarchy for "manage" expansion: manage includes all sub-actions */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const ACTION_HIERARCHY: Record<PermissionAction, number> = {
   view: 1,
   create: 2,

@@ -62,6 +62,7 @@ export function CommunityMapDraw({
     };
   }, []);
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const handlePolygonCreate = (e: any) => {
     if (!draw.current) return;
 

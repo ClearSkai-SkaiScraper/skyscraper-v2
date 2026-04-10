@@ -82,6 +82,7 @@ class EventBus {
    * Unsubscribe from an event
    */
   unsubscribe(subscriptionId: string): boolean {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     for (const [eventName, subs] of this.subscriptions.entries()) {
       const index = subs.findIndex((s) => s.id === subscriptionId);
       if (index !== -1) {

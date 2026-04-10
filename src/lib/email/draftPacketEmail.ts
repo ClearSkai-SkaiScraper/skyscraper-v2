@@ -17,6 +17,7 @@ interface DraftEmailParams {
  * Tone varies by recipient: professional for adjusters, friendly for homeowners
  */
 export async function draftPacketEmail(params: DraftEmailParams): Promise<DraftedPacketEmail> {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { recipientType, claim, payload, packetType, packetUrl } = params;
 
   // Extract claim context

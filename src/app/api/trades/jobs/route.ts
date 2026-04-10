@@ -23,6 +23,7 @@ import prisma from "@/lib/prisma";
  *   page: number
  *   limit: number
  */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export const GET = withAuth(async (request: NextRequest, { userId, orgId }) => {
   try {
     const { searchParams } = new URL(request.url);

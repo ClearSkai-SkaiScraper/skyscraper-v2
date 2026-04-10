@@ -107,6 +107,7 @@ export function AIJobScanner() {
   };
 
   const visibleRecommendations = recommendations.filter((r) => !dismissed.has(r.id));
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const highPriority = visibleRecommendations.filter((r) => r.priority === "high");
 
   if (loading) {

@@ -27,6 +27,7 @@ export async function sendNotification(data: NotificationData): Promise<void> {
 /**
  * Mark notification as read
  */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export async function markNotificationRead(notificationId: string, userId: string): Promise<void> {
   logger.debug(`[NotificationHelper] Marking notification ${notificationId} as read`);
   try {
@@ -64,7 +65,7 @@ export async function getUnreadCount(orgId: string): Promise<number> {
     return await prisma.projectNotification.count({
       where: { orgId, read: false },
     });
-  } catch (error) {
+  } catch (_error) {
     return 0;
   }
 }

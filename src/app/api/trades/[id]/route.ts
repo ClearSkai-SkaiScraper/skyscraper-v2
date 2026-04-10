@@ -8,6 +8,7 @@ import { withAuth } from "@/lib/auth/withAuth";
 import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export const GET = withAuth(async (req: NextRequest, { orgId, userId }, routeParams) => {
   const { id } = await routeParams.params;
   try {
@@ -38,6 +39,7 @@ export const GET = withAuth(async (req: NextRequest, { orgId, userId }, routePar
   }
 });
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export const PATCH = withAuth(async (req: NextRequest, { orgId, userId }, routeParams) => {
   const { id } = await routeParams.params;
   try {
@@ -79,6 +81,7 @@ export const PATCH = withAuth(async (req: NextRequest, { orgId, userId }, routeP
   }
 });
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export const DELETE = withAuth(async (req: NextRequest, { orgId, userId }, routeParams) => {
   const { id } = await routeParams.params;
   try {

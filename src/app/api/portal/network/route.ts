@@ -19,6 +19,7 @@ export const dynamic = "force-dynamic";
  * GET /api/portal/network
  * Get all connections for the current client
  */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export async function GET(req: NextRequest) {
   try {
     const { userId } = await auth();

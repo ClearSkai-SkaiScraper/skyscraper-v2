@@ -104,7 +104,7 @@ export default function ClaimsPipeline({ claims = [] }: { claims: ClaimCard[] })
           return; // Wait for user decision
         }
       }
-    } catch (err) {
+    } catch (_err) {
       logger.debug("AI suggestion unavailable, proceeding with manual update");
     }
 

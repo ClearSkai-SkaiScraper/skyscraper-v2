@@ -17,6 +17,7 @@ interface AddToTemplatesButtonProps {
 
 export function AddToTemplatesButton({
   templateId,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   templateTitle,
   templateSlug,
   initiallyAdded = false,
@@ -36,6 +37,7 @@ export function AddToTemplatesButton({
       setError(null);
 
       // clientFetch throws on non-ok responses, so success means template added
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const result = await clientFetch<{
         success: boolean;
         alreadyExists?: boolean;

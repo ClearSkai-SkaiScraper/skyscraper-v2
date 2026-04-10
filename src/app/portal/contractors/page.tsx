@@ -125,7 +125,7 @@ export default function ContractorsPage() {
 
       setSavedPros((prev) => prev.filter((p) => p.id !== proId));
       toast.success("Pro removed from your collection");
-    } catch (error) {
+    } catch (_error) {
       toast.error("Failed to remove pro");
     } finally {
       setRemoving(null);

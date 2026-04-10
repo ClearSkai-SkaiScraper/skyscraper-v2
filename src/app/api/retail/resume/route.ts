@@ -4,7 +4,6 @@ import "server-only";
 import { auth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 
-import { logger } from "@/lib/logger";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";

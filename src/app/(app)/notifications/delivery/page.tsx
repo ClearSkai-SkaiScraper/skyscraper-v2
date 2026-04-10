@@ -140,7 +140,7 @@ export default function ClientDeliveryNotificationsPage() {
       } else {
         toast.error(data.error || "Failed to send notification");
       }
-    } catch (e) {
+    } catch (_e) {
       toast.error("Failed to send notification");
     } finally {
       setSending(false);

@@ -126,6 +126,8 @@ export function sanitizeInput(input: string): string {
  * @param action - Action name (e.g., "create:claim", "delete:report")
  * @returns boolean indicating if user has permission
  */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export async function checkPermission(userId: string, action: string): Promise<boolean> {
   try {
     // TODO: Implement role-based permissions

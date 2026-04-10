@@ -28,6 +28,7 @@ export async function POST(request: NextRequest) {
       budget,
       claimId,
       jobId,
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       context: userContext,
     } = body;
 

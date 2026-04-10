@@ -29,6 +29,7 @@ export function ReceiptUploadClient() {
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
   const [showUpload, setShowUpload] = useState(false);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const fileRef = useRef<HTMLInputElement>(null);
 
   // Upload form state

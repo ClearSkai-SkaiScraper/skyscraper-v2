@@ -257,6 +257,7 @@ function getSuggestedFolder(category: string, subCategory?: string): string {
 // HANDLER
 // ─────────────────────────────────────────────────────────────────────────────
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export const POST = withAuth(async (req: NextRequest, { orgId, userId }) => {
   const start = Date.now();
 

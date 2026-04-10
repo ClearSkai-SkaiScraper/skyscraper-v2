@@ -646,6 +646,7 @@ export async function addCertification(input: AddCertificationInput) {
     select: { certifications: true },
   });
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const updated = await prisma.tradesProfile.update({
     where: { id: input.profileId },
     data: {

@@ -22,6 +22,7 @@ export function EditableField({
   label,
   value,
   field,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   jobId,
   onUpdate,
   type = "text",
@@ -45,7 +46,7 @@ export function EditableField({
       await onUpdate(field, processedValue);
       toast.success(`${label} updated successfully`);
       setIsEditing(false);
-    } catch (error) {
+    } catch (_error) {
       toast.error(`Failed to update ${label}`);
     } finally {
       setSaving(false);

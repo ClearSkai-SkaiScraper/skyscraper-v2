@@ -7,7 +7,6 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 
 import { requireAuth } from "@/lib/auth/requireAuth";
-import { logger } from "@/lib/logger";
 
 const ShareCreateSchema = z.object({
   resourceType: z.enum(["report", "export"]),
@@ -34,6 +33,8 @@ export async function POST(req: Request) {
       { status: 422 }
     );
   }
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { resourceType, resourceId, expiresInDays } = parsed.data;
 
   // Generate ephemeral token (not persisted - share_tokens model not in schema)

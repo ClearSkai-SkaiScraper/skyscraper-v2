@@ -176,6 +176,7 @@ export const POST = withAuth(async (req: NextRequest, { userId, orgId }) => {
  * GET /api/estimates
  * List all estimates for the organization
  */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export const GET = withAuth(async (req: NextRequest, { userId, orgId }) => {
   try {
     const { searchParams } = new URL(req.url);

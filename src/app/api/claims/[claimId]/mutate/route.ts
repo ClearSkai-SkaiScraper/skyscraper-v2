@@ -149,6 +149,7 @@ export const POST = withAuth(
       const { claimId } = await routeParams.params;
 
       // Verify claim belongs to org
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const claim = await getOrgClaimOrThrow(orgId, claimId);
 
       // Parse and validate body
@@ -212,6 +213,7 @@ async function handleUpdate(
   orgId: string,
   payload: Extract<ActionPayload, { action: "update" }>
 ) {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { action, ...fields } = payload;
 
   // Build update object with only provided fields

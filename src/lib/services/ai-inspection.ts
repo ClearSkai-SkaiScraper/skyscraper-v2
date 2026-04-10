@@ -201,6 +201,7 @@ Focus on detecting:`;
  */
 function parseAIInspectionResponse(
   responseText: string,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   componentType: string
 ): InspectionAnalysis {
   try {
@@ -314,7 +315,9 @@ function aggregateInspectionAnalyses(analyses: InspectionAnalysis[]): Inspection
  */
 export async function estimateRepairCosts(
   detections: InspectionDetection[],
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   componentType: string,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   zipCode: string
 ): Promise<{
   lowEstimate: number;

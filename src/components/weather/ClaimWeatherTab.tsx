@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
 
-import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { FullWeatherReport } from "@/components/weather/FullWeatherReport";
 import { QuickDOLFinder } from "@/components/weather/QuickDOLFinder";
@@ -60,6 +59,7 @@ export function ClaimWeatherTab({ claimId, propertyAddress, currentDol }: ClaimW
     }
   };
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const handleReportGenerated = (reportId: string) => {
     toast.success("Report Generated", {
         description: "Weather analysis report has been saved",

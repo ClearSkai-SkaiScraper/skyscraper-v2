@@ -126,6 +126,7 @@ export function AutopilotPanel({ claimId, className }: AutopilotPanelProps) {
   const {
     autopilotStatus,
     autopilotProgress,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     autopilotActions,
     setAutopilotPlan: setStorePlan,
     startAutopilot,

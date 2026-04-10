@@ -90,6 +90,7 @@ export async function GET() {
         });
 
         // Get the company name for display
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const company = await prisma.tradesCompany.findUnique({
           where: { id: member.companyId },
           select: { name: true },

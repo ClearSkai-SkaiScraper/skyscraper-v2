@@ -327,8 +327,10 @@ async function renderSection(
     logoImage: PDFImage | null;
   }
 ) {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { font, fontBold, brandRgb, accentRgb, logoImage } = fonts;
   const brand = brandColor(brandRgb);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const accent = brandColor(accentRgb);
   const maxTextWidth = PAGE.CONTENT_WIDTH;
 

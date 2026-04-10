@@ -29,6 +29,7 @@ export default function DocumentRow({
     return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
   };
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const getFileIcon = (fileType: string) => {
     // Could expand this to show different icons per file type
     return <FileText className="h-5 w-5 text-blue-400" />;

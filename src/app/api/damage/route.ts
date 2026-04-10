@@ -131,6 +131,7 @@ export const POST = withOrgScope(async (req: Request, { userId, orgId }) => {
  * GET /api/damage
  * List all damage assessments for the organization
  */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export const GET = withOrgScope(async (req: Request, { userId, orgId }) => {
   try {
     const { searchParams } = new URL(req.url);

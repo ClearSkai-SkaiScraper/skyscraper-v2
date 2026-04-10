@@ -87,6 +87,7 @@ interface SampleMapping {
   internal: Record<string, any>;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export const POST = withAuth(async (request: NextRequest, { orgId, userId }, routeParams) => {
   const { source } = await routeParams.params;
   const upperSource = source.toUpperCase() as MigrationSource;

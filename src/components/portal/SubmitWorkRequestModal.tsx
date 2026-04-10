@@ -53,6 +53,7 @@ const JOB_CATEGORIES = [
   { value: "unsure", label: "❓ Unsure — Help Me Decide", hint: "Not sure what I need yet" },
 ];
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export function SubmitWorkRequestModal({ isOpen, onClose, slug }: SubmitWorkRequestModalProps) {
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({

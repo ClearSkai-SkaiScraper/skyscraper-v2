@@ -27,6 +27,7 @@ interface AdjusterComboboxProps {
 export function AdjusterCombobox({
   currentName,
   currentEmail,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   currentPhone,
   onSelect,
 }: AdjusterComboboxProps) {

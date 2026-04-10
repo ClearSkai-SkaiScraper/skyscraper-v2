@@ -209,6 +209,7 @@ export const POST = withAuth(async (req: NextRequest, { userId, orgId }) => {
           continue;
         }
 
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const ext = mime.getExtension(mimeType) || filename.split(".").pop() || "bin";
 
         // Deterministic storage key

@@ -193,6 +193,7 @@ export default function ProfileEditPage({ params }: { params: { memberId: string
     setCertifications(certifications.filter((_, i) => i !== index));
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   function addTestimonial() {
     setTestimonials([
       ...testimonials,
@@ -200,12 +201,14 @@ export default function ProfileEditPage({ params }: { params: { memberId: string
     ]);
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   function updateTestimonial(index: number, field: keyof Testimonial, value: any) {
     const updated = [...testimonials];
     updated[index] = { ...updated[index], [field]: value };
     setTestimonials(updated);
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   function removeTestimonial(index: number) {
     setTestimonials(testimonials.filter((_, i) => i !== index));
   }

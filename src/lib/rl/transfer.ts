@@ -166,6 +166,7 @@ export class TransferRL {
           const hardLoss = this.crossEntropy(teacherAction, studentProbs);
           const loss = alpha * softLoss + (1 - alpha) * hardLoss;
 
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
           epochLoss += loss;
 
           // Update student policy
@@ -697,6 +698,7 @@ export class TransferRL {
     weights: number[],
     sourcePolicy: number[],
     state: number[],
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     action: number
   ): number[] {
     const epsilon = 1e-5;
@@ -769,6 +771,7 @@ export class TransferRL {
 
   private simulateEpisode(
     policy: number[],
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     env: Map<string, number>
   ): Array<{ state: number[]; action: number; reward: number }> {
     const episode: Array<{ state: number[]; action: number; reward: number }> = [];

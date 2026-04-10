@@ -30,6 +30,7 @@ const FEEDBACK_TYPES: { value: FeedbackType; label: string; emoji: string }[] = 
 const RATING_LABELS = ["Terrible", "Poor", "Okay", "Good", "Great"];
 
 export function FeedbackWidget() {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { userId, orgId } = useAuth();
   const pathname = usePathname();
 

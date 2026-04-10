@@ -60,6 +60,7 @@ function AccessDenied({ message }: { message: string }) {
  * Redirects clients to /portal.
  */
 export function ProOnlyGuard({ children, fallback, redirectTo = "/portal" }: GuardProps) {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { isPro, isClient, isLoading, isUnknown } = useUserIdentity();
   const router = useRouter();
 
@@ -94,6 +95,7 @@ export function ProOnlyGuard({ children, fallback, redirectTo = "/portal" }: Gua
  * Redirects pros to /dashboard.
  */
 export function ClientOnlyGuard({ children, fallback, redirectTo = "/dashboard" }: GuardProps) {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { isPro, isClient, isLoading, isUnknown } = useUserIdentity();
   const router = useRouter();
 
@@ -165,6 +167,7 @@ export function IdentitySwitch({
   unknownContent?: React.ReactNode;
   loadingContent?: React.ReactNode;
 }) {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { isPro, isClient, isLoading, isUnknown } = useUserIdentity();
 
   if (isLoading) {

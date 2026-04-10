@@ -41,6 +41,7 @@ const themeVariants: Record<string, BrandTheme> = {
  * @param orgId - Organization ID
  * @returns Brand theme configuration
  */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export async function resolveTheme(orgId: string): Promise<BrandTheme> {
   // TODO: Fetch from database based on orgId
   // const branding = await prisma.org_branding.findFirst({ where: { orgId } });

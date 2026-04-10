@@ -19,6 +19,7 @@ export interface ImageAnalysisResult {
  * Analyze images for damage
  * @deprecated Use runDamageBuilder from '@/lib/ai/damage' instead
  */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export async function analyzeImages(images: string[]): Promise<ImageAnalysisResult> {
   logger.warn('analyzeImages is deprecated - use runDamageBuilder from @/lib/ai/damage instead');
   

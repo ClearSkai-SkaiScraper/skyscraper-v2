@@ -15,6 +15,7 @@ export type ApiHandler = (req: Request, ctx: any) => Promise<Response>;
 export function withSentryApi(handler: ApiHandler): ApiHandler {
   return async (req, ctx) => {
     const url = new URL(req.url);
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const txn = Sentry.startSpan(
       { name: `API ${req.method} ${url.pathname}`, op: "http.server" },
       () => undefined
@@ -59,7 +60,7 @@ export function withRateLimit(handler: ApiHandler): ApiHandler {
       res.headers.set("x-ratelimit-remaining", remaining.toString());
       res.headers.set("x-ratelimit-reset", reset.toString());
       return res;
-    } catch (e) {
+    } catch (_e) {
       // Fail open if rate limiter errors
       return handler(req, ctx);
     }

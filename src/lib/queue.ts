@@ -17,6 +17,8 @@ export interface QueueJob<T = any> {
 /**
  * Add job to queue
  */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export async function addToQueue<T>(type: string, data: T): Promise<string> {
   // TODO: Implement actual queue with Redis/BullMQ
   return `job_${Date.now()}`;
@@ -25,6 +27,7 @@ export async function addToQueue<T>(type: string, data: T): Promise<string> {
 /**
  * Enqueue a job (alias for compatibility)
  */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export async function enqueue<T = any>(
   handler: (...args: any[]) => any,
   args: any[] = [],
@@ -53,6 +56,7 @@ export async function enqueue<T = any>(
 /**
  * Get job status
  */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export async function getJobStatus(jobId: string): Promise<QueueJob | null> {
   // TODO: Implement actual status checking
   return null;

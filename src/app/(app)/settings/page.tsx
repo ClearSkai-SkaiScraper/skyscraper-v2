@@ -37,6 +37,7 @@ export const metadata: Metadata = {
   description: "Configure your workspace, profile, and notification preferences.",
 };
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function MembershipMissing() {
   return (
     <div className="mx-auto max-w-3xl space-y-6 px-4 py-12">

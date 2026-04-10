@@ -12,6 +12,7 @@ export interface UploadPdfOptions {
   orgId: string;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export async function uploadPdf({ buffer, path, orgId }: UploadPdfOptions) {
   try {
     const supabase = getStorageClient();

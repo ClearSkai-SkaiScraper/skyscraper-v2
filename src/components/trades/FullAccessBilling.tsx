@@ -25,6 +25,7 @@ interface FullAccessStatus {
 }
 
 export function FullAccessBilling() {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { userId } = useAuth();
   const { user } = useUser();
   const [status, setStatus] = useState<FullAccessStatus | null>(null);

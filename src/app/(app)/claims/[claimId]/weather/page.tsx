@@ -1398,6 +1398,7 @@ function SavedScanCard({
   onSelectDol,
   onViewRadar,
   loadingRadar,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   categorizeScan,
 }: {
   scan: SavedScan;

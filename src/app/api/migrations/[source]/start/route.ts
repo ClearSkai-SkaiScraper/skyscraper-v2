@@ -122,7 +122,7 @@ export const POST = withAuth(async (request: NextRequest, { orgId, userId }, rou
         // Send final result
         const finalEvent = `data: ${JSON.stringify({ type: "complete", result })}\n\n`;
         controller.enqueue(encoder.encode(finalEvent));
-      } catch (error) {
+      } catch (_error) {
         // Send error event
         const errorEvent = `data: ${JSON.stringify({ type: "error", message: "Internal server error" })}\n\n`;
         controller.enqueue(encoder.encode(errorEvent));
@@ -145,6 +145,7 @@ export const POST = withAuth(async (request: NextRequest, { orgId, userId }, rou
  * GET /api/migrations/[source]/start
  * Returns the status of a running migration
  */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export const GET = withAuth(async (request: NextRequest, { orgId, userId }) => {
   // Get latest migration job for this org
   const job = await prisma.migration_jobs.findFirst({

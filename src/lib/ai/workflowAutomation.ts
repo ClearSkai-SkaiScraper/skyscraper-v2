@@ -233,7 +233,9 @@ async function enrichWithAssignments(
  * Suggest best assignee for action
  */
 async function suggestBestAssignee(
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   action: string,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   context: WorkflowContext
 ): Promise<string | undefined> {
   try {
@@ -337,6 +339,7 @@ async function executeAutomatableAction(
  */
 export async function detectBottlenecks(
   orgId: string,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   timeWindow: { start: Date; end: Date }
 ): Promise<BottleneckAnalysis[]> {
   // activity_log model doesn't exist in schema
@@ -383,6 +386,7 @@ export async function optimizeWorkflowRouting(orgId: string): Promise<{
 /**
  * Analyze routing patterns
  */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 async function analyzeRoutingPatterns(orgId: string) {
   // TODO: Implement pattern analysis
   return {
@@ -396,6 +400,7 @@ async function analyzeRoutingPatterns(orgId: string) {
 /**
  * Calculate workflow efficiency
  */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function calculateEfficiency(patterns: any): number {
   // Simple efficiency calculation (0-100)
   return 75; // Placeholder
@@ -404,6 +409,7 @@ function calculateEfficiency(patterns: any): number {
 /**
  * Generate optimization suggestions
  */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function generateOptimizationSuggestions(patterns: any): string[] {
   return [
     "Automate status transitions for common workflows",

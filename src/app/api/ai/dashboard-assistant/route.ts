@@ -75,6 +75,7 @@ export async function POST(req: NextRequest) {
     const claimType = claim.damageType || "Storm Damage";
 
     // Build context for AI
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const context = {
       claim: {
         number: claim.claimNumber,

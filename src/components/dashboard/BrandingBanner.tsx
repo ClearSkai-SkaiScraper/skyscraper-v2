@@ -48,6 +48,7 @@ export function BrandingBanner({ brandingCompleted, onboardingCompleted }: Brand
     // }
   }, []);
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   async function handleInitialize() {
     setInitializing(true);
     try {

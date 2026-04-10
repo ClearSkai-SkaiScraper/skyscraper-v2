@@ -38,7 +38,9 @@ export function AnnotationOverlayEditor({
   annotations,
   selectedIndex,
   onSelect,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   onMove,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   onResize,
   onDelete,
   onAdd,

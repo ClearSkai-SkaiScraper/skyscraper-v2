@@ -52,7 +52,9 @@ export async function getHistoricalWeather(
 export async function getWeatherEvents(
   lat: number,
   lng: number,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   startDate: Date,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   endDate: Date
 ): Promise<WeatherData[]> {
   logger.debug(`[Weather] Getting weather events for ${lat},${lng}`);

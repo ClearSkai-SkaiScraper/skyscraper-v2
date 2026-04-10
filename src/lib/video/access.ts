@@ -33,6 +33,7 @@ export async function generateVideoAccessToken(
 /**
  * Validate video access token
  */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export async function validateVideoAccessToken(token: string): Promise<{
   valid: boolean;
   videoId?: string;
@@ -45,6 +46,7 @@ export async function validateVideoAccessToken(token: string): Promise<{
 /**
  * Revoke video access token
  */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export async function revokeVideoAccessToken(token: string): Promise<boolean> {
   logger.debug("[VideoAccess] Stub: Would revoke token");
   return true;

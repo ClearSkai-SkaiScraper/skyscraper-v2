@@ -4,7 +4,6 @@ export const revalidate = 0;
 import { NextResponse } from "next/server";
 
 import { requireAuth } from "@/lib/auth/requireAuth";
-import { logger } from "@/lib/logger";
 import { BasePDFTemplate } from "@/lib/pdf/baseTemplate.tsx";
 import { uploadPDFToFirebase } from "@/lib/storage/firebaseUpload";
 import { pdfToUint8 } from "@/pdf/render";
@@ -12,6 +11,8 @@ import { pdfToUint8 } from "@/pdf/render";
 export async function POST(req: Request) {
   const auth = await requireAuth();
   if (auth instanceof NextResponse) return auth;
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { orgId, userId } = auth;
 
   const body = await req.json();

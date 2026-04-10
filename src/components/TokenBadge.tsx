@@ -12,6 +12,8 @@ type TokenBadgeProps = {
   className?: string;
 };
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export default function TokenBadge({ orgId, userId, className = "" }: TokenBadgeProps) {
   const { showTopUpModal } = useTokenGate();
 

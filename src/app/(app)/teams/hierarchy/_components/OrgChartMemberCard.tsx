@@ -34,6 +34,7 @@ interface OrgChartMemberCardProps {
 export function OrgChartMemberCard({
   member,
   reportCount,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   depth,
   isRoot,
   onAction,

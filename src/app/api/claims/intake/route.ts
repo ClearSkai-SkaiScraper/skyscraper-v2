@@ -35,9 +35,12 @@ export async function POST(req: Request) {
       status,
       propertyAddress,
       structureType,
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       stories,
       roofType,
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       slope,
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       squareFootage,
       contactId,
       contactName,
@@ -89,6 +92,7 @@ export async function POST(req: Request) {
 
     // 6. DETERMINE NEXT ACTION
     const finalStatus = status || "INTAKE";
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const nextAction = getNextActionFromStatus(finalStatus);
 
     // 7. CREATE PROPERTY RECORD

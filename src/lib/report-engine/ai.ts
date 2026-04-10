@@ -12,6 +12,7 @@ export async function runReportBuilder({
   addonPayload,
   address,
   roofType,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   lossType,
   orgId,
 }: {

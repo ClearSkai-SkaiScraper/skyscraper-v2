@@ -12,6 +12,7 @@ import { withAuth } from "@/lib/auth/withAuth";
 import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export const GET = withAuth(async (req: NextRequest, { orgId, userId }, routeParams) => {
   try {
     const { assetId } = await routeParams.params;

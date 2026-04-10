@@ -16,6 +16,7 @@ interface ConversionFunnelProps {
   batchJobId: string;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export function ConversionFunnel({ stages, batchJobId }: ConversionFunnelProps) {
   if (stages.length === 0) {
     return (

@@ -12,6 +12,7 @@ import { useEffect, useState } from "react";
 
 export default function AuthDebugPage() {
   const { user, isLoaded: userLoaded } = useUser();
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { userId, sessionId, orgId, isLoaded: authLoaded } = useAuth();
   const [serverAuthData, setServerAuthData] = useState<any>(null);
   const [serverError, setServerError] = useState<string | null>(null);

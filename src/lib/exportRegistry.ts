@@ -32,6 +32,7 @@ export async function createExportRecord(params: CreateExportParams) {
 /**
  * Get all exports for a claim
  */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export async function getClaimExports(claimId: string, orgId: string) {
   // reportExport model doesn't exist in schema
   logger.debug(`[exportRegistry] Would get exports for claim ${claimId}`);

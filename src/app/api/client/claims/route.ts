@@ -10,6 +10,7 @@ import prisma from "@/lib/prisma";
  * GET /api/client/claims
  * Get all claims a client is connected to
  */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export const GET = withAuth(async (req, { userId, orgId }) => {
   try {
     // Find all CONNECTED claim links for this client

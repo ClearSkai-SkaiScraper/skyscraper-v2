@@ -19,6 +19,7 @@ export interface ModuleContent {
   artifacts?: Array<{ label: string; url?: string }>; // future links / images
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export async function fetchModuleContent(id: AssemblyModuleKey, claimId?: string): Promise<ModuleContent> {
   switch (id) {
     case 'cover':

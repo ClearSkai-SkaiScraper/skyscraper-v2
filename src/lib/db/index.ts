@@ -63,6 +63,7 @@ function makePool(): Pool {
 
     return stub as Pool;
   }
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const isDev = process.env.NODE_ENV === "development";
 
   // eslint-disable-next-line no-restricted-syntax

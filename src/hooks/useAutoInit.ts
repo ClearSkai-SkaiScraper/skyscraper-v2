@@ -10,6 +10,7 @@ import { logger } from "@/lib/logger";
  * Creates org, user, and starts trial if needed
  */
 export function useAutoInit() {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { userId, orgId, isLoaded } = useAuth();
   const [initialized, setInitialized] = useState(false);
   const [loading, setLoading] = useState(false);

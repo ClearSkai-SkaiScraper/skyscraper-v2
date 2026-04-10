@@ -27,6 +27,7 @@ interface AddTokensModalProps {
 }
 
 export default function AddTokensModal({
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   orgId,
   isOpen,
   onCloseAction,

@@ -4,7 +4,6 @@
  * Auto-generated API docs with OpenAPI spec.
  */
 
-import prisma from "@/lib/prisma";
 
 export interface APIEndpoint {
   method: string;

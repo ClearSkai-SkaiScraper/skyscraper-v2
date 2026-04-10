@@ -7,6 +7,7 @@ import { getRateLimitIdentifier, rateLimiters } from "@/lib/rate-limit";
 
 export const dynamic = "force-dynamic";
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export const POST = withAuth(async (request, { userId, orgId }) => {
   try {
     // Rate limit AI photo analysis (expensive operation)
@@ -22,6 +23,7 @@ export const POST = withAuth(async (request, { userId, orgId }) => {
 
     // Validation — validateAIRequest removed, inline if needed
     // const validation = validateAIRequest(analyzePhotoFormDataSchema, { context });
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const validatedContext = context || undefined;
 
     if (!imageFile) {

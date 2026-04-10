@@ -129,6 +129,7 @@ export default function ClaimsReadyFolderPage() {
   const [sections, setSections] = useState<SectionStatus[]>(DEFAULT_SECTIONS);
   const [showSampleModal, setShowSampleModal] = useState(false);
   const [readinessScore, setReadinessScore] = useState(0);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [scoreLoading, setScoreLoading] = useState(false);
 
   // Fetch available claims

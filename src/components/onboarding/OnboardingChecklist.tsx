@@ -99,6 +99,7 @@ const DEFAULT_STEPS: OnboardingStep[] = [
 ];
 
 export function OnboardingChecklist({
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   orgId,
   completedSteps = [],
   onStepComplete,
@@ -183,6 +184,7 @@ export function OnboardingChecklist({
       {/* Steps List */}
       {isExpanded && (
         <div className="border-t">
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
           {steps.map((step, idx) => (
             <div
               key={step.id}

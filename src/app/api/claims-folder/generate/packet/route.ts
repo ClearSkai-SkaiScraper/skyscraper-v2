@@ -70,6 +70,7 @@ export async function POST(request: NextRequest) {
     const { orgId, userId } = auth;
 
     const body = await request.json();
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { claimId, mode, threshold, sectionKeys, format } = RequestSchema.parse(body);
 
     // Org scope check

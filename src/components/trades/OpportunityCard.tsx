@@ -52,6 +52,7 @@ export function OpportunityCard({
   createdAt,
   applicantCount,
   createdBy,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   hasFullAccess = false,
 }: OpportunityCardProps) {
   const router = useRouter();

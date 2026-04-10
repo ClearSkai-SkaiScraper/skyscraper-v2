@@ -74,6 +74,7 @@ export const SectionRegistry = {
   getSection(key: SectionKey) {
     return registry[key];
   },
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   getTemplateSections(templateId?: string): SectionKey[] {
     // For now, return all sections for demo; replace with template logic
     return Object.keys(registry) as SectionKey[];

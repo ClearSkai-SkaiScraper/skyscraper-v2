@@ -253,6 +253,7 @@ export function renderPdfHtml(mode: string, data: PdfTemplateData): string {
       <ol>
         ${citations
           .map(
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
             (c, i) => `
           <li>
             <span class="footnote-label">${escapeHtml(c.label)}</span>

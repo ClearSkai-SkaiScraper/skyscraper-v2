@@ -223,6 +223,7 @@ export const POST = withAuth(async (req: NextRequest, { userId, orgId }) => {
         },
       });
       if (clientRecord) {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         isClientRecord = true;
         // Create a virtual contact object so downstream logic works
         contact = {

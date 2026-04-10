@@ -72,6 +72,7 @@ export function buildHomeownerEmailFromReport(
   report: GeneratedReport,
   ctx: ReportContext
 ): EmailPayload {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const claimLabel = ctx.claimNumber || report.meta?.claimNumber || "your claim";
   const insured = ctx.insured_name || "you";
   const property = ctx.propertyAddress || report.meta?.location || "your property";

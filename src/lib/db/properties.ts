@@ -13,6 +13,7 @@ export async function getPropertyById(property_id: string) {
 
 export async function getAllTrackedProperties() {
   // Returns properties with lat/lon for weather tracking
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const properties = await prisma.properties.findMany({
     select: {
       id: true,

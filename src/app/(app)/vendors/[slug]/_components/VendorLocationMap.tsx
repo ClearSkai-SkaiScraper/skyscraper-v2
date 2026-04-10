@@ -62,6 +62,7 @@ const MAPBOX_TOKEN = process.env.NEXT_PUBLIC_MAPBOX_TOKEN;
 export function VendorLocationMap({
   locations,
   vendorName,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   vendorLogo,
   className = "",
   height = "400px",

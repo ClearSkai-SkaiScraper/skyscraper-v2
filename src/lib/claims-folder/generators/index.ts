@@ -33,6 +33,7 @@ interface RepairJustificationContext {
 export async function generateRepairJustification(
   ctx: RepairJustificationContext
 ): Promise<RepairJustificationData | null> {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { claimId, orgId } = ctx;
 
   try {

@@ -209,6 +209,7 @@ export default function ClaimDocumentsPage() {
     );
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const handleUploadComplete = async (urls: string[]) => {
     // Refresh the documents list after successful upload
     await fetchDocuments();

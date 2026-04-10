@@ -4,7 +4,7 @@
  */
 
 import { auth } from "@/lib/firebase";
-import { generateFilePath,uploadFileWithProgress } from "@/lib/firebase-storage";
+import { uploadFileWithProgress } from "@/lib/firebase-storage";
 
 /**
  * Upload a portfolio image for contractor profiles

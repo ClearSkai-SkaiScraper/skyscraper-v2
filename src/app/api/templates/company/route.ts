@@ -3,7 +3,6 @@ export const dynamic = "force-dynamic";
 import { NextRequest, NextResponse } from "next/server";
 
 import { withAuth } from "@/lib/auth/withAuth";
-import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 
 export const runtime = "nodejs";
@@ -50,7 +49,7 @@ export const GET = withAuth(async (req: NextRequest, { orgId }) => {
       templates: templatesWithDetails,
       count: templatesWithDetails.length,
     });
-  } catch (error) {
+  } catch (_error) {
     return NextResponse.json(
       {
         ok: false,

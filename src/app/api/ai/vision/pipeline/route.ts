@@ -101,6 +101,7 @@ const PipelineInputSchema = z.object({
   persist: z.boolean().optional().default(false),
 });
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 type PipelineInput = z.infer<typeof PipelineInputSchema>;
 
 // ─────────────────────────────────────────────────────────────────────────────

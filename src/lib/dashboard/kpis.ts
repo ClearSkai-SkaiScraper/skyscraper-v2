@@ -14,6 +14,7 @@ export interface DashboardKpis {
   conversionRate: number;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export async function loadKpis(orgId: string): Promise<DashboardKpis> {
   // Stub implementation — real KPI aggregation TBD
   return {

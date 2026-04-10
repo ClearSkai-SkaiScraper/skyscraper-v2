@@ -93,6 +93,7 @@ async function POST_INNER(
     }
 
     // Carrier strategy placeholder (negotiation strategies stored in metadata)
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const carrierStrategy = null;
 
     // Build pushback-specific response
@@ -241,6 +242,7 @@ Be assertive but professional.
 /**
  * Get pushback-specific response strategies
  */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function getPushbackResponse(pushbackType: string, carrier: string): string {
   const responses: Record<string, string> = {
     cosmetic: `

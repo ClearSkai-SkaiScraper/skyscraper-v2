@@ -1,7 +1,6 @@
 "use client";
 import React, { useEffect,useState } from "react";
 
-import { supabase } from "@/integrations/supabase/client";
 
 export default function TeamLibraryTab({ orgId }: { orgId?: string }) {
   const [tiles, setTiles] = useState<any[]>([]);
@@ -26,6 +25,7 @@ export default function TeamLibraryTab({ orgId }: { orgId?: string }) {
     }
   }, [orgId]);
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   async function uploadHeadshot(file: File) {
     if (!orgId) return;
     // TODO: Implement team member photo upload when proper schema is available

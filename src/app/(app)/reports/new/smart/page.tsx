@@ -20,7 +20,10 @@ type ClaimLite = {
 };
 
 export default function SmartReportBuilderPage() {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const router = useRouter();
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { isLoaded, isSignedIn } = useUser();
   const searchParams = useSearchParams();
   const initialClaimId = searchParams?.get("claimId") || "";

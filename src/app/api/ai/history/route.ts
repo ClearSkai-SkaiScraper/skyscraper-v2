@@ -69,7 +69,7 @@ export async function GET(req: NextRequest) {
           content: true,
         },
       });
-    } catch (err) {
+    } catch (_err) {
       // If ai_reports table doesn't exist, return empty array
       logger.debug("[AI History] ai_reports table not found, returning empty history");
       history = [];

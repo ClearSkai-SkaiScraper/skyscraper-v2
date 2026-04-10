@@ -24,19 +24,23 @@ const userMemory = new Map<
   }
 >();
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 type JobWithIncludes = jobs & {
   properties: properties | null;
   claims: claims | null;
 };
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 type ClaimWithIncludes = claims & {
   properties: properties | null;
 };
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 type ProjectWithIncludes = projects & {
   properties: properties | null;
 };
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 type OrgWithPlan = Org & {
   Plan: Plan | null;
 };
@@ -280,6 +284,7 @@ Be conversational, helpful, and specific. Reference real data when available. If
     logger.error(`[AI_CHAT] Error after ${processingTime}ms:`, error);
 
     // Provide detailed error information
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const errorDetails = {
       message: "Unknown error",
       type: error instanceof Error ? error.constructor.name : typeof error,

@@ -347,7 +347,9 @@ export async function createCollage(
  */
 export async function addTextOverlay(
   input: Buffer,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   text: string,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   options?: {
     position?: "top" | "center" | "bottom";
     fontSize?: number;
@@ -384,6 +386,7 @@ export async function smartCrop(input: Buffer, width: number, height: number): P
 
 // Helper Functions
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 async function prepareWatermark(watermark: Buffer, opacity: number): Promise<Buffer> {
   return await sharp(watermark).ensureAlpha().modulate({ brightness: 1, saturation: 1 }).toBuffer();
 }

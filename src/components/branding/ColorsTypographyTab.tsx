@@ -1,6 +1,7 @@
 "use client";
 import React from "react";
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export default function ColorsTypographyTab({ orgId }: { orgId?: string }) {
   return (
     <div>

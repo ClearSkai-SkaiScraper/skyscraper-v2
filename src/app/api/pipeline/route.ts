@@ -13,6 +13,7 @@ export const revalidate = 0;
 
 // Prisma singleton imported from @/lib/db/prisma
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export async function GET(request: NextRequest) {
   try {
     await requirePermission("view_projects");

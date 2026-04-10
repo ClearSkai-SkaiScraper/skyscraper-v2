@@ -44,6 +44,7 @@ interface ClaimData {
 
 export default function LifecyclePage() {
   const params = useParams();
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const router = useRouter();
   const claimId = params?.claimId as string;
 

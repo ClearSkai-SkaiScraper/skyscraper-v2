@@ -15,6 +15,7 @@ const sendMessageSchema = z.object({
   attachments: z.array(z.string().url()).optional().default([]),
 });
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export const POST = withAuth(async (req: NextRequest, { orgId, userId }) => {
   try {
     const body = await req.json();

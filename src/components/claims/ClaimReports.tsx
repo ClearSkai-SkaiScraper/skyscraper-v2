@@ -46,6 +46,7 @@ export function ClaimReports({ claimId }: ClaimReportsProps) {
     void fetchReports();
   }, [claimId]);
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const getReportIcon = (type: string) => {
     return FileText;
   };
@@ -74,7 +75,7 @@ export function ClaimReports({ claimId }: ClaimReportsProps) {
     try {
       // Open in new tab for now
       window.open(pdfUrl, "_blank");
-    } catch (err) {
+    } catch (_err) {
       alert("Failed to open report. Please try again.");
     }
   };

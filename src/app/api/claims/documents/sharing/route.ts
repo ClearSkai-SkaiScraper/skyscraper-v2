@@ -42,6 +42,7 @@ async function handleGET(req: NextRequest) {
       { status: 400 }
     );
   }
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { claimId, clientId } = queryParsed.data;
 
   // Verify the claim belongs to this org
@@ -112,6 +113,7 @@ async function handlePOST(req: NextRequest) {
   const authResult = await requireApiAuth();
   if (authResult instanceof NextResponse) return authResult;
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { userId, orgId } = authResult;
   if (!orgId) {
     return NextResponse.json({ error: "Organization context required" }, { status: 403 });

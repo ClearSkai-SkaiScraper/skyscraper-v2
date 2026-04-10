@@ -117,6 +117,7 @@ async function handleUpdate(
   userId: string,
   input: Extract<ActionInput, { action: "update" }>
 ) {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { action, ...updateData } = input;
 
   const updated = await prisma.tradesProfile.update({

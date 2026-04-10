@@ -218,6 +218,7 @@ const MODEL_GROUP_DEFINITIONS: Record<
 
 export async function analyzeEvidenceGaps(
   claimId: string,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   orgId: string
 ): Promise<EvidenceGapAnalysis> {
   // Get all detections for this claim

@@ -909,7 +909,9 @@ function scoreRepairability(
   detections: Array<{ isReplacement: boolean; isCodeViolation: boolean }>,
   pos: SimulationFactor[],
   neg: SimulationFactor[],
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   recs: SimulationRecommendation[],
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   recStart: number
 ): number {
   let score = 50; // Start at 50 (neutral)
@@ -1138,6 +1140,7 @@ function scoreCarrierHistory(
   const total = outcomes.length;
   const approved = outcomes.filter((o) => o.outcome === "approved").length;
   const partial = outcomes.filter((o) => o.outcome === "partial").length;
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const denied = outcomes.filter((o) => o.outcome === "denied").length;
   const approvalRate = ((approved + partial * 0.5) / total) * 100;
 

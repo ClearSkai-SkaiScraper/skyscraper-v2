@@ -18,6 +18,7 @@ interface TrialInfo {
 export default function TrialBanner() {
   const { organization } = useOrganization();
   const [trialInfo, setTrialInfo] = useState<TrialInfo | null>(null);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [currentTime, setCurrentTime] = useState(Date.now());
 
   useEffect(() => {

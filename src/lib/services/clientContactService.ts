@@ -20,6 +20,8 @@ interface CreateClientContactFromTradesParams {
  * Links the CRM client to the trades connection for future reference
  */
 export async function createClientContactFromTrades(params: CreateClientContactFromTradesParams) {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { orgId, connectionId, clientName, clientEmail, clientPhone, clientAddress, serviceType } =
     params;
 

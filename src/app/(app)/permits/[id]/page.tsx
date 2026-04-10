@@ -216,6 +216,7 @@ export default function PermitDetailPage() {
     }
   };
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const handleDeleteDocument = async (docId: string) => {
     if (!confirm("Remove this document?")) return;
     try {

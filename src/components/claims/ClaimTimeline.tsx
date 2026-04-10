@@ -188,6 +188,7 @@ export function ClaimTimeline({
           <div className="absolute bottom-0 left-4 top-0 w-0.5 bg-border" />
 
           <div className="space-y-4">
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
             {sortedEvents.map((event, index) => {
               const Icon = eventIcons[event.type] || Clock;
               const colorClass = eventColors[event.type] || "text-slate-500 bg-slate-500/10";

@@ -96,6 +96,7 @@ export default async function LeadDetailPage({ params }: { params: Promise<{ id:
 
   const { lead, contact, assigneeName } = result;
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const formatCurrency = (amount?: number) => {
     if (!amount) return "Not set";
     return new Intl.NumberFormat("en-US", {
@@ -104,6 +105,7 @@ export default async function LeadDetailPage({ params }: { params: Promise<{ id:
     }).format(amount);
   };
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const getStageColor = (stage: string) => {
     const normalized = stage?.toLowerCase();
     switch (normalized) {

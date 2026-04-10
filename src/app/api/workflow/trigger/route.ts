@@ -19,6 +19,7 @@ const TriggerSchema = z.object({
   metadata: z.record(z.any()).optional(),
 });
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export const POST = withOrgScope(async (request: Request, { userId, orgId }) => {
   try {
     const body = await request.json();

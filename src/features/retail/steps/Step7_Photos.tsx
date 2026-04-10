@@ -4,7 +4,6 @@ import { Image as ImageIcon, Upload, X } from "lucide-react";
 import React from "react";
 
 import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
 import { ClaimPacketData } from "@/lib/claims/templates";
 
 interface Step7Props {

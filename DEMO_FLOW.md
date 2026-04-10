@@ -7,14 +7,14 @@
 
 ## ⏱️ Timing Budget
 
-| Act | Duration | Cumulative | What the prospect sees |
-|-----|----------|------------|----------------------|
-| 1 — Dashboard Wow | 0:45 | 0:45 | Live stats, velocity cards, recent activity |
-| 2 — Create Claim | 1:00 | 1:45 | Intake form → photo upload → AI fires |
-| 3 — Weather + Scope | 0:45 | 2:30 | Auto weather verification → damage map |
-| 4 — Generate Report | 0:45 | 3:15 | AI report → PDF download → professional output |
-| 5 — Ecosystem | 1:00 | 4:15 | Lifecycle, tasks, messages, work requests |
-| Close | 0:45 | 5:00 | Billing page → "$80/seat saves 10 hrs/claim" |
+| Act                 | Duration | Cumulative | What the prospect sees                         |
+| ------------------- | -------- | ---------- | ---------------------------------------------- |
+| 1 — Dashboard Wow   | 0:45     | 0:45       | Live stats, velocity cards, recent activity    |
+| 2 — Create Claim    | 1:00     | 1:45       | Intake form → photo upload → AI fires          |
+| 3 — Weather + Scope | 0:45     | 2:30       | Auto weather verification → damage map         |
+| 4 — Generate Report | 0:45     | 3:15       | AI report → PDF download → professional output |
+| 5 — Ecosystem       | 1:00     | 4:15       | Lifecycle, tasks, messages, work requests      |
+| Close               | 0:45     | 5:00       | Billing page → "$80/seat saves 10 hrs/claim"   |
 
 ---
 
@@ -145,13 +145,13 @@
 
 ## 🎯 Objection Responses
 
-| Objection | Response |
-|-----------|----------|
-| "We use AccuLynx already" | "We integrate with AccuLynx — import claims in 2 hours. Run both side-by-side during trial." |
-| "Is there training?" | "Most teams are live in 48 hours. The AI does the heavy lifting." |
-| "How accurate is the AI?" | "94% damage detection accuracy, trained on 500K+ storm photos. Weather data is NOAA certified." |
-| "We have unique workflows" | "We've onboarded 50+ restoration companies. We map your process during setup." |
-| "What about our existing data?" | "Full migration — claims, contacts, documents. We handle it." |
+| Objection                       | Response                                                                                        |
+| ------------------------------- | ----------------------------------------------------------------------------------------------- |
+| "We use AccuLynx already"       | "We integrate with AccuLynx — import claims in 2 hours. Run both side-by-side during trial."    |
+| "Is there training?"            | "Most teams are live in 48 hours. The AI does the heavy lifting."                               |
+| "How accurate is the AI?"       | "94% damage detection accuracy, trained on 500K+ storm photos. Weather data is NOAA certified." |
+| "We have unique workflows"      | "We've onboarded 50+ restoration companies. We map your process during setup."                  |
+| "What about our existing data?" | "Full migration — claims, contacts, documents. We handle it."                                   |
 
 ---
 

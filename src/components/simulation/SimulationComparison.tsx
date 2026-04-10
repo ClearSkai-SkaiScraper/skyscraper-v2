@@ -221,6 +221,7 @@ function ScoreBox({ label, value }: { label: string; value: number }) {
 }
 
 function DeltaBox({ label, value }: { label: string; value: number }) {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const abs = Math.abs(Math.round(value));
   const color =
     value > 0

@@ -45,6 +45,7 @@ const FEATURED_CATEGORIES = [
 export default async function TradesNetworkPage() {
   const ctx = await getOrg({ mode: "required" });
   if (!ctx.ok) throw new Error("Unreachable: mode required should redirect");
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const orgId = ctx.orgId;
   const userId = ctx.userId;
 

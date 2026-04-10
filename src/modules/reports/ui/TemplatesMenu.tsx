@@ -128,6 +128,8 @@ export default function TemplatesMenu({
         {showAI && (
           <div className="border-b border-gray-200 bg-amber-50/50 px-6 py-4">
             <SmartTemplateSelector
+              // eslint-disable-next-line @typescript-eslint/no-unused-vars
+              // eslint-disable-next-line @typescript-eslint/no-unused-vars
               onSelect={(id, slug) => {
                 // The SmartTemplateSelector picks full templates, not section presets.
                 // Close the AI panel and keep the modal open for the user to select a preset.

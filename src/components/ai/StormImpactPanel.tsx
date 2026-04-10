@@ -5,6 +5,7 @@ import React, { useEffect, useState } from "react";
 
 import { logger } from "@/lib/logger";
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 interface StormEvent {
   date: string;
   type: string;
@@ -13,6 +14,7 @@ interface StormEvent {
   distance: number;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 interface HeatmapZone {
   intensity: number;
   radius: number;

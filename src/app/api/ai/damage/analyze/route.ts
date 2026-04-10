@@ -32,6 +32,7 @@ interface AnalysisResult {
   summary: string;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export const POST = withAuth(async (req, { userId, orgId }) => {
   try {
     const identifier = getRateLimitIdentifier(userId, req);

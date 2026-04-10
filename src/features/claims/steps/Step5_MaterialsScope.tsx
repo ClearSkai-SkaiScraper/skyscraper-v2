@@ -1,7 +1,7 @@
 // src/features/claims/steps/Step5_MaterialsScope.tsx
 "use client";
 
-import { FileText, Package, Plus, ShieldCheck,X } from "lucide-react";
+import { Package, Plus, ShieldCheck,X } from "lucide-react";
 import { useState } from "react";
 
 import { MaterialPicker } from "@/components/MaterialPicker";

@@ -74,6 +74,7 @@ export function buildExplanation(ctx: ExplanationContext): ExplanationPayload {
  * Save explanation to database
  * DEPRECATED: aIExplanation model doesn't exist in schema.
  */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export async function saveExplanation(actionId: string, explanation: ExplanationPayload) {
   // aIExplanation model doesn't exist in schema
   logger.debug(`[explanations] Would save explanation for action ${actionId}`);

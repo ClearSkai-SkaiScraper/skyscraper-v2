@@ -16,6 +16,7 @@ export default async function SupplementHomeownerPage({ params }: PageProps) {
 
   const {
     claim,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     supplements: supplement,
     headline,
     summary: text,

@@ -6,7 +6,6 @@
  * Re-enable when ready for production billing.
  */
 
-import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma"; // Re-enabled for compile
 
 export interface AiUsageParams {
@@ -21,6 +20,7 @@ export interface AiUsageParams {
  *
  * BETA: No-op for open beta testing - all AI features are free
  */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export async function trackAiUsage(params: AiUsageParams): Promise<void> {
   // BETA MODE: Skip all usage tracking
   // Users get unlimited AI access during beta testing

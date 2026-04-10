@@ -24,6 +24,7 @@ interface ClaimAIReportsProps {
 export function ClaimAIReports({ claimId }: ClaimAIReportsProps) {
   const [reports, setReports] = useState<AIReport[]>([]);
   const [loading, setLoading] = useState(true);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [error, setError] = useState<string | null>(null);
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [pdfMap, setPdfMap] = useState<Map<string, { id: string; url: string; title: string }>>(

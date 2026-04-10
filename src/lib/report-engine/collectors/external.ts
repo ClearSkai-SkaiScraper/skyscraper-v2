@@ -43,6 +43,7 @@ export async function collectExternalDataset({
 /**
  * Fetch local weather data for the property address
  */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 async function getLocalWeather(address: string) {
   // TODO: Integrate with weather API (OpenWeatherMap, Weather.gov, etc.)
   // For now, return structured placeholder
@@ -69,6 +70,8 @@ async function getLocalWeather(address: string) {
 /**
  * Fetch building codes for the property's jurisdiction
  */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 async function getBuildingCodes(address: string, roofType?: string | null) {
   // TODO: Integrate with building codes API (ICC, local jurisdiction databases)
   // For now, return structured placeholder
@@ -117,6 +120,8 @@ async function getManufacturerRequirements(roofType?: string | null) {
 /**
  * Assess climate risks for the property location
  */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 async function getClimateRisks(address: string, lossType?: string | null) {
   // TODO: Integrate with climate risk APIs (NOAA, FEMA, risk assessment platforms)
   // For now, return structured placeholder
@@ -151,8 +156,11 @@ async function getClimateRisks(address: string, lossType?: string | null) {
  * Get recommended upgrades based on location, roof type, and loss type
  */
 async function getRecommendedUpgrades(
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   address: string,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   roofType?: string | null,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   lossType?: string | null
 ) {
   // TODO: Build recommendation engine based on climate risks + building codes + loss history

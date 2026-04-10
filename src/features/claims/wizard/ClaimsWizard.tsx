@@ -26,7 +26,6 @@ import { useCallback,useEffect, useState } from "react";
 import { ExportPdfButton } from "@/components/ExportPdfButton";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
 import { Step1_CarrierClaim } from "@/features/claims/steps/Step1_CarrierClaim";
 import { Step2_InsuredProperty } from "@/features/claims/steps/Step2_InsuredProperty";
 import { Step3_DamageAssessment } from "@/features/claims/steps/Step3_DamageAssessment";
@@ -123,6 +122,7 @@ export default function ClaimsWizard({
 
     return baseData;
   });
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
 
   // START DRAFT GATE STATE
@@ -130,6 +130,7 @@ export default function ClaimsWizard({
   const [draftConfirmed, setDraftConfirmed] = useState(false);
 
   // RESUME DRAFT STATE
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [loadingDraft, setLoadingDraft] = useState(true);
   const [draftDetected, setDraftDetected] = useState<{
     reportId: string;

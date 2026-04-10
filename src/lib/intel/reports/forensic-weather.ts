@@ -467,6 +467,7 @@ function buildPropertyRiskAnalysis(input: ForensicWeatherInput) {
   };
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function buildStructuralInteraction(input: ForensicWeatherInput) {
   return {
     summary: "Structural component impact analysis",
@@ -587,6 +588,7 @@ function identifyImpactedElevations(input: ForensicWeatherInput) {
   }));
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function calculateCorrelationScore(location: any, weather: any): number {
   // Higher severity + more impacts = higher correlation
   const severityFactor = location.severity * 10;

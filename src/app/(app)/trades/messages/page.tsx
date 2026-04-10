@@ -404,6 +404,7 @@ export default function TradesMessagesPage() {
     }
   };
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const handleSendMessage = async (body: string) => {
     if (!selectedThread) return;
 

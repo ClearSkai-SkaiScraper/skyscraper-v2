@@ -182,6 +182,7 @@ export async function checkVendorInventory(
  */
 export async function trackVendorOrder(
   vendorCode: string,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   vendorOrderId: string
 ): Promise<{
   status: string;
@@ -273,6 +274,7 @@ async function callVendorApi(
 async function fetchVendorPricing(
   vendorCode: string,
   skus: string[],
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   apiKey: string
 ): Promise<VendorPriceQuote[]> {
   // Implementation would call actual vendor pricing API

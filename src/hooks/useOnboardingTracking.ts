@@ -40,6 +40,7 @@ const STORAGE_KEY = "skai-onboarding-progress";
  *   trackStep("company_info", { fieldsCompleted: 5 });
  */
 export function useOnboardingTracking() {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { userId, orgId } = useAuth();
   const pathname = usePathname();
   const stepStartTime = useRef<number>(Date.now());

@@ -27,6 +27,7 @@ export default function CoLogoUploader({ orgId }: { orgId: string }) {
         throw new Error(err.error || "Upload failed");
       }
 
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { url } = await res.json();
       toast.success("Logo uploaded");
     } catch (err: any) {

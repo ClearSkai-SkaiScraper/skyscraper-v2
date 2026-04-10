@@ -17,6 +17,7 @@ import { rebuttalExportPdfSchema, validateAIRequest } from "@/lib/validation/aiS
  * POST /api/ai/rebuttal/export-pdf
  * Generate branded rebuttal PDF with company branding and claim details
  */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 async function POST_INNER(req: NextRequest, ctx: { userId: string; orgId: string | null }) {
   try {
     const authResult = await requireApiAuth();

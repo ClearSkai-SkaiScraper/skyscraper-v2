@@ -23,6 +23,7 @@ const createMessageSchema = z.object({
  * List all message threads for a claim
  */
 export const GET = withAuth(
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   async (req: NextRequest, { userId, orgId }, routeParams: { params: { claimId: string } }) => {
     try {
       // Verify claim belongs to org

@@ -160,6 +160,7 @@ export class MetaRL {
         throw new Error("Meta-parameters not initialized");
       }
 
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const startTime = Date.now();
       let adaptedParams = [...this.metaParameters];
       const convergenceMetrics: ConvergenceMetrics = {
@@ -320,6 +321,7 @@ export class MetaRL {
       const valueGradient = new Array(this.metaParameters.length).fill(0);
 
       for (let i = 0; i < taskBatch.length; i++) {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const task = taskBatch[i];
         const context = contexts[i];
 
@@ -508,6 +510,7 @@ export class MetaRL {
     let totalReward = 0;
     for (let i = 0; i < batch.states.length; i++) {
       const qValues = this.forward(params, batch.states[i]);
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const action = this.argmax(qValues);
       totalReward += batch.rewards[i];
     }

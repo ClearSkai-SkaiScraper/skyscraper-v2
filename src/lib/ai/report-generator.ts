@@ -355,6 +355,7 @@ function generateScopeOfWork(claim: any) {
 /**
  * Generate professional opinion
  */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function generateProfessionalOpinion(claim: any) {
   return {
     functionalDamageStatement: `This roof has sustained functional damage that prevents it from performing its intended purpose of weatherproofing the structure.`,

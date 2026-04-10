@@ -103,6 +103,7 @@ export const POST = withAuth(async (req: NextRequest, { userId, orgId }) => {
       const uuid = crypto.randomUUID();
       const storagePath = `${orgId}/${claimId}/${category}/${timestamp}-${uuid}.${ext}`;
 
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { data, error } = await supabase.storage
         .from(BUCKET)
         .upload(storagePath, buffer, { contentType: file.type, upsert: true });

@@ -171,6 +171,7 @@ export async function ensureOrgForUser(): Promise<EnsuredOrg> {
         "My Company";
 
       const slugSource = primaryEmail || fallbackName || userId;
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const baseSlug = safeSlug(slugSource) || `org-${userId.slice(0, 8)}`;
 
       // DETERMINISTIC clerkOrgId — prevents duplicate orgs across concurrent requests
@@ -194,6 +195,7 @@ export async function ensureOrgForUser(): Promise<EnsuredOrg> {
           updatedAt: new Date(),
         },
       });
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       orgCreated = true;
 
       logger.debug("[ensureOrgForUser] Upserted org:", orgToUse.id);

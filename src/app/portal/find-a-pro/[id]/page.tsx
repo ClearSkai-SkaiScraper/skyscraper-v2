@@ -77,6 +77,7 @@ interface Pro {
 export default function ProProfilePage() {
   const params = useParams();
   const router = useRouter();
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { user } = useUser();
   const proId = Array.isArray(params?.id) ? params.id[0] : params?.id;
 
@@ -165,7 +166,7 @@ export default function ProProfilePage() {
 
       setConnectionStatus("pending");
       toast.success("Connection request sent! 🎉");
-    } catch (err) {
+    } catch (_err) {
       toast.error("Failed to send connection request");
     } finally {
       setConnecting(false);

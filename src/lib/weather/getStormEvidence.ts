@@ -279,6 +279,7 @@ async function buildStormEvidence(params: BuildEvidenceParams): Promise<StormEvi
     forceDOL,
     dolSource,
     stormEventId,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     includePhotoCorrelation = true,
   } = params;
 

@@ -95,7 +95,7 @@ export const POST = withAuth(async (request: NextRequest, { userId, orgId }) => 
         });
 
         results.push({ email: invitee.email, status: "sent" });
-      } catch (err) {
+      } catch (_err) {
         results.push({ email: invitee.email, status: "error", error: "Internal server error" });
       }
     }

@@ -202,6 +202,7 @@ export default function SmokeTestPage() {
     try {
       const start = Date.now();
       const res = await fetch("/api/health/live-check");
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const data = await res.json();
       // AI client init is checked as part of live-check
       if (res.ok) {

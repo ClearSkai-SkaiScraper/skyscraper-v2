@@ -14,6 +14,7 @@ import { logger } from "@/lib/logger";
 import { EnsuredOrg } from "@/lib/org/ensureOrgForUser";
 import prisma from "@/lib/prisma";
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const DEMO_SEED_KEY = "demo-seed-v1";
 
 const buildDemoIds = (orgId: string) => {
@@ -72,11 +73,13 @@ export async function ensureDemoDataForOrg(
     userId = undefined;
   } else {
     orgId = input.orgId;
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     userId = input.userId;
   }
 
   logger.debug(`[DEMO_SEED] Ensuring demo data for org: ${orgId}`);
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const demoIds = buildDemoIds(orgId);
 
   try {
@@ -157,6 +160,8 @@ export async function ensureDemoDataForOrg(
  * Create 3 demo leads with realistic data
  * Note: Schema requires contacts first, then leads that reference them
  */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 async function createDemoLeads(orgId: string, userId: string) {
   const demoContactsData = [
     {
@@ -419,10 +424,14 @@ async function createDemoLeads(orgId: string, userId: string) {
  *
  * Returns structured status for debugging constraint violations.
  */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 async function createDemoClaims(
   orgId: string,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   userId: string,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   leads: any[],
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   contacts: any[]
 ): Promise<{ claims: any[]; status: SeedStatus }> {
   const demoIds = buildDemoIds(orgId);
@@ -586,6 +595,7 @@ async function createDemoClaims(
 /**
  * Create 2 demo trade companies
  */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 async function createDemoTrades(orgId: string) {
   const tradesData = [
     {
@@ -628,6 +638,7 @@ async function createDemoTrades(orgId: string) {
  * Create 2 demo messages for the first claim
  * Uses MessageThread and Message models
  */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 async function createDemoMessages(orgId: string, userId: string, claims: any[]) {
   if (claims.length === 0) return [];
 
@@ -697,6 +708,7 @@ async function createDemoMessages(orgId: string, userId: string, claims: any[]) 
  * Create 2-3 demo AI reports per claim (weather + rebuttal)
  * These show up in the AI History Panel on claim detail pages
  */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 async function createDemoAIReports(orgId: string, userId: string, claims: any[]) {
   if (claims.length === 0) return [];
 

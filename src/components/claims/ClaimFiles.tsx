@@ -4,6 +4,7 @@ import { useState } from "react";
 import { logger } from "@/lib/logger";
 import { btn, card, glow } from "@/lib/theme";
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export default function ClaimFiles({ claimId }: { claimId: string }) {
   const [files, setFiles] = useState<any[]>([]);
   const [uploading, setUploading] = useState(false);

@@ -236,7 +236,7 @@ export async function fileExists(path: string): Promise<boolean> {
     const fileRef = ref(storage, path);
     await getMetadata(fileRef);
     return true;
-  } catch (error) {
+  } catch (_error) {
     return false;
   }
 }

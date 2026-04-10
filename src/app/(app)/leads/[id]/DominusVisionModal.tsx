@@ -21,6 +21,7 @@ interface DominusVisionModalProps {
   leadId: string;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export function DominusVisionModal({ image, onClose, leadId }: DominusVisionModalProps) {
   const [regenerating, setRegenerating] = useState(false);
 
@@ -59,7 +60,7 @@ ${image.notes}
         setRegenerating(false);
         return;
       }
-    } catch (err) {
+    } catch (_err) {
       toast.error("Failed to regenerate analysis");
     } finally {
       setRegenerating(false);

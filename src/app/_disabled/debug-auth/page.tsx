@@ -16,7 +16,7 @@ export default async function DebugAuthPage() {
       userRecord = await prisma.users.findUnique({
         where: { clerkUserId: clerkAuth.userId },
       });
-    } catch (e) {}
+    } catch (_e) {}
   }
 
   // Get user_organizations records for this user
@@ -26,7 +26,7 @@ export default async function DebugAuthPage() {
       userOrgs = await prisma.user_organizations.findMany({
         where: { userId: clerkAuth.userId },
       });
-    } catch (e) {}
+    } catch (_e) {}
   }
 
   // Get all orgs
@@ -35,7 +35,7 @@ export default async function DebugAuthPage() {
     allOrgs = await prisma.org.findMany({
       select: { id: true, name: true, clerkOrgId: true },
     });
-  } catch (e) {}
+  } catch (_e) {}
 
   // Count leads and claims for each org
   const orgDataPromises = allOrgs.map(async (org) => {

@@ -9,7 +9,7 @@ export async function copyToClipboard(text: string, label?: string): Promise<boo
     await navigator.clipboard.writeText(text);
     toast.success(label ? `${label} copied to clipboard` : "Copied to clipboard");
     return true;
-  } catch (error) {
+  } catch (_error) {
     // Fallback for older browsers
     try {
       const textArea = document.createElement("textarea");
@@ -23,7 +23,7 @@ export async function copyToClipboard(text: string, label?: string): Promise<boo
 
       toast.success(label ? `${label} copied to clipboard` : "Copied to clipboard");
       return true;
-    } catch (fallbackError) {
+    } catch (_fallbackError) {
       toast.error("Could not copy to clipboard");
       return false;
     }

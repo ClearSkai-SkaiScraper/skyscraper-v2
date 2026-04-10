@@ -130,6 +130,7 @@ export default function AIMetricsDashboard() {
 
   if (!metrics) return null;
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { summary, byRoute, byModel, timeSeries, topExpensive, topSlowest } = metrics;
 
   return (

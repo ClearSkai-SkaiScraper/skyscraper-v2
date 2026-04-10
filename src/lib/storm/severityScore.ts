@@ -12,7 +12,6 @@
  * Output: 0.0-10.0 severity score + risk category
  */
 
-import { StormEvent, StormProximity } from "./fetchStormData";
 
 // ===========================
 // TYPE DEFINITIONS

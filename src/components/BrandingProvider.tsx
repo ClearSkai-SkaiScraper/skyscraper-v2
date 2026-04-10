@@ -15,7 +15,9 @@ interface BrandingData {
 }
 
 export default function BrandingProvider({ children }: { children: React.ReactNode }) {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [brand, setBrand] = useState<BrandingData | null>(null);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [loading, setLoading] = useState(true);
   const { resolvedTheme } = useTheme();
 
@@ -30,6 +32,7 @@ export default function BrandingProvider({ children }: { children: React.ReactNo
         
         // Apply org-specific colors or theme defaults
         const primary = data?.primary || (resolvedTheme === "dark" ? "#7cc2ff" : "#117CFF");
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const surface = data?.surface || "rgba(255,255,255,0.85)";
         
         root.style.setProperty("--primary", primary);

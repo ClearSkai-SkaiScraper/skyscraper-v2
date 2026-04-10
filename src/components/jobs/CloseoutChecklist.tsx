@@ -83,7 +83,7 @@ export function CloseoutChecklist({ entityId, entityType }: CloseoutChecklistPro
         body: JSON.stringify({ entityId, entityType, field: key, value: checked }),
       });
       if (!res.ok) throw new Error("Failed to save");
-    } catch (err) {
+    } catch (_err) {
       // Revert on failure
       setItems((prev) =>
         prev.map((item) => (item.key === key ? { ...item, checked: !checked } : item))

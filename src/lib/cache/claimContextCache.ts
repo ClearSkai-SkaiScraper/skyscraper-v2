@@ -99,6 +99,7 @@ export async function invalidateClaimContext(claimId: string): Promise<void> {
  * Invalidate all claim context caches for an organization
  * Use when org-level data changes (templates, branding, etc.)
  */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export async function invalidateOrgClaimContexts(orgId: string): Promise<void> {
   const redis = createRedisClientSafely();
   if (!redis) return;

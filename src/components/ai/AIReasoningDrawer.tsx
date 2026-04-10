@@ -26,6 +26,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { logger } from "@/lib/logger";
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 interface Rule {
   id: string;
   name: string;
@@ -33,6 +34,7 @@ interface Rule {
   priority: number;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 interface SimilarClaim {
   claimId: string;
   score: number;

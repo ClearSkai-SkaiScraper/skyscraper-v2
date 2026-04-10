@@ -1,5 +1,4 @@
 import { Cloud, Droplets, Eye, Gauge, Sun, Wind } from "lucide-react";
-import Image from "next/image";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import type { DashboardWeather } from "@/lib/weather/weatherstack";

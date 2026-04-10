@@ -13,6 +13,7 @@ export const dynamic = "force-dynamic";
  * GET /api/portal/claims
  * List all claims the current user has portal access to
  */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export async function GET(req: NextRequest) {
   try {
     const authResult = await requirePortalAuth();

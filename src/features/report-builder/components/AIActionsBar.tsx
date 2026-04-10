@@ -15,6 +15,7 @@ interface AIActionsBarProps {
 }
 
 export function AIActionsBar({
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   projectId,
   onGenerateReport,
   onAutoCaptionPhotos,

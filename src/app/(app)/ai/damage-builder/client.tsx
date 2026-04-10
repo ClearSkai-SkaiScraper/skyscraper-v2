@@ -105,7 +105,7 @@ export default function DamageBuilderClient({ leadId, jobId }: DamageBuilderClie
       const result = await res.json();
       setSavedId(result.id || "saved");
       toast.success("Estimate saved successfully");
-    } catch (err) {
+    } catch (_err) {
       toast.error("Failed to save estimate. Please try again.");
     } finally {
       setSaving(false);

@@ -76,6 +76,7 @@ async function generateWithOpenAI(script: VideoScript, prompt: string): Promise<
 /**
  * Generate video using Synthesia
  */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 async function generateWithSynthesia(script: VideoScript, prompt: string): Promise<Buffer> {
   const narration = script.scenes.map((s) => s.voiceover).join(" ");
 

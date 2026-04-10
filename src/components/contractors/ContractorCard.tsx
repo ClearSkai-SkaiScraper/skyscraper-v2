@@ -46,6 +46,7 @@ export function ContractorCard({
   tagline,
   serviceAreas = [],
   services = [],
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   verified = false,
   emergencyAvailable = false,
   emergencyReady = false,
@@ -55,7 +56,9 @@ export function ContractorCard({
   trustScore = 0,
   licenseVerified = false,
   insuranceVerified = false,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   businessVerified = false,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   emailVerified = false,
   averageRating = 0,
   totalReviews = 0,

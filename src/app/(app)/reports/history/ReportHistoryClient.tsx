@@ -41,6 +41,7 @@ interface ReportHistoryClientProps {
   orgId: string;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export function ReportHistoryClient({ reports, orgId }: ReportHistoryClientProps) {
   const [filter, setFilter] = useState<string>("all");
   const [rebuilding, setRebuilding] = useState<string | null>(null);
@@ -50,6 +51,7 @@ export function ReportHistoryClient({ reports, orgId }: ReportHistoryClientProps
     return report.type === filter;
   });
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const handleDownload = (pdfUrl: string, reportId: string) => {
     if (!pdfUrl) {
       alert("PDF URL not available");

@@ -6,7 +6,6 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent,CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Input } from "@/components/ui/input";
 
 import type { ReportSection } from "../types";
 
@@ -19,6 +18,7 @@ interface SectionListProps {
 }
 
 export function SectionList({
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   reportId,
   sections,
   onReorder,

@@ -12,6 +12,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 const fetcher = (url: string) => fetch(url).then((r) => r.json());
 
 export default function OpsPage() {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { data: healthData, error: healthError } = useSWR("/api/health", fetcher, {
     refreshInterval: 10000, // Refresh every 10s
   });

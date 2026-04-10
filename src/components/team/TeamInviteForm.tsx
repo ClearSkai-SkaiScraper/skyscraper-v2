@@ -30,6 +30,7 @@ export default function TeamInviteForm({ onSuccess }: TeamInviteFormProps) {
         throw new Error(error.error || "Failed to send invitation");
       }
 
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const data = await response.json();
       toast.success(`Invitation sent to ${email}!`);
 

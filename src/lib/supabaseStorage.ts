@@ -17,6 +17,7 @@ import { logger } from "@/lib/logger";
 export async function createSignedDownloadUrl(
   bucket: string,
   key: string,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   expiresIn = 3600
 ): Promise<string | null> {
   try {

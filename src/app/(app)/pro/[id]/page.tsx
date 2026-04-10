@@ -13,6 +13,7 @@ export const metadata: Metadata = {
   description: "View trade professional details and portfolio.",
 };
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export default async function ProDetailPage({ params }: { params: { id: string } }) {
   const user = await currentUser();
   if (!user) redirect("/sign-in");

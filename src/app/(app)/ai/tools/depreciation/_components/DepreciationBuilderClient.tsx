@@ -459,6 +459,7 @@ export function DepreciationBuilderClient({
   };
 
   // Download certificate and save to claim
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const handleDownloadCertificate = async (signatureDataUrl?: string) => {
     try {
       // Save to claim first via unified actions endpoint

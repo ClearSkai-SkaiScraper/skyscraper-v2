@@ -19,6 +19,8 @@ export async function POST(req: NextRequest) {
   try {
     const auth = await requireAuth();
     if (auth instanceof NextResponse) return auth;
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { orgId, userId } = auth;
 
     const items: LineItem[] = await req.json();

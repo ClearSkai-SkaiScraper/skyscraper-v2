@@ -26,6 +26,7 @@ export async function routeToDashboard(): Promise<never> {
 
   // If no identity, try to determine from legacy tables
   if (!identity) {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const userType = await determineUserType(user.id);
     identity = await getUserIdentity(user.id);
   }

@@ -36,6 +36,7 @@ export async function logReportActivity({
   type,
   title,
   body,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   metadata = {},
   visibleToClient = false, // Default to internal-only for reports
 }: LogReportActivityParams): Promise<void> {

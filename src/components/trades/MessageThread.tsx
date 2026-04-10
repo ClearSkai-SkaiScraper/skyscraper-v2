@@ -32,6 +32,7 @@ interface MessageThreadProps {
 export function MessageThread({
   threadId,
   messages,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   participants,
   hasFullAccess = false,
   onMessageSent,
@@ -43,6 +44,7 @@ export function MessageThread({
 
   const userMessageCount = messages.filter((m) => m.sender_id === userId).length;
   const isFirstMessage = userMessageCount === 0;
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const willCostToken = isFirstMessage && !hasFullAccess;
 
   // Auto-scroll to bottom on new messages

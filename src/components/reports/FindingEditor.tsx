@@ -45,7 +45,9 @@ interface FindingEditorProps {
 
 export function FindingEditor({
   finding,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   photoId,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   claimId,
   onUpdate,
   onRemove,

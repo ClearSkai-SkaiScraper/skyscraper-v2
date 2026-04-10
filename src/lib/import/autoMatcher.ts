@@ -35,6 +35,7 @@ export function autoMatchFields(sourceFields: string[], targetSchema: string[]):
 /**
  * Validate field mapping
  */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export function validateMapping(mappings: FieldMapping[]): {
   valid: boolean;
   errors: string[];

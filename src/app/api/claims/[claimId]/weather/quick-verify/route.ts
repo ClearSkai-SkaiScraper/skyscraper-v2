@@ -64,6 +64,7 @@ export const POST = withAuth(
         );
       }
 
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { latitude: lat, longitude: lon, fullAddress: address } = locationResult.location;
       logger.info("[quick-verify] Resolved location", {
         claimId,

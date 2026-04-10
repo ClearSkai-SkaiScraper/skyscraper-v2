@@ -176,6 +176,7 @@ export async function POST(req: NextRequest) {
  * GET /api/trades/company/seats/assign-manager
  * Gets the org chart / manager hierarchy for the company
  */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export async function GET(req: NextRequest) {
   try {
     const ctx = await safeOrgContext();

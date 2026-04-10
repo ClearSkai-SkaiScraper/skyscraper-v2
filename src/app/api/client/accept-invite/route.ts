@@ -2,7 +2,6 @@ export const dynamic = "force-dynamic";
 import { NextRequest, NextResponse } from "next/server";
 
 import { isPortalAuthError, requirePortalAuth } from "@/lib/auth/requirePortalAuth";
-import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 
 /**

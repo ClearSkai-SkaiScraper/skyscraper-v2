@@ -143,6 +143,7 @@ Focus on:
  */
 export async function generateDamageOverlay(
   originalPhotoUrl: string,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   analysis: DamageAnalysis
 ): Promise<{ overlayUrl: string; markers: DamageMarker[] }> {
   // Step 1: Extract damage locations using Vision API
@@ -351,6 +352,7 @@ export async function generateBATFPresentation(reportData: {
 }): Promise<Buffer> {
   const doc = new jsPDF({ format: "letter", unit: "in" });
   const pageWidth = 8.5;
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const pageHeight = 11;
   let yPos = 0.5;
   const branding = reportData.branding;
@@ -414,6 +416,7 @@ export async function generateBATFPresentation(reportData: {
           1.0,
           1.0
         );
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         infoEndX = pageWidth - 1.8;
       }
     } catch {

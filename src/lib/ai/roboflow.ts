@@ -29,6 +29,7 @@ import { logger } from "@/lib/logger";
 
 const ROBOFLOW_API_KEY = process.env.ROBOFLOW_API_KEY;
 const ROBOFLOW_DEMO_MODE = process.env.ROBOFLOW_DEMO_MODE === "true";
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const ROBOFLOW_WORKSPACE = process.env.ROBOFLOW_WORKSPACE; // User's workspace ID
 
 // Use local Docker inference server if available, otherwise fall back to cloud

@@ -20,6 +20,7 @@ import { safeOrgContext } from "@/lib/safeOrgContext";
  *
  * Returns analytics breakdown by peril type, region, monthly trend, etc.
  */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export async function GET(req: NextRequest) {
   try {
     const ctx = await safeOrgContext();

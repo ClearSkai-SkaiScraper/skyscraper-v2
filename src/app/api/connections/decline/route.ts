@@ -13,6 +13,7 @@ const declineSchema = z.object({
   connectionId: z.string(),
 });
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export const POST = withAuth(async (req: NextRequest, { userId, orgId }) => {
   try {
     const rl = await checkRateLimit(userId, "API");

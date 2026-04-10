@@ -67,6 +67,7 @@ export default function AddressPreQualificationPage() {
         return;
       }
 
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { latitude, longitude, name } = geoData.results[0];
 
       // Call pre-qualification API

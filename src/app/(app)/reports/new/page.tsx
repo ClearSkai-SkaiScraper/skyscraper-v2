@@ -17,6 +17,8 @@ interface Claim {
 
 export default function NewReportPage() {
   const router = useRouter();
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { isLoaded, isSignedIn } = useUser();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -165,6 +167,7 @@ export default function NewReportPage() {
         return;
       }
 
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const data = await res.json();
 
       // Redirect to canonical report history

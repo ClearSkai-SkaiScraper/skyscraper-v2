@@ -5,7 +5,6 @@
 
 import { getDelegate } from "@/lib/db/modelAliases";
 import { logger } from "@/lib/logger";
-import prisma from "@/lib/prisma";
 
 // Prisma singleton imported from @/lib/db/prisma
 
@@ -303,6 +302,7 @@ export async function generateImpactPacket(propertyImpactId: string): Promise<st
 
   if (!propertyImpact) throw new Error('Property impact not found');
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const packetContent = `
 PROPERTY IMPACT ASSESSMENT
 Generated: ${new Date().toLocaleString()}

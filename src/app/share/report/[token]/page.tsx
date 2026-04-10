@@ -3,7 +3,6 @@
 import { notFound, redirect } from "next/navigation";
 
 import { getDelegate } from '@/lib/db/modelAliases';
-import prisma from "@/lib/prisma";
 
 interface ShareReportPageProps {
   params: {

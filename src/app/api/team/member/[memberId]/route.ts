@@ -18,6 +18,7 @@ import { checkRateLimit } from "@/lib/rate-limit";
 export const GET = withAuth(
   async (
     req: NextRequest,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     { userId, orgId, role: authRole },
     params: { params: { memberId: string } }
   ) => {

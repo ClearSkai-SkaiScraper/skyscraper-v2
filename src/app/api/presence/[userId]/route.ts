@@ -64,6 +64,7 @@ function computePresence(lastSeen: Date | null): {
   };
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export const GET = withAuth(async (req, { userId: callerUserId, orgId }, routeParams) => {
   const { userId: targetUserId } = await routeParams.params;
   logger.info("[PRESENCE_LOOKUP]", { callerUserId, targetUserId });

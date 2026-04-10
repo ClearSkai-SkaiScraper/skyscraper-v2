@@ -48,6 +48,7 @@ export default async function QuickPDFHistoryPage() {
         <div className="space-y-4">
           {history.map((run) => {
             const input = typeof run.input === "string" ? JSON.parse(run.input) : run.input;
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
             const output = typeof run.output === "string" ? JSON.parse(run.output) : run.output;
 
             return (

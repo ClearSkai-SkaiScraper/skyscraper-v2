@@ -41,6 +41,7 @@ const PatchPayoutSchema = z.object({
 export const dynamic = "force-dynamic";
 
 // Status stages for final payout
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const PAYOUT_STAGES = [
   "work_in_progress",
   "work_completed",
@@ -62,6 +63,7 @@ export async function GET(request: NextRequest, { params }: { params: { claimId:
   try {
     const auth = await requireAuth();
     if (auth instanceof NextResponse) return auth;
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { orgId, userId } = auth;
 
     const { claimId } = params;
@@ -274,6 +276,7 @@ export async function PATCH(request: NextRequest, { params }: { params: { claimI
         { status: 400 }
       );
     }
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { status, lineItems, certificationSigned, notes } = parsed.data;
 
     // Verify claim exists and belongs to org

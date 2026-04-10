@@ -12,6 +12,7 @@ import prisma from "@/lib/prisma";
  */
 export async function findSimilarClaims(
   queryClaimId: string,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   limit = 5
 ): Promise<{ claimId: string; score: number }[]> {
   // claimsEmbedding model doesn't exist in schema
@@ -24,6 +25,7 @@ export async function findSimilarClaims(
  */
 export async function findSimilarClaimsByText(
   queryText: string,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   limit = 5
 ): Promise<{ claimId: string; score: number }[]> {
   // claimsEmbedding model doesn't exist in schema
@@ -34,6 +36,7 @@ export async function findSimilarClaimsByText(
 /**
  * Calculate cosine similarity between two vectors
  */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function cosineSimilarity(a: number[], b: number[]): number {
   const len = Math.min(a.length, b.length);
   let dot = 0;

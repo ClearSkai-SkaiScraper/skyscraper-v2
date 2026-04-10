@@ -1,6 +1,6 @@
 "use client";
 
-import { DownloadIcon, FileIcon, Trash2Icon, UploadIcon } from "lucide-react";
+import { DownloadIcon, FileIcon, UploadIcon } from "lucide-react";
 import { useState } from "react";
 
 import { Badge } from "@/components/ui/badge";
@@ -65,6 +65,7 @@ export function ClaimFilesPanel({ claimId, orgId, initialFiles }: ClaimFilesPane
         throw new Error(error.error || "Upload failed");
       }
 
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const result = await response.json();
 
       // Refresh the page to show new files
@@ -84,6 +85,7 @@ export function ClaimFilesPanel({ claimId, orgId, initialFiles }: ClaimFilesPane
     return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
   };
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const getFileIcon = (type: string) => {
     return <FileIcon className="h-4 w-4" />;
   };

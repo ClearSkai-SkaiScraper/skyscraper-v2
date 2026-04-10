@@ -100,6 +100,7 @@ const REQUIREMENTS_OPTIONS = [
 ];
 
 export default function PostJobRequestPage() {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { user, isLoaded } = useUser();
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -207,6 +208,7 @@ export default function PostJobRequestPage() {
 
       if (!res.ok) throw new Error("Failed to create job request");
 
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const data = await res.json();
       toast.success("Job request posted! Contractors can now respond.");
       router.push("/portal/my-jobs");

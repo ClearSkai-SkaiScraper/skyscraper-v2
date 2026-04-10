@@ -143,6 +143,7 @@ export default function CompanyPage() {
     .join("")
     .slice(0, 2)
     .toUpperCase();
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const currentYear = new Date().getFullYear();
   const yearsInBusiness = company.yearsInBusiness || null;
 

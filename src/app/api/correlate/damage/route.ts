@@ -76,6 +76,7 @@ export const POST = withAuth(async (req: NextRequest, { orgId, userId }) => {
     // Save correlation result
     // Note: For now we'll store in claim notes/metadata
     // A dedicated CorrelationReport model should be added to schema
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const correlationRecord = {
       claimId,
       type: "DAMAGE_WEATHER_CORRELATION",

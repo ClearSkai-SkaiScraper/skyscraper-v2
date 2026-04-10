@@ -194,6 +194,7 @@ export async function computeReadinessAnalytics(
   const photoCounts = new Map(photoCountsByClaimRaw.map((r) => [r.claimId, r._count]));
   const analyzedCounts = new Map(analyzedPhotoCountsRaw.map((r) => [r.claimId, r._count]));
   const weatherMap = new Map(weatherReportsRaw.map((r) => [r.claimId, r]));
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const supplementMap = new Map(supplementCountsRaw.map((r) => [r.claim_id, r._count]));
   const activityMap = new Map(activityCountsRaw.map((r) => [r.claim_id, r._count]));
 

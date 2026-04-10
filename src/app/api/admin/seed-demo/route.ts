@@ -139,6 +139,7 @@ const LEAD_SOURCES = [
   "repeat_customer",
 ];
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export async function POST(req: NextRequest) {
   // Block demo seeding in production
   if (process.env.NODE_ENV === "production" && process.env.ALLOW_DEMO_SEED !== "true") {

@@ -18,6 +18,7 @@ export const dynamic = "force-dynamic";
  * GET /api/migrations/status/[jobId]
  * Get detailed migration report including item-level breakdown
  */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export const GET = withAuth(async (_request: NextRequest, { orgId, userId }, routeParams) => {
   const { jobId } = await routeParams.params;
 
@@ -95,6 +96,7 @@ const ActionSchema = z.object({
   action: z.enum(["pause", "resume", "cancel", "rollback"]),
 });
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export const POST = withAuth(async (request: NextRequest, { orgId, userId }, routeParams) => {
   const { jobId } = await routeParams.params;
 

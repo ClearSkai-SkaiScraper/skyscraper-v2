@@ -132,6 +132,7 @@ export function detectCarrierFromPolicyPDF(pdfText: string): CarrierDetectionRes
     };
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const normalizedText = pdfText.toLowerCase();
   const possibilities: { carrier: string; confidence: number }[] = [];
 
@@ -190,6 +191,7 @@ export function detectCarrierFromNotes(notesText: string): CarrierDetectionResul
     };
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const normalizedText = notesText.toLowerCase();
   const possibilities: { carrier: string; confidence: number }[] = [];
 

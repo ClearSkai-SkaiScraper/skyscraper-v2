@@ -17,7 +17,7 @@ async function getContractor(slug: string) {
     );
     const json = await res.json();
     return json.contractor || null;
-  } catch (err) {
+  } catch (_err) {
     return null;
   }
 }

@@ -9,7 +9,6 @@ import { Check,Save } from "lucide-react";
 import { useEffect,useState } from "react";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useDebounce } from "@/lib/hooks/useDebounce";
 import { logger } from "@/lib/logger";

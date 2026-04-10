@@ -4,7 +4,6 @@
  */
 
 import { logger } from "@/lib/logger";
-import prisma from "@/lib/prisma";
 
 export interface OrgLocation {
   lat: number;

@@ -2,7 +2,6 @@
 import React, { useEffect,useState } from "react";
 
 import { Button } from "@/components/ui/button";
-import { supabase } from "@/integrations/supabase/client";
 
 export default function LicensingTab({ orgId }: { orgId?: string }) {
   const [roc, setRoc] = useState("AZ ROC #350304");

@@ -11,6 +11,7 @@ import prisma from "@/lib/prisma";
  * POST /api/messages/client/create
  * Creates a new message thread from client to a connected pro
  */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export const POST = withAuth(async (req: NextRequest, { orgId, userId }) => {
   try {
     const body = await req.json();

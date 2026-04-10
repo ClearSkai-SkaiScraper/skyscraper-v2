@@ -20,6 +20,7 @@ import prisma from "@/lib/prisma";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export const GET = withAuth(async (request: NextRequest, { orgId, userId }) => {
   try {
     const url = new URL(request.url);

@@ -24,6 +24,7 @@ export async function executeSendEmail(
   claimId: string,
   orgId: string,
   audience: "ADJUSTER" | "HOMEOWNER",
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   config?: any
 ) {
   logger.debug(`[SKAI] Sending email to ${audience} for ${claimId}`);

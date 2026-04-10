@@ -44,6 +44,7 @@ const WeatherRequestSchema = z.object({
   }),
 });
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 type WeatherRequest = z.infer<typeof WeatherRequestSchema>;
 
 // =============================================================================

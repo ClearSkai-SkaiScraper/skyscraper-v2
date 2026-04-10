@@ -12,7 +12,7 @@
  * - HailTrace-style storm tracking (proprietary data)
  */
 
-import { format, subDays } from "date-fns";
+import { subDays } from "date-fns";
 
 import { logger } from "@/lib/logger";
 
@@ -71,6 +71,7 @@ export async function fetchNOAAStorms(
   daysBack: number = 365
 ): Promise<NOAAStormData> {
   const endDate = new Date();
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const startDate = subDays(endDate, daysBack);
 
   // NOAA API endpoint (replace with actual token)

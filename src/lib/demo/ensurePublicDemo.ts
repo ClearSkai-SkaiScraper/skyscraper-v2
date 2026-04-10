@@ -23,10 +23,10 @@ export async function ensurePublicDemoOrg(): Promise<string | null> {
     // Ensure demo data exists; swallow errors to avoid RSC digest
     try {
       await ensureDemoDataForOrg({ orgId });
-    } catch (_) {}
+    } catch (__) {}
 
     return orgId;
-  } catch (_) {
+  } catch (__) {
     return null;
   }
 }

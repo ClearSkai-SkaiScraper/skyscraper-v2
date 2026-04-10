@@ -3,7 +3,6 @@ export const dynamic = "force-dynamic";
 import { NextRequest, NextResponse } from "next/server";
 
 import { withAuth } from "@/lib/auth/withAuth";
-import { logger } from "@/lib/logger";
 
 /**
  * GET /api/billing/plans
@@ -11,6 +10,7 @@ import { logger } from "@/lib/logger";
  * Returns available subscription plans.
  * Currently returns static plan data. Will be replaced with Stripe Products lookup.
  */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export const GET = withAuth(async (_req: NextRequest, { orgId }) => {
   const plans = [
     {

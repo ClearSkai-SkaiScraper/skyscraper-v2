@@ -1,4 +1,3 @@
-import { auth, currentUser } from "@clerk/nextjs/server";
 
 import { getActiveOrgSafe } from "@/lib/auth/getActiveOrgSafe";
 import prisma from "@/lib/prisma";

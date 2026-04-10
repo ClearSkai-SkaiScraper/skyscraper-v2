@@ -462,6 +462,7 @@ function OutcomeBadge({ outcome }: { outcome: string }) {
   );
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function ApprovalGauge({ probability, confidence }: { probability: number; confidence: string }) {
   const color =
     probability >= 70 ? "text-emerald-500" : probability >= 40 ? "text-amber-500" : "text-red-500";

@@ -50,6 +50,7 @@ interface ClientDocumentSharingProps {
 export default function ClientDocumentSharing({
   claimId,
   clients: clientsProp,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   onClientAdded,
 }: ClientDocumentSharingProps) {
   const router = useRouter();

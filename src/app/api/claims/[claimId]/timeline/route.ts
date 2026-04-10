@@ -32,11 +32,13 @@ import { isValidationError, validateBody } from "@/lib/validation/middleware";
 export const GET = withAuth(
   async (
     req: NextRequest,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     { userId, orgId },
     routeParams: { params: Promise<{ claimId: string }> }
   ) => {
     try {
       const { claimId } = await routeParams.params;
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const claim = await getOrgClaimOrThrow(orgId, claimId);
 
       // Fetch claim with related data for enriched timeline
@@ -273,6 +275,7 @@ export const POST = withAuth(
 export const DELETE = withAuth(
   async (
     req: NextRequest,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     { userId, orgId },
     routeParams: { params: Promise<{ claimId: string }> }
   ) => {

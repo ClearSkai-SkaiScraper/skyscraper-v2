@@ -38,6 +38,7 @@ export function ClientShareWidget({
   const [documents, setDocuments] = useState<SharedDocument[]>([]);
   const [loading, setLoading] = useState(false);
   const [sendingInvite, setSendingInvite] = useState(false);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [clientConnected, setClientConnected] = useState(!!clientId);
 
   useEffect(() => {

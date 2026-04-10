@@ -2,7 +2,6 @@ export const dynamic = "force-dynamic";
 import * as Sentry from "@sentry/nextjs";
 import { NextRequest, NextResponse } from "next/server";
 
-import { logger } from "@/lib/logger";
 
 /**
  * GET /api/dev/sentry-test

@@ -64,6 +64,7 @@ export interface SectionCardProps {
 }
 
 export function SectionCard({
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   sectionKey,
   title,
   description,

@@ -27,6 +27,7 @@ interface GroupMembersProps {
   totalMembers: number;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export default function GroupMembers({ groupId, members, totalMembers }: GroupMembersProps) {
   const getInitials = (firstName?: string, lastName?: string) => {
     return ((firstName?.[0] || "") + (lastName?.[0] || "")).toUpperCase() || "?";

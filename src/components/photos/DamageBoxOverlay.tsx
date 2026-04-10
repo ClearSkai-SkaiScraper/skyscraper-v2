@@ -264,6 +264,7 @@ export function DamageBoxOverlay({
   return (
     <div className={cn("pointer-events-none absolute inset-0", className)}>
       {boxes.map((box, i) => {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const { pctX, pctY, pctW, pctH, showLabel } = boxPositions[i];
         const isLargeEnough = pctW >= MIN_SIZE_FOR_LABELS || pctH >= MIN_SIZE_FOR_LABELS;
         const isLabelHidden = hiddenLabels.has(i);

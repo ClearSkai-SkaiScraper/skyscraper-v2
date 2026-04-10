@@ -25,6 +25,7 @@ export async function classifyMaterials(options: {
     } catch {}
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const photoUrls = await Promise.all(options.photoIds.map(id => getStorageUrlForAsset(id)));
 
   // TODO: Vision classification prompt to GPT-4o using photoUrls

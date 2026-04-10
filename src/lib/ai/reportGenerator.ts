@@ -117,7 +117,7 @@ export async function generateReportSection(
     let parsedContent: any;
     try {
       parsedContent = JSON.parse(responseContent);
-    } catch (parseError) {
+    } catch (_parseError) {
       logger.error("[REPORT_GEN] Failed to parse JSON", { responseContent });
       throw new Error("Invalid JSON response from AI");
     }
@@ -181,6 +181,7 @@ export async function generateReportSection(
 /**
  * Template with parsed section configuration
  */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 interface TemplateWithSections extends report_templates {
   parsedSections?: TemplateSectionConfig[];
 }

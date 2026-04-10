@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
 
 import { requireApiAuth } from "@/lib/auth/apiAuth";
-import { logger } from "@/lib/logger";
 
 /**
  * Build Information API

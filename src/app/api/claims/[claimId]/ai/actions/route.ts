@@ -85,6 +85,7 @@ const actionSchema = z.discriminatedUnion("action", [
   }),
 ]);
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 type ActionPayload = z.infer<typeof actionSchema>;
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -165,6 +166,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ cla
 // ACTION HANDLERS
 // ─────────────────────────────────────────────────────────────────────────────
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 async function handleChat(claimId: string, message: string, orgId: string) {
   if (!process.env.OPENAI_API_KEY) {
     return NextResponse.json({

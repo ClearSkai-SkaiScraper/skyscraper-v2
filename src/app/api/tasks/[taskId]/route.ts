@@ -122,6 +122,7 @@ export const PUT = withAuth(async (req: NextRequest, { userId, orgId }, routePar
  * DELETE /api/tasks/[taskId]
  * Delete a task
  */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export const DELETE = withAuth(async (req: NextRequest, { userId, orgId }, routeParams) => {
   try {
     const { taskId } = await routeParams.params;

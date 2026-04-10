@@ -66,6 +66,7 @@ export default async function ReportHistoryPage({
 }) {
   const user = await currentUser();
   if (!user) redirect("/sign-in");
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const userId = user.id;
 
   // Get org context from safeOrgContext instead of publicMetadata
@@ -74,7 +75,7 @@ export default async function ReportHistoryPage({
     const { safeOrgContext } = await import("@/lib/safeOrgContext");
     const ctx = await safeOrgContext();
     orgId = ctx.orgId ?? undefined;
-  } catch (err) {
+  } catch (_err) {
     // Failed to get org context — continue with empty state
   }
 
@@ -113,7 +114,7 @@ export default async function ReportHistoryPage({
         claimId: claimFilter || undefined,
         leadId: leadFilter || undefined,
       });
-    } catch (error) {
+    } catch (_error) {
       // Error loading reports — continue with empty arrays
       // Continue with empty arrays - will show "No reports" message
     }

@@ -230,6 +230,7 @@ export async function generateStoryboard(
  */
 function buildVideoPrompt(scene: VideoScene, frameIndex: number, totalFrames: number): string {
   const baseStyle = scene.visualStyle;
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const progress = (frameIndex / totalFrames) * 100;
 
   // Add cinematic qualities

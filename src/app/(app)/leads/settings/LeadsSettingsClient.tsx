@@ -98,7 +98,7 @@ export default function LeadsSettingsClient({ orgId, initialSettings }: LeadsSet
 
       toast.success("Settings saved successfully!");
       setActiveModal(null);
-    } catch (error) {
+    } catch (_error) {
       toast.error("Failed to save settings");
     } finally {
       setSaving(false);

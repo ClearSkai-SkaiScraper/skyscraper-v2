@@ -174,6 +174,7 @@ https://skaiscrape.com`
     }
 
     const fileName = `complete-packets/${leadId}-${Date.now()}.zip`;
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { data, error } = await supabase.storage.from("exports").upload(fileName, zipBuffer, {
       contentType: "application/zip",
       upsert: false,

@@ -11,6 +11,7 @@ import { logger } from "@/lib/logger";
  * IMPORTANT: Does not block rendering - runs in background
  */
 export function AutoInitWrapper({ children }: { children: React.ReactNode }) {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { initialized, loading, error } = useAutoInit();
 
   useEffect(() => {

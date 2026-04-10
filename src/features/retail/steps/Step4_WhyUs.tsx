@@ -15,7 +15,6 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { ClaimPacketData } from "@/lib/claims/templates";
-import { cn } from "@/lib/utils";
 
 interface Step4Props {
   data: ClaimPacketData;

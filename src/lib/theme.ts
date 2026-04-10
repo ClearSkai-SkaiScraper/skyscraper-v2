@@ -271,6 +271,7 @@ export function cn(...classes: (string | boolean | undefined | null)[]): string 
  * Get mode-aware button classes
  */
 export function getButtonClasses(
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   mode: AppMode = "retail",
   variant: "primary" | "secondary" = "primary"
 ): string {
@@ -293,6 +294,7 @@ export function getButtonClasses(
 /**
  * Get mode-aware card classes
  */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export function getCardClasses(mode: AppMode = "retail"): string {
   return "rounded-lg border border-[var(--color-border)] bg-[var(--color-background)] shadow-md";
 }

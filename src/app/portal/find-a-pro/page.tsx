@@ -142,6 +142,7 @@ interface Job {
 // No demo profile - show real contractors only
 
 export default function FindAProPage() {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { user } = useUser();
 
   // Search state

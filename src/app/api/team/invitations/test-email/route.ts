@@ -16,6 +16,8 @@ import { FROM_EMAIL, getResend } from "@/lib/email/resend";
 import { APP_URL } from "@/lib/env";
 import { logger } from "@/lib/logger";
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export const GET = withAdmin(async (req: NextRequest, { userId, orgId }) => {
   const email = req.nextUrl.searchParams.get("email");
 

@@ -261,6 +261,7 @@ Return ONLY valid JSON with extracted values. Use null for missing fields.`;
  */
 function normalizeExtractedData(
   data: Record<string, any>,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   type: DocumentType
 ): Record<string, any> {
   const normalized: Record<string, any> = {};

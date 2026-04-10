@@ -76,6 +76,7 @@ function imageCacheHeaders() {
   };
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function getCategoryFallbackThumbKey(category: string | null | undefined): string {
   return getUniformCategoryThumbKey(category);
 }

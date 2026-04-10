@@ -32,6 +32,7 @@ export default async function ReportTemplatesPage() {
   }
 
   const orgId = orgResult.orgId;
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const userId = orgResult.userId;
 
   // Auto-seed ONE mandatory template if this org has none (Contractor Estimate)
@@ -93,13 +94,14 @@ export default async function ReportTemplatesPage() {
       }
 
       // Link to org via OrgTemplate
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const upserted = await prisma.orgTemplate.upsert({
         where: { orgId_templateId: { orgId, templateId: mandatoryTemplate.id } },
         update: { isActive: true },
         create: { orgId, templateId: mandatoryTemplate.id, isActive: true },
       });
     }
-  } catch (seedError) {
+  } catch (_seedError) {
     // Failed to seed mandatory template — continue without it
   }
 
@@ -176,7 +178,7 @@ export default async function ReportTemplatesPage() {
         ];
       }
     }
-  } catch (e) {
+  } catch (_e) {
     // Failed to fetch orgTemplates — show empty state
     templates = [];
   }

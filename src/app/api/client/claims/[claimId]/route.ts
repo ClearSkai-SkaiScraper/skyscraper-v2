@@ -15,6 +15,7 @@ import {
  * GET /api/client/claims/[claimId]
  * Get claim details for a client (only if CONNECTED)
  */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export const GET = withAuth(async (req, { userId, orgId }, routeParams) => {
   try {
     const { claimId } = await routeParams.params;

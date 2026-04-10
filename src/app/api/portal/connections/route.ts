@@ -207,6 +207,7 @@ export async function POST(req: NextRequest) {
 /**
  * GET - Get all connections for the current client
  */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export async function GET(req: NextRequest) {
   try {
     const { userId } = await auth();

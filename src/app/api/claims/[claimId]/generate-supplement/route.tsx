@@ -139,6 +139,7 @@ async function generateSupplementAsync(params: {
     totalDelta,
     claimData,
     orgId,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     userId,
     documentName,
   } = params;
@@ -177,6 +178,7 @@ async function generateSupplementAsync(params: {
       brandLogoUrl: branding.brandLogoUrl,
     };
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const stream = await renderToStream(<SupplementPDFDocument data={pdfData as any} />);
 
     // TODO: Upload PDF to storage and get fileUrl

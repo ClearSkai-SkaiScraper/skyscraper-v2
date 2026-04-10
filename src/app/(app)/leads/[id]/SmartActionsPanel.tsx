@@ -144,7 +144,7 @@ export function SmartActionsPanel({ leadId }: SmartActionsPanelProps) {
         type: "smart-action",
         action: action.id,
       });
-    } catch (_err) {
+    } catch (__err) {
       // Error handled by useAIStream
     }
   }

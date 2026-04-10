@@ -184,6 +184,7 @@ export function withSpanSync<T>(
 
     return { result, durationMs, traceId };
   } catch (error) {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const durationMs = performance.now() - startTime;
 
     span.setStatus({ code: 2, message: error instanceof Error ? error.message : "Unknown error" });

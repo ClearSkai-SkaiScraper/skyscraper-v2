@@ -207,6 +207,7 @@ export default function IntelligenceWizardPage({ params }: PageProps) {
         throw new Error(data.error || "Failed to generate report");
       }
 
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const data = await res.json();
 
       // Redirect to report view

@@ -86,6 +86,7 @@ export async function decryptBackup(inputPath: string, outputPath: string): Prom
   // Read metadata (salt + iv)
   const salt = Buffer.alloc(SALT_LENGTH);
   const iv = Buffer.alloc(IV_LENGTH);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const tag = Buffer.alloc(16);
 
   let bytesRead = 0;

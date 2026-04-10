@@ -57,6 +57,7 @@ export const POST = withAuth(async (request, { userId, orgId }) => {
     const propertyId = formData.get("propertyId") as string;
 
     // Validation — validateAIRequest removed, inline if needed
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const validation = { success: true, data: { propertyId: propertyId || undefined } };
 
     if (!image) {

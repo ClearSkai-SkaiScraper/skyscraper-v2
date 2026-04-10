@@ -5,7 +5,6 @@ export const revalidate = 0;
 import { NextResponse } from "next/server";
 
 import { requireApiAuth } from "@/lib/auth/apiAuth";
-import { logger } from "@/lib/logger";
 
 export async function GET() {
   // Auth required — env config is internal-only

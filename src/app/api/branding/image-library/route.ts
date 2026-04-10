@@ -77,6 +77,7 @@ export const POST = withAuth(async (req: NextRequest, { userId, orgId }) => {
     const buffer = Buffer.from(arrayBuffer);
 
     const timestamp = Date.now();
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const ext = file.name.split(".").pop() || "png";
     const safeName = file.name.replace(/[^a-zA-Z0-9.-]/g, "_").slice(0, 50);
     const filename = `image-library/${orgId}/${timestamp}-${safeName}`;

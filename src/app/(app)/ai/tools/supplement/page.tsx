@@ -91,6 +91,7 @@ function SupplementBuilderInner() {
   const searchParams = useSearchParams();
   const initialClaimId = searchParams?.get("claimId") ?? "";
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { claims, isLoading: claimsLoading } = useClaims();
   const [selectedClaimId, setSelectedClaimId] = useState(initialClaimId);
   const [items, setItems] = useState<SupplementItem[]>([]);

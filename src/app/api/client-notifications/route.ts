@@ -7,6 +7,7 @@ import { logger } from "@/lib/logger";
 import { getClientFromAuth } from "@/lib/portal/getClientFromAuth";
 import prisma from "@/lib/prisma";
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export async function GET(req: NextRequest) {
   try {
     const client = await getClientFromAuth();
@@ -95,6 +96,7 @@ export async function GET(req: NextRequest) {
 
         if (threads.length > 0) {
           const threadIds = threads.map((t) => t.id);
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
           const threadMap = new Map(threads.map((t) => [t.id, t.subject]));
 
           // Get unread messages NOT sent by this user

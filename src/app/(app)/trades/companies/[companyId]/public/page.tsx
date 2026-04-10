@@ -10,12 +10,14 @@ import {
   Building2,
   CheckCircle,
   Clock,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   Copy,
   ExternalLink,
   Globe,
   Mail,
   MapPin,
   Phone,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   Share2,
   Shield,
   Star,

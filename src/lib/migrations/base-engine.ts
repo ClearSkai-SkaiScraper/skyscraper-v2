@@ -328,6 +328,7 @@ export abstract class BaseMigrationEngine {
     this.stats.recordsFailed++;
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   protected emitProgress(status: MigrationStatus, message: string, percentComplete: number): void {
     if (!this.progressCallback || !this.jobId) return;
 

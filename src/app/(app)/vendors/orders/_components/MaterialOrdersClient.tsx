@@ -108,6 +108,8 @@ interface MaterialOrdersClientProps {
   userId: string;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export function MaterialOrdersClient({ orgId, userId }: MaterialOrdersClientProps) {
   const router = useRouter();
   const [orders, setOrders] = useState<MaterialOrder[]>([]);

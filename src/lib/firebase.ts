@@ -117,7 +117,7 @@ if (
     if (a) connectAuthEmulator(a, "http://localhost:9099");
     if (d) connectFirestoreEmulator(d, "localhost", 8080);
     if (f) connectFunctionsEmulator(f, "localhost", 5001);
-  } catch (error) {
+  } catch (_error) {
     logger.debug("Firebase emulators already connected or not available");
   }
 }

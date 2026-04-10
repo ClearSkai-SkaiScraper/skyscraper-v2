@@ -522,11 +522,13 @@ function ActivityNotificationsWidget() {
 export default function TradesSocialProfile({
   member,
   isOwnProfile,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   editEmployeeHref,
 }: TradesSocialProfileProps) {
   const [posts, setPosts] = useState<Post[]>([]);
   const [portfolio, setPortfolio] = useState<PortfolioItem[]>([]);
   const [reviews, setReviews] = useState<Review[]>([]);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [loading, setLoading] = useState(true);
   const [avatarUrl, setAvatarUrl] = useState<string | null>(member?.avatar || null);
   const [coverUrl, setCoverUrl] = useState<string | null>(member?.coverPhoto || null);
@@ -636,7 +638,7 @@ export default function TradesSocialProfile({
 
         const { url } = await res.json();
         setPostImages((prev) => [...prev, url]);
-      } catch (error) {
+      } catch (_error) {
         toast.error("Failed to upload image");
       }
     }
@@ -902,7 +904,7 @@ export default function TradesSocialProfile({
 
               toast.success("Cover photo updated!");
               setShowCoverEditor(false);
-            } catch (error) {
+            } catch (_error) {
               toast.error("Failed to update cover photo");
             } finally {
               setUploading(null);
@@ -1090,7 +1092,7 @@ export default function TradesSocialProfile({
                     if (!res.ok) throw new Error("Failed to save");
                     toast.success("Services updated!");
                     setShowSpecialtiesEditor(false);
-                  } catch (error) {
+                  } catch (_error) {
                     toast.error("Failed to save services");
                   } finally {
                     setSavingSpecialties(false);

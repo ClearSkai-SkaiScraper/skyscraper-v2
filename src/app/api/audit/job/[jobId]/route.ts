@@ -11,6 +11,7 @@ import { getJobAuditLogs } from "@/modules/audit/core/logger";
 
 export async function GET(req: NextRequest, { params }: { params: { jobId: string } }) {
   try {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { orgId } = await requireRole(["contractor", "adjuster", "admin"]);
     const { jobId } = params;
 

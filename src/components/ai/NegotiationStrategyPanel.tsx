@@ -1,6 +1,6 @@
 "use client";
 
-import { AlertCircle, CheckCircle2, Clock, Target } from "lucide-react";
+import { CheckCircle2, Clock, Target } from "lucide-react";
 import { useEffect, useState } from "react";
 
 import { Badge } from "@/components/ui/badge";
@@ -9,6 +9,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Skeleton } from "@/components/ui/skeleton";
 import { logger } from "@/lib/logger";
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 interface NegotiationStep {
   step: string;
   completed?: boolean;

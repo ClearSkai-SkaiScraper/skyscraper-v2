@@ -26,7 +26,7 @@ export async function renderAndUploadPDF(opts: {
     // wait for client readiness flag
     try {
       await page.waitForFunction("window.__SKAISCRAPER_RENDER_READY === true", { timeout: 5000 });
-    } catch (err) {
+    } catch (_err) {
       // proceed anyway
     }
 

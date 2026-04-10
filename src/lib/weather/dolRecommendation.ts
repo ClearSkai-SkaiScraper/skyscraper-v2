@@ -225,6 +225,7 @@ export async function validateClaimDOL(claimId: string): Promise<{
 async function gatherWeatherEvents(
   claimId: string,
   property: { lat: number; lng: number },
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   daysBack: number
 ): Promise<WeatherEvent[]> {
   const events: WeatherEvent[] = [];
@@ -417,6 +418,7 @@ function determinePrimaryPeril(topEvents: DOLResult["top_events"]): {
   primaryPeril: string;
   perilMagnitude: string;
 } {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const eventTypes = topEvents.map((e) => e.type);
 
   // Count by type
@@ -574,6 +576,7 @@ function buildCarrierNarrative(params: {
   supportingEvents: SupportingEvent[];
   property: PropertyContext;
 }): string {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { recommendedDate, confidence, primaryPeril, perilMagnitude, supportingEvents, property } =
     params;
 

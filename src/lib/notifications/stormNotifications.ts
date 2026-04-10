@@ -330,6 +330,7 @@ async function getNotificationRecipients(
 async function createPropertyImpactRecords(
   orgId: string,
   stormEventId: string,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   storm: any
 ): Promise<void> {
   // NOTE: The property_impacts model requires extensive data including
@@ -377,6 +378,7 @@ function getRecommendedAction(storm: any): string {
   return "Monitor for damage reports from homeowners";
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function haversineMiles(
   p1: { lat: number; lng: number },
   p2: { lat: number; lng: number }

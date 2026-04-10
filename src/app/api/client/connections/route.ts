@@ -10,6 +10,7 @@ import prisma from "@/lib/prisma";
  * GET /api/client/connections
  * Returns the list of pros that a client is connected to
  */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export async function GET(req: NextRequest) {
   try {
     const { userId } = await auth();

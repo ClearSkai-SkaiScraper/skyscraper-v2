@@ -17,6 +17,7 @@ import { getResend } from "@/lib/email/resend";
 import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export const POST = withAuth(async (req: NextRequest, { orgId, userId }) => {
   try {
     const body = await req.json();

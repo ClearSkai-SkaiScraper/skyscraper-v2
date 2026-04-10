@@ -8,7 +8,6 @@ export const dynamic = "force-dynamic";
 import { auth, currentUser } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 
-import { logger } from "@/lib/logger";
 
 export async function GET() {
   try {
@@ -27,7 +26,7 @@ export async function GET() {
       lastName: user?.lastName,
       createdAt: user?.createdAt,
     });
-  } catch (error) {
+  } catch (_error) {
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }

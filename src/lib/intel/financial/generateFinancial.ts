@@ -16,7 +16,9 @@ export interface FinancialAnalysis {
 }
 
 export async function generateFinancialAnalysis(
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   claim_id: string,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   orgId: string
 ): Promise<FinancialAnalysis> {
   logger.warn('generateFinancialAnalysis is a stub and needs implementation');

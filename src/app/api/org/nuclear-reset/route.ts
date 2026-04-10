@@ -261,7 +261,7 @@ export const GET = withAuth(async (req: NextRequest, { userId }) => {
         orgName: m.Org?.name || "DELETED",
       })),
     });
-  } catch (error) {
+  } catch (_error) {
     return NextResponse.json({ ok: false, error: "Internal server error" }, { status: 500 });
   }
 });

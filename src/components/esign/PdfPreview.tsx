@@ -23,6 +23,7 @@ interface PdfPreviewProps {
 export function PdfPreview({ pdfUrl, title }: PdfPreviewProps) {
   const [numPages, setNumPages] = useState<number>(0);
   const [pageNumber, setPageNumber] = useState<number>(1);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [loading, setLoading] = useState(true);
 
   function onDocumentLoadSuccess({ numPages }: { numPages: number }) {

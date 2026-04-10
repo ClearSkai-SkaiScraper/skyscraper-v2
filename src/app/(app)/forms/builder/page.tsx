@@ -1,9 +1,7 @@
 "use client";
 
-import { useUser } from "@clerk/nextjs";
 import { Edit, Eye, FileText,Plus, Trash2 } from "lucide-react";
-import { useRouter } from "next/navigation";
-import { useEffect,useState } from "react";
+import { useState } from "react";
 
 import { Button } from "@/components/ui/button";
 

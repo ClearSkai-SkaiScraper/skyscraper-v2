@@ -322,6 +322,7 @@ export class JobNimbusMigrationEngine extends BaseMigrationEngine {
 
           await this.recordItem("DOCUMENT", file.jnid, jobItem.internalId || "");
           this.stats.documentsImported++;
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
           docCount++;
         }
 

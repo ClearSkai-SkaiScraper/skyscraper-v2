@@ -70,6 +70,7 @@ export async function generateScope(
 ): Promise<Scope> {
   try {
     const totalArea = slopes.reduce((sum, slope) => sum + (slope.area || 0), 0);
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const totalSquares = Math.ceil(totalArea / 100); // Convert sq ft to squares
     const maxPitch = Math.max(...slopes.map((s) => s.pitch || 0));
 
@@ -318,6 +319,7 @@ Format as clear sections with headers.`;
 /**
  * Generate final summary for packets and adjusters
  */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export function generateFinalSummary(scope: Scope, narrative: string, rebuttals: string): string {
   const itemsList = scope.items
     .map((item) => `- ${item.description}: ${item.quantity} ${item.unit}`)

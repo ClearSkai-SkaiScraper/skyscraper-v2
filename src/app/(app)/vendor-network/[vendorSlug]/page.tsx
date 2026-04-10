@@ -42,7 +42,7 @@ export default async function VendorDetailPage({ params }: Props) {
         vendor_programs: { where: { isActive: true }, take: 50 },
       },
     });
-  } catch (err) {
+  } catch (_err) {
     // Prisma query error — vendor not found
     return notFound();
   }

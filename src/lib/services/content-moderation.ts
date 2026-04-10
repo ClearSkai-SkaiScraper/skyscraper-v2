@@ -105,6 +105,7 @@ export function moderateContent(content: string): ModerationResult {
   }
 
   const violations: ModerationViolation[] = [];
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const contentLower = content.toLowerCase();
 
   // Check for profanity

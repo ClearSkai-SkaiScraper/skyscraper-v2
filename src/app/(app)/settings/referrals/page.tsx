@@ -60,6 +60,7 @@ export default async function ReferralsSettingsPage() {
     );
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [rewards, referrals, Org] = await Promise.all([
     prisma.referral_rewards.findMany({
       where: { org_id: orgId },

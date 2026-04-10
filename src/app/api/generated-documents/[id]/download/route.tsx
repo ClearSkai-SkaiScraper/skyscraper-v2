@@ -20,6 +20,7 @@ import { RebuttalPDFDocument } from "@/lib/pdf/rebuttalRenderer";
 import { SupplementPDFDocument } from "@/lib/pdf/supplementRenderer";
 import { getOrgBranding, sanitizeFilename } from "@/lib/pdf/utils";
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export const GET = withAuth(async (req: NextRequest, { orgId, userId }, routeParams) => {
   try {
     const { id } = await routeParams!.params;

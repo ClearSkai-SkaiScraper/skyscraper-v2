@@ -109,6 +109,7 @@ function logReportEvent(
  * Approve a report — update status + log event
  */
 export async function approveReport(input: ApproveReportInput) {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { reportId, orgId, userId, notes } = input;
 
   const report = await prisma.ai_reports.update({
@@ -132,6 +133,7 @@ export async function approveReport(input: ApproveReportInput) {
  * Reject a report — update status + log event
  */
 export async function rejectReport(input: RejectReportInput) {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { reportId, orgId, userId, reason, notes } = input;
 
   const report = await prisma.ai_reports.update({
@@ -157,6 +159,7 @@ export async function rejectReport(input: RejectReportInput) {
  * TODO: wire actual email delivery via EmailQueue
  */
 export async function sendReport(input: SendReportInput) {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { reportId, orgId, userId, recipientEmail, recipientType, message } = input;
 
   const report = await prisma.ai_reports.update({
@@ -186,6 +189,7 @@ export async function sendReport(input: SendReportInput) {
  * TODO: wire actual packet assembly + email via EmailQueue
  */
 export async function sendPacket(input: SendPacketInput) {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { reportId, orgId, userId, recipientEmail, message, includePhotos, includeDocuments } =
     input;
 

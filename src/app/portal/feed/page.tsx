@@ -290,6 +290,7 @@ export default function FeedPage() {
   // Stats
   const unreadCount = activities.filter((a) => !a.isRead).length;
   const messageCount = activities.filter((a) => a.type === "message").length;
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const updateCount = activities.filter((a) => a.type === "status" || a.type === "update").length;
 
   if (loading) {

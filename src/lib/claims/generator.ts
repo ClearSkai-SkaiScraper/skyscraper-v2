@@ -7,6 +7,7 @@
 import * as Sentry from "@sentry/nextjs";
 import {
   AlignmentType,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   convertInchesToTwip,
   Document,
   HeadingLevel,
@@ -913,6 +914,7 @@ async function generateInsuranceDOCX(
 }
 
 // ========== RETAIL VERSION (10-Page Structure) ==========
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 async function generateRetailDOCX(data: ClaimPacketData, includeWeather: boolean): Promise<Blob> {
   const sections: Paragraph[] = [];
 

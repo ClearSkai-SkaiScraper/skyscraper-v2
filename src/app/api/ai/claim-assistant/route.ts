@@ -19,6 +19,7 @@ const claimAssistantSchema = z.object({
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export const POST = withAuth(async (request, { userId, orgId }) => {
   try {
     // Rate limit AI requests

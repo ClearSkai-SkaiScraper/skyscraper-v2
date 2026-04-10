@@ -68,7 +68,7 @@ export function ImageLibraryCard({ onSelectImage, onSelectAsBackground }: ImageL
       const { image } = await res.json();
       setImages((prev) => [image, ...prev]);
       toast.success("Image uploaded to library");
-    } catch (_error) {
+    } catch (__error) {
       toast.error("Failed to upload image");
     } finally {
       setUploading(false);
@@ -87,7 +87,7 @@ export function ImageLibraryCard({ onSelectImage, onSelectAsBackground }: ImageL
         setImages((prev) => prev.filter((img) => img.id !== imageId));
         toast.success("Image deleted");
       }
-    } catch (_error) {
+    } catch (__error) {
       toast.error("Failed to delete image");
     }
   }, []);

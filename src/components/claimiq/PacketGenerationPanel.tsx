@@ -74,6 +74,7 @@ export function PacketGenerationPanel({ claimId, className }: PacketGenerationPa
     readiness,
     selectedSections,
     startPacketGeneration,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     updatePacketProgress,
     completePacketGeneration,
     failPacketGeneration,

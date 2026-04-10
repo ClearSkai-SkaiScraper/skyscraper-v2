@@ -180,7 +180,7 @@ export default function CommunityHubPage() {
             setProfileAvatar(data.profile.avatarUrl);
           }
         }
-      } catch (e) {
+      } catch (_e) {
         // Silently fall back to Clerk avatar
       }
     }
@@ -189,6 +189,7 @@ export default function CommunityHubPage() {
 
   // Resolved avatar: prefer DB uploaded photo, fall back to Clerk
   const resolvedAvatar = profileAvatar || user?.imageUrl || undefined;
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [loadingPosts, setLoadingPosts] = useState(false);
   const [newPostContent, setNewPostContent] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
@@ -395,7 +396,7 @@ export default function CommunityHubPage() {
         const data = await res.json();
         setContentWarning(data.warning || null);
       }
-    } catch (error) {
+    } catch (_error) {
       // Silently fail moderation check
     }
   }, []);
@@ -1341,7 +1342,7 @@ export default function CommunityHubPage() {
                                   } else {
                                     throw new Error("Failed to accept");
                                   }
-                                } catch (error) {
+                                } catch (_error) {
                                   toast.error("Failed to accept invitation");
                                 }
                               }}
@@ -1366,7 +1367,7 @@ export default function CommunityHubPage() {
                                       prev.filter((i) => i.id !== invite.id)
                                     );
                                   }
-                                } catch (error) {
+                                } catch (_error) {
                                   toast.error("Failed to decline invitation");
                                 }
                               }}

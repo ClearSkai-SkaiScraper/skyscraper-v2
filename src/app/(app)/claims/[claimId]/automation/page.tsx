@@ -50,7 +50,7 @@ export default function ClaimAutomationPage({ params }: AutomationPageProps) {
       });
       toast.success("Alert dismissed");
       void fetchIntelligence();
-    } catch (error) {
+    } catch (_error) {
       toast.error("Failed to dismiss alert");
     }
   };
@@ -64,7 +64,7 @@ export default function ClaimAutomationPage({ params }: AutomationPageProps) {
       });
       toast.success("Recommendation accepted");
       void fetchIntelligence();
-    } catch (error) {
+    } catch (_error) {
       toast.error("Failed to accept recommendation");
     }
   };
@@ -77,7 +77,7 @@ export default function ClaimAutomationPage({ params }: AutomationPageProps) {
         body: JSON.stringify({ recommendationId }),
       });
       void fetchIntelligence();
-    } catch (error) {
+    } catch (_error) {
       toast.error("Failed to dismiss recommendation");
     }
   };
@@ -91,7 +91,7 @@ export default function ClaimAutomationPage({ params }: AutomationPageProps) {
       });
       toast.success("Task completed!");
       void fetchIntelligence();
-    } catch (error) {
+    } catch (_error) {
       toast.error("Failed to complete task");
     }
   };

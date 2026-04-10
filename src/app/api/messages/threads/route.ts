@@ -102,6 +102,7 @@ async function resolveClientRecord(userId: string) {
   return null;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export const GET = withAuth(async (req: NextRequest, { orgId, userId }) => {
   const startTime = Date.now();
   try {

@@ -119,7 +119,7 @@ export default function CoverPageBuilderPage() {
         setData((prev) => ({ ...prev, backgroundUrl: url }));
       }
       toast.success(`${type === "logo" ? "Logo" : "Background"} uploaded!`);
-    } catch (e) {
+    } catch (_e) {
       toast.error("Failed to upload file");
     } finally {
       setUploading(null);

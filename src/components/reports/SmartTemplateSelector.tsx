@@ -126,7 +126,7 @@ export function SmartTemplateSelector({
             context: context as any,
           });
         }
-      } catch (err) {
+      } catch (_err) {
         setError("Could not load recommendations");
         setRecommendations([]);
       } finally {

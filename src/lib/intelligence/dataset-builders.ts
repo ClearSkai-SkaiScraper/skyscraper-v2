@@ -855,7 +855,9 @@ export async function buildExternalDataset(
     state: string;
     zip: string;
   },
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   roofType: string | null,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   lossType: string
 ): Promise<ExternalDataset> {
   // NOTE: This is a simplified version.

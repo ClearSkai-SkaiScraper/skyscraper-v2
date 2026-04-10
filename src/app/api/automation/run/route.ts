@@ -14,6 +14,7 @@ import { withAuth } from "@/lib/auth/withAuth";
 import { runSkaiAutomations } from "@/lib/intel/automation/engine";
 import { logger } from "@/lib/logger";
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export const POST = withAuth(async (req: NextRequest, { userId, orgId }) => {
   try {
     const body = await req.json();

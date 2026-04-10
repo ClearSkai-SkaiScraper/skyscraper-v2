@@ -1,7 +1,6 @@
 import { currentUser } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 
-import { guardedFetch } from "@/lib/guardedFetch";
 
 import { getJobsForMap } from "./actions";
 import JobsMapClient from "./JobsMapClient";

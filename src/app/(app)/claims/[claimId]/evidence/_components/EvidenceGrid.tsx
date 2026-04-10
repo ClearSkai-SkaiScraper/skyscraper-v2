@@ -29,6 +29,7 @@ interface EvidenceGridProps {
   onAssetUpdated?: () => void;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export function EvidenceGrid({ assets, claimId, onAssetUpdated }: EvidenceGridProps) {
   const [selectedAsset, setSelectedAsset] = useState<EvidenceAsset | null>(null);
   const [thumbnailUrls, setThumbnailUrls] = useState<Record<string, string>>({});

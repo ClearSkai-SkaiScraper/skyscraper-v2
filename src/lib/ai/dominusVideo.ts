@@ -60,6 +60,7 @@ interface VideoStoryboard {
  */
 async function _generateVideoScriptInternal(input: VideoScriptInput): Promise<VideoScript> {
   const {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     leadId,
     address,
     photos,

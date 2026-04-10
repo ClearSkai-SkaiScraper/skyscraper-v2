@@ -7,6 +7,7 @@ import prisma from "@/lib/prisma";
 // Prisma singleton imported from @/lib/db/prisma
 
 export async function TasksToday() {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { orgId, userId } = await getCurrentUserPermissions();
 
   if (!orgId) {

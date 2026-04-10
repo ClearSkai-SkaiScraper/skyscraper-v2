@@ -36,6 +36,7 @@ type PublicSubmitPayload = {
  * - public_leads
  * - contractor_profiles (should be ContractorProfile)
  */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export async function handlePublicSubmit(payload: PublicSubmitPayload) {
   logger.warn('[public-intake] Feature disabled - missing backing Prisma models (customer_accounts, customer_properties, public_leads)');
   

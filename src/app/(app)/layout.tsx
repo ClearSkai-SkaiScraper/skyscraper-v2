@@ -96,6 +96,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
 
     if (orgResult.ok) {
       orgId = orgResult.org.id;
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       userId = orgResult.userId;
     } else {
       // Not authenticated or error - that's fine, render with temp org

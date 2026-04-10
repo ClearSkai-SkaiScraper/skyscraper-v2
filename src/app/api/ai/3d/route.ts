@@ -99,6 +99,7 @@ async function POST_INNER(request: NextRequest, ctx: AiBillingContext) {
  *
  * Returns available 3D vision capabilities
  */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export const GET = withAuth(async (_req, { userId }) => {
   try {
     return NextResponse.json({
@@ -121,7 +122,7 @@ export const GET = withAuth(async (_req, { userId }) => {
         },
       },
     });
-  } catch (error) {
+  } catch (_error) {
     return NextResponse.json({ success: false, error: "Internal server error" }, { status: 500 });
   }
 });

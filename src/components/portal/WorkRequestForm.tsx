@@ -40,6 +40,7 @@ const URGENCY_LEVELS = [
 ];
 
 export default function WorkRequestForm({
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   clientId,
   connectedContractors,
   clientEmail,

@@ -1001,6 +1001,7 @@ function StepFiveDateOfLoss(props: {
               <button
                 type="button"
                 onClick={() => {
+                  // eslint-disable-next-line @typescript-eslint/no-unused-vars
                   props.photos.forEach((_, i) => props.removePhoto(0));
                 }}
                 className="text-xs text-red-600 hover:text-red-700"

@@ -30,6 +30,7 @@ export async function POST(req: NextRequest) {
     const body = JSON.parse(rawBody);
 
     // Validate webhook (provider-specific — GAF QuickMeasure format)
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { orderId, externalId, status, reportUrl, measurements, provider } = body;
 
     if (!orderId && !externalId) {

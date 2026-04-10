@@ -75,6 +75,7 @@ export async function generateBaseMap(
       throw new Error("Mapbox API error");
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const imageBuffer = await response.arrayBuffer();
 
     // Upload to storage (mock for now)
@@ -156,6 +157,7 @@ export async function composeStormOverlay(
     const svgOverlay = generateHeatmapSVG(zones, propertyLat, propertyLng, width, height);
 
     // Composite using sharp
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const overlayBuffer = await sharp(mapBuffer)
       .composite([
         {

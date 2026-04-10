@@ -244,6 +244,7 @@ async function getRetailMarkers(orgId: string, token: string): Promise<JobMarker
   }
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 async function getVendorMarkers(orgId: string | null): Promise<JobMarker[]> {
   try {
     const vendorLocations = await prisma.vendorLocation.findMany({

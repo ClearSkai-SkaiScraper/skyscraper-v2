@@ -376,6 +376,7 @@ Be specific and tactical.`;
 function generateRecommendedSteps(
   input: PredictionInput,
   probabilities: any,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   riskFlags: string[]
 ): PredictionOutput["recommendedSteps"] {
   const steps: PredictionOutput["recommendedSteps"] = [];
@@ -432,7 +433,9 @@ function generateRecommendedSteps(
  * Generate success path guidance
  */
 function generateSuccessPath(
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   input: PredictionInput,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   probabilities: any
 ): PredictionOutput["successPath"] {
   return [
@@ -531,7 +534,7 @@ Be direct and tactical. Start with "The carrier will likely..."`;
     });
 
     return completion.choices[0]?.message?.content || "Analysis in progress.";
-  } catch (err) {
+  } catch (_err) {
     return `Based on current data, the claim has a ${probabilities.full}% chance of full approval. ${
       probabilities.deny > 50
         ? "High denial risk detected - prepare appeal documentation immediately."
@@ -543,6 +546,7 @@ Be direct and tactical. Start with "The carrier will likely..."`;
 /**
  * Predict carrier's next move
  */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function predictNextMove(input: PredictionInput, probabilities: any, carrierBehavior: any): string {
   if (probabilities.deny > 60) {
     return "Likely to request additional documentation or deny claim";

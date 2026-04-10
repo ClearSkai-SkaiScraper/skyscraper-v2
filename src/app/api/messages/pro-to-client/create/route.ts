@@ -20,6 +20,7 @@ export const dynamic = "force-dynamic";
  *  - subject?: string  (optional thread subject)
  *  - claimId?: string  (optional claim to attach to thread)
  */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export const POST = withAuth(async (req: NextRequest, { orgId, userId }) => {
   try {
     const body = await req.json();

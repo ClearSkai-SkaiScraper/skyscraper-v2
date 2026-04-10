@@ -37,6 +37,7 @@ export function TradesSubPageShell({
   actions,
 }: TradesSubPageShellProps) {
   const [isFullView, setIsFullView] = useState(false);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const router = useRouter();
 
   const content = (

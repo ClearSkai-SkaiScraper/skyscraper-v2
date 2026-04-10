@@ -16,6 +16,7 @@ export const dynamic = "force-dynamic";
 /*  GET — connection status                                            */
 /* ------------------------------------------------------------------ */
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export const GET = withAuth(async (req: NextRequest, { orgId, userId }) => {
   try {
     const conn = await prisma.quickbooks_connections.findUnique({
@@ -64,6 +65,7 @@ export const GET = withAuth(async (req: NextRequest, { orgId, userId }) => {
 /*  POST — disconnect                                                  */
 /* ------------------------------------------------------------------ */
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export const POST = withAuth(async (req: NextRequest, { orgId, userId }) => {
   try {
     const body = await req.json();

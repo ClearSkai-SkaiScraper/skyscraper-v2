@@ -11,6 +11,7 @@ export const dynamic = "force-dynamic";
  * Returns all employees for the current user's company.
  * Used by /trades/company/employees page ("Manage Team").
  */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export const GET = withAuth(async (req: NextRequest, { userId, orgId }) => {
   try {
     // Find the user's company membership

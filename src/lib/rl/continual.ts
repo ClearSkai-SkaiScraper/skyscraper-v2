@@ -546,6 +546,7 @@ export class ContinualRL {
   /**
    * Freeze task parameters
    */
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   private freezeTaskParameters(taskId: string, params: number[], mask: PackNetMask): void {
     this.optimalParameters.set(taskId, [...params]);
   }
@@ -558,6 +559,7 @@ export class ContinualRL {
     experiences: ExperienceMemory[]
   ): number[] {
     const gradient = new Array(column.parameters.length).fill(0);
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const epsilon = 1e-5;
 
     for (const exp of experiences.slice(0, 32)) {
@@ -653,6 +655,7 @@ export class ContinualRL {
   private evaluatePolicy(params: number[], experiences: ExperienceMemory[]): number {
     let totalReward = 0;
     for (const exp of experiences) {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const predicted = this.forward(params, exp.state);
       totalReward += exp.reward;
     }
@@ -665,6 +668,7 @@ export class ContinualRL {
   ): number {
     let totalReward = 0;
     for (const exp of experiences) {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const predicted = this.forwardProgressive(column, exp.state);
       totalReward += exp.reward;
     }

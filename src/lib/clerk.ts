@@ -8,7 +8,7 @@ export function getClerkIdentity(req: any) {
       orgId: (auth as any).orgId || null,
       sessionId: auth.sessionId || null,
     };
-  } catch (e) {
+  } catch (_e) {
     return { userId: null, orgId: null, sessionId: null };
   }
 }

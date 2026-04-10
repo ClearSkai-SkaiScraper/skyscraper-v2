@@ -255,6 +255,7 @@ export async function detectCodeUpgrades(
 
     if (city.toLowerCase().includes("phoenix")) {
       // Phoenix has heat-related requirements
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const hasReflectiveRoof = existingScope.some(
         (item) =>
           item.description.toLowerCase().includes("cool roof") ||

@@ -9,6 +9,7 @@ import { logger } from "@/lib/logger";
 // =====================================================
 
 const IS_PROD = process.env.NODE_ENV === "production";
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const IS_VERCEL = !!process.env.VERCEL;
 
 // ===== BUILD-TIME CLERK KEY VALIDATION =====

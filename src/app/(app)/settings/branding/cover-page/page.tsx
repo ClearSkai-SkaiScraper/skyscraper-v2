@@ -187,7 +187,7 @@ export default function AdvancedCoverPageBuilder() {
       const { url } = await res.json();
       setBackgroundImage(url);
       toast.success("Background uploaded!");
-    } catch (_e) {
+    } catch (__e) {
       toast.error("Failed to upload background");
     } finally {
       setUploading(false);

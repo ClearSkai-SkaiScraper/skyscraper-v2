@@ -20,7 +20,6 @@ import { useState } from "react";
 
 import ContractorSocialCard from "@/components/contractor/ContractorSocialCard";
 import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 // Contact Type Enum (to be added to schema)
 type ContactType =

@@ -11,6 +11,7 @@ import { logger } from "@/lib/logger";
  * Get a single damage assessment with all findings
  */
 export const GET = withOrgScope(
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   async (req: Request, { userId, orgId }, context: { params: Promise<{ id: string }> }) => {
     try {
       const { id } = await context.params;
@@ -46,6 +47,7 @@ export const GET = withOrgScope(
  * Delete a damage assessment
  */
 export const DELETE = withOrgScope(
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   async (req: Request, { userId, orgId }, context: { params: Promise<{ id: string }> }) => {
     try {
       const { id } = await context.params;

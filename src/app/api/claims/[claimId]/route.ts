@@ -149,7 +149,7 @@ export const PATCH = withOrgScope(
       // 🛡️ RBAC: Check permission to edit claims
       try {
         await requirePermission("claims:edit");
-      } catch (error) {
+      } catch (_error) {
         return createForbiddenResponse("You don't have permission to edit claims", {
           requiredPermission: "claims:edit",
         });
@@ -300,7 +300,7 @@ export const DELETE = withOrgScope(
       // 🛡️ RBAC: Check permission to delete claims
       try {
         await requirePermission("claims:delete");
-      } catch (error) {
+      } catch (_error) {
         return createForbiddenResponse("You don't have permission to delete claims", {
           requiredPermission: "claims:delete",
         });

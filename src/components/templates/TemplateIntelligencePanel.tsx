@@ -20,8 +20,10 @@ interface TemplateIntelligenceProps {
 }
 
 export function TemplateIntelligencePanel({
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   templateSlug,
   hasHtml,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   previewReady,
   generateReady,
   batchReady,

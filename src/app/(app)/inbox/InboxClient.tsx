@@ -1,10 +1,12 @@
 "use client";
 
 import {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   AlertCircle,
   Briefcase,
   CheckCheck,
   FileText,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   Filter,
   Hammer,
   Mail,

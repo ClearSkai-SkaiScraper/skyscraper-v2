@@ -15,6 +15,7 @@ export default function PortalSettingsPage() {
   const [pushNotifications, setPushNotifications] = useState(true);
   const [marketingEmails, setMarketingEmails] = useState(false);
   const [loading, setLoading] = useState(true);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
 

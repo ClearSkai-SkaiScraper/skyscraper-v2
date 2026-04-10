@@ -425,6 +425,7 @@ export default function Builder() {
   };
 
   /** Quick DOL Pull — fetch weather verification for the selected claim */
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const handleQuickDolPull = async () => {
     const claimId = selection.resolvedClaimId || selection.claimId;
     if (!claimId) {

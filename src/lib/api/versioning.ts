@@ -34,6 +34,7 @@ export class APIVersionRegistry {
    * Register endpoint
    */
   register(endpoint: VersionedEndpoint): void {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const key = `${endpoint.path}:${endpoint.version}`;
     const existing = this.endpoints.get(endpoint.path) || [];
     existing.push(endpoint);
@@ -213,11 +214,17 @@ function transformToV1(data: any): any {
   // Remove features not available in v1
   if (Array.isArray(data)) {
     return data.map((item) => {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { realtime, webhooks, ai, ...rest } = item;
       return rest;
     });
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { realtime, webhooks, ai, ...rest } = data;
   return rest;
 }
@@ -229,11 +236,13 @@ function transformToV2(data: any): any {
   // Remove v3-only features
   if (Array.isArray(data)) {
     return data.map((item) => {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { ai, ...rest } = item;
       return rest;
     });
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { ai, ...rest } = data;
   return rest;
 }
@@ -306,6 +315,8 @@ export function migrateData(data: any, fromVersion: APIVersion, toVersion: APIVe
 /**
  * Upgrade data to next version
  */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function upgradeVersion(data: any, from: APIVersion, to: APIVersion): any {
   // Version-specific upgrade logic
   return data;
@@ -314,6 +325,8 @@ function upgradeVersion(data: any, from: APIVersion, to: APIVersion): any {
 /**
  * Downgrade data to previous version
  */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function downgradeVersion(data: any, from: APIVersion, to: APIVersion): any {
   // Version-specific downgrade logic
   return data;

@@ -148,7 +148,7 @@ export const GET = withAuth(async (req: NextRequest, { orgId, userId }) => {
     }
 
     return NextResponse.json({ clients: clientsWithStatus });
-  } catch (error) {
+  } catch (_error) {
     log.error("[clients/connections] Failed to fetch", { error: "Internal server error" });
     return NextResponse.json({ error: "Failed to fetch clients" }, { status: 500 });
   }
@@ -278,7 +278,7 @@ export const POST = withAuth(async (req: NextRequest, { orgId, userId }) => {
       status: "created",
       emailSent,
     });
-  } catch (error) {
+  } catch (_error) {
     log.error("[clients/connections] Failed to invite", { error: "Internal server error" });
     return NextResponse.json({ error: "Failed to invite client" }, { status: 500 });
   }

@@ -64,6 +64,7 @@ export default async function ClientPortalPage() {
   let needsOnboarding = false;
 
   // Check Clerk metadata for user type hints (before auto-creating as client)
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const clerkUserType = user.publicMetadata?.userType as string | undefined;
 
   // If no identity exists, auto-create client registry entry.
@@ -113,7 +114,7 @@ export default async function ClientPortalPage() {
           logger.error("[PORTAL] Failed to sync to Clerk:", syncError);
           // Non-fatal - cookie fallback will work
         }
-      } catch (e) {
+      } catch (_e) {
         // May already exist, try to fetch again
         identity = await getUserIdentity(user.id);
       }
@@ -217,6 +218,7 @@ export default async function ClientPortalPage() {
       ]);
       projectCount = workRequests;
       messageCount = threads;
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       bidCount = connections;
 
       // Fetch recent work requests for the "My Projects" card
@@ -244,6 +246,7 @@ export default async function ClientPortalPage() {
 
   // Fetch real local contractors from the DB
   try {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const clientCity = client && "city" in client ? (client as { city: string | null }).city : null;
     const clientState =
       client && "state" in client ? (client as { state: string | null }).state : null;
@@ -329,7 +332,7 @@ export default async function ClientPortalPage() {
         })
         .catch(() => 0);
     }
-  } catch (e) {
+  } catch (_e) {
     // non-fatal
   }
 

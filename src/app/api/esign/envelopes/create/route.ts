@@ -30,6 +30,7 @@ interface CreateEnvelopeRequest {
   requiredSignerCount?: number;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export const POST = withAuth(async (req: NextRequest, { orgId, userId }) => {
   try {
     const body: CreateEnvelopeRequest = await req.json();

@@ -99,7 +99,7 @@ async function handlePOST(
   let json: any;
   try {
     json = JSON.parse(content);
-  } catch (parseError) {
+  } catch (_parseError) {
     log.error("[damage-builder] Failed to parse AI response", { content });
     return errors.internal("AI returned invalid response format.");
   }

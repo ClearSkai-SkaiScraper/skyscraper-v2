@@ -33,6 +33,7 @@ export interface LineItem {
  * Parse CSV content
  * Stub implementation
  */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export function parseCSV(content: string): ParseResult {
   logger.debug("[CSVParser] Stub: Would parse CSV content");
   return {
@@ -47,6 +48,7 @@ export function parseCSV(content: string): ParseResult {
 /**
  * Parse CSV file
  */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export async function parseCSVFile(file: File | Blob): Promise<ParseResult> {
   logger.debug("[CSVParser] Stub: Would parse CSV file");
   return parseCSV("");

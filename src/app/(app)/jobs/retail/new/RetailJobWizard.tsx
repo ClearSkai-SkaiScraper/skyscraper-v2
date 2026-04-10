@@ -72,6 +72,7 @@ const WORK_TYPES = [
   { value: "other", label: "📋 Other" },
 ];
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export function RetailJobWizard({ orgId }: Props) {
   const router = useRouter();
   const [step, setStep] = useState<Step>(1);

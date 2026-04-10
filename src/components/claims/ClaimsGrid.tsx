@@ -102,6 +102,7 @@ export function ClaimsGrid({ claims, publicMode }: { claims: ClaimItem[]; public
             key={claim.id}
             href={linkHref}
             className="group relative overflow-hidden rounded-2xl border border-[color:var(--border)] bg-[color:var(--surface-1)] p-6 shadow-sm transition-all hover:border-[color:var(--border-hover)] hover:shadow-md"
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
             onClick={(e) => {
               // 🔥 DEBUG: Log click event
               // eslint-disable-next-line no-console

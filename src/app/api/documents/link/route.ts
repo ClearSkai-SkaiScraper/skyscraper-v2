@@ -14,7 +14,6 @@ export const dynamic = "force-dynamic";
 import { NextRequest } from "next/server";
 
 import { apiError, apiOk } from "@/lib/apiError";
-import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 import { safeOrgContext } from "@/lib/safeOrgContext";
 

@@ -16,6 +16,7 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
   try {
     const auth = await requireAuth();
     if (auth instanceof NextResponse) return auth;
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { orgId, userId } = auth;
 
     const jobId = params.id;

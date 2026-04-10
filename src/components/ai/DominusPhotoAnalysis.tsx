@@ -30,6 +30,7 @@ interface DominusPhotoAnalysisProps {
   photos?: any[];
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export function DominusPhotoAnalysis({ images, photos }: DominusPhotoAnalysisProps) {
   const [selectedImage, setSelectedImage] = useState<ImageAnalysis | null>(null);
 

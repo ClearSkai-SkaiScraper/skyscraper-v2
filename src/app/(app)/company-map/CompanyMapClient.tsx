@@ -87,6 +87,7 @@ export default function CompanyMapClient({ locations }: { locations: PropertyLoc
           markerEl.style.boxShadow = "0 2px 4px rgba(0,0,0,0.3)";
           markerEl.style.cursor = "pointer";
 
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
           const marker = new mapboxgl.Marker(markerEl)
             .setLngLat([loc.lng, loc.lat])
             .setPopup(

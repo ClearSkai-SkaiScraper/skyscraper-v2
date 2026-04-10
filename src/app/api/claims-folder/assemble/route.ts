@@ -380,6 +380,7 @@ function buildDemoFolder(claimId: string): Record<string, unknown> {
   };
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export const POST = withAuth(async (request: NextRequest, { userId }) => {
   try {
     const body = await request.json();

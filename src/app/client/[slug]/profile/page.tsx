@@ -122,6 +122,7 @@ export default function ClientProfilePage() {
       });
 
       if (res.ok) {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const data = await res.json();
         toast.success("Profile saved successfully!");
         setProfile({ ...profile, ...formData } as ProfileData);
@@ -155,6 +156,7 @@ export default function ClientProfilePage() {
     toast.success("Profile link copied to clipboard!");
   };
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const openShareableLink = () => {
     window.open(getShareableLink(), "_blank");
   };

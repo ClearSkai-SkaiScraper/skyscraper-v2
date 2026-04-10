@@ -91,7 +91,9 @@ export async function checkRateLimit(
  * Consume rate limit (call after successful request)
  */
 export async function consumeRateLimit(
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   userId: string,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   endpoint: keyof typeof RATE_LIMITS
 ): Promise<void> {
   // Already handled in checkRateLimit

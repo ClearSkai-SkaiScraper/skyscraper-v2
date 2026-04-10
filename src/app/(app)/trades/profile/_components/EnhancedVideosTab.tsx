@@ -33,6 +33,7 @@ interface EnhancedVideosTabProps {
 }
 
 export default function EnhancedVideosTab({
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   userId,
   isOwnProfile,
   videos,

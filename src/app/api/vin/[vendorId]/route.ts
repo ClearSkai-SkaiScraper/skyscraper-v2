@@ -16,6 +16,8 @@ export async function GET(request: NextRequest, { params }: { params: { vendorId
   try {
     const auth = await requireAuth();
     if (auth instanceof NextResponse) return auth;
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { orgId, userId } = auth;
 
     const vendor = await prisma.vendor.findFirst({

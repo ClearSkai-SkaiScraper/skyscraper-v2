@@ -1,7 +1,6 @@
 export const dynamic = "force-dynamic";
 import { NextRequest, NextResponse } from "next/server";
 
-import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 import { safeOrgContext } from "@/lib/safeOrgContext";
 
@@ -13,6 +12,7 @@ import { safeOrgContext } from "@/lib/safeOrgContext";
  * generate actionable insights about highest-impact areas, trending perils,
  * and proactive recommendations.
  */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export async function POST(req: NextRequest) {
   try {
     const ctx = await safeOrgContext();
@@ -97,6 +97,7 @@ export async function POST(req: NextRequest) {
             where: { id: { in: propertyIds } },
             select: { street: true, city: true, state: true, zipCode: true },
           });
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
           claimAddresses = properties.map((p: any) =>
             `${p.street || ""}, ${p.city || ""}, ${p.state || ""} ${p.zipCode || ""}`.trim()
           );

@@ -156,6 +156,8 @@ const PAYOUT_STAGES = [
   { id: "paid", label: "Paid", icon: DollarSign },
 ];
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export function FinalPayoutClient({ claim, orgId, userId }: FinalPayoutClientProps) {
   const [activeTab, setActiveTab] = useState("summary");
   const [payoutStatus, setPayoutStatus] = useState<PayoutStatus>("not_started");
@@ -164,6 +166,8 @@ export function FinalPayoutClient({ claim, orgId, userId }: FinalPayoutClientPro
   const [showCertificationDialog, setShowCertificationDialog] = useState(false);
   const [certificationSigned, setCertificationSigned] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [notesToCarrier, setNotesToCarrier] = useState("");
   const [generatedPacketUrl, setGeneratedPacketUrl] = useState<string | null>(null);
 

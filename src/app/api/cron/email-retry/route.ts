@@ -103,7 +103,7 @@ export async function GET(req: Request) {
     logger.error("[CRON:EMAIL_RETRY] Fatal error:", error?.message || error);
     try {
       Sentry.captureException(error, { tags: { component: "email-retry-cron" } });
-    } catch (_) {}
+    } catch (__) {}
     return NextResponse.json({ error: error?.message || String(error) }, { status: 500 });
   }
 }

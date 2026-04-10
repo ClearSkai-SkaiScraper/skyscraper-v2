@@ -73,6 +73,7 @@ export async function fetchWeatherData(claimId: string): Promise<WeatherCauseOfL
     }
 
     // DOL confidence label for narrative
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const dolConfLabel =
       stormEvidence.dolConfidence >= 0.8
         ? "high confidence"
@@ -401,6 +402,7 @@ export async function fetchCodeData(claimId: string): Promise<CodeComplianceData
 
     // Build code requirements inline (simplified version)
     const state = claim.properties.state || "AZ";
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const yearBuilt = claim.properties.yearBuilt || 2000;
 
     // Basic code requirements for roofing

@@ -68,7 +68,7 @@ export function PdfTemplateSelect(props: {
           primary.length > 0 || !reportType ? primary : await fetchTemplates(`/api/templates/list`);
 
         if (!cancelled) setTemplates(resolved);
-      } catch (e) {
+      } catch (_e) {
         if (!cancelled) setTemplates([]);
       } finally {
         if (!cancelled) setLoading(false);

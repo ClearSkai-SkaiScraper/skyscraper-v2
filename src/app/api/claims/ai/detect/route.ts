@@ -4,10 +4,10 @@ import { NextRequest, NextResponse } from "next/server";
 
 import { AIModels, callOpenAI } from "@/lib/ai/client";
 import { withAuth } from "@/lib/auth/withAuth";
-import { logger } from "@/lib/logger";
 import { requirePermission } from "@/lib/permissions";
 import { checkRateLimit, getClientIdentifier } from "@/lib/security/ratelimit";
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export const POST = withAuth(async (req: NextRequest, { orgId, userId }) => {
   try {
     const identifier = getClientIdentifier(req, userId);
@@ -92,7 +92,7 @@ export const POST = withAuth(async (req: NextRequest, { orgId, userId }) => {
     }
 
     return NextResponse.json({ ok: true, results });
-  } catch (error) {
+  } catch (_error) {
     // Sentry captured via wrapper; still return structured error
     return NextResponse.json({ ok: false, error: "Internal server error" }, { status: 500 });
   }

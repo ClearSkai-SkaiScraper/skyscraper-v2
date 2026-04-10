@@ -1,6 +1,5 @@
 "use client";
 
-import { formatDistanceToNow } from "date-fns";
 import { Calendar,Eye, MousePointerClick, QrCode, TrendingUp } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
@@ -19,6 +18,7 @@ interface QrStatsCardProps {
   batchJobId: string;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export function QrStatsCard({ stats, batchJobId }: QrStatsCardProps) {
   const scanRate = stats.totalScans > 0 ? ((stats.uniqueScans / stats.totalScans) * 100).toFixed(1) : "0";
   const trend = stats.recentScans > 0 ? "up" : "neutral";

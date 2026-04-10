@@ -425,6 +425,7 @@ function ConnectionsSection() {
     );
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const hasAny = connections.length > 0 || pendingConnections.length > 0;
 
   return (
@@ -599,6 +600,7 @@ export default function ClientProfilePage() {
   });
 
   // Calculate profile completion using single source of truth
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { percent: profileCompletion, missing: profileMissing } = calculateClientStrength({
     firstName: profile.firstName,
     lastName: profile.lastName,

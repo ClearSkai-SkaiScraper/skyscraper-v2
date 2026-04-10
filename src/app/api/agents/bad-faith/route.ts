@@ -57,6 +57,7 @@ export const POST = withAuth(async (request, { userId, orgId }) => {
       ? Math.floor((Date.now() - new Date(claim.dateOfLoss).getTime()) / (1000 * 60 * 60 * 24))
       : null;
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const estimateTotal =
       claim.estimates?.reduce((sum: number, e: any) => sum + (e.total || 0), 0) || 0;
     const supplementCount = claim.supplements?.length || 0;

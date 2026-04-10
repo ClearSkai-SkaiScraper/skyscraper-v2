@@ -24,6 +24,7 @@ const createNoticeSchema = z.object({
  * GET /api/hoa/notices
  * List all HOA notice packs for the organization
  */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export const GET = withOrgScope(async (request: Request, { userId, orgId }) => {
   try {
     const { searchParams } = new URL(request.url);

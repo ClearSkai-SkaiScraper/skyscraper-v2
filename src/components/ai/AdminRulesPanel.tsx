@@ -1,6 +1,6 @@
 "use client";
 
-import { AlertCircle, CheckCircle, Code, Eye, Plus, Save, Trash2, XCircle } from "lucide-react";
+import { Code, Eye, Plus, Trash2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
@@ -51,6 +51,8 @@ interface AdminRulesPanelProps {
 export function AdminRulesPanel({ orgId }: AdminRulesPanelProps) {
   const [rules, setRules] = useState<Rule[]>([]);
   const [loading, setLoading] = useState(true);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [editingRule, setEditingRule] = useState<Rule | null>(null);
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
 
@@ -95,7 +97,7 @@ export function AdminRulesPanel({ orgId }: AdminRulesPanelProps) {
       toast.success("Success", {
         description: `Rule ${enabled ? "enabled" : "disabled"}`,
       });
-    } catch (err) {
+    } catch (_err) {
       toast.error("Error", {
         description: "Failed to update rule",
       });
@@ -118,7 +120,7 @@ export function AdminRulesPanel({ orgId }: AdminRulesPanelProps) {
       toast.success("Success", {
         description: "Rule deleted",
       });
-    } catch (err) {
+    } catch (_err) {
       toast.error("Error", {
         description: "Failed to delete rule",
       });
@@ -340,7 +342,7 @@ function RuleEditor({ rule, onSave, onCancel }: RuleEditorProps) {
       // API call would go here
       // For now, just return the data
       onSave(ruleData);
-    } catch (err) {
+    } catch (_err) {
       toast.error("Invalid JSON", {
         description: "Please check your DSL syntax",
       });

@@ -40,6 +40,7 @@ export async function POST(req: NextRequest) {
 
     // 2. Parse body
     const body = await req.json().catch(() => ({}));
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { apiKey, baseUrl, dryRun } = body as {
       apiKey?: string;
       baseUrl?: string;

@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 
 export default function MeetTheTeamUploader({
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   orgId,
   value,
   onChange,

@@ -69,7 +69,7 @@ export function usePlan(): UsePlanReturn {
             currentPeriodEnd: data.subscription?.currentPeriodEnd || null,
           });
         }
-      } catch (err) {
+      } catch (_err) {
         if (!cancelled) {
           setError("Failed to load plan info");
           setPlan({

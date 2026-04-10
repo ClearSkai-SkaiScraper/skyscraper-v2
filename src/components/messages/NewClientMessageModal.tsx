@@ -109,6 +109,7 @@ export default function NewClientMessageModal({
         throw new Error(error.error || "Failed to send message");
       }
 
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const data = await res.json();
       toast.success("Message sent!");
       setSelectedProId("");

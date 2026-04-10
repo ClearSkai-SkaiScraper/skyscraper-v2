@@ -16,6 +16,8 @@ import { withAuth } from "@/lib/auth/withAuth";
 import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export const GET = withAuth(async (request, { userId, orgId }, routeParams) => {
   try {
     const { slug } = await routeParams.params;
@@ -79,6 +81,8 @@ export const GET = withAuth(async (request, { userId, orgId }, routeParams) => {
   }
 });
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export const POST = withAuth(async (request, { userId, orgId }, routeParams) => {
   try {
     const { slug } = await routeParams.params;

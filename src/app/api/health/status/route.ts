@@ -1,7 +1,6 @@
 export const dynamic = "force-dynamic";
 import { NextRequest, NextResponse } from "next/server";
 
-import { logger } from "@/lib/logger";
 
 /**
  * GET /api/health/status — System status + active incidents
@@ -11,6 +10,7 @@ import { logger } from "@/lib/logger";
  *
  * No auth required — this is a public endpoint.
  */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export async function GET(req: NextRequest) {
   try {
     // Active incidents — edit this array to broadcast incidents

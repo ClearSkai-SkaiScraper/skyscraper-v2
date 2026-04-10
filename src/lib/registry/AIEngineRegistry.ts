@@ -12,6 +12,7 @@ export const AIEngineRegistry: Record<AIModuleKey, AIModule> = {
     key: "ai.summary",
     cost: 3,
     trigger: (ctx) => ctx?.reportType === "claims" || ctx?.reportType === "proposal",
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     run: async (ctx) => ({ summary: "AI executive summary placeholder." }),
   },
   "ai.captions": {

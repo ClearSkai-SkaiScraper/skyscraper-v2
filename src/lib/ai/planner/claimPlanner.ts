@@ -44,6 +44,7 @@ export function getNextActionsForClaim(ctx: PlannerContext): NextActionSuggestio
 /**
  * Get recommended actions for transitioning to a specific state
  */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function getActionsForState(state: ClaimStateEnum, ctx: PlannerContext): NextActionSuggestion[] {
   const actions: NextActionSuggestion[] = [];
 
@@ -137,6 +138,7 @@ function getActionsForState(state: ClaimStateEnum, ctx: PlannerContext): NextAct
 /**
  * Extract action suggestions from triggered rules
  */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function getActionsFromRules(rules: RuleDefinition[], ctx: PlannerContext): NextActionSuggestion[] {
   const actions: NextActionSuggestion[] = [];
 
@@ -184,6 +186,7 @@ function getActionsFromRules(rules: RuleDefinition[], ctx: PlannerContext): Next
  */
 export function prioritizeActions(
   actions: NextActionSuggestion[],
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   claimContext?: ClaimContext
 ): NextActionSuggestion[] {
   // Sort by priority first

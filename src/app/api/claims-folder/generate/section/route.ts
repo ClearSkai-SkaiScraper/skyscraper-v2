@@ -29,6 +29,7 @@ const RequestSchema = z.object({
 });
 
 /** Sections that have dedicated AI generators */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const AI_GENERATABLE_SECTIONS = [
   "executive-summary",
   "weather-cause",

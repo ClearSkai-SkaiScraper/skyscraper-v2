@@ -25,6 +25,7 @@ const updateNoticeSchema = z.object({
  * Get a single HOA notice pack by ID
  */
 export const GET = withOrgScope(
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   async (_request: Request, { userId, orgId }, context: { params: Promise<{ id: string }> }) => {
     try {
       const { id } = await context.params;
@@ -50,6 +51,7 @@ export const GET = withOrgScope(
  * Update an HOA notice pack
  */
 export const PATCH = withOrgScope(
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   async (request: Request, { userId, orgId }, context: { params: Promise<{ id: string }> }) => {
     try {
       const { id } = await context.params;
@@ -102,6 +104,7 @@ export const PATCH = withOrgScope(
  * Delete an HOA notice pack
  */
 export const DELETE = withOrgScope(
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   async (_request: Request, { userId, orgId }, context: { params: Promise<{ id: string }> }) => {
     try {
       const { id } = await context.params;

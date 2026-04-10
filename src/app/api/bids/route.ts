@@ -44,7 +44,9 @@ export async function POST(request: NextRequest) {
       includesPermits,
       includesMaterials,
       validDays = 30,
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       estimateUrl, // Optional: URL to attached estimate PDF
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       estimateFileName, // Optional: Original filename of estimate
     } = body;
 
@@ -88,6 +90,7 @@ export async function POST(request: NextRequest) {
     const safeValidDays = Math.min(Math.max(Math.floor(Number(validDays) || 30), 1), 365);
 
     // Create the bid
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const bid = await prisma.$executeRaw`
       INSERT INTO project_bids (
         id,

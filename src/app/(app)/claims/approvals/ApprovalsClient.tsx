@@ -21,6 +21,7 @@ interface PendingClaim {
   jobValueSubmittedAt: string;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export function ApprovalsClient({ orgId }: { orgId: string }) {
   const [claims, setClaims] = useState<PendingClaim[]>([]);
   const [loading, setLoading] = useState(true);

@@ -15,6 +15,7 @@ export const dynamic = "force-dynamic";
 // Use activities model directly since that's what exists in schema
 const ActivityModel = prisma.activities;
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function MembershipMissing() {
   return (
     <div className="mx-auto mt-8 max-w-3xl rounded-xl border border-[color:var(--border)] bg-[var(--surface-1)] p-8 shadow-lg">
@@ -46,6 +47,7 @@ function MembershipMissing() {
 export default async function TeamPage() {
   const orgCtx = await safeOrgContext();
   const organizationId = orgCtx.orgId || null;
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const userId = orgCtx.userId;
   if (orgCtx.status === "unauthenticated") {
     redirect("/sign-in");

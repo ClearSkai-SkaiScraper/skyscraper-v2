@@ -78,6 +78,7 @@ export interface HomeownerReportPayload {
  */
 export function generateEstimateDraftPayload(
   estimate: Record<string, any>,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   options?: { includeAttachments?: boolean }
 ): EmailDraftPayload {
   logger.debug("[ExportPayloads] Generating estimate draft");
@@ -105,6 +106,7 @@ export function generateExportPayload(type: string, data: Record<string, any>): 
  */
 export async function buildEstimatePacketPayload(
   estimateId: string,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   orgId: string | null
 ): Promise<EstimatePacketPayload> {
   const estimate = await prisma.estimates.findUnique({
@@ -182,6 +184,7 @@ export function buildAdjusterPacketPayload(
  */
 export async function buildHomeownerSummaryPayload(
   reportId: string,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   orgId: string | null
 ): Promise<HomeownerReportPayload> {
   const report = await prisma.reports.findUnique({
@@ -221,6 +224,7 @@ export async function buildHomeownerSummaryPayload(
  */
 export async function buildReportAdjusterPayload(
   reportId: string,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   orgId: string | null
 ): Promise<ReportPacketPayload> {
   const report = await prisma.reports.findUnique({
@@ -267,6 +271,7 @@ export async function buildReportAdjusterPayload(
  */
 export async function buildSupplementPacketPayload(
   supplementId: string,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   orgId: string | null
 ): Promise<SupplementPacketPayload> {
   const supplement = await prisma.supplements.findUnique({

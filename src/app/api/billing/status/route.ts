@@ -9,6 +9,7 @@ import { isPlatformAdmin } from "@/lib/security/roles";
 export const dynamic = "force-dynamic";
 
 // Calculate storage used by organization (in bytes)
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 async function calculateStorageUsed(orgId: string): Promise<number> {
   // Storage tracking not yet implemented - org_branding doesn't have size field
   // Return 0 for now - future: add file size tracking to uploads
@@ -23,6 +24,7 @@ async function calculateStorageUsed(orgId: string): Promise<number> {
  * - Whether account is limited
  * NOTE: Token/credit system removed — flat $80/month pricing
  */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export const GET = withAuth(async (req: NextRequest, { orgId, userId }) => {
   try {
     // ADMIN MODE: Platform admins get unlimited forever free access

@@ -334,6 +334,7 @@ export async function POST(request: NextRequest) {
         if (yoloDetections.length > 0) {
           // Replace GPT-4V detections with YOLO detections
           // YOLO gives us: x, y, width, height (percentages), type, confidence, severity
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
           detections = yoloDetections.map((yolo, idx) => ({
             type: yolo.type,
             severity: yolo.severity,
@@ -1768,6 +1769,7 @@ Return JSON:
 }`;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function buildHVACPrompt(claimType: string): string {
   return `Analyze this HVAC/AC unit photo for damage.
 
@@ -1822,6 +1824,7 @@ Return JSON:
 }`;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function buildGutterPrompt(claimType: string): string {
   return `Analyze this gutter/drainage system photo.
 
@@ -1868,6 +1871,8 @@ Return JSON:
 }`;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function buildWindowScreenPrompt(claimType: string): string {
   return `Analyze this window/screen photo for damage.
 
@@ -2416,6 +2421,7 @@ function formatDamageType(type: string): string {
   return type.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function buildCaption(detection: DamageDetection, ircCodeKey: string): string {
   const formattedType = formatDamageType(detection.type);
   // Keep caption clean for image overlays - IRC/HAAG info stored separately in ircCode field

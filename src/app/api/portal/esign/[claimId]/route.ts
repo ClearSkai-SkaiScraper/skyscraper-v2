@@ -69,6 +69,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ cla
         { status: 400 }
       );
     }
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { signature, documentId, ipAddress } = parsed.data;
 
     // Record the e-signature

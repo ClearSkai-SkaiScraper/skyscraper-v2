@@ -10,6 +10,7 @@ import { sendMessageSchema, threadActionSchema } from "@/lib/validation/message-
 import { validateBody } from "@/lib/validation/middleware";
 
 // GET /api/messages/:threadId - Get thread detail with messages
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export const GET = withAuth(async (req: NextRequest, { orgId, userId }, routeParams) => {
   try {
     const { threadId } = await routeParams.params;
@@ -177,11 +178,13 @@ export const GET = withAuth(async (req: NextRequest, { orgId, userId }, routePar
 });
 
 // POST /api/messages/:threadId - Send a message in a thread
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export const POST = withAuth(async (req: NextRequest, { orgId, userId }, routeParams) => {
   try {
     const { threadId } = await routeParams.params;
     const body = await validateBody(req, sendMessageSchema);
     if (body instanceof NextResponse) return body;
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { content, attachments } = body;
 
     // Verify user has access (expanded check matching GET)
@@ -310,6 +313,7 @@ export const POST = withAuth(async (req: NextRequest, { orgId, userId }, routePa
 });
 
 // DELETE /api/messages/:threadId - Delete a thread and all its messages
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export const DELETE = withAuth(async (req: NextRequest, { orgId, userId }, routeParams) => {
   try {
     const { threadId } = await routeParams.params;
@@ -372,6 +376,7 @@ export const DELETE = withAuth(async (req: NextRequest, { orgId, userId }, route
 });
 
 // PATCH /api/messages/:threadId - Archive or unarchive a thread
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export const PATCH = withAuth(async (req: NextRequest, { orgId, userId }, routeParams) => {
   try {
     const { threadId } = await routeParams.params;

@@ -1,6 +1,6 @@
 "use client";
 
-import { AlertCircle,Loader2, Plus, Trash2, Webhook } from "lucide-react";
+import { AlertCircle,Loader2, Plus, Webhook } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 

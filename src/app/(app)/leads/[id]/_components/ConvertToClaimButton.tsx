@@ -64,6 +64,7 @@ const COMMON_CARRIERS = [
 
 export function ConvertToClaimButton({
   leadId,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   leadTitle,
   leadDescription,
   isAlreadyConverted,

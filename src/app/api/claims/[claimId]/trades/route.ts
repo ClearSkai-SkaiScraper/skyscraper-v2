@@ -43,6 +43,7 @@ const deleteTradeSchema = z.object({
 export const GET = withAuth(
   async (
     req: NextRequest,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     { userId, orgId },
     routeParams: { params: Promise<{ claimId: string }> }
   ) => {
@@ -86,6 +87,7 @@ export const GET = withAuth(
 export const POST = withAuth(
   async (
     req: NextRequest,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     { userId, orgId },
     routeParams: { params: Promise<{ claimId: string }> }
   ) => {
@@ -147,6 +149,7 @@ export const POST = withAuth(
 export const DELETE = withAuth(
   async (
     req: NextRequest,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     { userId, orgId },
     routeParams: { params: Promise<{ claimId: string }> }
   ) => {

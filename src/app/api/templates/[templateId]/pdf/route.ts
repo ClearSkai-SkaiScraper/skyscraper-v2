@@ -80,8 +80,10 @@ export async function GET(req: NextRequest, { params }: { params: { templateId: 
   const { searchParams } = new URL(req.url);
   const download = searchParams.get("download") === "1";
   const isPreview = searchParams.get("preview") === "1";
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const claimIdParam = searchParams.get("claimId");
   const modeParam = searchParams.get("mode");
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const previewMode = modeParam === "branding-only" ? "branding-only" : "claim";
 
   try {
@@ -244,7 +246,7 @@ export async function GET(req: NextRequest, { params }: { params: { templateId: 
             "Cache-Control": "public, max-age=3600",
           },
         });
-      } catch (fileError) {
+      } catch (_fileError) {
         logger.error(`[PDF_PROXY] Local file not found: ${filePath}`);
         return await servePremiumStaticPreview({
           category: templateCategory,

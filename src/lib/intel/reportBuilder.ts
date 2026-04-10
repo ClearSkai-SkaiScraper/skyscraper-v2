@@ -14,6 +14,7 @@ export interface ReportResult {
  * Generate report
  * @deprecated Use report AI functions instead
  */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export async function generateReport(claim_id: string): Promise<ReportResult> {
   logger.warn('generateReport is deprecated');
   return {

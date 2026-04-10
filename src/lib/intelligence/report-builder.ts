@@ -74,6 +74,7 @@ export type GeneratedReport = {
 // ============================================================================
 
 function buildQuickReportPrompt(payload: IntelligenceCorePayload): string {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { internal, documents } = payload;
 
   return `You are SkaiScraper, an AI claims intelligence assistant. Generate a QUICK internal report.
@@ -269,6 +270,7 @@ Return JSON following this structure:
 }
 
 function buildRetailProposalPrompt(payload: IntelligenceCorePayload): string {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { internal, features, documents } = payload;
 
   return `You are SkaiScraper, a homeowner communication expert. Generate a RETAIL PROPOSAL.

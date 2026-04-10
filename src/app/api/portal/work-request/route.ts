@@ -103,6 +103,7 @@ export async function POST(req: Request) {
         const jobId = `job_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 
         // NOTE: Work request stored as claim until ClientJob table exists
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const jobData = {
           id: jobId,
           clientId: client.id,
@@ -133,6 +134,7 @@ export async function POST(req: Request) {
           const invitationId = `inv_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 
           // NOTE: Use claims_activity_log until JobInvitation table exists
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
           const invitationData = {
             id: invitationId,
             jobId,

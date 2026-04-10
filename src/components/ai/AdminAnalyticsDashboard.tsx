@@ -293,6 +293,7 @@ export function AdminAnalyticsDashboard({
                   </div>
                 ) : (
                   <div className="space-y-3">
+                    // eslint-disable-next-line @typescript-eslint/no-unused-vars
                     {ruleEffectiveness.map((rule, index) => (
                       <Card key={rule.ruleId}>
                         <CardContent className="p-4">

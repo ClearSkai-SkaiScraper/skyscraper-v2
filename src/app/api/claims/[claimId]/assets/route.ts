@@ -51,6 +51,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ clai
   try {
     const auth = await requireAuth();
     if (isAuthError(auth)) return auth;
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { orgId, userId } = auth;
 
     const { claimId } = await params;

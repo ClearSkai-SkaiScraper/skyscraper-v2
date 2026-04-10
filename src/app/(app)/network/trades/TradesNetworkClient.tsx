@@ -39,6 +39,7 @@ interface TradesNetworkClientProps {
   currentUserId: string;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export function TradesNetworkClient({ contractors, currentUserId }: TradesNetworkClientProps) {
   const router = useRouter();
   const [connectModalOpen, setConnectModalOpen] = useState(false);

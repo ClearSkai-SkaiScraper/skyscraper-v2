@@ -28,6 +28,8 @@ interface BrandingFormProps {
   userId: string;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export default function BrandingForm({ initial, orgId, userId }: BrandingFormProps) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);

@@ -65,6 +65,7 @@ export const POST = withAuth(async (req: NextRequest, { orgId }) => {
     const underpayment = Math.max(0, estimatedValue - approvedValue);
     const taxRate = AZ_DEFAULT_TAX_RATE;
     const carrierTax = approvedValue * taxRate;
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const contractorTax = estimatedValue * taxRate;
 
     const analysis = {

@@ -58,7 +58,7 @@ export const POST = withAuth(async (req: NextRequest, { userId }) => {
       if (brandingRes.ok) {
         branding = await brandingRes.json();
       }
-    } catch (e) {
+    } catch (_e) {
       logger.warn("[PDF_EXPORT] Branding fetch failed, continuing without branding");
     }
 

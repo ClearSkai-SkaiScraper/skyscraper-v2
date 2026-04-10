@@ -14,7 +14,7 @@ export function sanitizeJsonResponse(raw: string): { ok: boolean; data?: any; er
     }
     const parsed = JSON.parse(cleaned);
     return { ok: true, data: parsed, raw: cleaned };
-  } catch (e: any) {
+  } catch (_e: any) {
     return { ok: false, error: 'invalid_json', raw: cleaned };
   }
 }

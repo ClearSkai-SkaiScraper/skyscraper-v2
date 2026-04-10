@@ -59,7 +59,7 @@ export default function RetailProjectsPage() {
         } else {
           setError(result.error || "Failed to load packets");
         }
-      } catch (err) {
+      } catch (_err) {
         setError("Network error");
       } finally {
         setLoading(false);

@@ -45,6 +45,7 @@ export async function getBatchJobStatus(jobId: string): Promise<BatchJob | null>
 /**
  * Queue a new batch job
  */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export async function queueBatchJob(type: string, data: Record<string, any>): Promise<string> {
   logger.debug(`[BatchProcessor] Stub: Would queue ${type} job`);
   return `batch_${Date.now()}`;

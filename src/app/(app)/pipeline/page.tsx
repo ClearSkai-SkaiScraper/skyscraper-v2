@@ -232,6 +232,7 @@ export default async function PipelinePage({
 
     if (orgId) {
       // Real data only — no demo mode fallback
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       [jobs, stats] = await Promise.all([getJobsByCategory(orgId), getCategoryStats(orgId)]);
     }
     // If no orgId, continue with empty state — don't redirect

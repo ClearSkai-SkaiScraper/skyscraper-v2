@@ -168,6 +168,7 @@ export class ActiveRL {
     labelOracle: (state: number[], action: number) => number
   ): Promise<ActiveRLResult> {
     try {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const startMetrics = this.computeSampleEfficiency();
       let queriesMade = 0;
       let totalUncertaintyBefore = 0;

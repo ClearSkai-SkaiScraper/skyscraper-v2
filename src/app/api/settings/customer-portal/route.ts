@@ -54,6 +54,7 @@ export async function PATCH(req: Request) {
   }
 
   try {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const body = await req.json();
 
     // For now, log the settings — full persistence will require a dedicated table.

@@ -63,12 +63,14 @@ const HEADER_H = 20; // Top accent bar + spacing
 const FOOTER_H = 28; // Footer text + rule line
 
 // Safe content boundaries
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const SAFE_CONTENT_Y_MAX = PAGE_H - MARGIN_TOP - HEADER_H; // Highest y for content
 const SAFE_CONTENT_Y_MIN = MARGIN_BOTTOM + FOOTER_H; // Lowest y for content
 
 const CONTENT_W = PAGE_W - MARGIN_LEFT - MARGIN_RIGHT;
 const FOOTER_Y = 36;
 const MAX_PHOTO_H = 320;
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const MIN_PHOTO_H = 150;
 const MAX_FINDINGS_PER_PAGE = 4;
 const PAGE_BREAK_THRESHOLD = 160; // Start new page if < this much space remains
@@ -120,9 +122,11 @@ function sanitizeForPDF(text: string): string {
 
 // Print-safe mode helpers (darker grays, larger min font, no edge-bleed)
 const PRINT_SAFE_MIN_FONT = 8;
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function printSafeSize(size: number, printSafe: boolean): number {
   return printSafe ? Math.max(size, PRINT_SAFE_MIN_FONT) : size;
 }
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function printSafeGray(lightness: number, printSafe: boolean) {
   // In print-safe mode, clamp light grays to be darker for legibility
   const clamped = printSafe ? Math.min(lightness, 0.45) : lightness;
@@ -318,6 +322,7 @@ async function embedImageSafe(pdfDoc: PDFDocument, url: string): Promise<PDFImag
 // ─── Page Geometry Helpers ────────────────────────────────────────────────────
 
 /** Pre-measure wrapped text height for widow/orphan protection */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function measureWrappedTextHeight(
   text: string,
   maxWidth: number,

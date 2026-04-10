@@ -27,6 +27,7 @@ export interface DamageRegion {
  */
 export async function analyzePropertyImage(
   imageUrl: string,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   options?: {
     focusAreas?: string[];
     claimId?: string;

@@ -186,6 +186,7 @@ interface ZipInsight {
   tradeMatch: string;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function getZipInsight(zip: string, category: ClaimCategoryId, subtype: string): ZipInsight | null {
   if (!zip || zip.length < 5) return null;
 

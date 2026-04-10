@@ -11,6 +11,7 @@
 import { z } from "zod";
 
 // ── Hex Color ────────────────────────────────────────────────
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const hexColorOrEmpty = z
   .string()
   .regex(/^(#[0-9A-Fa-f]{6})?$/, "Invalid hex color")

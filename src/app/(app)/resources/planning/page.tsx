@@ -3,7 +3,7 @@
 import { useUser } from "@clerk/nextjs";
 import { AlertTriangle,Calendar, TrendingUp, Users } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 
 export default function ResourcePlanningPage() {
   const router = useRouter();

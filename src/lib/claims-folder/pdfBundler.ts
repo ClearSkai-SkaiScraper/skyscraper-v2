@@ -673,6 +673,7 @@ export async function renderPDFBytes(document: PDFDocument): Promise<Uint8Array>
   const MARGIN = 54; // 0.75 in
   const MAX_W = PAGE_W - MARGIN * 2;
   const BRAND = rgb(0.12, 0.27, 0.53); // Deep blue brand
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const GRAY = rgb(0.4, 0.4, 0.4);
   const LIGHT = rgb(0.92, 0.92, 0.92);
   const BLACK = rgb(0, 0, 0);

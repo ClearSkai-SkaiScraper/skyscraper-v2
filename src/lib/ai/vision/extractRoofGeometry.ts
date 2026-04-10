@@ -32,6 +32,7 @@ export async function extractRoofGeometry(options: {
   }
 
   // 1. Resolve photo URLs
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const photoUrls = await Promise.all(options.photoIds.map(id => getStorageUrlForAsset(id)));
 
   // 2. (Placeholder) Call segmentation model if requested

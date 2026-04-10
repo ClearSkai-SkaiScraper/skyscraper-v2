@@ -313,6 +313,7 @@ export default async function MyNetworkPage() {
 
   // Since employee doesn't have publicSkills or jobHistory in select, default to empty
   const employeeSkills: string[] = [];
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const employeeWorkHistory = null;
 
   // ── Serialize Prisma objects for client component transfer ──

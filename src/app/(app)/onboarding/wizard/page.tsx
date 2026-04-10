@@ -508,7 +508,10 @@ function StepInviteTeam({ onNext, onSkip }: { onNext: () => void; onSkip: () => 
 function StepFirstClaim({ onNext }: { onNext: () => void }) {
   const [loading, setLoading] = useState(false);
   const [created, setCreated] = useState(false);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [claimId, setClaimId] = useState("");
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [mode, setMode] = useState<"choose" | "sample" | "manual">("choose");
 
   const handleLoadSample = async () => {
@@ -729,6 +732,7 @@ function StepComplete() {
 // ═══════════════════════════════════════════════════════════════════
 function WizardContent() {
   const searchParams = useSearchParams();
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const router = useRouter();
 
   const initialStep = Math.min(

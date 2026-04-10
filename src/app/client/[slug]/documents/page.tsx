@@ -5,6 +5,7 @@ interface ClientDocumentsPageProps {
 }
 
 export default function ClientDocumentsPage({ params }: ClientDocumentsPageProps) {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { slug } = params;
 
   return (

@@ -55,6 +55,7 @@ interface EnhancedReviewsTabProps {
 }
 
 export default function EnhancedReviewsTab({
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   userId,
   isOwnProfile,
   reviews,

@@ -16,6 +16,7 @@ function newId(): string {
  * GET /api/network/clients/[slug]/activity
  * Returns activity feed for a client network
  */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export const GET = withAuth(async (req: NextRequest, { orgId }, routeParams) => {
   const { slug } = await routeParams.params;
 

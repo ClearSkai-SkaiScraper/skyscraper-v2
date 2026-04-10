@@ -489,6 +489,7 @@ function generateFallbackEstimate(request: EstimateRequest): CostEstimate {
 /**
  * Compare estimates
  */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export async function compareEstimates(estimateIds: string[]): Promise<{
   estimates: CostEstimate[];
   comparison: {

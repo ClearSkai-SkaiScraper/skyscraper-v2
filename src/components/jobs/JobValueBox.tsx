@@ -25,6 +25,7 @@ export function JobValueBox({
   entityType,
   estimatedJobValue,
   jobValueStatus,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   jobValueApprovedBy,
   jobValueApprovalNotes,
   onUpdate,

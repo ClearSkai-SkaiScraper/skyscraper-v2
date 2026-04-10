@@ -18,6 +18,7 @@ const handleStats = withAuth(async (req: NextRequest, { orgId }) => {
   try {
     const now = new Date();
     const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const fourteenDaysAgo = new Date(now.getTime() - 14 * 24 * 60 * 60 * 1000);
     const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
 

@@ -252,6 +252,7 @@ export const GET = withAuth(async (req: NextRequest, { orgId }) => {
       if (deny >= 60) highRisk++;
       else if (deny >= 30) medRisk++;
       else lowRisk++;
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       totalConf += Number(pred.confidenceScore || 0);
     }
     const aiPredictedApproval =

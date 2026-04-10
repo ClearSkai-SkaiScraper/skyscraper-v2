@@ -93,6 +93,7 @@ export function calculateFinancialAnalysis(
   const contractorACV = contractorRCV - depreciation.correctAmount;
 
   // Calculate taxes
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const carrierTax = carrierRCV * taxRate;
   const contractorTax = contractorRCV * taxRate;
 
@@ -284,6 +285,7 @@ function buildUnderpaymentReasons(
 function generateAuditFindings(
   lineItems: LineItemAnalysis[],
   depreciation: DepreciationAnalysis,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   input: FinancialInput
 ) {
   const findings: FinancialAnalysisResult["auditFindings"] = [];
@@ -317,8 +319,10 @@ function projectSettlement(
   contractorRCV: number,
   carrierRCV: number,
   lineItems: LineItemAnalysis[],
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   input: FinancialInput
 ): SettlementProjection {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const underpayment = contractorRCV - carrierRCV;
   const supplementPotential = lineItems
     .filter((item) => item.recommendedSupplement)

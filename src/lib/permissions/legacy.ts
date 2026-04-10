@@ -280,7 +280,7 @@ export function withPermission(permission: Permission) {
     try {
       await requirePermission(permission);
       return await handler(req);
-    } catch (error) {
+    } catch (_error) {
       return Response.json({ error: "Permission denied" }, { status: 403 });
     }
   };
@@ -327,7 +327,7 @@ export function withResourceAccess(
       }
 
       return await handler(req);
-    } catch (error) {
+    } catch (_error) {
       return Response.json({ error: "Access denied" }, { status: 403 });
     }
   };

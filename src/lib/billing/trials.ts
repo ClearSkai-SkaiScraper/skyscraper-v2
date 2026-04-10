@@ -170,7 +170,9 @@ export async function checkTrialAccess(orgId: string): Promise<{
  */
 export async function getOrgsNeedingTrialReminders() {
   const now = new Date();
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const in24Hours = new Date(now.getTime() + 24 * 60 * 60 * 1000);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const in1Hour = new Date(now.getTime() + 60 * 60 * 1000);
 
   // Get orgs with trial ending in ~24h or ~1h (±5 min window)

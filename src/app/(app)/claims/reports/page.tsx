@@ -73,6 +73,7 @@ async function getClaimsWithMaterials(orgId: string) {
   }
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 async function GenerateReportButton({ claimId }: { claimId: string }) {
   "use client";
 

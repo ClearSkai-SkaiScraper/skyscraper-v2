@@ -42,6 +42,7 @@ export const POST = withAuth(async (req: NextRequest, { userId, orgId }) => {
       );
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { email, name, contactId, claimId } = parsed.data;
 
     logger.info("[CONTACTS_INVITE]", { orgId, userId, email, claimId });

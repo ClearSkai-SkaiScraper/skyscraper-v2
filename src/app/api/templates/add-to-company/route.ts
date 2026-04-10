@@ -8,6 +8,7 @@ import prisma from "@/lib/prisma";
 
 export const runtime = "nodejs";
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export const POST = withAuth(async (request: NextRequest, { orgId, userId }) => {
   try {
     const body = await request.json();

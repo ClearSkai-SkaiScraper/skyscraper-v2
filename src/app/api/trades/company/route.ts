@@ -296,7 +296,7 @@ export const GET = withAuth(async (req: NextRequest, { orgId, userId }) => {
         select: { planKey: true },
       });
       planKey = org?.planKey || "solo";
-    } catch (e) {
+    } catch (_e) {
       // Org lookup may fail for edge cases, use default
     }
 

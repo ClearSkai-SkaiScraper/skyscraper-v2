@@ -10,6 +10,7 @@ export default function InvitePage() {
   const params = useParams();
   const router = useRouter();
   const { isSignedIn, isLoaded } = useAuth();
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { user } = useUser();
   const token = (params?.token as string) || "";
 

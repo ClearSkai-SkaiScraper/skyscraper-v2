@@ -19,6 +19,7 @@ export function OnboardingHint({
   stepId,
   title,
   message,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   position = "bottom",
 }: {
   stepId: string;

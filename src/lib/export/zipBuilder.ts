@@ -26,6 +26,7 @@ export async function createZip(entries: ZipEntry[]): Promise<Buffer> {
 /**
  * Add file to ZIP archive
  */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export function addFileToZip(archive: any, name: string, content: Buffer | string): void {
   logger.debug(`[ZipBuilder] Stub: Would add ${name} to ZIP`);
 }
@@ -33,6 +34,7 @@ export function addFileToZip(archive: any, name: string, content: Buffer | strin
 /**
  * Finalize and get ZIP buffer
  */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export async function finalizeZip(archive: any): Promise<Buffer> {
   logger.debug("[ZipBuilder] Stub: Would finalize ZIP");
   return Buffer.from([]);
@@ -43,6 +45,7 @@ export async function finalizeZip(archive: any): Promise<Buffer> {
  */
 export async function buildEstimateZip(
   claimId: string,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   options?: {
     includePhotos?: boolean;
     includeReports?: boolean;
@@ -61,6 +64,7 @@ export async function buildEstimateZip(
 export async function buildClaimZip(
   claimId: string,
   orgId: string,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   options?: {
     includeNarrative?: boolean;
     includeScope?: boolean;

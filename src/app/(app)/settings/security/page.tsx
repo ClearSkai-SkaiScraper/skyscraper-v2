@@ -43,6 +43,8 @@ interface LoginEvent {
 
 export default function SettingsSecurityPage() {
   const [mfaEnabled, setMfaEnabled] = useState(false);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [sessionTimeout, setSessionTimeout] = useState("24h");
   const [showApiKey, setShowApiKey] = useState(false);
 

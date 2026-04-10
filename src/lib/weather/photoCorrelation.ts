@@ -474,6 +474,7 @@ function generatePhotoNarrative(params: {
     hasCapturedAt,
     temporalCorrelation,
     spatialCorrelation,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     timeDeltaMinutes,
     distanceFromPropertyMiles,
     matchedEventType,
@@ -545,6 +546,7 @@ function generateCorrelationSummary(params: {
     moderateCorrelations,
     weakCorrelations,
     grade,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     stormDate,
   } = params;
 

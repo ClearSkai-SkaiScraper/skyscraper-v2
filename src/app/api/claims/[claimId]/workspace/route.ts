@@ -120,6 +120,7 @@ async function ensureOrgDemoClaim(orgId: string) {
   return { claimId, claimNumber: demoClaimNumber };
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export const GET = withAuth(async (req: NextRequest, { orgId, userId, role }, routeParams) => {
   try {
     const { claimId } = await routeParams.params;

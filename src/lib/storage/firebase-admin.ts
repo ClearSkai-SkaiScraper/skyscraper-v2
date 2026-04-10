@@ -7,11 +7,11 @@
 
 import { getApp,getApps } from "firebase-admin/app";
 
-import { firebaseAdmin } from "../firebaseAdmin";
 
 /**
  * Get Firebase Admin app instance (uses centralized singleton)
  */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function init() {
   if (!getApps().length) {
     throw new Error("Firebase Admin not initialized. Check firebaseAdmin.ts configuration.");
@@ -30,6 +30,7 @@ function init() {
 export async function uploadBufferToFirebase(
   filePath: string,
   buffer: Buffer,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   contentType = "application/pdf"
 ) {
   // Stubbed implementation: Firebase storage disabled in this build pass.
@@ -42,6 +43,7 @@ export async function uploadBufferToFirebase(
  *
  * @param filePath - Storage path
  */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export async function deleteFromFirebase(filePath: string) {
   // Stubbed no-op
   return;

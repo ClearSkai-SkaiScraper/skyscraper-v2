@@ -16,6 +16,7 @@ import { logger } from "@/lib/logger";
 type TicketType = "bug" | "feature" | "support" | "other";
 
 export default function SupportPage() {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { user } = useUser();
   const [type, setType] = useState<TicketType>("bug");
   const [title, setTitle] = useState("");

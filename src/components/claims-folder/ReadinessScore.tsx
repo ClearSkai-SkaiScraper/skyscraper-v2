@@ -133,6 +133,7 @@ function getScoreColor(score: number): string {
   return "bg-red-500";
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function getStatusIcon(status: "complete" | "partial" | "missing") {
   switch (status) {
     case "complete":

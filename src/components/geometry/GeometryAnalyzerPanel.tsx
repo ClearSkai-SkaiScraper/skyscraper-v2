@@ -21,6 +21,7 @@ export function GeometryAnalyzerPanel({
   onAnalysisComplete,
 }: GeometryAnalyzerPanelProps) {
   const [imageUrl, setImageUrl] = useState<string>("");
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [analysis, setAnalysis] = useState<SlopeAnalysis | null>(null);
   const [scorecards, setScorecards] = useState<SlopeScorecard[]>([]);

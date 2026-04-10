@@ -2230,6 +2230,7 @@ function FinancialsSection({
   );
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function TimelineSection({ claimId }: { claimId: string }) {
   const [events, setEvents] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);

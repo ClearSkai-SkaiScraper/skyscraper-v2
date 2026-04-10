@@ -5,7 +5,6 @@ export const revalidate = 0;
 import { NextRequest, NextResponse } from "next/server";
 
 import { withAuth } from "@/lib/auth/withAuth";
-import { logger } from "@/lib/logger";
 import { logRecommendationEvent } from "@/lib/reports/recommendation-analytics";
 
 /**
@@ -26,7 +25,7 @@ export const POST = withAuth(async (req: NextRequest) => {
     logRecommendationEvent(body);
 
     return NextResponse.json({ ok: true });
-  } catch (error) {
+  } catch (_error) {
     return NextResponse.json({ ok: false, error: "Failed to log analytics" }, { status: 500 });
   }
 });

@@ -196,7 +196,7 @@ export async function evaluateFlag(
   try {
     rows =
       await prisma.$queryRaw`SELECT id, enabled, rollout_percent, targeting FROM app.feature_flags WHERE key = ${key} AND (org_id = ${orgId || null} OR org_id IS NULL) ORDER BY CASE WHEN org_id = ${orgId || null} THEN 0 ELSE 1 END LIMIT 1`;
-  } catch (err) {
+  } catch (_err) {
     // Fallback for environments where rollout_percent/targeting columns not yet migrated.
     try {
       rows =

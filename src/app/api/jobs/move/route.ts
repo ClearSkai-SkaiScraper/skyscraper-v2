@@ -12,6 +12,7 @@ import { generateContactSlug } from "@/lib/generateContactSlug";
 import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export const POST = withAuth(async (req: NextRequest, { userId, orgId: userOrgId }) => {
   try {
     const body = await req.json();

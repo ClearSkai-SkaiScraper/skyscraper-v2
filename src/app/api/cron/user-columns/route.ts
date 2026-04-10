@@ -8,7 +8,6 @@ export const dynamic = "force-dynamic";
 export const maxDuration = 60;
 
 import { verifyCronSecret } from "@/lib/cron/verifyCronSecret";
-import { logger } from "@/lib/logger";
 
 // Scheduled by vercel.json every 30 minutes
 export async function GET(request: Request) {
@@ -49,7 +48,7 @@ export async function GET(request: Request) {
               text: `:warning: Schema drift detected (users table) missing columns: ${missing.join(", ")}`,
             }),
           });
-        } catch (e) {
+        } catch (_e) {
           Sentry.captureMessage("Slack notification failed (schema drift)", { level: "warning" });
         }
       }

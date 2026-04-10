@@ -603,6 +603,7 @@ export function findDiscrepancies(
   const discrepancies: Discrepancy[] = [];
 
   // Check timeline delays
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const firstRealEvent = realTimeline[0];
   const claimFiledReal = realTimeline.find((e) => e.title.toLowerCase().includes("claim filed"));
   const claimFiledIdeal = idealTimeline.find((e) => e.title.toLowerCase().includes("claim filed"));
@@ -627,6 +628,7 @@ export function findDiscrepancies(
   // Check for incomplete documentation
   const hasPhotos = realTimeline.some((e) => e.source === "photo");
   const hasVideo = realTimeline.some((e) => e.source === "video");
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const hasSkai = realTimeline.some((e) => e.source === "dominus");
 
   if (!hasPhotos) {

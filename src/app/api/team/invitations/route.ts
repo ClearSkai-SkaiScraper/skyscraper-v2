@@ -38,7 +38,7 @@ export const POST = withManager(async (req: NextRequest, { userId, orgId }) => {
     // 🛡️ RBAC: Check permission to invite team members
     try {
       await requirePermission("team:invite");
-    } catch (error) {
+    } catch (_error) {
       logger.warn("[TEAM_INVITATIONS] Permission denied", {
         userId,
         orgId,

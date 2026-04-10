@@ -133,6 +133,7 @@ export class RLQuantization {
    */
   quantizeModelPostTraining(policy: number[], calibrationData: number[][]): RLQuantizationResult {
     try {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const startTime = Date.now();
       const originalSize = policy.length * 4; // 32-bit floats
 
@@ -419,6 +420,7 @@ export class RLQuantization {
           const studentProbs = this.softmax(studentLogits, temperature);
 
           // Compute distillation loss
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
           const loss = this.klDivergence(softTargets, studentProbs);
 
           // Update student
@@ -514,6 +516,7 @@ export class RLQuantization {
 
   private computeQuantizationParams(
     weights: number[],
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     calibrationData: number[][]
   ): QuantizationParams {
     const min = Math.min(...weights);

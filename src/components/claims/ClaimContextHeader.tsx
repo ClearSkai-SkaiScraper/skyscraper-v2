@@ -38,6 +38,7 @@ export function ClaimContextHeader({
   claims,
   selectedClaimId,
   onClaimChange,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   selectedTemplate,
   onTemplateChange,
   showTemplateSelector = true,

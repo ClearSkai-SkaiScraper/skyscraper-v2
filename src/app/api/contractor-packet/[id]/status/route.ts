@@ -6,6 +6,7 @@ import { withAuth } from "@/lib/auth/withAuth";
 import { db } from "@/lib/db";
 import { logger } from "@/lib/logger";
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export const GET = withAuth(async (req: NextRequest, { orgId, userId }, routeParams) => {
   try {
     const { id: packetId } = await routeParams.params;

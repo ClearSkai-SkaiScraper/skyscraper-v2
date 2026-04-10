@@ -74,6 +74,8 @@ export default function ClientLeadsPage() {
   const [selectedRequest, setSelectedRequest] = useState<WorkRequest | null>(null);
   const [showConvertModal, setShowConvertModal] = useState(false);
   const [converting, setConverting] = useState(false);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [responseNote, setResponseNote] = useState("");
 
   useEffect(() => {
@@ -160,7 +162,7 @@ export default function ClientLeadsPage() {
       } else {
         toast.error("Failed to update status");
       }
-    } catch (error) {
+    } catch (_error) {
       toast.error("Failed to update status");
     }
   }

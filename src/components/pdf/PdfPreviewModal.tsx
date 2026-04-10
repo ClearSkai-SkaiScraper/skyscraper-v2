@@ -1,6 +1,6 @@
 "use client";
 
-import { Download, Maximize2,X, ZoomIn, ZoomOut } from "lucide-react";
+import { Download, X, ZoomIn, ZoomOut } from "lucide-react";
 import React from "react";
 
 import { Button } from "@/components/ui/button";

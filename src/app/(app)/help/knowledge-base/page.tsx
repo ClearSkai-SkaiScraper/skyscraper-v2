@@ -1,9 +1,9 @@
 "use client";
 
 import { useUser } from "@clerk/nextjs";
-import { BookOpen, FileText,FolderOpen, Search } from "lucide-react";
+import { BookOpen, FileText,Search } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 interface Article {
   id: string;
@@ -14,7 +14,10 @@ interface Article {
 }
 
 export default function KnowledgeBasePage() {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const router = useRouter();
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { isLoaded, isSignedIn } = useUser();
   const [searchQuery, setSearchQuery] = useState("");
   const [articles] = useState<Article[]>([

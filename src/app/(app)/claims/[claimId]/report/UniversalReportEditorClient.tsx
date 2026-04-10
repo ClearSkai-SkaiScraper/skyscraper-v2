@@ -168,6 +168,7 @@ export function UniversalReportEditorClient({
   };
 
   // Submit to carrier
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const handleSubmit = async (carrierName: string) => {
     if (!canSubmit) return;
 

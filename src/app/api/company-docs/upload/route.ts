@@ -77,6 +77,7 @@ export const POST = withAuth(async (req: NextRequest, { orgId, userId }) => {
       await supabase.storage.createBucket(bucket, { public: true, fileSizeLimit: maxSize });
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { data, error } = await supabase.storage
       .from(bucket)
       .upload(filePath, buffer, { contentType: file.type, upsert: true });

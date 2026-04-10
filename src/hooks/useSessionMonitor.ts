@@ -20,6 +20,7 @@ export function useSessionMonitor() {
   const { isSignedIn, isLoaded } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [sessionWarning, setSessionWarning] = useState(false);
   const lastCheck = useRef<number>(Date.now());
   const checkInterval = useRef<ReturnType<typeof setInterval> | null>(null);

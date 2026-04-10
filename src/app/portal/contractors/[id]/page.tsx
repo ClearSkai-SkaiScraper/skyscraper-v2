@@ -98,7 +98,7 @@ export default function ContractorProfilePage() {
         }
         const data = await res.json();
         setProfile(data.contractor);
-      } catch (err) {
+      } catch (_err) {
         setError("Failed to load profile");
       } finally {
         setLoading(false);

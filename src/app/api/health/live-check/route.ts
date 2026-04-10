@@ -145,7 +145,7 @@ async function checkWeatherService(): Promise<HealthCheck> {
       latencyMs: Date.now() - start,
       message: res.ok ? "Mesonet reachable" : `Status: ${res.status}`,
     };
-  } catch (err) {
+  } catch (_err) {
     return {
       name: "Weather Service (Mesonet)",
       status: "degraded",
@@ -175,6 +175,7 @@ async function checkStorage(): Promise<HealthCheck> {
   }
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export async function GET(req: NextRequest) {
   const startTotal = Date.now();
 

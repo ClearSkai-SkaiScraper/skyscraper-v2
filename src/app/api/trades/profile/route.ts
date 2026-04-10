@@ -43,6 +43,7 @@ const tradesProfileSchema = z.object({
  */
 
 // GET /api/trades/profile - Get current user's profile
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export const GET = withAuth(async (req: NextRequest, { userId, orgId }) => {
   try {
     const { searchParams } = new URL(req.url);

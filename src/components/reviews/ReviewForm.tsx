@@ -45,7 +45,7 @@ export function ReviewForm({
 
       const uploadedUrls = await Promise.all(uploadPromises);
       setPhotos([...photos, ...uploadedUrls]);
-    } catch (err) {
+    } catch (_err) {
       setError("Failed to upload photos");
     } finally {
       setUploading(false);

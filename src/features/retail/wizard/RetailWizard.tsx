@@ -20,7 +20,7 @@
 "use client";
 
 import { useUser } from "@clerk/nextjs";
-import { AlertCircle, CheckCircle2, Loader2, Save } from "lucide-react";
+import { AlertCircle, CheckCircle2, Loader2 } from "lucide-react";
 import { useCallback,useEffect, useState } from "react";
 
 import { ExportPdfButton } from "@/components/ExportPdfButton";
@@ -74,6 +74,7 @@ export default function RetailWizard({
   const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
 
   // RESUME DRAFT STATE
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [loadingDraft, setLoadingDraft] = useState(true);
   const [draftDetected, setDraftDetected] = useState<{
     packetId: string;

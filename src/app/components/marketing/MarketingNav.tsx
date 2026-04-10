@@ -1,5 +1,5 @@
 "use client";
-import { SignedIn, SignedOut, SignInButton, UserButton } from "@clerk/nextjs";
+import { SignedIn, SignedOut, UserButton } from "@clerk/nextjs";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
@@ -11,6 +11,7 @@ const links = [
 ];
 
 export default function MarketingNav() {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const pathname = usePathname();
   return (
     <header className="sticky top-0 z-40 border-b bg-white/90 backdrop-blur">

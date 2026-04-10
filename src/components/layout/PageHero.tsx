@@ -27,6 +27,7 @@ export function PageHero({
   icon,
   actions,
   section,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   gradient,
   children,
   className,
