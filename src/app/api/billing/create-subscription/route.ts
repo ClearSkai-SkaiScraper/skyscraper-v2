@@ -115,6 +115,7 @@ export const POST = withManager(async (req: NextRequest, { orgId, userId }) => {
       payment_settings: {
         save_default_payment_method: "on_subscription",
       },
+      automatic_tax: { enabled: true }, // Stripe handles sales tax
       metadata: { orgId, seatCount: String(seatCount) },
       expand: ["latest_invoice.payment_intent"],
     });
