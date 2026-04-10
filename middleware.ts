@@ -98,6 +98,7 @@ const isPublicRoute = createRouteMatcher([
   "/api/diag/ready",
   "/api/deploy-info",
   // "/api/debug(.*)", // DISABLED — debug routes moved to _disabled
+  "/api/debug/sentry-test", // Sentry verification (secret-protected)
   "/api/claims/test/workspace", // Public demo workspace data (read-only)
   "/api/claims/test/ai", // Public demo AI assistant endpoint (safe)
   "/api/org/active", // Allow org context endpoint to return 401 JSON (no redirect)
