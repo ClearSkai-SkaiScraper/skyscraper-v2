@@ -5,6 +5,8 @@ import Link from "next/link";
 
 import { Button } from "@/components/ui/button";
 
+import SeatCalculatorWidget from "./SeatCalculatorWidget";
+
 export const metadata: Metadata = {
   title: "Pricing – SkaiScraper",
   description:
@@ -15,7 +17,7 @@ export const metadata: Metadata = {
       "Simple, transparent pricing. $80 per seat per month. No tiers, no minimums, no hidden fees.",
   },
 };
-export const dynamic = "force-static";
+// Page can be static — SeatCalculatorWidget is a client island
 export const revalidate = 3600;
 
 const PRICE_PER_SEAT = 80;
@@ -102,34 +104,43 @@ export default function PricingPage() {
               Pricing <span className="text-[#117CFF]">Calculator</span>
             </h2>
             <p className="mt-2 text-muted-foreground">
-              See exactly what you&apos;ll pay. No surprises.
+              Pick your team size, see exactly what you&apos;ll pay, and subscribe instantly.
             </p>
           </div>
 
-          <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-4">
-            {EXAMPLES.map(({ seats, label }) => (
-              <div
-                key={seats}
-                className="rounded-2xl border bg-card p-6 text-center transition-all hover:-translate-y-1 hover:shadow-lg"
-              >
-                <div className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                  {label}
+          {/* Interactive Seat Calculator */}
+          <SeatCalculatorWidget />
+
+          {/* Quick Reference Grid */}
+          <div className="mt-12">
+            <h3 className="mb-4 text-center text-lg font-semibold text-muted-foreground">
+              Quick Reference
+            </h3>
+            <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-4">
+              {EXAMPLES.map(({ seats, label }) => (
+                <div
+                  key={seats}
+                  className="rounded-2xl border bg-card p-6 text-center transition-all hover:-translate-y-1 hover:shadow-lg"
+                >
+                  <div className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                    {label}
+                  </div>
+                  <div className="mt-2 flex items-center justify-center gap-1">
+                    <Users className="h-4 w-4 text-[#117CFF]" />
+                    <span className="text-lg font-bold">
+                      {seats} seat{seats !== 1 ? "s" : ""}
+                    </span>
+                  </div>
+                  <div className="mt-3 text-3xl font-bold text-[#117CFF]">
+                    ${(seats * PRICE_PER_SEAT).toLocaleString()}
+                  </div>
+                  <div className="text-sm text-muted-foreground">per month</div>
+                  <div className="mt-1 text-xs text-muted-foreground">
+                    ${(seats * PRICE_PER_SEAT * 12).toLocaleString()}/year
+                  </div>
                 </div>
-                <div className="mt-2 flex items-center justify-center gap-1">
-                  <Users className="h-4 w-4 text-[#117CFF]" />
-                  <span className="text-lg font-bold">
-                    {seats} seat{seats !== 1 ? "s" : ""}
-                  </span>
-                </div>
-                <div className="mt-3 text-3xl font-bold text-[#117CFF]">
-                  ${(seats * PRICE_PER_SEAT).toLocaleString()}
-                </div>
-                <div className="text-sm text-muted-foreground">per month</div>
-                <div className="mt-1 text-xs text-muted-foreground">
-                  ${(seats * PRICE_PER_SEAT * 12).toLocaleString()}/year
-                </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
         </section>
 
