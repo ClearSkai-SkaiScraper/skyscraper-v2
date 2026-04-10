@@ -3,7 +3,7 @@
 import path from "path";
 import puppeteer from "puppeteer";
 
-import { getSignedGetUrl,uploadBuffer } from "@/lib/s3";
+import { getSignedGetUrl, uploadBuffer } from "@/lib/s3";
 
 export async function renderAndUploadPDF(opts: {
   jobId: string;
@@ -57,4 +57,5 @@ export async function renderAndUploadPDF(opts: {
   }
 }
 
-export default { renderAndUploadPDF };
+const renderEngine = { renderAndUploadPDF };
+export default renderEngine;

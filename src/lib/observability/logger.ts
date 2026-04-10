@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 /**
  * Structured Logging with Context
  * Provides consistent logging across the application

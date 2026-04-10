@@ -108,6 +108,7 @@ export function createIdentityRedirect(
 
   // Pro trying to access client routes -> redirect to pro dashboard
   if (userType === "pro" && isClientRoute(pathname)) {
+    // eslint-disable-next-line no-console
     console.info(`[IDENTITY_ROUTING] Pro user accessing client route, redirecting to /dashboard`, {
       pathname,
     });
@@ -116,6 +117,7 @@ export function createIdentityRedirect(
 
   // Client trying to access pro routes -> redirect to client portal
   if (userType === "client" && isProRoute(pathname)) {
+    // eslint-disable-next-line no-console
     console.info(`[IDENTITY_ROUTING] Client user accessing pro route, redirecting to /portal`, {
       pathname,
     });

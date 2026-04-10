@@ -169,6 +169,7 @@ export async function sendMagicLinkEmail(
     });
 
     // TODO: Implement email sending via Resend / SendGrid
+    // eslint-disable-next-line no-console
     console.log(`
 📧 Magic Link Email
 To: ${email}

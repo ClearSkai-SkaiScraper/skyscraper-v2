@@ -198,6 +198,7 @@ export function removeIPFromWhitelist(ip: string): void {
  * Log IP access attempt
  */
 export function logIPAccess(ip: string, allowed: boolean, path: string): void {
+  // eslint-disable-next-line no-console
   console.log(
     JSON.stringify({
       timestamp: new Date().toISOString(),

@@ -1610,7 +1610,7 @@ export function getModelsForCategory(category: string): string[] {
   return MODEL_GROUPS[category] || [];
 }
 
-export default {
+const roboflowClient = {
   detectDamageWithYOLO,
   detectWithMultipleModels,
   detectByComponent,
@@ -1624,3 +1624,4 @@ export default {
   SEVERITY_MAP,
   MODEL_GROUPS,
 };
+export default roboflowClient;

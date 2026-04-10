@@ -71,6 +71,7 @@ export async function ensureOnboard({ userId, orgId, email }: OnboardParams): Pr
 
     await client.query("COMMIT");
 
+    // eslint-disable-next-line no-console
     console.log(`[ensureOnboard] ✅ Onboarded user ${userId} for org ${orgId}`);
   } catch (error) {
     await client.query("ROLLBACK");

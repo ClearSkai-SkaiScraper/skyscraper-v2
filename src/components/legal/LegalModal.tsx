@@ -1,6 +1,5 @@
 "use client";
 
-import { X } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 
@@ -26,6 +25,7 @@ export function LegalModal({ document, onAccepted }: LegalModalProps) {
     setError(null);
 
     try {
+      // eslint-disable-next-line no-console
       console.log("[LegalModal] Accepting document:", {
         documentId: document.id,
         version: document.latestVersion,
@@ -130,8 +130,8 @@ export function LegalModal({ document, onAccepted }: LegalModalProps) {
         <div className="flex flex-col gap-3">
           <div className="flex items-center justify-between gap-3">
             <p className="max-w-xs text-xs text-slate-400">
-              By clicking &quot;I Accept,&quot; you agree to be legally bound by this document on behalf of
-              yourself and, where applicable, your organization.
+              By clicking &quot;I Accept,&quot; you agree to be legally bound by this document on
+              behalf of yourself and, where applicable, your organization.
             </p>
 
             <button

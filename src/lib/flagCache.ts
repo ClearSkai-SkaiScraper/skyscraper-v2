@@ -4,11 +4,14 @@ const UP_TOKEN = process.env.UPSTASH_REDIS_REST_TOKEN;
 // Basic structured logger (fallback to console)
 function baseLog(evt: string, meta: Record<string, any>) {
   try {
-    console.log(JSON.stringify({ ts: new Date().toISOString(), component: 'flag-cache', evt, ...meta }));
+    // eslint-disable-next-line no-console
+    console.log(
+      JSON.stringify({ ts: new Date().toISOString(), component: "flag-cache", evt, ...meta })
+    );
   } catch {}
 }
 
-async function upFetch(path: string, method: string = 'GET', body?: any) {
+async function upFetch(path: string, method: string = "GET", body?: any) {
   if (!UP_URL || !UP_TOKEN) return null;
   const url = `${UP_URL}/${path}`;
   const res = await fetch(url, {
@@ -21,7 +24,7 @@ async function upFetch(path: string, method: string = 'GET', body?: any) {
 
 export async function getFlagCache(key: string): Promise<string | null> {
   const result = await upFetch(`get/${encodeURIComponent(key)}`);
-  if (!result || typeof result.result !== 'string') return null;
+  if (!result || typeof result.result !== "string") return null;
   return result.result;
 }
 
@@ -33,6 +36,6 @@ export async function delFlagCache(key: string) {
   await upFetch(`del/${encodeURIComponent(key)}`);
 }
 
-export function logCacheEvent(type: 'hit'|'miss'|'set'|'invalidate', key: string) {
-  baseLog('cache_'+type, { key });
+export function logCacheEvent(type: "hit" | "miss" | "set" | "invalidate", key: string) {
+  baseLog("cache_" + type, { key });
 }

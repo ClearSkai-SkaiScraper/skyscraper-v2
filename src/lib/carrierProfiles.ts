@@ -89,9 +89,10 @@ export function computeACVandRCV(opts: {
   return { acv, rcv, depreciationAmount };
 }
 
-export default {
+const carrierProfiles = {
   DEFAULT_PROFILES,
   findCarrierProfile,
   applyCarrierProfile,
   computeACVandRCV,
 };
+export default carrierProfiles;

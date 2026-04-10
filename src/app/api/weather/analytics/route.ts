@@ -40,6 +40,7 @@ export async function GET(req: NextRequest) {
       } catch (error) {
         if (error instanceof SubscriptionRequiredError) {
           // Log but don't block — user can see their existing data
+          // eslint-disable-next-line no-console
           console.info("[Weather Analytics] No active subscription, allowing read-only access");
         } else {
           throw error;

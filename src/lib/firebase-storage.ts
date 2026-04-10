@@ -302,7 +302,7 @@ export function getPreviewUrl(fileMetadata: FileMetadata): string {
   return url;
 }
 
-export default {
+const firebaseStorage = {
   uploadFileWithProgress,
   uploadMultipleFiles,
   uploadWithThumbnail,
@@ -317,3 +317,4 @@ export default {
   getPreviewUrl,
   generateFilePath,
 };
+export default firebaseStorage;

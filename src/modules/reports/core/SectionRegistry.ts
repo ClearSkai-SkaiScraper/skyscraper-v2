@@ -13,6 +13,7 @@ import type { ReportContext, Section, SectionKey } from "../types";
 
 // Placeholder render functions (will be implemented in /sections/*.ts)
 const placeholderRender = (sectionName: string) => async (_ctx: ReportContext) => {
+  // eslint-disable-next-line no-console
   console.log(`[Section Renderer] ${sectionName} - placeholder`);
 };
 

@@ -34,6 +34,7 @@ export function ClaimsGrid({ claims, publicMode }: { claims: ClaimItem[]; public
   // 🔥 DEBUG: Log claims data
   logger.debug("[ClaimsGrid] Rendering with claims:", claims.length);
   if (claims.length > 0) {
+    // eslint-disable-next-line no-console
     console.log("[ClaimsGrid] First claim:", {
       id: claims[0].id,
       claimNumber: claims[0].claimNumber,
@@ -88,6 +89,7 @@ export function ClaimsGrid({ claims, publicMode }: { claims: ClaimItem[]; public
           claim.id.includes &&
           (claim.claimNumber?.includes("DEMO") || (claim.insured_name ?? "").includes("Smith"))
         ) {
+          // eslint-disable-next-line no-console
           console.log("[ClaimsGrid] Rendering Link for demo claim:", {
             id: claim.id,
             linkHref,
@@ -102,6 +104,7 @@ export function ClaimsGrid({ claims, publicMode }: { claims: ClaimItem[]; public
             className="group relative overflow-hidden rounded-2xl border border-[color:var(--border)] bg-[color:var(--surface-1)] p-6 shadow-sm transition-all hover:border-[color:var(--border-hover)] hover:shadow-md"
             onClick={(e) => {
               // 🔥 DEBUG: Log click event
+              // eslint-disable-next-line no-console
               console.log("[ClaimsGrid] Link clicked:", {
                 id: claim.id,
                 href: linkHref,

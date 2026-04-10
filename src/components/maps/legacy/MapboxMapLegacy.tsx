@@ -24,6 +24,7 @@ export default function MapboxMap({ properties }: MapboxMapProps) {
   useEffect(() => {
     if (!mapContainer.current || map.current) return;
 
+    // eslint-disable-next-line no-console
     console.log("[MapboxMap] Initializing map", {
       hasToken: !!process.env.NEXT_PUBLIC_MAPBOX_TOKEN,
       propertyCount: properties.length,

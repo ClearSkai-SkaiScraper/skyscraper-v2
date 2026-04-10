@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import { randomUUID } from "crypto";
 
 export function withObs(handler: (req: Request, ctx: { reqId: string }) => Promise<Response>) {

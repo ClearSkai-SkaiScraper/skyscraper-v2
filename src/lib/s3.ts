@@ -1,6 +1,6 @@
 // src/lib/s3.ts
 // S3 helper configured to work with MinIO (dev) and AWS S3 (prod)
-import { GetObjectCommand,PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
+import { GetObjectCommand, PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 
 const REGION = process.env.S3_REGION || process.env.AWS_REGION || "us-east-1";
@@ -37,4 +37,5 @@ export async function getSignedGetUrl(key: string, expiresIn = 60 * 60) {
   return url;
 }
 
-export default { uploadBuffer, getSignedGetUrl };
+const s3Client = { uploadBuffer, getSignedGetUrl };
+export default s3Client;

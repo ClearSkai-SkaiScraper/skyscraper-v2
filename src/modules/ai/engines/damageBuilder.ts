@@ -69,6 +69,7 @@ async function analyzePhoto(photoUrl: string): Promise<PhotoAnalysisResult> {
   // Check if we have OpenAI API key
   // eslint-disable-next-line no-restricted-syntax
   if (!process.env.OPENAI_API_KEY) {
+    // eslint-disable-next-line no-console
     console.log("[DamageBuilder] No OpenAI key - using mock analysis");
     return { ...getMockPhotoAnalysis(), photoUrl, analyzedAt: new Date().toISOString() };
   }
@@ -129,6 +130,7 @@ For each damage found, provide approximate location as percentage coordinates fr
         analyzedAt: new Date().toISOString(),
         annotations: generateAnnotations(parsed.damages || []),
       };
+      // eslint-disable-next-line no-console
       console.log(`[DamageBuilder] Analyzed photo in ${Date.now() - startTime}ms`);
       return result;
     }
@@ -264,9 +266,11 @@ export async function runDamageBuilder(
 
   // Use batch processing for multiple photos
   if (useBatch && photoUrls.length > 0) {
+    // eslint-disable-next-line no-console
     console.log(`[DamageBuilder] Batch processing ${photoUrls.length} photos`);
     const batchResult = await analyzePhotoBatch(photoUrls, { maxConcurrent: 3, maxPhotos: 20 });
     analyses = batchResult.results;
+    // eslint-disable-next-line no-console
     console.log(
       `[DamageBuilder] Batch complete: ${batchResult.summary.analyzedPhotos}/${batchResult.summary.totalPhotos} in ${batchResult.summary.processingTimeMs}ms`
     );

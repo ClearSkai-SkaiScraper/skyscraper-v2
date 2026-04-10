@@ -64,6 +64,7 @@ export async function compressImage(
           type: "image/jpeg",
           lastModified: Date.now(),
         });
+        // eslint-disable-next-line no-console
         console.log(`[ImageCompression] HEIC→JPEG: ${file.name} → ${formatBytes(jpegFile.size)}`);
         return jpegFile;
       } catch (heicErr) {
@@ -119,6 +120,7 @@ export async function compressImage(
       lastModified: Date.now(),
     });
 
+    // eslint-disable-next-line no-console
     console.log(
       `[ImageCompression] ${file.name}: ${formatBytes(file.size)} → ${formatBytes(compressedFile.size)} (${Math.round((1 - compressedFile.size / file.size) * 100)}% reduction)`
     );

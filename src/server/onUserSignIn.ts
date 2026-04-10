@@ -68,10 +68,12 @@ export async function ensureOrgAndBranding({ userId, orgId }: { userId: string; 
               where: { id: legacyBranding.id },
               data: { orgId: dbOrgId },
             });
+            // eslint-disable-next-line no-console
             console.log(`[ONBOARDING] 🔄 Migrated branding from clerkOrgId to DB UUID`);
           } else {
             // Both exist — delete the legacy one (DB UUID record is canonical)
             await prisma.org_branding.delete({ where: { id: legacyBranding.id } });
+            // eslint-disable-next-line no-console
             console.log(`[ONBOARDING] 🧹 Removed duplicate legacy branding record`);
           }
         }
@@ -94,6 +96,7 @@ export async function ensureOrgAndBranding({ userId, orgId }: { userId: string; 
       update: {},
     });
 
+    // eslint-disable-next-line no-console
     console.log(`[ONBOARDING] ✅ Org/User/Branding ready for ${userId}`);
     return { ok: true };
   } catch (error) {

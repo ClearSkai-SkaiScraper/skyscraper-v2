@@ -7,7 +7,7 @@ import { getAgentQueue } from "@/lib/agent/queues";
 
 export async function scheduleRecurringMissions() {
   const { queue } = getAgentQueue();
-  
+
   // Sequencer runs every 5 minutes
   await queue.add(
     "sequencer-tick",
@@ -22,5 +22,6 @@ export async function scheduleRecurringMissions() {
     { repeat: { every: 3 * 60 * 60 * 1000 }, jobId: "recur:auto_depr" }
   );
 
+  // eslint-disable-next-line no-console
   console.log("✅ Recurring agent jobs scheduled");
 }

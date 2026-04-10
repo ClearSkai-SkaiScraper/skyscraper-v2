@@ -1,7 +1,7 @@
 "use client";
 
 import { useAuth } from "@clerk/nextjs";
-import { useEffect, useRef,useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { logger } from "@/lib/logger";
 
@@ -34,6 +34,7 @@ export function useAutoInit() {
         const data = await response.json();
 
         if (data.ok) {
+          // eslint-disable-next-line no-console
           console.log("[AUTO_INIT] User initialized:", {
             createdOrg: data.createdOrg,
             createdUser: data.createdUser,
