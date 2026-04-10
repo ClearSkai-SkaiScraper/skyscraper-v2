@@ -1,34 +1,59 @@
-// Access Control List helpers - stub for Clerk integration
+import { auth } from "@clerk/nextjs/server";
+
+import prisma from "@/lib/prisma";
+
+// Access Control List helpers — wired to Clerk + Prisma
 export type Role = "admin" | "manager" | "member";
 export type Plan = "solo" | "business" | "enterprise";
 
 /**
- * Get user role from Clerk metadata
- * TODO: Wire to actual Clerk user.publicMetadata.role
+ * Get the current user's role from Clerk org membership.
+ * Falls back to "member" if unavailable (safe default — lowest access).
  */
-export function userRole(): Role {
-  // Stub - replace with Clerk auth check
-  return "manager";
+export async function userRole(): Promise<Role> {
+  try {
+    const { orgRole } = await auth();
+    if (!orgRole) return "member";
+
+    // Clerk orgRole is like "org:admin", "org:member", etc.
+    const role = orgRole.replace("org:", "").toLowerCase();
+    if (role === "admin") return "admin";
+    if (role === "manager") return "manager";
+    return "member";
+  } catch {
+    return "member";
+  }
 }
 
 /**
- * Get user plan from Clerk metadata
- * TODO: Wire to actual Clerk org.publicMetadata.plan
+ * Get the current org's plan from Prisma.
+ * Falls back to "solo" if unavailable (lowest paid tier).
  */
-export function userPlan(): Plan {
-  // Stub - replace with Clerk org check
-  return "business";
+export async function userPlan(): Promise<Plan> {
+  try {
+    const { orgId } = await auth();
+    if (!orgId) return "solo";
+
+    const org = await prisma.org.findFirst({
+      where: { clerkOrgId: orgId },
+      select: { planKey: true, Plan: { select: { slug: true } } },
+    });
+
+    const slug = org?.Plan?.slug ?? org?.planKey ?? "solo";
+    if (slug === "enterprise") return "enterprise";
+    if (slug === "business") return "business";
+    return "solo";
+  } catch {
+    return "solo";
+  }
 }
 
 /**
- * Check if user is allowed based on roles and plans
- * @param roles - Required roles (any match)
- * @param plans - Required plans (any match)
- * @returns true if user meets requirements
+ * Check if user is allowed based on roles and plans.
+ * Both role and plan must pass (if specified).
  */
-export function allowed(roles?: Role[], plans?: Plan[]): boolean {
-  const r = userRole();
-  const p = userPlan();
+export async function allowed(roles?: Role[], plans?: Plan[]): Promise<boolean> {
+  const [r, p] = await Promise.all([userRole(), userPlan()]);
   const roleOk = !roles?.length || roles.includes(r);
   const planOk = !plans?.length || plans.includes(p);
   return roleOk && planOk;

@@ -24,6 +24,7 @@ export default async function SubscriptionPage() {
     include: {
       BillingSettings: true,
       Subscription: true,
+      Plan: true,
     },
   });
 
@@ -34,8 +35,8 @@ export default async function SubscriptionPage() {
     },
   });
 
-  // Get seat limit from plan or default to 5
-  const seatLimit = 5; // Org doesn't have seatLimit field
+  // Get seat limit from org model (seatsLimit field, default 5)
+  const seatLimit = org?.seatsLimit ?? 5;
 
   return (
     <>
@@ -46,7 +47,7 @@ export default async function SubscriptionPage() {
         icon={<CreditCard className="h-6 w-6" />}
       />
       <SubscriptionClient
-        currentPlanName={null}
+        currentPlanName={org?.Plan?.name ?? org?.planKey ?? null}
         subscriptionStatus={org?.Subscription?.status || null}
         stripeSubscriptionId={org?.Subscription?.stripeSubId || null}
         orgId={orgId}
