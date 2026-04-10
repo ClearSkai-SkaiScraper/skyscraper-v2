@@ -6,6 +6,7 @@ import { isRedirectError } from "next/dist/client/components/redirect";
 import React, { Suspense } from "react";
 
 // BetaModeBanner removed — plan info now in profile menu
+import { SubscriptionGate } from "@/components/billing/SubscriptionGate";
 import { BrandingBanner } from "@/components/dashboard/BrandingBanner";
 import DebugStrip from "@/components/DebugStrip";
 import { DemoModeBanner } from "@/components/demo/DemoModeBanner";
@@ -23,6 +24,8 @@ import { TaskSlideOver } from "@/components/tasks/TaskSlideOver";
 import { ToastProvider } from "@/components/ToastProvider";
 import { PostHogPageview } from "@/lib/analytics.tsx";
 import { getActiveOrgSafe } from "@/lib/auth/getActiveOrgSafe";
+import { isBetaMode } from "@/lib/beta";
+import { hasActiveSubscription } from "@/lib/billing/requireActiveSubscription";
 import { isBuildPhase } from "@/lib/buildPhase";
 import { getPendingLegalForUser } from "@/lib/legal/getPendingLegal";
 import { logger } from "@/lib/logger";
@@ -144,6 +147,19 @@ export default async function AppLayout({ children }: { children: React.ReactNod
       // Don't block - just log the error
     }
 
+    // 💰 SUBSCRIPTION GATE: Check if org has an active/trialing subscription
+    // Platform admins bypass this (handled inside hasActiveSubscription)
+    // The /settings/billing page must remain accessible even without subscription
+    let subscriptionActive = true; // Default to true to avoid blocking on errors
+    if (!isBuildPhase() && orgId !== "temp" && !isBetaMode()) {
+      try {
+        subscriptionActive = await hasActiveSubscription(orgId);
+      } catch (subError) {
+        logger.error("[LAYOUT_SUBSCRIPTION_CHECK]", subError?.message);
+        // Don't block on subscription check failures — let them through
+      }
+    }
+
     return (
       <AppProviders orgId={orgId} pendingLegal={pendingLegal}>
         <ToastProvider />
@@ -171,7 +187,15 @@ export default async function AppLayout({ children }: { children: React.ReactNod
                     <DemoModeBanner variant="full" />
                   </div>
                 )}
-                <ErrorBoundary>{children}</ErrorBoundary>
+                <ErrorBoundary>
+                  {subscriptionActive ? (
+                    children
+                  ) : (
+                    <SubscriptionGate orgName={orgResult.ok ? orgResult.org?.name : undefined}>
+                      {children}
+                    </SubscriptionGate>
+                  )}
+                </ErrorBoundary>
               </main>
               <CRMFooter />
             </div>
