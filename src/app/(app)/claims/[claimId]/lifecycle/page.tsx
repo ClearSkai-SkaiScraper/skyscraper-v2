@@ -53,7 +53,7 @@ export default function LifecyclePage() {
 
   useEffect(() => {
     if (!claimId) return;
-    fetchClaim();
+    void fetchClaim();
   }, [claimId]);
 
   async function fetchClaim() {

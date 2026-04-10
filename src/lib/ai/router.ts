@@ -308,8 +308,8 @@ export function listAIModules(): ModuleInfo[] {
  * @returns Array of task names or empty array if module not found
  */
 export function getModuleTasks(moduleName: string): string[] {
-  const module = moduleIndex.get(moduleName);
-  return module?.tasks || [];
+  const moduleEntry = moduleIndex.get(moduleName);
+  return moduleEntry?.tasks || [];
 }
 
 /**

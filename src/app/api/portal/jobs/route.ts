@@ -18,7 +18,7 @@ import { getClientFromAuth } from "@/lib/portal/getClientFromAuth";
 import prisma from "@/lib/prisma";
 
 // Helper to check if ClientJob table exists and is usable
-async function useClientJobModel(): Promise<boolean> {
+async function canUseClientJobModel(): Promise<boolean> {
   try {
     // Try to query the ClientJob model
     await prisma.clientJob.findFirst({ take: 1 });
@@ -50,9 +50,9 @@ export async function GET(req: NextRequest) {
     const offset = parseInt(url.searchParams.get("offset") || "0");
 
     // Try new ClientJob model first
-    const useNewModel = await useClientJobModel();
+    const canUseNewModel = await canUseClientJobModel();
 
-    if (useNewModel) {
+    if (canUseNewModel) {
       // Use new ClientJob model
       const where: any = {
         clientId: client.id,
@@ -255,9 +255,9 @@ export async function POST(req: NextRequest) {
     const body = parsed.data;
 
     // Try new ClientJob model first
-    const useNewModel = await useClientJobModel();
+    const canUseNewModel = await canUseClientJobModel();
 
-    if (useNewModel) {
+    if (canUseNewModel) {
       // Create using new ClientJob model
       const job = await prisma.clientJob.create({
         data: {
