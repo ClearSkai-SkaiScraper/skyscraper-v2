@@ -39,12 +39,18 @@ Sentry.init({
     process.env.NODE_ENV ||
     "development",
 
+  // Send user IP + request headers for better debugging
+  sendDefaultPii: true,
+
   // Lower sampling for edge (lightweight runtime)
   tracesSampleRate: process.env.SENTRY_TRACES_SAMPLE_RATE
     ? parseFloat(process.env.SENTRY_TRACES_SAMPLE_RATE)
     : process.env.NODE_ENV === "production"
       ? 0.05
       : 1.0,
+
+  // Enable Sentry Logs (structured log-to-trace correlation)
+  enableLogs: true,
 
   // Debug only in development with explicit flag
   debug: process.env.SENTRY_DEBUG === "true" && process.env.NODE_ENV !== "production",

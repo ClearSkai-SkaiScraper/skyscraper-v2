@@ -69,8 +69,19 @@ export async function register() {
   }
 
   // ═══════════════════════════════════════════════════════════════════════
-  // 4. Sentry Initialization (Server & Edge - deferred to config files)
+  // 4. Sentry Initialization (Server & Edge Runtime Dispatch)
   // ═══════════════════════════════════════════════════════════════════════
-  // Sentry is initialized via sentry.server.config.ts and sentry.edge.config.ts
-  // This hook ensures Node version checks + fetch guards run first
+  if (process.env.NEXT_RUNTIME === "nodejs") {
+    await import("../sentry.server.config");
+  }
+
+  if (process.env.NEXT_RUNTIME === "edge") {
+    await import("../sentry.edge.config");
+  }
 }
+
+// ═══════════════════════════════════════════════════════════════════════
+// 5. Automatic Server Error Capture (requires @sentry/nextjs >= 8.28.0)
+// ═══════════════════════════════════════════════════════════════════════
+import * as Sentry from "@sentry/nextjs";
+export const onRequestError = Sentry.captureRequestError;

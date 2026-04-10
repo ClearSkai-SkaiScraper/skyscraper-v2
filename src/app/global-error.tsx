@@ -1,6 +1,7 @@
 "use client";
 /* eslint-disable react/jsx-no-comment-textnodes, no-restricted-syntax */
 
+import * as Sentry from "@sentry/nextjs";
 import { useEffect } from "react";
 
 import { logger } from "@/lib/logger";
@@ -13,7 +14,9 @@ export default function GlobalError({
   reset: () => void;
 }) {
   useEffect(() => {
-    // Log the error to console for debugging
+    // Report to Sentry for production observability
+    Sentry.captureException(error);
+    // Also log locally for dev debugging
     logger.error("Global error caught:", error);
   }, [error]);
 

@@ -325,9 +325,11 @@ export default withSentryConfig(configWithBundleAnalyzer, {
   disableLogger: true,
   automaticVercelMonitors: true,
   hideSourceMaps: true,
-  // Skip sourcemap uploads during build to prevent hangs - do this in a separate job
-  disableServerWebpackPlugin: true,
-  disableClientWebpackPlugin: true,
-  // Only upload source maps if auth token provided AND explicitly enabled
-  dryRun: !process.env.SENTRY_AUTH_TOKEN || !process.env.SENTRY_UPLOAD_ENABLED,
+
+  // Proxy route to bypass ad-blockers (Sentry events sent via /monitoring)
+  tunnelRoute: "/monitoring",
+
+  // Source map upload — enabled when SENTRY_AUTH_TOKEN is present
+  // dryRun prevents upload when token is missing (dev/CI without secrets)
+  dryRun: !process.env.SENTRY_AUTH_TOKEN,
 });

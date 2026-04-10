@@ -359,5 +359,6 @@ export default clerkMiddleware((auth, req) => {
 });
 
 export const config = {
-  matcher: ["/((?!.*\\..*|_next).*)", "/(api|trpc)(.*)"],
+  // Exclude: static files, Next.js internals, and Sentry tunnel route
+  matcher: ["/((?!.*\\..*|_next|monitoring).*)", "/(api|trpc)(.*)"],
 };

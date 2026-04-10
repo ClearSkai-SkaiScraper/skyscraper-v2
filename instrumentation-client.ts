@@ -37,6 +37,9 @@ Sentry.init({
   dsn: SENTRY_DSN,
   environment: ENVIRONMENT,
 
+  // Send user IP + request headers for better debugging
+  sendDefaultPii: true,
+
   // Performance Monitoring
   tracesSampleRate: IS_DEV
     ? 1.0
@@ -44,6 +47,9 @@ Sentry.init({
 
   // Profiling — enabled for enterprise performance visibility
   profilesSampleRate: IS_DEV ? 0.0 : 0.1,
+
+  // Enable Sentry Logs (structured log-to-trace correlation)
+  enableLogs: true,
 
   // Debug mode (only in dev)
   debug: IS_DEV && process.env.NEXT_PUBLIC_SENTRY_DEBUG === "true",
@@ -59,7 +65,7 @@ Sentry.init({
 
   // Session Replay
   replaysSessionSampleRate: IS_DEV ? 1.0 : 0.01, // 1% of sessions
-  replaysOnErrorSampleRate: IS_DEV ? 1.0 : 0.5, // 50% when error occurs
+  replaysOnErrorSampleRate: IS_DEV ? 1.0 : 1.0, // 100% of error sessions recorded
 
   // PII Scrubbing - runs before sending events to Sentry
   beforeSend(event) {

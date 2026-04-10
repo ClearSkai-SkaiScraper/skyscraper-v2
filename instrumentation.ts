@@ -1,1 +1,1 @@
-export { register } from "./src/instrumentation";
+export { onRequestError, register } from "./src/instrumentation";

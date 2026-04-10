@@ -80,3 +80,6 @@ tests-backup/
 *.tsbuildinfo
 .env.vercel
 db/backups/
+
+# Sentry build plugin auth token
+.env.sentry-build-plugin

@@ -40,12 +40,21 @@ Sentry.init({
     process.env.NODE_ENV ||
     "development",
 
+  // Send user IP + request headers for better debugging
+  sendDefaultPii: true,
+
   // Performance Monitoring
   tracesSampleRate: process.env.SENTRY_TRACES_SAMPLE_RATE
     ? parseFloat(process.env.SENTRY_TRACES_SAMPLE_RATE)
     : process.env.NODE_ENV === "production"
       ? 0.1
       : 1.0,
+
+  // Attach local variable values to stack frames for richer debugging
+  includeLocalVariables: true,
+
+  // Enable Sentry Logs (structured log-to-trace correlation)
+  enableLogs: true,
 
   // Profiling — enabled for enterprise performance visibility
   profilesSampleRate: process.env.NODE_ENV === "production" ? 0.1 : 0.0,
