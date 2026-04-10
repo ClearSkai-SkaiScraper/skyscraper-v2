@@ -45,6 +45,8 @@ export const navSections: NavSection[] = [
       { label: "Analytics Hub", href: "/analytics" },
       { label: "Smart Actions", href: "/ai/smart-actions" },
       { label: "Quick DOL", href: "/quick-dol" },
+      { label: "Search", href: "/search" },
+      { label: "Weather Map", href: "/maps/weather-chains" },
       { label: "Notifications", href: "/notifications" },
     ],
   },
@@ -58,6 +60,7 @@ export const navSections: NavSection[] = [
       { label: "Depreciation Builder", href: "/ai/tools/depreciation" },
       { label: "Rebuttal Builder", href: "/ai/tools/rebuttal" },
       { label: "Bad Faith Analysis", href: "/ai/bad-faith" },
+      { label: "Weather Hub", href: "/weather-report" },
     ],
   },
   {
@@ -69,6 +72,7 @@ export const navSections: NavSection[] = [
       { label: "Task Manager", href: "/tasks" },
       { label: "Appointments & Inspections", href: "/appointments" },
       { label: "Crew Manager", href: "/crews" },
+      { label: "Work Orders", href: "/work-orders" },
       { label: "Map View", href: "/maps/map-view" },
       { label: "Door Knocking", href: "/maps/door-knocking" },
     ],
@@ -101,6 +105,7 @@ export const navSections: NavSection[] = [
       { label: "HOA Storm Notices", href: "/hoa/notices" },
       { label: "Company Documents", href: "/settings/company-documents" },
       { label: "Permits", href: "/permits" },
+      { label: "Contracts", href: "/contracts" },
     ],
   },
   {
@@ -111,6 +116,8 @@ export const navSections: NavSection[] = [
       { label: "Commissions", href: "/commissions" },
       { label: "Mortgage Checks", href: "/mortgage-checks" },
       { label: "Messages Hub", href: "/messages" },
+      { label: "Billing & Plans", href: "/settings/billing" },
+      { label: "Estimates", href: "/estimates" },
     ],
   },
   {
@@ -122,6 +129,8 @@ export const navSections: NavSection[] = [
       { label: "Job Board", href: "/trades/jobs" },
       { label: "Vendor Intelligence", href: "/vendor-network" },
       { label: "Invitations", href: "/invitations" },
+      { label: "Contacts", href: "/contacts" },
+      { label: "Clients", href: "/clients" },
     ],
   },
   {
@@ -134,6 +143,7 @@ export const navSections: NavSection[] = [
       { label: "Team & Company Seats", href: "/teams" },
       { label: "Company Hierarchy", href: "/teams/hierarchy" },
       { label: "Archive", href: "/archive" },
+      { label: "Help & Support", href: "/support" },
     ],
   },
 ];
