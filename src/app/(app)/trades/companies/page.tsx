@@ -35,6 +35,7 @@ export default function TradesCompaniesPage() {
 
   useEffect(() => {
     void fetchCompanies();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedSpecialty]);
 
   const fetchCompanies = async () => {

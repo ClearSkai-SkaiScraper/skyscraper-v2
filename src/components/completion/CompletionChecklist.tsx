@@ -26,6 +26,7 @@ export function CompletionChecklist({ claimId, onStatusChange }: CompletionCheck
 
   useEffect(() => {
     void fetchStatus();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [claimId]);
 
   const fetchStatus = async () => {

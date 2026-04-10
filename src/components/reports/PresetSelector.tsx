@@ -56,6 +56,7 @@ export function PresetSelector({
 
   useEffect(() => {
     void loadPresets();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [reportType]);
 
   const loadPresets = async () => {

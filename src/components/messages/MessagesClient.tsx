@@ -56,6 +56,7 @@ export default function MessagesClient({ userId, orgId }: MessagesClientProps) {
       if (pollThreadsRef.current) clearInterval(pollThreadsRef.current);
       if (pollMessagesRef.current) clearInterval(pollMessagesRef.current);
     };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [orgId]);
 
   const fetchThreads = async (silent = false) => {

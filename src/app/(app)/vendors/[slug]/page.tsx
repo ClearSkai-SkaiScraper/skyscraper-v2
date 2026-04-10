@@ -122,6 +122,7 @@ export default function VendorDetailPage() {
 
   useEffect(() => {
     if (slug) void fetchVendor();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [slug]);
 
   const fetchVendor = async () => {

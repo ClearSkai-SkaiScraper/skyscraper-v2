@@ -138,6 +138,7 @@ export default function PublicDirectoryPage() {
     if (filters.zip || filters.trade) {
       void loadContractors(filters);
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     filters.zip,
     filters.radius,

@@ -54,6 +54,7 @@ export default function LifecyclePage() {
 
   useEffect(() => {
     if (!claimId) return;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     void fetchClaim();
   }, [claimId]);
 

@@ -81,6 +81,7 @@ export function ClientConnectSection({ claimId, currentClientId }: ClientConnect
   // Fetch current attached client using unified endpoint
   useEffect(() => {
     void fetchAttachedClient();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [claimId, currentClientId]);
 
   const fetchConnections = async () => {

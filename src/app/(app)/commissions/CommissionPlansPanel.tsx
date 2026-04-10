@@ -108,6 +108,7 @@ export default function CommissionPlansPanel() {
 
   useEffect(() => {
     if (expanded && plans.length === 0) void fetchPlans();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [expanded]);
 
   const createFromPreset = async (presetKey: string) => {

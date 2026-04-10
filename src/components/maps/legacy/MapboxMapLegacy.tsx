@@ -80,6 +80,7 @@ export default function MapboxMap({ properties }: MapboxMapProps) {
     return () => {
       map.current?.remove();
     };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Add markers when map loads

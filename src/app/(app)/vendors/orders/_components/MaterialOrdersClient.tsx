@@ -146,6 +146,7 @@ export function MaterialOrdersClient({ orgId, userId }: MaterialOrdersClientProp
     unitPrice: 0,
   });
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     void fetchOrders();
   }, [filter]);

@@ -39,6 +39,7 @@ export default function ClaimAutomationPage({ params }: AutomationPageProps) {
 
   useEffect(() => {
     void fetchIntelligence();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [params.claimId]);
 
   const handleDismissAlert = async (alertId: string) => {

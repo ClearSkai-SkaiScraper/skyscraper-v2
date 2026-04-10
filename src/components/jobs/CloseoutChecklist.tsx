@@ -46,6 +46,7 @@ export function CloseoutChecklist({ entityId, entityType }: CloseoutChecklistPro
 
   useEffect(() => {
     void fetchChecklist();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [entityId]);
 
   async function fetchChecklist() {

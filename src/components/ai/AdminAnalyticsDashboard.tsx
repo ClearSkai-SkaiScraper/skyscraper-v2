@@ -63,6 +63,7 @@ export function AdminAnalyticsDashboard({
 
   useEffect(() => {
     void fetchAnalytics();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [orgId, timeRange]);
 
   const fetchAnalytics = async () => {

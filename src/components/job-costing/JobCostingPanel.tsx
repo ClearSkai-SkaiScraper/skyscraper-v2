@@ -44,6 +44,7 @@ export function JobCostingPanel({ jobId }: JobCostingPanelProps) {
 
   useEffect(() => {
     void fetchJobCost();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [jobId]);
 
   const fetchJobCost = async () => {

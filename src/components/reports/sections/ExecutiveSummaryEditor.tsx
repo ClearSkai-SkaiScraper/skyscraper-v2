@@ -43,6 +43,7 @@ export function ExecutiveSummaryEditor({ claimId, initialData }: ExecutiveSummar
       void saveData();
     }
   }, [debouncedData]);
+// eslint-disable-next-line react-hooks/exhaustive-deps
 
   async function saveData() {
     setIsSaving(true);

@@ -56,6 +56,7 @@ export function AdminRulesPanel({ orgId }: AdminRulesPanelProps) {
   const [editingRule, setEditingRule] = useState<Rule | null>(null);
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     void fetchRules();
   }, [orgId]);

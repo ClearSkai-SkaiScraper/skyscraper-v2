@@ -60,6 +60,7 @@ export default function DenialResponsePanel({ claimId }: { claimId: string }) {
 
   useEffect(() => {
     void fetchDenialResponse();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [claimId]);
 
   const fetchDenialResponse = async () => {

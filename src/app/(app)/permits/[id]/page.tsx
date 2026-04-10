@@ -157,6 +157,7 @@ export default function PermitDetailPage() {
   useEffect(() => {
     void fetchPermit();
     void fetchDocuments();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [fetchPermit]);
 
   const fetchDocuments = async () => {

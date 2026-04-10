@@ -64,6 +64,7 @@ export default function ClientDocumentSharing({
   useEffect(() => {
     if (!clientsProp?.length) {
       void fetchConnectedClient();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }
   }, [claimId]);
 
@@ -107,6 +108,7 @@ export default function ClientDocumentSharing({
     if (clients.length === 1 && !selectedClientId) {
       setSelectedClientId(clients[0].id);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     void loadDocuments();
   }, [claimId, selectedClientId, clients]);
 

@@ -52,6 +52,7 @@ export function ClaimMessagesPanel({ claimId }: ClaimMessagesPanelProps) {
 
   useEffect(() => {
     void fetchThreads();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [claimId]);
 
   const fetchThreads = async () => {

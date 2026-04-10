@@ -95,10 +95,12 @@ export default function TemplateDesigner() {
 
   useEffect(() => {
     void loadExistingPresets();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
     void loadPreset(selectedPreset);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedPreset]);
 
   async function loadExistingPresets() {

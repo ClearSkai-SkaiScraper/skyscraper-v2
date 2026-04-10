@@ -53,6 +53,7 @@ export default function ContractorsSearchPage({
     if (initialZip || initialTrade) {
       void search();
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (

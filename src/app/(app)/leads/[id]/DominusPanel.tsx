@@ -62,6 +62,7 @@ export function DominusPanel({ leadId }: DominusPanelProps) {
   });
 
   // Load AI data on mount
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     void loadAIData();
   }, [leadId]);

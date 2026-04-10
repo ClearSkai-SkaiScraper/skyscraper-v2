@@ -36,6 +36,7 @@ export function EvidenceUpload({ claimId, sectionKey, onUploadComplete }: Eviden
 
     const droppedFiles = Array.from(e.dataTransfer.files);
     addFiles(droppedFiles);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleFileInput = (e: React.ChangeEvent<HTMLInputElement>) => {

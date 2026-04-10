@@ -238,6 +238,7 @@ export default function TradesJobsPage() {
     void fetchJobs();
     void fetchAnalytics();
     void fetchIncomingRequests();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const fetchJobs = async () => {

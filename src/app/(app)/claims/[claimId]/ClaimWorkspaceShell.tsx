@@ -1331,6 +1331,7 @@ function PhotosSection({ claimId }: { claimId: string }) {
   // Fetch photos on mount
   React.useEffect(() => {
     void fetchPhotos();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [claimId]);
 
   async function fetchPhotos() {

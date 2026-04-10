@@ -189,6 +189,7 @@ export function useAutoSave({
         clearTimeout(debounceTimerRef.current);
       }
     };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [data, step, enabled, packetId, userId]);
 
   // beforeunload guard (warn if unsaved changes)

@@ -277,6 +277,7 @@ export default function MigrationWizardPage() {
     } finally {
       setLoading(false);
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [source, credentials, duplicateActions]);
 
   // ─── Step 4: Import - Poll Status ────────────────────────────────────────

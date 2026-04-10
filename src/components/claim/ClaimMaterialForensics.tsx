@@ -29,6 +29,7 @@ export default function ClaimMaterialForensics({ claimId, data: initialData }: C
     if (!initialData) {
       void fetchForensicData();
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [claimId]);
 
   const fetchForensicData = async () => {

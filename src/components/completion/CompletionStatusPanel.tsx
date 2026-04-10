@@ -20,6 +20,7 @@ export function CompletionStatusPanel({ claimId }: CompletionStatusPanelProps) {
 
   useEffect(() => {
     void fetchData();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [claimId]);
 
   const fetchData = async () => {

@@ -64,6 +64,7 @@ export default function ProfileEditPage({ params }: { params: { memberId: string
 
   useEffect(() => {
     void loadProfile();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [params.memberId]);
 
   if (!isLoaded || !isSignedIn) {

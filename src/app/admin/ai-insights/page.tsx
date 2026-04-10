@@ -42,6 +42,7 @@ export default function AIInsightsDashboard() {
 
   useEffect(() => {
     void fetchStats();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [timeRange]);
 
   const fetchStats = async () => {

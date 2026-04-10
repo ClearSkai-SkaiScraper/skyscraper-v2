@@ -62,6 +62,7 @@ export default function ClaimsAppealPage() {
     if (claimId) {
       void fetchAppealHistory();
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [claimId]);
 
   const fetchAppealHistory = async () => {

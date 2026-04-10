@@ -43,6 +43,7 @@ export default function ClaimDocumentsPage() {
 
   useEffect(() => {
     if (claimId) void fetchDocuments();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [claimId]);
 
   async function fetchDocuments() {

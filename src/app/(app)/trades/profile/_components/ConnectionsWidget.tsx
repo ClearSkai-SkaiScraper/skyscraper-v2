@@ -64,6 +64,7 @@ export default function ConnectionsWidget({ userId, isOwnProfile }: ConnectionsW
 
   useEffect(() => {
     void fetchConnections();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userId]);
 
   const fetchConnections = async () => {
@@ -421,6 +422,7 @@ export function ConnectButton({
 
   useEffect(() => {
     void checkConnectionStatus();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [targetUserId]);
 
   const checkConnectionStatus = async () => {

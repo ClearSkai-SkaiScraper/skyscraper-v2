@@ -62,6 +62,7 @@ export function SkaiAssistantPanel({ leadId }: SkaiAssistantPanelProps) {
   });
 
   // Load AI data on mount
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     void loadAIData();
   }, [leadId]);

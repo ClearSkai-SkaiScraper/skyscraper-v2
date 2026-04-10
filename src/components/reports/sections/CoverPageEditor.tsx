@@ -78,6 +78,7 @@ export function CoverPageEditor({ claimId, initialData, orgData }: CoverPageEdit
     if (debouncedData) {
       void saveData();
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [debouncedData]);
 
   async function saveData() {

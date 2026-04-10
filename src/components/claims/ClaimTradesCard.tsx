@@ -48,6 +48,7 @@ export function ClaimTradesCard({ claimId }: ClaimTradesCardProps) {
 
   useEffect(() => {
     void fetchLinkedTrades();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [claimId]);
 
   useEffect(() => {

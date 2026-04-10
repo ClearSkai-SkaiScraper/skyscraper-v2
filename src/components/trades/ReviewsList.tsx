@@ -34,6 +34,7 @@ export function ReviewsList({ proId, limit }: ReviewsListProps) {
 
   useEffect(() => {
     void loadReviews();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [proId]);
 
   async function loadReviews() {

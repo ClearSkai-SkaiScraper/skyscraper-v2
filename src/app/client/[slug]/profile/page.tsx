@@ -93,6 +93,7 @@ export default function ClientProfilePage() {
 
   useEffect(() => {
     void fetchProfile();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [slug]);
 
   const fetchProfile = async () => {

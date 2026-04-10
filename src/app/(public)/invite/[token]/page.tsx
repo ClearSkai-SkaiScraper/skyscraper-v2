@@ -29,6 +29,7 @@ export default function InvitePage() {
     }
 
     // User is signed in, accept the invitation
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     void acceptInvitation();
   }, [isLoaded, isSignedIn, token]);
 

@@ -184,6 +184,7 @@ export default function EnhancedPhotosTab({
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [lightboxOpen, filteredPhotos.length]);
 
   const handleShare = (photo: Photo) => {

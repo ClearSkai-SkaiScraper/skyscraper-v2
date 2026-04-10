@@ -44,6 +44,7 @@ export function SimulationHistoryTracker({ claimId, compact }: Props) {
 
   useEffect(() => {
     void fetchHistory();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [claimId]);
 
   async function fetchHistory() {

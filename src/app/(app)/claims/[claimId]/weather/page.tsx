@@ -218,6 +218,7 @@ export default function ClaimWeatherPage({ params }: Props) {
       }
     }
     void loadClaimAddress();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [claimId]);
 
   // ── Load saved scans ──

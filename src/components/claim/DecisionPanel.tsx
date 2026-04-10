@@ -89,6 +89,7 @@ export function DecisionPanel({ claimId }: DecisionPanelProps) {
   useEffect(() => {
     void fetchDecisionPlan();
     void fetchDisputePackages();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [claimId]);
 
   const fetchDecisionPlan = async () => {

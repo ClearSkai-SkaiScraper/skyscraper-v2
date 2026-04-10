@@ -46,6 +46,7 @@ export function ClaimTradesPanel({ claimId }: ClaimTradesPanelProps) {
 
   useEffect(() => {
     void fetchData();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [claimId]);
 
   const fetchData = async () => {

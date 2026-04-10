@@ -59,6 +59,7 @@ export function PredictionPanel({ claimId }: PredictionPanelProps) {
 
   useEffect(() => {
     void fetchPrediction();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [claimId]);
 
   const fetchPrediction = async () => {

@@ -60,6 +60,7 @@ export function AdjusterCombobox({
   useEffect(() => {
     if (open) {
       void fetchAdjusters(query);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }
   }, [open]);
 

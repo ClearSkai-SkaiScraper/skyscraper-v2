@@ -52,6 +52,7 @@ export function SignupAgreements({ userType, onComplete, redirectTo }: SignupAgr
   const [productUpdates, setProductUpdates] = useState(true);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     void loadDocuments();
   }, [userType]);
 

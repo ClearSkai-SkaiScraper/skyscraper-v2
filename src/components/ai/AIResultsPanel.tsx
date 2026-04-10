@@ -87,6 +87,7 @@ export function AIResultsPanel({
       const interval = setInterval(fetchAnalysis, refreshInterval);
       return () => clearInterval(interval);
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [claimId, autoRefresh, refreshInterval]);
 
   const toggleSection = (section: string) => {

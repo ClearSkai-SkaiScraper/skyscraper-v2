@@ -60,6 +60,7 @@ export default function KPIDashboardClient({ embedded = false }: { embedded?: bo
 
   useEffect(() => {
     void fetchKPIs();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [timeRange]);
 
   async function fetchKPIs() {

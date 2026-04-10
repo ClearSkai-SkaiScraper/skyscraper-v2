@@ -57,6 +57,7 @@ export function PartnersManager() {
 
   useEffect(() => {
     filterPartners();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [partners, searchQuery, tradeFilter]);
 
   async function fetchPartners() {

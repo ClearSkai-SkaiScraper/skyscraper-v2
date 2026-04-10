@@ -51,6 +51,7 @@ export default function DepreciationDashboard({ claimId }: DepreciationDashboard
 
   useEffect(() => {
     void fetchSummary();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [claimId]);
 
   const fetchSummary = async () => {

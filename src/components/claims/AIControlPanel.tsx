@@ -107,6 +107,7 @@ export function AIControlPanel({
   // Fetch existing analysis on mount
   useEffect(() => {
     void fetchAnalysis();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [claimId]);
 
   const fetchAnalysis = async () => {

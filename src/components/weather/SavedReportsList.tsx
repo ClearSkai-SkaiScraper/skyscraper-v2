@@ -36,6 +36,7 @@ export function SavedReportsList({ claimId, leadId, onViewReport }: SavedReports
 
   useEffect(() => {
     void fetchReports();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [claimId, leadId]);
 
   const fetchReports = async () => {

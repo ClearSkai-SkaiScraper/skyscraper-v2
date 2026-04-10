@@ -106,6 +106,7 @@ export default function EnhancedVideosTab({
     };
 
     window.addEventListener("keydown", handleKeyDown);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [selectedVideo, isPlaying, isMuted]);
 

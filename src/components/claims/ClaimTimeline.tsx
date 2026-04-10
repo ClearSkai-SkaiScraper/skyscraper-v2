@@ -110,6 +110,7 @@ export function ClaimTimeline({
     if (!propEvents && claimId) {
       void fetchTimelineEvents();
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [claimId, propEvents]);
 
   async function fetchTimelineEvents() {

@@ -41,6 +41,7 @@ export function DepCenter({ jobId }: DepCenterProps) {
 
   useEffect(() => {
     void loadReadiness();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [jobId]);
 
   async function loadReadiness() {

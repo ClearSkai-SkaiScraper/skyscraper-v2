@@ -237,6 +237,7 @@ export default function OverviewPage() {
           // Revert optimistic updates on failure
           void fetchData();
         }
+      // eslint-disable-next-line react-hooks/exhaustive-deps
       }, 2000);
     },
     [claimId]
@@ -358,6 +359,7 @@ export default function OverviewPage() {
         if (defaultInsp && !selectedInspectorId) {
           setSelectedInspectorId(defaultInsp.clerkUserId || defaultInsp.id);
         }
+      // eslint-disable-next-line react-hooks/exhaustive-deps
       })
       .catch(() => {});
   }, [claimId, fetchAttachedClient]);

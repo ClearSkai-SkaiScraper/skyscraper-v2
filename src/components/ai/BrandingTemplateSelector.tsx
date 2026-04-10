@@ -54,6 +54,7 @@ export function BrandingTemplateSelector({ onApplyTemplate }: BrandingTemplateSe
       }
     }
     void fetchTemplates();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleSelectTemplate = (templateId: string) => {

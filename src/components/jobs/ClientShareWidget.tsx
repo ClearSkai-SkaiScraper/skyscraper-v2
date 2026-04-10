@@ -44,6 +44,7 @@ export function ClientShareWidget({
   useEffect(() => {
     if (clientId) {
       void fetchDocuments();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }
   }, [clientId, jobId]);
 

@@ -29,6 +29,7 @@ export function AIHistoryPanel({ type, onRestore, limit = 10 }: AIHistoryPanelPr
 
   useEffect(() => {
     void fetchHistory();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [type]);
 
   const fetchHistory = async () => {

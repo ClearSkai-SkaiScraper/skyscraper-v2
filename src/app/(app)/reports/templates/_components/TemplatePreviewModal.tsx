@@ -81,6 +81,7 @@ export function TemplatePreviewModal({ template, onClose }: TemplatePreviewModal
   useEffect(() => {
     // Always try to fetch template data for fallback rendering
     void fetchTemplatePreview();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [templateId]);
 
   const fetchTemplatePreview = async () => {

@@ -75,6 +75,7 @@ export const BrandingProvider: React.FC<React.PropsWithChildren> = ({ children }
 
   useEffect(() => {
     void refresh();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return <BrandingCtx.Provider value={{ branding, refresh }}>{children}</BrandingCtx.Provider>;

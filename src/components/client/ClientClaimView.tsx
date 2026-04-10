@@ -54,6 +54,7 @@ export function ClientClaimView({ claimId }: ClientClaimViewProps) {
 
   useEffect(() => {
     void loadClaimData();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [claimId]);
 
   const loadClaimData = async () => {

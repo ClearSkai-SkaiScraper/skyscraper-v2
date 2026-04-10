@@ -54,6 +54,7 @@ export default function StormImpactPanel({ leadId }: { leadId: string }) {
   const [stormReport, setStormReport] = useState<StormImpact | null>(null);
   const [error, setError] = useState<string | null>(null);
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     void fetchStormReport();
   }, [leadId]);

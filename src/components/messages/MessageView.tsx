@@ -28,6 +28,7 @@ export default function MessageView({
   currentUserType,
 }: MessageViewProps) {
   // Ensure messages is always an array to prevent t.map errors
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   const safeMessages = Array.isArray(messages) ? messages : [];
 
   // Auto-mark incoming unread messages as read

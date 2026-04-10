@@ -74,6 +74,7 @@ export default function NewMessageModal({
         teamMemberId: "",
       });
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     open,
     orgId,

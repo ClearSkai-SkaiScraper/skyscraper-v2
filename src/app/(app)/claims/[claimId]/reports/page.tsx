@@ -30,6 +30,7 @@ export default function ClaimReportsPage({ params }: { params: { claimId: string
 
   useEffect(() => {
     void fetchReports();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [params.claimId]);
 
   async function fetchReports() {

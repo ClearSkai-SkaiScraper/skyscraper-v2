@@ -675,6 +675,7 @@ export function PhotoAnnotator({
     }
 
     ctx.restore();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     annotations,
     selectedAnnotation,

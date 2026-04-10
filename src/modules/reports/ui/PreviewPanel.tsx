@@ -32,6 +32,7 @@ export default function PreviewPanel({
     if (sections.length > 0) {
       void generatePreview();
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sections, showAIMarkers]);
 
   const generatePreview = async () => {

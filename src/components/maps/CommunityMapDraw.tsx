@@ -60,6 +60,7 @@ export function CommunityMapDraw({
     return () => {
       map.current?.remove();
     };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars

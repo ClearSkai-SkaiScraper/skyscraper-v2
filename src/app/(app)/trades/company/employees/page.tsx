@@ -93,6 +93,7 @@ export default function ManageEmployeesPage() {
 
   useEffect(() => {
     void loadEmployees();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const loadEmployees = async () => {

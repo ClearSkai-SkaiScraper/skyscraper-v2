@@ -87,6 +87,7 @@ export function useReportDraft(initial?: Partial<ReportDraftState>) {
         setBusy(false);
       }
     },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [address, photos, summary, notes, citations, mountRef]
   );
 

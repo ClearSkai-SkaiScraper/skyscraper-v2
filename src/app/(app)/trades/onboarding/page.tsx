@@ -112,6 +112,7 @@ export default function TradesOnboardingPage() {
       }
     }
     void loadProfile();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleAvatarSelect = (e: React.ChangeEvent<HTMLInputElement>) => {

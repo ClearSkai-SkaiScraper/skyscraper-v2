@@ -33,6 +33,7 @@ export function ClaimAIReports({ claimId }: ClaimAIReportsProps) {
 
   useEffect(() => {
     void fetchReports();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     void fetchPDFs();
   }, [claimId]);
 

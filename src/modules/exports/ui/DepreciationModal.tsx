@@ -129,6 +129,7 @@ export function DepreciationModal(props: DepreciationModalProps) {
       notes: initialValues?.notes ?? "",
       carrier: carrierName,
     });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [carrierName, open]);
 
   return (
