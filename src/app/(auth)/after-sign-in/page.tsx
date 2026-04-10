@@ -98,7 +98,12 @@ async function getUserTypeDirectSQL(clerkUserId: string): Promise<"pro" | "clien
 export default async function AfterSignInPage({
   searchParams,
 }: {
-  searchParams: Promise<{ mode?: string; redirect_url?: string; __clerk_status?: string }>;
+  searchParams: Promise<{
+    mode?: string;
+    redirect_url?: string;
+    __clerk_status?: string;
+    retry?: string;
+  }>;
 }) {
   const params = await searchParams;
   // CRITICAL: Detect mode from multiple sources
@@ -116,16 +121,41 @@ export default async function AfterSignInPage({
     }
   }
 
+  // ── Resilient user fetch with retry ───────────────────────────────────
+  // After OAuth, Clerk's session cookie may not propagate immediately.
+  // Redirecting to /sign-in when currentUser() fails creates a redirect loop
+  // because Clerk thinks the user IS signed in and bounces back here.
+  // Instead, retry up to 3 times with a short delay before giving up.
   let user;
-  try {
-    user = await currentUser();
-  } catch (error) {
-    logger.error("[AFTER-SIGN-IN] Error getting current user", { error });
-    redirect("/sign-in");
+  const MAX_RETRIES = 3;
+  const RETRY_DELAY_MS = 500;
+
+  for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
+    try {
+      user = await currentUser();
+      if (user?.id) break;
+      // No user yet — wait and retry (session may still be propagating)
+      if (attempt < MAX_RETRIES) {
+        logger.warn("[AFTER-SIGN-IN] currentUser() returned null, retrying", { attempt });
+        await new Promise((r) => setTimeout(r, RETRY_DELAY_MS * attempt));
+      }
+    } catch (error) {
+      logger.error("[AFTER-SIGN-IN] currentUser() threw", { attempt, error });
+      if (attempt < MAX_RETRIES) {
+        await new Promise((r) => setTimeout(r, RETRY_DELAY_MS * attempt));
+      }
+    }
   }
 
   if (!user?.id) {
-    redirect("/sign-in");
+    // After all retries, redirect to sign-in with a flag to prevent infinite loop
+    const retryCount = parseInt((params?.retry as string) ?? "0", 10);
+    if (retryCount >= 2) {
+      // Already looped multiple times — send to an error page, NOT back to sign-in
+      logger.error("[AFTER-SIGN-IN] User resolution failed after multiple attempts, breaking loop");
+      redirect("/sign-in?error=session_expired");
+    }
+    redirect(`/sign-in?retry=${retryCount + 1}`);
   }
 
   logger.info("[AFTER-SIGN-IN] START", { userId: user.id, mode });

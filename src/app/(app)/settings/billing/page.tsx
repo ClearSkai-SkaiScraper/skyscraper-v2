@@ -202,7 +202,7 @@ export default function BillingPage() {
           )}
 
           {/* ── Beta banner ──────────────────────────────────────────── */}
-          {process.env.NEXT_PUBLIC_BETA_MODE !== "false" && !hasSubscription && (
+          {process.env.NEXT_PUBLIC_BETA_MODE === "true" && !hasSubscription && (
             <Card className="border-blue-200 bg-blue-50 dark:border-blue-800 dark:bg-blue-950/30">
               <CardContent className="flex items-center gap-3 py-4">
                 <Shield className="h-5 w-5 text-blue-600" />
