@@ -119,14 +119,41 @@ export default async function SearchPage({
     <>
       <PageHero
         title="Search Results"
-        subtitle={
-          query
-            ? `Found ${totalResults} results for "${query}"`
-            : "Enter a search query to find claims, leads, jobs, and clients"
-        }
+        subtitle="Enter a search query to find claims, leads, jobs, and clients"
         icon={<SearchIcon className="h-6 w-6" />}
       />
       <PageContainer>
+        {/* Search Input Form */}
+        <form action="/search" method="GET" className="mb-6">
+          <div className="flex gap-2">
+            <div className="relative flex-1">
+              <SearchIcon className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+              <input
+                type="text"
+                name="q"
+                defaultValue={query}
+                placeholder="Search claims, leads, jobs, clients..."
+                className="w-full rounded-lg border border-slate-300 bg-white py-2.5 pl-10 pr-4 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200 dark:border-slate-600 dark:bg-slate-800 dark:text-white dark:focus:ring-blue-800"
+                autoFocus
+              />
+            </div>
+            <button
+              type="submit"
+              className="rounded-lg bg-blue-600 px-6 py-2.5 font-medium text-white transition-colors hover:bg-blue-700"
+            >
+              Search
+            </button>
+          </div>
+          <input type="hidden" name="type" value={type} />
+        </form>
+
+        {/* Results info */}
+        {query && (
+          <p className="mb-4 text-sm text-slate-600 dark:text-slate-400">
+            Found <strong>{totalResults}</strong> results for &quot;{query}&quot;
+          </p>
+        )}
+
         {/* Filter Badges - Now Clickable */}
         <div className="mb-6 flex gap-2">
           {filterLink("all", "All")}

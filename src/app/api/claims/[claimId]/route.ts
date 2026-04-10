@@ -17,12 +17,36 @@ const claimUpdateSchema = z
     lifecycleStage: z
       .enum([
         "FILED",
+        "INSPECTION_SCHEDULED",
+        "INSPECTION_COMPLETE",
         "ADJUSTER_REVIEW",
         "APPROVED",
         "DENIED",
         "APPEAL",
+        "IN_PROGRESS",
         "BUILD",
+        "WORK_COMPLETE",
+        "CLOSEOUT_PENDING",
         "COMPLETED",
+        "CLOSED",
+        "DEPRECIATION",
+      ])
+      .optional(),
+    lifecycle_stage: z
+      .enum([
+        "FILED",
+        "INSPECTION_SCHEDULED",
+        "INSPECTION_COMPLETE",
+        "ADJUSTER_REVIEW",
+        "APPROVED",
+        "DENIED",
+        "APPEAL",
+        "IN_PROGRESS",
+        "BUILD",
+        "WORK_COMPLETE",
+        "CLOSEOUT_PENDING",
+        "COMPLETED",
+        "CLOSED",
         "DEPRECIATION",
       ])
       .optional(),
@@ -149,7 +173,7 @@ export const PATCH = withOrgScope(
       // 🛡️ RBAC: Check permission to edit claims
       try {
         await requirePermission("claims:edit");
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
       } catch (_error) {
         return createForbiddenResponse("You don't have permission to edit claims", {
           requiredPermission: "claims:edit",
@@ -184,6 +208,7 @@ export const PATCH = withOrgScope(
         carrier,
         policyNumber,
         lifecycleStage,
+        lifecycle_stage,
         status,
         claimNumber,
         policy_number,
@@ -215,7 +240,8 @@ export const PATCH = withOrgScope(
       if (dateOfLoss !== undefined) updateData.dateOfLoss = new Date(dateOfLoss);
       if (carrier !== undefined) updateData.carrier = carrier;
       if (policyNumber !== undefined) updateData.policyNumber = policyNumber;
-      if (lifecycleStage !== undefined) updateData.lifecycle_stage = lifecycleStage;
+      const stageValue = lifecycle_stage ?? lifecycleStage;
+      if (stageValue !== undefined) updateData.lifecycle_stage = stageValue;
       if (status !== undefined) updateData.status = status;
 
       // MASTER CLAIM WORKSPACE: Add new fields to whitelist
@@ -240,7 +266,7 @@ export const PATCH = withOrgScope(
       if (nextAction !== undefined) updateData.nextAction = nextAction;
 
       // Track stage changes for activity logging
-      const stageChanged = lifecycleStage && lifecycleStage !== existingClaim.lifecycle_stage;
+      const stageChanged = stageValue && stageValue !== existingClaim.lifecycle_stage;
       const previousStage = existingClaim.lifecycle_stage;
 
       // Update the claim
@@ -264,10 +290,10 @@ export const PATCH = withOrgScope(
             claim_id: claim.id,
             user_id: userId,
             type: "STATUS_CHANGE",
-            message: `Claim lifecycle stage changed from ${previousStage} to ${lifecycleStage}`,
+            message: `Claim lifecycle stage changed from ${previousStage} to ${stageValue}`,
             metadata: {
               previousStage,
-              newStage: lifecycleStage,
+              newStage: stageValue,
             },
           },
         });
@@ -302,7 +328,7 @@ export const DELETE = withOrgScope(
       // 🛡️ RBAC: Check permission to delete claims
       try {
         await requirePermission("claims:delete");
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
       } catch (_error) {
         return createForbiddenResponse("You don't have permission to delete claims", {
           requiredPermission: "claims:delete",

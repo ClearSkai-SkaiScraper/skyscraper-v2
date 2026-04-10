@@ -62,11 +62,11 @@ export default function ClaimTabs({ claimId }: ClaimTabsProps) {
 
   return (
     <div className="relative -mb-px flex items-center">
-      {/* Left scroll arrow */}
+      {/* Left scroll arrow - only show on small screens */}
       {canScrollLeft && (
         <button
           onClick={() => scroll("left")}
-          className="absolute left-0 z-10 flex h-full w-8 items-center justify-center bg-gradient-to-r from-blue-600 via-blue-600 to-transparent"
+          className="absolute left-0 z-10 flex h-full w-8 items-center justify-center bg-gradient-to-r from-blue-600 via-blue-600 to-transparent lg:hidden"
           aria-label="Scroll tabs left"
         >
           <ChevronLeft className="h-4 w-4 text-white/80" />
@@ -75,7 +75,7 @@ export default function ClaimTabs({ claimId }: ClaimTabsProps) {
 
       <div
         ref={scrollRef}
-        className="scrollbar-none flex items-center gap-0.5 overflow-x-auto pb-0"
+        className="scrollbar-none flex w-full items-center gap-0 overflow-x-auto pb-0 lg:justify-start lg:overflow-x-visible"
       >
         {tabs.map((tab) => {
           const href = `/claims/${claimId}${tab.href}`;
@@ -87,7 +87,7 @@ export default function ClaimTabs({ claimId }: ClaimTabsProps) {
               key={tab.href}
               href={href}
               className={cn(
-                "whitespace-nowrap border-b-2 px-2.5 py-2.5 text-[13px] font-medium transition-colors",
+                "whitespace-nowrap border-b-2 px-2 py-2 text-[12px] font-medium transition-colors lg:px-2.5 lg:text-[13px]",
                 isActive
                   ? "border-white text-white"
                   : "border-transparent text-white/60 hover:border-white/40 hover:text-white/90"
@@ -99,11 +99,11 @@ export default function ClaimTabs({ claimId }: ClaimTabsProps) {
         })}
       </div>
 
-      {/* Right scroll arrow */}
+      {/* Right scroll arrow - only show on small screens */}
       {canScrollRight && (
         <button
           onClick={() => scroll("right")}
-          className="absolute right-0 z-10 flex h-full w-8 items-center justify-center bg-gradient-to-l from-indigo-600 via-indigo-600 to-transparent"
+          className="absolute right-0 z-10 flex h-full w-8 items-center justify-center bg-gradient-to-l from-indigo-600 via-indigo-600 to-transparent lg:hidden"
           aria-label="Scroll tabs right"
         >
           <ChevronRight className="h-4 w-4 text-white/80" />

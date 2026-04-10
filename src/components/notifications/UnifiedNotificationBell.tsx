@@ -133,6 +133,8 @@ export default function UnifiedNotificationBell({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ markAllAsRead: true }),
       });
+      // Re-fetch to ensure sync with server
+      await fetchNotifications();
     } catch (error) {
       logger.error("Failed to mark all as read:", error);
       await fetchNotifications();

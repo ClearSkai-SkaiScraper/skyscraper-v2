@@ -41,7 +41,7 @@ export default async function ClaimLayout({ children, params }: ClaimLayoutProps
       // Since we're in layout, we don't have the full path, so just redirect to overview
       redirect(`/claims/${result.canonicalId}/overview`);
     }
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (error: any) {
     // CRITICAL: Re-throw NEXT_REDIRECT — Next.js uses thrown errors for redirects
     if (error?.digest?.startsWith("NEXT_REDIRECT")) throw error;
@@ -190,8 +190,8 @@ export default async function ClaimLayout({ children, params }: ClaimLayoutProps
               </div>
             </div>
 
-            {/* Tab bar — clean bottom border style */}
-            <div className="mx-auto max-w-7xl px-4 md:px-6">
+            {/* Tab bar — clean bottom border style, full-width on lg screens */}
+            <div className="mx-auto w-full px-4 md:px-6 lg:max-w-none">
               <ClaimTabs claimId={claimId} />
             </div>
           </header>
@@ -377,8 +377,8 @@ export default async function ClaimLayout({ children, params }: ClaimLayoutProps
           </div>
         </div>
 
-        {/* Tab bar — clean bottom border style */}
-        <div className="mx-auto max-w-7xl px-4 md:px-6">
+        {/* Tab bar — clean bottom border style, full-width on lg screens */}
+        <div className="mx-auto w-full px-4 md:px-6 lg:max-w-none">
           <ClaimTabs claimId={claimId} />
         </div>
       </header>
