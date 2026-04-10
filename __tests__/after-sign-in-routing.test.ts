@@ -209,13 +209,13 @@ describe("after-sign-in page routing", () => {
     it("redirects to /sign-in when currentUser() returns null", async () => {
       mockCurrentUserReturn = null;
       const dest = await callAfterSignIn({});
-      expect(dest).toBe("/sign-in");
+      expect(dest).toBe("/sign-in?retry=1");
     });
 
     it("redirects to /sign-in when currentUser() returns user with no id", async () => {
       mockCurrentUserReturn = { id: null };
       const dest = await callAfterSignIn({});
-      expect(dest).toBe("/sign-in");
+      expect(dest).toBe("/sign-in?retry=1");
     });
   });
 
