@@ -1,13 +1,14 @@
 "use client";
 
+import { useUser } from "@clerk/nextjs";
+import { Clock, Download, Eye, FileText } from "lucide-react";
+import { useEffect, useState } from "react";
+
 import PortalPageHero from "@/components/portal/portal-page-hero";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useUser } from "@clerk/nextjs";
-import { Clock, Download, Eye, FileText } from "lucide-react";
-import { useEffect, useState } from "react";
 
 /* ------------------------------------------------------------------ */
 /*  Types                                                              */
@@ -48,7 +49,7 @@ export default function PortalDocumentsPage() {
         setLoading(false);
       }
     };
-    fetchDocs();
+    void fetchDocs();
   }, [user]);
 
   /* ── Loading ─────────────────────────────────────────── */
@@ -62,7 +63,6 @@ export default function PortalDocumentsPage() {
 
   const claimDocs = documents.filter((d) => d.category === "claim");
   const projectDocs = documents.filter((d) => d.category === "project");
-  const otherDocs = documents.filter((d) => d.category !== "claim" && d.category !== "project");
 
   return (
     <div className="mx-auto max-w-5xl space-y-6 px-4 py-6">

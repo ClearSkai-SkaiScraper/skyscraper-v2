@@ -1,12 +1,13 @@
 "use client";
 
+import { useUser } from "@clerk/nextjs";
+import { AlertCircle, Briefcase, CheckCircle2, Clock, Plus } from "lucide-react";
+import { useEffect, useState } from "react";
+
 import PortalPageHero from "@/components/portal/portal-page-hero";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { useUser } from "@clerk/nextjs";
-import { AlertCircle, Briefcase, CheckCircle2, Clock, Plus } from "lucide-react";
-import { useEffect, useState } from "react";
 
 /* ------------------------------------------------------------------ */
 /*  Types                                                              */
@@ -65,7 +66,7 @@ export default function PortalProjectsPage() {
         setLoading(false);
       }
     };
-    fetchProjects();
+    void fetchProjects();
   }, [user]);
 
   /* ── Loading ─────────────────────────────────────────── */

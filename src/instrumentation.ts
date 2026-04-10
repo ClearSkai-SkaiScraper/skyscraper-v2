@@ -71,10 +71,12 @@ export async function register() {
   // ═══════════════════════════════════════════════════════════════════════
   // 4. Sentry Initialization (Server & Edge Runtime Dispatch)
   // ═══════════════════════════════════════════════════════════════════════
+  // eslint-disable-next-line no-restricted-syntax -- NEXT_RUNTIME is a Next.js build-time variable, not a user env var
   if (process.env.NEXT_RUNTIME === "nodejs") {
     await import("../sentry.server.config");
   }
 
+  // eslint-disable-next-line no-restricted-syntax -- NEXT_RUNTIME is a Next.js build-time variable, not a user env var
   if (process.env.NEXT_RUNTIME === "edge") {
     await import("../sentry.edge.config");
   }
