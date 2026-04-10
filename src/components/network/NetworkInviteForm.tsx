@@ -162,9 +162,9 @@ export function NetworkInviteForm({ orgId }: NetworkInviteFormProps) {
       <div className="rounded-lg border border-blue-200 bg-blue-50 p-4 text-sm dark:border-blue-900 dark:bg-blue-950">
         <p className="font-medium text-blue-900 dark:text-blue-100">What happens next?</p>
         <ul className="mt-2 space-y-1 text-blue-800 dark:text-blue-200">
-          <li>• They'll receive an email invitation with a unique link</li>
+          <li>• They&apos;ll receive an email invitation with a unique link</li>
           <li>• They can create an account and complete their profile</li>
-          <li>• Once accepted, they'll appear in your network</li>
+          <li>• Once accepted, they&apos;ll appear in your network</li>
         </ul>
       </div>
     </form>

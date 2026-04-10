@@ -368,7 +368,7 @@ export default async function MyNetworkPage() {
             <p className="text-xs font-semibold uppercase tracking-wide text-sky-700">My Network</p>
             <h1 className="text-2xl font-bold text-slate-900">Your trades profile</h1>
             <p className="text-sm text-slate-600">
-              Keep this updated—it's what appears in the Trades Network and contractor search.
+              Keep this updated—it&apos;s what appears in the Trades Network and contractor search.
             </p>
           </div>
           <div className="flex flex-wrap gap-2">

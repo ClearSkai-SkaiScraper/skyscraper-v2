@@ -231,10 +231,10 @@ export default function GettingStartedCard() {
       {allCompleted && (
         <div className="mt-4 rounded-md border border-green-300 bg-green-50 p-4">
           <p className="text-center text-sm font-medium text-green-900">
-            🎉 Congratulations! You've completed all onboarding steps.
+            🎉 Congratulations! You&apos;ve completed all onboarding steps.
           </p>
           <p className="mt-1 text-center text-xs text-green-700">
-            You're ready to manage claims like a pro!
+            You&apos;re ready to manage claims like a pro!
           </p>
         </div>
       )}

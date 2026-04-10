@@ -740,7 +740,7 @@ export default function DoorKnockMapClient() {
           )}
           {!loading && pins.length === 0 && (
             <div className="rounded-lg border border-dashed p-4 text-center text-xs text-muted-foreground">
-              No pins yet. Click "Drop Pin" then click on the map.
+              No pins yet. Click &quot;Drop Pin&quot; then click on the map.
             </div>
           )}
           {pins.slice(0, 30).map((pin) => {

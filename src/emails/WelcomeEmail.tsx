@@ -63,7 +63,7 @@ export default function WelcomeEmail({
                   </tr>
                   <tr>
                     <td style={{ paddingTop: 24, fontSize: 13, color: "#6b7280" }}>
-                      Need help? Just reply to this email and we'll take care of you.
+                      Need help? Just reply to this email and we&apos;ll take care of you.
                     </td>
                   </tr>
                 </tbody>

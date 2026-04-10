@@ -421,7 +421,7 @@ export default function CodesPage() {
             <Scale className="mb-4 h-12 w-12 text-slate-300" />
             <h3 className="mb-2 text-lg font-medium">No Codes Analyzed Yet</h3>
             <p className="mb-4 max-w-md text-center text-sm text-slate-500">
-              Click "Analyze Codes" to identify applicable IRC codes and local requirements for this
+              Click &quot;Analyze Codes&quot; to identify applicable IRC codes and local requirements for this
               property.
             </p>
             <Button onClick={handleAnalyzeCodes}>

@@ -66,7 +66,7 @@ export default function TrialEndingEmail({
                   </tr>
                   <tr>
                     <td style={{ paddingTop: 24, fontSize: 13, color: "#6b7280" }}>
-                      If you have questions, just reply to this email—we're here to help.
+                      If you have questions, just reply to this email—we&apos;re here to help.
                     </td>
                   </tr>
                 </tbody>

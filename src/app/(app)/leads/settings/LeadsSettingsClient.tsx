@@ -236,7 +236,7 @@ export default function LeadsSettingsClient({ orgId, initialSettings }: LeadsSet
                 <div className="space-y-0.5">
                   <Label className="text-sm font-medium">Idle Lead Reminders</Label>
                   <p className="text-xs text-slate-500">
-                    Send alerts when leads haven't been touched
+                    Send alerts when leads haven&apos;t been touched
                   </p>
                 </div>
                 <Switch

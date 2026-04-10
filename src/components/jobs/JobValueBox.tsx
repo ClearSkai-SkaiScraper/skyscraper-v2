@@ -220,7 +220,7 @@ export function JobValueBox({
       {/* Submitted but NOT a manager — show waiting message */}
       {jobValueStatus === "submitted" && !isManager && !rbacLoading && (
         <p className="text-xs text-amber-600 dark:text-amber-400">
-          ⏳ Waiting for manager approval. You'll be notified when it's reviewed.
+          ⏳ Waiting for manager approval. You&apos;ll be notified when it&apos;s reviewed.
         </p>
       )}
 

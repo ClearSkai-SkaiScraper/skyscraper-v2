@@ -139,13 +139,13 @@ export function OrderMailersModal({
               <div className="flex items-center space-x-2">
                 <RadioGroupItem value="postcard" id="postcard" />
                 <Label htmlFor="postcard" className="cursor-pointer">
-                  Postcard <span className="text-sm text-muted-foreground">(6x9", faster delivery)</span>
+                  Postcard <span className="text-sm text-muted-foreground">(6x9&quot;, faster delivery)</span>
                 </Label>
               </div>
               <div className="flex items-center space-x-2">
                 <RadioGroupItem value="letter" id="letter" />
                 <Label htmlFor="letter" className="cursor-pointer">
-                  Letter <span className="text-sm text-muted-foreground">(8.5x11", formal)</span>
+                  Letter <span className="text-sm text-muted-foreground">(8.5x11&quot;, formal)</span>
                 </Label>
               </div>
             </RadioGroup>
@@ -237,7 +237,7 @@ export function OrderMailersModal({
           <Alert>
             <Info className="h-4 w-4" />
             <AlertDescription className="text-sm">
-              Each mailer includes a unique QR code for tracking. Delivery typically takes 3-5 business days. You'll receive webhook updates on delivery status.
+              Each mailer includes a unique QR code for tracking. Delivery typically takes 3-5 business days. You&apos;ll receive webhook updates on delivery status.
             </AlertDescription>
           </Alert>
 

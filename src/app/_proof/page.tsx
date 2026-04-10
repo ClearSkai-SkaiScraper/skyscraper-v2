@@ -68,7 +68,7 @@ export default function ProofPage() {
       <div className="mx-auto max-w-4xl space-y-8">
         <div>
           <h1 className="text-3xl font-bold">🔍 Deployment Proof</h1>
-          <p className="mt-2 text-slate-400">Verify what's actually deployed in production</p>
+          <p className="mt-2 text-slate-400">Verify what&apos;s actually deployed in production</p>
         </div>
 
         {/* Build Info */}

@@ -468,7 +468,7 @@ export function CSVUploadDialog() {
             <div className="space-y-3 py-6">
               <Progress value={progress} className="h-2" />
               <p className="text-center text-sm text-gray-500 dark:text-gray-400">
-                Processing invitations... please don't close this dialog.
+                Processing invitations... please don&apos;t close this dialog.
               </p>
             </div>
           </>

@@ -43,7 +43,7 @@ export default async function ClientProjectsPage({ params }: ClientProjectsPageP
             <div>
               <h3 className="font-medium text-foreground">No projects yet</h3>
               <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
-                When your contractor creates projects for you, they'll appear here with timelines
+                When your contractor creates projects for you, they&apos;ll appear here with timelines
                 and status updates.
               </p>
             </div>

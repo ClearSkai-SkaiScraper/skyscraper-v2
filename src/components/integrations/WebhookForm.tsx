@@ -80,7 +80,7 @@ export default function WebhookForm({ onSuccess }: WebhookFormProps) {
               ⚠️ Save Your Webhook Secret
             </h3>
             <p className="mb-4 text-sm text-gray-700 dark:text-gray-300">
-              This secret is only shown once. You'll need it to verify webhook signatures.
+              This secret is only shown once. You&apos;ll need it to verify webhook signatures.
             </p>
             <div className="break-all rounded-xl border border-gray-300 bg-white p-4 font-mono text-sm dark:border-gray-600 dark:bg-gray-800">
               {createdSecret}
@@ -94,7 +94,7 @@ export default function WebhookForm({ onSuccess }: WebhookFormProps) {
           }}
           className="w-full rounded-xl bg-blue-600 px-6 py-3 font-semibold text-white transition hover:bg-blue-700"
         >
-          I've Saved the Secret
+          I&apos;ve Saved the Secret
         </button>
       </div>
     );

@@ -120,11 +120,11 @@ export default function SkillsCertificationsPage() {
         <div className="mt-6 rounded-xl border border-blue-200 bg-blue-50 p-4">
           <h3 className="font-semibold text-blue-900">💡 Tips for Adding Skills</h3>
           <ul className="mt-2 space-y-1 text-sm text-blue-800">
-            <li>• Include state licenses (e.g., "Arizona Roofing License #123456")</li>
-            <li>• Add industry certifications (e.g., "GAF Master Elite", "CertainTeed SELECT")</li>
-            <li>• List safety training (e.g., "OSHA 30", "Fall Protection")</li>
-            <li>• Mention specialized skills (e.g., "Commercial Roofing", "Metal Roofing")</li>
-            <li>• Include software proficiency (e.g., "EagleView", "Xactimate")</li>
+            <li>• Include state licenses (e.g., &quot;Arizona Roofing License #123456&quot;)</li>
+            <li>• Add industry certifications (e.g., &quot;GAF Master Elite&quot;, &quot;CertainTeed SELECT&quot;)</li>
+            <li>• List safety training (e.g., &quot;OSHA 30&quot;, &quot;Fall Protection&quot;)</li>
+            <li>• Mention specialized skills (e.g., &quot;Commercial Roofing&quot;, &quot;Metal Roofing&quot;)</li>
+            <li>• Include software proficiency (e.g., &quot;EagleView&quot;, &quot;Xactimate&quot;)</li>
           </ul>
         </div>
       </div>

@@ -121,7 +121,7 @@ export function TradesNetworkClient({ contractors, currentUserId }: TradesNetwor
               Connect with {selectedContractor?.businessName}
             </DialogTitle>
             <DialogDescription className="text-base">
-              Send a connection request to start collaborating with this contractor. You'll be
+              Send a connection request to start collaborating with this contractor. You&apos;ll be
               notified when they respond.
             </DialogDescription>
           </DialogHeader>
@@ -147,7 +147,7 @@ export function TradesNetworkClient({ contractors, currentUserId }: TradesNetwor
                 className="resize-none"
               />
               <p className="text-xs text-muted-foreground">
-                Introduce yourself and explain why you'd like to connect
+                Introduce yourself and explain why you&apos;d like to connect
               </p>
             </div>
           </div>

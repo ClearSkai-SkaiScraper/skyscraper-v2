@@ -130,7 +130,7 @@ export function LegalModal({ document, onAccepted }: LegalModalProps) {
         <div className="flex flex-col gap-3">
           <div className="flex items-center justify-between gap-3">
             <p className="max-w-xs text-xs text-slate-400">
-              By clicking "I Accept," you agree to be legally bound by this document on behalf of
+              By clicking &quot;I Accept,&quot; you agree to be legally bound by this document on behalf of
               yourself and, where applicable, your organization.
             </p>
 

@@ -14,7 +14,7 @@ export default function CaseStudy() {
         <SectionTitle className="mb-4">ABC Roofing</SectionTitle>
         <p className="mb-4 text-muted-foreground">
           ABC Roofing increased their claim approval rate by 40% and reduced processing time from
-          weeks to days using SkaiScraper's AI-powered damage assessment.
+          weeks to days using SkaiScraper&apos;s AI-powered damage assessment.
         </p>
         <div className="mt-6 grid gap-4 md:grid-cols-3">
           {[{v:'40%', l:'Higher Approval Rate'},{v:'75%', l:'Time Saved'},{v:'$50K', l:'Monthly Revenue Increase'}].map(stat => (

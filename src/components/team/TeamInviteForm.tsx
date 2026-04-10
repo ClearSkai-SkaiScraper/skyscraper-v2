@@ -136,8 +136,8 @@ export default function TeamInviteForm({ onSuccess }: TeamInviteFormProps) {
             <p className="mb-1 font-semibold">How it works:</p>
             <ol className="list-inside list-decimal space-y-1">
               <li>Enter the email address of the person you want to invite</li>
-              <li>They'll receive an invitation link valid for 7 days</li>
-              <li>Once accepted, they'll have immediate access to your organization</li>
+              <li>They&apos;ll receive an invitation link valid for 7 days</li>
+              <li>Once accepted, they&apos;ll have immediate access to your organization</li>
             </ol>
           </div>
         </div>

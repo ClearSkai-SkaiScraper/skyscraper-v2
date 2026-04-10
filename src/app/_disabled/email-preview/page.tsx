@@ -179,7 +179,7 @@ export default function EmailPreviewPage() {
                 </div>
               ) : (
                 <div className="flex h-96 items-center justify-center text-gray-500">
-                  Select a template and click "Generate Preview" to see the email
+                  Select a template and click &quot;Generate Preview&quot; to see the email
                 </div>
               )}
             </div>

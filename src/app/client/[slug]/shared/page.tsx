@@ -102,7 +102,7 @@ export default async function ClientSharedPage({ params }: ClientSharedPageProps
             <div>
               <h3 className="font-medium text-foreground">Nothing shared yet</h3>
               <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
-                When your contractor shares reports, documents, or photos with you, they'll appear
+                When your contractor shares reports, documents, or photos with you, they&apos;ll appear
                 here.
               </p>
             </div>

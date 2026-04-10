@@ -56,7 +56,7 @@ export default async function SupplementHomeownerPage({ params }: PageProps) {
       {/* Key Items */}
       {keyItems.length > 0 && (
         <section className="space-y-2 text-sm">
-          <h2 className="border-b pb-1 text-lg font-semibold">A Few Key Items We're Requesting</h2>
+          <h2 className="border-b pb-1 text-lg font-semibold">A Few Key Items We&apos;re Requesting</h2>
           <ul className="space-y-2">
             {keyItems.map((item, idx) => (
               <li key={idx} className="rounded-lg border p-3">
@@ -75,7 +75,7 @@ export default async function SupplementHomeownerPage({ params }: PageProps) {
 
       {/* Total */}
       <section className="space-y-2 text-sm">
-        <h2 className="border-b pb-1 text-lg font-semibold">Total Amount We're Requesting</h2>
+        <h2 className="border-b pb-1 text-lg font-semibold">Total Amount We&apos;re Requesting</h2>
         <p>
           We are asking your insurance company to add approximately{" "}
           <strong>${totalRequested.toFixed(2)}</strong> in additional items.

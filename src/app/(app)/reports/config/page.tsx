@@ -54,7 +54,7 @@ export default async function ReportConfigPage() {
         <div className="mt-4 rounded-lg border-2 border-amber-200 bg-amber-50 p-4">
           <p className="text-sm font-semibold text-amber-900">⚠️ No claims found</p>
           <p className="mt-1 text-xs text-amber-700">
-            You don't have any claims yet. Create a claim first, then use the claim-level report
+            You don&apos;t have any claims yet. Create a claim first, then use the claim-level report
             generator at <code>/claims/[claimId]/reports</code>.
           </p>
         </div>

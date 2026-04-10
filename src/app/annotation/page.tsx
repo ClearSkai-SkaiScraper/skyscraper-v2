@@ -135,7 +135,7 @@ export default function AnnotationViewer() {
                   Use OpenAI Vision Detection
                 </span>
                 <p className="text-xs text-neutral-600">
-                  Advanced AI detection using OpenAI's vision model for more accurate results
+                  Advanced AI detection using OpenAI&apos;s vision model for more accurate results
                 </p>
               </div>
             </label>

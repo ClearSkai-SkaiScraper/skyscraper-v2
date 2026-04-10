@@ -34,7 +34,7 @@ export default function SkaiScraperStoryPage() {
           </p>
 
           <p className="mt-4 text-center text-2xl font-semibold italic text-white">
-            "If nobody is going to fix this system… I will."
+            &quot;If nobody is going to fix this system… I will.&quot;
           </p>
 
           <p className="mt-6 text-lg leading-relaxed text-gray-300">
@@ -45,7 +45,7 @@ export default function SkaiScraperStoryPage() {
         </StorySection>
 
         <StorySection title="The Founder's Mission">
-          <p className="text-lg leading-relaxed text-gray-300">Damien's mission is simple:</p>
+          <p className="text-lg leading-relaxed text-gray-300">Damien&apos;s mission is simple:</p>
 
           <ul className="mt-4 space-y-3 text-lg leading-relaxed text-gray-300">
             <li>• End the chaos in trades & restoration</li>
@@ -58,11 +58,11 @@ export default function SkaiScraperStoryPage() {
 
         <StorySection title="The Vision">
           <p className="text-lg leading-relaxed text-gray-300">
-            SkaiScraper isn't just a software platform. It's a movement to transform a $50 billion
+            SkaiScraper isn&apos;t just a software platform. It&apos;s a movement to transform a $50 billion
             industry that touches millions of families every year.
           </p>
           <p className="mt-6 text-lg leading-relaxed text-gray-300">
-            We're building the Tesla of property restoration — AI-native, contractor-first, and
+            We&apos;re building the Tesla of property restoration — AI-native, contractor-first, and
             designed for the next decade of climate volatility and storm frequency.
           </p>
           <div className="mt-8 grid gap-6 md:grid-cols-3">
@@ -110,8 +110,8 @@ export default function SkaiScraperStoryPage() {
 
         <StorySection title="Join the Mission">
           <p className="mb-6 text-lg leading-relaxed text-gray-300">
-            Whether you're a contractor looking to transform your business, a homeowner seeking
-            clarity, or an investor ready to back the future of restoration — we'd love to connect.
+            Whether you&apos;re a contractor looking to transform your business, a homeowner seeking
+            clarity, or an investor ready to back the future of restoration — we&apos;d love to connect.
           </p>
           <div className="flex flex-wrap gap-4">
             <a

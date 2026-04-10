@@ -74,7 +74,7 @@ export default function ApiDocsPage() {
                 </p>
                 <div className="rounded-lg bg-gray-900 p-4 font-mono text-sm text-green-400">
                   <div>curl https://api.skaiscrape.com/v1/jobs \</div>
-                  <div className="ml-4">-H "Authorization: Bearer {apiKey}"</div>
+                  <div className="ml-4">-H &quot;Authorization: Bearer {apiKey}&quot;</div>
                 </div>
               </div>
 

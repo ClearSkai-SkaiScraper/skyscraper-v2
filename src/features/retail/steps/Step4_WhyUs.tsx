@@ -116,7 +116,7 @@ export function Step4_WhyUs({ data, updateData }: Step4Props) {
       <div>
         <h2 className="text-2xl font-bold text-gray-900">Why Choose Us?</h2>
         <p className="mt-2 text-sm text-gray-600">
-          Showcase your company's strengths, credentials, and customer satisfaction. This section
+          Showcase your company&apos;s strengths, credentials, and customer satisfaction. This section
           builds trust and differentiates you from competitors.
         </p>
       </div>
@@ -360,7 +360,7 @@ export function Step4_WhyUs({ data, updateData }: Step4Props) {
           </div>
           <div className="ml-3 flex-1">
             <p className="text-sm text-blue-700">
-              <strong>Tip:</strong> This "Why Choose Us" page helps homeowners understand your
+              <strong>Tip:</strong> This &quot;Why Choose Us&quot; page helps homeowners understand your
               credibility and experience. Include 2-3 strong testimonials and highlight any industry
               certifications or awards.
             </p>

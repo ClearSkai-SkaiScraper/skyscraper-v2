@@ -159,7 +159,7 @@ export function SupplementPanel({ leadId, claimId, currentScope = [] }: Suppleme
         </CardHeader>
         <CardContent className="space-y-4">
           <p className="text-sm text-gray-600">
-            Upload the carrier's scope PDF and we'll automatically generate a professional supplement with AI-powered arguments.
+            Upload the carrier&apos;s scope PDF and we&apos;ll automatically generate a professional supplement with AI-powered arguments.
           </p>
 
           <div className="space-y-2">

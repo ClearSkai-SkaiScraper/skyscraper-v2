@@ -207,7 +207,7 @@ function NewInspectionContent() {
         <Card>
           <CardHeader>
             <CardTitle>Component Type</CardTitle>
-            <CardDescription>Select what you're inspecting</CardDescription>
+            <CardDescription>Select what you&apos;re inspecting</CardDescription>
           </CardHeader>
           <CardContent>
             <Select value={componentType} onValueChange={setComponentType}>

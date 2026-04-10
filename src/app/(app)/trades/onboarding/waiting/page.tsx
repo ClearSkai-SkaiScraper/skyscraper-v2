@@ -186,7 +186,7 @@ export default function WaitingPage() {
           <ul className="space-y-2 text-sm text-gray-600">
             <li className="flex items-start gap-2">
               <CheckCircle className="mt-0.5 h-5 w-5 flex-shrink-0 text-green-500" />
-              <span>✓ Click "Create Company Page" to set up your company profile</span>
+              <span>✓ Click &quot;Create Company Page&quot; to set up your company profile</span>
             </li>
             <li className="flex items-start gap-2">
               <CheckCircle className="mt-0.5 h-5 w-5 flex-shrink-0 text-green-500" />

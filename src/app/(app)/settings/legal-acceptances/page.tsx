@@ -37,7 +37,7 @@ export default async function LegalAcceptancesPage() {
         <div className="border-b border-slate-800 pb-6">
           <h1 className="text-3xl font-bold text-slate-50">Legal Acceptances</h1>
           <p className="mt-2 text-sm text-slate-400">
-            View all legal documents you've accepted and when you accepted them.
+            View all legal documents you&apos;ve accepted and when you accepted them.
           </p>
         </div>
 
@@ -47,7 +47,7 @@ export default async function LegalAcceptancesPage() {
             <FileText className="mx-auto h-12 w-12 text-slate-600" />
             <h3 className="mt-4 text-lg font-semibold text-slate-300">No Legal Acceptances</h3>
             <p className="mt-2 text-sm text-slate-500">
-              You haven't accepted any legal documents yet.
+              You haven&apos;t accepted any legal documents yet.
             </p>
           </div>
         ) : (
@@ -110,7 +110,7 @@ export default async function LegalAcceptancesPage() {
         <div className="rounded-xl border border-slate-800/50 bg-slate-900/30 p-6">
           <h3 className="text-sm font-semibold text-slate-300">About Legal Acceptances</h3>
           <p className="mt-2 text-xs leading-relaxed text-slate-500">
-            This page shows a record of all legal documents you've agreed to, including Terms of
+            This page shows a record of all legal documents you&apos;ve agreed to, including Terms of
             Service, Privacy Policy, and AI Safety Policy. Each acceptance is timestamped and stored
             in your company settings. These records are maintained for compliance and reference
             purposes.

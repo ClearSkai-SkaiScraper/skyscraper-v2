@@ -68,7 +68,7 @@ export function ClaimNotFoundCard({
                 Claim Not Found
               </p>
               <p className="text-sm text-slate-600 dark:text-slate-400">
-                This claim doesn't exist in the database, or it may have been deleted.
+                This claim doesn&apos;t exist in the database, or it may have been deleted.
               </p>
             </>
           )}

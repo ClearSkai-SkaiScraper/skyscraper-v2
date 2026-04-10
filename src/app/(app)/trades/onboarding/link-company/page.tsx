@@ -202,7 +202,7 @@ export default function LinkCompanyPage() {
                   placeholder="e.g., Phoenix Roofing Pros"
                 />
                 <p className="mt-2 text-sm text-gray-500">
-                  You'll receive an invite link to share with at least 2 other employees. Once 3+
+                  You&apos;ll receive an invite link to share with at least 2 other employees. Once 3+
                   employees have joined, you can create the full company page.
                 </p>
               </div>

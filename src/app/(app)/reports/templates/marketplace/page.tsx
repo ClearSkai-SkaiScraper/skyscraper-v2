@@ -348,7 +348,7 @@ export default function MarketplacePage() {
                 Quick Pick — Who is this report for?
               </p>
               <p className="text-sm text-amber-700 dark:text-amber-300">
-                Choose your audience and we'll show you the right templates
+                Choose your audience and we&apos;ll show you the right templates
               </p>
             </div>
           </div>

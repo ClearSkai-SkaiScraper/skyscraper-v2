@@ -82,7 +82,7 @@ export default async function AiClaimsReportPage({
       <div className="p-6">
         <h1 className="mb-2 text-xl font-semibold">AI Claims Report</h1>
         <p className="text-sm text-muted-foreground">
-          You don't have any claims yet. Create a claims first, then return here to generate a
+          You don&apos;t have any claims yet. Create a claims first, then return here to generate a
           report.
         </p>
       </div>

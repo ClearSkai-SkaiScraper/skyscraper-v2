@@ -249,7 +249,7 @@ export function OnboardingChecklist({
       {allRequiredComplete && (
         <div className="border-t bg-green-50 px-4 py-3">
           <p className="text-center text-sm font-medium text-green-700">
-            🎉 You've completed all required steps! You're ready to go.
+            🎉 You&apos;ve completed all required steps! You&apos;re ready to go.
           </p>
         </div>
       )}

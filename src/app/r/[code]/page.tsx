@@ -35,7 +35,7 @@ export default function ReferralLanding({ params }: { params: { code: string } }
             </svg>
           </div>
           <h1 className="text-4xl font-bold text-slate-900 md:text-5xl">
-            You're invited to
+            You&apos;re invited to
             <br />
             <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
               SkaiScraper™
@@ -160,7 +160,7 @@ export default function ReferralLanding({ params }: { params: { code: string } }
               <h4 className="mb-1 font-semibold text-blue-900">Referral Bonus</h4>
               <p className="text-sm text-blue-800">
                 When you subscribe to any paid plan, the contractor who invited you earns rewards.
-                It's a win-win! 🎉
+                It&apos;s a win-win! 🎉
               </p>
             </div>
           </div>

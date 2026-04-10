@@ -41,8 +41,8 @@ export default function CacheBusterTest() {
             <li>Take a screenshot of this page NOW</li>
             <li>Hard refresh (Cmd+Shift+R or Ctrl+Shift+F5)</li>
             <li>Compare the timestamps</li>
-            <li>If they're DIFFERENT = Code is deploying ✅</li>
-            <li>If they're THE SAME = Cache problem ❌</li>
+            <li>If they&apos;re DIFFERENT = Code is deploying ✅</li>
+            <li>If they&apos;re THE SAME = Cache problem ❌</li>
           </ol>
         </div>
         

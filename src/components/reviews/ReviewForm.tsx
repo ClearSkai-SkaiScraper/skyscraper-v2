@@ -197,7 +197,7 @@ export function ReviewForm({
       {publicLeadId && (
         <div className="rounded-lg border border-green-200 bg-green-50 p-3">
           <div className="text-sm text-green-800">
-            ✓ This review will be marked as <strong>verified</strong> because it's linked to your project.
+            ✓ This review will be marked as <strong>verified</strong> because it&apos;s linked to your project.
           </div>
         </div>
       )}

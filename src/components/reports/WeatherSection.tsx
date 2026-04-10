@@ -65,7 +65,7 @@ export default function WeatherSection({
             <div className="grid grid-cols-3 gap-4">
               <div>
                 <p className="text-sm text-gray-600">Max Size</p>
-                <p className="text-2xl font-bold text-red-600">{weatherData.hailData.maxSize}"</p>
+                <p className="text-2xl font-bold text-red-600">{weatherData.hailData.maxSize}&quot;</p>
               </div>
               <div>
                 <p className="text-sm text-gray-600">Duration</p>
@@ -170,7 +170,7 @@ export default function WeatherSection({
           </div>
           <div className="rounded bg-gray-50 p-4">
             <p className="text-sm text-gray-600">Precipitation</p>
-            <p className="text-xl font-semibold text-gray-900">{weatherData.precipitation}"</p>
+            <p className="text-xl font-semibold text-gray-900">{weatherData.precipitation}&quot;</p>
           </div>
         </div>
       </div>

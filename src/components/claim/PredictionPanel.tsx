@@ -293,7 +293,7 @@ export function PredictionPanel({ claimId }: PredictionPanelProps) {
                     <div className="text-xs text-emerald-700">{step.doThis}</div>
                   </div>
                   <div className="rounded border border-rose-200 bg-rose-50 p-3">
-                    <div className="mb-1 text-xs font-semibold text-rose-800">✗ DON'T DO THIS</div>
+                    <div className="mb-1 text-xs font-semibold text-rose-800">✗ DON&apos;T DO THIS</div>
                     <div className="text-xs text-rose-700">{step.dontDoThis}</div>
                   </div>
                 </div>
@@ -305,7 +305,7 @@ export function PredictionPanel({ claimId }: PredictionPanelProps) {
 
       {/* Next Move */}
       <div className="rounded-lg border border-primary/20 bg-primary/5 p-6 text-center">
-        <h3 className="mb-2 font-semibold">Carrier's Likely Next Move</h3>
+        <h3 className="mb-2 font-semibold">Carrier&apos;s Likely Next Move</h3>
         <p className="text-sm text-muted-foreground">{prediction.nextMove}</p>
       </div>
     </div>

@@ -19,8 +19,8 @@ export default function TermsPage() {
 
         <h2>1. Acceptance of Terms</h2>
         <p>
-          By accessing or using SkaiScraper ("the Service"), you agree to be bound by these Terms of
-          Service ("Terms"). If you do not agree, do not use the Service.
+          By accessing or using SkaiScraper (&quot;the Service&quot;), you agree to be bound by these Terms of
+          Service (&quot;Terms&quot;). If you do not agree, do not use the Service.
         </p>
 
         <h2>2. Beta Testing</h2>
@@ -79,7 +79,7 @@ export default function TermsPage() {
           <strong>Beta Period:</strong> Currently free. When billing is enabled:
         </p>
         <ul>
-          <li>You'll be notified 30 days before any charges</li>
+          <li>You&apos;ll be notified 30 days before any charges</li>
           <li>Payments processed securely via Stripe</li>
           <li>Subscription auto-renews unless you cancel</li>
           <li>Refunds handled case-by-case (contact support)</li>
@@ -117,7 +117,7 @@ export default function TermsPage() {
 
         <h2>10. Disclaimers & Limitations of Liability</h2>
         <p>
-          THE SERVICE IS PROVIDED "AS IS" WITHOUT WARRANTIES OF ANY KIND. WE DO NOT GUARANTEE THAT
+          THE SERVICE IS PROVIDED &quot;AS IS&quot; WITHOUT WARRANTIES OF ANY KIND. WE DO NOT GUARANTEE THAT
           AI-GENERATED REPORTS ARE ACCURATE, COMPLETE, OR SUITABLE FOR YOUR SPECIFIC USE CASE.
         </p>
         <p>
@@ -143,7 +143,7 @@ export default function TermsPage() {
 
         <h2>13. Changes to Terms</h2>
         <p>
-          We may update these Terms periodically. We'll notify you of significant changes via email.
+          We may update these Terms periodically. We&apos;ll notify you of significant changes via email.
           Continued use of the Service constitutes acceptance of the updated Terms.
         </p>
 

@@ -85,7 +85,7 @@ export default function InviteTeamMemberPage() {
                   Permission Denied
                 </h3>
                 <p className="mb-4 text-amber-700 dark:text-amber-300">
-                  You don't have permission to invite team members. Only admins and managers can
+                  You don&apos;t have permission to invite team members. Only admins and managers can
                   send invitations.
                 </p>
                 <p className="mb-4 text-sm text-amber-600 dark:text-amber-400">
@@ -185,7 +185,7 @@ export default function InviteTeamMemberPage() {
               />
             </div>
             <p className="mt-1.5 text-xs text-slate-700 dark:text-slate-300">
-              They'll receive an email invitation to join your organization
+              They&apos;ll receive an email invitation to join your organization
             </p>
           </div>
 
@@ -316,7 +316,7 @@ export default function InviteTeamMemberPage() {
             </li>
             <li className="flex items-start gap-2">
               <span className="text-blue-600 dark:text-blue-400">3.</span>
-              <span>They're automatically added to your organization with the assigned role</span>
+              <span>They&apos;re automatically added to your organization with the assigned role</span>
             </li>
             <li className="flex items-start gap-2">
               <span className="text-blue-600 dark:text-blue-400">4.</span>

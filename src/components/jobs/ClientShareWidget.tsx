@@ -269,7 +269,7 @@ export function ClientShareWidget({
             </div>
 
             <p className="text-xs text-muted-foreground">
-              Toggle documents on to share them in the client's portal
+              Toggle documents on to share them in the client&apos;s portal
             </p>
           </div>
         )}

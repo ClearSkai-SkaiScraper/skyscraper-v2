@@ -18,7 +18,7 @@ export default function RetailJobNotFound() {
           </CardHeader>
           <CardContent>
             <p className="text-sm text-slate-600 dark:text-slate-400">
-              The retail job you're looking for doesn't exist or you don't have permission to view
+              The retail job you&apos;re looking for doesn&apos;t exist or you don&apos;t have permission to view
               it. This could happen if:
             </p>
 

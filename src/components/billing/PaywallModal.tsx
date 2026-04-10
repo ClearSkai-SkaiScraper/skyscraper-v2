@@ -45,7 +45,7 @@ export function PaywallModal({
               <DialogTitle className="text-2xl font-bold">Upgrade Required</DialogTitle>
             </div>
             <p className="text-lg text-white/90">
-              You've reached your plan limits. Upgrade to continue using {feature}.
+              You&apos;ve reached your plan limits. Upgrade to continue using {feature}.
             </p>
           </div>
         </div>

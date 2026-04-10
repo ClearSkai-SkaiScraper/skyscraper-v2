@@ -86,7 +86,7 @@ export default function OnboardingPage() {
           </div>
           <CardTitle className="text-2xl">Welcome to SkaiScraper</CardTitle>
           <CardDescription>
-            The operating system for storm restoration. Let's set up your company.
+            The operating system for storm restoration. Let&apos;s set up your company.
           </CardDescription>
         </CardHeader>
         <CardContent>

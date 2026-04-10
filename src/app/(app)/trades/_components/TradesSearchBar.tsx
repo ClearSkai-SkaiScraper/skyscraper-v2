@@ -128,7 +128,7 @@ export function TradesSearchBar() {
           {!hasResults && !loading && (
             <div className="p-6 text-center text-slate-500">
               <Users className="mx-auto mb-2 h-8 w-8 text-slate-300" />
-              <p>No results found for "{query}"</p>
+              <p>No results found for &quot;{query}&quot;</p>
               <p className="mt-1 text-sm">Try searching for a company or contractor name</p>
             </div>
           )}
@@ -241,7 +241,7 @@ export function TradesSearchBar() {
               onClick={() => setIsOpen(false)}
               className="block border-t border-slate-100 bg-slate-50 px-4 py-3 text-center text-sm font-medium text-blue-600 transition-colors hover:bg-slate-100 dark:border-slate-800 dark:bg-slate-800 dark:hover:bg-slate-700"
             >
-              View all results for "{query}"
+              View all results for &quot;{query}&quot;
             </Link>
           )}
         </div>

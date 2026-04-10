@@ -301,7 +301,7 @@ export default function ClientLeadsPage() {
               <Inbox className="mx-auto mb-4 h-12 w-12 text-muted-foreground" />
               <h3 className="text-lg font-medium">No client leads yet</h3>
               <p className="mt-2 text-muted-foreground">
-                When clients invite you to jobs, they'll appear here
+                When clients invite you to jobs, they&apos;ll appear here
               </p>
             </Card>
           ) : (

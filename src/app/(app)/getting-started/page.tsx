@@ -215,13 +215,13 @@ export default function GettingStartedPage() {
             </div>
             <CardTitle className="text-2xl">🎉 Congratulations!</CardTitle>
             <CardDescription className="text-base">
-              You've completed the onboarding checklist! You're ready to use SkaiScraper to its full
+              You&apos;ve completed the onboarding checklist! You&apos;re ready to use SkaiScraper to its full
               potential.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="rounded-lg bg-white p-4 dark:bg-slate-800">
-              <h3 className="mb-2 font-semibold">What's Next?</h3>
+              <h3 className="mb-2 font-semibold">What&apos;s Next?</h3>
               <ul className="space-y-2 text-sm text-muted-foreground">
                 <li className="flex items-start gap-2">
                   <ChevronRight className="mt-0.5 h-4 w-4 flex-shrink-0 text-green-600" />
@@ -339,7 +339,7 @@ export default function GettingStartedPage() {
           </CardHeader>
           <CardContent className="space-y-3">
             <p className="text-sm text-muted-foreground">
-              If you have questions or run into any issues, we're here to help!
+              If you have questions or run into any issues, we&apos;re here to help!
             </p>
             <div className="flex flex-col gap-2 sm:flex-row">
               <Button asChild variant="outline" size="sm">

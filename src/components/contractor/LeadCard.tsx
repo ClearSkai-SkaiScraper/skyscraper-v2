@@ -185,7 +185,7 @@ export default function LeadCard({ lead, subscription }: LeadCardProps) {
             {subscription.tier === "free" ? (
               <>
                 <p className="mb-6 text-white/70">
-                  Pay $25 to unlock this lead's contact information and connect with the client
+                  Pay $25 to unlock this lead&apos;s contact information and connect with the client
                   directly.
                 </p>
                 <div className="mb-6 rounded-lg border border-white/10 bg-white/5 p-4">

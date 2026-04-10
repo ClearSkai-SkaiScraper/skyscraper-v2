@@ -106,7 +106,7 @@ export default function NotificationList({ notifications, userId }: Notification
         <Bell className="mx-auto h-16 w-16 text-muted-foreground/30" />
         <h3 className="mt-4 text-lg font-semibold text-foreground">No Notifications Yet</h3>
         <p className="mt-2 text-sm text-muted-foreground">
-          You'll see updates here as your claims progress.
+          You&apos;ll see updates here as your claims progress.
         </p>
       </div>
     );

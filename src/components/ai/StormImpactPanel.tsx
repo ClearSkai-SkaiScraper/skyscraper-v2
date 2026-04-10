@@ -222,7 +222,7 @@ export default function StormImpactPanel({ leadId }: { leadId: string }) {
         {stormReport.hailSize && (
           <div className="rounded-lg border border-gray-200 bg-white p-4">
             <p className="text-sm text-gray-600">Hail Size</p>
-            <p className="mt-1 text-2xl font-bold text-gray-900">{stormReport.hailSize}"</p>
+            <p className="mt-1 text-2xl font-bold text-gray-900">{stormReport.hailSize}&quot;</p>
           </div>
         )}
         {stormReport.windSpeed && (
@@ -290,7 +290,7 @@ export default function StormImpactPanel({ leadId }: { leadId: string }) {
                   <p className="text-sm text-gray-600">
                     {new Date(event.date).toLocaleDateString()} • {event.distance.toFixed(1)} miles away
                   </p>
-                  {event.hailSize && <p className="text-sm text-gray-700">Hail: {event.hailSize}"</p>}
+                  {event.hailSize && <p className="text-sm text-gray-700">Hail: {event.hailSize}&quot;</p>}
                   {event.windSpeed && <p className="text-sm text-gray-700">Wind: {event.windSpeed} MPH</p>}
                 </div>
               </div>

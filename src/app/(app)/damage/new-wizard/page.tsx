@@ -273,7 +273,7 @@ export default function NewDamageAssessmentPage() {
               </Card>
 
               <p className="text-sm text-muted-foreground">
-                Assessment saved successfully. Click "Finish" to return to claims list.
+                Assessment saved successfully. Click &quot;Finish&quot; to return to claims list.
               </p>
             </div>
           )}

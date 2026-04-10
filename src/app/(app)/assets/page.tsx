@@ -368,9 +368,9 @@ export default function AssetTrackingPage() {
                 <label className="mb-2 block text-sm font-medium">Assign To</label>
                 <select className="w-full rounded-lg border px-4 py-2" aria-label="Assign asset to">
                   <option>Unassigned</option>
-                  <option>Mike's Crew</option>
-                  <option>Tom's Crew</option>
-                  <option>Sarah's Crew</option>
+                  <option>Mike&apos;s Crew</option>
+                  <option>Tom&apos;s Crew</option>
+                  <option>Sarah&apos;s Crew</option>
                 </select>
               </div>
               <div className="mt-6 flex gap-3">

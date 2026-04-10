@@ -190,7 +190,7 @@ export function ClaimIntelligenceDashboard({ claimId }: ClaimIntelligenceDashboa
             <TrendingUp className="h-5 w-5" />
             Key Factors Affecting Prediction
           </CardTitle>
-          <CardDescription>These factors are influencing the AI's assessment</CardDescription>
+          <CardDescription>These factors are influencing the AI&apos;s assessment</CardDescription>
         </CardHeader>
         <CardContent>
           {intelligence.keyFactors.length === 0 ? (

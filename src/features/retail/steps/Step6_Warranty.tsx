@@ -64,7 +64,7 @@ export function Step6_Warranty({ data, updateData }: Step6Props) {
               ))}
             </SelectContent>
           </Select>
-          <p className="text-xs text-gray-500">Choose the warranty coverage you're offering</p>
+          <p className="text-xs text-gray-500">Choose the warranty coverage you&apos;re offering</p>
         </div>
       </div>
 

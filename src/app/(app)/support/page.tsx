@@ -74,7 +74,7 @@ export default function SupportPage() {
       <div className="mb-8">
         <h1 className="mb-2 text-3xl font-bold">Support & Feedback</h1>
         <p className="text-lg text-muted-foreground">
-          We're here to help! Report bugs, request features, or get in touch with our team.
+          We&apos;re here to help! Report bugs, request features, or get in touch with our team.
         </p>
       </div>
 
@@ -134,7 +134,7 @@ export default function SupportPage() {
                     className="flex cursor-pointer items-center gap-2 font-normal"
                   >
                     <Bug className="h-4 w-4 text-red-500" />
-                    <span>Bug Report - Something isn't working correctly</span>
+                    <span>Bug Report - Something isn&apos;t working correctly</span>
                   </Label>
                 </div>
                 <div className="flex items-center space-x-2">

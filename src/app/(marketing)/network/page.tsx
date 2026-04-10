@@ -227,7 +227,7 @@ export default function MarketingNetworkPage() {
                   Built for real trades — not directories
                 </h2>
                 <p className="mt-4 text-slate-600 dark:text-slate-400">
-                  This isn't Angi or Thumbtack. SkaiScraper trades profiles are tied to actual work,
+                  This isn&apos;t Angi or Thumbtack. SkaiScraper trades profiles are tied to actual work,
                   real companies, and verified team members.
                 </p>
                 <div className="mt-6 grid gap-4 sm:grid-cols-2">
@@ -266,7 +266,7 @@ export default function MarketingNetworkPage() {
             financed jobs. No more telephone games between parties.
           </p>
           <p className="mx-auto mt-6 max-w-xl text-lg font-semibold italic text-slate-700 dark:text-slate-300">
-            This isn't about software. It's about accountability and trust.
+            This isn&apos;t about software. It&apos;s about accountability and trust.
           </p>
         </div>
       </section>

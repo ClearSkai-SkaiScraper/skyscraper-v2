@@ -59,7 +59,7 @@ export default function ClaimSupplements({
 
         {supplements.length === 0 ? (
           <p className="text-sm italic text-[color:var(--muted)]">
-            No supplements yet. Click "Add Supplement" to create one.
+            No supplements yet. Click &quot;Add Supplement&quot; to create one.
           </p>
         ) : (
           <div className="space-y-3">

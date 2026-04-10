@@ -236,7 +236,7 @@ export function ClaimTradesCard({ claimId }: ClaimTradesCardProps) {
       {linkedTrades.length === 0 ? (
         <div className="py-8 text-center text-slate-600">
           <p>No trade partners linked yet.</p>
-          <p className="mt-1 text-sm">Click "Add Trade Partner" to get started.</p>
+          <p className="mt-1 text-sm">Click &quot;Add Trade Partner&quot; to get started.</p>
         </div>
       ) : (
         <div className="space-y-3">

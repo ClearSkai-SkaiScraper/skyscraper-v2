@@ -93,7 +93,7 @@ export default function ConnectionRequestCard() {
             No pending connection requests
           </div>
           <div className="text-xs text-zinc-400/70">
-            When clients request to connect with you, they'll appear here.
+            When clients request to connect with you, they&apos;ll appear here.
           </div>
         </div>
       </GlassPanel>

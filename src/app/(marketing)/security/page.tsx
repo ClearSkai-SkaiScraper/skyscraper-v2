@@ -16,7 +16,7 @@ export default function SecurityPage() {
         <Shield className="mx-auto mb-4 h-16 w-16 text-blue-600" />
         <h1 className="mb-4 text-4xl font-bold">Security & Data Protection</h1>
         <p className="text-xl text-muted-foreground">
-          Your data is critical to your business. Here's how we keep it safe.
+          Your data is critical to your business. Here&apos;s how we keep it safe.
         </p>
       </div>
 
@@ -102,7 +102,7 @@ export default function SecurityPage() {
           <li>Activity logs (for debugging and analytics)</li>
         </ul>
 
-        <h3>What We Don't Store</h3>
+        <h3>What We Don&apos;t Store</h3>
         <ul>
           <li>Credit card numbers (processed by Stripe, PCI DSS Level 1)</li>
           <li>Plaintext passwords (hashed by Clerk)</li>
@@ -181,7 +181,7 @@ export default function SecurityPage() {
           seriously and respond within 24 hours.
         </p>
         <p>
-          Please <strong>do not</strong> publicly disclose security issues until we've had a chance
+          Please <strong>do not</strong> publicly disclose security issues until we&apos;ve had a chance
           to address them. We appreciate responsible disclosure.
         </p>
 

@@ -171,12 +171,12 @@ export default function ClerkDebugPage() {
               </h3>
               <ol className="ml-4 list-decimal space-y-1">
                 <li>Open DevTools (F12) → Console tab</li>
-                <li>Look for errors like "Origin not allowed" or "Failed to load ClerkJS"</li>
+                <li>Look for errors like &quot;Origin not allowed&quot; or &quot;Failed to load ClerkJS&quot;</li>
                 <li>
                   Current origin:{" "}
                   <span className="font-mono text-green-400">{config.currentDomain}</span>
                 </li>
-                <li>Ensure this exact URL is in Clerk's Allowed Origins list</li>
+                <li>Ensure this exact URL is in Clerk&apos;s Allowed Origins list</li>
                 <li>After updating Clerk, wait 1-2 minutes for DNS propagation</li>
                 <li>Clear browser cache and try incognito window</li>
               </ol>

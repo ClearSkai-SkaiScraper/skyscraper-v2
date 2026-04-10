@@ -116,7 +116,7 @@ function SuccessContent() {
                 <div>
                   <h3 className="font-semibold text-gray-900">No Charge Until November 4th</h3>
                   <p className="text-gray-600">
-                    Your trial ends on November 4th. You'll only be charged if you keep your
+                    Your trial ends on November 4th. You&apos;ll only be charged if you keep your
                     subscription active.
                   </p>
                 </div>

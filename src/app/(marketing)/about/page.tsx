@@ -89,7 +89,7 @@ export default function AboutPage() {
         <section>
           <div className="mb-12 text-center">
             <h2 className="text-3xl font-bold tracking-tight">
-              <span className="text-[#117CFF]">What</span> We're Building
+              <span className="text-[#117CFF]">What</span> We&apos;re Building
             </h2>
             <p className="mt-4 text-lg text-muted-foreground">
               Four pillars of the modern trades workflow
@@ -149,7 +149,7 @@ export default function AboutPage() {
             <h2 className="text-3xl font-bold tracking-tight">
               <span className="text-[#117CFF]">Future</span> Roadmap
             </h2>
-            <p className="mt-4 text-muted-foreground">Where we're headed next</p>
+            <p className="mt-4 text-muted-foreground">Where we&apos;re headed next</p>
           </div>
 
           <div className="grid gap-4 md:grid-cols-2">

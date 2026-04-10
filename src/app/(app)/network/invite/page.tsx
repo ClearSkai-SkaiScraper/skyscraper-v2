@@ -17,7 +17,7 @@ export default async function NetworkInvitePage() {
       <div className="mb-6">
         <h1 className="text-3xl font-bold">Invite to Network</h1>
         <p className="mt-2 text-gray-600">
-          Invite vendors or clients to join your network. They'll receive an email to complete their
+          Invite vendors or clients to join your network. They&apos;ll receive an email to complete their
           profile.
         </p>
       </div>

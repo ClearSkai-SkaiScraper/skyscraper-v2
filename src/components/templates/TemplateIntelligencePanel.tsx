@@ -175,7 +175,7 @@ export function TemplateIntelligencePanel({
             <div className="rounded border border-yellow-200 bg-yellow-50 p-3 dark:border-yellow-900 dark:bg-yellow-950/20">
               <p className="text-xs text-yellow-800 dark:text-yellow-400">
                 <strong>Preview Mode:</strong> This template shows neutral placeholders. When you
-                generate it from a claim, it will use your organization's branding, claim data, and
+                generate it from a claim, it will use your organization&apos;s branding, claim data, and
                 property information automatically.
               </p>
             </div>

@@ -27,7 +27,7 @@ export default function ShowcasePage() {
       <header className="mb-8">
         <h1 className="text-3xl font-semibold tracking-tight">SkaiScraper™ Branding Showcase</h1>
         <p className="mt-2 text-gray-600">
-          Read-only demo of how your company's look & feel flows into reports and packets.
+          Read-only demo of how your company&apos;s look & feel flows into reports and packets.
         </p>
       </header>
 

@@ -235,7 +235,7 @@ export function FullAccessBilling() {
 
             <div className="space-y-2">
               <p className="mb-2 text-sm font-medium text-violet-900 dark:text-violet-100">
-                What's included:
+                What&apos;s included:
               </p>
               <div className="space-y-2">
                 <div className="flex items-center gap-2 text-sm text-violet-700 dark:text-violet-300">

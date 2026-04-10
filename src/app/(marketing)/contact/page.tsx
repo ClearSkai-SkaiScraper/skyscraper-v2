@@ -28,7 +28,7 @@ export default function ContactPage() {
         <div className="relative mx-auto max-w-6xl px-4 text-center sm:px-6 lg:px-8">
           <div className="mb-4 inline-flex items-center gap-2 rounded-full bg-white/10 px-4 py-2 backdrop-blur-sm">
             <MessageCircle className="h-4 w-4 text-[#FFC838]" />
-            <span className="text-sm font-medium">Let's Talk</span>
+            <span className="text-sm font-medium">Let&apos;s Talk</span>
           </div>
 
           <h1 className="text-4xl font-bold tracking-tight sm:text-5xl md:text-6xl">
@@ -39,7 +39,7 @@ export default function ContactPage() {
           </h1>
 
           <p className="mx-auto mt-6 max-w-2xl text-lg text-white/80">
-            Whether you're a solo roofer or a multi-branch restoration team, we'd love to learn
+            Whether you&apos;re a solo roofer or a multi-branch restoration team, we&apos;d love to learn
             about your workflow and show you how SkaiScraper can help.
           </p>
         </div>

@@ -127,7 +127,7 @@ export default function RouteOptimizationClient({ stops }: { stops: RouteStop[] 
 
           {!optimizedRoute ? (
             <div className="rounded-lg bg-blue-50 p-4 text-sm text-blue-700">
-              Select stops and click "Optimize Route" to calculate the best path.
+              Select stops and click &quot;Optimize Route&quot; to calculate the best path.
             </div>
           ) : (
             <div className="space-y-4">

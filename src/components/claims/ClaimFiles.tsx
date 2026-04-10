@@ -53,7 +53,7 @@ export default function ClaimFiles({ claimId }: { claimId: string }) {
         <div className="rounded-lg border-2 border-dashed border-[color:var(--border)] py-12 text-center">
           <div className="mb-3 text-4xl">📁</div>
           <p className="text-sm text-[color:var(--muted)]">
-            No files uploaded yet. Click "Upload Files" to add documents, photos, or reports.
+            No files uploaded yet. Click &quot;Upload Files&quot; to add documents, photos, or reports.
           </p>
         </div>
       ) : (

@@ -130,7 +130,7 @@ export function CancellationModal({
 
           {/* Feedback */}
           <div className="space-y-2">
-            <Label>Anything else you'd like us to know? (optional)</Label>
+            <Label>Anything else you&apos;d like us to know? (optional)</Label>
             <Textarea
               value={feedback}
               onChange={(e) => setFeedback(e.target.value)}

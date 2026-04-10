@@ -108,7 +108,7 @@ export function SectionList({
 
         {sections.length === 0 && (
           <div className="py-8 text-center text-gray-500">
-            No sections yet. Click "Generate Report" to get started.
+            No sections yet. Click &quot;Generate Report&quot; to get started.
           </div>
         )}
       </CardContent>

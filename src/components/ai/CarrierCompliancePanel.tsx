@@ -143,7 +143,7 @@ export function CarrierCompliancePanel({ leadId, currentScope = [] }: CarrierCom
                 onChange={(e) => setAdjusterEmail(e.target.value)}
               />
               <p className="text-xs text-gray-500">
-                We'll detect the carrier from the email domain
+                We&apos;ll detect the carrier from the email domain
               </p>
             </div>
 

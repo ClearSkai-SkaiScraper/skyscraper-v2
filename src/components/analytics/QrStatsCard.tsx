@@ -124,7 +124,7 @@ export function QrStatsCard({ stats, batchJobId }: QrStatsCardProps) {
             <QrCode className="mx-auto mb-3 h-12 w-12 text-muted-foreground" />
             <h4 className="mb-1 font-semibold">No Scans Yet</h4>
             <p className="text-sm text-muted-foreground">
-              QR codes haven't been scanned yet. Check back after mailers are delivered.
+              QR codes haven&apos;t been scanned yet. Check back after mailers are delivered.
             </p>
           </div>
         )}

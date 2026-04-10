@@ -55,7 +55,7 @@ export function StartDraftGate({
             Create Draft Claim Report?
           </DialogTitle>
           <DialogDescription>
-            You're about to create a draft claim report {carrierName && `for ${carrierName}`}
+            You&apos;re about to create a draft claim report {carrierName && `for ${carrierName}`}
             {claimNumber && ` (Claim #${claimNumber})`}.
           </DialogDescription>
         </DialogHeader>

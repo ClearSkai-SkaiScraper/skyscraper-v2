@@ -27,7 +27,7 @@ export function WeatherFullSection({ data }: { data: ReportData }) {
         <View style={baseStyles.tableRow}>
           <Text style={baseStyles.tableHeaderCell}>Date</Text>
           <Text style={baseStyles.tableHeaderCell}>Peril</Text>
-          <Text style={baseStyles.tableHeaderCell}>Hail Size (")</Text>
+          <Text style={baseStyles.tableHeaderCell}>Hail Size (&quot;)</Text>
           <Text style={baseStyles.tableHeaderCell}>Wind (mph)</Text>
           <Text style={baseStyles.tableHeaderCell}>Distance (mi)</Text>
         </View>

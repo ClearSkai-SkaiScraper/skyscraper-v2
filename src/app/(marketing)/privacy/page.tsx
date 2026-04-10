@@ -113,7 +113,7 @@ export default function PrivacyPage() {
         </ul>
         <p>You can disable cookies in your browser, but some features may not work.</p>
 
-        <h2>Children's Privacy</h2>
+        <h2>Children&apos;s Privacy</h2>
         <p>
           SkaiScraper is not intended for users under 18. We do not knowingly collect data from
           children.
@@ -121,7 +121,7 @@ export default function PrivacyPage() {
 
         <h2>Changes to This Policy</h2>
         <p>
-          We may update this policy periodically. We'll notify you of significant changes via email
+          We may update this policy periodically. We&apos;ll notify you of significant changes via email
           or in-app notification.
         </p>
 

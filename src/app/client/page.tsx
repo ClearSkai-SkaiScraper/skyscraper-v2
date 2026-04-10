@@ -15,7 +15,7 @@ export default async function ClientLandingPage() {
       <section className="mx-auto flex max-w-2xl flex-col gap-4 px-4 py-16">
         <h1 className="text-3xl font-semibold">Welcome to the SkaiScraper Client Portal</h1>
         <p className="text-slate-300">
-          Your account is set up, but your personalized project space isn't configured yet.
+          Your account is set up, but your personalized project space isn&apos;t configured yet.
         </p>
         <p className="text-slate-400">
           Check your email for a link from your contractor, or contact support if you believe this

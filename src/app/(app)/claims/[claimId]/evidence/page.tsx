@@ -158,7 +158,7 @@ export default async function EvidencePage({ params }: EvidencePageProps) {
               <div className="space-y-4">
                 <h3 className="text-sm font-semibold">Ungrouped Evidence</h3>
                 <p className="text-sm text-gray-600">
-                  These photos haven't been organized into sections yet.
+                  These photos haven&apos;t been organized into sections yet.
                 </p>
                 <Suspense fallback={<Skeleton className="h-64" />}>
                   <EvidenceGrid

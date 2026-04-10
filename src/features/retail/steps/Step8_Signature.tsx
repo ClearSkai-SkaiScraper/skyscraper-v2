@@ -70,7 +70,7 @@ export function Step8_Signature({ data, updateData, validationErrors }: Step8Pro
           {hasError("clientPrintedName") && !hasSignature && (
             <p className="text-sm text-red-600">Either printed name or signature is required</p>
           )}
-          <p className="text-xs text-gray-500">Client's full legal name</p>
+          <p className="text-xs text-gray-500">Client&apos;s full legal name</p>
         </div>
 
         {/* Email & Phone (Side by Side) */}
@@ -144,7 +144,7 @@ export function Step8_Signature({ data, updateData, validationErrors }: Step8Pro
           {hasError("clientSignature") && !hasSignature && (
             <p className="text-sm text-red-600">Either printed name or signature is required</p>
           )}
-          <p className="text-xs text-gray-500">Client's digital signature (coming in Phase 2)</p>
+          <p className="text-xs text-gray-500">Client&apos;s digital signature (coming in Phase 2)</p>
         </div>
 
         {/* E-Signature QR Code (Optional) */}

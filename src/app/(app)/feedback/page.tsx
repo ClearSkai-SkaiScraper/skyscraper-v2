@@ -32,7 +32,7 @@ export default async function FeedbackPage() {
         <div className="space-y-6">
           <div className="rounded-lg border border-blue-200 bg-blue-50 p-4 dark:border-blue-800 dark:bg-blue-900/20">
             <p className="text-sm font-medium text-blue-900 dark:text-blue-100">
-              🎯 We're actively building based on your input
+              🎯 We&apos;re actively building based on your input
             </p>
             <p className="mt-1 text-sm text-blue-700 dark:text-blue-300">
               Every piece of feedback helps us prioritize what matters most to you.
@@ -48,23 +48,23 @@ export default async function FeedbackPage() {
             <ul className="space-y-2 text-sm text-slate-600 dark:text-slate-400">
               <li className="flex gap-2">
                 <span>✅</span>
-                <span>"I was trying to [action] but [problem happened]"</span>
+                <span>&quot;I was trying to [action] but [problem happened]&quot;</span>
               </li>
               <li className="flex gap-2">
                 <span>✅</span>
-                <span>"I expected [X] to happen, but [Y] happened instead"</span>
+                <span>&quot;I expected [X] to happen, but [Y] happened instead&quot;</span>
               </li>
               <li className="flex gap-2">
                 <span>✅</span>
-                <span>"I couldn't figure out how to [do something]"</span>
+                <span>&quot;I couldn&apos;t figure out how to [do something]&quot;</span>
               </li>
               <li className="flex gap-2">
                 <span>✅</span>
-                <span>"This tool saved me [X hours/dollars]"</span>
+                <span>&quot;This tool saved me [X hours/dollars]&quot;</span>
               </li>
               <li className="flex gap-2">
                 <span>✅</span>
-                <span>"I wish I could [feature request]"</span>
+                <span>&quot;I wish I could [feature request]&quot;</span>
               </li>
             </ul>
           </div>
