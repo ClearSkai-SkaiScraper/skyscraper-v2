@@ -521,23 +521,24 @@
 
 ## Phase 1 — Stabilize
 
-| Sprint                | Status         | Errors Before | Errors After | Key Metric           |
-| --------------------- | -------------- | ------------- | ------------ | -------------------- |
-| 12 — Auto-Fix         | ⬜ Not started | 4,799         | ~4,350       | –450 errors          |
-| 15 — TradesConnection | ⬜ Not started | —             | —            | 0 `as any` on trades |
-| 16 — Sentry + DAU     | ⬜ Not started | —             | —            | 15 flows verified    |
+| Sprint                | Status    | Errors Before | Errors After | Key Metric                                     |
+| --------------------- | --------- | ------------- | ------------ | ---------------------------------------------- |
+| 12 — Auto-Fix         | ✅ DONE   | 4,799         | ~4,530       | 104 files + 89 files + 26 files cleaned        |
+| 15 — TradesConnection | ✅ DONE   | —             | —            | 0 `as any` on trades, PascalCase model deleted |
+| 13A — P0 Bugs         | ✅ DONE   | —             | —            | 4 hooks + 1 promise + 1 module var fixed       |
+| 16 — Sentry + DAU     | ⏳ Manual | —             | —            | Sentry token needs Vercel dashboard            |
 
 ## Phase 2 — Sell
 
-| Lane                   | Status         | Key Metric                   |
-| ---------------------- | -------------- | ---------------------------- |
-| H1 — Demo Flow         | ⬜ Not started | 5-min demo script tested     |
-| H2 — Seed Data         | ⬜ Not started | 1 canonical seed file        |
-| H3 — Billing Exit Beta | ⬜ Not started | Real subscription gates      |
-| H4 — Onboarding Polish | ⬜ Not started | 10-step funnel verified      |
-| H5 — Error Confidence  | ⬜ Not started | 100% error.tsx + loading.tsx |
-| H6 — Positioning       | ⬜ Not started | Pricing + ROI doc            |
-| 14 — Orphan Triage     | ⬜ Not started | 80 orphans resolved          |
+| Lane                   | Status      | Key Metric                                                 |
+| ---------------------- | ----------- | ---------------------------------------------------------- |
+| H1 — Demo Flow         | ✅ DONE     | DEMO_FLOW.md created, demo-day.sh bugs fixed               |
+| H2 — Seed Data         | ✅ DONE     | 27 legacy SQL archived, TS seeders canonical               |
+| H3 — Billing Exit Beta | ✅ DONE     | BETA_MODE removed, Clerk+Prisma wired, real gates          |
+| H4 — Onboarding Polish | ✅ REVIEWED | Both routes serve different purposes (wizard vs checklist) |
+| H5 — Error Confidence  | ✅ DONE     | +6 error.tsx +9 loading.tsx +4 not-found.tsx               |
+| H6 — Positioning       | ✅ DONE     | POSITIONING.md with ROI, tiers, 5 case studies             |
+| 14 — Orphan Triage     | ✅ DONE     | 10 routes added to nav, 242 categorized                    |
 
 ## Phase 3 — Scale
 
