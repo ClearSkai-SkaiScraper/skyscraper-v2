@@ -1,6 +1,17 @@
 // eslint-disable-next-line no-restricted-imports
 import { currentUser } from "@clerk/nextjs/server";
-import { AlertTriangle, CheckCircle, Clock, DollarSign, FileText, PlusIcon } from "lucide-react";
+import {
+  AlertTriangle,
+  CheckCircle,
+  Clock,
+  DollarSign,
+  FileSignature,
+  FileText,
+  Mail,
+  MoreHorizontal,
+  PlusIcon,
+  Share2,
+} from "lucide-react";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
@@ -8,6 +19,13 @@ import { NoOrgMembershipBanner } from "@/components/guards/NoOrgMembershipBanner
 import { PageHero } from "@/components/layout/PageHero";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { logger } from "@/lib/logger";
 import { getCurrentUserPermissions } from "@/lib/permissions";
 import prisma from "@/lib/prisma";
@@ -242,12 +260,12 @@ export default async function ContractsPage() {
                 Ongoing maintenance agreements
               </p>
               <div className="flex justify-between">
-                // eslint-disable-next-line react/jsx-no-comment-textnodes
                 <span className="font-semibold">
-                  // eslint-disable-next-line @typescript-eslint/no-explicit-any, react/jsx-no-comment-textnodes
-                  {allJobs.filter((j: any) => j.jobType === "repair").length} contract
-                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                  {allJobs.filter((j: any) => j.jobType === "repair").length !== 1 ? "s" : ""}
+                  {allJobs.filter((j: { jobType?: string }) => j.jobType === "repair").length}{" "}
+                  contract
+                  {allJobs.filter((j: { jobType?: string }) => j.jobType === "repair").length !== 1
+                    ? "s"
+                    : ""}
                 </span>
               </div>
             </CardContent>
@@ -268,24 +286,59 @@ export default async function ContractsPage() {
           ) : (
             <div className="divide-y">
               {recentActivity.map((item) => (
-                <Link
+                <div
                   key={item.id}
-                  href={item.href}
                   className="flex items-center justify-between rounded px-2 py-3 transition-colors hover:bg-slate-50 dark:hover:bg-slate-800"
                 >
-                  <div>
+                  <Link href={item.href} className="flex-1">
                     <p className="font-medium">{item.label}</p>
                     <p className="text-sm text-slate-500">{item.type}</p>
+                  </Link>
+                  <div className="flex items-center gap-3">
+                    <div className="text-right">
+                      <span className="inline-block rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-medium capitalize dark:bg-slate-800">
+                        {item.status?.replace(/_/g, " ") || "unknown"}
+                      </span>
+                      <p className="mt-1 text-xs text-slate-500">
+                        {new Date(item.date).toLocaleDateString()}
+                      </p>
+                    </div>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                          <MoreHorizontal className="h-4 w-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem asChild>
+                          <Link href={item.href}>
+                            <FileText className="mr-2 h-4 w-4" />
+                            View Contract
+                          </Link>
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem asChild>
+                          <Link href={`${item.href}?tab=documents`}>
+                            <FileSignature className="mr-2 h-4 w-4" />
+                            Request Signature
+                          </Link>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem asChild>
+                          <Link href={`${item.href}?action=email`}>
+                            <Mail className="mr-2 h-4 w-4" />
+                            Send via Email
+                          </Link>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem asChild>
+                          <Link href={`${item.href}?action=share`}>
+                            <Share2 className="mr-2 h-4 w-4" />
+                            Share / Forward
+                          </Link>
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
                   </div>
-                  <div className="text-right">
-                    <span className="inline-block rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-medium capitalize dark:bg-slate-800">
-                      {item.status?.replace(/_/g, " ") || "unknown"}
-                    </span>
-                    <p className="mt-1 text-xs text-slate-500">
-                      {new Date(item.date).toLocaleDateString()}
-                    </p>
-                  </div>
-                </Link>
+                </div>
               ))}
             </div>
           )}
