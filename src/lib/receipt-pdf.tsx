@@ -6,9 +6,8 @@
 // Uses @react-pdf/renderer for production-quality output
 // =====================================================
 
-import { Document, Page, pdf, StyleSheet,Text, View } from "@react-pdf/renderer";
+import { Document, Page, pdf, StyleSheet, Text, View } from "@react-pdf/renderer";
 import * as Sentry from "@sentry/nextjs";
-import React from "react";
 
 import { logger } from "@/lib/logger";
 
@@ -110,10 +109,7 @@ export async function buildAcceptanceReceiptPDF(input: AcceptanceReceiptInput): 
   const receiptDoc = (
     <Document>
       <Page size="A4" style={styles.page}>
-        // eslint-disable-next-line react/jsx-no-comment-textnodes
         {/* Watermark */}
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         <Text style={styles.watermark as any}>OFFICIAL RECEIPT</Text>
 
         {/* Header */}
@@ -175,10 +171,7 @@ export async function buildAcceptanceReceiptPDF(input: AcceptanceReceiptInput): 
             <Text style={styles.value}>{ip || "Not recorded"}</Text>
           </View>
           <View style={styles.row}>
-            // eslint-disable-next-line react/jsx-no-comment-textnodes
             <Text style={styles.label}>User Agent:</Text>
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             <Text style={{ ...styles.value, ...styles.mono } as any}>
               {userAgent ? userAgent.substring(0, 80) : "Not recorded"}
             </Text>

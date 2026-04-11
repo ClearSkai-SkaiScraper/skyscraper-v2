@@ -194,7 +194,9 @@ export default async function AfterSignInPage({
     }
     if (pendingRedirect?.startsWith("/")) redirect(pendingRedirect);
     if (resolvedType === "client") redirect("/portal");
-    redirect("/dashboard");
+    // Pro users: route through /subscribe to ensure billing is set up
+    // (will auto-redirect to /dashboard if already subscribed)
+    redirect("/subscribe");
   }
 
   // -- L1: Clerk publicMetadata (fastest, no network call) --
@@ -295,6 +297,7 @@ export default async function AfterSignInPage({
   await setUserTypeCookie(newType);
   await syncClerkMetadata(user.id, newType);
   if (pendingRedirect?.startsWith("/")) redirect(pendingRedirect);
-  if (newType === "pro") redirect("/dashboard");
+  // New pro users go to /subscribe for Stripe Checkout billing setup
+  if (newType === "pro") redirect("/subscribe");
   redirect("/portal");
 }

@@ -522,12 +522,23 @@ export default function DoorKnockMapClient() {
             : undefined,
         }),
       });
-      const json = await res.json();
-      if (!res.ok || !json.success) {
-        const errMsg =
-          json?.error || json?.details?.fieldErrors
-            ? `Validation error: ${JSON.stringify(json.details.fieldErrors)}`
-            : `Save failed (${res.status})`;
+      let json: Record<string, unknown> | null = null;
+      try {
+        json = await res.json();
+      } catch {
+        setSaveError(`Save failed (${res.status}) — unexpected response`);
+        return;
+      }
+      if (!res.ok || !json?.success) {
+        const fieldErrors =
+          json?.details &&
+          typeof json.details === "object" &&
+          "fieldErrors" in (json.details as Record<string, unknown>)
+            ? (json.details as Record<string, unknown>).fieldErrors
+            : null;
+        const errMsg = fieldErrors
+          ? `Validation error: ${JSON.stringify(fieldErrors)}`
+          : (json?.error as string) || `Save failed (${res.status})`;
         setSaveError(errMsg);
         logger.error("Save pin API error:", { status: res.status, body: json });
         return;
@@ -536,7 +547,7 @@ export default function DoorKnockMapClient() {
       setEditingPin(null);
       setSaveError(null);
       await fetchPins();
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (e: any) {
       const msg = e?.message || "Network error — check your connection";
       setSaveError(msg);

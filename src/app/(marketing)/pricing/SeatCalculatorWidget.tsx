@@ -136,9 +136,7 @@ export default function SeatCalculatorWidget() {
                 {seats} seat{seats !== 1 ? "s" : ""} × $80/mo
               </div>
               <div className="text-right">
-                <div className="text-3xl font-bold text-[#117CFF]">
-                  ${monthly.toLocaleString()}
-                </div>
+                <div className="text-3xl font-bold text-[#117CFF]">${monthly.toLocaleString()}</div>
                 <div className="text-sm text-muted-foreground">per month</div>
               </div>
             </div>
@@ -162,7 +160,8 @@ export default function SeatCalculatorWidget() {
             ) : (
               <span className="flex items-center gap-2">
                 <Rocket className="h-5 w-5" />
-                Start Subscription — {seats} Seat{seats !== 1 ? "s" : ""} · ${monthly.toLocaleString()}/mo
+                Start Subscription — {seats} Seat{seats !== 1 ? "s" : ""} · $
+                {monthly.toLocaleString()}/mo
               </span>
             )}
           </Button>

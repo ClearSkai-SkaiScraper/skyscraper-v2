@@ -125,6 +125,7 @@ export default function UnifiedNotificationBell({
   };
 
   const markAllAsRead = async () => {
+    // Optimistic update — set everything to read immediately
     setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
     setUnreadCount(0);
     try {
@@ -133,11 +134,12 @@ export default function UnifiedNotificationBell({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ markAllAsRead: true }),
       });
-      // Re-fetch to ensure sync with server
-      await fetchNotifications();
+      // Delay re-fetch to let DB writes settle (mark-read updates multiple tables)
+      setTimeout(() => void fetchNotifications(), 3000);
     } catch (error) {
       logger.error("Failed to mark all as read:", error);
-      await fetchNotifications();
+      // On error, delay re-fetch to show actual server state
+      setTimeout(() => void fetchNotifications(), 2000);
     }
   };
 

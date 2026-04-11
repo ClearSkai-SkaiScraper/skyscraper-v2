@@ -1340,7 +1340,7 @@ function PhotosSection({ claimId }: { claimId: string }) {
   // Fetch photos on mount
   React.useEffect(() => {
     void fetchPhotos();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [claimId]);
 
   async function fetchPhotos() {
@@ -1925,7 +1925,6 @@ function PhotosSection({ claimId }: { claimId: string }) {
             className="absolute right-4 top-4 z-10 text-white hover:text-gray-300"
             onClick={() => setSelectedPhoto(null)}
             aria-label="Close photo preview"
-          // eslint-disable-next-line react/jsx-no-comment-textnodes
           >
             <X className="h-8 w-8" />
           </button>

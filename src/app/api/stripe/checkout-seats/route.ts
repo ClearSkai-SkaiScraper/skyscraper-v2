@@ -61,7 +61,8 @@ export async function POST(req: NextRequest) {
     if (existing && (existing.status === "active" || existing.status === "trialing")) {
       return NextResponse.json(
         {
-          error: "You already have an active subscription. Go to Settings → Billing to manage seats.",
+          error:
+            "You already have an active subscription. Go to Settings → Billing to manage seats.",
           redirectTo: "/settings/billing",
         },
         { status: 409 }
@@ -117,7 +118,7 @@ export async function POST(req: NextRequest) {
         },
       ],
       subscription_data: {
-        trial_period_days: 14,
+        trial_period_days: 3,
         metadata: {
           orgId,
           seatCount: String(seatCount),

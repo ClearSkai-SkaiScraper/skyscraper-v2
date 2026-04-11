@@ -35,15 +35,13 @@ export function ReviewList({ contractorId, limit = 10 }: ReviewListProps) {
 
   useEffect(() => {
     void loadReviews();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [page]);
 
   async function loadReviews() {
     setLoading(true);
     try {
-      const res = await fetch(
-        `/api/reviews/${contractorId}?page=${page}&limit=${limit}`
-      );
+      const res = await fetch(`/api/reviews/${contractorId}?page=${page}&limit=${limit}`);
       const data = await res.json();
 
       if (res.ok) {
@@ -71,9 +69,7 @@ export function ReviewList({ contractorId, limit = 10 }: ReviewListProps) {
     return (
       <div className="rounded-xl border bg-gray-50 py-12 text-center">
         <p className="text-gray-600">No reviews yet.</p>
-        <p className="mt-1 text-sm text-gray-500">
-          Be the first to review this contractor!
-        </p>
+        <p className="mt-1 text-sm text-gray-500">Be the first to review this contractor!</p>
       </div>
     );
   }
@@ -84,9 +80,7 @@ export function ReviewList({ contractorId, limit = 10 }: ReviewListProps) {
       <div className="rounded-xl border border-blue-100 bg-blue-50 p-6">
         <div className="flex items-center gap-4">
           <div className="text-center">
-            <div className="text-4xl font-bold text-blue-600">
-              {averageRating.toFixed(1)}
-            </div>
+            <div className="text-4xl font-bold text-blue-600">{averageRating.toFixed(1)}</div>
             <StarRating value={averageRating} readonly size="md" />
             <div className="mt-1 text-sm text-gray-600">
               {totalReviews} review{totalReviews !== 1 ? "s" : ""}
@@ -98,10 +92,7 @@ export function ReviewList({ contractorId, limit = 10 }: ReviewListProps) {
       {/* Reviews */}
       <div className="space-y-4">
         {reviews.map((review) => (
-          <div
-            key={review.id}
-            className="space-y-3 rounded-xl border bg-white p-6"
-          >
+          <div key={review.id} className="space-y-3 rounded-xl border bg-white p-6">
             {/* Header */}
             <div className="flex items-start justify-between">
               <div>
@@ -140,7 +131,7 @@ export function ReviewList({ contractorId, limit = 10 }: ReviewListProps) {
                     key={idx}
                     onClick={() => setSelectedPhoto(photo)}
                     className="h-20 w-20 overflow-hidden rounded-lg border transition hover:border-blue-500"
-                  // eslint-disable-next-line @next/next/no-img-element
+                    // eslint-disable-next-line @next/next/no-img-element
                   >
                     <img
                       src={photo}
@@ -202,11 +193,10 @@ export function ReviewList({ contractorId, limit = 10 }: ReviewListProps) {
           <button
             onClick={() => setSelectedPhoto(null)}
             className="absolute right-4 top-4 text-3xl text-white hover:text-gray-300"
-          // eslint-disable-next-line react/jsx-no-comment-textnodes
           >
             ×
-          // eslint-disable-next-line @next/next/no-img-element
           </button>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={selectedPhoto}
             alt="Review photo"

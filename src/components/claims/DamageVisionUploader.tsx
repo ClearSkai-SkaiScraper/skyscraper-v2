@@ -203,11 +203,9 @@ export default function DamageVisionUploader({
               className="absolute right-4 top-4 z-10 rounded-full bg-black/50 p-2 text-white transition hover:bg-black/70"
               title="Remove and upload new image"
             >
-              // eslint-disable-next-line react/jsx-no-comment-textnodes
               <X className="h-5 w-5" />
-            // eslint-disable-next-line react/jsx-no-comment-textnodes
             </button>
-            // eslint-disable-next-line @next/next/no-img-element
+            {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={preview}
               alt="Damage preview"

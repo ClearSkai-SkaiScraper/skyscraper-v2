@@ -155,8 +155,24 @@ export default async function AppLayout({ children }: { children: React.ReactNod
 
     // 🛡️ Platform admin email bypass — check ALL email addresses on user account
     // Uses shared isAdminEmail() which checks against PLATFORM_ADMIN_EMAILS
-    const isPlatformAdminByEmail =
+    let isPlatformAdminByEmail =
       user?.emailAddresses?.some((e) => isAdminEmail(e.emailAddress)) ?? false;
+
+    // DB fallback: if currentUser() returned null or lacked emails,
+    // check the users table (resilient to Clerk API outages)
+    if (!isPlatformAdminByEmail && orgResult.ok) {
+      try {
+        const dbUser = await prisma.users.findUnique({
+          where: { clerkUserId: orgResult.userId },
+          select: { email: true },
+        });
+        if (dbUser?.email && isAdminEmail(dbUser.email)) {
+          isPlatformAdminByEmail = true;
+        }
+      } catch (dbFallbackErr) {
+        logger.warn("[LAYOUT] DB admin email fallback failed:", dbFallbackErr?.message);
+      }
+    }
 
     if (isPlatformAdminByEmail) {
       // Platform admins always have full access

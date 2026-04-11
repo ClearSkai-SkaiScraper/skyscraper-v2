@@ -59,7 +59,7 @@ export default function TemplateLibrary({
 
       setNewTemplateName("");
       void mutate();
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       setError(err.message || "Failed to save template");
     } finally {
@@ -178,9 +178,8 @@ export default function TemplateLibrary({
                 No templates saved yet. Save your current layout to get started.
               </div>
             ) : (
-              // eslint-disable-next-line react/jsx-no-comment-textnodes
               <div className="space-y-2">
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
                 {templates.map((template: any) => (
                   <div
                     key={template.id}

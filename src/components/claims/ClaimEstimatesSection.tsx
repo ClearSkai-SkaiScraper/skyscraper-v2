@@ -12,7 +12,7 @@ interface EstimatesSectionProps {
 
 export function ClaimEstimatesSection({ claim }: EstimatesSectionProps) {
   const items = claim.estimates ?? [];
-  
+
   if (!items.length) {
     return (
       <div className="py-8 text-center text-muted-foreground">
@@ -38,21 +38,14 @@ export function ClaimEstimatesSection({ claim }: EstimatesSectionProps) {
           New Estimate
         </Link>
       </div>
-      // eslint-disable-next-line react/jsx-no-comment-textnodes
       <div className="divide-y rounded-xl border bg-card">
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         {items.map((e: any) => (
           <div key={e.id} className="space-y-2 px-4 py-3">
             {/* Header */}
             <div className="flex justify-between gap-4">
               <div className="min-w-0 flex-1">
-                <div className="font-medium">
-                  {e.title ?? `Estimate ${e.id.slice(0, 8)}`}
-                </div>
-                <div className="mt-1 text-[11px] text-muted-foreground">
-                  {e.mode ?? "—"}
-                </div>
+                <div className="font-medium">{e.title ?? `Estimate ${e.id.slice(0, 8)}`}</div>
+                <div className="mt-1 text-[11px] text-muted-foreground">{e.mode ?? "—"}</div>
               </div>
               <div className="whitespace-nowrap text-[11px] text-muted-foreground">
                 {new Date(e.createdAt).toLocaleString()}

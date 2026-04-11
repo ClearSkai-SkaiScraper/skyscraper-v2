@@ -382,7 +382,7 @@ export async function GET(req: Request) {
         email: user.email || "",
         avatar: user.headshot_url || null,
         revenue: totalRevenue,
-        claimsSigned: effectiveClaims.length,
+        claimsSigned: effectiveClaims.filter((c) => c.signingStatus === "signed").length,
         claimsApproved: approvedClaims,
         doorsKnocked: effectiveLeads.length,
         closeRate,

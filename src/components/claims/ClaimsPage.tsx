@@ -82,11 +82,8 @@ export default function ClaimsPage({ mode = "public", initialClaims = [] }: Prop
             New Claim
           </Button>
         </Link>
-      // eslint-disable-next-line react/jsx-no-comment-textnodes
       </div>
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       <ClaimsGrid claims={hydratedClaims as any} publicMode={mode === "public"} />
     </div>
   );

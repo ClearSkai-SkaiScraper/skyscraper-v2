@@ -223,7 +223,6 @@ export default async function ClaimsTrackerPage() {
               <div className="text-slate-400">Loading pipeline...</div>
             </div>
           }
-        // eslint-disable-next-line react/jsx-no-comment-textnodes
         >
           <ClaimsPipeline claims={claims as any} />
         </Suspense>

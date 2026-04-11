@@ -81,7 +81,7 @@ export async function isPlatformAdmin(): Promise<boolean> {
   const claimEmail = (sessionClaims as any)?.email || (sessionClaims as any)?.primaryEmailAddress;
   if (isAdminEmail(claimEmail)) return true;
 
-  // Fallback: fetch full user from Clerk API — checks ALL email addresses
+  // Fallback 1: fetch full user from Clerk API — checks ALL email addresses
   if (userId) {
     try {
       // eslint-disable-next-line no-restricted-imports
@@ -91,7 +91,23 @@ export async function isPlatformAdmin(): Promise<boolean> {
         return true;
       }
     } catch {
-      // Not in a request context or Clerk API unavailable — fall through
+      // Not in a request context or Clerk API unavailable — fall through to DB
+    }
+  }
+
+  // Fallback 2: DB lookup — resilient to Clerk API outages
+  // The users table stores the email used at registration time.
+  if (userId) {
+    try {
+      const prismaModule = await import("@/lib/prisma");
+      const prisma = prismaModule.default;
+      const dbUser = await prisma.users.findUnique({
+        where: { clerkUserId: userId },
+        select: { email: true },
+      });
+      if (dbUser?.email && isAdminEmail(dbUser.email)) return true;
+    } catch {
+      // DB unavailable — final fallback exhausted
     }
   }
 

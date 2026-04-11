@@ -2,8 +2,8 @@
 /* eslint-disable react/jsx-no-comment-textnodes, @typescript-eslint/no-explicit-any */
 
 import { format } from "date-fns";
-import { Brain, ChevronDown, ChevronUp, Clock, Download,FileText, Loader2 } from "lucide-react";
-import { useEffect,useState } from "react";
+import { Brain, ChevronDown, ChevronUp, Clock, Download, FileText, Loader2 } from "lucide-react";
+import { useEffect, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -253,10 +253,7 @@ export function ClaimAIReports({ claimId }: ClaimAIReportsProps) {
                       {report.output?.events && report.output.events.length > 0 && (
                         <div>
                           <h4 className="text-sm font-semibold text-slate-900">Weather Events</h4>
-                          // eslint-disable-next-line react/jsx-no-comment-textnodes
                           <ul className="mt-1 space-y-1">
-                            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                            // eslint-disable-next-line @typescript-eslint/no-explicit-any
                             {report.output.events.slice(0, 3).map((event: any, idx: number) => (
                               <li key={idx} className="text-sm text-slate-700">
                                 • {event.description || event.type}

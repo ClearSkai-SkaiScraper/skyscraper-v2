@@ -112,7 +112,7 @@ export function ClaimTimeline({
     if (!propEvents && claimId) {
       void fetchTimelineEvents();
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [claimId, propEvents]);
 
   async function fetchTimelineEvents() {
@@ -188,13 +188,9 @@ export function ClaimTimeline({
       <CardContent>
         <div className="relative">
           {/* Timeline line */}
-          // eslint-disable-next-line react/jsx-no-comment-textnodes
           <div className="absolute bottom-0 left-4 top-0 w-0.5 bg-border" />
 
-          // eslint-disable-next-line react/jsx-no-comment-textnodes
           <div className="space-y-4">
-            // eslint-disable-next-line @typescript-eslint/no-unused-vars
-            // eslint-disable-next-line @typescript-eslint/no-unused-vars
             {sortedEvents.map((event, index) => {
               const Icon = eventIcons[event.type] || Clock;
               const colorClass = eventColors[event.type] || "text-slate-500 bg-slate-500/10";

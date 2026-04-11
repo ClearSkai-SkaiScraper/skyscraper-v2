@@ -16,7 +16,6 @@ import {
 } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
-import { redirect } from "next/navigation";
 
 import { PageContainer } from "@/components/layout/PageContainer";
 import { PageHero } from "@/components/layout/PageHero";
@@ -98,7 +97,12 @@ export default async function Settings() {
   const demoReady = isDemoWorkspaceReady({ hasOrganization: !!organizationId });
 
   if (orgCtx.status === "unauthenticated") {
-    redirect("/sign-in");
+    // Don't redirect to /sign-in — middleware already protects this route.
+    // If safeOrgContext returns "unauthenticated" despite middleware passing,
+    // it's a transient auth issue. Show an error card instead of redirect-looping.
+    return (
+      <ErrorCard message="Authentication context unavailable. Please refresh the page or sign out and back in." />
+    );
   }
   // In demo mode, bypass org context errors
   if (orgCtx.status === "error" && !demoReady) {

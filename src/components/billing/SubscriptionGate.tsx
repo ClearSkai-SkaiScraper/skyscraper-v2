@@ -21,7 +21,7 @@ export function SubscriptionGate({
   const pathname = usePathname();
 
   // Always let users access billing/settings pages to subscribe or manage
-  const passthroughPrefixes = ["/settings", "/billing", "/support", "/sign-out"];
+  const passthroughPrefixes = ["/settings", "/billing", "/subscribe", "/support", "/sign-out"];
   const isPassthrough = passthroughPrefixes.some((p) => pathname?.startsWith(p));
 
   if (isPassthrough && children) {
@@ -77,7 +77,7 @@ export function SubscriptionGate({
 
         {/* CTA */}
         <Link
-          href="/settings/billing"
+          href="/subscribe"
           className="inline-flex w-full items-center justify-center rounded-lg bg-blue-600 px-6 py-3 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
         >
           Start Subscription →

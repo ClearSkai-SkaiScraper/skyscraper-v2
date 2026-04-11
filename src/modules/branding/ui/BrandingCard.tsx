@@ -100,9 +100,8 @@ export function BrandingCard() {
 
       {/* Logo Preview */}
       {status.hasLogo && status.logoUrl ? (
-        // eslint-disable-next-line react/jsx-no-comment-textnodes
         <div className="mb-4 flex h-20 items-center justify-center rounded-md bg-gray-50 dark:bg-slate-900">
-          // eslint-disable-next-line @next/next/no-img-element
+          {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={status.logoUrl}
             alt="Company Logo"

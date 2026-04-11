@@ -11,11 +11,7 @@ interface ReviewFormProps {
   onSuccess?: () => void;
 }
 
-export function ReviewForm({ 
-  contractorId, 
-  publicLeadId, 
-  onSuccess 
-}: ReviewFormProps) {
+export function ReviewForm({ contractorId, publicLeadId, onSuccess }: ReviewFormProps) {
   const router = useRouter();
   const [rating, setRating] = useState(0);
   const [content, setContent] = useState("");
@@ -45,7 +41,7 @@ export function ReviewForm({
 
       const uploadedUrls = await Promise.all(uploadPromises);
       setPhotos([...photos, ...uploadedUrls]);
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (_err) {
       setError("Failed to upload photos");
     } finally {
@@ -97,13 +93,13 @@ export function ReviewForm({
       setRating(0);
       setContent("");
       setPhotos([]);
-      
+
       if (onSuccess) {
         onSuccess();
       } else {
         router.refresh();
       }
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       setError(err.message || "Failed to submit review");
     } finally {
@@ -117,22 +113,13 @@ export function ReviewForm({
 
       {/* Rating */}
       <div>
-        <label className="mb-2 block text-sm font-medium text-gray-700">
-          Your Rating *
-        </label>
-        <StarRating 
-          value={rating} 
-          onChange={setRating} 
-          size="lg" 
-          showValue 
-        />
+        <label className="mb-2 block text-sm font-medium text-gray-700">Your Rating *</label>
+        <StarRating value={rating} onChange={setRating} size="lg" showValue />
       </div>
 
       {/* Content */}
       <div>
-        <label className="mb-2 block text-sm font-medium text-gray-700">
-          Your Review *
-        </label>
+        <label className="mb-2 block text-sm font-medium text-gray-700">Your Review *</label>
         <textarea
           value={content}
           onChange={(e) => setContent(e.target.value)}
@@ -149,9 +136,7 @@ export function ReviewForm({
 
       {/* Photo Upload */}
       <div>
-        <label className="mb-2 block text-sm font-medium text-gray-700">
-          Photos (Optional)
-        </label>
+        <label className="mb-2 block text-sm font-medium text-gray-700">Photos (Optional)</label>
         <div className="flex items-start gap-4">
           {photos.length < 5 && (
             <label className="cursor-pointer">
@@ -174,9 +159,8 @@ export function ReviewForm({
           )}
 
           {photos.map((photo, idx) => (
-            // eslint-disable-next-line react/jsx-no-comment-textnodes
             <div key={idx} className="relative h-20 w-20">
-              // eslint-disable-next-line @next/next/no-img-element
+              {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={photo}
                 alt={`Upload ${idx + 1}`}
@@ -192,16 +176,15 @@ export function ReviewForm({
             </div>
           ))}
         </div>
-        <div className="mt-1 text-sm text-gray-500">
-          {photos.length}/5 photos
-        </div>
+        <div className="mt-1 text-sm text-gray-500">{photos.length}/5 photos</div>
       </div>
 
       {/* Verified Badge Info */}
       {publicLeadId && (
         <div className="rounded-lg border border-green-200 bg-green-50 p-3">
           <div className="text-sm text-green-800">
-            ✓ This review will be marked as <strong>verified</strong> because it&apos;s linked to your project.
+            ✓ This review will be marked as <strong>verified</strong> because it&apos;s linked to
+            your project.
           </div>
         </div>
       )}

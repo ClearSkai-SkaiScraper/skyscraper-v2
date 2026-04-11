@@ -8,7 +8,7 @@
 
 "use client";
 
-import { ChevronLeft, ChevronRight, Download,X, ZoomIn, ZoomOut } from "lucide-react";
+import { ChevronLeft, ChevronRight, Download, X, ZoomIn, ZoomOut } from "lucide-react";
 import { useState } from "react";
 
 import type { AnnotatedPhoto } from "@/lib/ai/photo-annotator";
@@ -118,11 +118,9 @@ export function AnnotatedPhotoGallery({ photos, onExport }: AnnotatedPhotoGaller
               onClick={() => handlePhotoClick(photo)}
               className="group relative overflow-hidden rounded-lg border border-slate-200 bg-white transition-all hover:shadow-lg"
             >
-              // eslint-disable-next-line react/jsx-no-comment-textnodes
               {/* Photo */}
-              // eslint-disable-next-line react/jsx-no-comment-textnodes
               <div className="relative aspect-video w-full overflow-hidden bg-slate-100">
-                // eslint-disable-next-line @next/next/no-img-element
+                {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={photo.photoUrl}
                   alt={photo.caption}
@@ -194,7 +192,6 @@ export function AnnotatedPhotoGallery({ photos, onExport }: AnnotatedPhotoGaller
                   </span>
                 </div>
               </div>
-
               {/* Details */}
               <div className="flex-1">
                 <div className="flex items-start justify-between">
@@ -254,7 +251,6 @@ export function AnnotatedPhotoGallery({ photos, onExport }: AnnotatedPhotoGaller
               <ZoomOut className="h-5 w-5" />
             </button>
           </div>
-
           <button
             onClick={handleClose}
             className="absolute right-4 top-4 z-10 rounded-lg bg-white/90 p-2 text-slate-900 hover:bg-white"
@@ -262,7 +258,6 @@ export function AnnotatedPhotoGallery({ photos, onExport }: AnnotatedPhotoGaller
           >
             <X className="h-5 w-5" />
           </button>
-
           {/* Navigation */}
           <button
             onClick={handlePrevious}
@@ -271,7 +266,6 @@ export function AnnotatedPhotoGallery({ photos, onExport }: AnnotatedPhotoGaller
           >
             <ChevronLeft className="h-6 w-6" />
           </button>
-
           <button
             onClick={handleNext}
             className="absolute right-4 top-1/2 z-10 -translate-y-1/2 rounded-lg bg-white/90 p-2 text-slate-900 hover:bg-white"
@@ -279,7 +273,6 @@ export function AnnotatedPhotoGallery({ photos, onExport }: AnnotatedPhotoGaller
           >
             <ChevronRight className="h-6 w-6" />
           </button>
-
           // eslint-disable-next-line react/jsx-no-comment-textnodes
           {/* Photo */}
           // eslint-disable-next-line react/jsx-no-comment-textnodes
@@ -292,7 +285,6 @@ export function AnnotatedPhotoGallery({ photos, onExport }: AnnotatedPhotoGaller
               style={{ transform: `scale(${zoom})`, transformOrigin: "center" }}
             />
           </div>
-
           {/* Annotations Panel */}
           <div className="absolute bottom-4 left-4 right-4 max-h-48 overflow-auto rounded-lg bg-white p-4">
             <h4 className="mb-2 font-bold text-slate-900">{selectedPhoto.caption}</h4>

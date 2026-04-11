@@ -1053,7 +1053,6 @@ export default function PhotosPage() {
                         <div
                           key={p.id}
                           className="flex items-start gap-2 rounded-lg bg-white/60 p-2 text-sm dark:bg-slate-800/60"
-                        // eslint-disable-next-line react/jsx-no-comment-textnodes
                         >
                           <img
                             src={p.publicUrl}

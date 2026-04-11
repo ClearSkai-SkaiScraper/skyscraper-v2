@@ -111,13 +111,15 @@ async function renderContactsPage() {
           <div className="py-8 text-center">
             <Lock className="mx-auto mb-4 h-12 w-12 text-slate-400" />
             <h2 className="mb-2 text-xl font-bold">Something went wrong</h2>
-            <p className="mb-4 text-sm text-slate-500">Please try signing in again.</p>
-            <Link
-              href="/sign-in?redirect_url=/contacts"
+            <p className="mb-4 text-sm text-slate-500">
+              There was an issue loading your workspace context. Please refresh the page.
+            </p>
+            <a
+              href="/contacts"
               className="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
             >
-              Sign In →
-            </Link>
+              Refresh Page →
+            </a>
           </div>
         </PageSectionCard>
       </PageContainer>
@@ -125,6 +127,8 @@ async function renderContactsPage() {
   }
 
   if (orgCtx.status === "unauthenticated") {
+    // Middleware already protects /contacts — if we reach here, it's a transient
+    // auth context issue, not a missing session. Show retry instead of "Sign In".
     return (
       <PageContainer>
         <PageHero
@@ -136,14 +140,25 @@ async function renderContactsPage() {
         <PageSectionCard>
           <div className="py-8 text-center">
             <Lock className="mx-auto mb-4 h-12 w-12 text-slate-400" />
-            <h2 className="mb-2 text-xl font-bold">Sign In Required</h2>
-            <p className="mb-4 text-sm text-slate-500">Please sign in to manage your contacts.</p>
-            <Link
-              href="/sign-in?redirect_url=/contacts"
-              className="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
-            >
-              Sign In →
-            </Link>
+            <h2 className="mb-2 text-xl font-bold">Authentication Unavailable</h2>
+            <p className="mb-4 text-sm text-slate-500">
+              Your session couldn&apos;t be verified. Please refresh the page or sign out and back
+              in.
+            </p>
+            <div className="flex items-center justify-center gap-3">
+              <a
+                href="/contacts"
+                className="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
+              >
+                Refresh Page →
+              </a>
+              <Link
+                href="/sign-out"
+                className="inline-flex items-center gap-2 rounded-xl border border-slate-300 px-4 py-2 text-slate-700 hover:bg-slate-50 dark:border-slate-600 dark:text-slate-300 dark:hover:bg-slate-800"
+              >
+                Sign Out
+              </Link>
+            </div>
           </div>
         </PageSectionCard>
       </PageContainer>
