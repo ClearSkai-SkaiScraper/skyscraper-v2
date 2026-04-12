@@ -2,6 +2,7 @@ import * as Sentry from "@sentry/nextjs";
 import { NextResponse } from "next/server";
 
 import { ensureOpenAI } from "@/lib/ai/client";
+import { checkFailSafe, classifyConfidence } from "@/lib/ai/damage-confidence";
 import { aiFail, aiOk } from "@/lib/api/aiResponse";
 import { withAuth } from "@/lib/auth/withAuth";
 import { logger } from "@/lib/logger";
@@ -136,8 +137,39 @@ export const POST = withAuth(async (req, { userId, orgId }) => {
       messages: [
         {
           role: "system",
-          content: `You are an expert property damage assessor and insurance claims specialist. 
-Analyze photos to identify damage with precise descriptions suitable for insurance documentation.
+          content: `You are an expert HAAG-certified property damage assessor and insurance claims specialist.
+
+Your mission is COMPREHENSIVE damage detection. You must find ALL visible damage.
+
+CRITICAL RULE: When in doubt, INCLUDE the finding. It is better to over-report than to miss damage.
+
+SYSTEMATIC SCAN: Analyze each photo in a 3×3 grid pattern (top-left through bottom-right). Report ALL damage from every region.
+
+Look for ALL of these:
+- Hail impacts (circular marks, granule displacement, dents)
+- Wind damage (lifted/missing shingles, creasing, fold marks)
+- Granule loss / bare spots / exposed mat
+- Bruising / soft spots on shingles
+- Nail pops / exposed fasteners
+- Ridge cap / starter strip issues
+- Flashing separation / lifting / denting
+- Pipe boot cracks / splits
+- Vent damage (turbine, power, roof)
+- Gutter dents (count each individually)
+- Downspout damage
+- Siding impact damage
+- Window screen tears / frame dents
+- Fascia / soffit damage
+- Paint chipping from impact
+- Stucco cracking
+- Any other storm-related damage
+
+For each finding provide:
+- Precise location on the structure
+- Severity: Low (cosmetic), Medium (functional), High (significant), Critical (immediate)
+- Measurements in inches where possible (shingle tabs ≈ 5" for reference)
+- Weather event attribution if determinable
+
 Always respond with valid JSON matching the requested schema.`,
         },
         {
@@ -205,16 +237,80 @@ Always respond with valid JSON matching the requested schema.`,
       data: { leadId, jobId, findingsCount: analysisResult.findings?.length || 0 },
     });
 
-    // Return structured analysis result
+    // Return structured analysis result with confidence classification and fail-safe
+    // Build confidence data for each finding
+    const findingsWithConfidence = (analysisResult.findings || []).map((finding) => {
+      // Estimate confidence from severity (since this route doesn't use Zod schema)
+      const rawConfidence =
+        finding.severity === "Critical"
+          ? 0.95
+          : finding.severity === "High"
+            ? 0.85
+            : finding.severity === "Medium"
+              ? 0.7
+              : finding.severity === "Low"
+                ? 0.5
+                : 0.4;
+
+      const classification = classifyConfidence(rawConfidence);
+      return {
+        ...finding,
+        confidence: rawConfidence,
+        confidenceLevel: classification.level,
+        confidenceColor: classification.color,
+        confidenceBgColor: classification.bgColor,
+        confidenceBorderStyle: classification.borderStyle,
+      };
+    });
+
+    // Run fail-safe check
+    const overallConfidence =
+      findingsWithConfidence.length > 0
+        ? findingsWithConfidence.reduce((sum, f) => sum + f.confidence, 0) /
+          findingsWithConfidence.length
+        : 0;
+
+    const failSafeReport = checkFailSafe({
+      summary: analysisResult.summary || "",
+      items: findingsWithConfidence.map((f) => ({
+        type: "impact" as const,
+        component: "other" as const,
+        location: f.location,
+        indicators: [f.description],
+        estimated_severity:
+          f.severity === "Critical" || f.severity === "High"
+            ? ("severe" as const)
+            : f.severity === "Medium"
+              ? ("moderate" as const)
+              : ("minor" as const),
+        confidence: f.confidence,
+      })),
+      overall_severity: findingsWithConfidence.some(
+        (f) => f.severity === "Critical" || f.severity === "High"
+      )
+        ? ("severe" as const)
+        : findingsWithConfidence.some((f) => f.severity === "Medium")
+          ? ("moderate" as const)
+          : ("minor" as const),
+      overall_confidence: overallConfidence,
+    });
+
     return NextResponse.json(
       aiOk({
-        findings: analysisResult.findings || [],
+        findings: findingsWithConfidence,
         codeCompliance: analysisResult.codeCompliance || [],
         materialSpecs: analysisResult.materialSpecs || [],
         summary: analysisResult.summary || "Analysis complete",
         tokensUsed: TOKEN_COST,
         model: response.model,
         photoCount: convertedPhotos.length,
+        // Fail-safe & confidence metadata
+        failSafe: {
+          passed: failSafeReport.passed,
+          mode: failSafeReport.mode,
+          message: failSafeReport.message,
+        },
+        overallConfidence,
       })
     );
   } catch (error: unknown) {

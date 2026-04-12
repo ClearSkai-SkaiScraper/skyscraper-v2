@@ -38,61 +38,74 @@ export default async function SearchPage({
   };
 
   try {
-    if (query) {
-      // Search across all entities
-      if (type === "all" || type === "claims") {
-        results.claims = await prisma.claims.findMany({
-          where: {
-            orgId,
+    // If query provided, search across entities
+    // If no query but type selected, show recent items of that type
+    const hasQuery = Boolean(query);
+
+    if (type === "all" || type === "claims") {
+      results.claims = await prisma.claims.findMany({
+        where: {
+          orgId,
+          ...(hasQuery && {
             OR: [
               { title: { contains: query, mode: "insensitive" } },
               { claimNumber: { contains: query, mode: "insensitive" } },
               { description: { contains: query, mode: "insensitive" } },
             ],
-          },
-          take: 10,
-        });
-      }
+          }),
+        },
+        orderBy: { updatedAt: "desc" },
+        take: hasQuery ? 10 : 20,
+      });
+    }
 
-      if (type === "all" || type === "leads") {
-        results.leads = await prisma.leads.findMany({
-          where: {
-            orgId,
+    if (type === "all" || type === "leads") {
+      results.leads = await prisma.leads.findMany({
+        where: {
+          orgId,
+          ...(hasQuery && {
             OR: [
               { title: { contains: query, mode: "insensitive" } },
               { description: { contains: query, mode: "insensitive" } },
             ],
-          },
-          take: 10,
-        });
-      }
+          }),
+        },
+        orderBy: { updatedAt: "desc" },
+        take: hasQuery ? 10 : 20,
+      });
+    }
 
-      if (type === "all" || type === "jobs") {
-        results.jobs = await prisma.jobs.findMany({
-          where: {
-            orgId,
+    if (type === "all" || type === "jobs") {
+      results.jobs = await prisma.jobs.findMany({
+        where: {
+          orgId,
+          ...(hasQuery && {
             OR: [
               { title: { contains: query, mode: "insensitive" } },
               { jobType: { contains: query, mode: "insensitive" } },
             ],
-          },
-          take: 10,
-        });
-      }
+          }),
+        },
+        orderBy: { updatedAt: "desc" },
+        take: hasQuery ? 10 : 20,
+      });
+    }
 
-      if (type === "all" || type === "clients") {
-        results.clients = await prisma.client.findMany({
-          where: {
-            orgId,
+    if (type === "all" || type === "clients") {
+      results.clients = await prisma.client.findMany({
+        where: {
+          orgId,
+          ...(hasQuery && {
             OR: [
               { firstName: { contains: query, mode: "insensitive" } },
               { lastName: { contains: query, mode: "insensitive" } },
               { email: { contains: query, mode: "insensitive" } },
             ],
-          },
-          take: 10,
-        });
-      }
+          }),
+        },
+        orderBy: { updatedAt: "desc" },
+        take: hasQuery ? 10 : 20,
+      });
     }
   } catch (error) {
     logger.error("[SearchPage] Database error:", error);
@@ -148,9 +161,13 @@ export default async function SearchPage({
         </form>
 
         {/* Results info */}
-        {query && (
+        {query ? (
           <p className="mb-4 text-sm text-slate-600 dark:text-slate-400">
             Found <strong>{totalResults}</strong> results for &quot;{query}&quot;
+          </p>
+        ) : (
+          <p className="mb-4 text-sm text-slate-600 dark:text-slate-400">
+            Showing <strong>{totalResults}</strong> recent {type === "all" ? "items" : type}
           </p>
         )}
 
@@ -281,6 +298,14 @@ export default async function SearchPage({
             <Card>
               <CardContent className="py-12 text-center text-muted-foreground">
                 No results found for &quot;{query}&quot;
+              </CardContent>
+            </Card>
+          )}
+
+          {!query && totalResults === 0 && (
+            <Card>
+              <CardContent className="py-12 text-center text-muted-foreground">
+                No {type === "all" ? "data" : type} found in your workspace yet.
               </CardContent>
             </Card>
           )}

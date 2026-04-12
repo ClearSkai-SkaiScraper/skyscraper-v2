@@ -137,7 +137,7 @@ export default async function ContractsPage() {
         icon={<FileText className="h-6 w-6" />}
         actions={
           <Button asChild className="bg-sky-600 text-white hover:bg-sky-700">
-            <Link href="/claims/new">
+            <Link href="/contracts/new">
               <PlusIcon className="mr-2 h-4 w-4" />
               New Contract
             </Link>

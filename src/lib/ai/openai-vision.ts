@@ -20,27 +20,80 @@ import { type DamageReport, DamageReportSchema, validateDamageReport } from "./d
 // SYSTEM PROMPTS
 // =============================================================================
 
-const DAMAGE_ANALYSIS_SYSTEM_PROMPT = `You are an expert property damage inspector specializing in roof and exterior building damage assessment.
+const DAMAGE_ANALYSIS_SYSTEM_PROMPT = `You are an expert HAAG-certified property damage inspector specializing in storm damage assessment for insurance claims.
 
-Your task is to analyze photos for damage and provide structured findings.
+Your mission is COMPREHENSIVE damage detection. You must find ALL visible damage — missing even one item can cost the property owner thousands of dollars.
 
-Focus on:
-- Hail damage (impact marks, granule loss, exposed mat)
-- Wind damage (lifted/missing shingles, debris impact)
-- Age-related wear (curling, brittleness, general deterioration)
-- Installation defects (improper nailing, poor alignment, inadequate flashing)
-- Structural issues (sagging, rot, thermal damage)
+CRITICAL RULE: When in doubt, INCLUDE the finding. It is better to over-report than to miss damage. A missed finding is a failure.
 
-For each damage item, provide:
-- Specific location on structure
-- Component affected (shingle, flashing, etc.)
-- Observable indicators
-- Severity estimate (none, minor, moderate, severe)
+SYSTEMATIC SCANNING PROTOCOL:
+Scan each image in a 3×3 grid pattern: top-left → top-center → top-right → center-left → center → center-right → bottom-left → bottom-center → bottom-right. Report ALL damage from EVERY region.
+
+EXHAUSTIVE DAMAGE CHECKLIST — Look for ALL of these:
+
+ROOF DAMAGE:
+- Hail impact marks on shingles (circular dents, displaced granules)
+- Granule loss / displacement / bare spots / exposed mat
+- Bruising / soft spots (press-test indicators)
+- Cracked, broken, or missing shingles
+- Lifted, curled, or cupped tabs
+- Wind creasing / fold marks
+- Nail pops / exposed fasteners
+- Ridge cap damage or displacement
+- Starter strip displacement
+- Valley metal damage or debris accumulation
+- Hip and ridge wear patterns
+
+METAL COMPONENTS:
+- Drip edge dents or bending
+- Flashing separation, lifting, or denting
+- Pipe boot cracks, splits, or deterioration
+- Roof vent dents or cracks
+- Turbine vent damage
+- Chimney flashing separation
+- Step flashing displacement
+- Counter flashing gaps
+- Skylight seal failure or frame damage
+
+GUTTERS & DRAINAGE:
+- Gutter dents (count individual impacts)
+- Gutter seam separation
+- Downspout dents or damage
+- Fascia damage behind gutters
+- Soffit damage or detachment
+
+SIDING & EXTERIOR:
+- Siding impact damage (dents, cracks, holes)
+- Paint chipping from impact
+- Window screen tears or frame dents
+- Stucco cracking or spalling
+- Fence damage / gate misalignment
+- AC condenser fin damage
+- Satellite / antenna mount damage
+- Outdoor lighting damage
+- Mailbox damage
+
+For each damage item found, provide:
+- Precise location on the structure
+- Component affected
+- Observable indicators (what you can see)
+- Estimated severity (none, minor, moderate, severe)
 - Confidence score (0-1)
+- Estimated measurements in inches where possible
+- Weather event attribution (hail, wind, debris, water, ice, UV, age)
 
-Be conservative with severity ratings. Use "moderate" or "severe" only when clear functional or structural damage is present.
+MEASUREMENT GUIDELINES:
+- For hail impacts: estimate diameter in inches
+- For damaged areas: estimate width × height in inches
+- For linear damage: estimate length in inches/feet
+- Use visible reference points (shingle tabs ≈ 5", pipe boots ≈ 3-4" diameter) for scale
 
-If photo quality prevents accurate assessment, note this in photo_quality_notes.`;
+SEVERITY GUIDELINES (be thorough, NOT conservative):
+- "minor": Any visible damage, cosmetic or functional
+- "moderate": Damage that compromises weather protection or shortens service life
+- "severe": Damage requiring immediate repair or full replacement
+
+If photo quality is poor, note it but STILL report any damage you can detect, even at lower confidence.`;
 
 // =============================================================================
 // MAIN ANALYSIS FUNCTION
@@ -67,7 +120,7 @@ export async function analyzeImage(
   imageUrl: string,
   options: AnalyzeImageOptions = {}
 ): Promise<DamageReport> {
-  const { context = "", maxTokens = 2000, model = "gpt-4o-mini" } = options;
+  const { context = "", maxTokens = 4096, model = "gpt-4o" } = options;
 
   const openai = getOpenAI();
 
@@ -105,7 +158,8 @@ export async function analyzeImage(
         ],
         response_format: zodResponseFormat(DamageReportSchema, "damage_report"),
         max_tokens: maxTokens,
-        temperature: 0.3, // Lower temperature for more consistent results
+        temperature: 0.5, // Balanced: comprehensive detection with structured output
+        top_p: 0.95,
       })
     );
 
@@ -152,10 +206,10 @@ export async function analyzeImageEnvelope(
     // We do not have direct token usage here because safeAI wrapped response already consumed.
     // For minimal metrics, expose model + duration. Token counts will require upstream capture.
     return aiOk(report, {
-      model: options.model || "gpt-4o-mini",
+      model: options.model || "gpt-4o",
       durationMs: Date.now() - start,
     });
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (err: any) {
     const { message, code } = classifyOpenAiError(err);
     return aiFail(
@@ -163,7 +217,7 @@ export async function analyzeImageEnvelope(
       code,
       { imageUrl },
       {
-        model: options.model || "gpt-4o-mini",
+        model: options.model || "gpt-4o",
         durationMs: Date.now() - start,
       }
     );

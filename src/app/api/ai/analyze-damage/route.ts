@@ -1,5 +1,11 @@
 export const dynamic = "force-dynamic";
 
+/**
+ * @deprecated Use POST /api/ai/damage/analyze or POST /api/ai/vision/pipeline instead.
+ * This route uses an external SKAI_VISION_ENDPOINT which is being phased out.
+ * All new code should use the canonical damage analysis endpoints.
+ */
+
 import { NextResponse } from "next/server";
 
 import { withAuth } from "@/lib/auth/withAuth";

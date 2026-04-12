@@ -1,3 +1,8 @@
+/**
+ * @deprecated Use POST /api/ai/damage/analyze or POST /api/ai/vision/pipeline instead.
+ * This route wraps analyzeImage() but the canonical pipeline provides richer analysis.
+ */
+
 import { NextResponse } from "next/server";
 
 import { analyzeImage } from "@/lib/ai/openai-vision";

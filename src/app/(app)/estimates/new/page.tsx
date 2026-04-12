@@ -7,6 +7,7 @@ import { useEffect, useState } from "react";
 
 import { Wizard, WizardStep } from "@/components/common/Wizard";
 import { PageHero } from "@/components/layout/PageHero";
+import { JobClaimSelector } from "@/components/trades/JobClaimSelector";
 import { Button } from "@/components/ui/button";
 import { XactimateTable } from "@/components/xactimate/XactimateTable";
 import { logger } from "@/lib/logger";
@@ -33,6 +34,7 @@ export default function EstimateNewPage() {
   const { isLoaded, isSignedIn } = useUser();
 
   const [claimId, setClaimId] = useState("");
+  const [selectedJobOrClaim, setSelectedJobOrClaim] = useState("");
   const [mode, setMode] = useState<"insurance" | "retail" | "hybrid">("insurance");
   const [lossType, setLossType] = useState("");
   const [dol, setDol] = useState("");
@@ -178,20 +180,28 @@ export default function EstimateNewPage() {
   const steps: WizardStep[] = [
     {
       id: "context",
-      title: "Claim & Mode",
-      description: "Select claim and estimate mode.",
+      title: "Job & Mode",
+      description: "Select job/claim and estimate mode.",
       render: () => (
         <div className="space-y-4">
           <div>
             <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
-              Claim ID (optional)
+              Link to Job or Claim (optional)
             </label>
-            <input
-              className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm focus:border-transparent focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-800"
-              placeholder="claim_123"
-              value={claimId}
-              onChange={(e) => setClaimId(e.target.value)}
+            <JobClaimSelector
+              value={selectedJobOrClaim}
+              onValueChange={(value) => {
+                setSelectedJobOrClaim(value);
+                // Extract just the ID part for API calls
+                const idPart = value.split(":")[1] || "";
+                setClaimId(idPart);
+              }}
+              placeholder="Select a job or claim to link this estimate…"
+              className="w-full"
             />
+            <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+              Link this estimate to an existing insurance claim, retail job, or lead.
+            </p>
           </div>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
             <div>

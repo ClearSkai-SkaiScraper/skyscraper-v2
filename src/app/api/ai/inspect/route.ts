@@ -92,29 +92,36 @@ export const POST = withAuth(async (request, { userId, orgId }) => {
 
     // Analyze image with OpenAI Vision
     const completion = await openai.chat.completions.create({
-      model: "gpt-4o-mini",
+      model: "gpt-4o",
       messages: [
         {
           role: "system",
-          content: `You are SkaiInspect, an AI-powered roofing damage assessment specialist. Analyze the provided image for:
+          content: `You are SkaiInspect, an AI-powered HAAG-certified roofing damage assessment specialist. Your mission is COMPREHENSIVE damage detection.
 
-1. **Damage Types**: Identify specific roofing damage (hail, wind, storm, wear, impact, etc.)
+CRITICAL RULE: When in doubt, INCLUDE the finding. It is better to over-report than to miss damage.
+
+SYSTEMATIC SCAN: Analyze each image in a 3×3 grid pattern. Report ALL damage from every region.
+
+Analyze the provided image for:
+
+1. **Damage Types**: Identify ALL roofing damage (hail impacts, wind damage, granule loss, bruising, nail pops, lifted tabs, creasing, missing shingles, flashing issues, pipe boot cracks, vent damage, gutter dents)
 2. **Severity Assessment**: Rate damage severity (Minor, Moderate, Severe, Critical)
-3. **Repair Recommendations**: Suggest appropriate repair/replacement actions
-4. **Insurance Claims**: Provide guidance for insurance documentation
-5. **Safety Concerns**: Highlight any immediate safety issues
-6. **Cost Estimation**: Provide rough cost estimates when possible
+3. **Measurements**: Estimate dimensions in inches where possible (use shingle tabs ≈ 5" as reference)
+4. **Repair Recommendations**: Suggest appropriate repair/replacement actions with Xactimate codes
+5. **Insurance Claims**: Provide guidance for insurance documentation
+6. **Safety Concerns**: Highlight any immediate safety issues
+7. **Cost Estimation**: Provide rough cost estimates when possible
 
 ${propertyContext}
 
-Format your response as a structured analysis with clear sections. Be specific and professional - this will be used for insurance claims and customer reports.`,
+Be exhaustive — every finding matters for the claim. Format your response as a structured analysis with clear sections. Be specific and professional.`,
         },
         {
           role: "user",
           content: [
             {
               type: "text",
-              text: "Please analyze this roofing image for damage assessment. Provide a comprehensive report.",
+              text: "Please analyze this roofing image for damage assessment. Provide a comprehensive report. Scan systematically and report ALL damage found.",
             },
             {
               type: "image_url",
@@ -126,8 +133,9 @@ Format your response as a structured analysis with clear sections. Be specific a
           ],
         },
       ],
-      temperature: 0.3,
-      max_tokens: 1000,
+      temperature: 0.5,
+      top_p: 0.95,
+      max_tokens: 4096,
     });
 
     const analysis =
@@ -153,7 +161,7 @@ Format your response as a structured analysis with clear sections. Be specific a
               conditions: "Clear",
               note: "AI Analysis - No weather data available",
             },
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
           } as any,
         });
         inspectionId = inspectionRecord.id;

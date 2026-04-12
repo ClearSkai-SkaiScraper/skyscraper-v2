@@ -442,14 +442,23 @@ export default function TasksPage() {
           <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-red-100 dark:bg-red-900/30">
             <X className="h-6 w-6 text-red-600 dark:text-red-400" />
           </div>
-          <h3 className="mb-2 text-lg font-semibold text-slate-900 dark:text-white">
-            Unable to Load Tasks
-          </h3>
-          <p className="mb-4 text-sm text-slate-500 dark:text-slate-400">{error}</p>
-          <Button onClick={() => window.location.reload()} variant="outline" className="gap-2">
-            <Loader2 className="h-4 w-4" />
-            Try Again
-          </Button>
+          <h3 className="mb-2 text-lg font-semibold text-slate-900 dark:text-white">Tasks Error</h3>
+          <p className="mb-4 text-sm text-slate-500 dark:text-slate-400">
+            {error === "Failed to connect to server"
+              ? "Unable to connect to the server. Please check your connection."
+              : error.includes("permission")
+                ? "You don't have permission to view tasks. Contact your administrator."
+                : error || "Something went wrong loading tasks. Please try again."}
+          </p>
+          <div className="flex flex-col gap-2 sm:flex-row sm:justify-center">
+            <Button onClick={() => window.location.reload()} variant="outline" className="gap-2">
+              <Loader2 className="h-4 w-4" />
+              Try Again
+            </Button>
+            <Button variant="ghost" asChild>
+              <Link href="/dashboard">Go to Dashboard</Link>
+            </Button>
+          </div>
         </Card>
       ) : tasks.length === 0 ? (
         <NoClaimsEmpty

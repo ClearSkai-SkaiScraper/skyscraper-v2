@@ -73,11 +73,19 @@ export const POST = withAuth(async (req: NextRequest, { userId }) => {
     }
 
     // ═══════════════════════════════════════════════════════════════════════
-    // STEP 2 — GPT-4o-mini semantic analysis (always runs)
-    // ═══════════════════════════════════════════════════════════════════════
+    // STEP 2 — GPT-4o semantic analysis (always runs, enhanced with YOLO context)
+    // ═════════════════════════════════════════════════════════════════════
+    // Build enhanced context with YOLO results if available
+    let analysisContext = context || "";
+    if (yoloDetections.length > 0) {
+      analysisContext += `\n\nRoboflow YOLO detected ${yoloDetections.length} regions of interest: ${yoloDetections.map((d) => `${d.type} (${(d.confidence * 100).toFixed(0)}%)`).join(", ")}. Verify each detection and scan the rest of the image for anything YOLO missed.`;
+    }
+    analysisContext +=
+      "\nWhen in doubt, INCLUDE the finding. It is better to over-report than to miss damage.";
+
     const report = await analyzeImage(imageUrl, {
-      context: context || "",
-      model: "gpt-4o-mini",
+      context: analysisContext,
+      model: "gpt-4o",
     });
 
     const severity = report.overall_severity || "none";

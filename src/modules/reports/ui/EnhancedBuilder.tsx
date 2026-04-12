@@ -18,14 +18,16 @@ import PreviewPanel from "./PreviewPanel";
 import RightPanel from "./RightPanel";
 import TemplatesMenu from "./TemplatesMenu";
 
+// NOTE: weather-verification removed from defaults per user request - not needed in Bid Package
+// (see SectionRegistry.ts - weather-verification.enabled = false)
 const DEFAULT_SECTIONS: SectionKey[] = [
   "cover",
   "toc",
   "executive-summary",
-  "weather-verification",
-  "photo-evidence",
   "scope-matrix",
   "code-compliance",
+  "pricing-comparison",
+  "retail-proposal",
   "signature-page",
 ];
 
@@ -88,7 +90,7 @@ export default function EnhancedBuilder() {
       a.download = `contractor-packet-${Date.now()}.${exportFormat}`;
       a.click();
       URL.revokeObjectURL(url);
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       setError(err.message);
     } finally {
@@ -104,7 +106,7 @@ export default function EnhancedBuilder() {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         sectionKey: sectionKey as any, // Cast for now - TODO: proper mapping
       });
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       setError(err.message);
     }
@@ -117,7 +119,7 @@ export default function EnhancedBuilder() {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         sectionKey: sectionKey as any, // Cast for now - TODO: proper mapping
       });
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       setError(err.message);
     }

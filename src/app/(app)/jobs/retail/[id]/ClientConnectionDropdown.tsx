@@ -43,6 +43,7 @@ export function ClientConnectionDropdown({ jobId, contactId }: ClientConnectionD
   const [loading, setLoading] = useState(true);
   const [selectedId, setSelectedId] = useState<string>("");
   const [attaching, setAttaching] = useState(false);
+  const [disconnecting, setDisconnecting] = useState(false);
   const [connectedClient, setConnectedClient] = useState<ConnectedClient | null>(null);
 
   // Fetch available connections from trades network
@@ -131,7 +132,7 @@ export function ClientConnectionDropdown({ jobId, contactId }: ClientConnectionD
       });
       setSelectedId("");
       toast.success("Client connected to job!");
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       logger.error("[RetailClientDropdown] attach failed:", error);
       toast.error(error.message || "Failed to connect client");
@@ -139,6 +140,34 @@ export function ClientConnectionDropdown({ jobId, contactId }: ClientConnectionD
       setAttaching(false);
     }
   }, [connections, jobId, selectedId]);
+
+  const handleDisconnect = useCallback(async () => {
+    if (!connectedClient) return;
+
+    setDisconnecting(true);
+    try {
+      // Update the lead to remove contactId
+      const res = await fetch(`/api/leads/${jobId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ contactId: null }),
+      });
+
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.error || "Failed to disconnect client");
+      }
+
+      setConnectedClient(null);
+      toast.success("Client disconnected from job");
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } catch (error: any) {
+      logger.error("[RetailClientDropdown] disconnect failed:", error);
+      toast.error(error.message || "Failed to disconnect client");
+    } finally {
+      setDisconnecting(false);
+    }
+  }, [connectedClient, jobId]);
 
   if (loading) {
     return (
@@ -169,20 +198,36 @@ export function ClientConnectionDropdown({ jobId, contactId }: ClientConnectionD
       </CardHeader>
       <CardContent className="space-y-3">
         {connectedClient ? (
-          <div className="rounded-xl border border-emerald-200/60 bg-emerald-50/50 p-3 dark:border-emerald-800/40 dark:bg-emerald-950/20">
-            <p className="text-sm font-semibold text-emerald-800 dark:text-emerald-300">
-              {connectedClient.name}
-            </p>
-            {connectedClient.email && (
-              <p className="text-xs text-emerald-600 dark:text-emerald-400">
-                {connectedClient.email}
+          <div className="space-y-2">
+            <div className="rounded-xl border border-emerald-200/60 bg-emerald-50/50 p-3 dark:border-emerald-800/40 dark:bg-emerald-950/20">
+              <p className="text-sm font-semibold text-emerald-800 dark:text-emerald-300">
+                {connectedClient.name}
               </p>
-            )}
-            {connectedClient.phone && (
-              <p className="text-xs text-emerald-600 dark:text-emerald-400">
-                {connectedClient.phone}
-              </p>
-            )}
+              {connectedClient.email && (
+                <p className="text-xs text-emerald-600 dark:text-emerald-400">
+                  {connectedClient.email}
+                </p>
+              )}
+              {connectedClient.phone && (
+                <p className="text-xs text-emerald-600 dark:text-emerald-400">
+                  {connectedClient.phone}
+                </p>
+              )}
+            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleDisconnect}
+              disabled={disconnecting}
+              className="w-full gap-2 border-red-200 text-red-600 hover:bg-red-50 hover:text-red-700 dark:border-red-800 dark:hover:bg-red-950/30"
+            >
+              {disconnecting ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <UserPlus className="h-4 w-4 rotate-45" />
+              )}
+              {disconnecting ? "Disconnecting…" : "Disconnect Client"}
+            </Button>
           </div>
         ) : connections.length > 0 ? (
           <div className="space-y-2">

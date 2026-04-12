@@ -129,17 +129,21 @@ export default function UnifiedNotificationBell({
     setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
     setUnreadCount(0);
     try {
-      await fetch(markReadEndpoint, {
+      const res = await fetch(markReadEndpoint, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ markAllAsRead: true }),
       });
-      // Delay re-fetch to let DB writes settle (mark-read updates multiple tables)
-      setTimeout(() => void fetchNotifications(), 3000);
+      if (!res.ok) {
+        logger.warn("Mark all as read returned non-OK status:", res.status);
+      }
+      // Wait longer before re-fetch to ensure all DB writes have committed
+      // Multiple tables are updated (notifications_reads, ProjectNotification, tradeNotification, message)
+      setTimeout(() => void fetchNotifications(), 5000);
     } catch (error) {
       logger.error("Failed to mark all as read:", error);
       // On error, delay re-fetch to show actual server state
-      setTimeout(() => void fetchNotifications(), 2000);
+      setTimeout(() => void fetchNotifications(), 3000);
     }
   };
 

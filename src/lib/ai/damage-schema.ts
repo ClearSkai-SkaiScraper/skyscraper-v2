@@ -1,9 +1,9 @@
 /**
  * AI Damage Analysis Schema
- * 
+ *
  * Structured output schema for OpenAI Vision API damage detection.
  * Used to parse and validate AI responses for roof/property damage.
- * 
+ *
  * @see https://platform.openai.com/docs/guides/structured-outputs
  */
 
@@ -14,13 +14,31 @@ import { z } from "zod";
 // =============================================================================
 
 export const DamageTypeEnum = z.enum([
-  "hail",           // Hail impact damage
-  "wind",           // Wind damage (lifted shingles, debris)
-  "impact",         // Physical impact (branches, objects)
-  "thermal",        // Heat/thermal damage
-  "age",            // Age-related wear
-  "installation",   // Installation defects
-  "unknown"         // Cannot determine cause
+  "hail", // Hail impact damage
+  "wind", // Wind damage (lifted shingles, debris)
+  "impact", // Physical impact (branches, objects)
+  "thermal", // Heat/thermal damage
+  "age", // Age-related wear
+  "installation", // Installation defects
+  "granule_loss", // Granule displacement / bare spots
+  "bruising", // Soft spots on shingles
+  "nail_pop", // Exposed fasteners
+  "lifted_tab", // Lifted / curled / cupped tabs
+  "curling", // Shingle curling
+  "cupping", // Shingle cupping
+  "creasing", // Wind crease / fold marks
+  "wind_crease", // Wind-specific creasing
+  "puncture", // Punctured membrane or material
+  "erosion", // Surface erosion
+  "delamination", // Layer separation
+  "blistering", // Surface blistering
+  "algae_stain", // Algae growth staining
+  "moss_growth", // Moss accumulation
+  "ponding", // Standing water evidence
+  "ice_dam_evidence", // Ice dam indicators
+  "thermal_shock", // Thermal expansion damage
+  "UV_degradation", // UV-related deterioration
+  "unknown", // Cannot determine cause
 ]);
 
 export const ComponentEnum = z.enum([
@@ -39,33 +57,77 @@ export const ComponentEnum = z.enum([
   "siding",
   "window",
   "door",
-  "other"
+  "ridge_cap",
+  "starter_strip",
+  "drip_edge",
+  "rake_edge",
+  "valley",
+  "hip",
+  "eave",
+  "pipe_boot",
+  "roof_vent",
+  "turbine_vent",
+  "power_vent",
+  "chimney_flashing",
+  "step_flashing",
+  "counter_flashing",
+  "skylight_curb",
+  "satellite_mount",
+  "ac_condenser",
+  "fence_panel",
+  "fence_post",
+  "gate",
+  "mailbox",
+  "outdoor_lighting",
+  "stucco",
+  "other",
 ]);
 
 export const SeverityEnum = z.enum([
-  "none",      // No damage detected
-  "minor",     // Cosmetic or minimal damage
-  "moderate",  // Functional damage requiring repair
-  "severe"     // Structural damage requiring replacement
+  "none", // No damage detected
+  "minor", // Cosmetic or minimal damage
+  "moderate", // Functional damage requiring repair
+  "severe", // Structural damage requiring replacement
 ]);
+
+export const QuadrantEnum = z.enum(["NW", "NE", "SW", "SE", "center"]);
+
+export const WeatherEventEnum = z.enum(["hail", "wind", "debris", "water", "ice", "UV", "age"]);
+
+export const MeasurementsSchema = z.object({
+  width_inches: z.number().nullable().optional().describe("Estimated width in inches"),
+  height_inches: z.number().nullable().optional().describe("Estimated height in inches"),
+  diameter_inches: z
+    .number()
+    .nullable()
+    .optional()
+    .describe("Estimated diameter in inches (for hail impacts)"),
+  depth_estimate: z.string().nullable().optional().describe("Estimated depth description"),
+});
 
 export const DamageItemSchema = z.object({
   type: DamageTypeEnum,
-  location: z.string()
-    .describe("Specific location on structure (e.g. 'north-facing slope', 'ridge cap', 'left fascia')")
+  location: z
+    .string()
+    .describe(
+      "Specific location on structure (e.g. 'north-facing slope', 'ridge cap', 'left fascia')"
+    )
     .default("unknown"),
   component: ComponentEnum,
-  indicators: z.array(z.string())
-    .describe("Observable indicators (e.g. ['missing granules', 'exposed nail heads', 'cracked seal'])")
+  indicators: z
+    .array(z.string())
+    .describe(
+      "Observable indicators (e.g. ['missing granules', 'exposed nail heads', 'cracked seal'])"
+    )
     .default([]),
   estimated_severity: SeverityEnum,
-  confidence: z.number()
-    .min(0)
-    .max(1)
-    .describe("AI confidence score for this damage item (0-1)"),
-  notes: z.string()
-    .optional()
-    .describe("Additional context or observations")
+  confidence: z.number().min(0).max(1).describe("AI confidence score for this damage item (0-1)"),
+  notes: z.string().optional().describe("Additional context or observations"),
+  quadrant: QuadrantEnum.optional().describe("Spatial quadrant: NW, NE, SW, SE, center"),
+  weatherEvent: WeatherEventEnum.optional().describe(
+    "Weather event attribution: hail, wind, debris, water, ice, UV, age"
+  ),
+  measurements: MeasurementsSchema.optional().describe("Estimated dimensions of the damage area"),
 });
 
 export type DamageItem = z.infer<typeof DamageItemSchema>;
@@ -75,22 +137,15 @@ export type DamageItem = z.infer<typeof DamageItemSchema>;
 // =============================================================================
 
 export const DamageReportSchema = z.object({
-  summary: z.string()
-    .describe("Brief overview of damage findings (2-3 sentences)"),
-  items: z.array(DamageItemSchema)
-    .describe("List of individual damage items detected"),
-  overall_severity: SeverityEnum
-    .describe("Overall damage severity across all items"),
-  overall_confidence: z.number()
-    .min(0)
-    .max(1)
-    .describe("Overall confidence in analysis (0-1)"),
-  recommendations: z.array(z.string())
+  summary: z.string().describe("Brief overview of damage findings (2-3 sentences)"),
+  items: z.array(DamageItemSchema).describe("List of individual damage items detected"),
+  overall_severity: SeverityEnum.describe("Overall damage severity across all items"),
+  overall_confidence: z.number().min(0).max(1).describe("Overall confidence in analysis (0-1)"),
+  recommendations: z.array(z.string()).optional().describe("Recommended next steps or actions"),
+  photo_quality_notes: z
+    .string()
     .optional()
-    .describe("Recommended next steps or actions"),
-  photo_quality_notes: z.string()
-    .optional()
-    .describe("Notes about photo quality, lighting, angles that affected analysis")
+    .describe("Notes about photo quality, lighting, angles that affected analysis"),
 });
 
 export type DamageReport = z.infer<typeof DamageReportSchema>;
@@ -122,7 +177,7 @@ export function getSeverityLabel(severity: z.infer<typeof SeverityEnum>): string
     none: "No Damage",
     minor: "Minor Damage",
     moderate: "Moderate Damage",
-    severe: "Severe Damage"
+    severe: "Severe Damage",
   };
   return labels[severity];
 }
@@ -135,7 +190,7 @@ export function getSeverityColor(severity: z.infer<typeof SeverityEnum>): string
     none: "text-green-600 bg-green-50",
     minor: "text-yellow-600 bg-yellow-50",
     moderate: "text-orange-600 bg-orange-50",
-    severe: "text-red-600 bg-red-50"
+    severe: "text-red-600 bg-red-50",
   };
   return colors[severity];
 }
@@ -160,7 +215,30 @@ export function getComponentLabel(component: z.infer<typeof ComponentEnum>): str
     siding: "Siding",
     window: "Window",
     door: "Door",
-    other: "Other"
+    ridge_cap: "Ridge Cap",
+    starter_strip: "Starter Strip",
+    drip_edge: "Drip Edge",
+    rake_edge: "Rake Edge",
+    valley: "Valley",
+    hip: "Hip",
+    eave: "Eave",
+    pipe_boot: "Pipe Boot",
+    roof_vent: "Roof Vent",
+    turbine_vent: "Turbine Vent",
+    power_vent: "Power Vent",
+    chimney_flashing: "Chimney Flashing",
+    step_flashing: "Step Flashing",
+    counter_flashing: "Counter Flashing",
+    skylight_curb: "Skylight Curb",
+    satellite_mount: "Satellite Mount",
+    ac_condenser: "AC Condenser",
+    fence_panel: "Fence Panel",
+    fence_post: "Fence Post",
+    gate: "Gate",
+    mailbox: "Mailbox",
+    outdoor_lighting: "Outdoor Lighting",
+    stucco: "Stucco",
+    other: "Other",
   };
   return labels[component];
 }
@@ -176,7 +254,25 @@ export function getDamageTypeLabel(type: z.infer<typeof DamageTypeEnum>): string
     thermal: "Thermal Damage",
     age: "Age-Related Wear",
     installation: "Installation Defect",
-    unknown: "Unknown Cause"
+    granule_loss: "Granule Loss",
+    bruising: "Bruising / Soft Spots",
+    nail_pop: "Nail Pop",
+    lifted_tab: "Lifted Tab",
+    curling: "Shingle Curling",
+    cupping: "Shingle Cupping",
+    creasing: "Creasing",
+    wind_crease: "Wind Crease",
+    puncture: "Puncture",
+    erosion: "Erosion",
+    delamination: "Delamination",
+    blistering: "Blistering",
+    algae_stain: "Algae Stain",
+    moss_growth: "Moss Growth",
+    ponding: "Ponding",
+    ice_dam_evidence: "Ice Dam Evidence",
+    thermal_shock: "Thermal Shock",
+    UV_degradation: "UV Degradation",
+    unknown: "Unknown Cause",
   };
   return labels[type];
 }
@@ -186,7 +282,8 @@ export function getDamageTypeLabel(type: z.infer<typeof DamageTypeEnum>): string
 // =============================================================================
 
 export const EXAMPLE_DAMAGE_REPORT: DamageReport = {
-  summary: "Moderate hail damage detected on north-facing slope with multiple impact points. Several shingles show granule loss and exposed mat. Flashing integrity compromised at ridge cap.",
+  summary:
+    "Moderate hail damage detected on north-facing slope with multiple impact points. Several shingles show granule loss and exposed mat. Flashing integrity compromised at ridge cap.",
   items: [
     {
       type: "hail",
@@ -195,7 +292,7 @@ export const EXAMPLE_DAMAGE_REPORT: DamageReport = {
       indicators: ["circular impact marks", "granule loss", "exposed mat"],
       estimated_severity: "moderate",
       confidence: 0.92,
-      notes: "Multiple impact points consistent with 1-1.5 inch hail"
+      notes: "Multiple impact points consistent with 1-1.5 inch hail",
     },
     {
       type: "hail",
@@ -203,15 +300,16 @@ export const EXAMPLE_DAMAGE_REPORT: DamageReport = {
       component: "flashing",
       indicators: ["denting", "paint damage"],
       estimated_severity: "minor",
-      confidence: 0.78
-    }
+      confidence: 0.78,
+    },
   ],
   overall_severity: "moderate",
   overall_confidence: 0.87,
   recommendations: [
     "Recommend full roof inspection",
     "Document all impact points for insurance claim",
-    "Check interior for water intrusion"
+    "Check interior for water intrusion",
   ],
-  photo_quality_notes: "Good lighting and angle. Could benefit from closer shots of individual damage points."
+  photo_quality_notes:
+    "Good lighting and angle. Could benefit from closer shots of individual damage points.",
 };
