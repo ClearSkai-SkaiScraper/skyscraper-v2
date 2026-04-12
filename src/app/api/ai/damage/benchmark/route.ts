@@ -13,11 +13,26 @@ export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
 import { NextResponse } from "next/server";
+import { z } from "zod";
 
 import { checkFailSafe, estimateMultiPassCost } from "@/lib/ai/damage-confidence";
 import { analyzeImage } from "@/lib/ai/openai-vision";
 import { withAuth } from "@/lib/auth/withAuth";
 import { logger } from "@/lib/logger";
+
+// Zod validation schema
+const BenchmarkRequestSchema = z.object({
+  imageUrls: z
+    .array(
+      z.object({
+        url: z.string().url(),
+        label: z.string().optional(),
+        expectedDamageTypes: z.array(z.string()).optional(),
+      })
+    )
+    .min(1, "At least one image URL is required"),
+  model: z.enum(["gpt-4o", "gpt-4o-mini"]).default("gpt-4o"),
+});
 
 interface BenchmarkResult {
   imageUrl: string;
@@ -39,14 +54,17 @@ interface BenchmarkResult {
 export const POST = withAuth(async (req, { userId }) => {
   try {
     const body = await req.json();
-    const { imageUrls, model = "gpt-4o" } = body as {
-      imageUrls: Array<{ url: string; label?: string; expectedDamageTypes?: string[] }>;
-      model?: "gpt-4o" | "gpt-4o-mini";
-    };
 
-    if (!imageUrls || imageUrls.length === 0) {
-      return NextResponse.json({ error: "imageUrls array required" }, { status: 400 });
+    // Validate with Zod
+    const parsed = BenchmarkRequestSchema.safeParse(body);
+    if (!parsed.success) {
+      return NextResponse.json(
+        { error: "Invalid request", details: parsed.error.flatten().fieldErrors },
+        { status: 400 }
+      );
     }
+
+    const { imageUrls, model } = parsed.data;
 
     // Estimate cost before running
     const costEstimate = estimateMultiPassCost(imageUrls.length, 1, model);

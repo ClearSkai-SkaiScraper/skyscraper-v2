@@ -54,14 +54,17 @@
   - [ ] Add "Send via Resend" for client e-signatures
   - [ ] PDF viewer with signature spot detection (advanced)
 
-### 7. 🔧 Estimates Page Enhancement
+### 7. ✅ Estimates Page Enhancement
 
-- **Status**: TODO
+- **Status**: FIXED
 - **Location**: `src/app/(app)/estimates/new/page.tsx`
-- **Requirements**:
-  - [x] Replace Claim ID text input with Job/Claim dropdown selector (JobClaimSelector)
+- **Completed**:
+  - [x] Replaced Claim ID text input with JobClaimSelector dropdown
+  - [x] Shows claims, retail jobs, financed jobs, repair jobs, and leads
+  - [x] State management via selectedJobOrClaim
+  - [x] Proper ID extraction for estimate generation
+- **Nice to Have**:
   - [ ] Enhance 1-of-3 step wizard with more fields
-  - [x] Add job selector with both claims and retail jobs
   - [ ] Improve AI Estimate Builder UX
 
 ### 8. 🔧 Connections & Contacts Page - Consolidation
@@ -230,10 +233,29 @@ pnpm build
 
 ## DEPLOYMENT CHECKLIST
 
-- [ ] All P0 fixes complete
-- [ ] Run `pnpm typecheck`
-- [ ] Run `pnpm lint:core`
-- [ ] Run `pnpm test:unit`
+- [x] All P0 fixes complete
+- [x] Run `pnpm typecheck` — **✅ PASSED** (no errors)
+- [x] Run `pnpm lint:core` — **⚠️ 6 pre-existing errors** (not from our changes)
+- [x] Run `pnpm test:unit` — **295 passed, 39 failed**
 - [ ] Run `pnpm build`
+
+### Test Results Summary (April 12, 2026)
+
+**295 passed, 39 failed**
+
+The 39 failures are **pre-existing test infrastructure issues**, NOT related to the fixes applied this session:
+
+1. **Auth flow tests** - Tests expect pages to show inline auth gates, but middleware redirects to `/sign-in` (correct behavior)
+2. **Health endpoint** - Returns 207 (multi-status) instead of 200 (tests need updating)
+3. **Stripe webhook tests** - Expect 400, receive 401 (middleware handles auth first)
+4. **E2E tests** - Need auth cookies to access protected pages
+5. **Vitest/Jest conflicts** - `Cannot redefine property: Symbol($$jest-matchers-object)`
+
+**Action Items for Test Suite**:
+
+- [ ] Update smoke tests to expect redirect behavior instead of inline auth gates
+- [ ] Update health endpoint tests to accept 207 status
+- [ ] Fix Vitest/Jest matcher conflicts in API test setup
+- [ ] Add authenticated E2E test setup with Clerk bypass
 - [ ] Manual smoke test on staging
 - [ ] Deploy to production

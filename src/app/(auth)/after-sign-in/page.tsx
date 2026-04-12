@@ -194,9 +194,7 @@ export default async function AfterSignInPage({
     }
     if (pendingRedirect?.startsWith("/")) redirect(pendingRedirect);
     if (resolvedType === "client") redirect("/portal");
-    // Pro users: route through /subscribe to ensure billing is set up
-    // (will auto-redirect to /dashboard if already subscribed)
-    redirect("/subscribe");
+    redirect("/dashboard");
   }
 
   // -- L1: Clerk publicMetadata (fastest, no network call) --
