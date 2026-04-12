@@ -61,7 +61,7 @@ export default function ClaimTabs({ claimId }: ClaimTabsProps) {
   };
 
   return (
-    <div className="relative -mb-px flex items-center">
+    <div className="relative flex items-center">
       {/* Left scroll arrow - only show on small screens */}
       {canScrollLeft && (
         <button
@@ -75,7 +75,7 @@ export default function ClaimTabs({ claimId }: ClaimTabsProps) {
 
       <div
         ref={scrollRef}
-        className="scrollbar-none flex w-full items-center gap-0 overflow-x-auto pb-0 lg:justify-start lg:overflow-x-visible"
+        className="scrollbar-none flex w-full items-center gap-0.5 overflow-x-auto py-1 lg:justify-center lg:overflow-x-visible"
       >
         {tabs.map((tab) => {
           const href = `/claims/${claimId}${tab.href}`;
@@ -87,10 +87,10 @@ export default function ClaimTabs({ claimId }: ClaimTabsProps) {
               key={tab.href}
               href={href}
               className={cn(
-                "whitespace-nowrap border-b-2 px-2 py-2 text-[12px] font-medium transition-colors lg:px-2.5 lg:text-[13px]",
+                "whitespace-nowrap rounded-md px-2.5 py-1.5 text-[12px] font-medium transition-all lg:px-3 lg:text-[13px]",
                 isActive
-                  ? "border-white text-white"
-                  : "border-transparent text-white/60 hover:border-white/40 hover:text-white/90"
+                  ? "bg-white/20 text-white shadow-sm backdrop-blur-sm"
+                  : "text-white/60 hover:bg-white/10 hover:text-white/90"
               )}
             >
               {tab.label}

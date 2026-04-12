@@ -190,8 +190,8 @@ export default async function ClaimLayout({ children, params }: ClaimLayoutProps
               </div>
             </div>
 
-            {/* Tab bar — clean bottom border style, full-width on lg screens */}
-            <div className="mx-auto w-full px-4 md:px-6 lg:max-w-none">
+            {/* Tab bar — aligned with header content */}
+            <div className="mx-auto w-full max-w-7xl px-4 md:px-6">
               <ClaimTabs claimId={claimId} />
             </div>
           </header>
@@ -377,8 +377,8 @@ export default async function ClaimLayout({ children, params }: ClaimLayoutProps
           </div>
         </div>
 
-        {/* Tab bar — clean bottom border style, full-width on lg screens */}
-        <div className="mx-auto w-full px-4 md:px-6 lg:max-w-none">
+        {/* Tab bar — aligned with header content */}
+        <div className="mx-auto w-full max-w-7xl px-4 md:px-6">
           <ClaimTabs claimId={claimId} />
         </div>
       </header>

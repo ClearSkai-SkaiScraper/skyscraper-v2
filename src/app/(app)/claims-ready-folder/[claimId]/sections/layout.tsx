@@ -6,7 +6,7 @@ import Link from "next/link";
 import { useParams, usePathname } from "next/navigation";
 
 import { Button } from "@/components/ui/button";
-import { type FolderSectionKey,SECTION_METADATA } from "@/lib/claims-folder/folderSchema";
+import { type FolderSectionKey, SECTION_METADATA } from "@/lib/claims-folder/folderSchema";
 import { cn } from "@/lib/utils";
 
 // Define section order for navigation
@@ -18,8 +18,10 @@ const SECTION_ORDER: FolderSectionKey[] = [
   "inspection-overview",
   "damage-grids",
   "photo-evidence",
+  "test-cuts",
   "code-compliance",
   "scope-pricing",
+  "supplements-variances",
   "repair-justification",
   "contractor-summary",
   "timeline",
