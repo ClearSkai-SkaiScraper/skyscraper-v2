@@ -65,6 +65,10 @@ export default function UnifiedNotificationBell({
   const apiBase = variant === "client" ? "/api/client-notifications" : "/api/notifications";
   const markReadEndpoint =
     variant === "client" ? "/api/client-notifications/mark-read" : "/api/notifications/mark-read";
+  const markAllReadEndpoint =
+    variant === "client"
+      ? "/api/client-notifications/mark-all-read"
+      : "/api/notifications/mark-all-read";
 
   const fetchNotifications = useCallback(async () => {
     try {
@@ -129,10 +133,9 @@ export default function UnifiedNotificationBell({
     setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
     setUnreadCount(0);
     try {
-      const res = await fetch(markReadEndpoint, {
+      const res = await fetch(markAllReadEndpoint, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ markAllAsRead: true }),
       });
       if (!res.ok) {
         logger.warn("Mark all as read returned non-OK status:", res.status);

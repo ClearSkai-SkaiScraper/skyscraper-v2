@@ -35,17 +35,26 @@ const TIER_CEILINGS: Record<string, number> = {
 };
 
 // ── Redis helpers ─────────────────────────────────────────────────
+function isValidUpstashUrl(url: string | undefined): boolean {
+  if (!url) return false;
+  if (url.includes("example.upstash.io") || url.includes("placeholder")) return false;
+  try {
+    const parsed = new URL(url);
+    return parsed.hostname.endsWith(".upstash.io") && parsed.protocol === "https:";
+  } catch {
+    return false;
+  }
+}
+
 function getRedisClient() {
   // eslint-disable-next-line no-restricted-syntax
-  if (!process.env.UPSTASH_REDIS_REST_URL || !process.env.UPSTASH_REDIS_REST_TOKEN) {
+  const url = process.env.UPSTASH_REDIS_REST_URL;
+  // eslint-disable-next-line no-restricted-syntax
+  const token = process.env.UPSTASH_REDIS_REST_TOKEN;
+  if (!isValidUpstashUrl(url) || !token) {
     return null;
   }
-  return {
-    // eslint-disable-next-line no-restricted-syntax
-    url: process.env.UPSTASH_REDIS_REST_URL,
-    // eslint-disable-next-line no-restricted-syntax
-    token: process.env.UPSTASH_REDIS_REST_TOKEN,
-  };
+  return { url, token };
 }
 
 async function redisGet(key: string): Promise<number> {

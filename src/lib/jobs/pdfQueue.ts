@@ -5,15 +5,27 @@
 
 import { Redis } from "@upstash/redis";
 
+// Check if URL is valid (not a placeholder)
+function isValidUpstashUrl(url: string | undefined): boolean {
+  if (!url) return false;
+  if (url.includes("example.upstash.io") || url.includes("placeholder")) return false;
+  try {
+    const parsed = new URL(url);
+    return parsed.hostname.endsWith(".upstash.io") && parsed.protocol === "https:";
+  } catch {
+    return false;
+  }
+}
+
 // eslint-disable-next-line no-restricted-syntax
-const redis = process.env.UPSTASH_REDIS_REST_URL
-  ? new Redis({
-      // eslint-disable-next-line no-restricted-syntax
-      url: process.env.UPSTASH_REDIS_REST_URL,
-      // eslint-disable-next-line no-restricted-syntax
-      token: process.env.UPSTASH_REDIS_REST_TOKEN!,
-    })
-  : null;
+const upstashUrl = process.env.UPSTASH_REDIS_REST_URL;
+// eslint-disable-next-line no-restricted-syntax
+const upstashToken = process.env.UPSTASH_REDIS_REST_TOKEN;
+
+const redis =
+  isValidUpstashUrl(upstashUrl) && upstashToken
+    ? new Redis({ url: upstashUrl, token: upstashToken })
+    : null;
 
 export interface PdfJob {
   id: string;

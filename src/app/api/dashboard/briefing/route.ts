@@ -115,7 +115,7 @@ export const GET = withAuth(async (_req, { orgId }) => {
         type: "opportunity",
         title: "New storm activity detected",
         description: `${recentStorms} storm event${recentStorms > 1 ? "s" : ""} reported in your area`,
-        link: "/storm-leads",
+        link: "/maps/weather-chains",
         linkText: "View Storm Map",
       });
     }

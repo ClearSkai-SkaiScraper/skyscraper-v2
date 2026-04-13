@@ -27,17 +27,46 @@ import { logger } from "@/lib/logger";
 // CONFIGURATION
 // ============================================================================
 
-// Initialize Upstash Redis client
+/**
+ * Check if the Upstash URL is a valid, real endpoint (not a placeholder).
+ * Returns false for placeholder URLs like "example.upstash.io" that would cause
+ * DNS lookup failures and hang the server.
+ */
+function isValidUpstashUrl(url: string | undefined): boolean {
+  if (!url) return false;
+  // Reject placeholder URLs
+  if (url.includes("example.upstash.io")) return false;
+  if (url.includes("placeholder")) return false;
+  if (url.includes("xxx")) return false;
+  // Must be a proper Upstash URL
+  try {
+    const parsed = new URL(url);
+    return parsed.hostname.endsWith(".upstash.io") && parsed.protocol === "https:";
+  } catch {
+    return false;
+  }
+}
+
+// eslint-disable-next-line no-restricted-syntax
+const upstashUrl = process.env.UPSTASH_REDIS_REST_URL;
+// eslint-disable-next-line no-restricted-syntax
+const upstashToken = process.env.UPSTASH_REDIS_REST_TOKEN;
+
+// Initialize Upstash Redis client only if URL is valid (not placeholder)
 const redis =
-  // eslint-disable-next-line no-restricted-syntax
-  process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN
+  isValidUpstashUrl(upstashUrl) && upstashToken
     ? new Redis({
-        // eslint-disable-next-line no-restricted-syntax
-        url: process.env.UPSTASH_REDIS_REST_URL,
-        // eslint-disable-next-line no-restricted-syntax
-        token: process.env.UPSTASH_REDIS_REST_TOKEN,
+        url: upstashUrl,
+        token: upstashToken,
       })
     : null;
+
+// Log warning if credentials exist but URL is invalid (likely placeholder)
+if (upstashUrl && upstashToken && !redis) {
+  logger.warn(
+    "[RateLimit] Upstash credentials found but URL appears invalid/placeholder. Using in-memory fallback."
+  );
+}
 
 // Fallback in-memory rate limiter for development
 const memoryStore = new Map<string, { count: number; resetAt: number }>();
@@ -88,36 +117,40 @@ export type RateLimitPreset = keyof typeof RATE_LIMIT_PRESETS;
 // UPSTASH RATELIMIT INSTANCES (for enhanced features)
 // ============================================================================
 
+// Only enable analytics in production with valid Upstash credentials
+// eslint-disable-next-line no-restricted-syntax
+const enableAnalytics = process.env.NODE_ENV === "production";
+
 const upstashLimiters = redis
   ? {
       AI: new Ratelimit({
         redis,
         limiter: Ratelimit.slidingWindow(10, "1 m"),
-        analytics: true,
+        analytics: enableAnalytics,
         prefix: "@upstash/ratelimit:ai",
       }),
       API: new Ratelimit({
         redis,
         limiter: Ratelimit.slidingWindow(100, "1 m"),
-        analytics: true,
+        analytics: enableAnalytics,
         prefix: "@upstash/ratelimit:api",
       }),
       WEBHOOK: new Ratelimit({
         redis,
         limiter: Ratelimit.slidingWindow(50, "1 m"),
-        analytics: true,
+        analytics: enableAnalytics,
         prefix: "@upstash/ratelimit:webhooks",
       }),
       PUBLIC: new Ratelimit({
         redis,
         limiter: Ratelimit.slidingWindow(5, "1 m"),
-        analytics: true,
+        analytics: enableAnalytics,
         prefix: "@upstash/ratelimit:public",
       }),
       API_KEYS: new Ratelimit({
         redis,
         limiter: Ratelimit.slidingWindow(10, "1 h"),
-        analytics: true,
+        analytics: enableAnalytics,
         prefix: "@upstash/ratelimit:api-keys",
       }),
     }

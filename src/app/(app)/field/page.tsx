@@ -26,9 +26,10 @@ import {
   MapPin,
   Plus,
   RotateCcw,
+  Ruler,
+  Search,
   Send,
   X,
-  Zap,
 } from "lucide-react";
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -375,15 +376,12 @@ export default function FieldModePage() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 pb-32 dark:bg-slate-950">
+    <div className="min-h-screen bg-slate-50 pb-40 dark:bg-slate-950">
       {/* Header — minimal, mobile-optimized */}
       <header className="sticky top-0 z-20 border-b border-slate-200 bg-white/90 backdrop-blur-lg dark:border-slate-800 dark:bg-slate-900/90">
         <div className="flex items-center justify-between px-4 py-3">
           <div>
-            <h1 className="text-lg font-bold text-foreground">
-              <Zap className="mr-1 inline h-5 w-5 text-amber-500" />
-              Field Mode
-            </h1>
+            <h1 className="text-lg font-bold text-foreground">Field Mode</h1>
             <div className="flex items-center gap-2 text-xs text-muted-foreground">
               <MapPin className="h-3 w-3" />
               {gpsStatus === "active" ? (
@@ -400,7 +398,7 @@ export default function FieldModePage() {
             </div>
           </div>
           <div className="flex items-center gap-2">
-            {/* Bulk Analyze Button - F8 Enhancement */}
+            {/* Bulk Analyze Button */}
             {photos.length > 0 && (unanalyzedCount > 0 || bulkAnalyzing) && (
               <button
                 type="button"
@@ -419,10 +417,7 @@ export default function FieldModePage() {
                     Analyzing...
                   </>
                 ) : (
-                  <>
-                    <Zap className="h-3 w-3" />
-                    Analyze All ({unanalyzedCount})
-                  </>
+                  <>AI Scan ({unanalyzedCount})</>
                 )}
               </button>
             )}
@@ -594,9 +589,19 @@ export default function FieldModePage() {
         </div>
       </div>
 
-      {/* Fixed bottom bar — BIG camera button */}
-      <div className="fixed bottom-0 left-0 right-0 z-30 border-t border-slate-200 bg-white/95 px-4 py-3 backdrop-blur-lg dark:border-slate-800 dark:bg-slate-900/95">
-        <div className="mx-auto flex max-w-lg items-center justify-between gap-3">
+      {/* Fixed bottom bar — Enhanced field tools */}
+      <div className="fixed bottom-0 left-0 right-0 z-30 border-t border-slate-200 bg-white/95 backdrop-blur-lg dark:border-slate-800 dark:bg-slate-900/95">
+        {/* Main action row */}
+        <div className="mx-auto flex max-w-lg items-center justify-between gap-2 px-4 py-3">
+          {/* Search Claims */}
+          <Link
+            href="/search"
+            className="flex flex-col items-center gap-1 rounded-xl px-3 py-2 text-slate-600 transition-colors hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800"
+          >
+            <Search className="h-5 w-5" />
+            <span className="text-[10px] font-medium">Search</span>
+          </Link>
+
           {/* Gallery upload */}
           <input
             ref={fileInputRef}
@@ -609,10 +614,10 @@ export default function FieldModePage() {
           <button
             type="button"
             onClick={() => fileInputRef.current?.click()}
-            className="flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-4 py-3 text-xs font-semibold text-slate-600 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-400"
+            className="flex flex-col items-center gap-1 rounded-xl px-3 py-2 text-slate-600 transition-colors hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800"
           >
-            <Plus className="h-4 w-4" />
-            Gallery
+            <Plus className="h-5 w-5" />
+            <span className="text-[10px] font-medium">Gallery</span>
           </button>
 
           {/* CAMERA BUTTON — THE BIG ONE */}
@@ -632,24 +637,38 @@ export default function FieldModePage() {
             <Camera className="h-7 w-7 text-white" />
           </button>
 
+          {/* Measure */}
+          <button
+            type="button"
+            onClick={() =>
+              toast.info(
+                "Measuring tool coming soon! For now, use your device's built-in measuring app."
+              )
+            }
+            className="flex flex-col items-center gap-1 rounded-xl px-3 py-2 text-slate-600 transition-colors hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800"
+          >
+            <Ruler className="h-5 w-5" />
+            <span className="text-[10px] font-medium">Measure</span>
+          </button>
+
           {/* Submit */}
           <button
             type="button"
             onClick={handleSubmit}
             disabled={submitting || photos.length === 0}
             className={cn(
-              "flex items-center gap-1.5 rounded-xl px-4 py-3 text-xs font-bold shadow-md transition-all",
+              "flex flex-col items-center gap-1 rounded-xl px-3 py-2 transition-all",
               photos.length > 0
-                ? "bg-gradient-to-r from-emerald-500 to-teal-500 text-white hover:brightness-110"
-                : "bg-slate-100 text-slate-400 dark:bg-slate-800"
+                ? "text-emerald-600 hover:bg-emerald-50 dark:text-emerald-400 dark:hover:bg-emerald-950/30"
+                : "text-slate-300 dark:text-slate-600"
             )}
           >
             {submitting ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
+              <Loader2 className="h-5 w-5 animate-spin" />
             ) : (
-              <Send className="h-4 w-4" />
+              <Send className="h-5 w-5" />
             )}
-            Submit
+            <span className="text-[10px] font-medium">Submit</span>
           </button>
         </div>
       </div>

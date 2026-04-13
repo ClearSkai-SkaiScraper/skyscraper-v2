@@ -10,13 +10,33 @@ import { Redis } from "@upstash/redis";
 
 let client: Redis | null | undefined = undefined; // undefined = uninitialized sentinel
 
+/**
+ * Check if the Upstash URL is a valid, real endpoint (not a placeholder).
+ * Returns false for placeholder URLs like "example.upstash.io" that would cause
+ * DNS lookup failures and hang the server.
+ */
+function isValidUpstashUrl(url: string | undefined): boolean {
+  if (!url) return false;
+  // Reject placeholder URLs
+  if (url.includes("example.upstash.io")) return false;
+  if (url.includes("placeholder")) return false;
+  if (url.includes("xxx")) return false;
+  // Must be a proper Upstash URL
+  try {
+    const parsed = new URL(url);
+    return parsed.hostname.endsWith(".upstash.io") && parsed.protocol === "https:";
+  } catch {
+    return false;
+  }
+}
+
 export function createRedisClientSafely(): Redis | null {
   if (client !== undefined) return client;
   // eslint-disable-next-line no-restricted-syntax
   const url = process.env.UPSTASH_REDIS_REST_URL;
   // eslint-disable-next-line no-restricted-syntax
   const token = process.env.UPSTASH_REDIS_REST_TOKEN;
-  if (!url || !token) {
+  if (!isValidUpstashUrl(url) || !token) {
     client = null;
     return client;
   }

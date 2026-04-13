@@ -34,6 +34,8 @@ import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 
+import { PageContainer } from "@/components/layout/PageContainer";
+import { PageHero } from "@/components/layout/PageHero";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -324,24 +326,13 @@ export default function ClaimPipelinePage() {
   const totalValue = state.lineItems.reduce((sum, li) => sum + li.total, 0);
 
   return (
-    <div className="mx-auto max-w-5xl px-4 py-8">
-      {/* Header */}
-      <div className="mb-8">
-        <Link
-          href="/claims"
-          className="mb-4 inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
-        >
-          <ArrowLeft className="h-4 w-4" />
-          Back to Claims
-        </Link>
-        <h1 className="text-3xl font-bold text-foreground">
-          <Zap className="mr-2 inline h-8 w-8 text-amber-500" />
-          Photos → Claim Packet
-        </h1>
-        <p className="mt-1 text-muted-foreground">
-          Upload photos, AI detects damage, generate a carrier-ready claim packet in minutes.
-        </p>
-      </div>
+    <PageContainer>
+      <PageHero
+        section="claims"
+        title="Photos → Claim"
+        subtitle="Upload photos, AI detects damage, generate a carrier-ready claim packet in minutes"
+        icon={<Zap className="h-5 w-5" />}
+      />
 
       {/* Step Progress Bar */}
       <div className="mb-8">
@@ -744,6 +735,6 @@ export default function ClaimPipelinePage() {
           </Button>
         )}
       </div>
-    </div>
+    </PageContainer>
   );
 }

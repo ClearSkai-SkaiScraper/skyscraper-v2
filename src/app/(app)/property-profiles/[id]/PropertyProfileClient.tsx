@@ -1,15 +1,36 @@
 "use client";
 /* eslint-disable react/jsx-no-comment-textnodes, @typescript-eslint/no-explicit-any */
 
-import { AlertTriangle, ArrowLeft, Camera, FileText, Home, TrendingUp, Wrench } from "lucide-react";
+import {
+  AlertTriangle,
+  ArrowLeft,
+  Camera,
+  Cloud,
+  CloudRain,
+  FileText,
+  Home,
+  Loader2,
+  TrendingUp,
+  Wrench,
+} from "lucide-react";
 import Link from "next/link";
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { logger } from "@/lib/logger";
+import { cn } from "@/lib/utils";
+
+interface WeatherEvent {
+  id: string;
+  date: string;
+  type: string;
+  severity: string;
+  hailSize?: number;
+  windSpeed?: number;
+}
 
 interface PropertyProfileClientProps {
   propertyId: string;
@@ -35,6 +56,31 @@ export default function PropertyProfileClient({
   const [digitalTwins] = useState(initialDigitalTwins);
   const [inspections] = useState(initialInspections);
   const [calculating, setCalculating] = useState(false);
+  const [weatherEvents, setWeatherEvents] = useState<WeatherEvent[]>([]);
+  const [loadingWeather, setLoadingWeather] = useState(false);
+
+  // Fetch weather history for this property
+  const fetchWeatherHistory = useCallback(async () => {
+    setLoadingWeather(true);
+    try {
+      const location = `${property.city}, ${property.state}`;
+      const res = await fetch(
+        `/api/weather/property-history?location=${encodeURIComponent(location)}&propertyId=${propertyId}`
+      );
+      if (res.ok) {
+        const data = await res.json();
+        setWeatherEvents(data.events || []);
+      }
+    } catch (error) {
+      logger.error("Failed to fetch weather history:", error);
+    } finally {
+      setLoadingWeather(false);
+    }
+  }, [property.city, property.state, propertyId]);
+
+  useEffect(() => {
+    void fetchWeatherHistory();
+  }, [fetchWeatherHistory]);
 
   const calculateHealthScore = async () => {
     setCalculating(true);
@@ -187,8 +233,9 @@ export default function PropertyProfileClient({
 
       {/* Tabs */}
       <Tabs defaultValue="overview" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-5">
+        <TabsList className="grid w-full grid-cols-6">
           <TabsTrigger value="overview">Overview</TabsTrigger>
+          <TabsTrigger value="weather">Weather</TabsTrigger>
           <TabsTrigger value="digital-twins">Digital Twins</TabsTrigger>
           <TabsTrigger value="maintenance">Maintenance</TabsTrigger>
           <TabsTrigger value="inspections">Inspections</TabsTrigger>
@@ -249,6 +296,96 @@ export default function PropertyProfileClient({
               </CardContent>
             </Card>
           </div>
+        </TabsContent>
+
+        <TabsContent value="weather">
+          <Card>
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle className="flex items-center gap-2">
+                    <CloudRain className="h-5 w-5" />
+                    Weather History
+                  </CardTitle>
+                  <CardDescription>
+                    Storm events that may have impacted this property
+                  </CardDescription>
+                </div>
+                <Link href="/maps/weather-chains">
+                  <Button variant="outline" size="sm">
+                    View Weather Map
+                  </Button>
+                </Link>
+              </div>
+            </CardHeader>
+            <CardContent>
+              {loadingWeather ? (
+                <div className="flex items-center justify-center py-8">
+                  <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                </div>
+              ) : weatherEvents.length === 0 ? (
+                <div className="py-8 text-center">
+                  <Cloud className="mx-auto mb-4 h-12 w-12 text-muted-foreground" />
+                  <p className="text-muted-foreground">No storm events recorded for this area</p>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {weatherEvents.map((event) => (
+                    <div
+                      key={event.id}
+                      className={cn(
+                        "flex items-center justify-between rounded-lg border p-4",
+                        event.severity === "severe"
+                          ? "border-red-200 bg-red-50/50 dark:border-red-900 dark:bg-red-950/20"
+                          : "border-slate-200 dark:border-slate-700"
+                      )}
+                    >
+                      <div className="flex items-center gap-3">
+                        <div
+                          className={cn(
+                            "flex h-10 w-10 items-center justify-center rounded-full",
+                            event.severity === "severe"
+                              ? "bg-red-100 text-red-600 dark:bg-red-900 dark:text-red-400"
+                              : "bg-blue-100 text-blue-600 dark:bg-blue-900 dark:text-blue-400"
+                          )}
+                        >
+                          <CloudRain className="h-5 w-5" />
+                        </div>
+                        <div>
+                          <p className="font-medium capitalize">{event.type} Event</p>
+                          <p className="text-sm text-muted-foreground">
+                            {new Date(event.date).toLocaleDateString()}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        {event.hailSize && <p className="text-sm">🧊 {event.hailSize}" hail</p>}
+                        {event.windSpeed && (
+                          <p className="text-sm">💨 {event.windSpeed} mph winds</p>
+                        )}
+                        <Badge
+                          variant={
+                            event.severity === "severe"
+                              ? "destructive"
+                              : event.severity === "moderate"
+                                ? "outline"
+                                : "secondary"
+                          }
+                          className={cn(
+                            "mt-1",
+                            event.severity === "moderate" &&
+                              "border-amber-300 bg-amber-50 text-amber-700 dark:border-amber-700 dark:bg-amber-950/30 dark:text-amber-400"
+                          )}
+                        >
+                          {event.severity}
+                        </Badge>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
         </TabsContent>
 
         <TabsContent value="digital-twins">

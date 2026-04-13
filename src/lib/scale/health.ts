@@ -88,11 +88,17 @@ export async function deepHealthCheck(): Promise<HealthCheck> {
   try {
     const cacheStart = Date.now();
     // eslint-disable-next-line no-restricted-syntax
-    if (process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN) {
-      // eslint-disable-next-line no-restricted-syntax
-      const res = await fetch(`${process.env.UPSTASH_REDIS_REST_URL}/ping`, {
-        // eslint-disable-next-line no-restricted-syntax
-        headers: { Authorization: `Bearer ${process.env.UPSTASH_REDIS_REST_TOKEN}` },
+    const upstashUrl = process.env.UPSTASH_REDIS_REST_URL;
+    // eslint-disable-next-line no-restricted-syntax
+    const upstashToken = process.env.UPSTASH_REDIS_REST_TOKEN;
+    // Only attempt ping if URL is valid (not a placeholder)
+    const isValidUrl =
+      upstashUrl &&
+      !upstashUrl.includes("example.upstash.io") &&
+      !upstashUrl.includes("placeholder");
+    if (isValidUrl && upstashToken) {
+      const res = await fetch(`${upstashUrl}/ping`, {
+        headers: { Authorization: `Bearer ${upstashToken}` },
         signal: AbortSignal.timeout(3000),
       });
       cacheAvailable = res.ok;

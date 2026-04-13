@@ -211,14 +211,21 @@ export default async function DashboardPage() {
         </PageHero>
 
         <div className="space-y-6">
-          {/* AI Daily Briefing — personalized morning summary */}
-          <AIDailyBriefing />
+          {/* Top Section: AI Briefing + Quick Actions */}
+          <div className="grid gap-6 lg:grid-cols-3">
+            <div className="lg:col-span-2">
+              <AIDailyBriefing />
+            </div>
+            <div className="space-y-6">
+              {/* Goal Tracker — weekly targets */}
+              <GoalTrackerCompact />
+              {/* Company Leaderboard — sales performance rankings */}
+              <CompanyLeaderboard />
+            </div>
+          </div>
 
-          {/* Goal Tracker — weekly targets in sidebar-style compact view */}
-          <GoalTrackerCompact className="lg:hidden" />
-
-          {/* Company Leaderboard — sales performance rankings (top priority) */}
-          <CompanyLeaderboard />
+          {/* Stalled Claims — "Never Lose a Claim" widget (high priority action item) */}
+          <StalledClaimsWidget />
 
           {/* KPI Cards — key metrics */}
           <AsyncBoundary
@@ -231,11 +238,19 @@ export default async function DashboardPage() {
             <StatsCards />
           </AsyncBoundary>
 
-          {/* Stalled Claims — "Never Lose a Claim" widget */}
-          <StalledClaimsWidget />
-
           {/* Work Opportunities & Network Activity Row */}
           <div className="grid gap-6 lg:grid-cols-2">
+            {/* Work Opportunities Notifications (more actionable) */}
+            <AsyncBoundary
+              fallback={
+                <div className="animate-pulse rounded-3xl border border-purple-200/20 bg-white/60 p-8 backdrop-blur-xl dark:bg-slate-900/50">
+                  <div className="h-48 rounded-xl bg-slate-200 dark:bg-slate-800"></div>
+                </div>
+              }
+            >
+              <WorkOpportunityNotifications />
+            </AsyncBoundary>
+
             {/* Network Activity */}
             <AsyncBoundary
               fallback={
@@ -246,36 +261,28 @@ export default async function DashboardPage() {
             >
               <NetworkActivity />
             </AsyncBoundary>
+          </div>
 
-            {/* Work Opportunities Notifications */}
+          {/* Weather Section */}
+          <div className="grid gap-6 lg:grid-cols-2">
+            {/* Live Weather Summary */}
+            <div className="rounded-2xl border border-slate-200/20 bg-white/60 p-6 shadow-sm backdrop-blur-xl dark:bg-slate-900/50">
+              <WeatherSummaryCard weather={weather} />
+            </div>
+
+            {/* Weather Intelligence KPIs */}
             <AsyncBoundary
               fallback={
-                <div className="animate-pulse rounded-3xl border border-purple-200/20 bg-white/60 p-8 backdrop-blur-xl dark:bg-slate-900/50">
-                  <div className="h-48 rounded-xl bg-slate-200 dark:bg-slate-800"></div>
+                <div className="grid h-full grid-cols-2 gap-4">
+                  {[...Array(4)].map((_, i) => (
+                    <div key={i} className="h-20 animate-pulse rounded-xl bg-[var(--surface-2)]" />
+                  ))}
                 </div>
               }
             >
-              <WorkOpportunityNotifications />
+              <WeatherKPICards />
             </AsyncBoundary>
           </div>
-
-          {/* Live Weather Summary */}
-          <div className="rounded-2xl border border-slate-200/20 bg-white/60 p-8 shadow-[0_0_30px_-12px_rgba(0,0,0,0.25)] backdrop-blur-xl dark:bg-slate-900/50">
-            <WeatherSummaryCard weather={weather} />
-          </div>
-
-          {/* Weather Intelligence KPIs */}
-          <AsyncBoundary
-            fallback={
-              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-                {[...Array(4)].map((_, i) => (
-                  <div key={i} className="h-40 animate-pulse rounded-2xl bg-[var(--surface-2)]" />
-                ))}
-              </div>
-            }
-          >
-            <WeatherKPICards />
-          </AsyncBoundary>
 
           {/* AI Recommendations — background intelligence */}
           <AIJobScanner />

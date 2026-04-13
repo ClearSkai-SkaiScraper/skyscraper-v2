@@ -178,8 +178,8 @@ export default function QuickDOLPage() {
     <PageContainer>
       <PageHero
         section="claims"
-        title="Is This Worth It?"
-        subtitle="Know before you knock. Score any address for storm damage or pull a date of loss in seconds."
+        title="Quick DOL Pull"
+        subtitle="Rapid date-of-loss verification and address scoring. Know before you knock."
       />
 
       {/* Tab switcher */}

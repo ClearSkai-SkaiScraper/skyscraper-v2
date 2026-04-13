@@ -1,7 +1,20 @@
+// Check if URL is valid (not a placeholder)
+function isValidUpstashUrl(url: string | undefined): boolean {
+  if (!url) return false;
+  if (url.includes("example.upstash.io") || url.includes("placeholder")) return false;
+  try {
+    const parsed = new URL(url);
+    return parsed.hostname.endsWith(".upstash.io") && parsed.protocol === "https:";
+  } catch {
+    return false;
+  }
+}
+
 // eslint-disable-next-line no-restricted-syntax
-const UP_URL = process.env.UPSTASH_REDIS_REST_URL;
+const _rawUrl = process.env.UPSTASH_REDIS_REST_URL;
 // eslint-disable-next-line no-restricted-syntax
 const UP_TOKEN = process.env.UPSTASH_REDIS_REST_TOKEN;
+const UP_URL = isValidUpstashUrl(_rawUrl) ? _rawUrl : undefined;
 
 // Basic structured logger (fallback to console)
 // eslint-disable-next-line @typescript-eslint/no-explicit-any

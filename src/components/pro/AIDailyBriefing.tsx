@@ -7,8 +7,11 @@ import {
   CheckCircle,
   Clock,
   DollarSign,
+  DoorOpen,
   FileText,
+  Settings2,
   Sparkles,
+  Target,
   TrendingUp,
   Users,
 } from "lucide-react";
@@ -36,6 +39,12 @@ interface DailyStats {
   revenueGoal: number;
 }
 
+interface GoalProgress {
+  doorsKnocked: { current: number; weekly: number; monthly: number };
+  jobsPosted: { current: number; weekly: number; monthly: number };
+  revenue: { current: number; weekly: number; monthly: number };
+}
+
 interface AIDailyBriefingProps {
   className?: string;
 }
@@ -44,6 +53,8 @@ export function AIDailyBriefing({ className }: AIDailyBriefingProps) {
   const [isLoading, setIsLoading] = useState(true);
   const [briefing, setBriefing] = useState<BriefingItem[]>([]);
   const [stats, setStats] = useState<DailyStats | null>(null);
+  const [goals, setGoals] = useState<GoalProgress | null>(null);
+  const [goalPeriod, setGoalPeriod] = useState<"weekly" | "monthly">("weekly");
   const [greeting, setGreeting] = useState("");
 
   useEffect(() => {
@@ -65,14 +76,17 @@ export function AIDailyBriefing({ className }: AIDailyBriefingProps) {
         const data = await res.json();
         setBriefing(data.items || []);
         setStats(data.stats || null);
+        setGoals(data.goals || getFallbackGoals());
       } else {
         // Use fallback data if API fails
         setBriefing(getFallbackBriefing());
         setStats(getFallbackStats());
+        setGoals(getFallbackGoals());
       }
     } catch {
       setBriefing(getFallbackBriefing());
       setStats(getFallbackStats());
+      setGoals(getFallbackGoals());
     } finally {
       setIsLoading(false);
     }
@@ -99,7 +113,7 @@ export function AIDailyBriefing({ className }: AIDailyBriefingProps) {
       type: "opportunity",
       title: "New storm activity detected",
       description: "Hail reported in your service area yesterday - 12 potential leads",
-      link: "/storm-leads",
+      link: "/maps/weather-chains",
       linkText: "View Storm Map",
       icon: <TrendingUp className="h-4 w-4" />,
     },
@@ -121,6 +135,20 @@ export function AIDailyBriefing({ className }: AIDailyBriefingProps) {
     revenueThisWeek: 47500,
     revenueGoal: 75000,
   });
+
+  const getFallbackGoals = (): GoalProgress => ({
+    doorsKnocked: { current: 45, weekly: 100, monthly: 400 },
+    jobsPosted: { current: 8, weekly: 15, monthly: 60 },
+    revenue: { current: 47500, weekly: 75000, monthly: 300000 },
+  });
+
+  const getGoalTarget = (goal: { current: number; weekly: number; monthly: number }) =>
+    goalPeriod === "weekly" ? goal.weekly : goal.monthly;
+
+  const getGoalPercent = (goal: { current: number; weekly: number; monthly: number }) => {
+    const target = getGoalTarget(goal);
+    return target > 0 ? Math.min(Math.round((goal.current / target) * 100), 100) : 0;
+  };
 
   const getItemStyles = (type: BriefingItem["type"]) => {
     switch (type) {
@@ -239,6 +267,110 @@ export function AIDailyBriefing({ className }: AIDailyBriefingProps) {
               ${(stats.revenueThisWeek / 100).toLocaleString()}
             </span>
           </div>
+        </div>
+      )}
+
+      {/* Goal Tracking */}
+      {goals && (
+        <div className="mb-6 rounded-xl border bg-gradient-to-br from-indigo-50/50 to-purple-50/50 p-4 dark:from-indigo-950/20 dark:to-purple-950/20">
+          <div className="mb-3 flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Target className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
+              <span className="text-sm font-semibold">Goal Tracking</span>
+            </div>
+            <div className="flex items-center gap-1 rounded-lg bg-muted/70 p-0.5">
+              <button
+                onClick={() => setGoalPeriod("weekly")}
+                className={cn(
+                  "rounded-md px-2 py-0.5 text-xs font-medium transition-colors",
+                  goalPeriod === "weekly"
+                    ? "bg-white text-foreground shadow-sm dark:bg-slate-800"
+                    : "text-muted-foreground hover:text-foreground"
+                )}
+              >
+                Weekly
+              </button>
+              <button
+                onClick={() => setGoalPeriod("monthly")}
+                className={cn(
+                  "rounded-md px-2 py-0.5 text-xs font-medium transition-colors",
+                  goalPeriod === "monthly"
+                    ? "bg-white text-foreground shadow-sm dark:bg-slate-800"
+                    : "text-muted-foreground hover:text-foreground"
+                )}
+              >
+                Monthly
+              </button>
+            </div>
+          </div>
+
+          <div className="space-y-3">
+            {/* Doors Knocked */}
+            <div>
+              <div className="mb-1 flex items-center justify-between text-xs">
+                <div className="flex items-center gap-1.5">
+                  <DoorOpen className="h-3.5 w-3.5 text-blue-500" />
+                  <span className="font-medium">Doors Knocked</span>
+                </div>
+                <span className="text-muted-foreground">
+                  {goals.doorsKnocked.current} / {getGoalTarget(goals.doorsKnocked)}
+                </span>
+              </div>
+              <div className="h-2 overflow-hidden rounded-full bg-blue-200 dark:bg-blue-900/50">
+                <div
+                  className="h-full rounded-full bg-blue-500 transition-all"
+                  style={{ width: `${getGoalPercent(goals.doorsKnocked)}%` }}
+                />
+              </div>
+            </div>
+
+            {/* Jobs Posted */}
+            <div>
+              <div className="mb-1 flex items-center justify-between text-xs">
+                <div className="flex items-center gap-1.5">
+                  <FileText className="h-3.5 w-3.5 text-amber-500" />
+                  <span className="font-medium">Jobs Posted</span>
+                </div>
+                <span className="text-muted-foreground">
+                  {goals.jobsPosted.current} / {getGoalTarget(goals.jobsPosted)}
+                </span>
+              </div>
+              <div className="h-2 overflow-hidden rounded-full bg-amber-200 dark:bg-amber-900/50">
+                <div
+                  className="h-full rounded-full bg-amber-500 transition-all"
+                  style={{ width: `${getGoalPercent(goals.jobsPosted)}%` }}
+                />
+              </div>
+            </div>
+
+            {/* Revenue */}
+            <div>
+              <div className="mb-1 flex items-center justify-between text-xs">
+                <div className="flex items-center gap-1.5">
+                  <DollarSign className="h-3.5 w-3.5 text-green-500" />
+                  <span className="font-medium">Revenue</span>
+                </div>
+                <span className="text-muted-foreground">
+                  ${(goals.revenue.current / 100).toLocaleString()} / $
+                  {(getGoalTarget(goals.revenue) / 100).toLocaleString()}
+                </span>
+              </div>
+              <div className="h-2 overflow-hidden rounded-full bg-green-200 dark:bg-green-900/50">
+                <div
+                  className="h-full rounded-full bg-green-500 transition-all"
+                  style={{ width: `${getGoalPercent(goals.revenue)}%` }}
+                />
+              </div>
+            </div>
+          </div>
+
+          <Link
+            href="/settings/goals"
+            className="mt-3 flex items-center gap-1 text-[10px] text-muted-foreground hover:text-foreground"
+          >
+            <Settings2 className="h-3 w-3" />
+            Set your goals
+          </Link>
         </div>
       )}
 
