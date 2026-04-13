@@ -3,6 +3,11 @@ import { Check, Shield, Users, Zap } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 
+import { CaseStudyCards } from "@/components/marketing/CaseStudyCards";
+import { CustomerLogos } from "@/components/marketing/CustomerLogos";
+import { FAQAccordion, pricingFAQs } from "@/components/marketing/FAQAccordion";
+import { ROICalculator } from "@/components/marketing/ROICalculator";
+import { TestimonialCarousel } from "@/components/marketing/TestimonialCarousel";
 import { Button } from "@/components/ui/button";
 
 import SeatCalculatorWidget from "./SeatCalculatorWidget";
@@ -249,55 +254,52 @@ export default function PricingPage() {
             <h2 className="text-3xl font-bold tracking-tight">
               <span className="text-[#117CFF]">Frequently</span> Asked Questions
             </h2>
+            <p className="mt-2 text-muted-foreground">
+              Everything you need to know about pricing and billing
+            </p>
           </div>
 
-          <div className="grid gap-6 md:grid-cols-2">
-            <div className="rounded-2xl border bg-card p-6">
-              <p className="font-semibold text-foreground">
-                Why per-seat pricing instead of tiers?
-              </p>
-              <p className="mt-2 text-sm text-muted-foreground">
-                Tiers create artificial limits and upgrade pressure. With per-seat pricing, a solo
-                operator pays the same rate as a 200-person company. Everyone gets every feature.
-              </p>
-            </div>
-            <div className="rounded-2xl border bg-card p-6">
-              <p className="font-semibold text-foreground">Can I add seats mid-month?</p>
-              <p className="mt-2 text-sm text-muted-foreground">
-                Yes! Stripe prorates automatically. If you add 5 seats halfway through the month,
-                you only pay for the remaining days.
-              </p>
-            </div>
-            <div className="rounded-2xl border bg-card p-6">
-              <p className="font-semibold text-foreground">What counts as a &ldquo;seat&rdquo;?</p>
-              <p className="mt-2 text-sm text-muted-foreground">
-                A seat is one team member who can log in and use the platform. Each user needs their
-                own seat. Client portal access is free and unlimited.
-              </p>
-            </div>
-            <div className="rounded-2xl border bg-card p-6">
-              <p className="font-semibold text-foreground">Is there a free trial?</p>
-              <p className="mt-2 text-sm text-muted-foreground">
-                During our beta period, everything is free. After beta, all new accounts get a 3-day
-                free trial with full access to evaluate the platform.
-              </p>
-            </div>
-            <div className="rounded-2xl border bg-card p-6">
-              <p className="font-semibold text-foreground">Do you offer enterprise discounts?</p>
-              <p className="mt-2 text-sm text-muted-foreground">
-                Our pricing is already competitive at scale. For 100+ seats, contact us to discuss
-                custom onboarding and support packages.
-              </p>
-            </div>
-            <div className="rounded-2xl border bg-card p-6">
-              <p className="font-semibold text-foreground">Can I cancel anytime?</p>
-              <p className="mt-2 text-sm text-muted-foreground">
-                Yes. No contracts, no cancellation fees. Cancel from the Stripe billing portal and
-                keep access until the end of your billing period.
-              </p>
-            </div>
-          </div>
+          <FAQAccordion items={pricingFAQs} className="mx-auto max-w-3xl" />
         </section>
+
+        {/* ── ROI Calculator ─────────────────────────────────────── */}
+        <section className="mt-24">
+          <div className="mb-8 text-center">
+            <h2 className="text-3xl font-bold tracking-tight">
+              See Your <span className="text-[#117CFF]">ROI</span>
+            </h2>
+            <p className="mt-2 text-muted-foreground">
+              Calculate your potential savings with SkaiScraper
+            </p>
+          </div>
+          <ROICalculator className="mx-auto max-w-2xl" />
+        </section>
+
+        {/* ── Testimonials ───────────────────────────────────────── */}
+        <section className="mt-24">
+          <div className="mb-8 text-center">
+            <h2 className="text-3xl font-bold tracking-tight">
+              Trusted by <span className="text-[#117CFF]">Contractors</span>
+            </h2>
+          </div>
+          <TestimonialCarousel />
+        </section>
+
+        {/* ── Case Studies ───────────────────────────────────────── */}
+        <section className="mt-24">
+          <div className="mb-8 text-center">
+            <h2 className="text-3xl font-bold tracking-tight">
+              Real <span className="text-[#117CFF]">Results</span>
+            </h2>
+            <p className="mt-2 text-muted-foreground">
+              See how contractors are growing with SkaiScraper
+            </p>
+          </div>
+          <CaseStudyCards limit={3} />
+        </section>
+
+        {/* ── Customer Logos ─────────────────────────────────────── */}
+        <CustomerLogos className="mt-24" />
 
         {/* ── Contact CTA ──────────────────────────────────────────── */}
         <section className="mt-24">

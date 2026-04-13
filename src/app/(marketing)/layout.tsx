@@ -1,6 +1,7 @@
 import Link from "next/link";
 import React from "react";
 
+import { StickyCTA } from "@/components/marketing/StickyCTA";
 import MarketingNavbar from "@/components/nav/MarketingNavbar";
 
 export const dynamic = "force-dynamic";
@@ -31,6 +32,7 @@ export default function MarketingLayout({ children }: { children: React.ReactNod
           </div>
         </div>
       </footer>
+      <StickyCTA />
     </>
   );
 }
