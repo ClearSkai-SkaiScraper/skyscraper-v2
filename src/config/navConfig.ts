@@ -32,43 +32,51 @@ export const FEATURE_FLAGS: Record<string, boolean> = {
 };
 
 /**
- * Canonical navigation sections — 9 sections, ~55 items.
+ * Canonical navigation sections — 8 sections, streamlined grouping.
  * Order = display order in both sidebar and mobile nav.
+ *
+ * Changelog (latest session):
+ *   - Merged "Reports" into "Documents & Reports"
+ *   - Moved Messages Hub → Network & Comms
+ *   - Removed duplicate analytics link (was in Command Center + Close More Jobs)
+ *   - Grouped financial items tighter under "Money"
  */
 export const navSections: NavSection[] = [
   {
-    label: "Storm Command Center",
+    label: "Command Center",
     items: [
       { label: "Dashboard", href: "/dashboard" },
       { label: "Storm Center", href: "/storm-center" },
       { label: "Job Pipeline", href: "/pipeline" },
       { label: "Analytics Hub", href: "/analytics" },
       { label: "Smart Actions", href: "/ai/smart-actions" },
-      { label: "Quick DOL", href: "/quick-dol" },
+      { label: "Is This Worth It?", href: "/quick-dol" },
+      { label: "🌩️ Storm → Leads", href: "/storm-leads" },
       { label: "Search", href: "/search" },
       { label: "Weather Map", href: "/maps/weather-chains" },
       { label: "Notifications", href: "/notifications" },
     ],
   },
   {
-    label: "Claims & Supplements",
+    label: "Win More Claims",
     items: [
       { label: "Active Claims", href: "/claims" },
+      { label: "⚡ Photos → Claim", href: "/claims/pipeline" },
       { label: "Claims Timeline", href: "/analytics/claims-timeline" },
-      { label: "Claims Assembly", href: "/claims-ready-folder" },
-      { label: "Supplement Builder", href: "/ai/tools/supplement" },
-      { label: "Depreciation Builder", href: "/ai/tools/depreciation" },
-      { label: "Rebuttal Builder", href: "/ai/tools/rebuttal" },
+      { label: "Generate Claim Packet", href: "/claims-ready-folder" },
+      { label: "Find More Damage", href: "/ai/tools/supplement" },
+      { label: "Recover Depreciation", href: "/ai/tools/depreciation" },
+      { label: "Fight the Adjuster", href: "/ai/tools/rebuttal" },
       { label: "Bad Faith Analysis", href: "/ai/bad-faith" },
       { label: "Weather Reports", href: "/weather" },
     ],
   },
   {
-    label: "Jobs & Field Ops",
+    label: "Close More Jobs",
     items: [
+      { label: "⚡ Field Mode", href: "/field" },
       { label: "Retail Workspace", href: "/jobs/retail" },
       { label: "Lead Routing", href: "/leads" },
-      { label: "Analytics Dashboard", href: "/analytics/dashboard" },
       { label: "Task Manager", href: "/tasks" },
       { label: "Appointments & Inspections", href: "/appointments" },
       { label: "Crew Manager", href: "/crews" },
@@ -78,28 +86,24 @@ export const navSections: NavSection[] = [
     ],
   },
   {
-    label: "Build Tools & Materials",
+    label: "Build & Estimate",
     items: [
       { label: "Project Plan Builder", href: "/ai/roofplan-builder" },
       { label: "Mockup Generator", href: "/ai/mockup", featureFlag: "FEATURE_MOCKUP_GENERATOR" },
       { label: "Vision Labs", href: "/vision-lab", featureFlag: "FEATURE_VISION_AI" },
       { label: "Material Estimator", href: "/materials/estimator" },
       { label: "Material Orders", href: "/vendors/orders" },
+      { label: "Estimates", href: "/estimates" },
     ],
   },
   {
-    label: "Reports",
+    label: "Documents & Reports",
     items: [
       { label: "Reports Hub", href: "/reports/hub" },
       { label: "Report History", href: "/reports/history" },
       { label: "Quick Reports", href: "/reports/templates/pdf-builder" },
       { label: "Templates & Marketplace", href: "/reports/templates" },
       { label: "Bid Package", href: "/reports/contractor-packet" },
-    ],
-  },
-  {
-    label: "Documents",
-    items: [
       { label: "Smart Documents", href: "/smart-docs" },
       { label: "Carrier Exports", href: "/ai/exports" },
       { label: "HOA Storm Notices", href: "/hoa/notices" },
@@ -109,28 +113,26 @@ export const navSections: NavSection[] = [
     ],
   },
   {
-    label: "Finance & Messages",
+    label: "Money",
     items: [
       { label: "Financial Overview", href: "/finance/overview" },
       { label: "Invoices", href: "/invoices" },
       { label: "Commissions", href: "/commissions" },
       { label: "Mortgage Checks", href: "/mortgage-checks" },
-      { label: "Messages Hub", href: "/messages" },
       { label: "Billing & Plans", href: "/settings/billing" },
-      { label: "Estimates", href: "/estimates" },
     ],
   },
   {
-    label: "Network",
+    label: "Network & Comms",
     items: [
       { label: "Trades Network Hub", href: "/trades" },
-      { label: "Connections & Contacts", href: "/company/connections" },
+      { label: "Connections", href: "/company/connections" },
       { label: "Work Requests", href: "/network/work-requests" },
       { label: "Job Board", href: "/trades/jobs" },
       { label: "Vendor Intelligence", href: "/vendor-network" },
       { label: "Invitations", href: "/invitations" },
-      { label: "Contacts", href: "/contacts" },
       { label: "Clients", href: "/clients" },
+      { label: "Messages Hub", href: "/messages" },
     ],
   },
   {

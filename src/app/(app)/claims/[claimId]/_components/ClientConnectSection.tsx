@@ -7,13 +7,26 @@ import {
   Loader2,
   Mail,
   Search,
+  Trash2,
   UserCheck,
   UserPlus,
   Users,
 } from "lucide-react";
+import Link from "next/link";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -65,6 +78,7 @@ export function ClientConnectSection({ claimId, currentClientId }: ClientConnect
 
   // Attached client
   const [attachedClient, setAttachedClient] = useState<Contact | null>(null);
+  const [detaching, setDetaching] = useState(false);
 
   // Invite state
   const [inviteEmail, setInviteEmail] = useState("");
@@ -81,7 +95,7 @@ export function ClientConnectSection({ claimId, currentClientId }: ClientConnect
   // Fetch current attached client using unified endpoint
   useEffect(() => {
     void fetchAttachedClient();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [claimId, currentClientId]);
 
   const fetchConnections = async () => {
@@ -168,7 +182,7 @@ export function ClientConnectSection({ claimId, currentClientId }: ClientConnect
       toast.success("Client attached successfully!");
       // Refresh attached client from API to get authoritative data
       void fetchAttachedClient();
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       logger.error("Attach from connection failed:", error);
       toast.error(error.message || "Failed to attach client");
@@ -214,7 +228,7 @@ export function ClientConnectSection({ claimId, currentClientId }: ClientConnect
       setSearchQuery("");
       setSearchResults([]);
       toast.success("Client attached successfully!");
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       logger.error("Attach client failed:", error);
       toast.error(error.message || "Failed to attach client");
@@ -253,7 +267,7 @@ export function ClientConnectSection({ claimId, currentClientId }: ClientConnect
       toast.success("Invite sent successfully!");
       setInviteEmail("");
       setInviteName("");
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       logger.error("Send invite failed:", error);
       toast.error(error.message || "Failed to send invite");
@@ -271,25 +285,90 @@ export function ClientConnectSection({ claimId, currentClientId }: ClientConnect
     }
   };
 
+  const detachClient = async () => {
+    setDetaching(true);
+    try {
+      const res = await fetch(`/api/claims/${claimId}/attach-contact`, {
+        method: "DELETE",
+      });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.error || "Failed to remove client");
+      }
+      setAttachedClient(null);
+      toast.success("Client disconnected from this claim");
+    } catch (error: unknown) {
+      const msg = error instanceof Error ? error.message : "Failed to remove client";
+      logger.error("[DETACH_CLIENT]", error);
+      toast.error(msg);
+    } finally {
+      setDetaching(false);
+    }
+  };
+
   return (
     <div className="space-y-6">
       {/* Current Attached Client */}
       {attachedClient && (
         <Card className="border-emerald-200 bg-emerald-50 dark:border-emerald-800 dark:bg-emerald-900/20">
-          <CardContent className="flex items-center gap-3 py-4">
-            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-100 dark:bg-emerald-900/50">
-              <UserCheck className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
-            </div>
-            <div>
-              <p className="font-semibold text-emerald-900 dark:text-emerald-100">
-                Client Connected: {attachedClient.firstName} {attachedClient.lastName}
-              </p>
-              {attachedClient.email && (
-                <p className="text-sm text-emerald-700 dark:text-emerald-300">
-                  {attachedClient.email}
+          <CardContent className="flex items-center justify-between gap-3 py-4">
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-100 dark:bg-emerald-900/50">
+                <UserCheck className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
+              </div>
+              <div>
+                <p className="font-semibold text-emerald-900 dark:text-emerald-100">
+                  Client Connected:{" "}
+                  <Link
+                    href={`/contacts/${attachedClient.id}`}
+                    className="underline decoration-emerald-400 underline-offset-2 hover:text-emerald-700 dark:hover:text-emerald-200"
+                  >
+                    {attachedClient.firstName} {attachedClient.lastName}
+                  </Link>
                 </p>
-              )}
+                {attachedClient.email && (
+                  <a
+                    href={`mailto:${attachedClient.email}`}
+                    className="text-sm text-emerald-700 underline decoration-emerald-300 underline-offset-2 hover:text-emerald-600 dark:text-emerald-300 dark:hover:text-emerald-200"
+                  >
+                    {attachedClient.email}
+                  </a>
+                )}
+              </div>
             </div>
+
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="text-red-500 hover:bg-red-50 hover:text-red-700 dark:hover:bg-red-900/20"
+                  disabled={detaching}
+                >
+                  <Trash2 className="mr-1 h-4 w-4" />
+                  Remove
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Remove Connected Client?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    This will disconnect {attachedClient.firstName} {attachedClient.lastName} from
+                    this claim. They will lose portal access to this claim. You can reconnect them
+                    later.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction
+                    onClick={detachClient}
+                    className="bg-red-600 text-white hover:bg-red-700"
+                  >
+                    {detaching ? "Removing…" : "Remove Client"}
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
           </CardContent>
         </Card>
       )}

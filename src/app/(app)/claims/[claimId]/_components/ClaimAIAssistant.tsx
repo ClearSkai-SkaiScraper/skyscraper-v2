@@ -1,7 +1,7 @@
 "use client";
 
 import { Bot, Loader2, Send, Sparkles } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -25,22 +25,56 @@ interface Message {
 }
 
 export function ClaimAIAssistant({ claimId, claimData }: ClaimAIAssistantProps) {
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      role: "assistant",
-      content: `Hi! I'm your AI assistant for claim ${claimData?.claimNumber || claimId}. I can help you with:
+  const welcomeMessage: Message = {
+    role: "assistant",
+    content: `Hi! I'm your AI claims advisor for ${claimData?.claimNumber || claimId}. I can help you:
 
-• Analyzing damage and generating recommendations
-• Creating supplemental estimates
-• Reviewing documentation completeness
-• Answering questions about this claim
+• 🔍 Find missed damage & increase claim value
+• 📝 Generate supplements & rebuttal letters
+• 🎯 Check what's missing for approval
+• ❓ Answer any question about this claim
 
 What would you like help with?`,
-      timestamp: new Date(),
-    },
-  ]);
+    timestamp: new Date(),
+  };
+
+  const [messages, setMessages] = useState<Message[]>([welcomeMessage]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [historyLoaded, setHistoryLoaded] = useState(false);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  // Scroll to bottom on new messages
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
+
+  // Fetch chat history on mount — "senior adjuster" memory
+  useEffect(() => {
+    async function loadHistory() {
+      try {
+        const data = await clientFetch<{
+          messages?: Array<{ role: string; content: string; createdAt: string }>;
+        }>(`/api/claims/${claimId}/chat-history`);
+
+        if (data.messages && data.messages.length > 0) {
+          const historicMessages: Message[] = data.messages.map((m) => ({
+            role: m.role as "user" | "assistant",
+            content: m.content,
+            timestamp: new Date(m.createdAt),
+          }));
+          setMessages([welcomeMessage, ...historicMessages]);
+        }
+      } catch {
+        // Silent fail — history is supplementary
+      } finally {
+        setHistoryLoaded(true);
+      }
+    }
+
+    loadHistory();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [claimId]);
 
   const handleSendMessage = async () => {
     if (!input.trim() || isLoading) return;
@@ -101,10 +135,10 @@ What would you like help with?`,
   };
 
   const quickActions = [
-    "Analyze damage photos",
-    "Generate supplement",
-    "Check documentation",
-    "Weather correlation",
+    "What damage is the adjuster missing?",
+    "How do I increase the payout?",
+    "Why would this claim get denied?",
+    "What's missing for approval?",
   ];
 
   return (
@@ -170,6 +204,7 @@ What would you like help with?`,
             </div>
           </div>
         )}
+        <div ref={messagesEndRef} />
       </div>
 
       {/* Quick Actions */}

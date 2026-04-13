@@ -28,6 +28,9 @@ import { retryQueue } from "@/lib/client/retryQueue";
 import { logger } from "@/lib/logger";
 import { getWorkflowStatusInfo, mapToWorkflowStatus, WORKFLOW_STATUSES } from "@/lib/statusMapping";
 
+import { DamageDeltaCard } from "@/components/claims/DamageDeltaCard";
+import { NextBestActions } from "@/components/claims/NextBestActions";
+
 import { CarrierExportButton } from "../_components/CarrierExportButton";
 import { ClaimsSidebar } from "../_components/ClaimsSidebar";
 import { ClientConnectSection } from "../_components/ClientConnectSection";
@@ -237,7 +240,7 @@ export default function OverviewPage() {
           // Revert optimistic updates on failure
           void fetchData();
         }
-      // eslint-disable-next-line react-hooks/exhaustive-deps
+        // eslint-disable-next-line react-hooks/exhaustive-deps
       }, 2000);
     },
     [claimId]
@@ -306,7 +309,7 @@ export default function OverviewPage() {
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
       toast.success("Weather Verification PDF downloaded!");
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       logger.error("[WeatherVerify] Error:", err);
       toast.error(err.message || "Failed to generate weather verification");
@@ -361,7 +364,7 @@ export default function OverviewPage() {
         if (defaultInsp && !selectedInspectorId) {
           setSelectedInspectorId(defaultInsp.clerkUserId || defaultInsp.id);
         }
-      // eslint-disable-next-line react-hooks/exhaustive-deps
+        // eslint-disable-next-line react-hooks/exhaustive-deps
       })
       .catch(() => {});
   }, [claimId, fetchAttachedClient]);
@@ -550,6 +553,12 @@ export default function OverviewPage() {
             <MetricPill label="Reports" value={stats.reportsCount} />
           </div>
         </SectionCard>
+
+        {/* 🔥 DAMAGE DELTA — "Find More Damage Than the Adjuster" */}
+        <DamageDeltaCard claimId={claimId} />
+
+        {/* ⚡ AUTO WIN ENGINE — "Increase This Claim" */}
+        <NextBestActions claimId={claimId} />
 
         {/* 2b. Signing Status + Job Value — key workflow controls */}
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2">

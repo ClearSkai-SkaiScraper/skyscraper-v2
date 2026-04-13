@@ -117,13 +117,9 @@ test.describe("Phase B+C: Centralized Permissions", () => {
 
   test.describe("Upload Permissions", () => {
     test("POST /api/claims/[id]/photos requires authentication", async ({ request }) => {
-      const formData = {
-        file: Buffer.from("fake-image-data"),
-        caption: "Test photo",
-      };
-
+      // Test with simple JSON body - multipart with Buffer causes Playwright issues
       const response = await request.post("/api/claims/test-claim-id/photos", {
-        multipart: formData,
+        data: { file: "test", caption: "Test photo" },
       });
 
       expect(response.status()).toBe(401);
@@ -183,7 +179,7 @@ test.describe("Phase B+C: UI Integration", () => {
   });
 
   test("Marketplace (public) pages do not require authentication", async ({ page }) => {
-    const publicUrls = ["/", "/marketplace"];
+    const publicUrls = ["/", "/marketplace", "/trades-network"];
 
     for (const url of publicUrls) {
       await page.goto(url);

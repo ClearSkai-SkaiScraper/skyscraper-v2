@@ -1,10 +1,21 @@
 // src/app/(app)/jobs/retail/[id]/ClientConnectionDropdown.tsx
 "use client";
 
-import { Loader2, UserCheck, UserPlus, Users } from "lucide-react";
+import { Ban, Loader2, UserCheck, UserPlus, Users } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -44,7 +55,20 @@ export function ClientConnectionDropdown({ jobId, contactId }: ClientConnectionD
   const [selectedId, setSelectedId] = useState<string>("");
   const [attaching, setAttaching] = useState(false);
   const [disconnecting, setDisconnecting] = useState(false);
+  const [blocking, setBlocking] = useState(false);
   const [connectedClient, setConnectedClient] = useState<ConnectedClient | null>(null);
+
+  // Filter out test/seed data from connections
+  const filterTestData = (conns: Connection[]) => {
+    return conns.filter((c) => {
+      const email = (c.email || "").toLowerCase();
+      const name = (c.name || "").toLowerCase();
+      // Filter out @example.com emails and test users
+      if (email.includes("@example.com") || email.includes("@test.com")) return false;
+      if (name.includes("test user") || name === "test" || name === "demo") return false;
+      return true;
+    });
+  };
 
   // Fetch available connections from trades network
   useEffect(() => {
@@ -62,7 +86,8 @@ export function ClientConnectionDropdown({ jobId, contactId }: ClientConnectionD
             companyName: c.companyName,
             contactId: c.contactId || c.id,
           }));
-          setConnections(conns);
+          // Filter out test/seed data
+          setConnections(filterTestData(conns));
         }
       } catch (error) {
         logger.error("[RetailClientDropdown] Failed to fetch connections:", error);
@@ -169,6 +194,47 @@ export function ClientConnectionDropdown({ jobId, contactId }: ClientConnectionD
     }
   }, [connectedClient, jobId]);
 
+  const handleBlock = useCallback(async () => {
+    if (!connectedClient) return;
+
+    setBlocking(true);
+    try {
+      // First disconnect
+      const disconnectRes = await fetch(`/api/leads/${jobId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ contactId: null }),
+      });
+
+      if (!disconnectRes.ok) {
+        throw new Error("Failed to disconnect before blocking");
+      }
+
+      // Then block
+      const blockRes = await fetch("/api/connections/block", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          blockedId: connectedClient.id,
+          reason: "Blocked from retail job",
+        }),
+      });
+
+      if (!blockRes.ok) {
+        throw new Error("Failed to block connection");
+      }
+
+      setConnectedClient(null);
+      toast.success("Client blocked and disconnected");
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } catch (error: any) {
+      logger.error("[RetailClientDropdown] block failed:", error);
+      toast.error(error.message || "Failed to block client");
+    } finally {
+      setBlocking(false);
+    }
+  }, [connectedClient, jobId]);
+
   if (loading) {
     return (
       <Card>
@@ -218,7 +284,7 @@ export function ClientConnectionDropdown({ jobId, contactId }: ClientConnectionD
               variant="outline"
               size="sm"
               onClick={handleDisconnect}
-              disabled={disconnecting}
+              disabled={disconnecting || blocking}
               className="w-full gap-2 border-red-200 text-red-600 hover:bg-red-50 hover:text-red-700 dark:border-red-800 dark:hover:bg-red-950/30"
             >
               {disconnecting ? (
@@ -228,6 +294,39 @@ export function ClientConnectionDropdown({ jobId, contactId }: ClientConnectionD
               )}
               {disconnecting ? "Disconnecting…" : "Disconnect Client"}
             </Button>
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={blocking || disconnecting}
+                  className="w-full gap-2 border-slate-200 text-slate-600 hover:bg-slate-50 hover:text-slate-700 dark:border-slate-700 dark:hover:bg-slate-900/30"
+                >
+                  {blocking ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <Ban className="h-4 w-4" />
+                  )}
+                  {blocking ? "Blocking…" : "Block Client"}
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Block this client?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    This will disconnect and block <strong>{connectedClient.name}</strong> from your
+                    network. They won't be able to reconnect automatically. You can unblock them
+                    later from your connections settings.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction onClick={handleBlock} className="bg-red-600 hover:bg-red-700">
+                    Block Client
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
           </div>
         ) : connections.length > 0 ? (
           <div className="space-y-2">

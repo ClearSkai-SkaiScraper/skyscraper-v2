@@ -19,6 +19,7 @@ import { getDashboardWeather } from "@/lib/weather/weatherstack";
 
 import CompanyBrandingPreview from "./_components/CompanyBrandingPreview";
 import NetworkActivity from "./_components/NetworkActivity";
+import StalledClaimsWidget from "./_components/StalledClaimsWidget";
 import StatsCards from "./_components/StatsCards";
 import WeatherKPICards from "./_components/WeatherKPICards";
 import WorkOpportunityNotifications from "./_components/WorkOpportunityNotifications";
@@ -197,6 +198,9 @@ export default async function DashboardPage() {
           >
             <StatsCards />
           </AsyncBoundary>
+
+          {/* Stalled Claims — "Never Lose a Claim" widget */}
+          <StalledClaimsWidget />
 
           {/* Work Opportunities & Network Activity Row */}
           <div className="grid gap-6 lg:grid-cols-2">

@@ -43,6 +43,8 @@ const PRO_ROUTES = [
   "/ai",
   "/smart-docs",
   "/quick-dol",
+  "/field",
+  "/storm-leads",
   "/property-profiles",
   "/vision-lab",
   "/invitations",
@@ -68,6 +70,15 @@ const PRO_ROUTES = [
   "/estimates",
   "/tasks",
   "/annotation", // AI Damage Annotation tool
+  "/contracts",
+  "/leaderboard",
+  "/work-orders",
+  "/clients",
+  "/search",
+  "/support",
+  "/hoa",
+  "/network",
+  "/company",
 ];
 
 const CLIENT_ROUTES = ["/portal", "/client"];
@@ -89,7 +100,9 @@ const isPublicRoute = createRouteMatcher([
   "/skaistack(.*)",
   "/investor(.*)",
   "/network(.*)",
-  "/contractors(.*)", // Public contractor profiles (redirects to appropriate view)
+  "/contractors(.*)",
+  "/trades-network(.*)", // Public trades network hub
+  "/marketplace(.*)", // Public marketplace browsing // Public contractor profiles (redirects to appropriate view)
   // "/claims" is NOT public - it requires auth for the workspace!
   // Use /claims-legacy for the public demo page instead
   "/claims-legacy", // Public demo claims page (read-only)

@@ -76,7 +76,8 @@ test.describe("Stripe Webhook — Security Gates", () => {
 test.describe("Stripe Webhook — Checkout/Billing Pages", () => {
   test("pricing page shows plans", async ({ page }) => {
     await page.goto("/pricing");
-    await expect(page.getByRole("heading", { name: /choose your plan|pricing/i })).toBeVisible({
+    // New pricing structure: $80 per seat per month (no tiers)
+    await expect(page.getByRole("heading", { name: /\\$80|per seat|pricing/i })).toBeVisible({
       timeout: 10000,
     });
   });

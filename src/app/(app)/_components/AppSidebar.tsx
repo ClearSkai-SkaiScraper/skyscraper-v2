@@ -1,8 +1,8 @@
 "use client";
 
+import { useTheme } from "next-themes";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useTheme } from "next-themes";
 import { useEffect, useState } from "react";
 
 import { RemoteViewSelector } from "@/components/remote-view/RemoteViewSelector";
@@ -20,7 +20,7 @@ export function AppSidebar() {
   // ── Collapsible sections ──
   // Start with Storm Command Center OPEN, all others collapsed. Persist to localStorage.
   const defaultCollapsed = Object.fromEntries(
-    navSections.map((s) => [s.label, s.label !== "Storm Command Center"])
+    navSections.map((s) => [s.label, s.label !== "Command Center"])
   );
   const [collapsedSections, setCollapsedSections] =
     useState<Record<string, boolean>>(defaultCollapsed);

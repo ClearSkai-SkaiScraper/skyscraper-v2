@@ -221,17 +221,62 @@ async function generateRebuttalAsync(params: {
       },
     };
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const stream = await renderToStream(<RebuttalPDFDocument data={pdfData as any} />);
 
-    // TODO: Upload PDF to storage and get fileUrl
-    // For now, we'll mark as ready without file_url
-    const fileUrl = undefined; // Replace with actual upload
+    // STEP 2b: Upload PDF to Supabase storage
+    let fileUrl: string | undefined;
+    let fileSizeBytes: number | undefined;
+    try {
+      const { createClient } = await import("@supabase/supabase-js");
+      // eslint-disable-next-line no-restricted-syntax
+      const sbUrl = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL;
+      // eslint-disable-next-line no-restricted-syntax
+      const sbKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+      if (sbUrl && sbKey) {
+        const supabase = createClient(sbUrl, sbKey, { auth: { persistSession: false } });
+        const bucket = "generated-documents";
+
+        // Ensure bucket exists
+        const { data: buckets } = await supabase.storage.listBuckets();
+        if (!buckets?.some((b: { name: string }) => b.name === bucket)) {
+          await supabase.storage.createBucket(bucket, { public: true });
+        }
+
+        // Collect stream into buffer
+        const chunks: Buffer[] = [];
+        for await (const chunk of stream as AsyncIterable<Buffer>) {
+          chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk));
+        }
+        const pdfBuffer = Buffer.concat(chunks);
+        fileSizeBytes = pdfBuffer.length;
+
+        const filePath = `${orgId}/${claimId}/rebuttal-${generatedDocumentId}.pdf`;
+        const { error: uploadError } = await supabase.storage
+          .from(bucket)
+          .upload(filePath, pdfBuffer, { contentType: "application/pdf", upsert: true });
+
+        if (!uploadError) {
+          const {
+            data: { publicUrl },
+          } = supabase.storage.from(bucket).getPublicUrl(filePath);
+          fileUrl = publicUrl;
+        } else {
+          logger.warn("[REBUTTAL] PDF upload failed, document saved without file", {
+            error: uploadError.message,
+          });
+        }
+      } else {
+        logger.warn("[REBUTTAL] Supabase not configured, PDF not persisted");
+      }
+    } catch (uploadErr) {
+      logger.warn("[REBUTTAL] PDF upload error (non-fatal)", uploadErr);
+    }
 
     // STEP 3: Update document status to ready
     await updateDocumentStatus(generatedDocumentId, "ready", {
       fileUrl,
+      fileSizeBytes,
       generatedContent: {
         sections: result.sections,
         denialReason,

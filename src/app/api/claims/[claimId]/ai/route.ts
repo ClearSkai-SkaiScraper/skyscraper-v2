@@ -7,7 +7,6 @@ export const dynamic = "force-dynamic";
  * GET /api/claims/[claimId]/ai - Get AI analysis results
  */
 
-// eslint-disable-next-line no-restricted-imports
 import { auth } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
@@ -16,6 +15,7 @@ import { getOpenAI } from "@/lib/ai/client";
 import { withAuth } from "@/lib/auth/withAuth";
 import { buildClaimContext } from "@/lib/claim/buildClaimContext";
 import { getClaimAIAnalysis, triggerManualAnalysis } from "@/lib/claims/aiHooks";
+import { saveChatMessage } from "@/lib/dominus/chat";
 import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 import { checkRateLimit } from "@/lib/rate-limit";
@@ -38,14 +38,12 @@ export async function POST(request: NextRequest, { params }: { params: { claimId
 
   // Public demo: allow unauthenticated requests for claimId "test" with safe handling
   if (claimId === "test") {
-    // eslint-disable-next-line @typescript-eslint/await-thenable
     const { userId } = await auth();
     if (!userId) {
       const body = await request.json().catch(() => ({}));
       const message: string | undefined = body?.message;
 
       // If OpenAI is configured, we can generate a lightweight demo reply; otherwise return a canned response
-      // eslint-disable-next-line no-restricted-syntax
       if (process.env.OPENAI_API_KEY && message) {
         try {
           const openai = getOpenAI();
@@ -95,9 +93,9 @@ export async function POST(request: NextRequest, { params }: { params: { claimId
 }
 
 const _authenticatedPOST = withAuth(
-  async (request: NextRequest, { userId, orgId }, routeParams: { params: { claimId: string } }) => {
+  async (request: NextRequest, { userId, orgId }, routeParams) => {
     try {
-      const { claimId } = routeParams.params;
+      const { claimId } = await routeParams!.params;
 
       const raw = await request.json();
       const parsed = AiChatSchema.safeParse(raw);
@@ -142,7 +140,6 @@ const _authenticatedPOST = withAuth(
         logger.debug("[CLAIM_AI_REQUEST] Starting for claim:", claimId);
 
         // Check if OpenAI is configured
-        // eslint-disable-next-line no-restricted-syntax
         if (!process.env.OPENAI_API_KEY) {
           logger.error("[CLAIM_AI_ERROR] OPENAI_API_KEY missing");
           return NextResponse.json(
@@ -247,6 +244,24 @@ Your goal: Help adjusters maximize accurate claim value while maintaining profes
 
           logger.debug("[CLAIM_AI_SUCCESS] Generated reply:", response.substring(0, 100) + "...");
 
+          // Persist chat messages (fire-and-forget)
+          void saveChatMessage({
+            userId,
+            orgId,
+            claimId,
+            role: "user",
+            content: message,
+            routeName: "/claims/ai",
+          });
+          void saveChatMessage({
+            userId,
+            orgId,
+            claimId,
+            role: "assistant",
+            content: response,
+            routeName: "/claims/ai",
+          });
+
           return NextResponse.json({
             ok: true,
             reply: response,
@@ -317,48 +332,45 @@ Your goal: Help adjusters maximize accurate claim value while maintaining profes
 /**
  * GET - Retrieve AI analysis results
  */
-export const GET = withAuth(
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  async (request: NextRequest, { userId, orgId }, routeParams: { params: { claimId: string } }) => {
-    try {
-      const { claimId } = routeParams.params;
+export const GET = withAuth(async (request: NextRequest, { userId, orgId }, routeParams) => {
+  try {
+    const { claimId } = await routeParams!.params;
 
-      // Verify claim exists and belongs to org
-      const claim = await prisma.claims.findFirst({
-        where: { id: claimId, orgId },
-        select: { orgId: true },
-      });
+    // Verify claim exists and belongs to org
+    const claim = await prisma.claims.findFirst({
+      where: { id: claimId, orgId },
+      select: { orgId: true },
+    });
 
-      if (!claim) {
-        return NextResponse.json({ success: false, error: "Claim not found" }, { status: 404 });
-      }
+    if (!claim) {
+      return NextResponse.json({ success: false, error: "Claim not found" }, { status: 404 });
+    }
 
-      // Get AI analysis results
-      const analysis = await getClaimAIAnalysis(claimId);
+    // Get AI analysis results
+    const analysis = await getClaimAIAnalysis(claimId);
 
-      if (!analysis) {
-        return NextResponse.json({
-          success: true,
-          message: "No AI analysis available yet",
-          analysis: null,
-        });
-      }
-
+    if (!analysis) {
       return NextResponse.json({
         success: true,
-        analysis,
-        summary: {
-          totalAnalyses: analysis.history?.length || 0,
-          hasTriage: !!analysis.triage,
-          hasDamageAssessment: !!analysis.damageAssessment,
-          hasVideoAnalysis: !!analysis.videoAnalysis,
-          hasBlueprintAnalysis: !!analysis.blueprintAnalysis,
-          hasPolicyOptimization: !!analysis.policyOptimization,
-        },
+        message: "No AI analysis available yet",
+        analysis: null,
       });
-    } catch (error) {
-      logger.error("[AI Analysis GET] Error:", error);
-      return NextResponse.json({ success: false, error: "Unknown error" }, { status: 500 });
     }
+
+    return NextResponse.json({
+      success: true,
+      analysis,
+      summary: {
+        totalAnalyses: analysis.history?.length || 0,
+        hasTriage: !!analysis.triage,
+        hasDamageAssessment: !!analysis.damageAssessment,
+        hasVideoAnalysis: !!analysis.videoAnalysis,
+        hasBlueprintAnalysis: !!analysis.blueprintAnalysis,
+        hasPolicyOptimization: !!analysis.policyOptimization,
+      },
+    });
+  } catch (error) {
+    logger.error("[AI Analysis GET] Error:", error);
+    return NextResponse.json({ success: false, error: "Unknown error" }, { status: 500 });
   }
-);
+});

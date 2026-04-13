@@ -189,3 +189,80 @@ export const POST = withAuth(
     }
   }
 );
+
+/**
+ * DELETE /api/claims/[claimId]/attach-contact
+ *
+ * Detaches (disconnects) the currently connected client from a claim.
+ * Removes the clientId from the claim and deletes the ClaimClientLink + client_access records.
+ */
+export const DELETE = withAuth(
+  async (
+    _req: NextRequest,
+    { orgId, userId },
+    routeParams: { params: Promise<{ claimId: string }> }
+  ) => {
+    try {
+      const { claimId } = await routeParams.params;
+
+      // Verify claim belongs to org
+      await getOrgClaimOrThrow(orgId, claimId);
+
+      // Get the current client info before removing
+      const currentClaim = await prisma.claims.findUnique({
+        where: { id: claimId },
+        select: { clientId: true },
+      });
+
+      if (!currentClaim?.clientId) {
+        return NextResponse.json(
+          { error: "No client is connected to this claim" },
+          { status: 400 }
+        );
+      }
+
+      // Remove clientId from claim
+      await prisma.claims.update({
+        where: { id: claimId },
+        data: { clientId: null },
+      });
+
+      // Remove ClaimClientLink records for this claim
+      try {
+        await prisma.claimClientLink.deleteMany({
+          where: { claimId },
+        });
+      } catch {
+        // Table may not exist or no records — non-critical
+      }
+
+      // Remove client_access records for this claim
+      try {
+        await prisma.client_access.deleteMany({
+          where: { claimId },
+        });
+      } catch {
+        // Non-critical
+      }
+
+      logger.info("[detach-contact] Client detached from claim", {
+        claimId,
+        orgId,
+        userId,
+        removedClientId: currentClaim.clientId,
+        action: "detach_client",
+      });
+
+      return NextResponse.json({
+        success: true,
+        message: "Client disconnected from claim",
+      });
+    } catch (error) {
+      if (error instanceof OrgScopeError) {
+        return NextResponse.json({ error: "Claim not found" }, { status: 404 });
+      }
+      logger.error("[detach-contact] Error:", error);
+      return NextResponse.json({ error: "Failed to detach client" }, { status: 500 });
+    }
+  }
+);

@@ -11,7 +11,7 @@ import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 
 export const POST = withAuth(async (req: NextRequest, { orgId, userId }, routeParams) => {
-  const { id: estimateId } = await routeParams.params;
+  const { id: estimateId } = await routeParams!.params;
   try {
     const body: SendPacketRequestBody = await req.json();
     const { to, cc, subject, message, recipientType } = body;
@@ -39,7 +39,6 @@ export const POST = withAuth(async (req: NextRequest, { orgId, userId }, routePa
     }
 
     // Determine packet URL
-    // eslint-disable-next-line no-restricted-syntax
     const packetUrl = `${process.env.NEXT_PUBLIC_APP_URL || "https://skaiscrape.com"}/exports/estimates/${estimateId}/adjuster`;
 
     // Send email
@@ -56,7 +55,6 @@ export const POST = withAuth(async (req: NextRequest, { orgId, userId }, routePa
     }
 
     // Update claim fields
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const updateData: any = {
       lastContactedAt: new Date(),
     };

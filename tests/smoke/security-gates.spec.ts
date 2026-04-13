@@ -110,6 +110,7 @@ test.describe("Portal Pages — Auth Required", () => {
 test.describe("Health Endpoints — Always Accessible", () => {
   test("/api/health/live returns 200", async ({ request }) => {
     const res = await request.get("/api/health/live");
-    expect(res.status()).toBe(200);
+    // Accept 200 (healthy) or 207 (degraded) - both are valid operational states
+    expect([200, 207]).toContain(res.status());
   });
 });

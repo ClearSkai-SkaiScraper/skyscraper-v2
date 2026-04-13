@@ -155,15 +155,15 @@ export async function getRemainingBackupCodes(userId: string): Promise<number> {
  */
 export async function enforce2FAForOrg(orgId: string, required: boolean): Promise<void> {
   // Store org 2FA requirement in database
+  // Note: require2FA field is not yet in the schema - using raw SQL for forward compatibility
   const { default: prisma } = await import("@/lib/prisma");
 
   await prisma.$executeRaw`
     UPDATE org SET require_2fa = ${required}, require_2fa_updated_at = NOW()
     WHERE id = ${orgId}
-  `
-    .catch(() => {
-      logger.warn("⚠️ Org table does not have require2FA field yet");
-    });
+  `.catch(() => {
+    logger.warn("⚠️ Org table does not have require_2fa field yet");
+  });
 }
 
 /**
@@ -176,9 +176,8 @@ export async function orgRequires2FA(orgId: string): Promise<boolean> {
     const result = await prisma.$queryRaw<{ require_2fa: boolean }[]>`
       SELECT require_2fa FROM org WHERE id = ${orgId} LIMIT 1
     `;
-    const org = { require2FA: result[0]?.require_2fa };
 
-    return org?.require2FA || false;
+    return result[0]?.require_2fa || false;
   } catch {
     return false;
   }

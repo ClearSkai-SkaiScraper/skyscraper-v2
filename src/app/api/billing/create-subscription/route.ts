@@ -99,7 +99,7 @@ export const POST = withManager(async (req: NextRequest, { orgId, userId }) => {
     }
 
     // ── Create subscription ─────────────────────────────────────────
-    // 14-day free trial for all new subscriptions
+    // 3-day free trial for all new subscriptions
     const TRIAL_DAYS = 3;
 
     const subscription = await stripe.subscriptions.create({
