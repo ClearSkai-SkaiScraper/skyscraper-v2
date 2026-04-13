@@ -32,38 +32,34 @@ export const FEATURE_FLAGS: Record<string, boolean> = {
 };
 
 /**
- * Canonical navigation sections — 8 sections, streamlined grouping.
+ * Canonical navigation sections — 7 balanced sections (5–7 items each).
  * Order = display order in both sidebar and mobile nav.
  *
  * Changelog (latest session):
- *   - Merged "Reports" into "Documents & Reports"
- *   - Moved Messages Hub → Network & Comms
- *   - Removed duplicate analytics link (was in Command Center + Close More Jobs)
- *   - Grouped financial items tighter under "Money"
+ *   - Renamed "Money" → "Finance & Billing" (professional)
+ *   - Moved "Is This Worth It?" → "Field & Sales" alongside Door Knocking
+ *   - Restored "Contacts" page in "Network & Comms"
+ *   - Merged "Command Center" + analytics into "Dashboard & Intel"
+ *   - Rebalanced all sections to 5–7 items
+ *   - Moved Notifications to footer / topbar (always accessible, not nav-locked)
  */
 export const navSections: NavSection[] = [
   {
-    label: "Command Center",
+    label: "Dashboard & Intel",
     items: [
       { label: "Dashboard", href: "/dashboard" },
       { label: "Storm Center", href: "/storm-center" },
-      { label: "Job Pipeline", href: "/pipeline" },
       { label: "Analytics Hub", href: "/analytics" },
-      { label: "Smart Actions", href: "/ai/smart-actions" },
-      { label: "Is This Worth It?", href: "/quick-dol" },
-      { label: "🌩️ Storm → Leads", href: "/storm-leads" },
+      { label: "Job Pipeline", href: "/pipeline" },
       { label: "Search", href: "/search" },
-      { label: "Weather Map", href: "/maps/weather-chains" },
-      { label: "Notifications", href: "/notifications" },
+      { label: "Smart Actions", href: "/ai/smart-actions" },
     ],
   },
   {
-    label: "Win More Claims",
+    label: "Claims & Insurance",
     items: [
       { label: "Active Claims", href: "/claims" },
       { label: "⚡ Photos → Claim", href: "/claims/pipeline" },
-      { label: "Claims Timeline", href: "/analytics/claims-timeline" },
-      { label: "Generate Claim Packet", href: "/claims-ready-folder" },
       { label: "Find More Damage", href: "/ai/tools/supplement" },
       { label: "Recover Depreciation", href: "/ai/tools/depreciation" },
       { label: "Fight the Adjuster", href: "/ai/tools/rebuttal" },
@@ -72,28 +68,36 @@ export const navSections: NavSection[] = [
     ],
   },
   {
-    label: "Close More Jobs",
+    label: "Field & Sales",
     items: [
       { label: "⚡ Field Mode", href: "/field" },
-      { label: "Retail Workspace", href: "/jobs/retail" },
+      { label: "🌩️ Storm → Leads", href: "/storm-leads" },
+      { label: "Is This Worth It?", href: "/quick-dol" },
       { label: "Lead Routing", href: "/leads" },
+      { label: "Door Knocking", href: "/maps/door-knocking" },
+      { label: "Weather Map", href: "/maps/weather-chains" },
+      { label: "Map View", href: "/maps/map-view" },
+    ],
+  },
+  {
+    label: "Jobs & Operations",
+    items: [
+      { label: "Retail Workspace", href: "/jobs/retail" },
       { label: "Task Manager", href: "/tasks" },
       { label: "Appointments & Inspections", href: "/appointments" },
       { label: "Crew Manager", href: "/crews" },
       { label: "Work Orders", href: "/work-orders" },
-      { label: "Map View", href: "/maps/map-view" },
-      { label: "Door Knocking", href: "/maps/door-knocking" },
+      { label: "Estimates", href: "/estimates" },
     ],
   },
   {
-    label: "Build & Estimate",
+    label: "Build & Design",
     items: [
       { label: "Project Plan Builder", href: "/ai/roofplan-builder" },
       { label: "Mockup Generator", href: "/ai/mockup", featureFlag: "FEATURE_MOCKUP_GENERATOR" },
       { label: "Vision Labs", href: "/vision-lab", featureFlag: "FEATURE_VISION_AI" },
       { label: "Material Estimator", href: "/materials/estimator" },
       { label: "Material Orders", href: "/vendors/orders" },
-      { label: "Estimates", href: "/estimates" },
     ],
   },
   {
@@ -103,17 +107,13 @@ export const navSections: NavSection[] = [
       { label: "Report History", href: "/reports/history" },
       { label: "Quick Reports", href: "/reports/templates/pdf-builder" },
       { label: "Templates & Marketplace", href: "/reports/templates" },
-      { label: "Bid Package", href: "/reports/contractor-packet" },
       { label: "Smart Documents", href: "/smart-docs" },
-      { label: "Carrier Exports", href: "/ai/exports" },
-      { label: "HOA Storm Notices", href: "/hoa/notices" },
-      { label: "Company Documents", href: "/settings/company-documents" },
-      { label: "Permits", href: "/permits" },
       { label: "Contracts", href: "/contracts" },
+      { label: "Permits", href: "/permits" },
     ],
   },
   {
-    label: "Money",
+    label: "Finance & Billing",
     items: [
       { label: "Financial Overview", href: "/finance/overview" },
       { label: "Invoices", href: "/invoices" },
@@ -125,14 +125,13 @@ export const navSections: NavSection[] = [
   {
     label: "Network & Comms",
     items: [
+      { label: "Clients", href: "/clients" },
+      { label: "Contacts", href: "/contacts" },
       { label: "Trades Network Hub", href: "/trades" },
       { label: "Connections", href: "/company/connections" },
       { label: "Work Requests", href: "/network/work-requests" },
-      { label: "Job Board", href: "/trades/jobs" },
-      { label: "Vendor Intelligence", href: "/vendor-network" },
-      { label: "Invitations", href: "/invitations" },
-      { label: "Clients", href: "/clients" },
       { label: "Messages Hub", href: "/messages" },
+      { label: "Invitations", href: "/invitations" },
     ],
   },
   {
@@ -143,8 +142,7 @@ export const navSections: NavSection[] = [
       { label: "Company Settings", href: "/settings" },
       { label: "Team Leaderboard", href: "/leaderboard" },
       { label: "Team & Company Seats", href: "/teams" },
-      { label: "Company Hierarchy", href: "/teams/hierarchy" },
-      { label: "Archive", href: "/archive" },
+      { label: "Notifications", href: "/notifications" },
       { label: "Help & Support", href: "/support" },
     ],
   },

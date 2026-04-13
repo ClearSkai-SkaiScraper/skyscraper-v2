@@ -57,9 +57,12 @@ test.describe("Critical System Smoke Tests", () => {
   test("pricing page loads tier headings", async ({ page }) => {
     await page.goto("/pricing");
     // New pricing structure: $80 per seat per month (no tiers)
-    await expect(page.getByRole("heading", { name: /\$80|per seat|pricing/i })).toBeVisible({
-      timeout: 10000,
-    });
+    // Use .first() — regex matches both h1 "$80 per seat / month" and h2 "Pricing Calculator"
+    await expect(page.getByRole("heading", { name: /\$80|per seat|pricing/i }).first()).toBeVisible(
+      {
+        timeout: 10000,
+      }
+    );
 
     // Check for key pricing elements
     const bodyText = await page.textContent("body");

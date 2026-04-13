@@ -117,6 +117,9 @@ export const metadata = {
   title: "Features – SkaiScraper",
   description:
     "AI-powered tools built for modern trades operations — damage builder, weather intelligence, smart supplements, and more.",
+  alternates: {
+    canonical: "/features",
+  },
 };
 
 export default function FeaturesPage() {

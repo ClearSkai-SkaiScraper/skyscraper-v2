@@ -29,6 +29,18 @@ const claimUpdateSchema = z
     title: z.string().max(500).optional(),
     description: z.string().max(10_000).optional(),
     status: z.string().max(50).optional(),
+    lifecycleStage: z
+      .enum([
+        "FILED",
+        "ADJUSTER_REVIEW",
+        "APPROVED",
+        "DENIED",
+        "APPEAL",
+        "BUILD",
+        "COMPLETED",
+        "DEPRECIATION",
+      ])
+      .optional(),
     claimNumber: z.string().max(100).optional(),
     damageType: z.string().max(100).optional(),
     insured_name: z.string().max(200).optional(),
@@ -81,6 +93,7 @@ export const PATCH = withAuth(
         "title",
         "description",
         "status",
+        "lifecycleStage",
         "claimNumber",
         "damageType",
         "insured_name",

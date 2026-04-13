@@ -7,6 +7,9 @@ export const metadata: Metadata = {
   title: "Contact – SkaiScraper",
   description:
     "Get in touch with the SkaiScraper team. Whether you're a solo roofer or a multi-branch restoration team, we'd love to hear from you.",
+  alternates: {
+    canonical: "/contact",
+  },
   openGraph: {
     title: "Contact – SkaiScraper",
     description:
@@ -39,8 +42,8 @@ export default function ContactPage() {
           </h1>
 
           <p className="mx-auto mt-6 max-w-2xl text-lg text-white/80">
-            Whether you&apos;re a solo roofer or a multi-branch restoration team, we&apos;d love to learn
-            about your workflow and show you how SkaiScraper can help.
+            Whether you&apos;re a solo roofer or a multi-branch restoration team, we&apos;d love to
+            learn about your workflow and show you how SkaiScraper can help.
           </p>
         </div>
       </section>

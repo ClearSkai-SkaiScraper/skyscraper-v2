@@ -10,8 +10,56 @@
  * 3. getRouteParams — Promise unwrapping, missing params, type safety
  */
 
-import { NextRequest, NextResponse } from "next/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
+
+// ── Mock next/server (ESM resolution requires .js extension) ─────────────────
+vi.mock("next/server", () => {
+  class MockNextRequest {
+    url: string;
+    method: string;
+    headers: Map<string, string>;
+    nextUrl: URL;
+    constructor(input: string | URL, init?: { headers?: Record<string, string>; method?: string }) {
+      const url = typeof input === "string" ? input : input.toString();
+      this.url = url;
+      this.method = init?.method || "GET";
+      this.headers = new Map(Object.entries(init?.headers || {}));
+      this.nextUrl = new URL(url);
+    }
+    json() {
+      return Promise.resolve({});
+    }
+    text() {
+      return Promise.resolve("");
+    }
+  }
+  class MockNextResponse {
+    status: number;
+    body: unknown;
+    _headers: Map<string, string>;
+    constructor(body?: unknown, init?: { status?: number; headers?: Record<string, string> }) {
+      this.body = body;
+      this.status = init?.status || 200;
+      this._headers = new Map(Object.entries(init?.headers || {}));
+    }
+    static json(data: unknown, init?: { status?: number; headers?: Record<string, string> }) {
+      return new MockNextResponse(JSON.stringify(data), init);
+    }
+    static redirect(url: string | URL, status?: number) {
+      return new MockNextResponse(null, { status: status || 307 });
+    }
+    static next() {
+      return new MockNextResponse(null, { status: 200 });
+    }
+  }
+  return {
+    NextRequest: MockNextRequest,
+    NextResponse: MockNextResponse,
+  };
+});
+
+// Import NextRequest/NextResponse AFTER mock is declared (vitest hoists vi.mock)
+import { NextRequest, NextResponse } from "next/server";
 
 // ── Mock server-only ─────────────────────────────────────────────────────────
 vi.mock("server-only", () => ({}));

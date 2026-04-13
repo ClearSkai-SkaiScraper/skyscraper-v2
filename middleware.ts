@@ -139,6 +139,12 @@ const isPublicRoute = createRouteMatcher([
   "/api/templates/health", // Template health check
   "/api/auth/identity", // Identity lookup API
   "/api/auth/register-client", // Client registration API
+  "/api/webhooks/stripe(.*)", // Stripe webhooks — signature-verified, no Clerk auth
+  "/api/webhooks/clerk(.*)", // Clerk webhooks — svix signature-verified
+  "/api/webhooks/twilio(.*)", // Twilio webhooks — HMAC signature-verified
+  "/api/webhooks/trades(.*)", // Trades network webhooks — secret-verified
+  "/share(.*)", // Public share links (claim reports for homeowners) — HMAC token-verified
+  "/api/share(.*)", // Public share API endpoints — HMAC token-verified
   "/favicon.ico",
   "/robots.txt",
   "/sitemap.xml",

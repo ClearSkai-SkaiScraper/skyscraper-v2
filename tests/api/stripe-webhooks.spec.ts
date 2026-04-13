@@ -58,6 +58,8 @@ test.describe("Stripe Webhook — Security Gates", () => {
 
   test("rate limits rapid requests", async ({ request }) => {
     // Send multiple rapid requests — eventually should get 429
+    // Increased timeout: rate limiter may be slow without Redis
+    test.setTimeout(60_000);
     const results: number[] = [];
     for (let i = 0; i < 5; i++) {
       const res = await request.post(WEBHOOK_URL, {
@@ -66,7 +68,7 @@ test.describe("Stripe Webhook — Security Gates", () => {
       });
       results.push(res.status());
     }
-    // At minimum, should always get 400 (no sig), not 200 or 500
+    // At minimum, should always get 400 (no sig) or 429 (rate limited), not 200 or 500
     for (const status of results) {
       expect([400, 429]).toContain(status);
     }
@@ -77,7 +79,10 @@ test.describe("Stripe Webhook — Checkout/Billing Pages", () => {
   test("pricing page shows plans", async ({ page }) => {
     await page.goto("/pricing");
     // New pricing structure: $80 per seat per month (no tiers)
-    await expect(page.getByRole("heading", { name: /\\$80|per seat|pricing/i })).toBeVisible({
+    // Use .first() — regex matches both h1 "$80 per seat / month" and h2 "Pricing Calculator"
+    await expect(
+      page.getByRole("heading", { name: /\\$80|per seat|pricing/i }).first()
+    ).toBeVisible({
       timeout: 10000,
     });
   });

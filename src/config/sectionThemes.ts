@@ -79,6 +79,7 @@ const ROUTE_THEME_MAP: [string, SectionTheme][] = [
   ["/analytics", "command"],
   ["/performance", "command"],
   ["/search", "command"],
+  ["/storm-center", "command"],
 
   // ── Claims Toolkit (must be before /claims general) ────────────────
   ["/claims/ready", "jobs"],
@@ -129,6 +130,10 @@ const ROUTE_THEME_MAP: [string, SectionTheme][] = [
   ["/route-optimization", "jobs"],
   ["/tasks", "jobs"],
   ["/time-tracking", "jobs"],
+
+  // ── Field & Sales ──────────────────────────────────────────────────
+  ["/field", "trades"],
+  ["/storm-leads", "trades"],
 
   // ── Trades Toolkit ─────────────────────────────────────────────────
   ["/trades", "trades"],

@@ -53,9 +53,48 @@ export async function getOrgContext(): Promise<OrgContext> {
   }
 
   // Load the org row to return full org data.
-  const org = await prisma.org.findUnique({
-    where: { id: orgId },
-  });
+  // Use try/catch to handle columns that exist in Prisma schema but
+  // haven't been migrated to the production DB yet (e.g. seats_limit, seats_used).
+  let org;
+  try {
+    org = await prisma.org.findUnique({
+      where: { id: orgId },
+    });
+  } catch (err: unknown) {
+    // If the query fails due to missing columns (P2022), retry with safe select
+    const isColumnError =
+      err instanceof Error &&
+      (err.message?.includes("does not exist") || (err as { code?: string }).code === "P2022");
+    if (isColumnError) {
+      org = await prisma.org.findUnique({
+        where: { id: orgId },
+        select: {
+          id: true,
+          clerkOrgId: true,
+          name: true,
+          planId: true,
+          createdAt: true,
+          updatedAt: true,
+          stripeCustomerId: true,
+          stripeSubscriptionId: true,
+          subscriptionStatus: true,
+          trialEndsAt: true,
+          trialStatus: true,
+          planKey: true,
+          referralCode: true,
+          brandLogoUrl: true,
+          pdfFooterText: true,
+          pdfHeaderText: true,
+          demoMode: true,
+          is_archived: true,
+          onboarding_step: true,
+          onboarding_complete: true,
+        },
+      });
+    } else {
+      throw err;
+    }
+  }
 
   // If the org row is somehow missing, bubble up as a hard error so we don't loop onboarding.
   if (!org) {

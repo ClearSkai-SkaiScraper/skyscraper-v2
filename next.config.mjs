@@ -73,6 +73,13 @@ const nextConfig = {
       { source: "/billing-new", destination: "/billing", permanent: true },
       // SEO redirect
       { source: "/home", destination: "/", permanent: true },
+      // Legal page aliases (footer links use /legal/* but routes are at root)
+      { source: "/legal/terms", destination: "/terms", permanent: true },
+      { source: "/legal/privacy", destination: "/privacy", permanent: true },
+      { source: "/legal/security", destination: "/security", permanent: true },
+      // Portal route consolidation (C3 Enhancement)
+      { source: "/portal/my-jobs", destination: "/portal/jobs", permanent: true },
+      { source: "/portal/my-pros", destination: "/portal/contractors", permanent: true },
       // Legacy report generation paths
       { source: "/retail/generate", destination: "/reports/new", permanent: false },
       { source: "/claims/generate", destination: "/reports/new", permanent: false },

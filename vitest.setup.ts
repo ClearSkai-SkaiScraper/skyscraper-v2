@@ -16,6 +16,75 @@ process.env.NEXT_PUBLIC_BASE_URL = "http://localhost:3000";
 process.env.RESEND_API_KEY = "re_test_mock";
 process.env.OPENAI_API_KEY = "sk-test-mock";
 
+// ── Mock next/server ─────────────────────────────────────────────────
+vi.mock("next/server", () => {
+  class MockNextRequest {
+    url: string;
+    method: string;
+    headers: Map<string, string>;
+    nextUrl: URL;
+    constructor(input: string | URL, init?: { headers?: Record<string, string>; method?: string }) {
+      const url = typeof input === "string" ? input : input.toString();
+      this.url = url;
+      this.method = init?.method || "GET";
+      this.headers = new Map(Object.entries(init?.headers || {}));
+      this.nextUrl = new URL(url);
+    }
+    json() {
+      return Promise.resolve({});
+    }
+    text() {
+      return Promise.resolve("");
+    }
+  }
+  class MockNextResponse {
+    status: number;
+    body: unknown;
+    _headers: Map<string, string>;
+    _jsonData: unknown;
+    constructor(body?: unknown, init?: { status?: number; headers?: Record<string, string> }) {
+      this.body = body;
+      this.status = init?.status || 200;
+      this._headers = new Map(Object.entries(init?.headers || {}));
+      this._jsonData = null;
+      // Try to parse body as JSON for .json() method
+      if (typeof body === "string") {
+        try {
+          this._jsonData = JSON.parse(body);
+        } catch {
+          /* not JSON */
+        }
+      }
+    }
+    /** Instance .json() — mirrors the real Response.json() API */
+    async json() {
+      if (this._jsonData !== null) return this._jsonData;
+      if (typeof this.body === "string") return JSON.parse(this.body);
+      return this.body;
+    }
+    /** Instance .text() — mirrors the real Response.text() API */
+    async text() {
+      if (typeof this.body === "string") return this.body;
+      return JSON.stringify(this.body);
+    }
+    static json(data: unknown, init?: { status?: number; headers?: Record<string, string> }) {
+      const resp = new MockNextResponse(JSON.stringify(data), init);
+      resp._jsonData = data;
+      return resp;
+    }
+    static redirect(url: string | URL, status?: number) {
+      return new MockNextResponse(null, { status: status || 307 });
+    }
+    static next() {
+      return new MockNextResponse(null, { status: 200 });
+    }
+  }
+  return {
+    NextRequest: MockNextRequest,
+    NextResponse: MockNextResponse,
+  };
+});
+
 // ── Mock next/navigation ────────────────────────────────────────────
 vi.mock("next/navigation", () => ({
   redirect: vi.fn(),

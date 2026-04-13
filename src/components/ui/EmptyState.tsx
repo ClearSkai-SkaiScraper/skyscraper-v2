@@ -62,12 +62,13 @@ export default function EmptyState({
     if (!icon) {
       return <Inbox className={cn("text-muted-foreground", iconSizes[size])} />;
     }
-    // If it's a Lucide component function, instantiate it
-    if (typeof icon === "function") {
-      const IconComp = icon as LucideIcon;
-      return <IconComp className={cn("text-muted-foreground", iconSizes[size])} />;
+    // If it's already a rendered React element (e.g. <Icon />), use as-is
+    if (React.isValidElement(icon)) {
+      return icon;
     }
-    return icon;
+    // Otherwise it's a component reference (function OR forwardRef) — instantiate it
+    const IconComp = icon as LucideIcon;
+    return <IconComp className={cn("text-muted-foreground", iconSizes[size])} />;
   };
 
   return (

@@ -34,6 +34,8 @@ import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 
+import { AddressAutocomplete, type AddressSuggestion } from "@/components/AddressAutocomplete";
+import { VoiceNoteButton } from "@/components/VoiceNoteRecorder";
 import { cn } from "@/lib/utils";
 
 // ---------------------------------------------------------------------------
@@ -118,6 +120,9 @@ export default function FieldModePage() {
   const [submitted, setSubmitted] = useState(false);
   const [showScope, setShowScope] = useState(false);
   const [gpsStatus, setGpsStatus] = useState<"pending" | "active" | "unavailable">("pending");
+  const [bulkAnalyzing, setBulkAnalyzing] = useState(false);
+  const [draggedPhotoId, setDraggedPhotoId] = useState<string | null>(null);
+  const [dragOverPhotoId, setDragOverPhotoId] = useState<string | null>(null);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const cameraInputRef = useRef<HTMLInputElement>(null);
@@ -192,6 +197,57 @@ export default function FieldModePage() {
     setPhotos((prev) => prev.filter((p) => p.id !== id));
   }, []);
 
+  // ---- Drag-and-drop photo reorder ----
+  const handleDragStart = useCallback((e: React.DragEvent, photoId: string) => {
+    setDraggedPhotoId(photoId);
+    e.dataTransfer.effectAllowed = "move";
+    e.dataTransfer.setData("text/plain", photoId);
+  }, []);
+
+  const handleDragOver = useCallback(
+    (e: React.DragEvent, photoId: string) => {
+      e.preventDefault();
+      e.dataTransfer.dropEffect = "move";
+      if (photoId !== draggedPhotoId) {
+        setDragOverPhotoId(photoId);
+      }
+    },
+    [draggedPhotoId]
+  );
+
+  const handleDragLeave = useCallback(() => {
+    setDragOverPhotoId(null);
+  }, []);
+
+  const handleDrop = useCallback(
+    (e: React.DragEvent, targetPhotoId: string) => {
+      e.preventDefault();
+      const sourcePhotoId = draggedPhotoId;
+      setDraggedPhotoId(null);
+      setDragOverPhotoId(null);
+
+      if (!sourcePhotoId || sourcePhotoId === targetPhotoId) return;
+
+      setPhotos((prev) => {
+        const sourceIndex = prev.findIndex((p) => p.id === sourcePhotoId);
+        const targetIndex = prev.findIndex((p) => p.id === targetPhotoId);
+        if (sourceIndex === -1 || targetIndex === -1) return prev;
+
+        const newPhotos = [...prev];
+        const [removed] = newPhotos.splice(sourceIndex, 1);
+        newPhotos.splice(targetIndex, 0, removed);
+        return newPhotos;
+      });
+      toast.success("Photo reordered");
+    },
+    [draggedPhotoId]
+  );
+
+  const handleDragEnd = useCallback(() => {
+    setDraggedPhotoId(null);
+    setDragOverPhotoId(null);
+  }, []);
+
   const updatePhotoNote = useCallback((id: string, note: string) => {
     setPhotos((prev) => prev.map((p) => (p.id === id ? { ...p, note } : p)));
   }, []);
@@ -201,6 +257,24 @@ export default function FieldModePage() {
       prev.map((item) => (item.id === id ? { ...item, selected: !item.selected } : item))
     );
   }, []);
+
+  // ---- Bulk Analyze All Photos ----
+  const handleBulkAnalyze = useCallback(async () => {
+    const unanalyzed = photos.filter((p) => !p.aiLabel && !p.analyzing);
+    if (unanalyzed.length === 0) {
+      toast.info("All photos already analyzed");
+      return;
+    }
+
+    setBulkAnalyzing(true);
+    toast.info(`Analyzing ${unanalyzed.length} photos...`);
+
+    // Analyze all unanalyzed photos in parallel
+    await Promise.all(unanalyzed.map((photo) => quickAnalyze(photo)));
+
+    setBulkAnalyzing(false);
+    toast.success("All photos analyzed!");
+  }, [photos]);
 
   // ---- Submit ----
   const handleSubmit = useCallback(async () => {
@@ -258,6 +332,8 @@ export default function FieldModePage() {
   }, [photos, propertyAddress, homeownerName, notes, scopeItems]);
 
   const selectedCount = scopeItems.filter((s) => s.selected).length;
+  const unanalyzedCount = photos.filter((p) => !p.aiLabel && !p.analyzing).length;
+  const analyzingCount = photos.filter((p) => p.analyzing).length;
 
   // ── Success screen ──
   if (submitted) {
@@ -323,22 +399,50 @@ export default function FieldModePage() {
               </span>
             </div>
           </div>
-          <Link
-            href="/claims"
-            className="rounded-lg px-3 py-1.5 text-xs text-muted-foreground hover:bg-slate-100 dark:hover:bg-slate-800"
-          >
-            Exit
-          </Link>
+          <div className="flex items-center gap-2">
+            {/* Bulk Analyze Button - F8 Enhancement */}
+            {photos.length > 0 && (unanalyzedCount > 0 || bulkAnalyzing) && (
+              <button
+                type="button"
+                onClick={handleBulkAnalyze}
+                disabled={bulkAnalyzing || analyzingCount > 0}
+                className={cn(
+                  "flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold transition-all",
+                  bulkAnalyzing || analyzingCount > 0
+                    ? "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400"
+                    : "bg-blue-100 text-blue-700 hover:bg-blue-200 dark:bg-blue-900/30 dark:text-blue-400"
+                )}
+              >
+                {bulkAnalyzing || analyzingCount > 0 ? (
+                  <>
+                    <Loader2 className="h-3 w-3 animate-spin" />
+                    Analyzing...
+                  </>
+                ) : (
+                  <>
+                    <Zap className="h-3 w-3" />
+                    Analyze All ({unanalyzedCount})
+                  </>
+                )}
+              </button>
+            )}
+            <Link
+              href="/claims"
+              className="rounded-lg px-3 py-1.5 text-xs text-muted-foreground hover:bg-slate-100 dark:hover:bg-slate-800"
+            >
+              Exit
+            </Link>
+          </div>
         </div>
       </header>
 
       <div className="mx-auto max-w-lg px-4 py-4">
         {/* Quick info fields */}
         <div className="mb-4 space-y-3">
-          <input
-            type="text"
+          <AddressAutocomplete
             value={propertyAddress}
-            onChange={(e) => setPropertyAddress(e.target.value)}
+            onChange={setPropertyAddress}
+            onSelect={(suggestion: AddressSuggestion) => setPropertyAddress(suggestion.fullAddress)}
             placeholder="Property address..."
             className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm dark:border-slate-700 dark:bg-slate-800"
           />
@@ -351,44 +455,64 @@ export default function FieldModePage() {
           />
         </div>
 
-        {/* Photos Grid */}
+        {/* Photos Grid - Drag to reorder */}
         {photos.length > 0 && (
-          <div className="mb-4 grid grid-cols-3 gap-2">
-            {photos.map((photo) => (
-              <div key={photo.id} className="group relative">
-                <img
-                  src={photo.preview}
-                  alt="Field"
-                  className="h-28 w-full rounded-xl object-cover"
-                />
-                {/* AI label overlay */}
-                {photo.analyzing ? (
-                  <div className="absolute inset-0 flex items-center justify-center rounded-xl bg-black/40">
-                    <Loader2 className="h-5 w-5 animate-spin text-white" />
-                  </div>
-                ) : photo.aiLabel ? (
-                  <div className="absolute bottom-0 left-0 right-0 rounded-b-xl bg-gradient-to-t from-black/70 to-transparent px-1.5 pb-1.5 pt-4">
-                    <p className="text-[9px] font-medium leading-tight text-white">
-                      {photo.aiLabel}
-                    </p>
-                  </div>
-                ) : null}
-                {/* GPS badge */}
-                {photo.latitude && (
-                  <div className="absolute left-1 top-1 rounded-full bg-emerald-500/90 p-0.5">
-                    <MapPin className="h-2.5 w-2.5 text-white" />
-                  </div>
-                )}
-                {/* Delete */}
-                <button
-                  type="button"
-                  onClick={() => removePhoto(photo.id)}
-                  className="absolute right-1 top-1 rounded-full bg-red-500 p-1 text-white opacity-0 transition-opacity group-hover:opacity-100"
+          <div className="mb-4">
+            {photos.length > 1 && (
+              <p className="mb-2 text-center text-xs text-muted-foreground">
+                💡 Drag photos to reorder
+              </p>
+            )}
+            <div className="grid grid-cols-3 gap-2">
+              {photos.map((photo) => (
+                <div
+                  key={photo.id}
+                  className={cn(
+                    "group relative cursor-grab transition-all duration-200",
+                    draggedPhotoId === photo.id && "scale-95 opacity-50",
+                    dragOverPhotoId === photo.id && "scale-105 ring-2 ring-blue-500 ring-offset-2"
+                  )}
+                  draggable
+                  onDragStart={(e) => handleDragStart(e, photo.id)}
+                  onDragOver={(e) => handleDragOver(e, photo.id)}
+                  onDragLeave={handleDragLeave}
+                  onDrop={(e) => handleDrop(e, photo.id)}
+                  onDragEnd={handleDragEnd}
                 >
-                  <X className="h-3 w-3" />
-                </button>
-              </div>
-            ))}
+                  <img
+                    src={photo.preview}
+                    alt="Field"
+                    className="pointer-events-none h-28 w-full rounded-xl object-cover"
+                  />
+                  {/* AI label overlay */}
+                  {photo.analyzing ? (
+                    <div className="absolute inset-0 flex items-center justify-center rounded-xl bg-black/40">
+                      <Loader2 className="h-5 w-5 animate-spin text-white" />
+                    </div>
+                  ) : photo.aiLabel ? (
+                    <div className="absolute bottom-0 left-0 right-0 rounded-b-xl bg-gradient-to-t from-black/70 to-transparent px-1.5 pb-1.5 pt-4">
+                      <p className="text-[9px] font-medium leading-tight text-white">
+                        {photo.aiLabel}
+                      </p>
+                    </div>
+                  ) : null}
+                  {/* GPS badge */}
+                  {photo.latitude && (
+                    <div className="absolute left-1 top-1 rounded-full bg-emerald-500/90 p-0.5">
+                      <MapPin className="h-2.5 w-2.5 text-white" />
+                    </div>
+                  )}
+                  {/* Delete */}
+                  <button
+                    type="button"
+                    onClick={() => removePhoto(photo.id)}
+                    className="absolute right-1 top-1 rounded-full bg-red-500 p-1 text-white opacity-0 transition-opacity group-hover:opacity-100"
+                  >
+                    <X className="h-3 w-3" />
+                  </button>
+                </div>
+              ))}
+            </div>
           </div>
         )}
 
@@ -453,14 +577,21 @@ export default function FieldModePage() {
           )}
         </div>
 
-        {/* Notes */}
-        <textarea
-          value={notes}
-          onChange={(e) => setNotes(e.target.value)}
-          placeholder="Field notes..."
-          rows={3}
-          className="mb-4 w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm dark:border-slate-700 dark:bg-slate-800"
-        />
+        {/* Notes with Voice Input */}
+        <div className="relative mb-4">
+          <textarea
+            value={notes}
+            onChange={(e) => setNotes(e.target.value)}
+            placeholder="Field notes... (or tap mic to speak)"
+            rows={3}
+            className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 pr-12 text-sm dark:border-slate-700 dark:bg-slate-800"
+          />
+          <div className="absolute right-2 top-2">
+            <VoiceNoteButton
+              onTranscript={(text) => setNotes((prev) => (prev ? `${prev} ${text}` : text))}
+            />
+          </div>
+        </div>
       </div>
 
       {/* Fixed bottom bar — BIG camera button */}

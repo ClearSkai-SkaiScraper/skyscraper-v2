@@ -6,6 +6,9 @@ export const metadata: Metadata = {
   title: "About – SkaiScraper",
   description:
     "Learn about SkaiScraper's mission to revolutionize trades operations with AI-powered intelligence",
+  alternates: {
+    canonical: "/about",
+  },
   openGraph: {
     title: "About – SkaiScraper",
     description:
@@ -13,9 +16,34 @@ export const metadata: Metadata = {
   },
 };
 
+// JSON-LD Organization structured data (M6 Enhancement)
+const organizationJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  name: "ClearSkai Technologies",
+  alternateName: "SkaiScraper",
+  url: "https://skaiscrape.com",
+  logo: "https://skaiscrape.com/brand/logo.png",
+  description:
+    "AI-powered operations hub for roofing and restoration contractors. Transform how trades professionals handle damage detection, claims management, and client communication.",
+  foundingDate: "2024",
+  sameAs: ["https://twitter.com/skaiscraper", "https://linkedin.com/company/skaiscraper"],
+  contactPoint: {
+    "@type": "ContactPoint",
+    contactType: "sales",
+    email: "hello@skaiscrape.com",
+    url: "https://skaiscrape.com/contact",
+  },
+};
+
 export default function AboutPage() {
   return (
     <main className="min-h-screen bg-background">
+      {/* JSON-LD Structured Data (M6) */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationJsonLd) }}
+      />
       {/* Hero Section */}
       <section className="relative overflow-hidden bg-gradient-to-br from-[#117CFF] via-[#0066DD] to-[#004AAD] py-24 text-white">
         <div className="absolute inset-0 bg-[url('/grid.svg')] opacity-10" />

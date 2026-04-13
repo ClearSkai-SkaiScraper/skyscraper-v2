@@ -186,8 +186,14 @@ test.describe("Auth Matrix — Pro Pages require auth", () => {
         .filter({ hasText: /Sign In Required/i })
         .isVisible()
         .catch(() => false);
+      // Some pages show "Authentication Unavailable" (h2) instead of "Sign In Required" (h1)
+      const hasAuthUnavailable = await page
+        .locator("h2")
+        .filter({ hasText: /Authentication Unavailable/i })
+        .isVisible()
+        .catch(() => false);
       expect(
-        redirectedToSignIn || hasAuthGate,
+        redirectedToSignIn || hasAuthGate || hasAuthUnavailable,
         `${path} should require auth but appears accessible`
       ).toBeTruthy();
     });

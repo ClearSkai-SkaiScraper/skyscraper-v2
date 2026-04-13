@@ -18,9 +18,9 @@ export function AppSidebar() {
   const t = getUiTheme(mode);
 
   // ── Collapsible sections ──
-  // Start with Storm Command Center OPEN, all others collapsed. Persist to localStorage.
+  // Start with Dashboard & Intel OPEN, all others collapsed. Persist to localStorage.
   const defaultCollapsed = Object.fromEntries(
-    navSections.map((s) => [s.label, s.label !== "Command Center"])
+    navSections.map((s) => [s.label, s.label !== "Dashboard & Intel"])
   );
   const [collapsedSections, setCollapsedSections] =
     useState<Record<string, boolean>>(defaultCollapsed);

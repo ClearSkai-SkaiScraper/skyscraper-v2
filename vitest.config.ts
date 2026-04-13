@@ -5,8 +5,11 @@ export default defineConfig({
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
-      // Also handle root-level alias (tsconfig maps @/* to both ./src/* and ./*)
+      // Fix ESM resolution for next/server — vitest ESM can't resolve without .js extension
+      "next/server": path.resolve(__dirname, "node_modules/next/dist/server/web/exports/index.js"),
     },
+    // Tell vitest to try 'require' condition (where next/server is defined as CJS)
+    conditions: ["node", "import", "require"],
   },
   test: {
     globals: true,

@@ -13,8 +13,36 @@
  * of the entire multi-tenant security model. Previously had ZERO unit tests.
  */
 
-import { NextResponse } from "next/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
+
+// ── Mock next/server (ESM resolution workaround for vitest) ──────────────────
+vi.mock("next/server", () => {
+  class MockNextResponse {
+    status: number;
+    body: unknown;
+    _headers: Map<string, string>;
+    constructor(body?: unknown, init?: { status?: number; headers?: Record<string, string> }) {
+      this.body = body;
+      this.status = init?.status || 200;
+      this._headers = new Map(Object.entries(init?.headers || {}));
+    }
+    static json(data: unknown, init?: { status?: number; headers?: Record<string, string> }) {
+      const resp = new MockNextResponse(JSON.stringify(data), init);
+      // Add json() method on the instance for test compatibility
+      (resp as Record<string, unknown>).json = async () => data;
+      return resp;
+    }
+    static redirect(url: string | URL, status?: number) {
+      return new MockNextResponse(null, { status: status || 307 });
+    }
+    static next() {
+      return new MockNextResponse(null, { status: 200 });
+    }
+  }
+  return { NextResponse: MockNextResponse };
+});
+
+import { NextResponse } from "next/server";
 
 // ── Mock Clerk auth ──────────────────────────────────────────────────────────
 const mockAuth = vi.fn();

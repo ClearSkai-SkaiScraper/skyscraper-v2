@@ -11,6 +11,9 @@ export const metadata: Metadata = {
   title: "Pricing – SkaiScraper",
   description:
     "Simple, transparent pricing. $80 per seat per month. No tiers, no minimums, no hidden fees. Scale from 1 to 500 seats.",
+  alternates: {
+    canonical: "/pricing",
+  },
   openGraph: {
     title: "Pricing – SkaiScraper",
     description:
@@ -21,6 +24,32 @@ export const metadata: Metadata = {
 export const revalidate = 3600;
 
 const PRICE_PER_SEAT = 80;
+
+// JSON-LD structured data for pricing (M6 Enhancement)
+const pricingJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "Product",
+  name: "SkaiScraper Pro",
+  description:
+    "AI-powered operations hub for roofing and restoration contractors. Includes damage detection, weather verification, claims management, and client portal.",
+  brand: {
+    "@type": "Brand",
+    name: "SkaiScraper",
+  },
+  offers: {
+    "@type": "Offer",
+    price: "80.00",
+    priceCurrency: "USD",
+    priceValidUntil: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString().split("T")[0],
+    availability: "https://schema.org/InStock",
+    url: "https://skaiscrape.com/pricing",
+    description: "Per seat, per month. No minimums, no hidden fees.",
+    seller: {
+      "@type": "Organization",
+      name: "ClearSkai Technologies",
+    },
+  },
+};
 
 const EXAMPLES = [
   { seats: 1, label: "Solo Operator" },
@@ -51,6 +80,11 @@ const FEATURES = [
 export default function PricingPage() {
   return (
     <main className="min-h-screen bg-background">
+      {/* JSON-LD Structured Data (M6) */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(pricingJsonLd) }}
+      />
       {/* ── Hero ───────────────────────────────────────────────────── */}
       <section className="relative overflow-hidden bg-gradient-to-br from-[#117CFF] via-[#0066DD] to-[#004AAD] py-24 text-white">
         <div className="absolute inset-0 bg-[url('/grid.svg')] opacity-10" />

@@ -7,6 +7,7 @@ import React, { Suspense } from "react";
 
 // BetaModeBanner removed — plan info now in profile menu
 import { SubscriptionGate } from "@/components/billing/SubscriptionGate";
+import { CommandPalette } from "@/components/CommandPalette";
 import { BrandingBanner } from "@/components/dashboard/BrandingBanner";
 import DebugStrip from "@/components/DebugStrip";
 import { DemoModeBanner } from "@/components/demo/DemoModeBanner";
@@ -14,12 +15,12 @@ import EmojiScrubber from "@/components/EmojiScrubber";
 import { FeatureHelp } from "@/components/FeatureHelp";
 import { CRMFooter } from "@/components/nav/CRMFooter";
 import CRMTopbar from "@/components/nav/CRMTopbar";
+import { QuickActionsMenu } from "@/components/QuickActionsMenu";
 import {
   RemoteViewBanner,
   RemoteViewBodyAttribute,
 } from "@/components/remote-view/RemoteViewBanner";
 import { ErrorBoundary } from "@/components/system/ErrorBoundary";
-import { TaskButton } from "@/components/tasks/TaskButton";
 import { TaskSlideOver } from "@/components/tasks/TaskSlideOver";
 import { ToastProvider } from "@/components/ToastProvider";
 import { PostHogPageview } from "@/lib/analytics.tsx";
@@ -229,7 +230,8 @@ export default async function AppLayout({ children }: { children: React.ReactNod
           <FeatureHelp />
           <RemoteViewBanner />
           <RemoteViewBodyAttribute />
-          <TaskButton variant="floating" label="New Task" />
+          <QuickActionsMenu />
+          <CommandPalette />
           <TaskSlideOver />
         </div>
       </AppProviders>

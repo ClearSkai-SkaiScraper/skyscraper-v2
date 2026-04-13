@@ -11,28 +11,38 @@ import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { logger } from "@/lib/logger";
 
-// Lifecycle stages in order
+// Lifecycle stages in order — matches ClaimLifecycleStage enum in Prisma schema
+// plus additional workflow stages supported by the API
 const LIFECYCLE_STAGES = [
   { key: "FILED", label: "Filed", description: "Claim has been filed with carrier" },
   {
-    key: "INSPECTION_SCHEDULED",
-    label: "Inspection Scheduled",
-    description: "Adjuster inspection is scheduled",
-  },
-  {
-    key: "INSPECTION_COMPLETE",
-    label: "Inspection Complete",
-    description: "Inspection completed, awaiting decision",
+    key: "ADJUSTER_REVIEW",
+    label: "Adjuster Review",
+    description: "Adjuster is reviewing the claim & scheduling inspection",
   },
   { key: "APPROVED", label: "Approved", description: "Claim approved by carrier" },
-  { key: "IN_PROGRESS", label: "In Progress", description: "Work is being performed" },
-  { key: "WORK_COMPLETE", label: "Work Complete", description: "All work has been completed" },
   {
-    key: "CLOSEOUT_PENDING",
-    label: "Closeout Pending",
-    description: "Awaiting final payments & documentation",
+    key: "DENIED",
+    label: "Denied",
+    description: "Claim denied — may file appeal",
+    variant: "warning" as const,
   },
-  { key: "CLOSED", label: "Closed", description: "Claim fully closed out" },
+  {
+    key: "APPEAL",
+    label: "Appeal",
+    description: "Appealing carrier decision with supplemental evidence",
+  },
+  {
+    key: "BUILD",
+    label: "Build / In Progress",
+    description: "Restoration work is being performed",
+  },
+  { key: "COMPLETED", label: "Completed", description: "All work has been completed" },
+  {
+    key: "DEPRECIATION",
+    label: "Depreciation Recovery",
+    description: "Recovering withheld depreciation from carrier",
+  },
 ];
 
 interface ClaimData {

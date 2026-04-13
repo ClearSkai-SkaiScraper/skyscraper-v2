@@ -117,9 +117,9 @@ test.describe("Org-Scoped Data Isolation", () => {
           organizationId: FOREIGN_ORG_ID,
         },
       });
-      // Should fail (missing required fields or client not found)
-      // but should NOT succeed with the foreign org
-      expect([400, 404, 422, 500]).toContain(res.status());
+      // Should fail (401 auth, 400 validation, 404 not found, etc.)
+      // but should NOT succeed with the foreign org (never 200/201)
+      expect([400, 401, 404, 422, 500]).toContain(res.status());
     });
 
     test("POST /api/work-requests with foreign org → rejected", async ({ request }) => {
@@ -129,7 +129,8 @@ test.describe("Org-Scoped Data Isolation", () => {
           organizationId: FOREIGN_ORG_ID,
         },
       });
-      expect([400, 404, 422, 500]).toContain(res.status());
+      // 401 = auth required, 400/422 = validation, 404 = not found
+      expect([400, 401, 404, 422, 500]).toContain(res.status());
     });
   });
 

@@ -1,5 +1,6 @@
 "use client";
-import { useState } from "react";
+import { useCallback, useRef, useState } from "react";
+import { toast } from "sonner";
 
 import { triggerNotification } from "@/components/notifications/UnifiedNotificationBell";
 import { logger } from "@/lib/logger";
@@ -37,8 +38,21 @@ const STAGES: { key: ClaimStage; label: string; color: string }[] = [
   { key: "DEPRECIATION", label: "Depreciation", color: "bg-orange-100 dark:bg-orange-900" },
 ];
 
-export default function ClaimsPipeline({ claims = [] }: { claims: ClaimCard[] }) {
-  const [dragging, setDragging] = useState<string | null>(null);
+// Map stage to status string for API
+const STAGE_TO_STATUS: Record<ClaimStage, string> = {
+  FILED: "new",
+  ADJUSTER_REVIEW: "in_progress",
+  APPROVED: "approved",
+  DENIED: "denied",
+  APPEAL: "appeal",
+  BUILD: "build",
+  COMPLETED: "completed",
+  DEPRECIATION: "depreciation",
+};
+
+export default function ClaimsPipeline({ claims: initialClaims = [] }: { claims: ClaimCard[] }) {
+  // Use local state for optimistic updates - no page reload needed
+  const [claims, setClaims] = useState<ClaimCard[]>(initialClaims);
   const [dragOverStage, setDragOverStage] = useState<ClaimStage | null>(null);
   const [aiSuggestion, setAiSuggestion] = useState<{
     claimId: string;
@@ -50,6 +64,12 @@ export default function ClaimsPipeline({ claims = [] }: { claims: ClaimCard[] })
   const [pendingDrop, setPendingDrop] = useState<{ stage: ClaimStage; claimId: string } | null>(
     null
   );
+  // Track processing claims to prevent duplicate drops
+  const [processingClaims, setProcessingClaims] = useState<Set<string>>(new Set());
+
+  // Use ref to track dragging ID - refs don't have stale closure issues
+  const draggingRef = useRef<string | null>(null);
+  const [draggingId, setDraggingId] = useState<string | null>(null);
 
   const claimsByStage = STAGES.reduce(
     (acc, stage) => {
@@ -59,91 +79,156 @@ export default function ClaimsPipeline({ claims = [] }: { claims: ClaimCard[] })
     {} as Record<ClaimStage, ClaimCard[]>
   );
 
-  const handleDragStart = (claim_id: string) => {
-    setDragging(claim_id);
-  };
+  const handleDragStart = useCallback((claim_id: string) => {
+    draggingRef.current = claim_id;
+    setDraggingId(claim_id);
+  }, []);
 
-  const handleDragEnd = () => {
-    setDragging(null);
+  const handleDragEnd = useCallback(() => {
+    draggingRef.current = null;
+    setDraggingId(null);
     setDragOverStage(null);
-  };
+  }, []);
 
-  const handleDragOver = (stage: ClaimStage) => {
-    if (dragging) {
+  const handleDragOver = useCallback((stage: ClaimStage) => {
+    if (draggingRef.current) {
       setDragOverStage(stage);
     }
-  };
+  }, []);
 
-  const handleDrop = async (stage: ClaimStage, claim_id: string) => {
-    setDragging(null);
-    setDragOverStage(null);
-    setPendingDrop({ stage, claimId: claim_id });
+  const handleDrop = useCallback(
+    async (stage: ClaimStage, claim_id: string) => {
+      // Use ref value to get the most current dragging ID
+      const currentDragging = draggingRef.current || claim_id;
 
-    // Get AI suggestion for this claim
-    try {
-      const aiRes = await fetch("/api/ai/suggest-status", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ claimId: claim_id }),
-      });
+      // Clear drag state immediately
+      draggingRef.current = null;
+      setDraggingId(null);
+      setDragOverStage(null);
 
-      if (aiRes.ok) {
-        const aiData = await aiRes.json();
-        setAiSuggestion(aiData);
+      // Prevent duplicate processing
+      if (processingClaims.has(currentDragging)) {
+        logger.debug("Claim already being processed, skipping", currentDragging);
+        return;
+      }
 
-        // Trigger notification about AI suggestion
-        triggerNotification({
-          message: `AI suggests ${aiData.suggestedStatus} for claim ${claim_id.substring(0, 8)}`,
-          id: claim_id,
-          type: "ai_suggestion",
+      // Find the claim
+      const claim = claims.find((c) => c.id === currentDragging);
+      if (!claim) {
+        logger.warn("Claim not found for drop", currentDragging);
+        toast.error("Claim not found. Please refresh the page.");
+        return;
+      }
+
+      // Skip if already in this stage
+      if (claim.lifecycleStage === stage) {
+        return;
+      }
+
+      // Mark as processing
+      setProcessingClaims((prev) => new Set(prev).add(currentDragging));
+      setPendingDrop({ stage, claimId: currentDragging });
+
+      // Optimistic update - move claim immediately in UI
+      setClaims((prev) =>
+        prev.map((c) => (c.id === currentDragging ? { ...c, lifecycleStage: stage } : c))
+      );
+
+      // Try to get AI suggestion (non-blocking)
+      try {
+        const aiRes = await fetch("/api/ai/suggest-status", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ claimId: currentDragging }),
         });
 
-        // If AI suggests something different than user's drop, show modal
-        if (aiData.suggestedStatus !== stage && aiData.confidence > 60) {
-          setShowAiModal(true);
-          return; // Wait for user decision
+        if (aiRes.ok) {
+          const aiData = await aiRes.json();
+          setAiSuggestion(aiData);
+
+          triggerNotification({
+            message: `AI suggests ${aiData.suggestedStatus} for claim ${currentDragging.substring(0, 8)}`,
+            id: currentDragging,
+            type: "ai_suggestion",
+          });
+
+          if (aiData.suggestedStatus !== stage && aiData.confidence > 60) {
+            setShowAiModal(true);
+            return;
+          }
         }
+      } catch (_err) {
+        logger.debug("AI suggestion unavailable, proceeding with manual update");
       }
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    } catch (_err) {
-      logger.debug("AI suggestion unavailable, proceeding with manual update");
-    }
 
-    // If no AI suggestion or low confidence, proceed with manual update
-    await updateClaimStatus(claim_id, stage);
-  };
+      // Proceed with update
+      await updateClaimStatus(currentDragging, stage);
+    },
+    [claims, processingClaims]
+  );
 
-  const updateClaimStatus = async (claim_id: string, stage: ClaimStage) => {
-    try {
-      await fetch(`/api/claims/${claim_id}/status`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ lifecycleStage: stage }),
-        cache: "no-store",
-      });
-      window.location.reload(); // Refresh to show updated state
-    } catch (err) {
-      logger.error("Failed to update claim stage:", err);
-    }
-  };
+  const updateClaimStatus = useCallback(
+    async (claim_id: string, stage: ClaimStage) => {
+      try {
+        // Use the update endpoint which we know works
+        const res = await fetch(`/api/claims/${claim_id}/update`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            status: STAGE_TO_STATUS[stage],
+            lifecycleStage: stage,
+          }),
+          cache: "no-store",
+        });
 
-  const handleAcceptAiSuggestion = () => {
+        if (!res.ok) {
+          const errData = await res.json().catch(() => ({}));
+          throw new Error(errData.error || `Failed with status ${res.status}`);
+        }
+
+        toast.success(`Claim moved to ${stage}`);
+      } catch (err) {
+        logger.error("Failed to update claim stage:", err);
+        toast.error(
+          err instanceof Error ? err.message : "Failed to update claim. Please try again."
+        );
+
+        // Revert optimistic update on error
+        setClaims((prev) =>
+          prev.map((c) => {
+            const original = initialClaims.find((ic) => ic.id === c.id);
+            return original ? { ...c, lifecycleStage: original.lifecycleStage } : c;
+          })
+        );
+      } finally {
+        setProcessingClaims((prev) => {
+          const next = new Set(prev);
+          next.delete(claim_id);
+          return next;
+        });
+        setPendingDrop(null);
+      }
+    },
+    [initialClaims]
+  );
+
+  const handleAcceptAiSuggestion = useCallback(() => {
     if (aiSuggestion && pendingDrop) {
       void updateClaimStatus(pendingDrop.claimId, aiSuggestion.suggestedStatus as ClaimStage);
       setShowAiModal(false);
       setAiSuggestion(null);
       setPendingDrop(null);
     }
-  };
+  }, [aiSuggestion, pendingDrop, updateClaimStatus]);
 
-  const handleRejectAiSuggestion = () => {
+  const handleRejectAiSuggestion = useCallback(() => {
     if (pendingDrop) {
       void updateClaimStatus(pendingDrop.claimId, pendingDrop.stage);
       setShowAiModal(false);
       setAiSuggestion(null);
       setPendingDrop(null);
     }
-  };
+  }, [pendingDrop, updateClaimStatus]);
 
   return (
     <div className="overflow-x-auto pb-4">
@@ -161,7 +246,9 @@ export default function ClaimsPipeline({ claims = [] }: { claims: ClaimCard[] })
               onDragLeave={() => setDragOverStage(null)}
               onDrop={(e) => {
                 e.preventDefault();
-                if (dragging) void handleDrop(stage.key, dragging);
+                // Get claim ID from dataTransfer as backup
+                const claimId = e.dataTransfer.getData("text/plain") || draggingRef.current;
+                if (claimId) void handleDrop(stage.key, claimId);
               }}
             >
               <div
@@ -179,40 +266,68 @@ export default function ClaimsPipeline({ claims = [] }: { claims: ClaimCard[] })
                 </div>
 
                 <div className="space-y-2">
-                  {stageClaims.map((claim) => (
-                    <div
-                      key={claim.id}
-                      draggable
-                      onDragStart={() => handleDragStart(claim.id)}
-                      onDragEnd={handleDragEnd}
-                      className={`p-3 ${stage.color} cursor-move rounded-lg transition-shadow hover:shadow-lg ${
-                        dragging === claim.id ? "opacity-50" : ""
-                      }`}
-                    >
-                      <div className="mb-1 flex items-center gap-1 font-mono text-xs text-[color:var(--muted)]">
-                        <span>📄</span>
-                        <span>{claim.claimNumber}</span>
+                  {stageClaims.map((claim) => {
+                    const isProcessing = processingClaims.has(claim.id);
+                    return (
+                      <div
+                        key={claim.id}
+                        draggable={!isProcessing}
+                        onDragStart={(e) => {
+                          // Store claim ID in dataTransfer for reliable retrieval
+                          e.dataTransfer.setData("text/plain", claim.id);
+                          e.dataTransfer.effectAllowed = "move";
+                          handleDragStart(claim.id);
+                        }}
+                        onDragEnd={handleDragEnd}
+                        className={`p-3 ${stage.color} cursor-move rounded-lg transition-all hover:shadow-lg ${
+                          draggingId === claim.id ? "scale-95 opacity-50" : ""
+                        } ${isProcessing ? "animate-pulse cursor-wait opacity-70" : ""}`}
+                      >
+                        <div className="mb-1 flex items-center gap-1 font-mono text-xs text-[color:var(--muted)]">
+                          <span>📄</span>
+                          <span>{claim.claimNumber}</span>
+                          {isProcessing && (
+                            <span className="ml-auto text-blue-500">
+                              <svg className="h-3 w-3 animate-spin" viewBox="0 0 24 24">
+                                <circle
+                                  className="opacity-25"
+                                  cx="12"
+                                  cy="12"
+                                  r="10"
+                                  stroke="currentColor"
+                                  strokeWidth="4"
+                                  fill="none"
+                                />
+                                <path
+                                  className="opacity-75"
+                                  fill="currentColor"
+                                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                                />
+                              </svg>
+                            </span>
+                          )}
+                        </div>
+                        <div className="mb-1 flex items-center gap-1 text-sm font-semibold text-[color:var(--text)]">
+                          <span>👤</span>
+                          <span>{claim.insured_name || "Unknown"}</span>
+                        </div>
+                        <div className="mb-2 flex items-center gap-1 text-xs text-[color:var(--muted)]">
+                          <span>📍</span>
+                          <span>{claim.property.street}</span>
+                        </div>
+                        <div className="flex items-center gap-1 text-sm font-bold text-[color:var(--primary)]">
+                          <span>💰</span>
+                          <span>
+                            $
+                            {((claim.exposureCents || 0) / 100).toLocaleString("en-US", {
+                              minimumFractionDigits: 0,
+                              maximumFractionDigits: 0,
+                            })}
+                          </span>
+                        </div>
                       </div>
-                      <div className="mb-1 flex items-center gap-1 text-sm font-semibold text-[color:var(--text)]">
-                        <span>👤</span>
-                        <span>{claim.insured_name || "Unknown"}</span>
-                      </div>
-                      <div className="mb-2 flex items-center gap-1 text-xs text-[color:var(--muted)]">
-                        <span>📍</span>
-                        <span>{claim.property.street}</span>
-                      </div>
-                      <div className="flex items-center gap-1 text-sm font-bold text-[color:var(--primary)]">
-                        <span>💰</span>
-                        <span>
-                          $
-                          {((claim.exposureCents || 0) / 100).toLocaleString("en-US", {
-                            minimumFractionDigits: 0,
-                            maximumFractionDigits: 0,
-                          })}
-                        </span>
-                      </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </div>
             </div>
