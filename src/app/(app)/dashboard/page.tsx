@@ -1,5 +1,6 @@
 import { LayoutDashboard, Lock } from "lucide-react";
 import type { Metadata } from "next";
+import nextDynamic from "next/dynamic";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
@@ -23,6 +24,31 @@ import StalledClaimsWidget from "./_components/StalledClaimsWidget";
 import StatsCards from "./_components/StatsCards";
 import WeatherKPICards from "./_components/WeatherKPICards";
 import WorkOpportunityNotifications from "./_components/WorkOpportunityNotifications";
+
+// Pro Dashboard enhancement components (client-side)
+const AIDailyBriefing = nextDynamic(
+  () => import("@/components/pro/AIDailyBriefing").then((mod) => mod.AIDailyBriefing),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="animate-pulse rounded-2xl border border-slate-200/20 bg-white/60 p-8 backdrop-blur-xl dark:bg-slate-900/50">
+        <div className="h-32 rounded-xl bg-slate-200 dark:bg-slate-800"></div>
+      </div>
+    ),
+  }
+);
+
+const GoalTrackerCompact = nextDynamic(
+  () => import("@/components/pro/GoalTracker").then((mod) => mod.GoalTrackerCompact),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="animate-pulse rounded-2xl border border-slate-200/20 bg-white/60 p-6 backdrop-blur-xl dark:bg-slate-900/50">
+        <div className="h-24 rounded-xl bg-slate-200 dark:bg-slate-800"></div>
+      </div>
+    ),
+  }
+);
 // DashboardAssistantDock temporarily disabled
 // const DashboardAssistantDock = nextDynamic(() => import("./_components/DashboardAssistantDock"), {
 //   ssr: false,
@@ -185,6 +211,12 @@ export default async function DashboardPage() {
         </PageHero>
 
         <div className="space-y-6">
+          {/* AI Daily Briefing — personalized morning summary */}
+          <AIDailyBriefing />
+
+          {/* Goal Tracker — weekly targets in sidebar-style compact view */}
+          <GoalTrackerCompact className="lg:hidden" />
+
           {/* Company Leaderboard — sales performance rankings (top priority) */}
           <CompanyLeaderboard />
 

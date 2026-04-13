@@ -15,7 +15,7 @@ import {
 
 import { cn } from "@/lib/utils";
 
-type ClaimStage =
+export type ClaimStage =
   | "submitted"
   | "reviewing"
   | "inspection_scheduled"
