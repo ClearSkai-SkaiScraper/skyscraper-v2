@@ -1,5 +1,8 @@
+import { Hammer } from "lucide-react";
+
 import { NoOrgMembershipBanner } from "@/components/guards/NoOrgMembershipBanner";
 import { PageContainer } from "@/components/layout/PageContainer";
+import { PageHero } from "@/components/layout/PageHero";
 import { logger } from "@/lib/logger";
 import { safeOrgContext } from "@/lib/safeOrgContext";
 
@@ -7,7 +10,14 @@ import { RetailJobWizard } from "./RetailJobWizard";
 
 export const dynamic = "force-dynamic";
 
-export default async function NewRetailJobPage() {
+type JobCategory = "out_of_pocket" | "financed" | "repair";
+const VALID_CATEGORIES: JobCategory[] = ["out_of_pocket", "financed", "repair"];
+
+export default async function NewRetailJobPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ category?: string }>;
+}) {
   let orgId = "";
   try {
     const orgResult = await safeOrgContext();
@@ -22,15 +32,24 @@ export default async function NewRetailJobPage() {
     return <NoOrgMembershipBanner title="Create Retail Job" />;
   }
 
+  const params = await searchParams;
+  const initialCategory =
+    params.category && VALID_CATEGORIES.includes(params.category as JobCategory)
+      ? (params.category as JobCategory)
+      : undefined;
+
   return (
     <PageContainer maxWidth="5xl">
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Create Retail Job</h1>
-        <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-          Set up a new out-of-pocket, financed, or repair job
-        </p>
+      <PageHero
+        section="jobs"
+        title="Create Retail Job"
+        subtitle="Set up a new out-of-pocket, financed, or repair job"
+        icon={<Hammer className="h-5 w-5" />}
+        size="compact"
+      />
+      <div className="mx-auto max-w-4xl">
+        <RetailJobWizard orgId={orgId} initialCategory={initialCategory} />
       </div>
-      <RetailJobWizard orgId={orgId} />
     </PageContainer>
   );
 }

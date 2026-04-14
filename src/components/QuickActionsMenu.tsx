@@ -105,7 +105,7 @@ export function QuickActionsMenu({
       label: "New Lead",
       icon: <UserPlus className="h-4 w-4" />,
       href: "/leads/new",
-      color: "from-cyan-500 to-blue-500",
+      color: "from-emerald-500 to-green-600",
     },
     {
       id: "new-job",

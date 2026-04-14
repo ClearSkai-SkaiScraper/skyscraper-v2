@@ -184,14 +184,14 @@ export default async function DashboardPage() {
         >
           <div className="flex items-center gap-4">
             <div className="flex flex-wrap gap-3">
-              <Button asChild>
+              <Button asChild className="bg-blue-600 text-white hover:bg-blue-700">
                 <Link href="/claims/new">New Claim</Link>
               </Button>
-              <Button variant="outline" asChild>
+              <Button asChild className="bg-emerald-600 text-white hover:bg-emerald-700">
                 <Link href="/leads/new">New Lead</Link>
               </Button>
-              <Button variant="outline" asChild>
-                <Link href="/jobs/retail/new">New Job</Link>
+              <Button asChild className="bg-amber-600 text-white hover:bg-amber-700">
+                <Link href="/jobs/new">New Job</Link>
               </Button>
               <Button variant="outline" asChild>
                 <Link href="/tasks">Task Manager</Link>

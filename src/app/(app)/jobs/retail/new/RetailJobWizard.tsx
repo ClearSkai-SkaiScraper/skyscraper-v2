@@ -19,7 +19,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 
-type Props = { orgId: string };
+type Props = { orgId: string; initialCategory?: JobCategory };
 type Step = 1 | 2 | 3 | 4 | 5 | 6;
 
 type JobCategory = "out_of_pocket" | "financed" | "repair";
@@ -74,14 +74,14 @@ const WORK_TYPES = [
 ];
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-export function RetailJobWizard({ orgId }: Props) {
+export function RetailJobWizard({ orgId, initialCategory }: Props) {
   const router = useRouter();
   const [step, setStep] = useState<Step>(1);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   // Step 1 – Job Details
-  const [jobCategory, setJobCategory] = useState<JobCategory>("out_of_pocket");
+  const [jobCategory, setJobCategory] = useState<JobCategory>(initialCategory ?? "out_of_pocket");
   const [workType, setWorkType] = useState("");
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");

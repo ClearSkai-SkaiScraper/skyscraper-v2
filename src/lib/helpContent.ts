@@ -531,6 +531,54 @@ export const helpContentRegistry: Record<string, HelpContent> = {
       "Job financials flow into your Financial Overview dashboard",
     ],
   },
+  "/jobs/new": {
+    title: "Create a New Job",
+    description:
+      "Choose the job type to launch the right onboarding workflow — insurance claim, out-of-pocket, financed, or repair.",
+    steps: [
+      "Select the job category that matches how this work is being paid for",
+      "Insurance → opens the Claim Intake wizard with carrier fields",
+      "Out of Pocket / Financed / Repair → opens the Retail Job wizard (6 steps)",
+      "Click Continue to start the onboarding flow",
+    ],
+    tips: [
+      "Not sure which type? Insurance claims require a carrier and claim number; everything else is a retail job",
+      "You can also create jobs from the Retail Workspace or the Claims list",
+    ],
+  },
+  "/jobs/retail": {
+    title: "Retail Workspace",
+    description: "Your hub for all non-insurance jobs — out-of-pocket, financed, and repair work.",
+    steps: [
+      "View all retail jobs sorted by status and temperature",
+      "Click any job to open its full detail workspace",
+      "Use 'Add Job' to create a new retail job through the 6-step wizard",
+      "Filter by category: Out of Pocket, Financed, or Repair",
+    ],
+    tips: [
+      "Hot leads are marked with a flame — follow up within 24 hours",
+      "Use temperature tags (hot/warm/cold) to prioritize your pipeline",
+      "Jobs created here automatically appear in your Job Pipeline dashboard",
+    ],
+  },
+  "/jobs/retail/new": {
+    title: "Retail Job Wizard",
+    description:
+      "Create a new retail job in 6 easy steps: details, customer, property, photos, measurements, and review.",
+    steps: [
+      "Step 1 — Choose category (OOP / Financed / Repair) and work type",
+      "Step 2 — Enter customer contact information",
+      "Step 3 — Add the property address",
+      "Step 4 — Upload property or damage photos (optional)",
+      "Step 5 — Enter measurements and scope notes (optional)",
+      "Step 6 — Review everything and submit",
+    ],
+    tips: [
+      "The more detail you add now, the faster your estimate and proposal will be",
+      "Photos from this wizard are saved to the job workspace automatically",
+      "You can always edit job details after submission",
+    ],
+  },
   "/proposals": {
     title: "Proposals",
     description: "Create and manage proposals for homeowners and commercial clients.",
@@ -1391,6 +1439,266 @@ export const helpContentRegistry: Record<string, HelpContent> = {
         q: "Can I use my own templates?",
         a: "Yes! Upload any PDF or Word document as a template, then add signature fields and reuse it for future claims.",
       },
+    ],
+  },
+
+  // ─────────────────────────────────────────────────────────────────────────────
+  // MISSING NAV ROUTES — Full helpContent coverage for FAB lightbulb
+  // ─────────────────────────────────────────────────────────────────────────────
+
+  "/analytics": {
+    title: "Analytics Hub",
+    description:
+      "Deep-dive into company performance — revenue trends, close rates, pipeline health, and rep-level metrics.",
+    steps: [
+      "Review the top-line KPIs: revenue, close rate, average deal size",
+      "Compare performance across reps, teams, and time periods",
+      "Drill into the Claims Timeline to spot pipeline bottlenecks",
+      "Export data for meetings or accountant reports",
+    ],
+    tips: [
+      "Use date-range filters to compare month-over-month performance",
+      "The Claims Timeline shows average days in each pipeline stage",
+      "Export to CSV for custom analysis in Google Sheets or Excel",
+    ],
+  },
+
+  "/search": {
+    title: "Global Search",
+    description:
+      "Find anything — claims, leads, contacts, properties, jobs, or reports — all from one search bar.",
+    steps: [
+      "Type a name, address, claim number, or keyword",
+      "Results are grouped by type: Claims, Leads, Contacts, Properties, etc.",
+      "Click any result to jump directly to its detail page",
+      "Use filters to narrow results by date or category",
+    ],
+    tips: [
+      "Search by partial address to find properties quickly",
+      "Claim numbers and policy numbers are both searchable",
+      "Recent searches are saved for quick re-access",
+    ],
+  },
+
+  "/weather": {
+    title: "Weather Intelligence",
+    description:
+      "Track severe weather events, verify dates of loss, and plan door-knocking routes around recent storms.",
+    steps: [
+      "View recent hail, wind, and storm events on the map",
+      "Click any event to see affected areas and damage probability",
+      "Use Quick DOL to verify weather on a specific date for claims",
+      "Export storm data for door-knocking route planning",
+    ],
+    tips: [
+      "Set up weather alerts to get notified when storms hit your area",
+      "Weather data is sourced from NOAA and local stations",
+      "Storm severity ratings help prioritize canvassing neighborhoods",
+    ],
+  },
+
+  "/field": {
+    title: "Field Mode",
+    description:
+      "Your mobile toolkit for on-site inspections — take reference photos, capture measurements, and log notes in the field.",
+    steps: [
+      "Open Field Mode when you arrive at a property",
+      "Use the camera tool to capture reference photos with scale markers",
+      "Log measurements directly from the field",
+      "Add notes and voice memos for each area inspected",
+      "Sync everything to the claim workspace when back online",
+    ],
+    tips: [
+      "Field Mode works offline — data syncs when you reconnect",
+      "Use the scale reference photo tool for accurate hail/damage measurements",
+      "Photos taken in Field Mode are automatically tagged with GPS coordinates",
+    ],
+  },
+
+  "/maps/door-knocking": {
+    title: "Door Knocking Mode",
+    description:
+      "Plan and track door-knocking routes, log interactions, and convert knocks into leads.",
+    steps: [
+      "Select a neighborhood or draw a custom area on the map",
+      "Start a canvassing session to track your route",
+      "Log each door knock — Interested, Not Home, Not Interested, or Already Signed",
+      "Convert interested homeowners into leads instantly",
+      "Review your session stats: doors knocked, conversion rate, revenue potential",
+    ],
+    tips: [
+      "Combine with Weather Map to target storm-damaged neighborhoods",
+      "Set daily knock goals to keep your team on pace",
+      "Door-knocking data feeds into your Analytics Hub metrics",
+    ],
+  },
+
+  "/maps/weather-chains": {
+    title: "Weather Map",
+    description:
+      "Visualize storm paths, hail swaths, and wind damage corridors on an interactive map.",
+    steps: [
+      "View the map with color-coded storm severity overlays",
+      "Click any storm event to see hail size, wind speed, and damage reports",
+      "Toggle between Hail, Wind, and Combined damage layers",
+      "Identify high-probability neighborhoods for door-knocking",
+    ],
+    tips: [
+      "Combine with Door Knocking mode for targeted canvassing",
+      "Darker red zones indicate higher damage probability",
+      "Export map views as images for team briefings",
+    ],
+  },
+
+  "/estimates": {
+    title: "Estimates",
+    description:
+      "Create accurate job estimates with material pricing, labor rates, and markup calculations.",
+    steps: [
+      "Click 'New Estimate' and link to a job or property",
+      "Add line items: materials, labor, overhead, and profit",
+      "Use the Material Estimator for auto-pricing",
+      "Preview the estimate with your company branding",
+      "Send to the homeowner or download as PDF",
+    ],
+    tips: [
+      "Estimates can be converted to invoices with one click",
+      "Use templates for common job types to save time",
+      "The Out of Pocket vs Financing toggle adjusts payment terms automatically",
+    ],
+  },
+
+  "/clients": {
+    title: "Client Management",
+    description:
+      "View and manage your homeowner clients — contact info, properties, claims, and job history.",
+    steps: [
+      "Browse all clients or search by name, email, or phone",
+      "Click a client to view their complete history: properties, claims, and jobs",
+      "Add notes and follow-up reminders for each client",
+      "Track client satisfaction and referral potential",
+    ],
+    tips: [
+      "Clients are created automatically when you add a claim or lead",
+      "Happy clients are your best referral source — track them!",
+      "Export client lists for email marketing campaigns",
+    ],
+  },
+
+  "/network/work-requests": {
+    title: "Work Requests",
+    description: "Manage incoming and outgoing work requests from your trades network connections.",
+    steps: [
+      "View incoming requests from connected contractors",
+      "Accept or decline requests based on your availability",
+      "Create outgoing requests to find subs for your jobs",
+      "Track request status: Pending → Accepted → In Progress → Completed",
+    ],
+    tips: [
+      "Respond to requests quickly — contractors prefer responsive partners",
+      "Add job details and photos to attract better responses",
+      "Completed work requests build your network reputation",
+    ],
+  },
+
+  "/invitations": {
+    title: "Invitations",
+    description: "Manage team invitations and network connection requests.",
+    steps: [
+      "View pending invitations sent to you",
+      "Accept or decline team and network invitations",
+      "Send new invitations to team members or network partners",
+      "Track invitation status: Sent → Viewed → Accepted/Declined",
+    ],
+    tips: [
+      "Team invitations grant access to your company workspace",
+      "Network invitations create two-way contractor connections",
+    ],
+  },
+
+  "/leaderboard": {
+    title: "Team Leaderboard",
+    description:
+      "See how your team stacks up — rankings by revenue, claims closed, doors knocked, and more.",
+    steps: [
+      "View team rankings in the selected metric category",
+      "Switch between: Revenue, Claims Closed, Doors Knocked, Leads Converted",
+      "Click any team member to view their detailed performance",
+      "Use the time period filter: This Week, This Month, This Quarter, All Time",
+    ],
+    tips: [
+      "Leaderboards update in real-time as deals close",
+      "Use leaderboards to identify coaching opportunities",
+      "Top performers are highlighted with badges and streaks",
+    ],
+  },
+
+  "/notifications": {
+    title: "Notifications",
+    description:
+      "Stay on top of everything — claim updates, team messages, weather alerts, and system notifications.",
+    steps: [
+      "View all notifications sorted by most recent",
+      "Click any notification to jump to the related item",
+      "Mark notifications as read or archive them",
+      "Filter by type: Claims, Team, Weather, System",
+    ],
+    tips: [
+      "Critical notifications (weather alerts, overdue claims) are highlighted in red",
+      "Configure notification preferences in Settings",
+      "The bell icon in the top bar shows your unread count",
+    ],
+  },
+
+  "/claims/pipeline": {
+    title: "Photos → Claim Pipeline",
+    description:
+      "Upload property photos and let AI generate a complete insurance claim scope automatically.",
+    steps: [
+      "Upload or drag-and-drop property inspection photos",
+      "AI analyzes damage type, severity, and affected areas",
+      "Review the AI-generated scope and make adjustments",
+      "Submit as a new claim or attach to an existing one",
+    ],
+    tips: [
+      "Higher quality photos produce more accurate AI analysis",
+      "Include close-ups of damage alongside wide-angle context shots",
+      "The AI works best with 10+ photos per property",
+    ],
+  },
+
+  "/materials/estimator": {
+    title: "Material Estimator",
+    description:
+      "Calculate material quantities and costs based on measurements — roofing squares, siding LF, and more.",
+    steps: [
+      "Enter the property measurements or pull from a linked job",
+      "Select material types: shingles, underlayment, drip edge, etc.",
+      "Choose your preferred brands and grade levels",
+      "View the total cost breakdown with waste factor included",
+      "Export or send the material list to your vendor",
+    ],
+    tips: [
+      "The estimator includes standard waste factors by material type",
+      "Link to a job to auto-populate measurements",
+      "Compare pricing across multiple vendors before ordering",
+    ],
+  },
+
+  "/trades/profile": {
+    title: "My Profile & Company",
+    description:
+      "Manage your public-facing company profile — the listing other pros see in the Trades Network.",
+    steps: [
+      "Update your company name, logo, and description",
+      "List your specialties, service areas, and certifications",
+      "Add portfolio photos of completed work",
+      "Set your availability and contact preferences",
+    ],
+    tips: [
+      "A complete profile ranks higher in contractor searches",
+      "Portfolio photos attract more connection requests",
+      "Keep your service areas up to date for accurate matching",
     ],
   },
 };

@@ -1,6 +1,6 @@
 "use client";
 
-import { Briefcase, DollarSign, Hammer, Home, Landmark } from "lucide-react";
+import { CreditCard, DollarSign, Hammer, Home, Wrench } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 
-type JobCategory = "insurance" | "retail" | "out_of_pocket" | "financed";
+type JobCategory = "insurance" | "out_of_pocket" | "financed" | "repair";
 
 const JOB_CATEGORIES: {
   value: JobCategory;
@@ -29,28 +29,28 @@ const JOB_CATEGORIES: {
     borderColor: "border-blue-200 dark:border-blue-800 hover:border-blue-400",
   },
   {
-    value: "retail",
-    label: "Retail Job",
-    description: "Direct pay from homeowner — no insurance involved",
-    icon: <DollarSign className="h-6 w-6" />,
-    color: "bg-emerald-50 text-emerald-600 dark:bg-emerald-950/30 dark:text-emerald-400",
-    borderColor: "border-emerald-200 dark:border-emerald-800 hover:border-emerald-400",
-  },
-  {
     value: "out_of_pocket",
     label: "Out of Pocket",
-    description: "Homeowner paying cash for repairs not covered by insurance",
-    icon: <Landmark className="h-6 w-6" />,
+    description: "Homeowner paying cash — direct pay, no insurance or financing",
+    icon: <DollarSign className="h-6 w-6" />,
     color: "bg-amber-50 text-amber-600 dark:bg-amber-950/30 dark:text-amber-400",
     borderColor: "border-amber-200 dark:border-amber-800 hover:border-amber-400",
   },
   {
     value: "financed",
-    label: "Financing",
+    label: "Financed",
     description: "Homeowner using a financing plan — third-party lender involved",
-    icon: <Briefcase className="h-6 w-6" />,
-    color: "bg-purple-50 text-purple-600 dark:bg-purple-950/30 dark:text-purple-400",
-    borderColor: "border-purple-200 dark:border-purple-800 hover:border-purple-400",
+    icon: <CreditCard className="h-6 w-6" />,
+    color: "bg-green-50 text-green-600 dark:bg-green-950/30 dark:text-green-400",
+    borderColor: "border-green-200 dark:border-green-800 hover:border-green-400",
+  },
+  {
+    value: "repair",
+    label: "Repair / Service",
+    description: "Standard repair or maintenance — no full replacement needed",
+    icon: <Wrench className="h-6 w-6" />,
+    color: "bg-slate-50 text-slate-600 dark:bg-slate-800/30 dark:text-slate-400",
+    borderColor: "border-slate-200 dark:border-slate-700 hover:border-slate-400",
   },
 ];
 
@@ -62,11 +62,11 @@ export default function NewJobPage() {
     if (!selected) return;
 
     if (selected === "insurance") {
-      // Route to claims/new for insurance work
+      // Insurance → Claims intake wizard
       router.push("/claims/new");
     } else {
-      // Route to leads/new with the job category pre-selected
-      router.push(`/leads/new?jobCategory=${selected}`);
+      // OOP / Financed / Repair → Retail Job 6-step wizard with category pre-selected
+      router.push(`/jobs/retail/new?category=${selected}`);
     }
   };
 
