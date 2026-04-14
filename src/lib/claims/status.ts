@@ -5,14 +5,33 @@
  * Professional claim lifecycle management with intelligent workflow automation
  */
 
+/**
+ * Canonical claim lifecycle stages — aligned with the PATCH API's Zod enum
+ * in src/app/api/claims/[claimId]/route.ts.
+ *
+ * The lifecycle page stepper, edit-page dropdown, and badge helpers all
+ * reference this single array.
+ */
 export const CLAIM_STATUSES = [
-  "INTAKE",
+  "FILED",
   "INSPECTION_SCHEDULED",
+  "INSPECTION_COMPLETE",
+  "ADJUSTER_REVIEW",
+  "APPROVED",
+  "DENIED",
+  "APPEAL",
+  "IN_PROGRESS",
+  "BUILD",
+  "WORK_COMPLETE",
+  "CLOSEOUT_PENDING",
+  "COMPLETED",
+  "DEPRECIATION",
+  "CLOSED",
+  // Legacy aliases kept for backwards-compat badge rendering
+  "INTAKE",
   "INSPECTION_COMPLETED",
   "FILED_WITH_CARRIER",
   "ADJUSTER_SCHEDULED",
-  "APPROVED",
-  "DENIED",
   "SUPPLEMENT_SUBMITTED",
   "PAID_CLOSED",
 ] as const;
@@ -36,16 +55,19 @@ export type StructureType =
  * Powers "Next Action" UI throughout the platform
  */
 export function getNextActionFromStatus(status: ClaimStatus | string): string {
-  const normalized = status.toUpperCase() as ClaimStatus;
+  const normalized = status.toUpperCase();
 
   switch (normalized) {
     case "INTAKE":
+    case "FILED":
       return "Schedule inspection";
     case "INSPECTION_SCHEDULED":
       return "Complete inspection & upload photos";
     case "INSPECTION_COMPLETED":
+    case "INSPECTION_COMPLETE":
       return "Prepare estimate & file with carrier";
     case "FILED_WITH_CARRIER":
+    case "ADJUSTER_REVIEW":
       return "Track adjuster appointment";
     case "ADJUSTER_SCHEDULED":
       return "Attend adjustment & document damage";
@@ -53,9 +75,22 @@ export function getNextActionFromStatus(status: ClaimStatus | string): string {
       return "Schedule build date";
     case "DENIED":
       return "Review for supplement or appraisal";
+    case "APPEAL":
+      return "Submit appeal & supporting documentation";
     case "SUPPLEMENT_SUBMITTED":
       return "Await carrier response on supplement";
+    case "IN_PROGRESS":
+    case "BUILD":
+      return "Monitor build progress";
+    case "WORK_COMPLETE":
+      return "Schedule final walkthrough";
+    case "CLOSEOUT_PENDING":
+      return "Complete closeout checklist & collect depreciation";
+    case "DEPRECIATION":
+      return "Collect recoverable depreciation from carrier";
+    case "COMPLETED":
     case "PAID_CLOSED":
+    case "CLOSED":
       return "Send thank-you and request review/referral";
     default:
       return "Review claim details";
@@ -67,16 +102,19 @@ export function getNextActionFromStatus(status: ClaimStatus | string): string {
  * Consistent visual language across the platform
  */
 export function getStatusBadgeColor(status: ClaimStatus | string): string {
-  const normalized = status.toUpperCase() as ClaimStatus;
+  const normalized = status.toUpperCase();
 
   switch (normalized) {
     case "INTAKE":
+    case "FILED":
       return "bg-slate-100 text-slate-800 border-slate-200";
     case "INSPECTION_SCHEDULED":
       return "bg-blue-100 text-blue-800 border-blue-200";
     case "INSPECTION_COMPLETED":
+    case "INSPECTION_COMPLETE":
       return "bg-indigo-100 text-indigo-800 border-indigo-200";
     case "FILED_WITH_CARRIER":
+    case "ADJUSTER_REVIEW":
       return "bg-amber-100 text-amber-800 border-amber-200";
     case "ADJUSTER_SCHEDULED":
       return "bg-purple-100 text-purple-800 border-purple-200";
@@ -84,9 +122,22 @@ export function getStatusBadgeColor(status: ClaimStatus | string): string {
       return "bg-emerald-100 text-emerald-800 border-emerald-200";
     case "DENIED":
       return "bg-red-100 text-red-800 border-red-200";
+    case "APPEAL":
+      return "bg-orange-100 text-orange-800 border-orange-200";
     case "SUPPLEMENT_SUBMITTED":
       return "bg-cyan-100 text-cyan-800 border-cyan-200";
+    case "IN_PROGRESS":
+    case "BUILD":
+      return "bg-violet-100 text-violet-800 border-violet-200";
+    case "WORK_COMPLETE":
+      return "bg-teal-100 text-teal-800 border-teal-200";
+    case "CLOSEOUT_PENDING":
+      return "bg-yellow-100 text-yellow-800 border-yellow-200";
+    case "DEPRECIATION":
+      return "bg-sky-100 text-sky-800 border-sky-200";
+    case "COMPLETED":
     case "PAID_CLOSED":
+    case "CLOSED":
       return "bg-green-100 text-green-800 border-green-200";
     default:
       return "bg-slate-100 text-slate-800 border-slate-200";
@@ -189,14 +240,18 @@ export function claimNeedsAttention(claim: {
   // Missing contact
   if (!claim.contactId) return true;
 
-  // Stuck in INTAKE for more than 3 days
-  if (claim.status === "INTAKE" && daysSinceUpdate > 3) return true;
+  // Stuck in INTAKE/FILED for more than 3 days
+  if ((claim.status === "INTAKE" || claim.status === "FILED") && daysSinceUpdate > 3) return true;
 
   // Inspection scheduled but no update in 7 days
   if (claim.status === "INSPECTION_SCHEDULED" && daysSinceUpdate > 7) return true;
 
-  // Filed with carrier but no update in 14 days
-  if (claim.status === "FILED_WITH_CARRIER" && daysSinceUpdate > 14) return true;
+  // Filed with carrier / adjuster review but no update in 14 days
+  if (
+    (claim.status === "FILED_WITH_CARRIER" || claim.status === "ADJUSTER_REVIEW") &&
+    daysSinceUpdate > 14
+  )
+    return true;
 
   return false;
 }

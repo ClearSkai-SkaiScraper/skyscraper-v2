@@ -229,14 +229,18 @@ export default function EditClaimPage({ params }: { params: { claimId: string } 
                     <SelectValue placeholder="Select stage" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="INTAKE">Intake</SelectItem>
-                    <SelectItem value="INSPECTION">Inspection</SelectItem>
-                    <SelectItem value="ESTIMATING">Estimating</SelectItem>
+                    <SelectItem value="FILED">Filed / Intake</SelectItem>
+                    <SelectItem value="INSPECTION_SCHEDULED">Inspection Scheduled</SelectItem>
+                    <SelectItem value="INSPECTION_COMPLETE">Inspection Complete</SelectItem>
                     <SelectItem value="ADJUSTER_REVIEW">Adjuster Review</SelectItem>
                     <SelectItem value="APPROVED">Approved</SelectItem>
-                    <SelectItem value="SUPPLEMENT">Supplement</SelectItem>
-                    <SelectItem value="PAYMENT">Payment</SelectItem>
-                    <SelectItem value="COMPLETION">Completion</SelectItem>
+                    <SelectItem value="DENIED">Denied</SelectItem>
+                    <SelectItem value="APPEAL">Appeal</SelectItem>
+                    <SelectItem value="BUILD">Build / In Progress</SelectItem>
+                    <SelectItem value="WORK_COMPLETE">Work Complete</SelectItem>
+                    <SelectItem value="CLOSEOUT_PENDING">Closeout Pending</SelectItem>
+                    <SelectItem value="COMPLETED">Completed</SelectItem>
+                    <SelectItem value="DEPRECIATION">Depreciation</SelectItem>
                     <SelectItem value="CLOSED">Closed</SelectItem>
                   </SelectContent>
                 </Select>
