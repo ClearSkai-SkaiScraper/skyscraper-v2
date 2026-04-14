@@ -39,6 +39,10 @@ export default defineConfig({
   },
 
   // Configure projects for different browsers and test directories
+  // Default test timeout: 45s to accommodate first-hit route compilation in dev mode.
+  // Individual test.describe blocks can override with test.describe.configure().
+  timeout: 45_000,
+
   projects: [
     {
       name: "smoke",

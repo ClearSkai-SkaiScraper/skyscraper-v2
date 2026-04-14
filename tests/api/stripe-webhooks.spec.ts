@@ -16,10 +16,25 @@ import { expect, test } from "@playwright/test";
 test.describe("Stripe Webhook — Security Gates", () => {
   const WEBHOOK_URL = "/api/webhooks/stripe";
 
+  // Stripe SDK is large. First-hit compilation in dev mode can take 5-10 s.
+  test.describe.configure({ timeout: 60_000 });
+
+  // Warmup: compile the webhook route before timed tests run.
+  test.beforeAll(async ({ request }) => {
+    await request
+      .post(WEBHOOK_URL, {
+        data: "warmup",
+        headers: { "Content-Type": "text/plain" },
+        timeout: 45_000,
+      })
+      .catch(() => {});
+  });
+
   test("rejects request without stripe-signature header", async ({ request }) => {
     const res = await request.post(WEBHOOK_URL, {
       data: JSON.stringify({ type: "checkout.session.completed" }),
       headers: { "Content-Type": "application/json" },
+      timeout: 15_000,
     });
     expect(res.status()).toBe(400);
     const json = await res.json();
@@ -33,6 +48,7 @@ test.describe("Stripe Webhook — Security Gates", () => {
         "Content-Type": "application/json",
         "stripe-signature": "t=1234567890,v1=invalid_signature_hash",
       },
+      timeout: 15_000,
     });
     expect(res.status()).toBe(400);
     const json = await res.json();
@@ -46,12 +62,13 @@ test.describe("Stripe Webhook — Security Gates", () => {
         "Content-Type": "application/json",
         "stripe-signature": "t=1234567890,v1=test",
       },
+      timeout: 15_000,
     });
     expect(res.status()).toBe(400);
   });
 
   test("rejects GET method (only POST allowed)", async ({ request }) => {
-    const res = await request.get(WEBHOOK_URL);
+    const res = await request.get(WEBHOOK_URL, { timeout: 15_000 });
     // Should be 405 (method not allowed) or 401 or 404
     expect([401, 404, 405]).toContain(res.status());
   });

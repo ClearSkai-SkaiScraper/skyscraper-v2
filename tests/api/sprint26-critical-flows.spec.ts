@@ -189,10 +189,37 @@ test.describe("RBAC — Billing routes require manager+ role", () => {
 // 7. WEBHOOK SIGNATURES — Invalid signatures rejected
 // ─────────────────────────────────────────────────────
 test.describe("Webhook Signature Enforcement", () => {
+  // Webhook routes include heavy SDKs (Stripe, crypto). First-hit compilation
+  // in Next.js dev mode can take 5-10 s per route. Give the block a generous
+  // timeout so compilation doesn't cause false failures.
+  test.describe.configure({ timeout: 60_000 });
+
+  // Warmup: compile all 3 webhook routes before timed tests run.
+  test.beforeAll(async ({ request }) => {
+    await Promise.allSettled([
+      request.post("/api/webhooks/stripe", {
+        data: "warmup",
+        headers: { "Content-Type": "text/plain" },
+        timeout: 45_000,
+      }),
+      request.post("/api/webhooks/twilio", {
+        data: "warmup",
+        headers: { "Content-Type": "text/plain" },
+        timeout: 45_000,
+      }),
+      request.post("/api/webhooks/trades", {
+        data: "{}",
+        headers: { "Content-Type": "application/json" },
+        timeout: 45_000,
+      }),
+    ]);
+  });
+
   test("POST /api/webhooks/stripe rejects without signature → 400", async ({ request }) => {
     const res = await request.post("/api/webhooks/stripe", {
       data: JSON.stringify({ type: "test.event" }),
       headers: { "Content-Type": "application/json" },
+      timeout: 15_000,
     });
     expect(res.status()).toBe(400);
     const json = await res.json();
@@ -203,6 +230,7 @@ test.describe("Webhook Signature Enforcement", () => {
     const res = await request.post("/api/webhooks/twilio", {
       data: "From=%2B15551234567&Body=test&MessageSid=SM123",
       headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      timeout: 15_000,
     });
     // 403 = invalid/missing signature (our HMAC guard)
     expect(res.status()).toBe(403);
@@ -211,6 +239,7 @@ test.describe("Webhook Signature Enforcement", () => {
   test("POST /api/webhooks/trades rejects without secret → 401", async ({ request }) => {
     const res = await request.post("/api/webhooks/trades", {
       data: { event: "connection.requested", data: {}, timestamp: new Date().toISOString() },
+      timeout: 15_000,
     });
     expect(res.status()).toBe(401);
   });
@@ -219,6 +248,7 @@ test.describe("Webhook Signature Enforcement", () => {
     const res = await request.post("/api/webhooks/trades", {
       data: { event: "connection.requested", data: {}, timestamp: new Date().toISOString() },
       headers: { "x-webhook-secret": "wrong-secret-value" },
+      timeout: 15_000,
     });
     expect(res.status()).toBe(401);
   });
