@@ -2,6 +2,7 @@
 import { clerkClient } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 
+import { requireRole } from "@/lib/auth/rbac";
 import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 import { safeOrgContext } from "@/lib/safeOrgContext";
@@ -51,6 +52,9 @@ export async function GET(req: Request) {
     const ctx = await safeOrgContext();
     if (ctx.status !== "ok" || !ctx.orgId)
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+    // RBAC: Only managers+ can view leaderboard/compensation data
+    await requireRole("manager");
 
     const { searchParams } = new URL(req.url);
     const period = searchParams.get("period") || "month";
@@ -437,6 +441,13 @@ export async function GET(req: Request) {
       },
     });
   } catch (err) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    if ((err as any)?.digest?.startsWith?.("NEXT_REDIRECT")) throw err;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const statusCode = (err as any)?.statusCode;
+    if (statusCode === 403) {
+      return NextResponse.json({ error: (err as Error).message }, { status: 403 });
+    }
     logger.error("[API] leaderboard error:", err);
     return NextResponse.json({ error: "Internal error" }, { status: 500 });
   }

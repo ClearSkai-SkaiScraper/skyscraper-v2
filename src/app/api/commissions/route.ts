@@ -5,6 +5,7 @@ import { NextRequest } from "next/server";
 import { z } from "zod";
 
 import { apiError, apiOk } from "@/lib/apiError";
+import { requireRole } from "@/lib/auth/rbac";
 import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 import { safeOrgContext } from "@/lib/safeOrgContext";
@@ -94,6 +95,9 @@ export async function POST(req: NextRequest) {
       return apiError(401, "UNAUTHORIZED", "Authentication required");
     }
 
+    // RBAC: Only managers+ can approve/pay commissions
+    await requireRole("manager");
+
     const body = await req.json().catch(() => null);
     if (!body) return apiError(400, "INVALID_BODY", "Invalid JSON");
 
@@ -140,6 +144,11 @@ export async function POST(req: NextRequest) {
 
     return apiOk({ record: updated, action });
   } catch (err) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const statusCode = (err as any)?.statusCode;
+    if (statusCode === 403) {
+      return apiError(403, "FORBIDDEN", (err as Error).message);
+    }
     logger.error("[commissions-post]", err);
     return apiError(500, "INTERNAL_ERROR", err.message);
   }

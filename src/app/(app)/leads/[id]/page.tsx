@@ -40,7 +40,7 @@ import { LeadStageActions } from "./_components/LeadStageActions";
 async function getLead(id: string, internalOrgId: string) {
   // internalOrgId is already the DB org ID from getResolvedOrgResult
   const lead = await prisma.leads.findFirst({
-    where: { id, orgId: internalOrgId },
+    where: { id, orgId: internalOrgId, archivedAt: null },
   });
 
   if (!lead) return null;

@@ -10,6 +10,7 @@ export const dynamic = "force-dynamic";
 import { NextRequest, NextResponse } from "next/server";
 
 import { logCriticalAction } from "@/lib/audit/criticalActions";
+import { requireRole } from "@/lib/auth/rbac";
 import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 import { safeOrgContext } from "@/lib/safeOrgContext";
@@ -58,6 +59,9 @@ export async function PUT(req: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    // RBAC: Only admins can modify branding
+    await requireRole("admin");
+
     const body = await req.json();
     const { logoUrl, pdfHeaderText, pdfFooterText } = body;
 
@@ -82,6 +86,12 @@ export async function PUT(req: NextRequest) {
 
     return NextResponse.json({ success: true, branding: updated });
   } catch (error) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    if ((error as any)?.digest?.startsWith?.("NEXT_REDIRECT")) throw error;
+    const statusCode = (error as any)?.statusCode;
+    if (statusCode === 403) {
+      return NextResponse.json({ error: (error as Error).message }, { status: 403 });
+    }
     logger.error("[SETTINGS_BRANDING] PUT Error:", error);
     return NextResponse.json({ error: "Failed to update branding" }, { status: 500 });
   }

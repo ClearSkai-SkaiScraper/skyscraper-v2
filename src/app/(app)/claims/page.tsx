@@ -248,18 +248,30 @@ export default async function ClaimsPage({ searchParams }: ClaimsPageProps) {
       0
     );
     const claimsByStatus = {
-      new: allOrgClaims.filter((c: any) => c.status === "new" || c.status === "filed"),
-      in_progress: allOrgClaims.filter(
-        (c: any) => c.status === "in_progress" || c.status === "build"
-      ),
-      pending: allOrgClaims.filter(
-        (c: any) => c.status === "pending" || c.status === "adjuster_review"
-      ),
-      approved: allOrgClaims.filter((c: any) => c.status === "approved"),
-      denied: allOrgClaims.filter((c: any) => c.status === "denied" || c.status === "appeal"),
-      completed: allOrgClaims.filter(
-        (c: any) => c.status === "completed" || c.status === "closed" || c.status === "complete"
-      ),
+      new: allOrgClaims.filter((c: any) => {
+        const s = (c.status || "").toLowerCase();
+        return s === "new" || s === "filed" || s === "intake";
+      }),
+      in_progress: allOrgClaims.filter((c: any) => {
+        const s = (c.status || "").toLowerCase();
+        return s === "in_progress" || s === "build" || s === "inspection" || s === "supplement";
+      }),
+      pending: allOrgClaims.filter((c: any) => {
+        const s = (c.status || "").toLowerCase();
+        return s === "pending" || s === "adjuster_review" || s === "submitted" || s === "in_review";
+      }),
+      approved: allOrgClaims.filter((c: any) => {
+        const s = (c.status || "").toLowerCase();
+        return s === "approved";
+      }),
+      denied: allOrgClaims.filter((c: any) => {
+        const s = (c.status || "").toLowerCase();
+        return s === "denied" || s === "appeal";
+      }),
+      completed: allOrgClaims.filter((c: any) => {
+        const s = (c.status || "").toLowerCase();
+        return s === "completed" || s === "closed" || s === "complete";
+      }),
     };
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const signedCount = signingData.filter((c: any) => c.signingStatus === "signed").length;

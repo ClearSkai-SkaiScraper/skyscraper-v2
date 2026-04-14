@@ -54,6 +54,7 @@ export default async function LeadsPage({ searchParams }: { searchParams: LeadsS
   const page = Math.max(1, parseInt(searchParams.page || "1", 10) || 1);
   const limit = 20;
   const offset = (page - 1) * limit;
+  let queryFailed = false;
 
   try {
     if (orgId) {
@@ -115,9 +116,8 @@ export default async function LeadsPage({ searchParams }: { searchParams: LeadsS
     // Show error state so user knows something went wrong
     leads = [];
     totalLeads = 0;
-    // We'll render an error banner below
-  }
     contactsById = new Map();
+    queryFailed = true;
   }
 
   const newLeadsCount = leads.filter((l) => l.stage === "new").length;
@@ -150,6 +150,16 @@ export default async function LeadsPage({ searchParams }: { searchParams: LeadsS
       </PageHero>
 
       <div className="space-y-6">
+        {/* Error banner when query fails */}
+        {queryFailed && (
+          <div className="rounded-xl border border-red-500/40 bg-red-50 p-4 dark:bg-red-950">
+            <p className="flex items-center gap-2 text-sm font-medium text-red-700 dark:text-red-200">
+              <Activity className="h-4 w-4" />
+              Failed to load leads. Please try refreshing the page.
+            </p>
+          </div>
+        )}
+
         {/* Stats Row - Card-based like Retail Workspace */}
         <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
           <Card className="border-emerald-200 bg-gradient-to-br from-emerald-50 to-green-50 dark:border-emerald-800 dark:from-emerald-900/30 dark:to-green-900/30">

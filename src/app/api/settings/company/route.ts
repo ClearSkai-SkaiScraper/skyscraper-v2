@@ -12,6 +12,7 @@ import { createId } from "@paralleldrive/cuid2";
 import { NextRequest, NextResponse } from "next/server";
 
 import { logCriticalAction } from "@/lib/audit/criticalActions";
+import { requireRole } from "@/lib/auth/rbac";
 import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 import { safeOrgContext } from "@/lib/safeOrgContext";
@@ -76,6 +77,9 @@ export async function PATCH(req: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    // RBAC: Only admins can modify company settings
+    await requireRole("admin");
+
     const body = await req.json();
     const { phone, contactEmail, licenseNumber, serviceArea, website, about, tagline } = body;
 
@@ -125,6 +129,12 @@ export async function PATCH(req: NextRequest) {
 
     return NextResponse.json({ success: true, profile });
   } catch (error) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    if ((error as any)?.digest?.startsWith?.("NEXT_REDIRECT")) throw error;
+    const statusCode = (error as any)?.statusCode;
+    if (statusCode === 403) {
+      return NextResponse.json({ error: (error as Error).message }, { status: 403 });
+    }
     logger.error("[SETTINGS_COMPANY] PATCH Error:", error);
     return NextResponse.json({ error: "Failed to update company settings" }, { status: 500 });
   }

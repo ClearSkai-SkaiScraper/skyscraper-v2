@@ -88,7 +88,7 @@ export async function POST(req: Request) {
     const claimNumber = `CL-${Date.now()}-${nanoid(6)}`;
 
     // 6. DETERMINE NEXT ACTION
-    const finalStatus = status || "INTAKE";
+    const finalStatus = status || "new";
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const nextAction = getNextActionFromStatus(finalStatus);
 
