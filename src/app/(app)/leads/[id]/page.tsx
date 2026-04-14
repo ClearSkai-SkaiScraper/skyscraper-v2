@@ -147,14 +147,14 @@ export default async function LeadDetailPage({ params }: { params: Promise<{ id:
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white dark:from-slate-900 dark:to-slate-950">
-      {/* Section-themed gradient header — Jobs (teal) */}
-      <header className="bg-gradient-to-r from-teal-500 via-teal-600 to-cyan-600 shadow-lg">
+      {/* Section-themed gradient header — Leads (green/emerald) */}
+      <header className="bg-gradient-to-r from-emerald-500 via-emerald-600 to-teal-600 shadow-lg">
         <div className="mx-auto max-w-7xl px-6 py-6">
           <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
             <div>
               <Link
                 href="/leads"
-                className="inline-flex items-center gap-2 text-sm text-teal-100 transition-colors hover:text-white"
+                className="inline-flex items-center gap-2 text-sm text-emerald-100 transition-colors hover:text-white"
               >
                 <ArrowLeft className="h-4 w-4" />
                 Back to Lead Routing
@@ -170,7 +170,7 @@ export default async function LeadDetailPage({ params }: { params: Promise<{ id:
                     </h1>
                     <Badge className="border-white/20 bg-white/20 text-white">{stageLabel}</Badge>
                     {lead.temperature && (
-                      <Badge className="border-teal-200/30 bg-teal-200/20 text-white">
+                      <Badge className="border-emerald-200/30 bg-emerald-200/20 text-white">
                         {lead.temperature}
                       </Badge>
                     )}

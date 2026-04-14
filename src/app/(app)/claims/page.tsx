@@ -199,7 +199,7 @@ export default async function ClaimsPage({ searchParams }: ClaimsPageProps) {
         activities: [], // Skip activities for now - can add later
       }));
       total = Number(countResult[0]?.count || 0);
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       logger.error("[ClaimsPage] Raw SQL query failed", {
         error: error?.message || error,
@@ -256,7 +256,7 @@ export default async function ClaimsPage({ searchParams }: ClaimsPageProps) {
     return (
       <PageContainer maxWidth="7xl">
         <PageHero
-          section="jobs"
+          section="claims"
           title="Claims Workspace"
           subtitle="Manage and track all insurance claims"
           icon={<ClipboardList className="h-5 w-5" />}
@@ -271,7 +271,7 @@ export default async function ClaimsPage({ searchParams }: ClaimsPageProps) {
               Pipeline
             </Link>
           </Button>
-          <Button asChild className="bg-white text-teal-700 hover:bg-teal-50">
+          <Button asChild className="bg-white text-blue-700 hover:bg-blue-50">
             <Link href="/claims/new">
               <Plus className="mr-2 h-4 w-4" />
               New Claim
@@ -298,18 +298,16 @@ export default async function ClaimsPage({ searchParams }: ClaimsPageProps) {
           </Card>
 
           {/* Signing Status Card */}
-          <Card className="border-emerald-200 bg-gradient-to-br from-emerald-50 to-teal-50 dark:border-emerald-800 dark:from-emerald-900/30 dark:to-teal-900/30">
+          <Card className="border-sky-200 bg-gradient-to-br from-sky-50 to-blue-50 dark:border-sky-800 dark:from-sky-900/30 dark:to-blue-900/30">
             <CardHeader className="pb-2">
-              <CardTitle className="flex items-center gap-2 text-sm font-medium text-emerald-800 dark:text-emerald-200">
+              <CardTitle className="flex items-center gap-2 text-sm font-medium text-sky-800 dark:text-sky-200">
                 <ShieldCheck className="h-4 w-4" />
                 Signed
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-2xl font-bold text-emerald-700 dark:text-emerald-300">
-                {signedCount}
-              </p>
-              <p className="text-xs text-emerald-600">{pendingSignatureCount} pending</p>
+              <p className="text-2xl font-bold text-sky-700 dark:text-sky-300">{signedCount}</p>
+              <p className="text-xs text-sky-600">{pendingSignatureCount} pending</p>
             </CardContent>
           </Card>
 

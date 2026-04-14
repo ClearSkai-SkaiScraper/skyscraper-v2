@@ -122,7 +122,7 @@ export default async function LeadsPage({ searchParams }: { searchParams: LeadsS
   return (
     <PageContainer maxWidth="7xl">
       <PageHero
-        section="jobs"
+        section="leads"
         title="Lead Routing"
         subtitle="Route new leads to the right workspace and next step"
         icon={<Target className="h-5 w-5" />}
@@ -137,7 +137,7 @@ export default async function LeadsPage({ searchParams }: { searchParams: LeadsS
             View Pipeline
           </Link>
         </Button>
-        <Button asChild className="bg-white text-teal-700 hover:bg-teal-50">
+        <Button asChild className="bg-white text-emerald-700 hover:bg-emerald-50">
           <Link href="/leads/new">
             <PlusIcon className="mr-2 h-4 w-4" />
             Add New Lead
@@ -148,9 +148,9 @@ export default async function LeadsPage({ searchParams }: { searchParams: LeadsS
       <div className="space-y-6">
         {/* Stats Row - Card-based like Retail Workspace */}
         <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-          <Card className="border-indigo-200 bg-gradient-to-br from-indigo-50 to-purple-50 dark:border-indigo-800 dark:from-indigo-900/30 dark:to-purple-900/30">
+          <Card className="border-emerald-200 bg-gradient-to-br from-emerald-50 to-green-50 dark:border-emerald-800 dark:from-emerald-900/30 dark:to-green-900/30">
             <CardHeader className="pb-2">
-              <CardTitle className="flex items-center gap-2 text-sm font-medium text-indigo-800 dark:text-indigo-200">
+              <CardTitle className="flex items-center gap-2 text-sm font-medium text-emerald-800 dark:text-emerald-200">
                 <Target className="h-4 w-4" />
                 Pipeline View
               </CardTitle>
@@ -158,7 +158,7 @@ export default async function LeadsPage({ searchParams }: { searchParams: LeadsS
             <CardContent>
               <Link
                 href="/pipeline"
-                className="text-sm font-semibold text-indigo-600 hover:text-indigo-700"
+                className="text-sm font-semibold text-emerald-600 hover:text-emerald-700"
               >
                 Open Pipeline →
               </Link>
@@ -168,7 +168,7 @@ export default async function LeadsPage({ searchParams }: { searchParams: LeadsS
           <Card>
             <CardHeader className="pb-2">
               <CardTitle className="flex items-center gap-2 text-sm font-medium">
-                <div className="rounded-full bg-blue-500 p-1.5">
+                <div className="rounded-full bg-emerald-500 p-1.5">
                   <Users className="h-3 w-3 text-white" />
                 </div>
                 Lead Queue
@@ -208,7 +208,7 @@ export default async function LeadsPage({ searchParams }: { searchParams: LeadsS
                   type="text"
                   name="search"
                   placeholder="Search leads by title..."
-                  className="w-full rounded-lg border bg-white py-2 pl-10 pr-4 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 dark:bg-slate-900"
+                  className="w-full rounded-lg border bg-white py-2 pl-10 pr-4 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 dark:bg-slate-900"
                   defaultValue={searchParams.search || ""}
                 />
               </div>
@@ -228,7 +228,7 @@ export default async function LeadsPage({ searchParams }: { searchParams: LeadsS
               <Mail className="mx-auto h-12 w-12 text-slate-300 dark:text-slate-500" />
               <h3 className="mt-4 text-lg font-semibold">No leads yet</h3>
               <p className="mt-2 text-sm text-slate-500">Start by adding your first lead!</p>
-              <Button asChild className="mt-4 bg-purple-600 hover:bg-purple-700">
+              <Button asChild className="mt-4 bg-emerald-600 hover:bg-emerald-700">
                 <Link href="/leads/new">
                   <PlusIcon className="mr-2 h-4 w-4" />
                   Add First Lead
@@ -244,10 +244,10 @@ export default async function LeadsPage({ searchParams }: { searchParams: LeadsS
                 return (
                   <Card
                     key={lead.id}
-                    className="transition-all hover:border-purple-300 hover:shadow-md"
+                    className="transition-all hover:border-emerald-300 hover:shadow-md"
                   >
                     <CardContent className="flex items-center gap-4 p-4">
-                      <div className="rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 p-3">
+                      <div className="rounded-lg bg-gradient-to-br from-emerald-500 to-green-600 p-3">
                         <Target className="h-5 w-5 text-white" />
                       </div>
 
@@ -272,13 +272,13 @@ export default async function LeadsPage({ searchParams }: { searchParams: LeadsS
                             variant="outline"
                             className={
                               lead.stage === "new"
-                                ? "border-blue-300 bg-blue-50 text-blue-700"
+                                ? "border-emerald-300 bg-emerald-50 text-emerald-700"
                                 : lead.stage === "qualified"
-                                  ? "border-purple-300 bg-purple-50 text-purple-700"
+                                  ? "border-green-300 bg-green-50 text-green-700"
                                   : lead.stage === "proposal"
-                                    ? "border-orange-300 bg-orange-50 text-orange-700"
+                                    ? "border-teal-300 bg-teal-50 text-teal-700"
                                     : lead.stage === "won"
-                                      ? "border-green-300 bg-green-50 text-green-700"
+                                      ? "border-emerald-400 bg-emerald-100 text-emerald-800"
                                       : "border-slate-300 bg-slate-50 text-slate-700"
                             }
                           >

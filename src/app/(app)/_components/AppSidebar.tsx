@@ -142,7 +142,16 @@ export function AppSidebar() {
                 className={cn(
                   "flex w-full cursor-pointer items-center justify-between px-3 pb-1 pr-3 pt-4 text-[13px] font-extrabold uppercase tracking-wider transition-all hover:opacity-90",
                   !isCollapsed || sectionHasActive
-                    ? "border-b-2 border-blue-500 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent"
+                    ? cn(
+                        "border-b-2",
+                        section.label === "Claims & Insurance"
+                          ? "border-blue-500 bg-gradient-to-r from-blue-600 to-sky-600 bg-clip-text text-transparent"
+                          : section.label === "Field & Sales"
+                            ? "border-emerald-500 bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent"
+                            : section.label === "Jobs & Operations"
+                              ? "border-amber-500 bg-gradient-to-r from-amber-600 to-orange-600 bg-clip-text text-transparent"
+                              : "border-blue-500 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent"
+                      )
                     : "border-b border-transparent bg-gradient-to-r from-slate-400 to-slate-500 bg-clip-text text-transparent hover:from-blue-500 hover:to-purple-500"
                 )}
                 aria-expanded={!isCollapsed}
@@ -152,7 +161,14 @@ export function AppSidebar() {
                   className={cn(
                     "h-3.5 w-3.5 shrink-0 text-slate-400 transition-transform duration-200",
                     isCollapsed ? "-rotate-90" : "rotate-0",
-                    (!isCollapsed || sectionHasActive) && "text-blue-500"
+                    (!isCollapsed || sectionHasActive) &&
+                      (section.label === "Claims & Insurance"
+                        ? "text-blue-500"
+                        : section.label === "Field & Sales"
+                          ? "text-emerald-500"
+                          : section.label === "Jobs & Operations"
+                            ? "text-amber-500"
+                            : "text-blue-500")
                   )}
                   fill="none"
                   viewBox="0 0 24 24"

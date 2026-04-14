@@ -1,29 +1,33 @@
 /**
  * ============================================================================
- * MASTER SECTION COLOR SYSTEM — UNIFIED TEAL/TURQUOISE
+ * MASTER SECTION COLOR SYSTEM — ENTITY-CODED
  * ============================================================================
  *
- * ALL sections use the same teal/turquoise gradient.
- * Clean, unified brand identity across every page.
+ * Brand-cohesive gradients that visually distinguish each platform area:
  *
- * Only the header gradient changes. Everything else stays:
- * - Same glass cards
- * - Same layout
- * - Same typography
- * - Same spacing
+ * — command (Dashboard, overview)  → Deep teal (brand anchor)
+ * — claims (Insurance claims)     → Blue family (sky → blue)
+ * — jobs (Retail / Jobs / Leads)  → Teal → cyan
+ * — trades (Crews, materials)     → Amber → orange
+ * — reports (Docs, proposals)     → Purple → violet
+ * — network (Vendors, contacts)   → Indigo → blue
+ * — finance (Invoices, billing)   → Emerald → green
+ * — settings (Admin, account)     → Slate → cool gray
+ * — leads (Sales pipeline)        → Emerald → teal (green family)
  *
  * ============================================================================
  */
 
 export type SectionTheme =
-  | "command" // Deep Blue — Dashboard, overview, KPIs
-  | "jobs" // Teal — Claims list, jobs, retail, pipeline
-  | "claims" // Turquoise — Claims workspace tools, AI claims tools
+  | "command" // Deep Teal — Dashboard, overview, KPIs
+  | "jobs" // Teal/Cyan — Retail jobs, pipeline
+  | "claims" // Blue — Claims workspace, AI claims tools
+  | "leads" // Green — Sales leads pipeline
   | "trades" // Warm Orange — Crews, trades, field tools
   | "reports" // Purple — Reports, docs, proposals, templates
   | "network" // Indigo — Vendor network, invitations, contacts
-  | "finance" // Emerald Green — Finance, invoices, commissions, messages
-  | "settings"; // Cyan — Billing, integrations, security, org settings
+  | "finance" // Emerald Green — Finance, invoices, commissions
+  | "settings"; // Slate — Billing, integrations, security, org settings
 
 export interface ThemeConfig {
   gradient: string;
@@ -40,28 +44,32 @@ export const SECTION_THEMES: Record<SectionTheme, ThemeConfig> = {
     subtitleColor: "text-teal-200/80",
   },
   claims: {
-    gradient: "bg-gradient-to-r from-teal-600 via-teal-600 to-cyan-600",
-    subtitleColor: "text-teal-200/80",
+    gradient: "bg-gradient-to-r from-blue-600 via-blue-600 to-sky-600",
+    subtitleColor: "text-blue-200/80",
+  },
+  leads: {
+    gradient: "bg-gradient-to-r from-emerald-600 via-emerald-600 to-teal-600",
+    subtitleColor: "text-emerald-200/80",
   },
   trades: {
-    gradient: "bg-gradient-to-r from-teal-600 via-teal-600 to-cyan-600",
-    subtitleColor: "text-teal-200/80",
+    gradient: "bg-gradient-to-r from-amber-600 via-amber-600 to-orange-600",
+    subtitleColor: "text-amber-200/80",
   },
   reports: {
-    gradient: "bg-gradient-to-r from-teal-600 via-teal-600 to-cyan-600",
-    subtitleColor: "text-teal-200/80",
+    gradient: "bg-gradient-to-r from-purple-600 via-purple-600 to-violet-600",
+    subtitleColor: "text-purple-200/80",
   },
   network: {
-    gradient: "bg-gradient-to-r from-teal-600 via-teal-600 to-cyan-600",
-    subtitleColor: "text-teal-200/80",
+    gradient: "bg-gradient-to-r from-indigo-600 via-indigo-600 to-blue-600",
+    subtitleColor: "text-indigo-200/80",
   },
   finance: {
-    gradient: "bg-gradient-to-r from-teal-600 via-teal-600 to-cyan-600",
-    subtitleColor: "text-teal-200/80",
+    gradient: "bg-gradient-to-r from-emerald-600 via-emerald-600 to-green-600",
+    subtitleColor: "text-emerald-200/80",
   },
   settings: {
-    gradient: "bg-gradient-to-r from-teal-600 via-teal-600 to-cyan-600",
-    subtitleColor: "text-teal-200/80",
+    gradient: "bg-gradient-to-r from-slate-600 via-slate-600 to-slate-500",
+    subtitleColor: "text-slate-300/80",
   },
 };
 
@@ -82,8 +90,8 @@ const ROUTE_THEME_MAP: [string, SectionTheme][] = [
   ["/storm-center", "command"],
 
   // ── Claims Toolkit (must be before /claims general) ────────────────
-  ["/claims/ready", "jobs"],
-  ["/claims/new", "jobs"],
+  ["/claims/ready", "claims"],
+  ["/claims/new", "claims"],
   ["/claims/rebuttal", "claims"],
   ["/ai/", "claims"],
   ["/evidence", "claims"],
@@ -102,18 +110,22 @@ const ROUTE_THEME_MAP: [string, SectionTheme][] = [
   ["/weather-chains", "claims"],
   ["/weather-report", "claims"],
 
-  // ── Jobs & Claims ──────────────────────────────────────────────────
-  ["/claims", "jobs"],
+  // ── Claims (list + detail pages) ───────────────────────────────────
+  ["/claims", "claims"],
+
+  // ── Leads (sales pipeline) — green family ──────────────────────────
+  ["/leads", "leads"],
+  ["/client-leads", "leads"],
+  ["/opportunities", "leads"],
+
+  // ── Jobs & Operations (retail, pipeline, misc) ─────────────────────
   ["/pipeline", "jobs"],
   ["/jobs", "jobs"],
-  ["/leads", "jobs"],
   ["/work-orders", "jobs"],
-  ["/opportunities", "jobs"],
   ["/property-profiles", "jobs"],
   ["/appointments", "jobs"],
   ["/permits", "jobs"],
   ["/mortgage-checks", "jobs"],
-  ["/client-leads", "jobs"],
   ["/archive", "jobs"],
   ["/bids", "jobs"],
   ["/claims-ready-folder", "jobs"],
