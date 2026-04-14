@@ -35,12 +35,9 @@ export async function POST(req: Request) {
       status,
       propertyAddress,
       structureType,
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       stories,
       roofType,
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       slope,
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       squareFootage,
       contactId,
       contactName,
@@ -95,7 +92,8 @@ export async function POST(req: Request) {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const nextAction = getNextActionFromStatus(finalStatus);
 
-    // 7. CREATE PROPERTY RECORD
+    // 7. CREATE PROPERTY RECORD — persist structure/roof data from wizard
+    const sqft = squareFootage ? Number(String(squareFootage)) || null : null;
     const propertyRecord = await prisma.properties.create({
       data: {
         id: nanoid(),
@@ -107,6 +105,8 @@ export async function POST(req: Request) {
         city: "",
         state: "",
         zipCode: "",
+        squareFootage: sqft,
+        roofType: roofType || null,
         createdAt: new Date(),
         updatedAt: new Date(),
       },
@@ -162,6 +162,9 @@ export async function POST(req: Request) {
             tradeType,
             structureType,
             roofType,
+            slope,
+            stories,
+            squareFootage: sqft,
             agentName,
           },
           createdAt: new Date(),

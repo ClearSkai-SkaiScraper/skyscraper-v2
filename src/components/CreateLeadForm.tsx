@@ -48,7 +48,9 @@ export default function CreateLeadForm({ onSuccess }: CreateLeadFormProps) {
   });
 
   // Auto-detect if this should be a claim or retail job
+  // Handles both hyphenated select values (e.g. "hail-damage") and space-separated text
   const getJobType = (workType: string): string => {
+    const normalised = workType.toLowerCase().replace(/-/g, " ");
     const insuranceKeywords = [
       "insurance",
       "claim",
@@ -56,18 +58,18 @@ export default function CreateLeadForm({ onSuccess }: CreateLeadFormProps) {
       "hail damage",
       "wind damage",
       "water damage",
+      "insurance help",
     ];
-    const workTypeLower = workType.toLowerCase();
 
-    if (insuranceKeywords.some((keyword) => workTypeLower.includes(keyword))) {
+    if (insuranceKeywords.some((keyword) => normalised.includes(keyword))) {
       return "CLAIM";
     }
 
-    if (workType.includes("solar")) return "RETAIL";
+    if (normalised.includes("solar")) return "RETAIL";
     if (
-      workType.includes("roof replacement") ||
-      workType.includes("siding") ||
-      workType.includes("windows")
+      normalised.includes("roof replacement") ||
+      normalised.includes("siding") ||
+      normalised.includes("windows")
     )
       return "RETAIL";
 
@@ -76,6 +78,16 @@ export default function CreateLeadForm({ onSuccess }: CreateLeadFormProps) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // P0 FIX: Insurance claims must go through the dedicated claims wizard.
+    // Creating a lead with jobCategory="claim" would produce an orphan record
+    // invisible in both the leads list and the claims workspace.
+    if (formData.jobCategory === "claim") {
+      toast.info("🛡️ Redirecting to the insurance claim wizard…");
+      router.push("/claims/new");
+      return;
+    }
+
     setIsLoading(true);
 
     try {
@@ -128,9 +140,6 @@ export default function CreateLeadForm({ onSuccess }: CreateLeadFormProps) {
       // Route based on job category
       if (onSuccess) {
         onSuccess();
-      } else if (formData.jobCategory === "claim") {
-        toast.success("🛡️ Insurance claim created — opening claims workspace!");
-        router.push(`/leads/${leadId}`);
       } else if (["out_of_pocket", "financed", "repair"].includes(formData.jobCategory)) {
         toast.success("🛒 Retail job created — opening retail workspace!");
         router.push(`/jobs/retail/${leadId}`);

@@ -64,14 +64,16 @@ export default async function LeadsPage({ searchParams }: { searchParams: LeadsS
       const whereClause: any = {
         orgId,
         AND: [
-          { OR: [{ jobCategory: { in: ["lead", "repair"] } }, { jobCategory: null }] },
+          // Only show "lead" category and uncategorised. Retail (out_of_pocket, financed, repair) → Retail Workspace.
+          // Insurance claims are created via /api/claims/intake, not as leads.
+          { OR: [{ jobCategory: "lead" }, { jobCategory: null }] },
           ...(searchParams.search
             ? [{ title: { contains: searchParams.search, mode: "insensitive" } }]
             : []),
         ],
       };
 
-      // Show only unrouted + repair leads (retail out-of-pocket/financed live in Retail Workspace)
+      // Show only unrouted leads (retail out-of-pocket/financed/repair live in Retail Workspace)
       const [fetchedLeads, fetchedTotal] = await Promise.all([
         prisma.leads.findMany({
           where: whereClause,
