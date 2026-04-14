@@ -96,6 +96,36 @@ export default async function Settings() {
   // Demo mode: allow access if org exists
   const demoReady = isDemoWorkspaceReady({ hasOrganization: !!organizationId });
 
+  // RBAC Gate: Only admins/owners can access settings
+  if (!isAdmin) {
+    return (
+      <PageContainer maxWidth="5xl">
+        <PageHero
+          section="settings"
+          title="Settings"
+          subtitle="Organization configuration"
+          icon={<SettingsIcon className="h-5 w-5" />}
+        />
+        <div className="mx-auto max-w-xl rounded-xl border border-amber-500/40 bg-amber-50 p-8 shadow dark:bg-amber-950">
+          <h2 className="mb-2 flex items-center gap-2 text-xl font-semibold text-amber-700 dark:text-amber-200">
+            <Shield className="h-5 w-5" /> Admin Access Required
+          </h2>
+          <p className="text-sm text-amber-600 dark:text-amber-300">
+            Settings can only be managed by organization admins and owners. Contact your admin if
+            you need changes.
+          </p>
+          <div className="mt-4">
+            <Link href="/dashboard">
+              <button className="rounded border border-[color:var(--border)] px-5 py-2 text-sm">
+                ← Dashboard
+              </button>
+            </Link>
+          </div>
+        </div>
+      </PageContainer>
+    );
+  }
+
   if (orgCtx.status === "unauthenticated") {
     // Don't redirect to /sign-in — middleware already protects this route.
     // If safeOrgContext returns "unauthenticated" despite middleware passing,

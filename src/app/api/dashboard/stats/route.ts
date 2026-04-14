@@ -67,11 +67,12 @@ export const GET = withAuth(async (req: NextRequest, { orgId, userId }) => {
       videoReportsLast30,
       uniqueClaimsWithReportsData,
     ] = await Promise.all([
-      safe(prisma.claims.count({ where: orgFilter }), 0),
+      safe(prisma.claims.count({ where: { ...orgFilter, archivedAt: null } }), 0),
       safe(
         prisma.leads.count({
           where: {
             ...orgFilter,
+            archivedAt: null,
             // Exclude retail-category leads — those show under "Retail Jobs" card
             NOT: { jobCategory: { in: ["out_of_pocket", "financed", "repair"] } },
           },
@@ -93,6 +94,7 @@ export const GET = withAuth(async (req: NextRequest, { orgId, userId }) => {
         prisma.leads.count({
           where: {
             ...orgFilter,
+            archivedAt: null,
             jobCategory: { in: ["out_of_pocket", "financed", "repair"] },
             stage: { notIn: ["closed", "lost"] },
           },

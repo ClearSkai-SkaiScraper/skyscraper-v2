@@ -20,6 +20,7 @@ import { useEffect, useState } from "react";
 
 import { PageContainer } from "@/components/layout/PageContainer";
 import { PageHero } from "@/components/layout/PageHero";
+import { RBACGuard } from "@/components/rbac/RBACGuard";
 import { logger } from "@/lib/logger";
 
 const fmt = (n: number) =>
@@ -210,6 +211,32 @@ export default function FinancialOverviewPage() {
   const totalPipelineValue = (pipeline?.approvedValue ?? 0) + (pipeline?.pendingValue ?? 0);
 
   return (
+    <RBACGuard
+      minimumRole="manager"
+      fallback={
+        <PageContainer maxWidth="5xl">
+          <PageHero
+            title="Financial Overview"
+            subtitle="Executive view — revenue, profit, commissions, and accounts receivable"
+            icon={<TrendingUp className="h-5 w-5" />}
+            section="finance"
+          />
+          <div className="mx-auto max-w-xl rounded-xl border border-amber-500/40 bg-amber-50 p-8 shadow dark:bg-amber-950">
+            <h2 className="mb-2 flex items-center gap-2 text-xl font-semibold text-amber-700 dark:text-amber-200">
+              <Shield className="h-5 w-5" /> Manager Access Required
+            </h2>
+            <p className="text-sm text-amber-600 dark:text-amber-300">
+              Financial data is restricted to managers, admins, and owners.
+            </p>
+            <div className="mt-4">
+              <Link href="/dashboard">
+                <button className="rounded border border-[color:var(--border)] px-5 py-2 text-sm">← Dashboard</button>
+              </Link>
+            </div>
+          </div>
+        </PageContainer>
+      }
+    >
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950">
       {/* Gradient Header — matching claims workspace */}
       <header className="sticky top-0 z-20 border-b border-emerald-700/30 bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-700 shadow-lg">
@@ -817,5 +844,6 @@ export default function FinancialOverviewPage() {
         )}
       </main>
     </div>
+    </RBACGuard>
   );
 }

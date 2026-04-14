@@ -1,5 +1,6 @@
-import { Users2 } from "lucide-react";
+import { Shield, Users2 } from "lucide-react";
 import type { Metadata } from "next";
+import Link from "next/link";
 
 import { PageContainer } from "@/components/layout/PageContainer";
 import { PageHero } from "@/components/layout/PageHero";
@@ -34,6 +35,37 @@ export default async function CompanySeatsPage() {
           redirectUrl="/teams"
           message="Please sign in to manage your company seats."
         />
+      </PageContainer>
+    );
+  }
+
+  // RBAC Gate: Only admins/owners can manage team seats
+  const userRole = orgCtx.role; // "owner" | "admin" | "member"
+  const isAdmin = userRole === "owner" || userRole === "admin" || userRole === "ADMIN";
+  if (!isAdmin) {
+    return (
+      <PageContainer maxWidth="5xl">
+        <PageHero
+          section="settings"
+          title="Company Seats"
+          subtitle="Manage your team seats and invitations"
+          icon={<Users2 className="h-5 w-5" />}
+        />
+        <div className="mx-auto max-w-xl rounded-xl border border-amber-500/40 bg-amber-50 p-8 shadow dark:bg-amber-950">
+          <h2 className="mb-2 flex items-center gap-2 text-xl font-semibold text-amber-700 dark:text-amber-200">
+            <Shield className="h-5 w-5" /> Admin Access Required
+          </h2>
+          <p className="text-sm text-amber-600 dark:text-amber-300">
+            Team management is restricted to organization admins and owners.
+          </p>
+          <div className="mt-4">
+            <Link href="/dashboard">
+              <button className="rounded border border-[color:var(--border)] px-5 py-2 text-sm">
+                ← Dashboard
+              </button>
+            </Link>
+          </div>
+        </div>
       </PageContainer>
     );
   }

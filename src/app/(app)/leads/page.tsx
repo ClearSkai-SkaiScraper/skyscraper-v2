@@ -63,6 +63,7 @@ export default async function LeadsPage({ searchParams }: { searchParams: LeadsS
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const whereClause: any = {
         orgId,
+        archivedAt: null,
         AND: [
           // Only show "lead" category and uncategorised. Retail (out_of_pocket, financed, repair) → Retail Workspace.
           // Insurance claims are created via /api/claims/intake, not as leads.
@@ -111,8 +112,11 @@ export default async function LeadsPage({ searchParams }: { searchParams: LeadsS
     }
   } catch (error) {
     logger.error("[LeadsPage] Failed to fetch leads:", error);
-    // Treat as empty state - user sees friendly "No leads yet" instead of scary error
+    // Show error state so user knows something went wrong
     leads = [];
+    totalLeads = 0;
+    // We'll render an error banner below
+  }
     contactsById = new Map();
   }
 

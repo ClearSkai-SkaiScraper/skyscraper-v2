@@ -47,6 +47,7 @@ async function getRetailJobs(orgId: string): Promise<RetailJob[]> {
     const jobs = await prisma.leads.findMany({
       where: {
         orgId,
+        archivedAt: null,
         jobCategory: { in: ["out_of_pocket", "financed", "repair"] },
       },
       include: {
@@ -67,7 +68,7 @@ async function getRetailJobs(orgId: string): Promise<RetailJob[]> {
     return jobs as RetailJob[];
   } catch (error) {
     logger.error("[getRetailJobs] Error:", error);
-    return [];
+    return []; // Caller should handle empty gracefully
   }
 }
 

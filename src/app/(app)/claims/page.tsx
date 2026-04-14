@@ -47,10 +47,12 @@ interface ClaimsPageProps {
 }
 
 const CLAIM_STATUSES = [
-  { id: "new", label: "New", icon: Plus, color: "bg-blue-500" },
+  { id: "new", label: "New / Filed", icon: Plus, color: "bg-blue-500" },
   { id: "in_progress", label: "In Progress", icon: Clock, color: "bg-amber-500" },
-  { id: "pending", label: "Pending", icon: Clock, color: "bg-purple-500" },
+  { id: "pending", label: "Pending Review", icon: Clock, color: "bg-purple-500" },
   { id: "approved", label: "Approved", icon: CheckCircle, color: "bg-green-500" },
+  { id: "denied", label: "Denied / Appeal", icon: AlertTriangle, color: "bg-red-500" },
+  { id: "completed", label: "Completed", icon: ShieldCheck, color: "bg-emerald-500" },
 ];
 
 function ErrorCard({ message }: { message: string }) {
@@ -114,6 +116,7 @@ export default async function ClaimsPage({ searchParams }: ClaimsPageProps) {
           FROM claims c
           LEFT JOIN properties p ON c."propertyId" = p.id
           WHERE c."orgId" = ${organizationId} 
+            AND c."archivedAt" IS NULL
             AND c.status = ${params.stage.toLowerCase()}
             AND (c."claimNumber" ILIKE ${searchTerm} OR c.title ILIKE ${searchTerm})
           ORDER BY c."createdAt" DESC
@@ -122,6 +125,7 @@ export default async function ClaimsPage({ searchParams }: ClaimsPageProps) {
         countResult = await prisma.$queryRaw<[{ count: number }]>`
           SELECT COUNT(*)::int as count FROM claims 
           WHERE "orgId" = ${organizationId} 
+            AND "archivedAt" IS NULL
             AND status = ${params.stage.toLowerCase()}
             AND ("claimNumber" ILIKE ${searchTerm} OR title ILIKE ${searchTerm})
         `;
@@ -134,12 +138,12 @@ export default async function ClaimsPage({ searchParams }: ClaimsPageProps) {
             p.state AS property_state, p."zipCode" AS property_zip
           FROM claims c
           LEFT JOIN properties p ON c."propertyId" = p.id
-          WHERE c."orgId" = ${organizationId} AND c.status = ${params.stage.toLowerCase()}
+          WHERE c."orgId" = ${organizationId} AND c."archivedAt" IS NULL AND c.status = ${params.stage.toLowerCase()}
           ORDER BY c."createdAt" DESC
           LIMIT ${limit} OFFSET ${offset}
         `;
         countResult = await prisma.$queryRaw<[{ count: number }]>`
-          SELECT COUNT(*)::int as count FROM claims WHERE "orgId" = ${organizationId} AND status = ${params.stage.toLowerCase()}
+          SELECT COUNT(*)::int as count FROM claims WHERE "orgId" = ${organizationId} AND "archivedAt" IS NULL AND status = ${params.stage.toLowerCase()}
         `;
       } else if (searchTerm) {
         rawClaims = await prisma.$queryRaw<any[]>`
@@ -151,6 +155,7 @@ export default async function ClaimsPage({ searchParams }: ClaimsPageProps) {
           FROM claims c
           LEFT JOIN properties p ON c."propertyId" = p.id
           WHERE c."orgId" = ${organizationId}
+            AND c."archivedAt" IS NULL
             AND (c."claimNumber" ILIKE ${searchTerm} OR c.title ILIKE ${searchTerm})
           ORDER BY c."createdAt" DESC
           LIMIT ${limit} OFFSET ${offset}
@@ -158,6 +163,7 @@ export default async function ClaimsPage({ searchParams }: ClaimsPageProps) {
         countResult = await prisma.$queryRaw<[{ count: number }]>`
           SELECT COUNT(*)::int as count FROM claims 
           WHERE "orgId" = ${organizationId}
+            AND "archivedAt" IS NULL
             AND ("claimNumber" ILIKE ${searchTerm} OR title ILIKE ${searchTerm})
         `;
       } else {
@@ -169,12 +175,12 @@ export default async function ClaimsPage({ searchParams }: ClaimsPageProps) {
             p.state AS property_state, p."zipCode" AS property_zip
           FROM claims c
           LEFT JOIN properties p ON c."propertyId" = p.id
-          WHERE c."orgId" = ${organizationId}
+          WHERE c."orgId" = ${organizationId} AND c."archivedAt" IS NULL
           ORDER BY c."createdAt" DESC
           LIMIT ${limit} OFFSET ${offset}
         `;
         countResult = await prisma.$queryRaw<[{ count: number }]>`
-          SELECT COUNT(*)::int as count FROM claims WHERE "orgId" = ${organizationId}
+          SELECT COUNT(*)::int as count FROM claims WHERE "orgId" = ${organizationId} AND "archivedAt" IS NULL
         `;
       }
 
@@ -219,7 +225,7 @@ export default async function ClaimsPage({ searchParams }: ClaimsPageProps) {
     let allOrgClaims: any[] = [];
     try {
       allOrgClaims = await prisma.$queryRaw<any[]>`
-        SELECT status, "estimatedValue" FROM claims WHERE "orgId" = ${organizationId}
+        SELECT status, "estimatedValue" FROM claims WHERE "orgId" = ${organizationId} AND "archivedAt" IS NULL
       `;
     } catch {
       allOrgClaims = claims; // fallback to current page
@@ -242,10 +248,18 @@ export default async function ClaimsPage({ searchParams }: ClaimsPageProps) {
       0
     );
     const claimsByStatus = {
-      new: allOrgClaims.filter((c: any) => c.status === "new"),
-      in_progress: allOrgClaims.filter((c: any) => c.status === "in_progress"),
-      pending: allOrgClaims.filter((c: any) => c.status === "pending"),
+      new: allOrgClaims.filter((c: any) => c.status === "new" || c.status === "filed"),
+      in_progress: allOrgClaims.filter(
+        (c: any) => c.status === "in_progress" || c.status === "build"
+      ),
+      pending: allOrgClaims.filter(
+        (c: any) => c.status === "pending" || c.status === "adjuster_review"
+      ),
       approved: allOrgClaims.filter((c: any) => c.status === "approved"),
+      denied: allOrgClaims.filter((c: any) => c.status === "denied" || c.status === "appeal"),
+      completed: allOrgClaims.filter(
+        (c: any) => c.status === "completed" || c.status === "closed" || c.status === "complete"
+      ),
     };
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const signedCount = signingData.filter((c: any) => c.signingStatus === "signed").length;

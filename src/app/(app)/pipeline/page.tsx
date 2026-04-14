@@ -106,6 +106,7 @@ async function getJobsByCategory(orgId: string) {
     const leads = await prisma.leads.findMany({
       where: {
         orgId,
+        archivedAt: null,
       },
       include: {
         contacts: {
@@ -127,7 +128,7 @@ async function getJobsByCategory(orgId: string) {
 
     // Also get claims and format them as pipeline items
     const claims = await prisma.claims.findMany({
-      where: { orgId },
+      where: { orgId, archivedAt: null },
       select: {
         id: true,
         title: true,
@@ -158,14 +159,20 @@ async function getJobsByCategory(orgId: string) {
     // Map lifecycle_stage → pipeline stage (1:1, matches stageToLifecycle in /api/pipeline/move)
     const lifecycleToStage: Record<string, string> = {
       FILED: "new",
+      INSPECTION_SCHEDULED: "new",
+      INSPECTION_COMPLETE: "qualified",
       ADJUSTER_REVIEW: "qualified",
       BUILD: "proposal",
+      IN_PROGRESS: "proposal",
+      WORK_COMPLETE: "negotiation",
       APPROVED: "negotiation",
       COMPLETED: "won",
-      // Fallbacks for stages not directly used by pipeline drag-and-drop
-      DENIED: "new",
+      CLOSED: "won",
+      // Denied/Appeal are active work items, not new leads
+      DENIED: "qualified",
       APPEAL: "negotiation",
       DEPRECIATION: "won",
+      CLOSEOUT_PENDING: "negotiation",
     };
 
     // Status-based fallback for claims that don't have lifecycle_stage set yet
