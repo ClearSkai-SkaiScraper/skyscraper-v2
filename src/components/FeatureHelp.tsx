@@ -8,11 +8,9 @@ import { getHelpForRoute, type HelpContent } from "@/lib/helpContent";
 import { cn } from "@/lib/utils";
 
 /**
- * FeatureHelp — floating lightbulb button (bottom-right) that slides open
- * a contextual help panel based on the current route.
- *
+ * FeatureHelp — contextual help panel that slides open from the right.
+ * Triggered via custom event "toggle-feature-help" dispatched from QuickActionsMenu.
  * Shows tips, steps, and best practices for every page in the app.
- * Remembers dismissed state per-session via localStorage.
  */
 export function FeatureHelp() {
   const rawPathname = usePathname();
@@ -27,6 +25,13 @@ export function FeatureHelp() {
       const saved = localStorage.getItem("skai-help-dismissed");
       if (saved) setDismissed(new Set(JSON.parse(saved)));
     } catch {}
+  }, []);
+
+  // Listen for toggle event from QuickActionsMenu
+  useEffect(() => {
+    const handler = () => setIsOpen((prev) => !prev);
+    window.addEventListener("toggle-feature-help", handler);
+    return () => window.removeEventListener("toggle-feature-help", handler);
   }, []);
 
   // Update help content when route changes
@@ -46,34 +51,11 @@ export function FeatureHelp() {
     } catch {}
   };
 
-  // Don't show if no help content or user dismissed this route
+  // Don't render if no help content for this route
   if (!helpContent) return null;
 
   return (
     <>
-      {/* Floating Lightbulb Button */}
-      {!isOpen && (
-        <button
-          onClick={() => setIsOpen(true)}
-          className={cn(
-            "group fixed bottom-6 right-6 z-50 flex h-12 w-12 items-center justify-center",
-            "rounded-full bg-gradient-to-br from-yellow-400 to-orange-500",
-            "shadow-lg shadow-yellow-500/25 transition-all duration-300",
-            "hover:scale-110 hover:shadow-xl hover:shadow-yellow-500/40",
-            "active:scale-95",
-            dismissed.has(pathname) && "opacity-60 hover:opacity-100"
-          )}
-          title="Feature tips & help"
-        >
-          <Lightbulb className="h-6 w-6 text-white transition-transform group-hover:rotate-12" />
-          {!dismissed.has(pathname) && (
-            <span className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-blue-500 text-[9px] font-bold text-white">
-              ?
-            </span>
-          )}
-        </button>
-      )}
-
       {/* Help Panel — slides in from right */}
       {isOpen && (
         <>

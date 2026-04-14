@@ -35,7 +35,9 @@ export default function EstimateNewPage() {
 
   const [claimId, setClaimId] = useState("");
   const [selectedJobOrClaim, setSelectedJobOrClaim] = useState("");
-  const [mode, setMode] = useState<"insurance" | "retail" | "hybrid">("insurance");
+  const [mode, setMode] = useState<"insurance" | "retail" | "out-of-pocket" | "financing">(
+    "insurance"
+  );
   const [lossType, setLossType] = useState("");
   const [dol, setDol] = useState("");
   const [damageAssessmentId, setDamageAssessmentId] = useState("");
@@ -216,7 +218,8 @@ export default function EstimateNewPage() {
               >
                 <option value="insurance">Insurance</option>
                 <option value="retail">Retail</option>
-                <option value="hybrid">Hybrid</option>
+                <option value="out-of-pocket">Out of Pocket</option>
+                <option value="financing">Financing</option>
               </select>
             </div>
             <div>

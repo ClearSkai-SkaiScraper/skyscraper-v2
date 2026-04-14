@@ -14,7 +14,17 @@
  * Replaces the single TaskButton FAB with a unified quick actions menu.
  */
 
-import { Camera, FileText, Hammer, ListTodo, Plus, Search, X } from "lucide-react";
+import {
+  Camera,
+  FileText,
+  Hammer,
+  Lightbulb,
+  ListTodo,
+  Plus,
+  Search,
+  UserPlus,
+  X,
+} from "lucide-react";
 import Link from "next/link";
 import { useCallback, useState } from "react";
 
@@ -39,6 +49,7 @@ export function QuickActionsMenu({
   className?: string;
 }) {
   const [isOpen, setIsOpen] = useState(false);
+  const [showHelp, setShowHelp] = useState(false);
   const { openTaskPanel } = useTaskSlideOver();
 
   const handleSearch = useCallback(() => {
@@ -60,6 +71,12 @@ export function QuickActionsMenu({
     setIsOpen(false);
     openTaskPanel();
   }, [openTaskPanel]);
+
+  const handlePageHelp = useCallback(() => {
+    setIsOpen(false);
+    // Dispatch custom event to open FeatureHelp panel
+    window.dispatchEvent(new CustomEvent("toggle-feature-help"));
+  }, []);
 
   const actions: QuickAction[] = [
     {
@@ -84,6 +101,13 @@ export function QuickActionsMenu({
       color: "from-blue-500 to-blue-600",
     },
     {
+      id: "new-lead",
+      label: "New Lead",
+      icon: <UserPlus className="h-4 w-4" />,
+      href: "/leads/new",
+      color: "from-cyan-500 to-blue-500",
+    },
+    {
       id: "new-job",
       label: "New Job",
       icon: <Hammer className="h-4 w-4" />,
@@ -96,6 +120,13 @@ export function QuickActionsMenu({
       icon: <Camera className="h-4 w-4" />,
       href: "/field",
       color: "from-emerald-500 to-teal-500",
+    },
+    {
+      id: "page-help",
+      label: "Page Help",
+      icon: <Lightbulb className="h-4 w-4" />,
+      onClick: handlePageHelp,
+      color: "from-yellow-400 to-orange-500",
     },
   ];
 

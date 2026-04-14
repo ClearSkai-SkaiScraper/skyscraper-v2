@@ -52,14 +52,14 @@ export const navSections: NavSection[] = [
       { label: "Analytics Hub", href: "/analytics" },
       { label: "Job Pipeline", href: "/pipeline" },
       { label: "Search", href: "/search" },
-      { label: "Smart Actions", href: "/ai/smart-actions" },
+      { label: "Smart Actions Hub", href: "/ai/smart-actions" },
     ],
   },
   {
     label: "Claims & Insurance",
     items: [
       { label: "Active Claims", href: "/claims" },
-      { label: "⚡ Photos → Claim", href: "/claims/pipeline" },
+      { label: "Photos → Claim", href: "/claims/pipeline" },
       { label: "Supplement Builder", href: "/ai/tools/supplement" },
       { label: "Depreciation Builder", href: "/ai/tools/depreciation" },
       { label: "Rebuttal Builder", href: "/ai/tools/rebuttal" },
@@ -70,7 +70,7 @@ export const navSections: NavSection[] = [
   {
     label: "Field & Sales",
     items: [
-      { label: "⚡ Field Mode", href: "/field" },
+      { label: "Field Mode", href: "/field" },
       { label: "Quick DOL Pull", href: "/quick-dol" },
       { label: "Lead Routing", href: "/leads" },
       { label: "Door Knocking", href: "/maps/door-knocking" },

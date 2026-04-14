@@ -10,21 +10,24 @@ interface SignaturePadProps {
 
 function SignaturePad({ onChange }: SignaturePadProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
   const [isDrawing, setIsDrawing] = useState(false);
   const [isDirty, setIsDirty] = useState(false);
+
+  // Logical canvas size (before DPR scaling)
+  const CANVAS_W = 600;
+  const CANVAS_H = 200;
 
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
     const dpr = window.devicePixelRatio || 1;
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const rect = canvas.getBoundingClientRect();
 
-    canvas.width = 600 * dpr;
-    canvas.height = 200 * dpr;
-    canvas.style.width = "600px";
-    canvas.style.height = "200px";
+    canvas.width = CANVAS_W * dpr;
+    canvas.height = CANVAS_H * dpr;
+    canvas.style.width = `${CANVAS_W}px`;
+    canvas.style.height = `${CANVAS_H}px`;
 
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
@@ -34,7 +37,7 @@ function SignaturePad({ onChange }: SignaturePadProps) {
     ctx.lineCap = "round";
     ctx.lineJoin = "round";
     ctx.fillStyle = "#ffffff";
-    ctx.fillRect(0, 0, 600, 200);
+    ctx.fillRect(0, 0, CANVAS_W, CANVAS_H);
     ctx.strokeStyle = "#111827";
   }, []);
 
@@ -48,9 +51,14 @@ function SignaturePad({ onChange }: SignaturePadProps) {
     const clientX = "touches" in e ? e.touches[0].clientX : e.clientX;
     const clientY = "touches" in e ? e.touches[0].clientY : e.clientY;
 
+    // Scale mouse position to canvas logical coordinates
+    // This fixes the offset when CSS max-w-full shrinks the canvas visually
+    const scaleX = CANVAS_W / rect.width;
+    const scaleY = CANVAS_H / rect.height;
+
     return {
-      x: clientX - rect.left,
-      y: clientY - rect.top,
+      x: (clientX - rect.left) * scaleX,
+      y: (clientY - rect.top) * scaleY,
     };
   };
 
@@ -99,7 +107,7 @@ function SignaturePad({ onChange }: SignaturePadProps) {
     if (!ctx || !canvas) return;
 
     ctx.fillStyle = "#ffffff";
-    ctx.fillRect(0, 0, 600, 200);
+    ctx.fillRect(0, 0, CANVAS_W, CANVAS_H);
     setIsDirty(false);
     onChange(null);
   };
@@ -113,7 +121,10 @@ function SignaturePad({ onChange }: SignaturePadProps) {
         )}
       </div>
 
-      <div className="inline-block overflow-hidden rounded-xl border-2 border-dashed bg-white">
+      <div
+        ref={containerRef}
+        className="inline-block w-full max-w-[600px] overflow-hidden rounded-xl border-2 border-dashed bg-white"
+      >
         <canvas
           ref={canvasRef}
           onMouseDown={startDrawing}

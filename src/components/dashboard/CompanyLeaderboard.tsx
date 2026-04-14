@@ -15,6 +15,7 @@ import {
 import { useEffect, useMemo, useState } from "react";
 
 import { logger } from "@/lib/logger";
+import { cn } from "@/lib/utils";
 
 interface LeaderboardEntry {
   userId: string;
@@ -56,7 +57,11 @@ const fmtK = (n: number) => {
 
 type TabKey = "revenue" | "claims" | "doors";
 
-export function CompanyLeaderboard() {
+interface CompanyLeaderboardProps {
+  className?: string;
+}
+
+export function CompanyLeaderboard({ className }: CompanyLeaderboardProps) {
   const [entries, setEntries] = useState<LeaderboardEntry[]>([]);
   const [summary, setSummary] = useState<LeaderboardSummary | null>(null);
   const [loading, setLoading] = useState(true);
@@ -169,7 +174,12 @@ export function CompanyLeaderboard() {
   const displayed = expanded ? sorted : sorted.slice(0, 5);
 
   return (
-    <div className="overflow-hidden rounded-2xl border border-[color:var(--border)] bg-white/80 shadow-[0_0_40px_-12px_rgba(0,0,0,0.12)] backdrop-blur-xl dark:bg-slate-900/80">
+    <div
+      className={cn(
+        "flex flex-col overflow-hidden rounded-2xl border border-[color:var(--border)] bg-white/80 shadow-[0_0_40px_-12px_rgba(0,0,0,0.12)] backdrop-blur-xl dark:bg-slate-900/80",
+        className
+      )}
+    >
       {/* Gradient top stripe */}
       <div className="h-1.5 bg-gradient-to-r from-yellow-400 via-orange-500 to-red-500" />
 

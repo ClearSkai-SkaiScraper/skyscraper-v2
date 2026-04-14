@@ -140,38 +140,38 @@ export default function WeatherKPICards() {
       {/* KPI Cards Grid */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         {/* Weather Verification Rate */}
-        <Card className="overflow-hidden">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
+        <Card className="min-w-0 overflow-hidden">
+          <CardHeader className="flex flex-row items-center justify-between gap-2 pb-2">
+            <CardTitle className="min-w-0 truncate text-sm font-medium text-muted-foreground">
               Weather Verification Rate
             </CardTitle>
-            <Cloud className="h-4 w-4 text-blue-500" />
+            <Cloud className="h-4 w-4 shrink-0 text-blue-500" />
           </CardHeader>
-          <CardContent>
+          <CardContent className="min-w-0">
             <div className="text-2xl font-bold">{verificationRate}%</div>
             <Progress value={verificationRate} className="mt-2 h-2" />
-            <p className="mt-2 text-xs text-muted-foreground">
+            <p className="mt-2 truncate text-xs text-muted-foreground">
               {data.claimsWithWeatherVerified} of {data.totalRecentClaims} claims verified
             </p>
           </CardContent>
         </Card>
 
         {/* Recent Weather Events */}
-        <Card className="overflow-hidden">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
+        <Card className="min-w-0 overflow-hidden">
+          <CardHeader className="flex flex-row items-center justify-between gap-2 pb-2">
+            <CardTitle className="min-w-0 truncate text-sm font-medium text-muted-foreground">
               Recent Weather Events
             </CardTitle>
-            <Zap className="h-4 w-4 text-yellow-500" />
+            <Zap className="h-4 w-4 shrink-0 text-yellow-500" />
           </CardHeader>
-          <CardContent>
+          <CardContent className="min-w-0">
             <div className="flex items-baseline gap-2">
               <span className="text-2xl font-bold">
                 {data.recentHailEvents + data.recentWindEvents + data.recentTornadoes}
               </span>
               <span className="text-sm text-muted-foreground">last 30 days</span>
             </div>
-            <div className="mt-3 flex gap-2">
+            <div className="mt-3 flex flex-wrap gap-2">
               <Badge variant="secondary" className="gap-1">
                 <CloudRain className="h-3 w-3" />
                 {data.recentHailEvents} hail
@@ -190,14 +190,14 @@ export default function WeatherKPICards() {
         </Card>
 
         {/* DOL Confidence */}
-        <Card className="overflow-hidden">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
+        <Card className="min-w-0 overflow-hidden">
+          <CardHeader className="flex flex-row items-center justify-between gap-2 pb-2">
+            <CardTitle className="min-w-0 truncate text-sm font-medium text-muted-foreground">
               DOL Confidence Breakdown
             </CardTitle>
-            <TrendingUp className="h-4 w-4 text-green-500" />
+            <TrendingUp className="h-4 w-4 shrink-0 text-green-500" />
           </CardHeader>
-          <CardContent>
+          <CardContent className="min-w-0">
             <div className="space-y-2">
               <div className="flex items-center justify-between">
                 <span className="text-sm">High</span>
@@ -254,14 +254,14 @@ export default function WeatherKPICards() {
         </Card>
 
         {/* Average Correlation Score */}
-        <Card className="overflow-hidden">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
+        <Card className="min-w-0 overflow-hidden">
+          <CardHeader className="flex flex-row items-center justify-between gap-2 pb-2">
+            <CardTitle className="min-w-0 truncate text-sm font-medium text-muted-foreground">
               Avg. Correlation Score
             </CardTitle>
-            <MapPin className="h-4 w-4 text-purple-500" />
+            <MapPin className="h-4 w-4 shrink-0 text-purple-500" />
           </CardHeader>
-          <CardContent>
+          <CardContent className="min-w-0">
             <div className="flex items-baseline gap-2">
               <span className="text-2xl font-bold">{Math.round(data.averageCorrelationScore)}</span>
               <span className="text-sm text-muted-foreground">/ 100</span>
@@ -269,7 +269,9 @@ export default function WeatherKPICards() {
             <div className="mt-2">
               <Progress value={data.averageCorrelationScore} className="h-2" />
             </div>
-            <p className="mt-2 text-xs text-muted-foreground">Photo-weather alignment strength</p>
+            <p className="mt-2 truncate text-xs text-muted-foreground">
+              Photo-weather alignment strength
+            </p>
             {data.averageCorrelationScore >= 70 && (
               <Badge className="mt-2 bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300">
                 Strong Evidence

@@ -637,14 +637,47 @@ export default function FieldModePage() {
             <Camera className="h-7 w-7 text-white" />
           </button>
 
-          {/* Measure */}
+          {/* Measure — opens camera for reference measurement photo */}
+          <input
+            id="measure-camera-input"
+            type="file"
+            accept="image/*"
+            capture="environment"
+            onChange={(e) => {
+              // Tag the photo as a measurement reference
+              const handleMeasure = async (ev: React.ChangeEvent<HTMLInputElement>) => {
+                const files = Array.from(ev.target.files || []);
+                if (files.length === 0) return;
+                const gps = await getGPS();
+                const newPhotos: FieldPhoto[] = files.map((file) => ({
+                  id: `measure_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+                  file,
+                  preview: URL.createObjectURL(file),
+                  latitude: gps?.latitude,
+                  longitude: gps?.longitude,
+                  timestamp: new Date().toISOString(),
+                  note: "📏 Measurement reference photo",
+                  analyzing: false,
+                  aiLabel: "Measurement Reference",
+                }));
+                setPhotos((prev) => [...prev, ...newPhotos]);
+                toast.success("Measurement photo captured! Add notes with dimensions.");
+                ev.target.value = "";
+              };
+              void handleMeasure(e);
+            }}
+            className="hidden"
+          />
           <button
             type="button"
-            onClick={() =>
-              toast.info(
-                "Measuring tool coming soon! For now, use your device's built-in measuring app."
-              )
-            }
+            onClick={() => {
+              toast.info("Place a coin, card, or tape measure next to damage for scale reference", {
+                duration: 3000,
+              });
+              setTimeout(() => {
+                document.getElementById("measure-camera-input")?.click();
+              }, 500);
+            }}
             className="flex flex-col items-center gap-1 rounded-xl px-3 py-2 text-slate-600 transition-colors hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800"
           >
             <Ruler className="h-5 w-5" />

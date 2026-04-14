@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "AI Smart Actions | SkaiScraper",
+  title: "Smart Actions Hub | SkaiScraper",
   description:
     "AI-powered prioritized action recommendations for claims, leads, and crew scheduling.",
 };

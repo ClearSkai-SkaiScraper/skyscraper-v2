@@ -7,6 +7,10 @@ import { defineConfig, devices } from "@playwright/test";
 export default defineConfig({
   testDir: "./tests",
 
+  // Only match .spec.ts files, exclude .test.ts (Vitest unit tests)
+  testMatch: /.*\.spec\.ts$/,
+  testIgnore: [/.*\.test\.ts$/, "**/node_modules/**"],
+
   // Run tests in parallel
   fullyParallel: true,
 

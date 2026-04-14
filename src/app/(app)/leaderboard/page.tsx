@@ -1,37 +1,39 @@
+import { Trophy } from "lucide-react";
+import type { Metadata } from "next";
+
 import { CompanyLeaderboard } from "@/components/dashboard/CompanyLeaderboard";
 import { NoOrgMembershipBanner } from "@/components/guards/NoOrgMembershipBanner";
+import { PageContainer } from "@/components/layout/PageContainer";
+import { PageHero } from "@/components/layout/PageHero";
 import { getOrgContext } from "@/lib/org/getOrgContext";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
-export const metadata = {
-  title: "Leaderboard | SkaiScrape",
-  description: "Team performance rankings — revenue, claims signed, and lead sources.",
+export const metadata: Metadata = {
+  title: "Team Analytics & Leaderboard | SkaiScraper",
+  description: "Team performance analytics — revenue, claims, close rates, and rep rankings.",
 };
 
 /**
- * /leaderboard — Full-page leaderboard view
- * Wraps the existing CompanyLeaderboard component in a dedicated page.
+ * /leaderboard — Full-page Team Analytics & Leaderboard
+ * Shows team KPIs + full leaderboard component with filtering.
  */
-export default async function LeaderboardPage() {
+export default async function LeaderboardAnalyticsPage() {
   const ctx = await getOrgContext();
   if (!ctx.orgId) return <NoOrgMembershipBanner title="Team Leaderboard" />;
 
   return (
-    <div className="mx-auto max-w-7xl space-y-6 p-6">
-      {/* Page Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Team Leaderboard</h1>
-          <p className="mt-1 text-muted-foreground">
-            Track revenue, signed claims, and rep performance across your entire team.
-          </p>
-        </div>
-      </div>
+    <PageContainer maxWidth="7xl">
+      <PageHero
+        section="command"
+        title="Team Analytics & Leaderboard"
+        subtitle="Track revenue, signed claims, and rep performance across your entire team"
+        icon={<Trophy className="h-5 w-5" />}
+      />
 
-      {/* Leaderboard Component */}
+      {/* Full Leaderboard Component with all tabs, filtering, and analytics */}
       <CompanyLeaderboard />
-    </div>
+    </PageContainer>
   );
 }

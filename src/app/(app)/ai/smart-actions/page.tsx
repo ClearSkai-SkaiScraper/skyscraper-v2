@@ -135,8 +135,8 @@ export default function SmartActionsPage() {
     <PageContainer maxWidth="7xl">
       <PageHero
         section="claims"
-        title="AI Smart Actions Engine"
-        subtitle="Intelligent recommendations powered by your real-time pipeline data"
+        title="Smart Actions Hub"
+        subtitle="AI recommendations, stalled claims, goals tracking — your command center for what needs attention"
         icon={<Brain className="h-5 w-5" />}
       >
         <div className="flex items-center gap-3">

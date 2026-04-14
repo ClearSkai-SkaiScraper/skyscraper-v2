@@ -68,19 +68,74 @@ export function AIDailyBriefing({ className }: AIDailyBriefingProps) {
     fetchBriefing();
   }, []);
 
+  const getIconForType = (type: string): React.ReactNode => {
+    switch (type) {
+      case "urgent":
+        return <AlertTriangle className="h-4 w-4" />;
+      case "followup":
+        return <Calendar className="h-4 w-4" />;
+      case "opportunity":
+        return <TrendingUp className="h-4 w-4" />;
+      case "milestone":
+        return <CheckCircle className="h-4 w-4" />;
+      default:
+        return <Sparkles className="h-4 w-4" />;
+    }
+  };
+
   const fetchBriefing = async () => {
     setIsLoading(true);
     try {
-      const res = await fetch("/api/dashboard/briefing");
-      if (res.ok) {
-        const data = await res.json();
-        setBriefing(data.items || []);
-        setStats(data.stats || null);
-        setGoals(data.goals || getFallbackGoals());
+      // Fetch briefing + goals in parallel
+      const [briefingRes, goalsRes] = await Promise.all([
+        fetch("/api/dashboard/briefing").catch(() => null),
+        fetch("/api/dashboard/goals").catch(() => null),
+      ]);
+
+      // Handle briefing response
+      if (briefingRes?.ok) {
+        const data = await briefingRes.json();
+        // API items don't have icons - map them based on type
+        const items = (data.items || []).map((item: BriefingItem & { icon?: React.ReactNode }) => ({
+          ...item,
+          icon: item.icon || getIconForType(item.type),
+        }));
+        setBriefing(items.length > 0 ? items : getFallbackBriefing());
+        setStats(data.stats || getFallbackStats());
       } else {
-        // Use fallback data if API fails
         setBriefing(getFallbackBriefing());
         setStats(getFallbackStats());
+      }
+
+      // Handle goals response
+      if (goalsRes?.ok) {
+        const goalsData = await goalsRes.json();
+        if (goalsData.goals && Array.isArray(goalsData.goals)) {
+          // Transform API goals format to component format
+          const claimsGoal = goalsData.goals.find((g: { id: string }) => g.id === "claims");
+          const revenueGoal = goalsData.goals.find((g: { id: string }) => g.id === "revenue");
+          const leadsGoal = goalsData.goals.find((g: { id: string }) => g.id === "leads");
+          setGoals({
+            doorsKnocked: {
+              current: leadsGoal?.current ?? 0,
+              weekly: leadsGoal?.target ?? 50,
+              monthly: (leadsGoal?.target ?? 50) * 4,
+            },
+            jobsPosted: {
+              current: claimsGoal?.current ?? 0,
+              weekly: claimsGoal?.target ?? 20,
+              monthly: (claimsGoal?.target ?? 20) * 4,
+            },
+            revenue: {
+              current: revenueGoal?.current ?? 0,
+              weekly: revenueGoal?.target ?? 7500000,
+              monthly: (revenueGoal?.target ?? 7500000) * 4,
+            },
+          });
+        } else {
+          setGoals(getFallbackGoals());
+        }
+      } else {
         setGoals(getFallbackGoals());
       }
     } catch {

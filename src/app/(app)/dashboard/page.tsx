@@ -38,17 +38,8 @@ const AIDailyBriefing = nextDynamic(
   }
 );
 
-const GoalTrackerCompact = nextDynamic(
-  () => import("@/components/pro/GoalTracker").then((mod) => mod.GoalTrackerCompact),
-  {
-    ssr: false,
-    loading: () => (
-      <div className="animate-pulse rounded-2xl border border-slate-200/20 bg-white/60 p-6 backdrop-blur-xl dark:bg-slate-900/50">
-        <div className="h-24 rounded-xl bg-slate-200 dark:bg-slate-800"></div>
-      </div>
-    ),
-  }
-);
+// GoalTrackerCompact now integrated into AIDailyBriefing
+
 // DashboardAssistantDock temporarily disabled
 // const DashboardAssistantDock = nextDynamic(() => import("./_components/DashboardAssistantDock"), {
 //   ssr: false,
@@ -211,16 +202,13 @@ export default async function DashboardPage() {
         </PageHero>
 
         <div className="space-y-6">
-          {/* Top Section: AI Briefing + Quick Actions */}
-          <div className="grid gap-6 lg:grid-cols-3">
-            <div className="lg:col-span-2">
-              <AIDailyBriefing />
+          {/* Top Section: AI Briefing + Leaderboard - Equal Size Side by Side */}
+          <div className="grid gap-6 lg:grid-cols-2">
+            <div className="max-h-[600px] overflow-hidden rounded-2xl">
+              <AIDailyBriefing className="h-full max-h-[600px] overflow-y-auto" />
             </div>
-            <div className="space-y-6">
-              {/* Goal Tracker — weekly targets */}
-              <GoalTrackerCompact />
-              {/* Company Leaderboard — sales performance rankings */}
-              <CompanyLeaderboard />
+            <div className="max-h-[600px] overflow-hidden rounded-2xl">
+              <CompanyLeaderboard className="h-full max-h-[600px] overflow-y-auto" />
             </div>
           </div>
 
