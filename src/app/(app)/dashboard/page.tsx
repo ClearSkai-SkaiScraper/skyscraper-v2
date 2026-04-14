@@ -1,12 +1,9 @@
 import { LayoutDashboard, Lock } from "lucide-react";
 import type { Metadata } from "next";
-import nextDynamic from "next/dynamic";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
-import { AIJobScanner } from "@/components/ai/AIJobScanner";
 import { AsyncBoundary } from "@/components/AsyncBoundary";
-// UpgradeCTA removed — replaced with CompanyBrandingPreview
 import { CompanyLeaderboard } from "@/components/dashboard/CompanyLeaderboard";
 import { WeatherSummaryCard } from "@/components/dashboard/WeatherSummaryCard";
 import { PageContainer } from "@/components/layout/PageContainer";
@@ -18,32 +15,12 @@ import { getOrgLocation } from "@/lib/org/getOrgLocation";
 import { safeOrgContext } from "@/lib/safeOrgContext";
 import { getDashboardWeather } from "@/lib/weather/weatherstack";
 
+import AIInsightsWidget from "./_components/AIInsightsWidget";
 import CompanyBrandingPreview from "./_components/CompanyBrandingPreview";
 import NetworkActivity from "./_components/NetworkActivity";
-import StalledClaimsWidget from "./_components/StalledClaimsWidget";
 import StatsCards from "./_components/StatsCards";
 import WeatherKPICards from "./_components/WeatherKPICards";
 import WorkOpportunityNotifications from "./_components/WorkOpportunityNotifications";
-
-// Pro Dashboard enhancement components (client-side)
-const AIDailyBriefing = nextDynamic(
-  () => import("@/components/pro/AIDailyBriefing").then((mod) => mod.AIDailyBriefing),
-  {
-    ssr: false,
-    loading: () => (
-      <div className="animate-pulse rounded-2xl border border-slate-200/20 bg-white/60 p-8 backdrop-blur-xl dark:bg-slate-900/50">
-        <div className="h-32 rounded-xl bg-slate-200 dark:bg-slate-800"></div>
-      </div>
-    ),
-  }
-);
-
-// GoalTrackerCompact now integrated into AIDailyBriefing
-
-// DashboardAssistantDock temporarily disabled
-// const DashboardAssistantDock = nextDynamic(() => import("./_components/DashboardAssistantDock"), {
-//   ssr: false,
-// });
 
 export const metadata: Metadata = {
   title: "Dashboard | SkaiScraper",
@@ -202,20 +179,7 @@ export default async function DashboardPage() {
         </PageHero>
 
         <div className="space-y-6">
-          {/* Top Section: AI Briefing + Leaderboard - Equal Size Side by Side */}
-          <div className="grid gap-6 lg:grid-cols-2">
-            <div className="max-h-[600px] overflow-hidden rounded-2xl">
-              <AIDailyBriefing className="h-full max-h-[600px] overflow-y-auto" />
-            </div>
-            <div className="max-h-[600px] overflow-hidden rounded-2xl">
-              <CompanyLeaderboard className="h-full max-h-[600px] overflow-y-auto" />
-            </div>
-          </div>
-
-          {/* Stalled Claims — "Never Lose a Claim" widget (high priority action item) */}
-          <StalledClaimsWidget />
-
-          {/* KPI Cards — key metrics */}
+          {/* KPI Cards — key metrics at the top */}
           <AsyncBoundary
             fallback={
               <div className="animate-pulse rounded-2xl border border-slate-200/20 bg-white/60 p-8 backdrop-blur-xl dark:bg-slate-900/50">
@@ -226,9 +190,20 @@ export default async function DashboardPage() {
             <StatsCards />
           </AsyncBoundary>
 
+          {/* Main Section: AI Insights + Leaderboard - Side by Side */}
+          <div className="grid gap-6 lg:grid-cols-2">
+            {/* AI Insights - Combined Stalled Claims + Recommendations */}
+            <AIInsightsWidget />
+
+            {/* Company Leaderboard with Goals */}
+            <div className="max-h-[520px] overflow-hidden rounded-2xl">
+              <CompanyLeaderboard className="h-full max-h-[520px] overflow-y-auto" />
+            </div>
+          </div>
+
           {/* Work Opportunities & Network Activity Row */}
           <div className="grid gap-6 lg:grid-cols-2">
-            {/* Work Opportunities Notifications (more actionable) */}
+            {/* Work Opportunities Notifications */}
             <AsyncBoundary
               fallback={
                 <div className="animate-pulse rounded-3xl border border-purple-200/20 bg-white/60 p-8 backdrop-blur-xl dark:bg-slate-900/50">
@@ -254,7 +229,7 @@ export default async function DashboardPage() {
           {/* Weather Section */}
           <div className="grid gap-6 lg:grid-cols-2">
             {/* Live Weather Summary */}
-            <div className="rounded-2xl border border-slate-200/20 bg-white/60 p-6 shadow-sm backdrop-blur-xl dark:bg-slate-900/50">
+            <div className="rounded-2xl border border-slate-200/40 bg-white/80 p-6 shadow-sm backdrop-blur-sm dark:border-slate-800/60 dark:bg-slate-900/60">
               <WeatherSummaryCard weather={weather} />
             </div>
 
@@ -271,9 +246,6 @@ export default async function DashboardPage() {
               <WeatherKPICards />
             </AsyncBoundary>
           </div>
-
-          {/* AI Recommendations — background intelligence */}
-          <AIJobScanner />
 
           {/* Company Branding Quick Viewer */}
           <CompanyBrandingPreview />

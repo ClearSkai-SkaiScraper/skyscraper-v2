@@ -29,20 +29,44 @@ function SignaturePad({ onSave, onClear }: SignaturePadProps) {
   const [isDrawing, setIsDrawing] = useState(false);
   const [hasSignature, setHasSignature] = useState(false);
 
-  const startDrawing = useCallback((e: React.MouseEvent | React.TouchEvent) => {
+  // Fixed canvas dimensions
+  const CANVAS_WIDTH = 500;
+  const CANVAS_HEIGHT = 150;
+
+  // Get properly scaled coordinates accounting for CSS scaling
+  const getScaledCoords = useCallback((e: React.MouseEvent | React.TouchEvent) => {
     const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext("2d");
-    if (!ctx) return;
+    if (!canvas) return { x: 0, y: 0 };
 
-    setIsDrawing(true);
     const rect = canvas.getBoundingClientRect();
-    const x = "touches" in e ? e.touches[0].clientX - rect.left : e.clientX - rect.left;
-    const y = "touches" in e ? e.touches[0].clientY - rect.top : e.clientY - rect.top;
+    const clientX = "touches" in e ? e.touches[0].clientX : e.clientX;
+    const clientY = "touches" in e ? e.touches[0].clientY : e.clientY;
 
-    ctx.beginPath();
-    ctx.moveTo(x, y);
+    // Scale factor: canvas internal size vs CSS rendered size
+    const scaleX = CANVAS_WIDTH / rect.width;
+    const scaleY = CANVAS_HEIGHT / rect.height;
+
+    return {
+      x: (clientX - rect.left) * scaleX,
+      y: (clientY - rect.top) * scaleY,
+    };
   }, []);
+
+  const startDrawing = useCallback(
+    (e: React.MouseEvent | React.TouchEvent) => {
+      const canvas = canvasRef.current;
+      if (!canvas) return;
+      const ctx = canvas.getContext("2d");
+      if (!ctx) return;
+
+      setIsDrawing(true);
+      const { x, y } = getScaledCoords(e);
+
+      ctx.beginPath();
+      ctx.moveTo(x, y);
+    },
+    [getScaledCoords]
+  );
 
   const draw = useCallback(
     (e: React.MouseEvent | React.TouchEvent) => {
@@ -52,9 +76,7 @@ function SignaturePad({ onSave, onClear }: SignaturePadProps) {
       const ctx = canvas.getContext("2d");
       if (!ctx) return;
 
-      const rect = canvas.getBoundingClientRect();
-      const x = "touches" in e ? e.touches[0].clientX - rect.left : e.clientX - rect.left;
-      const y = "touches" in e ? e.touches[0].clientY - rect.top : e.clientY - rect.top;
+      const { x, y } = getScaledCoords(e);
 
       ctx.strokeStyle = "#1a1a1a";
       ctx.lineWidth = 2;
@@ -63,7 +85,7 @@ function SignaturePad({ onSave, onClear }: SignaturePadProps) {
       ctx.stroke();
       setHasSignature(true);
     },
-    [isDrawing]
+    [isDrawing, getScaledCoords]
   );
 
   const stopDrawing = useCallback(() => {
@@ -88,9 +110,10 @@ function SignaturePad({ onSave, onClear }: SignaturePadProps) {
       <div className="relative rounded-xl border-2 border-dashed border-slate-300 bg-white dark:border-slate-600 dark:bg-slate-900">
         <canvas
           ref={canvasRef}
-          width={500}
-          height={150}
-          className="w-full cursor-crosshair touch-none"
+          width={CANVAS_WIDTH}
+          height={CANVAS_HEIGHT}
+          className="h-[150px] w-full max-w-[500px] cursor-crosshair touch-none"
+          style={{ touchAction: "none" }}
           onMouseDown={startDrawing}
           onMouseMove={draw}
           onMouseUp={stopDrawing}
