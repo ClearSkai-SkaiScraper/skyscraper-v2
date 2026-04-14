@@ -30,8 +30,10 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 import { ConvertToClaimButton } from "./_components/ConvertToClaimButton";
 import { EditableLeadSummary } from "./_components/EditableLeadSummary";
+import { JobCategoryActions } from "./_components/JobCategoryActions";
 import LeadDetailTabs from "./_components/LeadDetailTabs";
 import { LeadJobValueCard } from "./_components/LeadJobValueCard";
+import { LeadStageActions } from "./_components/LeadStageActions";
 
 // Prisma singleton imported from @/lib/db/prisma
 
@@ -268,6 +270,15 @@ export default async function LeadDetailPage({ params }: { params: Promise<{ id:
           </div>
 
           <div className="space-y-6">
+            <LeadStageActions leadId={lead.id} currentStage={lead.stage || "new"} />
+
+            <JobCategoryActions
+              leadId={lead.id}
+              currentCategory={jobCategory}
+              contactId={contact?.id}
+              contactName={contactName}
+            />
+
             <Card className="border-0 shadow-lg">
               <CardHeader className="bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-950/30 dark:to-orange-950/30">
                 <CardTitle className="flex items-center gap-2">

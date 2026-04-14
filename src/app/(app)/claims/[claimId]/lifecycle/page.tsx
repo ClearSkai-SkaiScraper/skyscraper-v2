@@ -16,6 +16,16 @@ import { logger } from "@/lib/logger";
 const LIFECYCLE_STAGES = [
   { key: "FILED", label: "Filed", description: "Claim has been filed with carrier" },
   {
+    key: "INSPECTION_SCHEDULED",
+    label: "Inspection Scheduled",
+    description: "Property inspection has been scheduled",
+  },
+  {
+    key: "INSPECTION_COMPLETE",
+    label: "Inspection Complete",
+    description: "Inspection completed — preparing estimate & filing",
+  },
+  {
     key: "ADJUSTER_REVIEW",
     label: "Adjuster Review",
     description: "Adjuster is reviewing the claim & scheduling inspection",
@@ -33,15 +43,35 @@ const LIFECYCLE_STAGES = [
     description: "Appealing carrier decision with supplemental evidence",
   },
   {
-    key: "BUILD",
-    label: "Build / In Progress",
-    description: "Restoration work is being performed",
+    key: "IN_PROGRESS",
+    label: "In Progress",
+    description: "Restoration work is underway",
   },
-  { key: "COMPLETED", label: "Completed", description: "All work has been completed" },
+  {
+    key: "BUILD",
+    label: "Build",
+    description: "Active build phase — materials ordered & crew dispatched",
+  },
+  {
+    key: "WORK_COMPLETE",
+    label: "Work Complete",
+    description: "All restoration work finished — scheduling final walkthrough",
+  },
+  {
+    key: "CLOSEOUT_PENDING",
+    label: "Closeout Pending",
+    description: "Completing closeout checklist & final documentation",
+  },
+  { key: "COMPLETED", label: "Completed", description: "All work and paperwork completed" },
   {
     key: "DEPRECIATION",
     label: "Depreciation Recovery",
     description: "Recovering withheld depreciation from carrier",
+  },
+  {
+    key: "CLOSED",
+    label: "Closed",
+    description: "Claim fully closed — all funds collected",
   },
 ];
 

@@ -263,7 +263,7 @@ export default function EditClaimPage({ params }: { params: { claimId: string } 
                     <SelectItem value="APPROVED">Approved</SelectItem>
                     <SelectItem value="DENIED">Denied</SelectItem>
                     <SelectItem value="CLOSED">Closed</SelectItem>
-                    <SelectItem value="archived">Archived</SelectItem>
+                    <SelectItem value="ARCHIVED">Archived</SelectItem>
                   </SelectContent>
                 </Select>
               </div>

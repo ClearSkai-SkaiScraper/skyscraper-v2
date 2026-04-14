@@ -53,7 +53,7 @@ const createLeadSchema = z.object({
   workType: z.string().optional(),
   urgency: z.string().optional(),
   budget: z.number().optional(),
-  jobCategory: z.string().default("lead"),
+  jobCategory: z.enum(["lead", "claim", "financed", "out_of_pocket", "repair"]).default("lead"),
   measurements: measurementsSchema.optional(),
 });
 

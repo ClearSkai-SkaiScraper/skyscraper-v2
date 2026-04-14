@@ -94,7 +94,7 @@ export default async function ClaimsReadyPage() {
     return (
       <PageContainer maxWidth="7xl">
         <PageHero
-          section="jobs"
+          section="claims"
           title="Ready for Submission"
           subtitle="Claims ready to be submitted to carriers"
           icon={<FolderCheck className="h-5 w-5" />}
@@ -114,7 +114,7 @@ export default async function ClaimsReadyPage() {
   return (
     <PageContainer maxWidth="7xl">
       <PageHero
-        section="jobs"
+        section="claims"
         title="Ready for Submission"
         subtitle={`${readyClaims.length} claim${readyClaims.length !== 1 ? "s" : ""} ready — $${(totalValue / 100).toLocaleString()} total value`}
         icon={<FolderCheck className="h-5 w-5" />}

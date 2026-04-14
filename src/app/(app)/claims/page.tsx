@@ -23,6 +23,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { NoClaimsEmpty } from "@/components/ui/EmptyStatePresets";
 import { getTenant } from "@/lib/auth/tenant";
+import { getStatusBadgeColor } from "@/lib/claims/status";
 import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 
@@ -366,16 +367,9 @@ export default async function ClaimsPage({ searchParams }: ClaimsPageProps) {
             <h2 className="text-lg font-semibold">Recent Claims</h2>
             <div className="grid gap-3">
               {claims.map((claim: any) => {
-                const statusColor =
-                  claim.status === "new"
-                    ? "border-blue-200 bg-blue-50 text-blue-700 dark:border-blue-800 dark:bg-blue-900/30 dark:text-blue-400"
-                    : claim.status === "in_progress"
-                      ? "border-amber-200 bg-amber-50 text-amber-700 dark:border-amber-800 dark:bg-amber-900/30 dark:text-amber-400"
-                      : claim.status === "pending"
-                        ? "border-purple-200 bg-purple-50 text-purple-700 dark:border-purple-800 dark:bg-purple-900/30 dark:text-purple-400"
-                        : claim.status === "approved"
-                          ? "border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-400"
-                          : "border-slate-200 bg-slate-50 text-slate-700 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-400";
+                const statusColor = getStatusBadgeColor(
+                  claim.status || claim.lifecycle_stage || "new"
+                );
 
                 return (
                   <Link key={claim.id} href={`/claims/${claim.id}`}>

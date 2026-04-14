@@ -29,7 +29,7 @@ export default async function NewClaimPage() {
   return (
     <PageContainer maxWidth="5xl">
       <PageHero
-        section="jobs"
+        section="claims"
         icon={<FilePlus className="h-5 w-5" />}
         title="New Claim"
         subtitle="Complete the intake wizard to create a new insurance claim"

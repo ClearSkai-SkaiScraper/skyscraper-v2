@@ -29,7 +29,7 @@ const updateLeadSchema = z
     temperature: z.enum(["hot", "warm", "cold"]).optional(),
     assignedTo: z.string().optional(),
     followUpDate: z.string().nullable().optional(),
-    jobCategory: z.string().optional(),
+    jobCategory: z.enum(["lead", "claim", "financed", "out_of_pocket", "repair"]).optional(),
     clientId: z.string().optional(),
     estimatedJobValue: z.number().optional(),
     jobValueStatus: z.enum(["draft", "submitted", "approved", "rejected"]).optional(),

@@ -100,47 +100,57 @@ export function getNextActionFromStatus(status: ClaimStatus | string): string {
 /**
  * Get Tailwind CSS classes for status badge styling
  * Consistent visual language across the platform
+ * Handles both lifecycle_stage (UPPER_CASE) and status (lowercase) fields
  */
 export function getStatusBadgeColor(status: ClaimStatus | string): string {
-  const normalized = status.toUpperCase();
+  const normalized = status.toUpperCase().replace(/ /g, "_");
 
   switch (normalized) {
+    case "NEW":
     case "INTAKE":
     case "FILED":
-      return "bg-slate-100 text-slate-800 border-slate-200";
+      return "border-blue-200 bg-blue-50 text-blue-700 dark:border-blue-800 dark:bg-blue-900/30 dark:text-blue-400";
     case "INSPECTION_SCHEDULED":
-      return "bg-blue-100 text-blue-800 border-blue-200";
+      return "border-sky-200 bg-sky-50 text-sky-700 dark:border-sky-800 dark:bg-sky-900/30 dark:text-sky-400";
     case "INSPECTION_COMPLETED":
     case "INSPECTION_COMPLETE":
-      return "bg-indigo-100 text-indigo-800 border-indigo-200";
+      return "border-indigo-200 bg-indigo-50 text-indigo-700 dark:border-indigo-800 dark:bg-indigo-900/30 dark:text-indigo-400";
     case "FILED_WITH_CARRIER":
     case "ADJUSTER_REVIEW":
-      return "bg-amber-100 text-amber-800 border-amber-200";
-    case "ADJUSTER_SCHEDULED":
-      return "bg-purple-100 text-purple-800 border-purple-200";
-    case "APPROVED":
-      return "bg-emerald-100 text-emerald-800 border-emerald-200";
-    case "DENIED":
-      return "bg-red-100 text-red-800 border-red-200";
-    case "APPEAL":
-      return "bg-orange-100 text-orange-800 border-orange-200";
-    case "SUPPLEMENT_SUBMITTED":
-      return "bg-cyan-100 text-cyan-800 border-cyan-200";
     case "IN_PROGRESS":
+      return "border-amber-200 bg-amber-50 text-amber-700 dark:border-amber-800 dark:bg-amber-900/30 dark:text-amber-400";
+    case "ADJUSTER_SCHEDULED":
+    case "PENDING":
+      return "border-purple-200 bg-purple-50 text-purple-700 dark:border-purple-800 dark:bg-purple-900/30 dark:text-purple-400";
+    case "APPROVED":
+      return "border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-400";
+    case "DENIED":
+      return "border-red-200 bg-red-50 text-red-700 dark:border-red-800 dark:bg-red-900/30 dark:text-red-400";
+    case "APPEAL":
+      return "border-orange-200 bg-orange-50 text-orange-700 dark:border-orange-800 dark:bg-orange-900/30 dark:text-orange-400";
+    case "SUPPLEMENT_SUBMITTED":
+      return "border-cyan-200 bg-cyan-50 text-cyan-700 dark:border-cyan-800 dark:bg-cyan-900/30 dark:text-cyan-400";
     case "BUILD":
-      return "bg-violet-100 text-violet-800 border-violet-200";
+      return "border-violet-200 bg-violet-50 text-violet-700 dark:border-violet-800 dark:bg-violet-900/30 dark:text-violet-400";
     case "WORK_COMPLETE":
-      return "bg-teal-100 text-teal-800 border-teal-200";
+      return "border-teal-200 bg-teal-50 text-teal-700 dark:border-teal-800 dark:bg-teal-900/30 dark:text-teal-400";
     case "CLOSEOUT_PENDING":
-      return "bg-yellow-100 text-yellow-800 border-yellow-200";
+      return "border-yellow-200 bg-yellow-50 text-yellow-700 dark:border-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400";
     case "DEPRECIATION":
-      return "bg-sky-100 text-sky-800 border-sky-200";
+      return "border-sky-200 bg-sky-50 text-sky-700 dark:border-sky-800 dark:bg-sky-900/30 dark:text-sky-400";
     case "COMPLETED":
     case "PAID_CLOSED":
     case "CLOSED":
-      return "bg-green-100 text-green-800 border-green-200";
+    case "COMPLETE":
+      return "border-green-200 bg-green-50 text-green-700 dark:border-green-800 dark:bg-green-900/30 dark:text-green-400";
+    case "OPEN":
+      return "border-blue-200 bg-blue-50 text-blue-700 dark:border-blue-800 dark:bg-blue-900/30 dark:text-blue-400";
+    case "ON_HOLD":
+      return "border-slate-200 bg-slate-50 text-slate-700 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-400";
+    case "ARCHIVED":
+      return "border-slate-200 bg-slate-50 text-slate-600 dark:border-slate-700 dark:bg-slate-800/50 dark:text-slate-500";
     default:
-      return "bg-slate-100 text-slate-800 border-slate-200";
+      return "border-slate-200 bg-slate-50 text-slate-700 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-400";
   }
 }
 
