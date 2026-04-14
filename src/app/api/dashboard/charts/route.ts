@@ -22,24 +22,24 @@ export const GET = withAuth(async (req: NextRequest, { orgId }) => {
 
     // Parallelize all independent chart queries
     const [claimsByStatus, weekCounts, leadsBySource] = await Promise.all([
-      // Claims by Status
+      // Claims by Status (exclude archived)
       prisma.claims.groupBy({
         by: ["status"],
-        where: { orgId },
+        where: { orgId, archivedAt: null },
         _count: { id: true },
       }),
-      // Claims Over Time - 8 week counts in parallel
+      // Claims Over Time - 8 week counts in parallel (exclude archived)
       Promise.all(
         weekRanges.map((w) =>
           prisma.claims.count({
-            where: { orgId, createdAt: { gte: w.weekStart, lt: w.weekEnd } },
+            where: { orgId, archivedAt: null, createdAt: { gte: w.weekStart, lt: w.weekEnd } },
           })
         )
       ),
-      // Lead Source Breakdown
+      // Lead Source Breakdown (exclude archived)
       prisma.leads.groupBy({
         by: ["source"],
-        where: { orgId },
+        where: { orgId, archivedAt: null },
         _count: { id: true },
       }),
     ]);
@@ -71,9 +71,6 @@ export const GET = withAuth(async (req: NextRequest, { orgId }) => {
     return NextResponse.json(payload);
   } catch (error) {
     logger.error("[GET /api/dashboard/charts] error:", error);
-    return NextResponse.json(
-      { ok: false, error: "Unknown error" },
-      { status: 500 }
-    );
+    return NextResponse.json({ ok: false, error: "Unknown error" }, { status: 500 });
   }
 });

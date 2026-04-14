@@ -103,7 +103,7 @@ export const GET = withAuth(async (req: NextRequest, { orgId, userId }) => {
       ),
       safe(
         prisma.claims.findMany({
-          where: orgFilter,
+          where: { ...orgFilter, archivedAt: null },
           orderBy: { createdAt: "desc" },
           take: 5,
           select: {
@@ -118,7 +118,7 @@ export const GET = withAuth(async (req: NextRequest, { orgId, userId }) => {
       ),
       safe(
         prisma.leads.findMany({
-          where: orgFilter,
+          where: { ...orgFilter, archivedAt: null },
           orderBy: { createdAt: "desc" },
           take: 5,
           select: {
@@ -131,11 +131,20 @@ export const GET = withAuth(async (req: NextRequest, { orgId, userId }) => {
         }),
         []
       ),
-      // Trends - last 30 days
-      safe(prisma.claims.count({ where: { ...orgFilter, createdAt: { gte: thirtyDaysAgo } } }), 0),
+      // Trends - last 30 days (all exclude archived)
       safe(
         prisma.claims.count({
-          where: { ...orgFilter, createdAt: { gte: sixtyDaysAgo, lt: thirtyDaysAgo } },
+          where: { ...orgFilter, archivedAt: null, createdAt: { gte: thirtyDaysAgo } },
+        }),
+        0
+      ),
+      safe(
+        prisma.claims.count({
+          where: {
+            ...orgFilter,
+            archivedAt: null,
+            createdAt: { gte: sixtyDaysAgo, lt: thirtyDaysAgo },
+          },
         }),
         0
       ),
@@ -143,6 +152,7 @@ export const GET = withAuth(async (req: NextRequest, { orgId, userId }) => {
         prisma.leads.count({
           where: {
             ...orgFilter,
+            archivedAt: null,
             createdAt: { gte: thirtyDaysAgo },
             NOT: { jobCategory: { in: ["out_of_pocket", "financed", "repair"] } },
           },
@@ -153,6 +163,7 @@ export const GET = withAuth(async (req: NextRequest, { orgId, userId }) => {
         prisma.leads.count({
           where: {
             ...orgFilter,
+            archivedAt: null,
             createdAt: { gte: sixtyDaysAgo, lt: thirtyDaysAgo },
             NOT: { jobCategory: { in: ["out_of_pocket", "financed", "repair"] } },
           },
@@ -163,6 +174,7 @@ export const GET = withAuth(async (req: NextRequest, { orgId, userId }) => {
         prisma.leads.count({
           where: {
             ...orgFilter,
+            archivedAt: null,
             jobCategory: { in: ["out_of_pocket", "financed", "repair"] },
             stage: { notIn: ["closed", "lost"] },
             createdAt: { gte: thirtyDaysAgo },
@@ -174,6 +186,7 @@ export const GET = withAuth(async (req: NextRequest, { orgId, userId }) => {
         prisma.leads.count({
           where: {
             ...orgFilter,
+            archivedAt: null,
             jobCategory: { in: ["out_of_pocket", "financed", "repair"] },
             stage: { notIn: ["closed", "lost"] },
             createdAt: { gte: sixtyDaysAgo, lt: thirtyDaysAgo },

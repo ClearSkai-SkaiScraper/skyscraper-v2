@@ -25,7 +25,18 @@ const updateLeadSchema = z
     source: z.string().optional(),
     value: z.number().optional(),
     probability: z.number().min(0).max(100).optional(),
-    stage: z.string().optional(),
+    stage: z
+      .enum([
+        "new",
+        "contacted",
+        "qualified",
+        "proposal",
+        "negotiation",
+        "won",
+        "lost",
+        "converted",
+      ])
+      .optional(),
     temperature: z.enum(["hot", "warm", "cold"]).optional(),
     assignedTo: z.string().optional(),
     followUpDate: z.string().nullable().optional(),
@@ -345,12 +356,12 @@ const baseDELETE = async (request: Request, { params }: { params: { id: string }
       );
     }
 
-    // Soft delete by updating stage to "lost"
+    // Soft delete (archive) — preserve original stage, just mark as archived
     await prisma.leads.update({
       where: { id: params.id },
       data: {
-        stage: "lost",
         closedAt: new Date(),
+        archivedAt: new Date(),
       },
     });
 
@@ -362,9 +373,9 @@ const baseDELETE = async (request: Request, { params }: { params: { id: string }
           orgId,
           leadId: lead.id,
           contactId: lead.contactId,
-          type: "lead_deleted",
-          title: "Lead Deleted",
-          description: `Lead "${lead.title}" was marked as lost`,
+          type: "lead_archived",
+          title: "Lead Archived",
+          description: `Lead "${lead.title}" was archived`,
           userId: userId || "system",
           userName: "System",
           updatedAt: new Date(),
@@ -376,7 +387,7 @@ const baseDELETE = async (request: Request, { params }: { params: { id: string }
 
     return NextResponse.json({
       success: true,
-      description: "Lead deleted successfully",
+      description: "Lead archived successfully",
     });
   } catch (error) {
     logger.error(`[DELETE /api/leads/${params.id}] Error:`, error);

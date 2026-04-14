@@ -11,6 +11,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { generateContactSlug } from "@/lib/generateContactSlug";
 import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
+import { checkRateLimit } from "@/lib/ratelimit";
 
 /**
  * Timing-safe comparison of webhook secret to prevent timing attacks
@@ -51,6 +52,14 @@ interface WebhookPayload {
 }
 
 export async function POST(req: NextRequest) {
+  // Rate limit per source IP
+  const ip = req.headers.get("x-forwarded-for")?.split(",")[0] || "unknown";
+  const rl = await checkRateLimit(`trades:${ip}`, "WEBHOOK");
+  if (!rl.success) {
+    logger.warn("[TRADES_WEBHOOK] Rate limit exceeded", { ip });
+    return NextResponse.json({ error: "Rate limit exceeded", reset: rl.reset }, { status: 429 });
+  }
+
   try {
     // Verify webhook signature (timing-safe comparison)
     const headersList = headers();
@@ -59,10 +68,19 @@ export async function POST(req: NextRequest) {
     const expectedSecret = process.env.TRADES_WEBHOOK_SECRET;
 
     if (!webhookSecret || !expectedSecret || !verifyWebhookSecret(webhookSecret, expectedSecret)) {
+      logger.warn("[TRADES_WEBHOOK] Unauthorized — invalid or missing secret", {
+        hasSecret: !!webhookSecret,
+        hasExpected: !!expectedSecret,
+        ip,
+      });
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const payload: WebhookPayload = await req.json();
+    logger.info("[TRADES_WEBHOOK] Event received", {
+      event: payload.event,
+      timestamp: payload.timestamp,
+    });
 
     // Handle different event types
     switch (payload.event) {
@@ -89,10 +107,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ success: true, event: payload.event });
   } catch (error) {
     logger.error("Trades webhook error:", error);
-    return NextResponse.json(
-      { error: "Webhook processing failed" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Webhook processing failed" }, { status: 500 });
   }
 }
 

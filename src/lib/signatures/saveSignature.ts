@@ -14,6 +14,7 @@ interface SaveSignatureOptions {
   signerEmail: string;
   role: string;
   signature: string; // base64 or data URL of signature image
+  orgId?: string; // Tenant isolation — scope lookups to org
 }
 
 export async function saveSignature({
@@ -22,8 +23,11 @@ export async function saveSignature({
   signerEmail,
   role,
   signature,
+  orgId,
 }: SaveSignatureOptions) {
-  logger.info(`[signatures] Saving signature for document ${documentId} by ${signerName}`);
+  logger.info(`[signatures] Saving signature for document ${documentId} by ${signerName}`, {
+    orgId,
+  });
 
   // Check if there's already a SignatureEnvelope for this document
   let envelope = await prisma.signatureEnvelope.findFirst({

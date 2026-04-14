@@ -29,6 +29,7 @@ export async function GET(_req: NextRequest) {
     const leads = await prisma.leads.findMany({
       where: {
         orgId: organizationId,
+        archivedAt: null,
         // Include all jobs (both with and without claimId)
       },
       orderBy: { updatedAt: "desc" },

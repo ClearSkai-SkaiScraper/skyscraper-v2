@@ -155,7 +155,7 @@ export async function listLeads(
 ): Promise<{ leads: LeadDTO[]; total: number; limit: number; offset: number }> {
   const { orgId, limit = 50, offset = 0, stage, source, assignedTo, search } = params;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const where: any = { orgId };
+  const where: any = { orgId, archivedAt: null };
   if (stage) where.stage = stage;
   if (source) where.source = source;
   if (assignedTo) where.assignedTo = assignedTo;
@@ -180,7 +180,7 @@ export async function listLeads(
   const contacts =
     contactIds.length > 0
       ? await prisma.contacts.findMany({
-          where: { id: { in: contactIds } },
+          where: { id: { in: contactIds }, orgId },
           select: {
             id: true,
             firstName: true,

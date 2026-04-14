@@ -50,7 +50,32 @@ const claimUpdateSchema = z
         "DEPRECIATION",
       ])
       .optional(),
-    status: z.string().optional(),
+    status: z
+      .enum([
+        "new",
+        "filed",
+        "intake",
+        "in_progress",
+        "build",
+        "inspection",
+        "supplement",
+        "inspection_scheduled",
+        "inspection_complete",
+        "work_complete",
+        "closeout_pending",
+        "depreciation",
+        "pending",
+        "adjuster_review",
+        "submitted",
+        "in_review",
+        "approved",
+        "denied",
+        "appeal",
+        "completed",
+        "closed",
+        "archived",
+      ])
+      .optional(),
     claimNumber: z.string().optional(),
     policy_number: z.string().optional(),
     insured_name: z.string().optional(),
@@ -363,11 +388,12 @@ export const DELETE = withOrgScope(
         );
       }
 
-      // Soft delete by updating status
+      // Soft delete by updating status + set archivedAt
       await prisma.claims.update({
         where: { id: params.claimId },
         data: {
           status: "archived",
+          archivedAt: new Date(),
         },
       });
 

@@ -254,7 +254,17 @@ export default async function ClaimsPage({ searchParams }: ClaimsPageProps) {
       }),
       in_progress: allOrgClaims.filter((c: any) => {
         const s = (c.status || "").toLowerCase();
-        return s === "in_progress" || s === "build" || s === "inspection" || s === "supplement";
+        return (
+          s === "in_progress" ||
+          s === "build" ||
+          s === "inspection" ||
+          s === "supplement" ||
+          s === "inspection_scheduled" ||
+          s === "inspection_complete" ||
+          s === "work_complete" ||
+          s === "closeout_pending" ||
+          s === "depreciation"
+        );
       }),
       pending: allOrgClaims.filter((c: any) => {
         const s = (c.status || "").toLowerCase();

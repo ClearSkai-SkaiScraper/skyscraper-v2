@@ -36,17 +36,19 @@ export const GET = withAuth(async (_req, { orgId }) => {
       weeklyRevenue,
       recentStorms,
     ] = await Promise.all([
-      // New leads this week
+      // New leads this week (exclude archived)
       prisma.leads.count({
         where: {
           orgId,
+          archivedAt: null,
           createdAt: { gte: weekStart },
         },
       }),
-      // Claims needing action
+      // Claims needing action (exclude archived)
       prisma.claims.count({
         where: {
           orgId,
+          archivedAt: null,
           status: { in: ["needs_review", "pending_response"] },
         },
       }),
@@ -61,17 +63,19 @@ export const GET = withAuth(async (_req, { orgId }) => {
           },
         },
       }),
-      // Pending approvals
+      // Pending approvals (exclude archived)
       prisma.claims.count({
         where: {
           orgId,
+          archivedAt: null,
           jobValueStatus: "submitted",
         },
       }),
-      // Weekly revenue (sum of approved claims)
+      // Weekly revenue (sum of approved claims, exclude archived)
       prisma.claims.aggregate({
         where: {
           orgId,
+          archivedAt: null,
           status: "approved",
           updatedAt: { gte: weekStart },
         },

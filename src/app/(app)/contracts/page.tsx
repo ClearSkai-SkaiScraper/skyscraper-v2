@@ -51,7 +51,7 @@ export default async function ContractsPage() {
 
   try {
     insuranceClaims = await prisma.claims.findMany({
-      where: { orgId },
+      where: { orgId, archivedAt: null },
       orderBy: { updatedAt: "desc" },
       select: {
         id: true,
@@ -68,7 +68,7 @@ export default async function ContractsPage() {
 
   try {
     allJobs = await prisma.jobs.findMany({
-      where: { orgId },
+      where: { orgId, archivedAt: null },
       orderBy: { updatedAt: "desc" },
       select: {
         id: true,

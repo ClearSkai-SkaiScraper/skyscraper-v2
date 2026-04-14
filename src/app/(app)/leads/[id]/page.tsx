@@ -45,8 +45,8 @@ async function getLead(id: string, internalOrgId: string) {
 
   if (!lead) return null;
 
-  const contactRow = await prisma.contacts.findUnique({
-    where: { id: lead.contactId },
+  const contactRow = await prisma.contacts.findFirst({
+    where: { id: lead.contactId, orgId: internalOrgId },
     select: {
       id: true,
       firstName: true,

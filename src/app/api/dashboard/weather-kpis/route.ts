@@ -74,10 +74,11 @@ export async function GET() {
       if (event.tornadoRating) recentTornadoes++;
     }
 
-    // 4. Claims with weather verification
+    // 4. Claims with weather verification (exclude archived)
     const recentClaims = await prisma.claims.count({
       where: {
         orgId,
+        archivedAt: null,
         createdAt: { gte: thirtyDaysAgo },
       },
     });

@@ -9,6 +9,7 @@ import { saveSignature } from "@/lib/signatures/saveSignature";
 export async function POST(request: NextRequest) {
   const auth = await requireAuth();
   if (auth instanceof NextResponse) return auth;
+  const { orgId } = auth;
 
   try {
     const body = await request.json();
@@ -24,14 +25,12 @@ export async function POST(request: NextRequest) {
       signerEmail,
       role,
       signature,
+      orgId,
     });
 
     return NextResponse.json(result);
   } catch (error) {
     logger.error("Signature save error:", error);
-    return NextResponse.json(
-      { error: "Failed to save signature" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Failed to save signature" }, { status: 500 });
   }
 }

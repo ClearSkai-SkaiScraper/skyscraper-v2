@@ -71,7 +71,7 @@ export async function listClaims(params: {
 }): Promise<{ claims: ClaimDTO[]; total: number; limit: number; offset: number }> {
   const { orgId, limit = 50, offset = 0, stage, search, visibleUserIds } = params;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const where: any = { orgId };
+  const where: any = { orgId, archivedAt: null };
   if (stage) where.status = stage; // status field in schema
   if (search) {
     where.OR = [

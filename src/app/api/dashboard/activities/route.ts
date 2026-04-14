@@ -25,7 +25,7 @@ export const GET = withAuth(async (req: NextRequest, { orgId }) => {
     const [recentClaims, recentLeads, recentReports, recentInspections] = await Promise.all([
       prisma.claims
         .findMany({
-          where: { orgId },
+          where: { orgId, archivedAt: null },
           orderBy: { createdAt: "desc" },
           take: 5,
           select: {
@@ -42,7 +42,7 @@ export const GET = withAuth(async (req: NextRequest, { orgId }) => {
         }),
       prisma.leads
         .findMany({
-          where: { orgId },
+          where: { orgId, archivedAt: null },
           orderBy: { createdAt: "desc" },
           take: 5,
           select: {
