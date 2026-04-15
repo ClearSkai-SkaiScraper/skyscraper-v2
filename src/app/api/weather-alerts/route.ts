@@ -60,15 +60,34 @@ export async function GET() {
     }
 
     const orgId = orgCtx.orgId;
+    const userId = orgCtx.userId;
 
     // Resolve primary state for this org:
-    // 1. Check contractor_profiles.serviceAreas for a state
-    // 2. Fall back to most common property state
+    // 1. Check user's Trades Network profile (tradesCompanyMember) for state
+    // 2. Fall back to contractor_profiles.serviceAreas
+    // 3. Fall back to most common property state
     let state: string | null = null;
 
-    if (orgId) {
+    if (userId) {
       try {
-        // Try contractor profile first
+        // First: user's Trades Network profile
+        const tradesMember = await prisma.tradesCompanyMember.findUnique({
+          where: { userId },
+          select: { state: true },
+        });
+
+        if (tradesMember?.state) {
+          const s = tradesMember.state.trim();
+          state = s.length === 2 ? s.toUpperCase() : stateNameToCode(s);
+        }
+      } catch (err) {
+        logger.warn("[WEATHER_ALERTS] Failed to resolve user trades state", { userId, err });
+      }
+    }
+
+    if (!state && orgId) {
+      try {
+        // Try contractor profile serviceAreas
         const profile = await prisma.contractor_profiles.findUnique({
           where: { orgId },
           select: { serviceAreas: true },

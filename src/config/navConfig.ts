@@ -74,7 +74,7 @@ export const navSections: NavSection[] = [
       { label: "Quick DOL Pull", href: "/quick-dol" },
       { label: "Lead Routing", href: "/leads" },
       { label: "Door Knocking", href: "/maps/door-knocking" },
-      { label: "Weather Map", href: "/maps/weather-chains" },
+      { label: "Weather Intelligence", href: "/maps/weather-chains" },
       { label: "Property Profiles", href: "/property-profiles" },
       { label: "Map View", href: "/maps/map-view" },
     ],

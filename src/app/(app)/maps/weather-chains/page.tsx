@@ -1,370 +1,226 @@
 /**
- * Weather Maps — Storm Intelligence & Lead Generation
+ * Weather Maps — Storm Intelligence, Forecast & Evidence Hub
  *
- * Enhanced weather map page that combines:
- *   - Storm event visualization
- *   - Property damage scoring
- *   - One-click save to Door Knocking routes
- *   - Integration with Property Profiles
+ * Apple Weather–inspired layout:
+ *   - Current conditions bar (live from Visual Crossing)
+ *   - Full-width Mapbox map with overlay layers (claims, heatmap, storms)
+ *   - Right sidebar: data sets (storm events, weather reports, NWS alerts)
+ *   - 7-day forecast strip below map
+ *   - Active alerts banner
+ *   - "Use as Evidence" flow to attach weather data to claims
  */
-"use client";
 
-import {
-  ArrowRight,
-  Cloud,
-  CloudLightning,
-  CloudRain,
-  Home,
-  Loader2,
-  MapPin,
-  Plus,
-  RefreshCw,
-  Target,
-} from "lucide-react";
-import Link from "next/link";
-import { useCallback, useEffect, useState } from "react";
-import { toast } from "sonner";
+import { CloudRain } from "lucide-react";
+import type { Metadata } from "next";
+import nextDynamic from "next/dynamic";
 
 import { PageContainer } from "@/components/layout/PageContainer";
 import { PageHero } from "@/components/layout/PageHero";
-import { PageSectionCard } from "@/components/layout/PageSectionCard";
-import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
+import { getMapboxToken } from "@/lib/debug/mapboxDebug";
+import { logger } from "@/lib/logger";
+import { getOrgLocation } from "@/lib/org/getOrgLocation";
+import prisma from "@/lib/prisma";
+import { safeOrgContext } from "@/lib/safeOrgContext";
 
-// ---------------------------------------------------------------------------
-// Types
-// ---------------------------------------------------------------------------
-interface StormEvent {
-  id: string;
-  date: string;
-  type: string;
-  severity: string;
-  location: string;
-  hailSize?: number;
-  windSpeed?: number;
-  impactedProperties: number;
+import type { WeatherClaimMarker } from "./_components/WeatherMapDashboard";
+
+const WeatherMapDashboard = nextDynamic(() => import("./_components/WeatherMapDashboard"), {
+  ssr: false,
+  loading: () => (
+    <div className="flex h-[70vh] items-center justify-center rounded-2xl border bg-slate-900/20 backdrop-blur-sm">
+      <div className="text-center">
+        <div className="mb-3 text-5xl">🌩️</div>
+        <p className="text-sm font-medium text-muted-foreground">Loading Weather Intelligence…</p>
+      </div>
+    </div>
+  ),
+});
+
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
+export const metadata: Metadata = {
+  title: "Weather Intelligence Map | SkaiScraper",
+  description: "Storm damage map, 7-day forecast, live alerts, and weather evidence for claims",
+};
+
+/* ─── Geocode address via Mapbox ─── */
+async function geocodeAddress(
+  address: string,
+  token: string
+): Promise<{ lat: number; lng: number } | null> {
+  try {
+    const encoded = encodeURIComponent(address.trim());
+    const res = await fetch(
+      `https://api.mapbox.com/geocoding/v5/mapbox.places/${encoded}.json?limit=1&types=address,place&access_token=${token}`,
+      { next: { revalidate: 86400 } }
+    );
+    const json = await res.json();
+    const coords = json?.features?.[0]?.center;
+    if (coords && coords.length === 2) return { lng: coords[0], lat: coords[1] };
+    return null;
+  } catch {
+    return null;
+  }
 }
 
-interface RankedAddress {
-  id: string;
-  address: string;
-  city: string;
-  state: string;
-  score: number;
-  distanceFromStorm: number;
-  estimatedHailSize?: number;
-  existingClaim: boolean;
-  existingLead: boolean;
+/* ─── Infer severity from weather data ─── */
+function inferSeverity(claim: {
+  hailSize: string | null;
+  windSpeed: string | null;
+}): "low" | "moderate" | "severe" | "extreme" | null {
+  const hail = parseFloat(claim.hailSize || "0");
+  const wind = parseFloat(claim.windSpeed || "0");
+  if (hail >= 2 || wind >= 80) return "extreme";
+  if (hail >= 1 || wind >= 60) return "severe";
+  if (hail >= 0.5 || wind >= 40) return "moderate";
+  if (hail > 0 || wind > 0) return "low";
+  return null;
 }
 
-// ---------------------------------------------------------------------------
-// Component
-// ---------------------------------------------------------------------------
-export default function WeatherMapsPage() {
-  const [storms, setStorms] = useState<StormEvent[]>([]);
-  const [selectedStorm, setSelectedStorm] = useState<StormEvent | null>(null);
-  const [addresses, setAddresses] = useState<RankedAddress[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [loadingAddresses, setLoadingAddresses] = useState(false);
-  const [savingToDoorknock, setSavingToDoorknock] = useState<string | null>(null);
+/* ─── Load claims with weather data as map markers ─── */
+async function loadWeatherMarkers(orgId: string, token: string): Promise<WeatherClaimMarker[]> {
+  const claims = await prisma.claims.findMany({
+    where: { orgId, isDemo: false },
+    select: {
+      id: true,
+      claimNumber: true,
+      status: true,
+      dateOfLoss: true,
+      properties: {
+        select: { street: true, city: true, state: true, zipCode: true },
+      },
+      weather_reports: {
+        select: {
+          overallAssessment: true,
+          primaryPeril: true,
+          globalSummary: true,
+          events: true,
+          lat: true,
+          lng: true,
+        },
+        orderBy: { createdAt: "desc" },
+        take: 1,
+      },
+    },
+    take: 200,
+    orderBy: { createdAt: "desc" },
+  });
 
-  // Load recent storms
-  const fetchStorms = useCallback(async () => {
-    setLoading(true);
-    try {
-      const res = await fetch("/api/weather/storm-events?limit=20");
-      if (res.ok) {
-        const data = await res.json();
-        const events: StormEvent[] = (data.events || data.stormEvents || []).map(
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          (e: any, i: number) => ({
-            id: e.id || `storm_${i}`,
-            date: e.date || e.eventDate || new Date().toISOString(),
-            type: e.type || e.eventType || "mixed",
-            severity: e.severity || "moderate",
-            location: e.location || e.city || "Unknown",
-            hailSize: e.hailSize,
-            windSpeed: e.windSpeed,
-            impactedProperties: e.impactedProperties || e.propertiesAffected || 0,
-          })
-        );
-        setStorms(events);
-        if (events.length > 0 && !selectedStorm) {
-          setSelectedStorm(events[0]);
+  const items = claims
+    .map((c) => {
+      const prop = c.properties?.[0];
+      const address = prop
+        ? [prop.street, prop.city, prop.state, prop.zipCode].filter(Boolean).join(", ")
+        : "";
+      const report = c.weather_reports?.[0];
+      const events =
+        (report?.events as Array<{
+          hailSize?: string;
+          windSpeed?: string;
+        }>) || [];
+      const hailSize = events.find((e) => e.hailSize)?.hailSize || null;
+      const windSpeed = events.find((e) => e.windSpeed)?.windSpeed || null;
+      const summary =
+        typeof report?.globalSummary === "string"
+          ? report.globalSummary
+          : (report?.globalSummary as { text?: string })?.text || report?.overallAssessment || null;
+      return {
+        id: c.id,
+        claimNumber: c.claimNumber || c.id.slice(0, 8),
+        address,
+        status: c.status || "unknown",
+        dolDate: c.dateOfLoss ? c.dateOfLoss.toISOString() : null,
+        weatherSummary: summary,
+        hailSize,
+        windSpeed,
+        _address: address,
+        _reportLat: report?.lat ?? null,
+        _reportLng: report?.lng ?? null,
+      };
+    })
+    .filter((m) => m._address);
+
+  // Batch geocode (10 at a time to respect Mapbox rate limits)
+  const BATCH = 10;
+  const results: WeatherClaimMarker[] = [];
+
+  for (let i = 0; i < items.length; i += BATCH) {
+    const batch = items.slice(i, i + BATCH);
+    const geocoded = await Promise.all(
+      batch.map(async (item) => {
+        let lat = item._reportLat;
+        let lng = item._reportLng;
+        if (lat == null || lng == null) {
+          const coords = await geocodeAddress(item._address, token);
+          if (!coords) return null;
+          lat = coords.lat;
+          lng = coords.lng;
         }
-      }
-    } catch (error) {
-      console.error("Failed to fetch storms:", error);
-    } finally {
-      setLoading(false);
-    }
-  }, [selectedStorm]);
+        return {
+          id: item.id,
+          claimNumber: item.claimNumber,
+          address: item.address,
+          lat,
+          lng,
+          status: item.status,
+          dolDate: item.dolDate,
+          weatherSummary: item.weatherSummary,
+          hailSize: item.hailSize,
+          windSpeed: item.windSpeed,
+          severity: inferSeverity(item),
+        };
+      })
+    );
+    geocoded.forEach((r) => {
+      if (r) results.push(r);
+    });
+  }
 
-  // Load ranked addresses for selected storm
-  const fetchAddresses = useCallback(async (storm: StormEvent) => {
-    setLoadingAddresses(true);
+  return results;
+}
+
+export default async function WeatherMapsPage() {
+  const ctx = await safeOrgContext();
+
+  if (ctx.status === "unauthenticated") {
+    return (
+      <div className="p-6 text-sm text-muted-foreground">
+        Sign in to access weather intelligence.
+      </div>
+    );
+  }
+
+  const mapboxToken = getMapboxToken();
+  const orgLocation = await getOrgLocation(ctx.orgId);
+  const center: [number, number] = [orgLocation.lng, orgLocation.lat];
+
+  let markers: WeatherClaimMarker[] = [];
+  if (ctx.orgId && mapboxToken) {
     try {
-      const res = await fetch(
-        `/api/weather/storm-addresses?stormId=${storm.id}&location=${encodeURIComponent(storm.location)}`
-      );
-      if (res.ok) {
-        const data = await res.json();
-        setAddresses(data.addresses || []);
-      }
+      markers = await loadWeatherMarkers(ctx.orgId, mapboxToken);
     } catch (error) {
-      console.error("Failed to fetch addresses:", error);
-    } finally {
-      setLoadingAddresses(false);
+      logger.error("[WEATHER_MAP] Failed to load markers", { error });
     }
-  }, []);
-
-  useEffect(() => {
-    void fetchStorms();
-  }, [fetchStorms]);
-
-  useEffect(() => {
-    if (selectedStorm) {
-      void fetchAddresses(selectedStorm);
-    }
-  }, [selectedStorm, fetchAddresses]);
-
-  // Save address to doorknocking route
-  const saveToDoorknoking = async (address: RankedAddress) => {
-    setSavingToDoorknock(address.id);
-    try {
-      const res = await fetch("/api/doorknocking/addresses", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          address: address.address,
-          city: address.city,
-          state: address.state,
-          score: address.score,
-          source: "weather_map",
-        }),
-      });
-      if (res.ok) {
-        toast.success("Added to Door Knocking route!");
-        setAddresses((prev) =>
-          prev.map((a) => (a.id === address.id ? { ...a, existingLead: true } : a))
-        );
-      } else {
-        toast.error("Failed to add to route");
-      }
-    } catch {
-      toast.error("Failed to add to route");
-    } finally {
-      setSavingToDoorknock(null);
-    }
-  };
-
-  const getStormIcon = (type: string) => {
-    if (type.includes("hail")) return <Cloud className="h-4 w-4" />;
-    if (type.includes("wind")) return <CloudLightning className="h-4 w-4" />;
-    return <CloudRain className="h-4 w-4" />;
-  };
-
-  const getSeverityColor = (severity: string) => {
-    switch (severity.toLowerCase()) {
-      case "severe":
-        return "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400";
-      case "moderate":
-        return "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400";
-      default:
-        return "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400";
-    }
-  };
-
-  const getScoreColor = (score: number) => {
-    if (score >= 70) return "text-red-600 dark:text-red-400";
-    if (score >= 40) return "text-amber-600 dark:text-amber-400";
-    return "text-emerald-600 dark:text-emerald-400";
-  };
+  }
 
   return (
     <PageContainer>
       <PageHero
         section="leads"
-        title="Weather Map"
-        subtitle="View storm activity, score properties for damage likelihood, and build door knocking routes"
-        icon={<CloudRain className="h-5 w-5" />}
-      >
-        <div className="flex gap-2">
-          <Button variant="outline" onClick={() => void fetchStorms()}>
-            <RefreshCw className="mr-2 h-4 w-4" />
-            Refresh
-          </Button>
-          <Button asChild>
-            <Link href="/maps/door-knocking">
-              <MapPin className="mr-2 h-4 w-4" />
-              Door Knocking
-            </Link>
-          </Button>
+        title="Weather Intelligence"
+        subtitle="Live weather, storm data, forecasts, and evidence for claims — all in one view"
+        icon={<CloudRain className="h-6 w-6 text-blue-500" />}
+      />
+
+      {!mapboxToken ? (
+        <div className="rounded-xl border border-amber-200 bg-amber-50 p-6 text-sm text-amber-800 dark:border-amber-800 dark:bg-amber-950/40 dark:text-amber-300">
+          Mapbox token not configured. Set <code>NEXT_PUBLIC_MAPBOX_TOKEN</code> in your environment
+          variables to enable weather maps.
         </div>
-      </PageHero>
-
-      <div className="grid gap-6 lg:grid-cols-3">
-        {/* Storm Events List */}
-        <div className="lg:col-span-1">
-          <PageSectionCard>
-            <h3 className="mb-4 font-semibold text-foreground">Recent Storms</h3>
-            {loading ? (
-              <div className="flex items-center justify-center py-8">
-                <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-              </div>
-            ) : storms.length === 0 ? (
-              <div className="py-8 text-center text-sm text-muted-foreground">
-                No recent storm events found
-              </div>
-            ) : (
-              <div className="space-y-2">
-                {storms.map((storm) => (
-                  <button
-                    key={storm.id}
-                    onClick={() => setSelectedStorm(storm)}
-                    className={cn(
-                      "w-full rounded-lg border p-3 text-left transition-all",
-                      selectedStorm?.id === storm.id
-                        ? "border-blue-300 bg-blue-50 dark:border-blue-700 dark:bg-blue-950/30"
-                        : "border-slate-200 hover:bg-slate-50 dark:border-slate-700 dark:hover:bg-slate-800"
-                    )}
-                  >
-                    <div className="flex items-center gap-2">
-                      {getStormIcon(storm.type)}
-                      <span className="font-medium">{storm.location}</span>
-                      <span
-                        className={cn(
-                          "ml-auto rounded-full px-2 py-0.5 text-xs font-medium",
-                          getSeverityColor(storm.severity)
-                        )}
-                      >
-                        {storm.severity}
-                      </span>
-                    </div>
-                    <div className="mt-1 text-xs text-muted-foreground">
-                      {new Date(storm.date).toLocaleDateString()} • {storm.impactedProperties}{" "}
-                      properties
-                    </div>
-                    {(storm.hailSize || storm.windSpeed) && (
-                      <div className="mt-1 flex gap-3 text-xs">
-                        {storm.hailSize && <span>🧊 {storm.hailSize}" hail</span>}
-                        {storm.windSpeed && <span>💨 {storm.windSpeed} mph</span>}
-                      </div>
-                    )}
-                  </button>
-                ))}
-              </div>
-            )}
-          </PageSectionCard>
-        </div>
-
-        {/* Ranked Addresses */}
-        <div className="lg:col-span-2">
-          <PageSectionCard>
-            <div className="mb-4 flex items-center justify-between">
-              <h3 className="font-semibold text-foreground">
-                {selectedStorm ? `Properties Near ${selectedStorm.location}` : "Select a Storm"}
-              </h3>
-              {addresses.length > 0 && (
-                <Link href="/maps/door-knocking" className="text-sm text-primary hover:underline">
-                  View All Routes →
-                </Link>
-              )}
-            </div>
-
-            {loadingAddresses ? (
-              <div className="flex items-center justify-center py-12">
-                <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-              </div>
-            ) : !selectedStorm ? (
-              <div className="flex flex-col items-center justify-center py-12 text-center">
-                <Target className="mb-3 h-12 w-12 text-muted-foreground/50" />
-                <p className="text-sm text-muted-foreground">
-                  Select a storm event to see ranked properties
-                </p>
-              </div>
-            ) : addresses.length === 0 ? (
-              <div className="flex flex-col items-center justify-center py-12 text-center">
-                <Home className="mb-3 h-12 w-12 text-muted-foreground/50" />
-                <p className="font-medium text-foreground">No addresses found</p>
-                <p className="mt-1 text-sm text-muted-foreground">
-                  Try a different storm or check back later
-                </p>
-              </div>
-            ) : (
-              <div className="space-y-2">
-                {addresses.map((addr) => (
-                  <div
-                    key={addr.id}
-                    className={cn(
-                      "flex items-center gap-4 rounded-lg border p-4 transition-all",
-                      addr.existingClaim
-                        ? "border-emerald-200 bg-emerald-50/50 dark:border-emerald-800 dark:bg-emerald-950/20"
-                        : addr.existingLead
-                          ? "border-blue-200 bg-blue-50/50 dark:border-blue-800 dark:bg-blue-950/20"
-                          : "border-slate-200 dark:border-slate-700"
-                    )}
-                  >
-                    {/* Score */}
-                    <div className="flex flex-col items-center">
-                      <div className={cn("text-2xl font-bold", getScoreColor(addr.score))}>
-                        {addr.score}
-                      </div>
-                      <div className="text-[10px] text-muted-foreground">score</div>
-                    </div>
-
-                    {/* Address Info */}
-                    <div className="min-w-0 flex-1">
-                      <p className="font-medium text-foreground">{addr.address}</p>
-                      <p className="text-sm text-muted-foreground">
-                        {addr.city}, {addr.state} • {addr.distanceFromStorm.toFixed(1)} mi from
-                        storm
-                      </p>
-                      {addr.estimatedHailSize && (
-                        <p className="mt-1 text-xs text-muted-foreground">
-                          Est. hail: {addr.estimatedHailSize}"
-                        </p>
-                      )}
-                    </div>
-
-                    {/* Actions */}
-                    <div className="flex items-center gap-2">
-                      {addr.existingClaim ? (
-                        <span className="rounded-full bg-emerald-100 px-3 py-1 text-xs font-medium text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400">
-                          Has Claim
-                        </span>
-                      ) : addr.existingLead ? (
-                        <span className="rounded-full bg-blue-100 px-3 py-1 text-xs font-medium text-blue-700 dark:bg-blue-900/30 dark:text-blue-400">
-                          In Route
-                        </span>
-                      ) : (
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => void saveToDoorknoking(addr)}
-                          disabled={savingToDoorknock === addr.id}
-                        >
-                          {savingToDoorknock === addr.id ? (
-                            <Loader2 className="mr-1 h-3 w-3 animate-spin" />
-                          ) : (
-                            <Plus className="mr-1 h-3 w-3" />
-                          )}
-                          Add to Route
-                        </Button>
-                      )}
-                      <Link href={`/property-profiles?address=${encodeURIComponent(addr.address)}`}>
-                        <Button size="sm" variant="ghost">
-                          <ArrowRight className="h-4 w-4" />
-                        </Button>
-                      </Link>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </PageSectionCard>
-        </div>
-      </div>
+      ) : (
+        <WeatherMapDashboard markers={markers} center={center} mapboxToken={mapboxToken} />
+      )}
     </PageContainer>
   );
 }
