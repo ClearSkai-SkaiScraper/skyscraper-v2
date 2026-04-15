@@ -146,7 +146,7 @@ export default function CRMPage() {
     return (
       <div className="container mx-auto space-y-6 p-6">
         <PageHero
-          section="jobs"
+          section="leads"
           title="CRM Dashboard"
           subtitle="Overview of your sales pipeline and team activity"
           icon={<Users className="h-6 w-6" />}
@@ -169,7 +169,7 @@ export default function CRMPage() {
     <div className="container mx-auto space-y-6 p-6">
       {/* Header */}
       <PageHero
-        section="jobs"
+        section="leads"
         title="CRM Dashboard"
         subtitle="Overview of your sales pipeline and team activity"
         icon={<Users className="h-6 w-6" />}
@@ -385,8 +385,8 @@ export default function CRMPage() {
                           <span className="text-sm font-medium">
                             {post.authorId === user?.id
                               ? user?.fullName || "You"
-                              // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                              : (post as any).authorName || "Team Member"}
+                              : // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                                (post as any).authorName || "Team Member"}
                           </span>
                           <div className="flex items-center gap-2">
                             {post.pinned && (

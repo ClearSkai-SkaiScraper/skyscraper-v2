@@ -113,7 +113,7 @@ export default function GoalSettingsPage() {
   return (
     <PageContainer>
       <PageHero
-        section="command"
+        section="settings"
         title="Goal Settings"
         subtitle="Set your weekly and monthly performance targets. These goals power your dashboard briefing and progress tracking."
         icon={<Settings className="h-5 w-5" />}

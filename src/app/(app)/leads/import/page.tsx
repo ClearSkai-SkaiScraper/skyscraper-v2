@@ -22,7 +22,7 @@ export default async function LeadsImportPage() {
   return (
     <div className="mx-auto max-w-4xl p-6">
       <PageHero
-        section="jobs"
+        section="leads"
         title="Import Leads"
         subtitle="Upload a CSV to bulk-import leads into your pipeline"
         icon={<Upload className="h-6 w-6" />}

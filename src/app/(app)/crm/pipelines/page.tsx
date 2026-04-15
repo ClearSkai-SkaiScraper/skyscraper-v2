@@ -98,7 +98,7 @@ export default function PipelinesPage() {
     return (
       <div className="container mx-auto space-y-6 p-6">
         <PageHero
-          section="jobs"
+          section="leads"
           title="Pipelines"
           subtitle="Track your sales pipeline progress and next actions"
           icon={<TrendingUp className="h-6 w-6" />}
@@ -125,7 +125,7 @@ export default function PipelinesPage() {
     <div className="container mx-auto space-y-6 p-6">
       {/* Header */}
       <PageHero
-        section="jobs"
+        section="leads"
         title="Pipelines"
         subtitle="Track your sales pipeline progress and next actions"
         icon={<TrendingUp className="h-6 w-6" />}

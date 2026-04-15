@@ -140,7 +140,7 @@ export default function SMSPage() {
         title="SMS Conversations"
         subtitle="Two-way text messaging with your contacts via Twilio"
         icon={<MessageCircle className="h-5 w-5" />}
-        section="finance"
+        section="network"
       />
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3" style={{ minHeight: "500px" }}>

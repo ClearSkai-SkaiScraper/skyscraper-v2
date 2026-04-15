@@ -58,7 +58,7 @@ export default async function LeadsSettingsPage() {
   return (
     <div className="mx-auto max-w-5xl space-y-8 p-6">
       <PageHero
-        section="jobs"
+        section="leads"
         title="Lead Pipeline Configuration"
         subtitle="Fine‑tune how prospects enter, advance, and convert inside your organization."
         icon={<Settings className="h-6 w-6" />}

@@ -54,7 +54,7 @@ export default async function ClientsPage({ searchParams }: PageProps) {
   return (
     <div className="space-y-6 p-6">
       <PageHero
-        section="jobs"
+        section="leads"
         title="Clients"
         subtitle="Manage your client contacts and relationships"
         icon={<Users className="h-5 w-5" />}

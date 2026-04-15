@@ -129,7 +129,7 @@ export default function AnalyticsHubPage() {
   return (
     <PageContainer maxWidth="7xl">
       <PageHero
-        section="command"
+        section="reports"
         title="Analytics Hub"
         subtitle="Every metric in one place — operations, executive insights, and platform health"
         icon={<BarChart3 className="h-6 w-6" />}

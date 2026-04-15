@@ -22,7 +22,7 @@ export default async function CarrierExportPage() {
         title="Carrier Export Builder"
         subtitle="Package your project files, photos, reports, and documentation in a carrier-ready format for insurance submission"
         icon={<Package className="h-8 w-8" />}
-        section="jobs"
+        section="claims"
       />
 
       {/* How It Works */}

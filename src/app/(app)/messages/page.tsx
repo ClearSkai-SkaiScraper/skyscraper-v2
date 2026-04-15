@@ -22,7 +22,7 @@ export default async function MessagesPage() {
         title="Messages"
         subtitle="Centralized communication between your team, clients, and carriers"
         icon={<MessageSquare className="h-6 w-6" />}
-        section="finance"
+        section="network"
       />
       <MessagesClient userId={orgResult.userId} orgId={orgResult.orgId} />
     </PageContainer>

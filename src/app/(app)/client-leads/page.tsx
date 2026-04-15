@@ -162,7 +162,7 @@ export default function ClientLeadsPage() {
       } else {
         toast.error("Failed to update status");
       }
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (_error) {
       toast.error("Failed to update status");
     }
@@ -210,7 +210,7 @@ export default function ClientLeadsPage() {
   return (
     <PageContainer>
       <PageHero
-        section="jobs"
+        section="leads"
         title="Client Leads"
         description="Job requests and invitations from clients looking for your services"
         icon={<Inbox className="h-8 w-8" />}

@@ -11,7 +11,7 @@ export default async function NewLeadPage() {
   return (
     <div className="container mx-auto py-6">
       <PageHero
-        section="jobs"
+        section="leads"
         title="New Lead"
         subtitle="Create a new lead and route it to the right workspace"
         icon={<PlusCircle className="h-6 w-6" />}

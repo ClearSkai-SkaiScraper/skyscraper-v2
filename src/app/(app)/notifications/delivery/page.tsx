@@ -140,7 +140,7 @@ export default function ClientDeliveryNotificationsPage() {
       } else {
         toast.error(data.error || "Failed to send notification");
       }
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (_e) {
       toast.error("Failed to send notification");
     } finally {
@@ -157,7 +157,7 @@ export default function ClientDeliveryNotificationsPage() {
         title="Client Delivery Notifications"
         subtitle="Send real-time updates to clients about their jobs, schedules, and deliveries"
         icon={<Bell className="h-5 w-5" />}
-        section="finance"
+        section="settings"
       >
         <Button
           onClick={() => setShowNewModal(true)}
