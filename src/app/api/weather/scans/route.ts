@@ -1,7 +1,8 @@
 /**
  * GET  /api/weather/scans?claimId=xxx — List saved weather scans for a claim
+ * GET  /api/weather/scans?limit=20    — List recent org-wide weather scans (for Weather Intelligence map)
  *
- * Returns all quick_dol and full_report weather_reports for the claim,
+ * Returns all quick_dol and full_report weather_reports,
  * organized by peril category with radar station info.
  */
 import { NextRequest, NextResponse } from "next/server";
@@ -18,10 +19,60 @@ export const GET = withAuth(async (req: NextRequest, { userId, orgId }) => {
   try {
     const { searchParams } = new URL(req.url);
     const claimId = searchParams.get("claimId");
+    const limit = Math.min(Number(searchParams.get("limit") || 50), 100);
 
+    // ── Org-wide mode: return recent scans across the org (for Weather Intelligence) ──
     if (!claimId) {
-      return NextResponse.json({ error: "claimId is required" }, { status: 400 });
+      const recentScans = await prisma.weather_reports.findMany({
+        where: {
+          users: { orgId },
+        },
+        orderBy: { createdAt: "desc" },
+        take: limit,
+        select: {
+          id: true,
+          mode: true,
+          address: true,
+          lat: true,
+          lng: true,
+          dol: true,
+          lossType: true,
+          primaryPeril: true,
+          confidence: true,
+          candidateDates: true,
+          globalSummary: true,
+          createdAt: true,
+          periodFrom: true,
+          periodTo: true,
+          users: { select: { name: true } },
+        },
+      });
+
+      // Format for the Weather Intelligence dashboard
+      const scans = recentScans.map((s) => ({
+        id: s.id,
+        mode: s.mode,
+        address: s.address,
+        lat: s.lat,
+        lng: s.lng,
+        dateOfLoss: s.dol?.toISOString() || null,
+        primaryPeril: s.primaryPeril || s.lossType || null,
+        confidence: s.confidence,
+        overallAssessment:
+          typeof s.globalSummary === "object" && s.globalSummary !== null
+            ? ((s.globalSummary as Record<string, unknown>).overallAssessment as string) ||
+              ((s.globalSummary as Record<string, unknown>).notes as string) ||
+              null
+            : null,
+        createdAt: s.createdAt.toISOString(),
+        createdBy: s.users?.name || null,
+        candidateDates: s.candidateDates,
+      }));
+
+      return NextResponse.json({ scans, reports: scans, totalScans: scans.length });
     }
+
+    // ── Claim-specific mode: existing behavior ──
 
     // Verify claim belongs to org
     const claim = await prisma.claims.findFirst({

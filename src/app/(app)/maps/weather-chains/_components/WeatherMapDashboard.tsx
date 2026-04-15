@@ -135,6 +135,8 @@ interface WeatherReport {
   createdAt: string;
   dateOfLoss: string | null;
   confidence: number | null;
+  lat: number | null;
+  lng: number | null;
 }
 
 // Active overlay layers the user can toggle
@@ -332,7 +334,7 @@ export default function WeatherMapDashboard({ markers, center, mapboxToken }: Pr
         setCurrentWeather(forecastRes.current || null);
         setResolvedLocation(forecastRes.location || "");
 
-        // Weather reports
+        // Weather reports (including DOL scans with lat/lng for map markers)
         const reports: WeatherReport[] = (reportsRes.scans || reportsRes.reports || [])
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           .map((r: any) => ({
@@ -343,6 +345,8 @@ export default function WeatherMapDashboard({ markers, center, mapboxToken }: Pr
             createdAt: r.createdAt || new Date().toISOString(),
             dateOfLoss: r.dateOfLoss ?? null,
             confidence: r.confidence ?? null,
+            lat: r.lat ?? null,
+            lng: r.lng ?? null,
           }));
         setWeatherReports(reports);
       } catch (err) {
@@ -484,7 +488,7 @@ export default function WeatherMapDashboard({ markers, center, mapboxToken }: Pr
       },
     });
 
-    // Storm events layer (if any have coordinates)
+    // Storm events layer (storm_events + DOL scan markers with coordinates)
     const stormFeatures = storms
       .filter((s) => s.latitude && s.longitude)
       .map((s) => ({
@@ -501,10 +505,29 @@ export default function WeatherMapDashboard({ markers, center, mapboxToken }: Pr
         },
       }));
 
-    if (stormFeatures.length > 0) {
+    // Add DOL scan markers (weather_reports with lat/lng) as additional storm features
+    const dolScanFeatures = weatherReports
+      .filter((r) => r.lat && r.lng)
+      .map((r) => ({
+        type: "Feature" as const,
+        geometry: {
+          type: "Point" as const,
+          coordinates: [r.lng!, r.lat!],
+        },
+        properties: {
+          id: `dol_${r.id}`,
+          severity: r.confidence && r.confidence >= 0.7 ? "severe" : "moderate",
+          type: r.primaryPeril || "dol-scan",
+          color: r.confidence && r.confidence >= 0.7 ? "#ea580c" : "#f59e0b",
+        },
+      }));
+
+    const allStormFeatures = [...stormFeatures, ...dolScanFeatures];
+
+    if (allStormFeatures.length > 0) {
       map.addSource("storms-src", {
         type: "geojson",
-        data: { type: "FeatureCollection", features: stormFeatures },
+        data: { type: "FeatureCollection", features: allStormFeatures },
       });
 
       map.addLayer({
@@ -539,7 +562,7 @@ export default function WeatherMapDashboard({ markers, center, mapboxToken }: Pr
     map.on("mouseleave", "claims-layer", () => {
       map.getCanvas().style.cursor = "";
     });
-  }, [markers, storms, mapReady, activeOverlay]);
+  }, [markers, storms, weatherReports, mapReady, activeOverlay]);
 
   useEffect(() => {
     renderLayers();
