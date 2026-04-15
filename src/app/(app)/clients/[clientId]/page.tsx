@@ -1,8 +1,10 @@
 // eslint-disable-next-line no-restricted-imports
 import { currentUser } from "@clerk/nextjs/server";
+import { Users } from "lucide-react";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
+import { PageHero } from "@/components/layout/PageHero";
 import prisma from "@/lib/prisma";
 
 async function getOrCreatePortalToken(clientId: string, claimId: string, orgId: string) {
@@ -51,52 +53,58 @@ export default async function ClientDetailPage({ params }: { params: { clientId:
   const leads: any[] = [];
 
   return (
-    <div className="space-y-6 p-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">{client.name}</h1>
-        <Link href="/clients" className="text-sm underline">
-          Back
+    <div className="space-y-6">
+      <PageHero
+        title={client.name}
+        subtitle={client.email ?? "Client Details"}
+        icon={<Users className="h-6 w-6" />}
+        section="clients"
+      >
+        <Link href="/clients" className="text-sm text-white/80 underline hover:text-white">
+          ← Back to Clients
         </Link>
-      </div>
-      <div className="grid gap-4 text-sm md:grid-cols-3">
-        <Stat label="Email" value={client.email ?? ""} />
-        <Stat label="Phone" value={client.phone || "—"} />
-        <Stat label="Address" value={client.address || "—"} />
-      </div>
-      {token && (
-        <Link
-          href={`/portal/${token}`}
-          target="_blank"
-          className="inline-block rounded border bg-white px-4 py-2 text-sm hover:bg-gray-50"
-        >
-          View as Client
-        </Link>
-      )}
-
-      {/* ITEM 6: All Jobs Section */}
-      <div className="space-y-4 border-t pt-6">
-        <h2 className="text-lg font-semibold">Claims History ({claims.length})</h2>
-        {claims.length === 0 ? (
-          <p className="text-sm text-gray-500">No claims</p>
-        ) : (
-          <div className="space-y-2">
-            {claims.map((claim) => (
-              <div
-                key={claim.id}
-                className="flex items-center justify-between border-b pb-2 text-sm"
-              >
-                <div>
-                  <p className="font-medium">{claim.title}</p>
-                  <p className="text-gray-500">{claim.claimNumber}</p>
-                </div>
-                <span className="rounded bg-gray-100 px-2 py-1 text-xs">{claim.status}</span>
-              </div>
-            ))}
-          </div>
+      </PageHero>
+      <div className="px-6">
+        <div className="grid gap-4 text-sm md:grid-cols-3">
+          <Stat label="Email" value={client.email ?? ""} />
+          <Stat label="Phone" value={client.phone || "—"} />
+          <Stat label="Address" value={client.address || "—"} />
+        </div>
+        {token && (
+          <Link
+            href={`/portal/${token}`}
+            target="_blank"
+            className="inline-block rounded border bg-white px-4 py-2 text-sm hover:bg-gray-50"
+          >
+            View as Client
+          </Link>
         )}
 
-        <h2 className="mt-6 text-lg font-semibold">Leads History ({leads.length})</h2>
-        <p className="text-sm text-gray-500">No leads</p>
+        {/* ITEM 6: All Jobs Section */}
+        <div className="space-y-4 border-t pt-6">
+          <h2 className="text-lg font-semibold">Claims History ({claims.length})</h2>
+          {claims.length === 0 ? (
+            <p className="text-sm text-gray-500">No claims</p>
+          ) : (
+            <div className="space-y-2">
+              {claims.map((claim) => (
+                <div
+                  key={claim.id}
+                  className="flex items-center justify-between border-b pb-2 text-sm"
+                >
+                  <div>
+                    <p className="font-medium">{claim.title}</p>
+                    <p className="text-gray-500">{claim.claimNumber}</p>
+                  </div>
+                  <span className="rounded bg-gray-100 px-2 py-1 text-xs">{claim.status}</span>
+                </div>
+              ))}
+            </div>
+          )}
+
+          <h2 className="mt-6 text-lg font-semibold">Leads History ({leads.length})</h2>
+          <p className="text-sm text-gray-500">No leads</p>
+        </div>
       </div>
     </div>
   );
