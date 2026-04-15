@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import { getOpenAI } from "@/lib/ai/client";
 import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
+import { checkRateLimit } from "@/lib/rate-limit";
 import { safeOrgContext } from "@/lib/safeOrgContext";
 
 export const dynamic = "force-dynamic";
@@ -13,12 +14,28 @@ export const dynamic = "force-dynamic";
  * Scans all claims, jobs, damage assessments, inspections, measurement orders,
  * scopes, and estimates linked to this property and uses AI to extract every
  * property detail it can find.
+ *
+ * Safety rails:
+ *  - Auth required (safeOrgContext)
+ *  - Rate limited (5/min per user — "AI" tier)
+ *  - Non-empty fields are NOT overwritten unless client explicitly accepts
+ *  - AI failures return graceful empty suggestions, never crash
+ *  - Audit trail: structured logging with orgId, userId, propertyId, sourceCount
  */
 export async function POST(_req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
     const ctx = await safeOrgContext();
-    if (ctx.status !== "ok" || !ctx.orgId) {
+    if (ctx.status !== "ok" || !ctx.orgId || !ctx.userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    // ── Rate limit (AI tier: 5 requests/min per user) ──────────────
+    const rl = await checkRateLimit(ctx.userId, "AI").catch(() => ({ allowed: true }));
+    if ("allowed" in rl && !rl.allowed) {
+      return NextResponse.json(
+        { error: "Rate limit exceeded. Try again in a minute.", retryAfter: 60 },
+        { status: 429, headers: { "Retry-After": "60" } }
+      );
     }
 
     const { id } = await params;
@@ -344,11 +361,28 @@ Return format: { "suggestions": { ... }, "confidence": { ... }, "reasoning": "br
       return NextResponse.json(
         {
           success: false,
-          error: "AI returned unparseable response",
+          suggestions: {},
+          error: "AI returned unparseable response. Try again.",
         },
-        { status: 500 }
+        { status: 200 } // 200 with empty suggestions — don't break UI
       );
     }
+
+    // ── Audit trail: log autofill attempt ───────────────────────
+    const sourceCount =
+      claims.length +
+      jobs.length +
+      inspections.length +
+      measurements.length +
+      damageAssessments.length;
+
+    logger.info("[PROPERTY_AUTOFILL]", {
+      orgId: ctx.orgId,
+      userId: ctx.userId,
+      propertyId,
+      suggestionCount: Object.keys(parsed.suggestions || {}).length,
+      sourceCount,
+    });
 
     return NextResponse.json({
       success: true,
@@ -365,6 +399,14 @@ Return format: { "suggestions": { ... }, "confidence": { ... }, "reasoning": "br
     });
   } catch (error) {
     logger.error("[PROPERTY_AUTOFILL]", error);
-    return NextResponse.json({ error: "Internal error" }, { status: 500 });
+    // Graceful failure — never crash the UI
+    return NextResponse.json(
+      {
+        success: false,
+        suggestions: {},
+        error: "AI autofill is temporarily unavailable. Your data is safe.",
+      },
+      { status: 200 }
+    );
   }
 }

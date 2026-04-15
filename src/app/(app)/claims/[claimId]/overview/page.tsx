@@ -696,6 +696,14 @@ export default function OverviewPage() {
                     placeholder="85001"
                   />
                 </div>
+                {claim.propertyId && (
+                  <Link
+                    href={`/property-profiles/${claim.propertyId}`}
+                    className="mt-2 inline-flex items-center gap-1 text-sm font-medium text-blue-600 transition-colors hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300"
+                  >
+                    View Property Profile →
+                  </Link>
+                )}
               </div>
             </div>
             <div className="mt-4 border-t border-slate-200 pt-4 dark:border-slate-700">
