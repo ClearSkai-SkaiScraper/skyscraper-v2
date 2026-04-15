@@ -90,13 +90,61 @@ export async function POST(req: NextRequest) {
     // Build full address
     const fullAddress = [address, city, state, zipCode].filter(Boolean).join(", ");
 
-    // Create the detailed property profile directly
-    // propertyId is self-referencing when no base property record exists
+    // ── Dual-write: create `properties` row first (FK target for claims/jobs/inspections) ──
+    // Then create `property_profiles` linked to it (rich data for health scores, digital twins)
+    const propertyId = createId();
     const profileId = createId();
+
+    // 1. Find or create a placeholder contact for the property
+    //    (properties.contactId is required by schema)
+    let contactId: string | null = null;
+    const existingContact = await prisma.contacts.findFirst({
+      where: { orgId: ctx.orgId },
+      select: { id: true },
+      orderBy: { createdAt: "desc" },
+    });
+    if (existingContact) {
+      contactId = existingContact.id;
+    } else {
+      // Create a placeholder contact for the org
+      contactId = createId();
+      await prisma.contacts.create({
+        data: {
+          id: contactId,
+          orgId: ctx.orgId,
+          firstName: "Property",
+          lastName: "Owner",
+          email: "",
+          updatedAt: new Date(),
+        },
+      });
+    }
+
+    // 2. Create the base `properties` row (FK target)
+    await prisma.properties.create({
+      data: {
+        id: propertyId,
+        orgId: ctx.orgId,
+        contactId,
+        name: fullAddress,
+        propertyType: parsed.data.propertyType || "residential",
+        street: address,
+        city: city || "",
+        state: state || "",
+        zipCode: zipCode || "",
+        yearBuilt: yearBuilt || null,
+        squareFootage: squareFootage || null,
+        roofType: roofType || null,
+        roofAge: roofAge || null,
+        updatedAt: new Date(),
+      },
+    });
+
+    // 3. Create the detailed `property_profiles` row linked to properties
     const profile = await prisma.property_profiles.create({
       data: {
         id: profileId,
-        propertyId: profileId,
+        propertyId,
         orgId: ctx.orgId,
         fullAddress,
         streetAddress: address,
@@ -113,7 +161,7 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    logger.info("[PROPERTY_PROFILE_CREATE]", { orgId: ctx.orgId, profileId });
+    logger.info("[PROPERTY_PROFILE_CREATE]", { orgId: ctx.orgId, propertyId, profileId });
 
     return NextResponse.json({ success: true, data: profile }, { status: 201 });
   } catch (err) {

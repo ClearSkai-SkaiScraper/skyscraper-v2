@@ -120,6 +120,8 @@ export const GET = withAuth(async (req: NextRequest, ctx) => {
           claimsSigned: r.claimsSigned,
           claimsApproved: r.claimsApproved,
           doorsKnocked: r.doorsKnocked,
+          leadsGenerated: r.contactsMade ?? 0,
+          jobsCompleted: r.inspectionsCompleted ?? 0,
           closeRate: Number(r.closeRate),
           commissionEarned:
             Number(r.commissionPaid) + Number(r.commissionOwed) + Number(r.commissionPending),
@@ -164,6 +166,8 @@ export const GET = withAuth(async (req: NextRequest, ctx) => {
             totalRevenue,
             totalClaims,
             totalDoors,
+            totalLeads: cleanLeaderboard.reduce((s, r) => s + (r.leadsGenerated || 0), 0),
+            totalJobs: cleanLeaderboard.reduce((s, r) => s + (r.jobsCompleted || 0), 0),
             pendingClaimsCount,
             signedClaimsCount,
             repCount: cleanLeaderboard.length,
@@ -347,6 +351,22 @@ export const GET = withAuth(async (req: NextRequest, ctx) => {
     for (const pin of canvassPins) {
       doorKnocksByUser.set(pin.userId, pin._count.id);
     }
+
+    // ── Jobs completed per user (from jobs table) ──
+    const jobRecords = await prisma.jobs.findMany({
+      where: {
+        orgId: ctx.orgId,
+        createdAt: { gte: periodStart },
+        status: { in: ["completed", "done", "finished"] },
+      },
+      select: { foreman: true },
+    });
+    const jobsByUser = new Map<string, number>();
+    for (const j of jobRecords) {
+      if (j.foreman) {
+        jobsByUser.set(j.foreman, (jobsByUser.get(j.foreman) || 0) + 1);
+      }
+    }
     // Total org-wide door knocks for summary
     const totalOrgDoorKnocks = await prisma.canvass_pins.count({
       where: {
@@ -405,6 +425,8 @@ export const GET = withAuth(async (req: NextRequest, ctx) => {
         claimsApproved: approvedClaims,
         doorsKnocked:
           (doorKnocksByUser.get(user.clerkUserId) || 0) + (doorKnocksByUser.get(user.id) || 0),
+        leadsGenerated: effectiveLeads.length,
+        jobsCompleted: (jobsByUser.get(user.clerkUserId) || 0) + (jobsByUser.get(user.id) || 0),
         closeRate,
         commissionEarned: totalRevenue * 0.1,
         commissionPaid: 0,
@@ -442,6 +464,8 @@ export const GET = withAuth(async (req: NextRequest, ctx) => {
           totalRevenue,
           totalClaims,
           totalDoors,
+          totalLeads: cleanLeaderboard.reduce((s, r) => s + (r.leadsGenerated || 0), 0),
+          totalJobs: cleanLeaderboard.reduce((s, r) => s + (r.jobsCompleted || 0), 0),
           pendingClaimsCount,
           signedClaimsCount,
           repCount: cleanLeaderboard.length,

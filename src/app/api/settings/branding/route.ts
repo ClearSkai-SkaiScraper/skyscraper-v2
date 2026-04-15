@@ -22,25 +22,36 @@ export async function GET() {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    // Read PDF-specific fields from Org table
     const org = await prisma.org.findUnique({
       where: { id: ctx.orgId },
       select: {
         id: true,
         name: true,
+        clerkOrgId: true,
         brandLogoUrl: true,
         pdfHeaderText: true,
         pdfFooterText: true,
       },
     });
 
+    // Read branding from org_branding (canonical source for logo, colors, etc.)
+    const orgIdCandidates = [ctx.orgId, org?.clerkOrgId].filter(
+      (v): v is string => typeof v === "string" && v.length > 0
+    );
+    const branding = await prisma.org_branding.findFirst({
+      where: { orgId: { in: orgIdCandidates } },
+      orderBy: { updatedAt: "desc" },
+    });
+
     return NextResponse.json({
       success: true,
       branding: {
         id: org?.id,
-        name: org?.name,
-        logoUrl: org?.brandLogoUrl || "",
-        brandColor: "",
-        secondaryColor: "",
+        name: branding?.companyName || org?.name,
+        logoUrl: branding?.logoUrl || org?.brandLogoUrl || "",
+        brandColor: branding?.colorPrimary || "",
+        secondaryColor: branding?.colorAccent || "",
         tagline: "",
         pdfHeaderText: org?.pdfHeaderText || "",
         pdfFooterText: org?.pdfFooterText || "",
@@ -74,6 +85,30 @@ export async function PUT(req: NextRequest) {
         updatedAt: new Date(),
       },
     });
+
+    // Sync logoUrl to org_branding (canonical branding table) to prevent split-brain
+    if (logoUrl !== undefined) {
+      try {
+        const org = await prisma.org.findUnique({
+          where: { id: ctx.orgId },
+          select: { clerkOrgId: true },
+        });
+        const orgIdCandidates = [ctx.orgId, org?.clerkOrgId].filter(
+          (v): v is string => typeof v === "string" && v.length > 0
+        );
+        const existingBranding = await prisma.org_branding.findFirst({
+          where: { orgId: { in: orgIdCandidates } },
+        });
+        if (existingBranding) {
+          await prisma.org_branding.update({
+            where: { id: existingBranding.id },
+            data: { logoUrl, updatedAt: new Date() },
+          });
+        }
+      } catch (syncErr) {
+        logger.warn("[SETTINGS_BRANDING] Failed to sync logoUrl to org_branding:", syncErr);
+      }
+    }
 
     logger.info("[SETTINGS_BRANDING] Updated", { orgId: ctx.orgId });
 

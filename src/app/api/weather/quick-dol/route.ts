@@ -420,7 +420,8 @@ export const POST = withAuth(async (req: NextRequest, { userId, orgId }) => {
       response.scanId = scanId;
       logger.info("[weather/quick-dol] Saved scan", { scanId, claimId: body.claimId, orgId });
 
-      // ── Step 6: Create storm_events entry so it appears on Weather Intelligence map ──
+      // ── Step 6: Upsert storm_events entry so it appears on Weather Intelligence map ──
+      // Idempotent: if a storm event already exists at the same location + date + org, update it
       if (lat !== null && lng !== null && candidates.length > 0) {
         try {
           const topCandidate = candidates[0];
@@ -448,48 +449,84 @@ export const POST = withAuth(async (req: NextRequest, { userId, orgId }) => {
           // Extract city from address for affectedCities
           const cityFromAddr = extractCityFromAddress(address);
 
-          await prisma.storm_events.create({
-            data: {
-              id: crypto.randomUUID(),
+          const stormStartTime = topCandidate.date ? new Date(topCandidate.date) : new Date();
+
+          // ── Idempotency: check for existing storm_event at same location ± 0.01° and ±3 days ──
+          const THREE_DAYS_MS = 3 * 24 * 60 * 60 * 1000;
+          const existing = await prisma.storm_events.findFirst({
+            where: {
               orgId,
-              eventType,
-              severity,
-              centerLat: lat,
-              centerLng: lng,
-              radiusMiles: 5, // default radius for a DOL-identified storm
-              affectedZipCodes: [],
-              affectedCities: cityFromAddr ? [cityFromAddr] : [],
-              hailSizeAvg: topWeather?.precip ? Math.min(topWeather.precip, 4) : null,
-              windSpeedMax: topWeather?.windgust
-                ? Math.round(topWeather.windgust)
-                : topWeather?.windspeed
-                  ? Math.round(topWeather.windspeed)
-                  : null,
-              stormStartTime: topCandidate.date ? new Date(topCandidate.date) : new Date(),
-              estimatedPropertiesImpacted: 0,
-              impactSummary: `DOL scan: ${topCandidate.reasoning || `${eventType} event detected via Quick DOL analysis`}`,
-              damageProjection: `Confidence: ${Math.round(conf * 100)}% — ${weatherData.length} days analyzed`,
-              deploymentRecommendation:
-                conf >= 0.7
-                  ? "Recommended — high confidence DOL match"
-                  : "Review needed — moderate confidence",
-              aiConfidence: Math.round(conf * 100),
-              status: "DETECTED",
-              detectedAt: new Date(),
-              updatedAt: new Date(),
-              metadata: { source: "quick_dol", weatherReportId: scanId },
+              centerLat: {
+                gte: Number(lat) - 0.01,
+                lte: Number(lat) + 0.01,
+              },
+              centerLng: {
+                gte: Number(lng) - 0.01,
+                lte: Number(lng) + 0.01,
+              },
+              stormStartTime: {
+                gte: new Date(stormStartTime.getTime() - THREE_DAYS_MS),
+                lte: new Date(stormStartTime.getTime() + THREE_DAYS_MS),
+              },
             },
           });
-          logger.info(
-            "[weather/quick-dol] Created storm_events entry for Weather Intelligence map",
-            {
+
+          const stormData = {
+            eventType,
+            severity,
+            centerLat: lat,
+            centerLng: lng,
+            radiusMiles: 5,
+            affectedZipCodes: [],
+            affectedCities: cityFromAddr ? [cityFromAddr] : [],
+            hailSizeAvg: topWeather?.precip ? Math.min(topWeather.precip, 4) : null,
+            windSpeedMax: topWeather?.windgust
+              ? Math.round(topWeather.windgust)
+              : topWeather?.windspeed
+                ? Math.round(topWeather.windspeed)
+                : null,
+            stormStartTime,
+            estimatedPropertiesImpacted: 0,
+            impactSummary: `DOL scan: ${topCandidate.reasoning || `${eventType} event detected via Quick DOL analysis`}`,
+            damageProjection: `Confidence: ${Math.round(conf * 100)}% — ${weatherData.length} days analyzed`,
+            deploymentRecommendation:
+              conf >= 0.7
+                ? "Recommended — high confidence DOL match"
+                : "Review needed — moderate confidence",
+            aiConfidence: Math.round(conf * 100),
+            status: "DETECTED",
+            updatedAt: new Date(),
+            metadata: { source: "quick_dol", weatherReportId: scanId },
+          };
+
+          if (existing) {
+            // Update existing storm event with latest data
+            await prisma.storm_events.update({
+              where: { id: existing.id },
+              data: stormData,
+            });
+            logger.info("[weather/quick-dol] Updated existing storm_events entry (idempotent)", {
+              existingId: existing.id,
               scanId,
               lat,
               lng,
               eventType,
               severity,
-            }
-          );
+            });
+          } else {
+            await prisma.storm_events.create({
+              data: {
+                id: crypto.randomUUID(),
+                orgId,
+                ...stormData,
+                detectedAt: new Date(),
+              },
+            });
+            logger.info(
+              "[weather/quick-dol] Created storm_events entry for Weather Intelligence map",
+              { scanId, lat, lng, eventType, severity }
+            );
+          }
         } catch (stormErr) {
           // Non-fatal — scan still saved, just won't show as a map marker
           logger.warn("[weather/quick-dol] Failed to create storm_events entry:", stormErr);

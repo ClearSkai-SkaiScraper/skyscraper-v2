@@ -234,6 +234,10 @@ export function GoalProgressBar() {
           totalJobs += m.jobsCompleted || m.jobs || 0;
         }
 
+        // Use summary totals as fallback (more accurate for org-wide counts)
+        if (summary?.totalLeads && totalLeads === 0) totalLeads = summary.totalLeads;
+        if (summary?.totalJobs && totalJobs === 0) totalJobs = summary.totalJobs;
+
         // Doors come from summary (now real canvass_pins count)
         const totalDoors =
           summary?.totalDoors ??
