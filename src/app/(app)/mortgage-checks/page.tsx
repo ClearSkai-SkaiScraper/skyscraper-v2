@@ -115,7 +115,7 @@ export default async function MortgageChecksPage() {
   return (
     <PageContainer maxWidth="7xl">
       <PageHero
-        section="jobs"
+        section="finance"
         title="Mortgage Check Tracker"
         subtitle="Track mortgage company checks through endorsement and deposit"
         icon={<Banknote className="h-5 w-5" />}

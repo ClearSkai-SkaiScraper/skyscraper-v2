@@ -82,7 +82,6 @@ export const navSections: NavSection[] = [
   {
     label: "Jobs & Operations",
     items: [
-      { label: "New Job", href: "/jobs/new" },
       { label: "Retail Workspace", href: "/jobs/retail" },
       { label: "Task Manager", href: "/tasks" },
       { label: "Appointments & Inspections", href: "/appointments" },

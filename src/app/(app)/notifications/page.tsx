@@ -214,7 +214,7 @@ export default function NotificationsPage() {
   return (
     <PageContainer maxWidth="5xl">
       <PageHero
-        section="network"
+        section="settings"
         title="Notifications"
         subtitle="Stay on top of messages, connection requests, and system alerts"
       >

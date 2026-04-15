@@ -434,7 +434,7 @@ supplement_002"
   return (
     <>
       <PageHero
-        section="claims"
+        section="reports"
         title="AI Estimate Builder"
         subtitle="Generate insurance or retail estimates with Xactimate-style line items, O&P, and tax"
         icon={<Calculator className="h-6 w-6" />}

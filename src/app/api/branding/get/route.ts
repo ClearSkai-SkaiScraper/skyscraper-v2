@@ -59,6 +59,9 @@ export async function GET(req: NextRequest) {
         colorAccent: true,
         logoUrl: true,
         teamPhotoUrl: true,
+        tax_rate: true,
+        tax_enabled: true,
+        business_state: true,
       },
     });
 

@@ -6,6 +6,7 @@ import { NoOrgMembershipBanner } from "@/components/guards/NoOrgMembershipBanner
 import { PageContainer } from "@/components/layout/PageContainer";
 import { PageHero } from "@/components/layout/PageHero";
 import { getOrgContext } from "@/lib/org/getOrgContext";
+import { GoalProgressBar } from "./_components/GoalProgressBar";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -17,7 +18,7 @@ export const metadata: Metadata = {
 
 /**
  * /leaderboard — Full-page Team Analytics & Leaderboard
- * Shows team KPIs + full leaderboard component with filtering.
+ * Shows team KPIs + goal progress + full leaderboard component with filtering.
  */
 export default async function LeaderboardAnalyticsPage() {
   const ctx = await getOrgContext();
@@ -26,11 +27,14 @@ export default async function LeaderboardAnalyticsPage() {
   return (
     <PageContainer maxWidth="7xl">
       <PageHero
-        section="command"
+        section="settings"
         title="Team Analytics & Leaderboard"
         subtitle="Track revenue, signed claims, and rep performance across your entire team"
         icon={<Trophy className="h-5 w-5" />}
       />
+
+      {/* Goal Progress Bars — client component reads localStorage goals */}
+      <GoalProgressBar />
 
       {/* Full Leaderboard Component with all tabs, filtering, and analytics */}
       <CompanyLeaderboard />

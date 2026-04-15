@@ -28,14 +28,15 @@ test.describe("Critical System Smoke Tests", () => {
 
   test("sign-in page is accessible", async ({ page }) => {
     const response = await page.goto("/sign-in").catch(() => null);
-    if (!response || response.status() >= 400) return test.skip("Sign-in route not available");
+    if (!response || response.status() >= 400)
+      return test.skip(true, "Sign-in route not available");
     await page.waitForTimeout(1500); // allow Clerk assets to attempt load
     const emailInput = page.locator('input[type="email"], input[name*="email" i], form');
     const visible = await emailInput
       .first()
       .isVisible()
       .catch(() => false);
-    if (!visible) return test.skip("Clerk UI not loaded");
+    if (!visible) return test.skip(true, "Clerk UI not loaded");
     await expect(page).toHaveURL(/sign-in/);
   });
 
@@ -87,14 +88,15 @@ test.describe("Authentication Flow", () => {
 
   test("sign-in page renders accessible heading", async ({ page }) => {
     const response = await page.goto("/sign-in").catch(() => null);
-    if (!response || response.status() >= 400) return test.skip("Sign-in route not available");
+    if (!response || response.status() >= 400)
+      return test.skip(true, "Sign-in route not available");
     await page.waitForTimeout(1500);
     const formPresence = page.locator('form, input[type="email"], input[name*="email" i]');
     const visible = await formPresence
       .first()
       .isVisible()
       .catch(() => false);
-    if (!visible) return test.skip("Clerk UI not loaded");
+    if (!visible) return test.skip(true, "Clerk UI not loaded");
   });
 });
 
@@ -114,7 +116,7 @@ test.describe("Health Endpoints", () => {
   test("/api/health/ready returns 200 OK with database check (skips without DB)", async ({
     request,
   }) => {
-    if (!hasDb) test.skip("Skipping /api/health/ready DB check without real DATABASE_URL");
+    if (!hasDb) test.skip(true, "Skipping /api/health/ready DB check without real DATABASE_URL");
     const response = await request.get("/api/health/ready");
     expect(response.ok()).toBeTruthy();
     expect(response.status()).toBe(200);

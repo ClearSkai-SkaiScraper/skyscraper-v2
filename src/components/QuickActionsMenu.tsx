@@ -42,10 +42,10 @@ interface QuickAction {
 }
 
 export function QuickActionsMenu({
-  onSearch,
+  onSearchAction,
   className,
 }: {
-  onSearch?: () => void;
+  onSearchAction?: () => void;
   className?: string;
 }) {
   const [isOpen, setIsOpen] = useState(false);
@@ -54,8 +54,8 @@ export function QuickActionsMenu({
 
   const handleSearch = useCallback(() => {
     setIsOpen(false);
-    if (onSearch) {
-      onSearch();
+    if (onSearchAction) {
+      onSearchAction();
     } else {
       // Dispatch keyboard event for cmdk
       const event = new KeyboardEvent("keydown", {
@@ -65,7 +65,7 @@ export function QuickActionsMenu({
       });
       document.dispatchEvent(event);
     }
-  }, [onSearch]);
+  }, [onSearchAction]);
 
   const handleNewTask = useCallback(() => {
     setIsOpen(false);
@@ -111,7 +111,7 @@ export function QuickActionsMenu({
       id: "new-job",
       label: "New Job",
       icon: <Hammer className="h-4 w-4" />,
-      href: "/jobs/new",
+      href: "/jobs/retail/new",
       color: "from-amber-500 to-orange-500",
     },
     {

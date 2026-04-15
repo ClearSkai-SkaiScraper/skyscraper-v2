@@ -17,9 +17,9 @@ import { getDashboardWeather } from "@/lib/weather/weatherstack";
 
 import AIInsightsWidget from "./_components/AIInsightsWidget";
 import CompanyBrandingPreview from "./_components/CompanyBrandingPreview";
+import DOLWeatherWidget from "./_components/DOLWeatherWidget";
 import NetworkActivity from "./_components/NetworkActivity";
 import StatsCards from "./_components/StatsCards";
-import WeatherKPICards from "./_components/WeatherKPICards";
 import WorkOpportunityNotifications from "./_components/WorkOpportunityNotifications";
 
 export const metadata: Metadata = {
@@ -168,7 +168,7 @@ export default async function DashboardPage() {
                 <Link href="/leads/new">New Lead</Link>
               </Button>
               <Button asChild className="bg-amber-600 text-white hover:bg-amber-700">
-                <Link href="/jobs/new">New Job</Link>
+                <Link href="/jobs/retail/new">New Job</Link>
               </Button>
               <Button variant="outline" asChild>
                 <Link href="/tasks">Task Manager</Link>
@@ -190,15 +190,35 @@ export default async function DashboardPage() {
             <StatsCards />
           </AsyncBoundary>
 
-          {/* Main Section: AI Insights + Leaderboard - Side by Side */}
-          <div className="grid gap-6 lg:grid-cols-2">
-            {/* AI Insights - Combined Stalled Claims + Recommendations */}
-            <AIInsightsWidget />
-
-            {/* Company Leaderboard with Goals */}
-            <div className="max-h-[520px] overflow-hidden rounded-2xl">
-              <CompanyLeaderboard className="h-full max-h-[520px] overflow-y-auto" />
+          {/* Company Leaderboard — Full Width at Top */}
+          <AsyncBoundary
+            fallback={
+              <div className="animate-pulse rounded-2xl border border-slate-200/20 bg-white/60 p-8 backdrop-blur-xl dark:bg-slate-900/50">
+                <div className="h-64 rounded-xl bg-slate-200 dark:bg-slate-800"></div>
+              </div>
+            }
+          >
+            <div className="rounded-2xl border border-slate-200/40 bg-white/80 shadow-sm backdrop-blur-sm dark:border-slate-800/60 dark:bg-slate-900/60">
+              <CompanyLeaderboard className="max-h-[500px] overflow-y-auto" />
             </div>
+          </AsyncBoundary>
+
+          {/* AI Insights — Full Width Below Leaderboard */}
+          <AIInsightsWidget />
+
+          {/* Weather + DOL Intelligence Row */}
+          <div className="grid gap-6 lg:grid-cols-2">
+            {/* Live Weather Summary */}
+            <div className="rounded-2xl border border-slate-200/40 bg-white/80 p-6 shadow-sm backdrop-blur-sm dark:border-slate-800/60 dark:bg-slate-900/60">
+              <WeatherSummaryCard weather={weather} />
+            </div>
+
+            {/* DOL Weather Intelligence - Single Consolidated Widget */}
+            <AsyncBoundary
+              fallback={<div className="h-64 animate-pulse rounded-2xl bg-[var(--surface-2)]" />}
+            >
+              <DOLWeatherWidget />
+            </AsyncBoundary>
           </div>
 
           {/* Work Opportunities & Network Activity Row */}
@@ -223,27 +243,6 @@ export default async function DashboardPage() {
               }
             >
               <NetworkActivity />
-            </AsyncBoundary>
-          </div>
-
-          {/* Weather Section */}
-          <div className="grid gap-6 lg:grid-cols-2">
-            {/* Live Weather Summary */}
-            <div className="rounded-2xl border border-slate-200/40 bg-white/80 p-6 shadow-sm backdrop-blur-sm dark:border-slate-800/60 dark:bg-slate-900/60">
-              <WeatherSummaryCard weather={weather} />
-            </div>
-
-            {/* Weather Intelligence KPIs */}
-            <AsyncBoundary
-              fallback={
-                <div className="grid h-full grid-cols-2 gap-4">
-                  {[...Array(4)].map((_, i) => (
-                    <div key={i} className="h-20 animate-pulse rounded-xl bg-[var(--surface-2)]" />
-                  ))}
-                </div>
-              }
-            >
-              <WeatherKPICards />
             </AsyncBoundary>
           </div>
 

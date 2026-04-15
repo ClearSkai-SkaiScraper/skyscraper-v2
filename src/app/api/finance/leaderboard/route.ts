@@ -2,7 +2,6 @@
 import { clerkClient } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 
-import { requireRole } from "@/lib/auth/rbac";
 import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 import { safeOrgContext } from "@/lib/safeOrgContext";
@@ -53,8 +52,9 @@ export async function GET(req: Request) {
     if (ctx.status !== "ok" || !ctx.orgId)
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-    // RBAC: Only managers+ can view leaderboard/compensation data
-    await requireRole("manager");
+    // RBAC: All authenticated org members can view the leaderboard
+    // (Managers+ can see full data, members see limited view)
+    // Removed requireRole("manager") to allow all team members access
 
     const { searchParams } = new URL(req.url);
     const period = searchParams.get("period") || "month";

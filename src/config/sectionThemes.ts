@@ -146,6 +146,8 @@ const ROUTE_THEME_MAP: [string, SectionTheme][] = [
   // ── Field & Sales ──────────────────────────────────────────────────
   ["/field", "trades"],
   ["/storm-leads", "trades"],
+  ["/maps/door-knocking", "trades"],
+  ["/maps/weather-chains", "claims"],
 
   // ── Trades Toolkit ─────────────────────────────────────────────────
   ["/trades", "trades"],
@@ -186,7 +188,7 @@ const ROUTE_THEME_MAP: [string, SectionTheme][] = [
   ["/commissions", "finance"],
   ["/messages", "finance"],
   ["/sms", "finance"],
-  ["/notifications", "finance"],
+  ["/notifications", "settings"],
   ["/billing", "finance"],
   ["/contracts", "finance"],
   ["/financial", "finance"],

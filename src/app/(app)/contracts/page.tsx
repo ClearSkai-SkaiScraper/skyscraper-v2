@@ -68,7 +68,7 @@ export default async function ContractsPage() {
 
   try {
     allJobs = await prisma.jobs.findMany({
-      where: { orgId, archivedAt: null },
+      where: { orgId },
       orderBy: { updatedAt: "desc" },
       select: {
         id: true,

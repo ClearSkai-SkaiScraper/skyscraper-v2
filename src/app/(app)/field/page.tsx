@@ -25,6 +25,7 @@ import {
   Loader2,
   MapPin,
   Plus,
+  RefreshCw,
   RotateCcw,
   Ruler,
   Search,
@@ -32,7 +33,8 @@ import {
   X,
 } from "lucide-react";
 import Link from "next/link";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Suspense, useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 
 import { AddressAutocomplete, type AddressSuggestion } from "@/components/AddressAutocomplete";
@@ -86,26 +88,61 @@ const QUICK_SCOPE_ITEMS: Omit<QuickScopeItem, "id" | "selected">[] = [
 ];
 
 // ---------------------------------------------------------------------------
-// GPS helper
+// GPS helper — with retry and fallback
 // ---------------------------------------------------------------------------
-function getGPS(): Promise<{ latitude: number; longitude: number } | null> {
+function getGPS(retries = 2): Promise<{ latitude: number; longitude: number } | null> {
   return new Promise((resolve) => {
     if (!navigator.geolocation) {
       resolve(null);
       return;
     }
-    navigator.geolocation.getCurrentPosition(
-      (pos) => resolve({ latitude: pos.coords.latitude, longitude: pos.coords.longitude }),
-      () => resolve(null),
-      { timeout: 5000, enableHighAccuracy: true }
-    );
+
+    let attempt = 0;
+    const tryGet = () => {
+      navigator.geolocation.getCurrentPosition(
+        (pos) => resolve({ latitude: pos.coords.latitude, longitude: pos.coords.longitude }),
+        () => {
+          attempt++;
+          if (attempt <= retries) {
+            // Retry with lower accuracy (faster, works indoors)
+            navigator.geolocation.getCurrentPosition(
+              (pos) => resolve({ latitude: pos.coords.latitude, longitude: pos.coords.longitude }),
+              () => resolve(null),
+              { timeout: 10000, enableHighAccuracy: false }
+            );
+          } else {
+            resolve(null);
+          }
+        },
+        { timeout: 5000, enableHighAccuracy: true }
+      );
+    };
+    tryGet();
   });
+}
+
+// ---------------------------------------------------------------------------
+// Linked record type — job or claim to associate this field submission with
+// ---------------------------------------------------------------------------
+interface LinkedRecord {
+  id: string;
+  label: string;
+  type: "claim" | "job";
 }
 
 // ---------------------------------------------------------------------------
 // Component
 // ---------------------------------------------------------------------------
-export default function FieldModePage() {
+function FieldModeContent() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+
+  // Pre-fill from URL params (e.g. from Property Profile → AI Inspection)
+  const urlPropertyId = searchParams?.get("propertyId") || "";
+  const urlAddress = searchParams?.get("address") || "";
+  const urlClaimId = searchParams?.get("claimId") || "";
+  const urlJobId = searchParams?.get("jobId") || "";
+
   const [photos, setPhotos] = useState<FieldPhoto[]>([]);
   const [scopeItems, setScopeItems] = useState<QuickScopeItem[]>(
     QUICK_SCOPE_ITEMS.map((item, i) => ({
@@ -114,25 +151,106 @@ export default function FieldModePage() {
       selected: false,
     }))
   );
-  const [propertyAddress, setPropertyAddress] = useState("");
+  const [propertyAddress, setPropertyAddress] = useState(urlAddress);
   const [homeownerName, setHomeownerName] = useState("");
   const [notes, setNotes] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [submittedClaimId, setSubmittedClaimId] = useState<string | null>(null);
   const [showScope, setShowScope] = useState(false);
   const [gpsStatus, setGpsStatus] = useState<"pending" | "active" | "unavailable">("pending");
   const [bulkAnalyzing, setBulkAnalyzing] = useState(false);
   const [draggedPhotoId, setDraggedPhotoId] = useState<string | null>(null);
   const [dragOverPhotoId, setDragOverPhotoId] = useState<string | null>(null);
 
+  // Linked record — existing claim or job to associate with
+  const [linkedRecord, setLinkedRecord] = useState<LinkedRecord | null>(null);
+  const [searchingRecords, setSearchingRecords] = useState(false);
+  const [recordResults, setRecordResults] = useState<LinkedRecord[]>([]);
+  const [showRecordSearch, setShowRecordSearch] = useState(false);
+  const [recordSearchQuery, setRecordSearchQuery] = useState("");
+
   const fileInputRef = useRef<HTMLInputElement>(null);
   const cameraInputRef = useRef<HTMLInputElement>(null);
 
-  // Check GPS on mount
+  // Pre-link if URL has claimId or jobId
   useEffect(() => {
-    getGPS().then((result) => {
+    if (urlClaimId) {
+      setLinkedRecord({
+        id: urlClaimId,
+        label: `Claim ${urlClaimId.slice(0, 8)}...`,
+        type: "claim",
+      });
+    } else if (urlJobId) {
+      setLinkedRecord({ id: urlJobId, label: `Job ${urlJobId.slice(0, 8)}...`, type: "job" });
+    }
+  }, [urlClaimId, urlJobId]);
+
+  // Check GPS on mount — with retry
+  useEffect(() => {
+    getGPS(2).then((result) => {
       setGpsStatus(result ? "active" : "unavailable");
     });
+  }, []);
+
+  // Search claims/jobs for linking
+  const searchRecords = useCallback(async (query: string) => {
+    if (query.length < 2) {
+      setRecordResults([]);
+      return;
+    }
+    setSearchingRecords(true);
+    try {
+      const [claimsRes, jobsRes] = await Promise.allSettled([
+        fetch(`/api/claims?search=${encodeURIComponent(query)}&limit=5`),
+        fetch(`/api/jobs?search=${encodeURIComponent(query)}&limit=5`),
+      ]);
+      const results: LinkedRecord[] = [];
+      if (claimsRes.status === "fulfilled" && claimsRes.value.ok) {
+        const claimsData = await claimsRes.value.json();
+        const claims = Array.isArray(claimsData)
+          ? claimsData
+          : claimsData.data || claimsData.claims || [];
+        for (const c of claims.slice(0, 5)) {
+          results.push({
+            id: c.id,
+            label: `${c.claimNumber || "Claim"} — ${c.title || c.propertyAddress || ""}`.slice(
+              0,
+              60
+            ),
+            type: "claim",
+          });
+        }
+      }
+      if (jobsRes.status === "fulfilled" && jobsRes.value.ok) {
+        const jobsData = await jobsRes.value.json();
+        const jobs = Array.isArray(jobsData) ? jobsData : jobsData.data || jobsData.jobs || [];
+        for (const j of jobs.slice(0, 5)) {
+          results.push({
+            id: j.id,
+            label: `${j.jobNumber || "Job"} — ${j.title || j.address || ""}`.slice(0, 60),
+            type: "job",
+          });
+        }
+      }
+      setRecordResults(results);
+    } catch {
+      setRecordResults([]);
+    } finally {
+      setSearchingRecords(false);
+    }
+  }, []);
+
+  // Retry GPS
+  const retryGPS = useCallback(async () => {
+    setGpsStatus("pending");
+    const result = await getGPS(3);
+    setGpsStatus(result ? "active" : "unavailable");
+    if (result) {
+      toast.success("GPS connected!");
+    } else {
+      toast.error("GPS still unavailable. Check location permissions in Settings.");
+    }
   }, []);
 
   // ---- Photo capture ----
@@ -296,6 +414,16 @@ export default function FieldModePage() {
       formData.append("source", "field_mode");
       formData.append("quickScope", JSON.stringify(selectedScope.map((s) => s.label)));
 
+      // Pass linked record info
+      if (linkedRecord) {
+        formData.append("linkedRecordId", linkedRecord.id);
+        formData.append("linkedRecordType", linkedRecord.type);
+      }
+      // Pass property ID if navigated from a property profile
+      if (urlPropertyId) {
+        formData.append("propertyId", urlPropertyId);
+      }
+
       // Attach all photos
       for (const photo of photos) {
         formData.append("photos", photo.file);
@@ -318,6 +446,8 @@ export default function FieldModePage() {
       });
 
       if (res.ok) {
+        const data = await res.json();
+        setSubmittedClaimId(data.claimId || null);
         setSubmitted(true);
         toast.success("Claim submitted! AI is analyzing your photos.");
       } else {
@@ -330,7 +460,7 @@ export default function FieldModePage() {
     } finally {
       setSubmitting(false);
     }
-  }, [photos, propertyAddress, homeownerName, notes, scopeItems]);
+  }, [photos, propertyAddress, homeownerName, notes, scopeItems, linkedRecord, urlPropertyId]);
 
   const selectedCount = scopeItems.filter((s) => s.selected).length;
   const unanalyzedCount = photos.filter((p) => !p.aiLabel && !p.analyzing).length;
@@ -349,12 +479,22 @@ export default function FieldModePage() {
         </p>
         <p className="text-sm text-muted-foreground">AI is analyzing your photos now.</p>
         <div className="mt-6 flex gap-3">
-          <Link
-            href="/claims"
-            className="rounded-xl bg-emerald-600 px-6 py-3 text-sm font-bold text-white shadow-md hover:bg-emerald-700"
-          >
-            View Claims
-          </Link>
+          {submittedClaimId ? (
+            <button
+              type="button"
+              onClick={() => router.push(`/claims/${submittedClaimId}`)}
+              className="rounded-xl bg-emerald-600 px-6 py-3 text-sm font-bold text-white shadow-md hover:bg-emerald-700"
+            >
+              View Claim
+            </button>
+          ) : (
+            <Link
+              href="/claims"
+              className="rounded-xl bg-emerald-600 px-6 py-3 text-sm font-bold text-white shadow-md hover:bg-emerald-700"
+            >
+              View Claims
+            </Link>
+          )}
           <button
             type="button"
             onClick={() => {
@@ -364,6 +504,8 @@ export default function FieldModePage() {
               setHomeownerName("");
               setNotes("");
               setSubmitted(false);
+              setSubmittedClaimId(null);
+              setLinkedRecord(null);
             }}
             className="rounded-xl border border-slate-200 bg-white px-6 py-3 text-sm font-bold text-slate-700 shadow-sm hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300"
           >
@@ -387,7 +529,14 @@ export default function FieldModePage() {
               {gpsStatus === "active" ? (
                 <span className="text-emerald-600">GPS active</span>
               ) : gpsStatus === "unavailable" ? (
-                <span className="text-amber-600">GPS unavailable</span>
+                <button
+                  type="button"
+                  onClick={retryGPS}
+                  className="flex items-center gap-1 text-amber-600 hover:text-amber-700"
+                >
+                  GPS unavailable
+                  <RefreshCw className="h-2.5 w-2.5" />
+                </button>
               ) : (
                 <span>Checking GPS...</span>
               )}
@@ -448,6 +597,101 @@ export default function FieldModePage() {
             placeholder="Homeowner name (optional)"
             className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm dark:border-slate-700 dark:bg-slate-800"
           />
+
+          {/* Link to existing Claim or Job */}
+          <div className="relative">
+            {linkedRecord ? (
+              <div className="flex items-center justify-between rounded-xl border border-blue-200 bg-blue-50 px-4 py-3 dark:border-blue-800 dark:bg-blue-950/30">
+                <div className="flex items-center gap-2 text-sm">
+                  <span
+                    className={cn(
+                      "rounded px-1.5 py-0.5 text-[10px] font-bold uppercase",
+                      linkedRecord.type === "claim"
+                        ? "bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300"
+                        : "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300"
+                    )}
+                  >
+                    {linkedRecord.type}
+                  </span>
+                  <span className="truncate text-foreground">{linkedRecord.label}</span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setLinkedRecord(null)}
+                  className="ml-2 rounded-full p-1 text-slate-400 hover:bg-slate-200 hover:text-slate-600 dark:hover:bg-slate-700"
+                >
+                  <X className="h-3 w-3" />
+                </button>
+              </div>
+            ) : (
+              <>
+                <button
+                  type="button"
+                  onClick={() => setShowRecordSearch(!showRecordSearch)}
+                  className="w-full rounded-xl border border-dashed border-slate-300 bg-white px-4 py-3 text-left text-sm text-muted-foreground hover:border-blue-400 hover:bg-blue-50/50 dark:border-slate-600 dark:bg-slate-800 dark:hover:border-blue-600 dark:hover:bg-blue-950/20"
+                >
+                  🔗 Link to existing claim or job (optional)
+                </button>
+                {showRecordSearch && (
+                  <div className="mt-1 rounded-xl border border-slate-200 bg-white p-3 shadow-lg dark:border-slate-700 dark:bg-slate-800">
+                    <input
+                      type="text"
+                      value={recordSearchQuery}
+                      onChange={(e) => {
+                        setRecordSearchQuery(e.target.value);
+                        void searchRecords(e.target.value);
+                      }}
+                      placeholder="Search by claim #, job #, or address..."
+                      autoFocus
+                      className="mb-2 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm dark:border-slate-600 dark:bg-slate-900"
+                    />
+                    {searchingRecords && (
+                      <p className="py-2 text-center text-xs text-muted-foreground">
+                        <Loader2 className="mr-1 inline h-3 w-3 animate-spin" />
+                        Searching...
+                      </p>
+                    )}
+                    {recordResults.length > 0 && (
+                      <div className="max-h-40 space-y-1 overflow-y-auto">
+                        {recordResults.map((r) => (
+                          <button
+                            key={`${r.type}-${r.id}`}
+                            type="button"
+                            onClick={() => {
+                              setLinkedRecord(r);
+                              setShowRecordSearch(false);
+                              setRecordSearchQuery("");
+                              setRecordResults([]);
+                            }}
+                            className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-xs hover:bg-slate-50 dark:hover:bg-slate-700"
+                          >
+                            <span
+                              className={cn(
+                                "rounded px-1.5 py-0.5 text-[10px] font-bold uppercase",
+                                r.type === "claim"
+                                  ? "bg-blue-100 text-blue-700 dark:bg-blue-900/40"
+                                  : "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40"
+                              )}
+                            >
+                              {r.type}
+                            </span>
+                            <span className="truncate">{r.label}</span>
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                    {!searchingRecords &&
+                      recordSearchQuery.length >= 2 &&
+                      recordResults.length === 0 && (
+                        <p className="py-2 text-center text-xs text-muted-foreground">
+                          No results — will create a new claim on submit
+                        </p>
+                      )}
+                  </div>
+                )}
+              </>
+            )}
+          </div>
         </div>
 
         {/* Photos Grid - Drag to reorder */}
@@ -706,5 +950,22 @@ export default function FieldModePage() {
         </div>
       </div>
     </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Page wrapper with Suspense for useSearchParams
+// ---------------------------------------------------------------------------
+export default function FieldModePage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex min-h-screen items-center justify-center bg-slate-50 dark:bg-slate-950">
+          <Loader2 className="h-8 w-8 animate-spin text-blue-500" />
+        </div>
+      }
+    >
+      <FieldModeContent />
+    </Suspense>
   );
 }

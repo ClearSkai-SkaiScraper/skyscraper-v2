@@ -57,7 +57,7 @@ export default async function WeatherReportsPage() {
         title="Weather Reports"
         subtitle="Storm tracking, hail reports, and weather intelligence for your service area"
         icon={<CloudRain className="h-5 w-5" />}
-        section="reports"
+        section="claims"
       >
         <Button asChild>
           <Link href="/reports/weather">

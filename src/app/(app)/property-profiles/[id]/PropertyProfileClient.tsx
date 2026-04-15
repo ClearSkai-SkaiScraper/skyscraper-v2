@@ -7,11 +7,13 @@ import {
   Camera,
   Cloud,
   CloudRain,
+  Edit2,
   FileText,
   Home,
   Loader2,
   TrendingUp,
   Wrench,
+  X,
 } from "lucide-react";
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
@@ -51,13 +53,27 @@ export default function PropertyProfileClient({
   initialDigitalTwins,
   initialInspections,
 }: PropertyProfileClientProps) {
-  const [property] = useState(initialProperty);
+  const [property, setProperty] = useState(initialProperty);
   const [healthScore, setHealthScore] = useState(initialHealthScore);
   const [digitalTwins] = useState(initialDigitalTwins);
   const [inspections] = useState(initialInspections);
   const [calculating, setCalculating] = useState(false);
   const [weatherEvents, setWeatherEvents] = useState<WeatherEvent[]>([]);
   const [loadingWeather, setLoadingWeather] = useState(false);
+  const [editing, setEditing] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [editForm, setEditForm] = useState({
+    yearBuilt: initialProperty.yearBuilt || "",
+    squareFootage: initialProperty.squareFootage || "",
+    propertyType: initialProperty.propertyType || "RESIDENTIAL",
+    roofType: initialProperty.roofType || "",
+    roofAge: initialProperty.roofAge || "",
+    hvacAge: initialProperty.hvacAge || "",
+    waterHeaterAge: initialProperty.waterHeaterAge || "",
+    stories: initialProperty.stories || "",
+    garageType: initialProperty.garageType || "",
+    foundationType: initialProperty.foundationType || "",
+  });
 
   // Fetch weather history for this property
   const fetchWeatherHistory = useCallback(async () => {
@@ -99,6 +115,39 @@ export default function PropertyProfileClient({
     }
   };
 
+  const handleSaveProperty = async () => {
+    setSaving(true);
+    try {
+      const res = await fetch(`/api/v1/property-profiles/${propertyId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          yearBuilt: editForm.yearBuilt ? Number(editForm.yearBuilt) : null,
+          squareFootage: editForm.squareFootage ? Number(editForm.squareFootage) : null,
+          propertyType: editForm.propertyType,
+          roofType: editForm.roofType || null,
+          roofAge: editForm.roofAge ? Number(editForm.roofAge) : null,
+          hvacAge: editForm.hvacAge ? Number(editForm.hvacAge) : null,
+          waterHeaterAge: editForm.waterHeaterAge ? Number(editForm.waterHeaterAge) : null,
+          stories: editForm.stories ? Number(editForm.stories) : null,
+          garageType: editForm.garageType || null,
+          foundationType: editForm.foundationType || null,
+        }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setProperty({ ...property, ...data.property });
+        setEditing(false);
+      } else {
+        logger.error("Failed to save property:", res.status);
+      }
+    } catch (error) {
+      logger.error("Failed to save property:", error);
+    } finally {
+      setSaving(false);
+    }
+  };
+
   const riskScore = property.insuranceRiskScore || 0;
   const riskLevel =
     riskScore >= 80 ? "Critical" : riskScore >= 60 ? "High" : riskScore >= 40 ? "Moderate" : "Low";
@@ -122,15 +171,22 @@ export default function PropertyProfileClient({
           </div>
         </div>
         <div className="flex gap-2">
-          <Link href={`/inspections/new?propertyId=${propertyId}`}>
+          <Link
+            href={`/field?propertyId=${propertyId}&address=${encodeURIComponent(property.streetAddress || property.fullAddress || "")}`}
+          >
             <Button variant="outline" className="gap-2">
               <Camera className="h-4 w-4" />
               AI Inspection
             </Button>
           </Link>
-          <Link href={`/property-profiles/${propertyId}`}>
-            <Button>Edit Property</Button>
-          </Link>
+          <Button
+            onClick={() => setEditing(!editing)}
+            variant={editing ? "destructive" : "default"}
+            className="gap-2"
+          >
+            {editing ? <X className="h-4 w-4" /> : <Edit2 className="h-4 w-4" />}
+            {editing ? "Cancel" : "Edit Property"}
+          </Button>
         </div>
       </div>
 
@@ -243,6 +299,150 @@ export default function PropertyProfileClient({
         </TabsList>
 
         <TabsContent value="overview" className="space-y-6">
+          {/* Edit Form */}
+          {editing && (
+            <Card className="border-2 border-blue-300 bg-blue-50/50 dark:border-blue-700 dark:bg-blue-950/20">
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <CardTitle className="flex items-center gap-2">
+                    <Edit2 className="h-5 w-5" />
+                    Edit Property Details
+                  </CardTitle>
+                  <div className="flex gap-2">
+                    <Button
+                      onClick={handleSaveProperty}
+                      disabled={saving}
+                      size="sm"
+                      className="gap-2"
+                    >
+                      {saving ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : (
+                        <Save className="h-4 w-4" />
+                      )}
+                      {saving ? "Saving..." : "Save Changes"}
+                    </Button>
+                    <Button onClick={() => setEditing(false)} variant="outline" size="sm">
+                      <X className="mr-1 h-4 w-4" />
+                      Cancel
+                    </Button>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                  <div className="space-y-2">
+                    <Label>Year Built</Label>
+                    <Input
+                      type="number"
+                      value={editForm.yearBuilt}
+                      onChange={(e) => setEditForm({ ...editForm, yearBuilt: e.target.value })}
+                      placeholder="e.g. 2005"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Square Footage</Label>
+                    <Input
+                      type="number"
+                      value={editForm.squareFootage}
+                      onChange={(e) => setEditForm({ ...editForm, squareFootage: e.target.value })}
+                      placeholder="e.g. 2400"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Property Type</Label>
+                    <Select
+                      value={editForm.propertyType}
+                      onValueChange={(v) => setEditForm({ ...editForm, propertyType: v })}
+                    >
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="RESIDENTIAL">Residential</SelectItem>
+                        <SelectItem value="COMMERCIAL">Commercial</SelectItem>
+                        <SelectItem value="MULTI_FAMILY">Multi-Family</SelectItem>
+                        <SelectItem value="INDUSTRIAL">Industrial</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Roof Type</Label>
+                    <Select
+                      value={editForm.roofType || ""}
+                      onValueChange={(v) => setEditForm({ ...editForm, roofType: v })}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select..." />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="Asphalt Shingle">Asphalt Shingle</SelectItem>
+                        <SelectItem value="Metal">Metal</SelectItem>
+                        <SelectItem value="Tile">Tile</SelectItem>
+                        <SelectItem value="Flat/TPO">Flat/TPO</SelectItem>
+                        <SelectItem value="Slate">Slate</SelectItem>
+                        <SelectItem value="Wood Shake">Wood Shake</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Roof Age (years)</Label>
+                    <Input
+                      type="number"
+                      value={editForm.roofAge}
+                      onChange={(e) => setEditForm({ ...editForm, roofAge: e.target.value })}
+                      placeholder="e.g. 12"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>HVAC Age (years)</Label>
+                    <Input
+                      type="number"
+                      value={editForm.hvacAge}
+                      onChange={(e) => setEditForm({ ...editForm, hvacAge: e.target.value })}
+                      placeholder="e.g. 8"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Water Heater Age (years)</Label>
+                    <Input
+                      type="number"
+                      value={editForm.waterHeaterAge}
+                      onChange={(e) => setEditForm({ ...editForm, waterHeaterAge: e.target.value })}
+                      placeholder="e.g. 5"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Stories</Label>
+                    <Input
+                      type="number"
+                      value={editForm.stories}
+                      onChange={(e) => setEditForm({ ...editForm, stories: e.target.value })}
+                      placeholder="e.g. 2"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Foundation Type</Label>
+                    <Select
+                      value={editForm.foundationType || ""}
+                      onValueChange={(v) => setEditForm({ ...editForm, foundationType: v })}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select..." />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="Slab">Slab</SelectItem>
+                        <SelectItem value="Crawl Space">Crawl Space</SelectItem>
+                        <SelectItem value="Basement">Basement</SelectItem>
+                        <SelectItem value="Pier & Beam">Pier & Beam</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
           <div className="grid gap-6 md:grid-cols-2">
             {/* Property Details */}
             <Card>
@@ -265,6 +465,16 @@ export default function PropertyProfileClient({
                   <span className="text-muted-foreground">Risk Level:</span>
                   <Badge variant={riskColor as any}>{riskLevel}</Badge>
                 </div>
+                {!editing && (
+                  <Button
+                    onClick={() => setEditing(true)}
+                    variant="outline"
+                    size="sm"
+                    className="mt-3 w-full gap-2"
+                  >
+                    <Edit2 className="h-3 w-3" /> Edit Details
+                  </Button>
+                )}
               </CardContent>
             </Card>
 
@@ -293,6 +503,16 @@ export default function PropertyProfileClient({
                     {property.waterHeaterAge ? `${property.waterHeaterAge} years` : "N/A"}
                   </span>
                 </div>
+                {!editing && (
+                  <Button
+                    onClick={() => setEditing(true)}
+                    variant="outline"
+                    size="sm"
+                    className="mt-3 w-full gap-2"
+                  >
+                    <Edit2 className="h-3 w-3" /> Edit Systems
+                  </Button>
+                )}
               </CardContent>
             </Card>
           </div>

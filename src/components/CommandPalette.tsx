@@ -154,7 +154,7 @@ export function CommandPalette({ className }: CommandPaletteProps) {
         label: "Create New Job",
         description: "Start a new job — choose insurance, OOP, financed, or repair",
         icon: <Plus className="h-4 w-4" />,
-        action: () => router.push("/jobs/new"),
+        action: () => router.push("/jobs/retail/new"),
         keywords: ["add", "start", "new job", "retail", "repair"],
         section: "actions",
       },

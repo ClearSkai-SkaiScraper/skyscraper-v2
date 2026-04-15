@@ -2,12 +2,14 @@
 
 import { useUser } from "@clerk/nextjs";
 import {
+  AlertTriangle,
   ArrowRight,
   BarChart3,
   Brain,
   CheckCircle2,
   Clock,
   DollarSign,
+  ExternalLink,
   Flame,
   Lightbulb,
   RefreshCw,
@@ -46,6 +48,27 @@ interface ActionsSummary {
   totalClaims: number;
   totalLeads: number;
 }
+
+interface StalledClaim {
+  id: string;
+  claimNumber: string | null;
+  status: string | null;
+  propertyAddress: string | null;
+  homeownerName: string | null;
+  claimAmount: number | null;
+  daysSinceUpdate: number;
+  tier: "critical" | "warning" | "watch";
+}
+
+interface StalledSummary {
+  total: number;
+  critical: number;
+  warning: number;
+  watch: number;
+  totalAtRiskValue: number;
+}
+
+type ActiveTab = "actions" | "stalled" | "goals";
 
 const typeConfig = {
   urgent: {
@@ -97,6 +120,10 @@ export default function SmartActionsPage() {
   const [summary, setSummary] = useState<ActionsSummary | null>(null);
   const [loading, setLoading] = useState(true);
   const [dismissed, setDismissed] = useState<Set<string>>(new Set());
+  const [stalledClaims, setStalledClaims] = useState<StalledClaim[]>([]);
+  const [stalledSummary, setStalledSummary] = useState<StalledSummary | null>(null);
+  const [stalledLoading, setStalledLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState<ActiveTab>("actions");
 
   useEffect(() => {
     if (isLoaded && !isSignedIn) router.push("/sign-in");
@@ -121,7 +148,24 @@ export default function SmartActionsPage() {
   useEffect(() => {
     if (!isLoaded || !isSignedIn) return;
     void fetchActions();
+    void fetchStalledClaims();
   }, [isLoaded, isSignedIn]);
+
+  const fetchStalledClaims = async () => {
+    setStalledLoading(true);
+    try {
+      const res = await fetch("/api/claims/stalled");
+      const data = await res.json();
+      if (data.success) {
+        setStalledClaims(data.data?.claims || []);
+        setStalledSummary(data.data?.summary || null);
+      }
+    } catch (e) {
+      logger.error("Stalled claims fetch failed:", e);
+    } finally {
+      setStalledLoading(false);
+    }
+  };
 
   if (!isLoaded || !isSignedIn) {
     return <div className="flex h-screen items-center justify-center">Loading...</div>;
@@ -134,7 +178,7 @@ export default function SmartActionsPage() {
   return (
     <PageContainer maxWidth="7xl">
       <PageHero
-        section="claims"
+        section="command"
         title="Smart Actions Hub"
         subtitle="AI recommendations, stalled claims, goals tracking — your command center for what needs attention"
         icon={<Brain className="h-5 w-5" />}
@@ -212,106 +256,295 @@ export default function SmartActionsPage() {
         </Card>
       </div>
 
-      {/* Action Cards */}
-      {loading ? (
+      {/* Tab Navigation */}
+      <div className="mb-6 flex gap-1 rounded-xl bg-slate-100 p-1 dark:bg-slate-800/50">
+        <button
+          onClick={() => setActiveTab("actions")}
+          className={`flex-1 rounded-lg px-4 py-2.5 text-sm font-medium transition-all ${
+            activeTab === "actions"
+              ? "bg-white text-slate-900 shadow-sm dark:bg-slate-700 dark:text-white"
+              : "text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white"
+          }`}
+        >
+          <Sparkles className="mr-1.5 inline h-4 w-4" />
+          AI Actions ({visibleActions.length})
+        </button>
+        <button
+          onClick={() => setActiveTab("stalled")}
+          className={`flex-1 rounded-lg px-4 py-2.5 text-sm font-medium transition-all ${
+            activeTab === "stalled"
+              ? "bg-white text-slate-900 shadow-sm dark:bg-slate-700 dark:text-white"
+              : "text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white"
+          }`}
+        >
+          <AlertTriangle className="mr-1.5 inline h-4 w-4" />
+          Stalled Claims ({stalledSummary?.total || 0})
+        </button>
+        <button
+          onClick={() => setActiveTab("goals")}
+          className={`flex-1 rounded-lg px-4 py-2.5 text-sm font-medium transition-all ${
+            activeTab === "goals"
+              ? "bg-white text-slate-900 shadow-sm dark:bg-slate-700 dark:text-white"
+              : "text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white"
+          }`}
+        >
+          <Target className="mr-1.5 inline h-4 w-4" />
+          Goals
+        </button>
+      </div>
+
+      {/* Stalled Claims Tab */}
+      {activeTab === "stalled" && (
         <div className="space-y-4">
-          {[...Array(4)].map((_, i) => (
-            <div
-              key={i}
-              className="animate-pulse rounded-2xl border border-slate-200/20 bg-white/60 p-6 dark:bg-slate-900/50"
-            >
-              <div className="flex items-center gap-3">
-                <div className="h-10 w-10 rounded-xl bg-slate-200 dark:bg-slate-800" />
-                <div className="flex-1 space-y-2">
-                  <div className="h-4 w-1/3 rounded bg-slate-200 dark:bg-slate-800" />
-                  <div className="h-3 w-2/3 rounded bg-slate-200 dark:bg-slate-800" />
+          {stalledLoading ? (
+            <div className="space-y-3">
+              {[...Array(3)].map((_, i) => (
+                <div key={i} className="animate-pulse rounded-xl border p-4">
+                  <div className="h-5 w-1/3 rounded bg-slate-200 dark:bg-slate-800" />
+                  <div className="mt-2 h-4 w-2/3 rounded bg-slate-200 dark:bg-slate-800" />
+                </div>
+              ))}
+            </div>
+          ) : stalledClaims.length === 0 ? (
+            <Card className="border-emerald-200 bg-gradient-to-br from-emerald-50 to-teal-50 dark:border-emerald-800 dark:from-emerald-950/20 dark:to-teal-950/20">
+              <CardContent className="py-12 text-center">
+                <CheckCircle2 className="mx-auto mb-4 h-12 w-12 text-emerald-500" />
+                <h3 className="text-xl font-bold text-emerald-800 dark:text-emerald-300">
+                  No Stalled Claims! 🎉
+                </h3>
+                <p className="text-sm text-emerald-700 dark:text-emerald-400">
+                  All your claims are progressing on schedule.
+                </p>
+              </CardContent>
+            </Card>
+          ) : (
+            <>
+              {/* Stalled Summary */}
+              <div className="mb-4 grid grid-cols-4 gap-3">
+                <div className="rounded-xl border border-red-200 bg-red-50/80 p-3 text-center dark:border-red-800 dark:bg-red-950/20">
+                  <div className="text-2xl font-bold text-red-600">
+                    {stalledSummary?.critical || 0}
+                  </div>
+                  <div className="text-xs text-red-700 dark:text-red-400">Critical</div>
+                </div>
+                <div className="rounded-xl border border-amber-200 bg-amber-50/80 p-3 text-center dark:border-amber-800 dark:bg-amber-950/20">
+                  <div className="text-2xl font-bold text-amber-600">
+                    {stalledSummary?.warning || 0}
+                  </div>
+                  <div className="text-xs text-amber-700 dark:text-amber-400">Warning</div>
+                </div>
+                <div className="rounded-xl border border-blue-200 bg-blue-50/80 p-3 text-center dark:border-blue-800 dark:bg-blue-950/20">
+                  <div className="text-2xl font-bold text-blue-600">
+                    {stalledSummary?.watch || 0}
+                  </div>
+                  <div className="text-xs text-blue-700 dark:text-blue-400">Watch</div>
+                </div>
+                <div className="rounded-xl border border-slate-200 bg-slate-50/80 p-3 text-center dark:border-slate-700 dark:bg-slate-800/50">
+                  <div className="text-2xl font-bold">
+                    ${((stalledSummary?.totalAtRiskValue || 0) / 100).toLocaleString()}
+                  </div>
+                  <div className="text-xs text-muted-foreground">At Risk Value</div>
                 </div>
               </div>
-            </div>
-          ))}
-        </div>
-      ) : visibleActions.length === 0 ? (
-        <Card className="border-emerald-200 bg-gradient-to-br from-emerald-50 to-teal-50 dark:border-emerald-800 dark:from-emerald-950/20 dark:to-teal-950/20">
-          <CardContent className="py-12 text-center">
-            <Sparkles className="mx-auto mb-4 h-12 w-12 text-emerald-500" />
-            <h3 className="text-xl font-bold text-emerald-800 dark:text-emerald-300">
-              All Clear! 🎉
-            </h3>
-            <p className="mx-auto mt-2 max-w-md text-sm text-emerald-700 dark:text-emerald-400">
-              No pending actions right now. Your pipeline is healthy and all tasks are on track.
-              Keep building — new recommendations will appear as your data evolves.
-            </p>
-          </CardContent>
-        </Card>
-      ) : (
-        <div className="space-y-4">
-          {visibleActions.map((action) => {
-            const config = typeConfig[action.type];
-            const Icon = config.icon;
-            return (
-              <div
-                key={action.id}
-                className={`group overflow-hidden rounded-2xl border ${config.border} ${config.bg} p-5 shadow-sm transition-all hover:shadow-md`}
-              >
-                <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                  <div className="flex items-start gap-4">
-                    <div className={`rounded-xl p-2.5 ${config.bg}`}>
-                      <Icon className={`h-5 w-5 ${config.color}`} />
-                    </div>
-                    <div className="flex-1">
-                      <div className="mb-1 flex flex-wrap items-center gap-2">
-                        <span
-                          className={`rounded-full px-2 py-0.5 text-[10px] font-bold uppercase ${config.badge}`}
-                        >
-                          {config.label}
-                        </span>
-                        <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-medium capitalize text-slate-600 dark:bg-slate-800 dark:text-slate-400">
-                          {action.category}
-                        </span>
-                        {action.priority === "high" && (
-                          <span className="rounded-full bg-red-100 px-2 py-0.5 text-[10px] font-bold text-red-700 dark:bg-red-900/50 dark:text-red-400">
-                            ⚡ HIGH PRIORITY
+
+              {stalledClaims.map((claim) => (
+                <div
+                  key={claim.id}
+                  className={`rounded-xl border p-4 transition-all hover:shadow-md ${
+                    claim.tier === "critical"
+                      ? "border-red-200 bg-red-50/80 dark:border-red-800/50 dark:bg-red-950/20"
+                      : claim.tier === "warning"
+                        ? "border-amber-200 bg-amber-50/80 dark:border-amber-800/50 dark:bg-amber-950/20"
+                        : "border-slate-200 bg-slate-50/80 dark:border-slate-700 dark:bg-slate-800/40"
+                  }`}
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div
+                        className={`h-2.5 w-2.5 rounded-full ${
+                          claim.tier === "critical"
+                            ? "bg-red-500"
+                            : claim.tier === "warning"
+                              ? "bg-amber-500"
+                              : "bg-blue-500"
+                        }`}
+                      />
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm font-semibold">
+                            {claim.claimNumber || claim.id.slice(0, 16)}
                           </span>
+                          <span
+                            className={`rounded-full px-2 py-0.5 text-[10px] font-bold uppercase ${
+                              claim.tier === "critical"
+                                ? "bg-red-100 text-red-700 dark:bg-red-900/50 dark:text-red-400"
+                                : claim.tier === "warning"
+                                  ? "bg-amber-100 text-amber-700 dark:bg-amber-900/50 dark:text-amber-400"
+                                  : "bg-blue-100 text-blue-700 dark:bg-blue-900/50 dark:text-blue-400"
+                            }`}
+                          >
+                            {claim.tier}
+                          </span>
+                        </div>
+                        <p className="text-xs text-muted-foreground">
+                          {claim.homeownerName || "Unknown"}
+                        </p>
+                        {claim.propertyAddress && (
+                          <p className="text-xs text-muted-foreground">{claim.propertyAddress}</p>
                         )}
                       </div>
-                      <h4 className="text-base font-bold text-slate-900 dark:text-white">
-                        {action.title}
-                      </h4>
-                      <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
-                        {action.description}
-                      </p>
-                      {action.metric && (
-                        <p className="mt-2 flex items-center gap-1 text-xs font-semibold text-slate-700 dark:text-slate-300">
-                          <TrendingUp className="h-3 w-3" />
-                          {action.metric}
-                        </p>
-                      )}
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <div className="text-right">
+                        <div className="text-sm font-medium text-amber-600">
+                          {claim.daysSinceUpdate}d idle
+                        </div>
+                        {claim.claimAmount && (
+                          <div className="text-xs text-muted-foreground">
+                            ${(claim.claimAmount / 100).toLocaleString()}
+                          </div>
+                        )}
+                      </div>
+                      <Link href={`/claims/${claim.id}`}>
+                        <Button size="sm" variant="outline" className="gap-1">
+                          <ExternalLink className="h-3 w-3" />
+                          View
+                        </Button>
+                      </Link>
                     </div>
                   </div>
+                </div>
+              ))}
+            </>
+          )}
+        </div>
+      )}
 
-                  <div className="flex shrink-0 items-center gap-2 sm:flex-col">
-                    <Button asChild size="sm">
-                      <Link href={action.actionHref}>
-                        {action.actionLabel}
-                        <ArrowRight className="ml-1.5 h-3.5 w-3.5" />
-                      </Link>
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => setDismissed((prev) => new Set([...prev, action.id]))}
-                      className="text-xs text-slate-400 hover:text-slate-600"
-                    >
-                      <CheckCircle2 className="mr-1 h-3 w-3" />
-                      Done
-                    </Button>
+      {/* Goals Tab */}
+      {activeTab === "goals" && (
+        <div className="space-y-4">
+          <Card className="border-indigo-200 bg-gradient-to-br from-indigo-50 to-purple-50 dark:border-indigo-800 dark:from-indigo-950/20 dark:to-purple-950/20">
+            <CardContent className="py-8 text-center">
+              <Target className="mx-auto mb-4 h-12 w-12 text-indigo-500" />
+              <h3 className="text-xl font-bold text-indigo-800 dark:text-indigo-300">
+                Goal Tracking
+              </h3>
+              <p className="mx-auto mt-2 max-w-md text-sm text-indigo-700 dark:text-indigo-400">
+                Set and track goals for your team. Revenue targets, claim counts, and performance
+                milestones — all in one place.
+              </p>
+              <Button asChild className="mt-4" variant="outline">
+                <Link href="/settings/goals">
+                  <Target className="mr-2 h-4 w-4" />
+                  Configure Goals
+                </Link>
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
+      {/* Action Cards - Only visible on actions tab */}
+      {activeTab === "actions" &&
+        (loading ? (
+          <div className="space-y-4">
+            {[...Array(4)].map((_, i) => (
+              <div
+                key={i}
+                className="animate-pulse rounded-2xl border border-slate-200/20 bg-white/60 p-6 dark:bg-slate-900/50"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="h-10 w-10 rounded-xl bg-slate-200 dark:bg-slate-800" />
+                  <div className="flex-1 space-y-2">
+                    <div className="h-4 w-1/3 rounded bg-slate-200 dark:bg-slate-800" />
+                    <div className="h-3 w-2/3 rounded bg-slate-200 dark:bg-slate-800" />
                   </div>
                 </div>
               </div>
-            );
-          })}
-        </div>
-      )}
+            ))}
+          </div>
+        ) : visibleActions.length === 0 ? (
+          <Card className="border-emerald-200 bg-gradient-to-br from-emerald-50 to-teal-50 dark:border-emerald-800 dark:from-emerald-950/20 dark:to-teal-950/20">
+            <CardContent className="py-12 text-center">
+              <Sparkles className="mx-auto mb-4 h-12 w-12 text-emerald-500" />
+              <h3 className="text-xl font-bold text-emerald-800 dark:text-emerald-300">
+                All Clear! 🎉
+              </h3>
+              <p className="mx-auto mt-2 max-w-md text-sm text-emerald-700 dark:text-emerald-400">
+                No pending actions right now. Your pipeline is healthy and all tasks are on track.
+                Keep building — new recommendations will appear as your data evolves.
+              </p>
+            </CardContent>
+          </Card>
+        ) : (
+          <div className="space-y-4">
+            {visibleActions.map((action) => {
+              const config = typeConfig[action.type];
+              const Icon = config.icon;
+              return (
+                <div
+                  key={action.id}
+                  className={`group overflow-hidden rounded-2xl border ${config.border} ${config.bg} p-5 shadow-sm transition-all hover:shadow-md`}
+                >
+                  <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                    <div className="flex items-start gap-4">
+                      <div className={`rounded-xl p-2.5 ${config.bg}`}>
+                        <Icon className={`h-5 w-5 ${config.color}`} />
+                      </div>
+                      <div className="flex-1">
+                        <div className="mb-1 flex flex-wrap items-center gap-2">
+                          <span
+                            className={`rounded-full px-2 py-0.5 text-[10px] font-bold uppercase ${config.badge}`}
+                          >
+                            {config.label}
+                          </span>
+                          <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-medium capitalize text-slate-600 dark:bg-slate-800 dark:text-slate-400">
+                            {action.category}
+                          </span>
+                          {action.priority === "high" && (
+                            <span className="rounded-full bg-red-100 px-2 py-0.5 text-[10px] font-bold text-red-700 dark:bg-red-900/50 dark:text-red-400">
+                              ⚡ HIGH PRIORITY
+                            </span>
+                          )}
+                        </div>
+                        <h4 className="text-base font-bold text-slate-900 dark:text-white">
+                          {action.title}
+                        </h4>
+                        <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
+                          {action.description}
+                        </p>
+                        {action.metric && (
+                          <p className="mt-2 flex items-center gap-1 text-xs font-semibold text-slate-700 dark:text-slate-300">
+                            <TrendingUp className="h-3 w-3" />
+                            {action.metric}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="flex shrink-0 items-center gap-2 sm:flex-col">
+                      <Button asChild size="sm">
+                        <Link href={action.actionHref}>
+                          {action.actionLabel}
+                          <ArrowRight className="ml-1.5 h-3.5 w-3.5" />
+                        </Link>
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setDismissed((prev) => new Set([...prev, action.id]))}
+                        className="text-xs text-slate-400 hover:text-slate-600"
+                      >
+                        <CheckCircle2 className="mr-1 h-3 w-3" />
+                        Done
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        ))}
     </PageContainer>
   );
 }
