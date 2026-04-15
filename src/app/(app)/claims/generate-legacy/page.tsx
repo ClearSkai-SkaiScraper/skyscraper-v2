@@ -96,6 +96,7 @@ export default function ClaimsGeneratePage() {
     <div className="container mx-auto max-w-4xl space-y-6 p-6">
       {/* Header */}
       <PageHero
+        section="claims"
         title="Generate Insurance Claim"
         subtitle="Create a new AI-powered insurance claim proposal"
         icon={<FileText className="h-5 w-5" />}

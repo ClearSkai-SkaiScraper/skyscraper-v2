@@ -71,6 +71,7 @@ export default async function TemplateDetailPage({ params }: { params: { templat
   return (
     <PageContainer>
       <PageHero
+        section="reports"
         title={orgTemplate?.customName || template.name}
         subtitle={template.description || "Professional report template"}
         icon={<FileText className="h-5 w-5" />}

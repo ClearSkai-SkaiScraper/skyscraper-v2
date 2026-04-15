@@ -151,6 +151,7 @@ export default function SmartReportBuilderPage() {
   return (
     <div className="mx-auto max-w-6xl space-y-4 py-6">
       <PageHero
+        section="reports"
         title="Smart AI Report Builder"
         subtitle="Choose a claim, select a report type, pick your audience, and toggle which sections you want. SkaiScraper will generate a structured report you can print or export."
       >

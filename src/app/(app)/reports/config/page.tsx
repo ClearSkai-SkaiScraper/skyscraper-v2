@@ -50,12 +50,12 @@ export default async function ReportConfigPage() {
   if (!sampleClaim) {
     return (
       <div className="p-4">
-        <PageHero title="Report Generator" subtitle="No claims found" />
+        <PageHero section="reports" title="Report Generator" subtitle="No claims found" />
         <div className="mt-4 rounded-lg border-2 border-amber-200 bg-amber-50 p-4">
           <p className="text-sm font-semibold text-amber-900">⚠️ No claims found</p>
           <p className="mt-1 text-xs text-amber-700">
-            You don&apos;t have any claims yet. Create a claim first, then use the claim-level report
-            generator at <code>/claims/[claimId]/reports</code>.
+            You don&apos;t have any claims yet. Create a claim first, then use the claim-level
+            report generator at <code>/claims/[claimId]/reports</code>.
           </p>
         </div>
       </div>
@@ -67,6 +67,7 @@ export default async function ReportConfigPage() {
   return (
     <div className="flex flex-col gap-4 p-4">
       <PageHero
+        section="reports"
         title="Report Generator"
         subtitle={`Using claim ${sampleClaim?.claimNumber || sampleClaim?.id || "N/A"} at ${propertyAddress}`}
       >

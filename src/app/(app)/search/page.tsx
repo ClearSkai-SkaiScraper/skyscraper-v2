@@ -131,6 +131,7 @@ export default async function SearchPage({
   return (
     <>
       <PageHero
+        section="command"
         title="Search Results"
         subtitle="Enter a search query to find claims, leads, jobs, and clients"
         icon={<SearchIcon className="h-6 w-6" />}

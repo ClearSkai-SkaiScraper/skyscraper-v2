@@ -18,6 +18,7 @@ export default function ApiDocsPage() {
   return (
     <div className="space-y-6 p-8">
       <PageHero
+        section="settings"
         title="API Documentation"
         subtitle="Integrate SkaiScraper into your applications"
         icon={<Code className="h-5 w-5" />}

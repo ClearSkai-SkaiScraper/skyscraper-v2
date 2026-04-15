@@ -19,6 +19,7 @@ export default async function AdvancedAnalyticsPage() {
     <div className="space-y-6">
       {/* Header */}
       <PageHero
+        section="reports"
         title="Advanced Analytics"
         subtitle="Create custom reports, export data, and build powerful dashboards"
         icon={<BarChart3 className="h-5 w-5" />}

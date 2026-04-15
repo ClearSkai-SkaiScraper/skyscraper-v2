@@ -84,6 +84,7 @@ export default function WebhooksPage() {
   return (
     <div className="space-y-6 p-8">
       <PageHero
+        section="settings"
         title="Webhooks & Event System"
         subtitle="Real-time webhooks and event subscriptions"
         icon={<Webhook className="h-5 w-5" />}

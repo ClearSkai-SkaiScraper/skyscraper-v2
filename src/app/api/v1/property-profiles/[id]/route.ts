@@ -1,3 +1,4 @@
+import { createId } from "@paralleldrive/cuid2";
 import { NextResponse } from "next/server";
 
 import { logger } from "@/lib/logger";
@@ -32,14 +33,11 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
         data: {
           yearBuilt: body.yearBuilt,
           squareFootage: body.squareFootage,
-          propertyType: body.propertyType,
           roofType: body.roofType,
           roofAge: body.roofAge,
           hvacAge: body.hvacAge,
           waterHeaterAge: body.waterHeaterAge,
-          stories: body.stories,
-          garageType: body.garageType,
-          foundationType: body.foundationType,
+          numStories: body.stories ?? body.numStories,
           updatedAt: new Date(),
         },
       });
@@ -54,22 +52,23 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
       // Create a property_profile for this property
       const newProfile = await prisma.property_profiles.create({
         data: {
+          id: createId(),
           propertyId: id,
           orgId: ctx.orgId,
-          streetAddress: basicProperty.street,
-          city: basicProperty.city,
-          state: basicProperty.state,
-          zipCode: basicProperty.zipCode,
+          fullAddress:
+            `${basicProperty.street || ""}, ${basicProperty.city || ""}, ${basicProperty.state || ""} ${basicProperty.zipCode || ""}`.trim(),
+          streetAddress: basicProperty.street || "",
+          city: basicProperty.city || "",
+          state: basicProperty.state || "",
+          zipCode: basicProperty.zipCode || "",
+          updatedAt: new Date(),
           yearBuilt: body.yearBuilt,
           squareFootage: body.squareFootage,
-          propertyType: body.propertyType || "RESIDENTIAL",
           roofType: body.roofType,
           roofAge: body.roofAge,
           hvacAge: body.hvacAge,
           waterHeaterAge: body.waterHeaterAge,
-          stories: body.stories,
-          garageType: body.garageType,
-          foundationType: body.foundationType,
+          numStories: body.stories ?? body.numStories,
         },
       });
 

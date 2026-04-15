@@ -26,6 +26,7 @@ export default async function AIVisionPage() {
           Back to Claims
         </Link>
         <PageHero
+          section="claims"
           title="AI Damage Analysis"
           subtitle="Upload photos of property damage for instant AI-powered analysis and recommendations"
         />

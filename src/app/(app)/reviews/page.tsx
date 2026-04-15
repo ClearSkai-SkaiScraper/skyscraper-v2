@@ -95,6 +95,7 @@ function CustomerReviewsPage() {
     <div className="space-y-6 p-8">
       {/* Header */}
       <PageHero
+        section="network"
         title="Customer Reviews & Ratings"
         subtitle="Manage your online reputation and customer feedback"
         icon={<Star className="h-5 w-5" />}

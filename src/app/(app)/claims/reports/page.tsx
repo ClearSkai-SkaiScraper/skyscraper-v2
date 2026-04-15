@@ -122,6 +122,7 @@ export default async function ClaimsReportsPage() {
     <div className="container mx-auto space-y-6 py-6">
       {/* Header */}
       <PageHero
+        section="claims"
         title="Claims Reports"
         subtitle="Generate PDF reports for claims with materials"
         icon={<FileText className="h-5 w-5" />}

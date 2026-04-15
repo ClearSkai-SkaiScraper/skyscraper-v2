@@ -94,6 +94,7 @@ export default async function AiClaimsReportPage({
   return (
     <div className="flex flex-col gap-4 p-6">
       <PageHero
+        section="reports"
         title="AI Claims Report"
         subtitle={`Claim ${claims.claimNumber || claims.id} • ${claims.propertyAddress} • ${claims.dateOfLoss ? new Date(claims.dateOfLoss).toLocaleDateString() : "No DOL set"}`}
       >

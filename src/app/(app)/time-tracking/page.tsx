@@ -85,6 +85,7 @@ export default async function TimeTrackingPage() {
   return (
     <div className="space-y-6 p-8">
       <PageHero
+        section="jobs"
         title="Time Tracking & Scheduling"
         subtitle="Team schedules, job assignments, and work tracking"
         icon={<Clock className="h-5 w-5" />}

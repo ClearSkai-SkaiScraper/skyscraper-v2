@@ -18,6 +18,7 @@ export default async function InboxPage() {
   return (
     <div className="mx-auto max-w-7xl px-4 py-6">
       <PageHero
+        section="network"
         title="Inbox"
         subtitle="Stay updated with your team's activities and system notifications"
       />

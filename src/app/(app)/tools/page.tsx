@@ -324,6 +324,7 @@ export default async function ToolsPage() {
   return (
     <PageContainer>
       <PageHero
+        section="command"
         title="AI Tools"
         subtitle="AI-powered tools to accelerate claims processing, generate professional documents, and win more approvals."
         icon={<Sparkles className="h-8 w-8 text-primary" />}
