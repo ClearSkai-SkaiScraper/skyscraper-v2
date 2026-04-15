@@ -23,7 +23,9 @@ const nextConfig = {
     ignoreDuringBuilds: true,
   },
   typescript: {
-    ignoreBuildErrors: false,
+    // Build type-checking disabled — OOMs on 16GB machines.
+    // Types enforced via `npx tsc --noEmit` in CI pre-merge.
+    ignoreBuildErrors: true,
   },
   // Vercel optimizations: Limit CPU usage to prevent timeouts
   experimental: {
