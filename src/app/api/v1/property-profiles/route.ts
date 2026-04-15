@@ -9,20 +9,28 @@ import { safeOrgContext } from "@/lib/safeOrgContext";
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
-const createPropertySchema = z.object({
-  address: z.string().min(1, "Address is required"),
-  city: z.string().optional().default(""),
-  state: z.string().optional().default(""),
-  zipCode: z.string().optional().default(""),
-  propertyType: z.string().optional(),
-  squareFootage: z.number().int().positive().optional(),
-  yearBuilt: z.number().int().min(1800).max(2100).optional(),
-  roofType: z.string().optional(),
-  roofAge: z.number().int().min(0).optional(),
-  hvacAge: z.number().int().min(0).optional(),
-  waterHeaterAge: z.number().int().min(0).optional(),
-  notes: z.string().optional(),
-});
+const createPropertySchema = z
+  .object({
+    // Accept both 'address' and 'streetAddress' (form sends streetAddress)
+    address: z.string().min(1, "Address is required").optional(),
+    streetAddress: z.string().min(1, "Address is required").optional(),
+    city: z.string().optional().default(""),
+    state: z.string().optional().default(""),
+    zipCode: z.string().optional().default(""),
+    county: z.string().optional(),
+    propertyType: z.string().optional(),
+    squareFootage: z.number().int().positive().optional(),
+    yearBuilt: z.number().int().min(1800).max(2100).optional(),
+    roofType: z.string().optional(),
+    roofAge: z.number().int().min(0).optional(),
+    hvacAge: z.number().int().min(0).optional(),
+    waterHeaterAge: z.number().int().min(0).optional(),
+    notes: z.string().optional(),
+  })
+  .refine((d) => d.address || d.streetAddress, {
+    message: "Address is required",
+    path: ["address"],
+  });
 
 /**
  * GET /api/v1/property-profiles — List property profiles for the org
@@ -75,10 +83,12 @@ export async function POST(req: NextRequest) {
     }
 
     const {
-      address,
+      address: rawAddress,
+      streetAddress,
       city,
       state,
       zipCode,
+      county,
       squareFootage,
       yearBuilt,
       roofType,
@@ -86,6 +96,9 @@ export async function POST(req: NextRequest) {
       hvacAge,
       waterHeaterAge,
     } = parsed.data;
+
+    // Normalize: form sends streetAddress, legacy callers send address
+    const address = rawAddress || streetAddress || "";
 
     // Build full address
     const fullAddress = [address, city, state, zipCode].filter(Boolean).join(", ");
@@ -163,7 +176,7 @@ export async function POST(req: NextRequest) {
 
     logger.info("[PROPERTY_PROFILE_CREATE]", { orgId: ctx.orgId, propertyId, profileId });
 
-    return NextResponse.json({ success: true, data: profile }, { status: 201 });
+    return NextResponse.json({ success: true, data: profile, property: profile }, { status: 201 });
   } catch (err) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     if ((err as any)?.digest?.startsWith?.("NEXT_REDIRECT")) throw err;
