@@ -250,7 +250,7 @@ const ROUTE_THEME_MAP: [string, SectionTheme][] = [
   ["/smart-docs", "reports"],
   ["/ai-video-reports", "reports"],
   ["/esign", "reports"],
-  ["/estimates", "reports"],
+  ["/estimates", "jobs"],
   ["/exports", "reports"],
   ["/forms", "reports"],
   ["/quotes", "reports"],

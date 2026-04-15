@@ -55,10 +55,10 @@ export default async function ClientDetailPage({ params }: { params: { clientId:
   return (
     <div className="space-y-6">
       <PageHero
-        title={client.name}
+        title={client.name ?? "Client"}
         subtitle={client.email ?? "Client Details"}
         icon={<Users className="h-6 w-6" />}
-        section="clients"
+        section="network"
       >
         <Link href="/clients" className="text-sm text-white/80 underline hover:text-white">
           ← Back to Clients

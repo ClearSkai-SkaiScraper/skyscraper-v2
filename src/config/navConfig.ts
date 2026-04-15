@@ -125,10 +125,9 @@ export const navSections: NavSection[] = [
   {
     label: "Network & Comms",
     items: [
-      { label: "Clients", href: "/clients" },
+      { label: "Clients & Connections", href: "/clients" },
       { label: "Contacts", href: "/contacts" },
       { label: "Trades Network Hub", href: "/trades" },
-      { label: "Connections", href: "/company/connections" },
       { label: "Work Requests", href: "/network/work-requests" },
       { label: "Messages Hub", href: "/messages" },
       { label: "Invitations", href: "/invitations" },

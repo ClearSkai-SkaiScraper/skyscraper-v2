@@ -9,11 +9,10 @@
  * - Clients (customers - linked to Client Contacts)
  */
 
-// eslint-disable-next-line no-restricted-imports
-import { currentUser } from "@clerk/nextjs/server";
 import {
   Building2,
   HardHat,
+  Lock,
   Mail,
   Package,
   Phone,
@@ -24,7 +23,6 @@ import {
 } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
-import { redirect } from "next/navigation";
 
 export const metadata: Metadata = {
   title: "My Connections | Trades Network | SkaiScraper",
@@ -82,11 +80,84 @@ export default async function CompanyConnectionsPage({
 }: {
   searchParams: Promise<{ q?: string }>;
 }) {
-  const { q: searchQuery } = await searchParams;
-  const user = await currentUser();
-  if (!user) redirect("/sign-in");
+  // ULTRA-DEFENSIVE: Wrap entire page in try-catch to prevent ANY uncaught errors
+  try {
+    return await renderConnectionsPage(searchParams);
+  } catch (error: any) {
+    // CRITICAL: Re-throw NEXT_REDIRECT — Next.js uses thrown errors for navigation
+    if (
+      error?.digest?.startsWith?.("NEXT_REDIRECT") ||
+      error?.digest?.startsWith?.("NEXT_NOT_FOUND")
+    )
+      throw error;
+    logger.error("[CompanyConnections] FATAL PAGE ERROR:", {
+      message: error?.message,
+      stack: error?.stack,
+    });
+    return (
+      <PageContainer maxWidth="6xl">
+        <PageHero
+          section="network"
+          title="My Connections"
+          subtitle="Your professional network"
+          icon={<Users className="h-5 w-5" />}
+        />
+        <div className="py-8 text-center">
+          <Lock className="mx-auto mb-4 h-12 w-12 text-slate-400" />
+          <h2 className="mb-2 text-xl font-bold">Unable to Load Connections</h2>
+          <p className="mb-4 text-sm text-slate-500">
+            There was an issue loading your connections. Please try again.
+          </p>
+          <Link
+            href="/dashboard"
+            className="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
+          >
+            Go to Dashboard →
+          </Link>
+        </div>
+      </PageContainer>
+    );
+  }
+}
 
-  const orgCtx = await safeOrgContext();
+async function renderConnectionsPage(searchParams: Promise<{ q?: string }>) {
+  let searchQuery = "";
+  try {
+    const params = await searchParams;
+    searchQuery = params?.q || "";
+  } catch {
+    // searchParams resolution failed — continue with no search
+  }
+
+  let orgCtx;
+  try {
+    orgCtx = await safeOrgContext();
+  } catch (error) {
+    logger.error("[CompanyConnections] safeOrgContext failed:", error);
+    return (
+      <PageContainer maxWidth="6xl">
+        <PageHero
+          section="network"
+          title="My Connections"
+          subtitle="Your professional network"
+          icon={<Users className="h-5 w-5" />}
+        />
+        <div className="py-8 text-center">
+          <Lock className="mx-auto mb-4 h-12 w-12 text-slate-400" />
+          <h2 className="mb-2 text-xl font-bold">Something went wrong</h2>
+          <p className="mb-4 text-sm text-slate-500">
+            There was an issue verifying your workspace. Please refresh the page.
+          </p>
+          <a
+            href="/company/connections"
+            className="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
+          >
+            Refresh Page →
+          </a>
+        </div>
+      </PageContainer>
+    );
+  }
 
   // TENANT ISOLATION: Require actual org membership
   if (orgCtx.status !== "ok" || !orgCtx.orgId) {
@@ -121,87 +192,89 @@ export default async function CompanyConnectionsPage({
   let subCount = 0;
   let contractorCount = 0;
 
-  if (orgId) {
-    try {
-      // Fetch team connections via tradesCompanyMember which has orgId
-      // and includes the company relation
-      const teamMembers = await prisma.tradesCompanyMember.findMany({
-        where: { orgId },
-        include: {
-          company: {
-            select: {
-              id: true,
-              name: true,
-              logo: true,
-              isVerified: true,
-              city: true,
-              state: true,
-              specialties: true,
-              phone: true,
-              email: true,
-            },
+  try {
+    // Fetch team connections via tradesCompanyMember which has orgId
+    // and includes the company relation
+    const teamMembers = await prisma.tradesCompanyMember.findMany({
+      where: { orgId },
+      include: {
+        company: {
+          select: {
+            id: true,
+            name: true,
+            logo: true,
+            isVerified: true,
+            city: true,
+            state: true,
+            specialties: true,
+            phone: true,
+            email: true,
           },
         },
-        orderBy: { createdAt: "desc" },
-      });
+      },
+      orderBy: { createdAt: "desc" },
+    });
 
-      // Map to unified format
-      connections = teamMembers
-        .filter((tm) => tm.company) // Only include members with a company
-        .map((tm) => ({
-          id: tm.id,
-          type: tm.role || "contractor",
-          name: tm.company?.name || "Unknown Company",
-          logo: tm.company?.logo,
-          verified: tm.company?.isVerified,
-          city: tm.company?.city,
-          state: tm.company?.state,
-          specialties: tm.company?.specialties || [],
-          phone: tm.company?.phone,
-          email: tm.company?.email,
-          companyId: tm.companyId,
-          createdAt: tm.createdAt,
-        }));
-
-      // Count by type
-      vendorCount = connections.filter((c) => c.type === "vendor").length;
-      subCount = connections.filter((c) => c.type === "subcontractor").length;
-      contractorCount = connections.filter((c) => c.type === "contractor").length;
-
-      // Fetch ALL client contacts (not just count) so we can display them
-      const contacts = await prisma.contacts.findMany({
-        where: { orgId },
-        select: {
-          id: true,
-          firstName: true,
-          lastName: true,
-          email: true,
-          phone: true,
-          company: true,
-          city: true,
-          state: true,
-          createdAt: true,
-        },
-        orderBy: { createdAt: "desc" },
-        take: 100, // Limit for performance
-      });
-      clientContacts = contacts.map((c) => ({
-        id: c.id,
-        type: "client",
-        name: [c.firstName, c.lastName].filter(Boolean).join(" ") || c.company || "Unknown",
-        firstName: c.firstName,
-        lastName: c.lastName,
-        email: c.email,
-        phone: c.phone,
-        companyName: c.company,
-        city: c.city,
-        state: c.state,
-        createdAt: c.createdAt,
+    // Map to unified format
+    connections = teamMembers
+      .filter((tm) => tm.company) // Only include members with a company
+      .map((tm) => ({
+        id: tm.id,
+        type: tm.role || "contractor",
+        name: tm.company?.name || "Unknown Company",
+        logo: tm.company?.logo,
+        verified: tm.company?.isVerified,
+        city: tm.company?.city,
+        state: tm.company?.state,
+        specialties: tm.company?.specialties || [],
+        phone: tm.company?.phone,
+        email: tm.company?.email,
+        companyId: tm.companyId,
+        createdAt: tm.createdAt,
       }));
-      clientCount = contacts.length;
-    } catch (error) {
-      logger.error("[CompanyConnections] Error fetching data:", error);
-    }
+
+    // Count by type
+    vendorCount = connections.filter((c) => c.type === "vendor").length;
+    subCount = connections.filter((c) => c.type === "subcontractor").length;
+    contractorCount = connections.filter((c) => c.type === "contractor").length;
+  } catch (error) {
+    logger.error("[CompanyConnections] Error fetching connections:", error);
+  }
+
+  try {
+    // Fetch ALL client contacts (not just count) so we can display them
+    const contacts = await prisma.contacts.findMany({
+      where: { orgId },
+      select: {
+        id: true,
+        firstName: true,
+        lastName: true,
+        email: true,
+        phone: true,
+        company: true,
+        city: true,
+        state: true,
+        createdAt: true,
+      },
+      orderBy: { createdAt: "desc" },
+      take: 100, // Limit for performance
+    });
+    clientContacts = contacts.map((c) => ({
+      id: c.id,
+      type: "client",
+      name: [c.firstName, c.lastName].filter(Boolean).join(" ") || c.company || "Unknown",
+      firstName: c.firstName,
+      lastName: c.lastName,
+      email: c.email,
+      phone: c.phone,
+      companyName: c.company,
+      city: c.city,
+      state: c.state,
+      createdAt: c.createdAt,
+    }));
+    clientCount = contacts.length;
+  } catch (error) {
+    logger.error("[CompanyConnections] Error fetching contacts:", error);
   }
 
   const totalConnections = connections.length + clientCount;

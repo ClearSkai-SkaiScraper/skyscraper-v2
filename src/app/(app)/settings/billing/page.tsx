@@ -160,7 +160,7 @@ export default function BillingPage() {
       fallback={
         <PageContainer maxWidth="5xl">
           <PageHero
-            section="settings"
+            section="finance"
             title="Billing & Seats"
             subtitle="Manage your team size and subscription"
             icon={<CreditCard className="h-5 w-5" />}
@@ -182,7 +182,7 @@ export default function BillingPage() {
     >
       <PageContainer maxWidth="5xl">
         <PageHero
-          section="settings"
+          section="finance"
           title="Billing & Seats"
           subtitle="Manage your team size and subscription"
           icon={<CreditCard className="h-5 w-5" />}

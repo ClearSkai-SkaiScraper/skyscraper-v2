@@ -100,7 +100,7 @@ export default async function EstimatesPage() {
         title="Estimates"
         subtitle="Create and manage project estimates"
         icon={<Calculator className="h-5 w-5" />}
-        section="reports"
+        section="jobs"
       >
         <Button asChild>
           <Link href="/estimates/new">
