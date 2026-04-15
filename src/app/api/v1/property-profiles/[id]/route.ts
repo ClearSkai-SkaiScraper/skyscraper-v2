@@ -109,7 +109,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
     }
 
     const profile = await prisma.property_profiles
-      .findFirst({ where: { OR: [{ id }, { propertyId: id }] } })
+      .findFirst({ where: { orgId: ctx.orgId, OR: [{ id }, { propertyId: id }] } })
       .catch(() => null);
 
     if (profile) {
@@ -120,8 +120,10 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
       return NextResponse.json({ success: true, property: updated });
     }
 
-    // Fallback: create from properties table
-    const basicProp = await prisma.properties.findUnique({ where: { id } }).catch(() => null);
+    // Fallback: create from properties table (still org-scoped)
+    const basicProp = await prisma.properties
+      .findFirst({ where: { id, orgId: ctx.orgId } })
+      .catch(() => null);
 
     if (basicProp) {
       const addr = [basicProp.street, basicProp.city, basicProp.state, basicProp.zipCode]
@@ -163,7 +165,7 @@ export async function POST(_req: Request, { params }: { params: Promise<{ id: st
 
     const { id } = await params;
     const profile = await prisma.property_profiles
-      .findFirst({ where: { OR: [{ id }, { propertyId: id }] } })
+      .findFirst({ where: { orgId: ctx.orgId, OR: [{ id }, { propertyId: id }] } })
       .catch(() => null);
 
     if (!profile) {

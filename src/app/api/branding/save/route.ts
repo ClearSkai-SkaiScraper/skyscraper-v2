@@ -63,6 +63,24 @@ import { pool } from "@/server/db";
 
 export const POST = withAuth(async (req: NextRequest, { orgId, userId }) => {
   try {
+    // Only admins/managers can change org branding
+    try {
+      const { requireRole } = await import("@/lib/auth/rbac");
+      await requireRole("manager");
+    } catch (roleErr: unknown) {
+      if (
+        roleErr instanceof Error &&
+        "status" in roleErr &&
+        (roleErr as { status?: number }).status === 403
+      ) {
+        return NextResponse.json(
+          { error: "Admin or manager role required to update branding" },
+          { status: 403 }
+        );
+      }
+      // Non-RBAC error (no membership table, etc.) — allow through gracefully
+    }
+
     const org = await prisma.org.findUnique({
       where: { id: orgId },
       select: { id: true, clerkOrgId: true },

@@ -107,6 +107,18 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    // Only managers+ can set org-wide goals
+    // Skip role check for single-user orgs (they're implicitly admin)
+    try {
+      const { requireRole } = await import("@/lib/auth/rbac");
+      await requireRole("manager");
+    } catch (roleErr: unknown) {
+      if ((roleErr as { statusCode?: number })?.statusCode === 403) {
+        return NextResponse.json({ error: "Manager role required to set goals" }, { status: 403 });
+      }
+      // If RBAC fails for other reasons (e.g., no membership table), allow through
+    }
+
     const body = await req.json();
     const parsed = upsertGoalSchema.safeParse(body);
     if (!parsed.success) {

@@ -204,7 +204,11 @@ export default async function DashboardPage() {
           </AsyncBoundary>
 
           {/* AI Insights — Full Width Below Leaderboard */}
-          <AIInsightsWidget />
+          <AsyncBoundary
+            fallback={<div className="h-32 animate-pulse rounded-2xl bg-[var(--surface-2)]" />}
+          >
+            <AIInsightsWidget />
+          </AsyncBoundary>
 
           {/* Weather + DOL Intelligence Row */}
           <div className="grid gap-6 lg:grid-cols-2">
@@ -247,7 +251,11 @@ export default async function DashboardPage() {
           </div>
 
           {/* Company Branding Quick Viewer */}
-          <CompanyBrandingPreview />
+          <AsyncBoundary
+            fallback={<div className="h-24 animate-pulse rounded-2xl bg-[var(--surface-2)]" />}
+          >
+            <CompanyBrandingPreview />
+          </AsyncBoundary>
         </div>
       </PageContainer>
     );
