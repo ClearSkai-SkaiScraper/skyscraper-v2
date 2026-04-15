@@ -25,7 +25,7 @@ const clientTabs = [
   { label: "Home", href: "", icon: Home },
   { label: "Products", href: "/products", icon: Package },
   { label: "Messages", href: "/messages", icon: MessageSquare },
-  { label: "Jobs", href: "/my-jobs", icon: Briefcase },
+  { label: "Jobs", href: "/jobs", icon: Briefcase },
   { label: "Claims", href: "/claims", icon: Shield },
   { label: "Find Pro", href: "/find-a-pro", icon: Search },
   { label: "My Pros", href: "/contractors", icon: Heart },

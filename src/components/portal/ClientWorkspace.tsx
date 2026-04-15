@@ -240,7 +240,7 @@ export function ClientWorkspace({
   messages = [],
   canUpload = true,
   canMessage = true,
-  backLink = "/portal/my-jobs",
+  backLink = "/portal/jobs",
   backLabel = "Back to My Jobs",
   onUploadPhoto,
   onUploadDocument,
@@ -280,7 +280,7 @@ export function ClientWorkspace({
       toast.success(`${type === "photo" ? "Photos" : "Documents"} uploaded successfully!`);
       setShowUploadDialog(false);
       onRefresh?.();
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       toast.error(error.message || "Failed to upload files");
     } finally {
@@ -298,7 +298,7 @@ export function ClientWorkspace({
       setNewMessage("");
       toast.success("Message sent!");
       onRefresh?.();
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       toast.error(error.message || "Failed to send message");
     } finally {

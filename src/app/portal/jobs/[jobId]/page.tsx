@@ -184,7 +184,7 @@ export default function JobDetailPage() {
           ctaLabel="Create Project"
           ctaHref="/portal/projects/new"
           secondaryLabel="Back to My Jobs"
-          secondaryHref="/portal/my-jobs"
+          secondaryHref="/portal/jobs"
           size="lg"
         />
       </div>
@@ -203,7 +203,7 @@ export default function JobDetailPage() {
         messages={messages}
         canUpload={true}
         canMessage={true}
-        backLink="/portal/my-jobs"
+        backLink="/portal/jobs"
         backLabel="Back to My Jobs"
         onUploadPhoto={handleUploadPhoto}
         onUploadDocument={handleUploadDocument}

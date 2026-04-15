@@ -27,6 +27,8 @@ import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 import { safeOrgContext } from "@/lib/safeOrgContext";
 
+import { ContactBlockButton } from "./_components/ContactBlockButton";
+
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
@@ -267,6 +269,9 @@ export default async function ContactDetailPage({ params }: Props) {
       />
     );
   }
+
+  // Determine if this contact is blocked
+  const isBlocked = Array.isArray(contact.tags) && (contact.tags as string[]).includes("blocked");
 
   // Get initials for avatar
   const initials = `${contact.firstName?.[0] || ""}${contact.lastName?.[0] || ""}`.toUpperCase();
@@ -513,6 +518,16 @@ export default async function ContactDetailPage({ params }: Props) {
         <Button variant="outline" className="gap-2">
           <Star className="h-4 w-4" />
         </Button>
+      </div>
+
+      {/* Block / Remove / Report Actions */}
+      <div className="mt-4 flex gap-3 border-t border-slate-200 pt-4 dark:border-slate-700">
+        <ContactBlockButton contactId={contact.id} isBlocked={isBlocked} />
+        <Link href={`/contacts/${contact.id}/edit`} className="flex-1">
+          <Button variant="destructive" size="sm" className="w-full gap-2 text-xs">
+            Remove Contact
+          </Button>
+        </Link>
       </div>
     </div>
   );

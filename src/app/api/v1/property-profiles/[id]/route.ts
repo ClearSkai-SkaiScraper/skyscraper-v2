@@ -7,8 +7,86 @@ import { safeOrgContext } from "@/lib/safeOrgContext";
 
 export const dynamic = "force-dynamic";
 
+const INT_FIELDS = new Set([
+  "squareFootage",
+  "lotSize",
+  "yearBuilt",
+  "numBedrooms",
+  "numStories",
+  "garageSpaces",
+  "roofAge",
+  "hvacAge",
+  "waterHeaterAge",
+  "waterHeaterGallons",
+  "plumbingAge",
+  "electricalPanelAge",
+  "foundationAge",
+]);
+
+const FLOAT_FIELDS = new Set([
+  "numBathrooms",
+  "roofSquares",
+  "hvacTonnage",
+  "latitude",
+  "longitude",
+]);
+
+const BOOL_FIELDS = new Set([
+  "hasGeneratorHookup",
+  "hasSmartHome",
+  "hasLowEWindows",
+  "hasSolarPanels",
+]);
+
+const DATE_FIELDS = new Set([
+  "lastRoofReplacement",
+  "roofWarrantyExpires",
+  "lastHvacService",
+  "hvacWarrantyExpires",
+  "lastWaterHeaterService",
+  "solarInstallDate",
+]);
+
+const ALL_EDITABLE = [
+  ...INT_FIELDS,
+  ...FLOAT_FIELDS,
+  ...BOOL_FIELDS,
+  ...DATE_FIELDS,
+  "foundationType",
+  "roofType",
+  "roofPitch",
+  "roofColor",
+  "hvacType",
+  "hvacManufacturer",
+  "hvacModel",
+  "waterHeaterType",
+  "waterHeaterFuel",
+  "plumbingType",
+  "sewerType",
+  "waterSource",
+  "electricalPanelType",
+  "wiringType",
+  "insulationRating",
+  "windowType",
+  "floodZone",
+  "county",
+];
+
+function coerce(key: string, val: unknown): unknown {
+  if (val === null || val === undefined || val === "") return null;
+  if (INT_FIELDS.has(key)) return Math.round(Number(val)) || null;
+  if (FLOAT_FIELDS.has(key)) return Number(val) || null;
+  if (BOOL_FIELDS.has(key)) return val === true || val === "true";
+  if (DATE_FIELDS.has(key)) {
+    const d = new Date(val as string);
+    return isNaN(d.getTime()) ? null : d;
+  }
+  return String(val);
+}
+
 /**
- * PATCH /api/v1/property-profiles/[id] — Update property profile details
+ * PATCH /api/v1/property-profiles/[id]
+ * Accepts any subset of 40+ editable property fields.
  */
 export async function PATCH(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
@@ -20,58 +98,49 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
     const { id } = await params;
     const body = await req.json();
 
-    // Try to update property_profiles first
+    // Build data from known fields
+    const data: Record<string, unknown> = { updatedAt: new Date() };
+    for (const key of ALL_EDITABLE) {
+      // Accept "stories" from frontend → map to "numStories"
+      const val = key === "numStories" ? (body.numStories ?? body.stories) : body[key];
+      if (val !== undefined) {
+        data[key] = coerce(key, val);
+      }
+    }
+
     const profile = await prisma.property_profiles
-      .findFirst({
-        where: { OR: [{ id }, { propertyId: id }] },
-      })
+      .findFirst({ where: { OR: [{ id }, { propertyId: id }] } })
       .catch(() => null);
 
     if (profile) {
       const updated = await prisma.property_profiles.update({
         where: { id: profile.id },
-        data: {
-          yearBuilt: body.yearBuilt,
-          squareFootage: body.squareFootage,
-          roofType: body.roofType,
-          roofAge: body.roofAge,
-          hvacAge: body.hvacAge,
-          waterHeaterAge: body.waterHeaterAge,
-          numStories: body.stories ?? body.numStories,
-          updatedAt: new Date(),
-        },
+        data,
       });
-
       return NextResponse.json({ success: true, property: updated });
     }
 
-    // Fallback: try properties table
-    const basicProperty = await prisma.properties.findUnique({ where: { id } }).catch(() => null);
+    // Fallback: create from properties table
+    const basicProp = await prisma.properties.findUnique({ where: { id } }).catch(() => null);
 
-    if (basicProperty) {
-      // Create a property_profile for this property
+    if (basicProp) {
+      const addr = [basicProp.street, basicProp.city, basicProp.state, basicProp.zipCode]
+        .filter(Boolean)
+        .join(", ");
       const newProfile = await prisma.property_profiles.create({
         data: {
           id: createId(),
           propertyId: id,
           orgId: ctx.orgId,
-          fullAddress:
-            `${basicProperty.street || ""}, ${basicProperty.city || ""}, ${basicProperty.state || ""} ${basicProperty.zipCode || ""}`.trim(),
-          streetAddress: basicProperty.street || "",
-          city: basicProperty.city || "",
-          state: basicProperty.state || "",
-          zipCode: basicProperty.zipCode || "",
+          fullAddress: addr,
+          streetAddress: basicProp.street || "",
+          city: basicProp.city || "",
+          state: basicProp.state || "",
+          zipCode: basicProp.zipCode || "",
           updatedAt: new Date(),
-          yearBuilt: body.yearBuilt,
-          squareFootage: body.squareFootage,
-          roofType: body.roofType,
-          roofAge: body.roofAge,
-          hvacAge: body.hvacAge,
-          waterHeaterAge: body.waterHeaterAge,
-          numStories: body.stories ?? body.numStories,
+          ...data,
         },
       });
-
       return NextResponse.json({ success: true, property: newProfile });
     }
 
@@ -83,9 +152,9 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
 }
 
 /**
- * POST /api/v1/property-profiles/[id]/health-score — Calculate health score
+ * POST /api/v1/property-profiles/[id] — Calculate health score
  */
-export async function POST(req: Request, { params }: { params: Promise<{ id: string }> }) {
+export async function POST(_req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
     const ctx = await safeOrgContext();
     if (ctx.status !== "ok" || !ctx.orgId) {
@@ -93,33 +162,27 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
     }
 
     const { id } = await params;
-
-    // Return a calculated health score based on property data
     const profile = await prisma.property_profiles
-      .findFirst({
-        where: { OR: [{ id }, { propertyId: id }] },
-      })
+      .findFirst({ where: { OR: [{ id }, { propertyId: id }] } })
       .catch(() => null);
 
     if (!profile) {
       return NextResponse.json({ error: "Property not found" }, { status: 404 });
     }
 
-    // Simple health score calculation
-    let overallScore = 70;
-    const roofAge = profile.roofAge || 0;
-    const hvacAge = profile.hvacAge || 0;
-
-    if (roofAge > 20) overallScore -= 20;
-    else if (roofAge > 15) overallScore -= 10;
-    if (hvacAge > 15) overallScore -= 15;
-    else if (hvacAge > 10) overallScore -= 5;
+    let score = 70;
+    const rAge = profile.roofAge || 0;
+    const hAge = profile.hvacAge || 0;
+    if (rAge > 20) score -= 20;
+    else if (rAge > 15) score -= 10;
+    if (hAge > 15) score -= 15;
+    else if (hAge > 10) score -= 5;
 
     const healthScore = {
-      overallScore: Math.max(0, Math.min(100, overallScore)),
-      grade: overallScore >= 80 ? "A" : overallScore >= 60 ? "B" : overallScore >= 40 ? "C" : "D",
-      roofIntegrityScore: Math.max(0, 100 - roofAge * 3),
-      hvacEfficiencyScore: Math.max(0, 100 - hvacAge * 4),
+      overallScore: Math.max(0, Math.min(100, score)),
+      grade: score >= 80 ? "A" : score >= 60 ? "B" : score >= 40 ? "C" : "D",
+      roofIntegrityScore: Math.max(0, 100 - rAge * 3),
+      hvacEfficiencyScore: Math.max(0, 100 - hAge * 4),
       systemConditionScore: 75,
       maintenanceScore: 70,
       structuralRiskScore: 80,
@@ -127,7 +190,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
         ? Math.max(0, 100 - (new Date().getFullYear() - profile.yearBuilt) * 0.5)
         : 50,
       createdAt: new Date().toISOString(),
-      criticalIssues: [],
+      criticalIssues: [] as { issue: string; severity: string }[],
     };
 
     return NextResponse.json({ success: true, healthScore });

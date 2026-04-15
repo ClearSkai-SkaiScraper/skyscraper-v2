@@ -1,8 +1,10 @@
 "use client";
 
 import {
+  AlertTriangle,
   ArrowLeft,
   BadgeCheck,
+  Ban,
   Briefcase,
   ExternalLink,
   Globe,
@@ -11,6 +13,7 @@ import {
   MessageCircle,
   Phone,
   Shield,
+  ShieldCheck,
   Star,
   Users,
 } from "lucide-react";
@@ -81,6 +84,11 @@ export default function ContractorProfilePage() {
   const [profile, setProfile] = useState<ContractorProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isBlocked, setIsBlocked] = useState(false);
+  const [blockLoading, setBlockLoading] = useState(false);
+  const [showReport, setShowReport] = useState(false);
+  const [reportLoading, setReportLoading] = useState(false);
+  const [reportSent, setReportSent] = useState(false);
 
   const contractorId = params!.id as string;
 
@@ -98,7 +106,7 @@ export default function ContractorProfilePage() {
         }
         const data = await res.json();
         setProfile(data.contractor);
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
       } catch (_err) {
         setError("Failed to load profile");
       } finally {
@@ -452,6 +460,104 @@ export default function ContractorProfilePage() {
                 </Link>
               </Button>
             </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Block & Report Actions */}
+      <div className="flex gap-3 border-t border-slate-200 pt-4 dark:border-slate-700">
+        <Button
+          variant={isBlocked ? "outline" : "destructive"}
+          size="sm"
+          className="flex-1 gap-2 text-xs"
+          disabled={blockLoading}
+          onClick={async () => {
+            setBlockLoading(true);
+            try {
+              await fetch("/api/portal/block", {
+                method: isBlocked ? "DELETE" : "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ proId: profile.id }),
+              });
+              setIsBlocked(!isBlocked);
+            } finally {
+              setBlockLoading(false);
+            }
+          }}
+        >
+          {isBlocked ? (
+            <>
+              <ShieldCheck className="h-3.5 w-3.5" />
+              {blockLoading ? "Unblocking…" : "Unblock Pro"}
+            </>
+          ) : (
+            <>
+              <Ban className="h-3.5 w-3.5" />
+              {blockLoading ? "Blocking…" : "Block Pro"}
+            </>
+          )}
+        </Button>
+        <Button
+          variant="outline"
+          size="sm"
+          className="flex-1 gap-2 text-xs text-amber-600 hover:text-amber-700"
+          onClick={() => setShowReport(!showReport)}
+        >
+          <AlertTriangle className="h-3.5 w-3.5" />
+          Report
+        </Button>
+      </div>
+
+      {/* Report Form */}
+      {showReport && (
+        <Card className="border-amber-200 bg-amber-50/50 dark:border-amber-800 dark:bg-amber-950/20">
+          <CardContent className="space-y-3 p-4">
+            {reportSent ? (
+              <p className="text-center text-sm font-medium text-green-600">
+                ✅ Report submitted. We&#39;ll review it shortly.
+              </p>
+            ) : (
+              <>
+                <p className="text-sm font-medium text-amber-800 dark:text-amber-200">
+                  Report this contractor
+                </p>
+                <textarea
+                  id="report-reason"
+                  rows={3}
+                  placeholder="Describe the issue…"
+                  className="w-full rounded-md border border-amber-200 bg-white p-2 text-sm dark:border-amber-700 dark:bg-slate-900"
+                />
+                <Button
+                  size="sm"
+                  variant="destructive"
+                  disabled={reportLoading}
+                  onClick={async () => {
+                    const textarea = document.getElementById(
+                      "report-reason"
+                    ) as HTMLTextAreaElement;
+                    if (!textarea?.value.trim()) return;
+                    setReportLoading(true);
+                    try {
+                      await fetch("/api/portal/complaints", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({
+                          targetProId: profile.id,
+                          targetOrgId: profile.id,
+                          subject: `Report against ${profile.companyName || profile.name}`,
+                          description: textarea.value.trim(),
+                        }),
+                      });
+                      setReportSent(true);
+                    } finally {
+                      setReportLoading(false);
+                    }
+                  }}
+                >
+                  {reportLoading ? "Sending…" : "Submit Report"}
+                </Button>
+              </>
+            )}
           </CardContent>
         </Card>
       )}

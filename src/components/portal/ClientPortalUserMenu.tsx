@@ -349,7 +349,7 @@ export default function ClientPortalUserMenu() {
               onClick={() => setOpen(false)}
             />
             <MenuLink
-              href="/portal/my-jobs"
+              href="/portal/jobs"
               icon={<Briefcase className="h-4 w-4" />}
               label="My Jobs"
               onClick={() => setOpen(false)}

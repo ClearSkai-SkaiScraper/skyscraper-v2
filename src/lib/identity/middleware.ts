@@ -24,7 +24,6 @@ export const DASHBOARD_ROUTES = {
     "/portal/invite",
     "/portal/jobs",
     "/portal/messages",
-    "/portal/my-jobs",
     "/portal/my-pros",
     "/portal/network",
     "/portal/notifications",

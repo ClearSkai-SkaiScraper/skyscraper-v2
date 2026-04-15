@@ -168,7 +168,7 @@ export default function WorkRequestForm({
         setSuccess(true);
         // Auto-redirect after 3 seconds
         setTimeout(() => {
-          router.push("/portal/my-jobs");
+          router.push("/portal/jobs");
         }, 3000);
       } else {
         setError(data.error || "Failed to submit work request. Please try again.");
@@ -197,7 +197,7 @@ export default function WorkRequestForm({
           business day.
         </p>
         <div className="flex justify-center gap-3">
-          <Link href="/portal/my-jobs">
+          <Link href="/portal/jobs">
             <Button variant="default" size="lg">
               Back to My Jobs
             </Button>
@@ -568,7 +568,7 @@ export default function WorkRequestForm({
 
       {/* Submit Actions */}
       <div className="flex justify-end gap-3">
-        <Link href="/portal/my-jobs">
+        <Link href="/portal/jobs">
           <Button type="button" variant="outline">
             Cancel
           </Button>

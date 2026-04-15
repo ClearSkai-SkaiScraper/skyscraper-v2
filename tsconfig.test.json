@@ -7,6 +7,8 @@
   "include": [
     "tests/**/*.ts",
     "tests/**/*.tsx",
+    "__tests__/**/*.ts",
+    "__tests__/**/*.tsx",
     "src/lib/**/*.ts",
     "src/types/**/*.ts",
     "src/schemas/**/*.ts"

@@ -117,7 +117,7 @@ export default async function ClientPortalPage() {
           logger.error("[PORTAL] Failed to sync to Clerk:", syncError);
           // Non-fatal - cookie fallback will work
         }
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
       } catch (_e) {
         // May already exist, try to fetch again
         identity = await getUserIdentity(user.id);
@@ -341,7 +341,7 @@ export default async function ClientPortalPage() {
         })
         .catch(() => 0);
     }
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
   } catch (_e) {
     // non-fatal
   }
@@ -381,7 +381,7 @@ export default async function ClientPortalPage() {
 
         {/* ── Stats Grid ── */}
         <div className="mb-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          <Link href="/portal/my-jobs" className="group">
+          <Link href="/portal/jobs" className="group">
             <Card className="relative overflow-hidden border-0 bg-gradient-to-br from-emerald-50 to-emerald-100/50 shadow-md transition-all group-hover:-translate-y-1 group-hover:shadow-lg dark:from-emerald-950/40 dark:to-emerald-900/20">
               <div className="absolute right-0 top-0 h-24 w-24 translate-x-6 translate-y-[-6px] rounded-full bg-emerald-200/50 dark:bg-emerald-800/30" />
               <CardContent className="relative flex items-center gap-4 p-5">
@@ -664,7 +664,7 @@ export default async function ClientPortalPage() {
                 <CardDescription>Active project requests</CardDescription>
               </div>
               <Link
-                href="/portal/my-jobs"
+                href="/portal/jobs"
                 className="rounded-lg bg-emerald-50 px-3 py-1.5 text-sm font-medium text-emerald-600 transition-colors hover:bg-emerald-100 dark:bg-emerald-900/30 dark:hover:bg-emerald-900/50"
               >
                 View All →
@@ -693,7 +693,7 @@ export default async function ClientPortalPage() {
                   {recentProjects.map((proj: any) => (
                     <Link
                       key={proj.id}
-                      href="/portal/my-jobs"
+                      href="/portal/jobs"
                       className="flex items-center gap-3 rounded-lg border p-3 transition-colors hover:bg-slate-50 dark:hover:bg-slate-800"
                     >
                       <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-emerald-100 dark:bg-emerald-900/30">

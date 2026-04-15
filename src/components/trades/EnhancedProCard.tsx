@@ -561,7 +561,7 @@ export default function EnhancedProCard({
                 Message
               </Link>
               <Link
-                href={`/portal/my-jobs/new?proId=${id}`}
+                href={`/portal/jobs/new?proId=${id}`}
                 className="flex items-center gap-1 text-sm text-slate-500 transition-colors hover:text-blue-600"
               >
                 <Calendar className="h-4 w-4" />

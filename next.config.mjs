@@ -163,7 +163,7 @@ const nextConfig = {
 
       // Portal legacy redirects
       { source: "/portal/community/feed", destination: "/portal", permanent: true },
-      { source: "/portal/projects", destination: "/portal/my-jobs", permanent: true },
+      { source: "/portal/projects", destination: "/portal/jobs", permanent: true },
       { source: "/portal/my-claims", destination: "/portal/claims", permanent: true },
     ];
   },

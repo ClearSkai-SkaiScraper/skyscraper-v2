@@ -263,7 +263,7 @@ async function handleSendJobInvite(
     const { sendEmail } = await import("@/lib/email/resend");
 
     // eslint-disable-next-line no-restricted-syntax
-    const portalUrl = `${process.env.NEXT_PUBLIC_APP_URL || "https://skaiscrape.com"}/portal/my-jobs`;
+    const portalUrl = `${process.env.NEXT_PUBLIC_APP_URL || "https://skaiscrape.com"}/portal/jobs`;
 
     await sendEmail({
       to: input.email,

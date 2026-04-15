@@ -1021,7 +1021,7 @@ export default function ClientProfilePage() {
               </CardHeader>
               <CardContent className="space-y-4">
                 <Link
-                  href="/portal/my-jobs"
+                  href="/portal/jobs"
                   className="flex items-center justify-between transition-colors hover:text-blue-600"
                 >
                   <span className="flex items-center gap-2 text-slate-600">
@@ -1393,7 +1393,7 @@ export default function ClientProfilePage() {
                     <CardContent>
                       <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
                         <Link
-                          href="/portal/my-jobs"
+                          href="/portal/jobs"
                           className="group rounded-xl border bg-gradient-to-br from-blue-50 to-blue-100/50 p-4 text-center transition-all hover:-translate-y-0.5 hover:shadow-md dark:border-blue-800/50 dark:from-blue-950/40 dark:to-blue-900/20"
                         >
                           <Briefcase className="mx-auto mb-1 h-5 w-5 text-blue-600" />

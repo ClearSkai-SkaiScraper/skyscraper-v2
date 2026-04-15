@@ -5,6 +5,7 @@ import {
   AlertTriangle,
   ArrowLeft,
   Camera,
+  CheckCircle,
   Cloud,
   CloudRain,
   Edit2,
@@ -12,9 +13,12 @@ import {
   Home,
   Loader2,
   Save,
+  Sparkles,
   TrendingUp,
   Wrench,
   X,
+  XCircle,
+  Zap,
 } from "lucide-react";
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
@@ -72,17 +76,58 @@ export default function PropertyProfileClient({
   const [loadingWeather, setLoadingWeather] = useState(false);
   const [editing, setEditing] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [autofilling, setAutofilling] = useState(false);
+  const [autofillSuggestions, setAutofillSuggestions] = useState<Record<string, unknown>>({});
+  const [autofillConfidence, setAutofillConfidence] = useState<Record<string, string>>({});
+  const [autofillReasoning, setAutofillReasoning] = useState("");
+  const [acceptedFields, setAcceptedFields] = useState<Set<string>>(new Set());
   const [editForm, setEditForm] = useState({
+    // Structure
     yearBuilt: initialProperty.yearBuilt || "",
     squareFootage: initialProperty.squareFootage || "",
-    propertyType: initialProperty.propertyType || "RESIDENTIAL",
+    lotSize: initialProperty.lotSize || "",
+    numBedrooms: initialProperty.numBedrooms || "",
+    numBathrooms: initialProperty.numBathrooms || "",
+    numStories: initialProperty.numStories || "",
+    garageSpaces: initialProperty.garageSpaces || "",
+    // Roof
     roofType: initialProperty.roofType || "",
     roofAge: initialProperty.roofAge || "",
+    roofSquares: initialProperty.roofSquares || "",
+    roofPitch: initialProperty.roofPitch || "",
+    roofColor: initialProperty.roofColor || "",
+    // HVAC
+    hvacType: initialProperty.hvacType || "",
     hvacAge: initialProperty.hvacAge || "",
+    hvacManufacturer: initialProperty.hvacManufacturer || "",
+    hvacModel: initialProperty.hvacModel || "",
+    hvacTonnage: initialProperty.hvacTonnage || "",
+    // Water Heater
+    waterHeaterType: initialProperty.waterHeaterType || "",
     waterHeaterAge: initialProperty.waterHeaterAge || "",
-    stories: initialProperty.stories || "",
-    garageType: initialProperty.garageType || "",
+    waterHeaterGallons: initialProperty.waterHeaterGallons || "",
+    waterHeaterFuel: initialProperty.waterHeaterFuel || "",
+    // Plumbing & Electrical
+    plumbingType: initialProperty.plumbingType || "",
+    plumbingAge: initialProperty.plumbingAge || "",
+    sewerType: initialProperty.sewerType || "",
+    waterSource: initialProperty.waterSource || "",
+    electricalPanelType: initialProperty.electricalPanelType || "",
+    electricalPanelAge: initialProperty.electricalPanelAge || "",
+    wiringType: initialProperty.wiringType || "",
+    // Foundation
     foundationType: initialProperty.foundationType || "",
+    foundationAge: initialProperty.foundationAge || "",
+    // Features
+    hasGeneratorHookup: initialProperty.hasGeneratorHookup || false,
+    hasSmartHome: initialProperty.hasSmartHome || false,
+    hasLowEWindows: initialProperty.hasLowEWindows || false,
+    hasSolarPanels: initialProperty.hasSolarPanels || false,
+    insulationRating: initialProperty.insulationRating || "",
+    windowType: initialProperty.windowType || "",
+    // Location / Risk
+    floodZone: initialProperty.floodZone || "",
+    county: initialProperty.county || "",
   });
 
   // Fetch weather history for this property
@@ -131,23 +176,14 @@ export default function PropertyProfileClient({
       const res = await fetch(`/api/v1/property-profiles/${propertyId}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          yearBuilt: editForm.yearBuilt ? Number(editForm.yearBuilt) : null,
-          squareFootage: editForm.squareFootage ? Number(editForm.squareFootage) : null,
-          propertyType: editForm.propertyType,
-          roofType: editForm.roofType || null,
-          roofAge: editForm.roofAge ? Number(editForm.roofAge) : null,
-          hvacAge: editForm.hvacAge ? Number(editForm.hvacAge) : null,
-          waterHeaterAge: editForm.waterHeaterAge ? Number(editForm.waterHeaterAge) : null,
-          stories: editForm.stories ? Number(editForm.stories) : null,
-          garageType: editForm.garageType || null,
-          foundationType: editForm.foundationType || null,
-        }),
+        body: JSON.stringify(editForm),
       });
       if (res.ok) {
         const data = await res.json();
         setProperty({ ...property, ...data.property });
         setEditing(false);
+        setAutofillSuggestions({});
+        setAcceptedFields(new Set());
       } else {
         logger.error("Failed to save property:", res.status);
       }
@@ -156,6 +192,56 @@ export default function PropertyProfileClient({
     } finally {
       setSaving(false);
     }
+  };
+
+  const handleAutofill = async () => {
+    setAutofilling(true);
+    try {
+      const res = await fetch(`/api/v1/property-profiles/${propertyId}/autofill`, {
+        method: "POST",
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (data.success && data.suggestions) {
+          setAutofillSuggestions(data.suggestions);
+          setAutofillConfidence(data.confidence || {});
+          setAutofillReasoning(data.reasoning || "");
+        }
+      }
+    } catch (error) {
+      logger.error("Failed to autofill:", error);
+    } finally {
+      setAutofilling(false);
+    }
+  };
+
+  const acceptSuggestion = (field: string) => {
+    const val = autofillSuggestions[field];
+    setEditForm((prev) => ({ ...prev, [field]: val }));
+    setAcceptedFields((prev) => new Set([...prev, field]));
+    setAutofillSuggestions((prev) => {
+      const next = { ...prev };
+      delete next[field];
+      return next;
+    });
+  };
+
+  const rejectSuggestion = (field: string) => {
+    setAutofillSuggestions((prev) => {
+      const next = { ...prev };
+      delete next[field];
+      return next;
+    });
+  };
+
+  const acceptAllSuggestions = () => {
+    const updates: Record<string, unknown> = {};
+    for (const [field, val] of Object.entries(autofillSuggestions)) {
+      updates[field] = val;
+    }
+    setEditForm((prev) => ({ ...prev, ...updates }));
+    setAcceptedFields((prev) => new Set([...prev, ...Object.keys(autofillSuggestions)]));
+    setAutofillSuggestions({});
   };
 
   const riskScore = property.insuranceRiskScore || 0;
@@ -320,6 +406,20 @@ export default function PropertyProfileClient({
                   </CardTitle>
                   <div className="flex gap-2">
                     <Button
+                      onClick={handleAutofill}
+                      disabled={autofilling}
+                      variant="outline"
+                      size="sm"
+                      className="gap-2 border-purple-300 text-purple-700 hover:bg-purple-50 dark:border-purple-600 dark:text-purple-400 dark:hover:bg-purple-950/30"
+                    >
+                      {autofilling ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : (
+                        <Sparkles className="h-4 w-4" />
+                      )}
+                      {autofilling ? "Scanning..." : "AI Autofill"}
+                    </Button>
+                    <Button
                       onClick={handleSaveProperty}
                       disabled={saving}
                       size="sm"
@@ -339,116 +439,584 @@ export default function PropertyProfileClient({
                   </div>
                 </div>
               </CardHeader>
-              <CardContent>
-                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                  <div className="space-y-2">
-                    <Label>Year Built</Label>
-                    <Input
-                      type="number"
-                      value={editForm.yearBuilt}
-                      onChange={(e) => setEditForm({ ...editForm, yearBuilt: e.target.value })}
-                      placeholder="e.g. 2005"
-                    />
+              <CardContent className="space-y-6">
+                {/* Autofill suggestions banner */}
+                {Object.keys(autofillSuggestions).length > 0 && (
+                  <div className="rounded-lg border border-purple-200 bg-purple-50/80 p-4 dark:border-purple-800 dark:bg-purple-950/30">
+                    <div className="mb-3 flex items-center justify-between">
+                      <h4 className="flex items-center gap-2 font-semibold text-purple-700 dark:text-purple-300">
+                        <Sparkles className="h-4 w-4" />
+                        AI Suggestions ({Object.keys(autofillSuggestions).length} fields)
+                      </h4>
+                      <Button
+                        onClick={acceptAllSuggestions}
+                        variant="outline"
+                        size="sm"
+                        className="gap-1 text-xs"
+                      >
+                        <CheckCircle className="h-3 w-3" /> Accept All
+                      </Button>
+                    </div>
+                    {autofillReasoning && (
+                      <p className="mb-3 text-xs text-purple-600 dark:text-purple-400">
+                        {autofillReasoning}
+                      </p>
+                    )}
+                    <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+                      {Object.entries(autofillSuggestions).map(([field, val]) => (
+                        <div
+                          key={field}
+                          className="flex items-center justify-between rounded-md border border-purple-200 bg-white px-3 py-2 text-sm dark:border-purple-700 dark:bg-slate-900"
+                        >
+                          <div className="min-w-0">
+                            <span className="font-medium">{field}</span>
+                            <span className="ml-1 text-muted-foreground">= {String(val)}</span>
+                            {autofillConfidence[field] && (
+                              <Badge variant="outline" className="ml-1 text-[10px]">
+                                {autofillConfidence[field]}
+                              </Badge>
+                            )}
+                          </div>
+                          <div className="ml-2 flex gap-1">
+                            <button
+                              onClick={() => acceptSuggestion(field)}
+                              className="rounded p-0.5 text-green-600 hover:bg-green-100 dark:hover:bg-green-900/30"
+                            >
+                              <CheckCircle className="h-4 w-4" />
+                            </button>
+                            <button
+                              onClick={() => rejectSuggestion(field)}
+                              className="rounded p-0.5 text-red-500 hover:bg-red-100 dark:hover:bg-red-900/30"
+                            >
+                              <XCircle className="h-4 w-4" />
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
                   </div>
-                  <div className="space-y-2">
-                    <Label>Square Footage</Label>
-                    <Input
-                      type="number"
-                      value={editForm.squareFootage}
-                      onChange={(e) => setEditForm({ ...editForm, squareFootage: e.target.value })}
-                      placeholder="e.g. 2400"
-                    />
+                )}
+
+                {/* ── Structure ── */}
+                <fieldset className="rounded-lg border p-4">
+                  <legend className="flex items-center gap-2 px-2 text-sm font-semibold">
+                    <Home className="h-4 w-4" /> Structure
+                  </legend>
+                  <div className="grid gap-4 pt-2 md:grid-cols-2 lg:grid-cols-4">
+                    <div className="space-y-2">
+                      <Label>Year Built</Label>
+                      <Input
+                        type="number"
+                        value={editForm.yearBuilt}
+                        onChange={(e) => setEditForm({ ...editForm, yearBuilt: e.target.value })}
+                        placeholder="e.g. 2005"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Square Footage</Label>
+                      <Input
+                        type="number"
+                        value={editForm.squareFootage}
+                        onChange={(e) =>
+                          setEditForm({ ...editForm, squareFootage: e.target.value })
+                        }
+                        placeholder="e.g. 2400"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Lot Size (sq ft)</Label>
+                      <Input
+                        type="number"
+                        value={editForm.lotSize}
+                        onChange={(e) => setEditForm({ ...editForm, lotSize: e.target.value })}
+                        placeholder="e.g. 8500"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Stories</Label>
+                      <Input
+                        type="number"
+                        value={editForm.numStories}
+                        onChange={(e) => setEditForm({ ...editForm, numStories: e.target.value })}
+                        placeholder="e.g. 2"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Bedrooms</Label>
+                      <Input
+                        type="number"
+                        value={editForm.numBedrooms}
+                        onChange={(e) => setEditForm({ ...editForm, numBedrooms: e.target.value })}
+                        placeholder="e.g. 4"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Bathrooms</Label>
+                      <Input
+                        type="number"
+                        step="0.5"
+                        value={editForm.numBathrooms}
+                        onChange={(e) => setEditForm({ ...editForm, numBathrooms: e.target.value })}
+                        placeholder="e.g. 2.5"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Garage Spaces</Label>
+                      <Input
+                        type="number"
+                        value={editForm.garageSpaces}
+                        onChange={(e) => setEditForm({ ...editForm, garageSpaces: e.target.value })}
+                        placeholder="e.g. 2"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>County</Label>
+                      <Input
+                        value={editForm.county}
+                        onChange={(e) => setEditForm({ ...editForm, county: e.target.value })}
+                        placeholder="e.g. Maricopa"
+                      />
+                    </div>
                   </div>
-                  <div className="space-y-2">
-                    <Label>Property Type</Label>
-                    <Select
-                      value={editForm.propertyType}
-                      onValueChange={(v) => setEditForm({ ...editForm, propertyType: v })}
-                    >
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="RESIDENTIAL">Residential</SelectItem>
-                        <SelectItem value="COMMERCIAL">Commercial</SelectItem>
-                        <SelectItem value="MULTI_FAMILY">Multi-Family</SelectItem>
-                        <SelectItem value="INDUSTRIAL">Industrial</SelectItem>
-                      </SelectContent>
-                    </Select>
+                </fieldset>
+
+                {/* ── Roof ── */}
+                <fieldset className="rounded-lg border p-4">
+                  <legend className="flex items-center gap-2 px-2 text-sm font-semibold">
+                    🏠 Roof
+                  </legend>
+                  <div className="grid gap-4 pt-2 md:grid-cols-2 lg:grid-cols-4">
+                    <div className="space-y-2">
+                      <Label>Roof Type</Label>
+                      <Select
+                        value={editForm.roofType || ""}
+                        onValueChange={(v) => setEditForm({ ...editForm, roofType: v })}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select..." />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="Asphalt Shingle">Asphalt Shingle</SelectItem>
+                          <SelectItem value="Metal">Metal</SelectItem>
+                          <SelectItem value="Tile">Tile</SelectItem>
+                          <SelectItem value="Flat/TPO">Flat/TPO</SelectItem>
+                          <SelectItem value="Slate">Slate</SelectItem>
+                          <SelectItem value="Wood Shake">Wood Shake</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Roof Age (years)</Label>
+                      <Input
+                        type="number"
+                        value={editForm.roofAge}
+                        onChange={(e) => setEditForm({ ...editForm, roofAge: e.target.value })}
+                        placeholder="e.g. 12"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Roof Squares</Label>
+                      <Input
+                        type="number"
+                        step="0.1"
+                        value={editForm.roofSquares}
+                        onChange={(e) => setEditForm({ ...editForm, roofSquares: e.target.value })}
+                        placeholder="e.g. 32.5"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Roof Pitch</Label>
+                      <Input
+                        value={editForm.roofPitch}
+                        onChange={(e) => setEditForm({ ...editForm, roofPitch: e.target.value })}
+                        placeholder="e.g. 6/12"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Roof Color</Label>
+                      <Input
+                        value={editForm.roofColor}
+                        onChange={(e) => setEditForm({ ...editForm, roofColor: e.target.value })}
+                        placeholder="e.g. Charcoal"
+                      />
+                    </div>
                   </div>
-                  <div className="space-y-2">
-                    <Label>Roof Type</Label>
-                    <Select
-                      value={editForm.roofType || ""}
-                      onValueChange={(v) => setEditForm({ ...editForm, roofType: v })}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select..." />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="Asphalt Shingle">Asphalt Shingle</SelectItem>
-                        <SelectItem value="Metal">Metal</SelectItem>
-                        <SelectItem value="Tile">Tile</SelectItem>
-                        <SelectItem value="Flat/TPO">Flat/TPO</SelectItem>
-                        <SelectItem value="Slate">Slate</SelectItem>
-                        <SelectItem value="Wood Shake">Wood Shake</SelectItem>
-                      </SelectContent>
-                    </Select>
+                </fieldset>
+
+                {/* ── HVAC ── */}
+                <fieldset className="rounded-lg border p-4">
+                  <legend className="flex items-center gap-2 px-2 text-sm font-semibold">
+                    ❄️ HVAC
+                  </legend>
+                  <div className="grid gap-4 pt-2 md:grid-cols-2 lg:grid-cols-4">
+                    <div className="space-y-2">
+                      <Label>HVAC Type</Label>
+                      <Select
+                        value={editForm.hvacType || ""}
+                        onValueChange={(v) => setEditForm({ ...editForm, hvacType: v })}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select..." />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="Central Air">Central Air</SelectItem>
+                          <SelectItem value="Heat Pump">Heat Pump</SelectItem>
+                          <SelectItem value="Mini-Split">Mini-Split</SelectItem>
+                          <SelectItem value="Window Unit">Window Unit</SelectItem>
+                          <SelectItem value="Geothermal">Geothermal</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-2">
+                      <Label>HVAC Age (years)</Label>
+                      <Input
+                        type="number"
+                        value={editForm.hvacAge}
+                        onChange={(e) => setEditForm({ ...editForm, hvacAge: e.target.value })}
+                        placeholder="e.g. 8"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Manufacturer</Label>
+                      <Input
+                        value={editForm.hvacManufacturer}
+                        onChange={(e) =>
+                          setEditForm({ ...editForm, hvacManufacturer: e.target.value })
+                        }
+                        placeholder="e.g. Trane"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Model</Label>
+                      <Input
+                        value={editForm.hvacModel}
+                        onChange={(e) => setEditForm({ ...editForm, hvacModel: e.target.value })}
+                        placeholder="e.g. XR15"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Tonnage</Label>
+                      <Input
+                        type="number"
+                        step="0.5"
+                        value={editForm.hvacTonnage}
+                        onChange={(e) => setEditForm({ ...editForm, hvacTonnage: e.target.value })}
+                        placeholder="e.g. 3.5"
+                      />
+                    </div>
                   </div>
-                  <div className="space-y-2">
-                    <Label>Roof Age (years)</Label>
-                    <Input
-                      type="number"
-                      value={editForm.roofAge}
-                      onChange={(e) => setEditForm({ ...editForm, roofAge: e.target.value })}
-                      placeholder="e.g. 12"
-                    />
+                </fieldset>
+
+                {/* ── Water Heater ── */}
+                <fieldset className="rounded-lg border p-4">
+                  <legend className="flex items-center gap-2 px-2 text-sm font-semibold">
+                    🔥 Water Heater
+                  </legend>
+                  <div className="grid gap-4 pt-2 md:grid-cols-2 lg:grid-cols-4">
+                    <div className="space-y-2">
+                      <Label>Type</Label>
+                      <Select
+                        value={editForm.waterHeaterType || ""}
+                        onValueChange={(v) => setEditForm({ ...editForm, waterHeaterType: v })}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select..." />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="Tank">Tank</SelectItem>
+                          <SelectItem value="Tankless">Tankless</SelectItem>
+                          <SelectItem value="Heat Pump">Heat Pump</SelectItem>
+                          <SelectItem value="Solar">Solar</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Age (years)</Label>
+                      <Input
+                        type="number"
+                        value={editForm.waterHeaterAge}
+                        onChange={(e) =>
+                          setEditForm({ ...editForm, waterHeaterAge: e.target.value })
+                        }
+                        placeholder="e.g. 5"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Gallons</Label>
+                      <Input
+                        type="number"
+                        value={editForm.waterHeaterGallons}
+                        onChange={(e) =>
+                          setEditForm({ ...editForm, waterHeaterGallons: e.target.value })
+                        }
+                        placeholder="e.g. 50"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Fuel</Label>
+                      <Select
+                        value={editForm.waterHeaterFuel || ""}
+                        onValueChange={(v) => setEditForm({ ...editForm, waterHeaterFuel: v })}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select..." />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="Electric">Electric</SelectItem>
+                          <SelectItem value="Natural Gas">Natural Gas</SelectItem>
+                          <SelectItem value="Propane">Propane</SelectItem>
+                          <SelectItem value="Solar">Solar</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
                   </div>
-                  <div className="space-y-2">
-                    <Label>HVAC Age (years)</Label>
-                    <Input
-                      type="number"
-                      value={editForm.hvacAge}
-                      onChange={(e) => setEditForm({ ...editForm, hvacAge: e.target.value })}
-                      placeholder="e.g. 8"
-                    />
+                </fieldset>
+
+                {/* ── Plumbing & Electrical ── */}
+                <fieldset className="rounded-lg border p-4">
+                  <legend className="flex items-center gap-2 px-2 text-sm font-semibold">
+                    <Zap className="h-4 w-4" /> Plumbing & Electrical
+                  </legend>
+                  <div className="grid gap-4 pt-2 md:grid-cols-2 lg:grid-cols-4">
+                    <div className="space-y-2">
+                      <Label>Plumbing Type</Label>
+                      <Select
+                        value={editForm.plumbingType || ""}
+                        onValueChange={(v) => setEditForm({ ...editForm, plumbingType: v })}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select..." />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="Copper">Copper</SelectItem>
+                          <SelectItem value="PEX">PEX</SelectItem>
+                          <SelectItem value="PVC">PVC</SelectItem>
+                          <SelectItem value="Galvanized">Galvanized</SelectItem>
+                          <SelectItem value="Cast Iron">Cast Iron</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Plumbing Age (years)</Label>
+                      <Input
+                        type="number"
+                        value={editForm.plumbingAge}
+                        onChange={(e) => setEditForm({ ...editForm, plumbingAge: e.target.value })}
+                        placeholder="e.g. 15"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Sewer Type</Label>
+                      <Select
+                        value={editForm.sewerType || ""}
+                        onValueChange={(v) => setEditForm({ ...editForm, sewerType: v })}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select..." />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="Municipal">Municipal</SelectItem>
+                          <SelectItem value="Septic">Septic</SelectItem>
+                          <SelectItem value="Cesspool">Cesspool</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Water Source</Label>
+                      <Select
+                        value={editForm.waterSource || ""}
+                        onValueChange={(v) => setEditForm({ ...editForm, waterSource: v })}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select..." />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="Municipal">Municipal</SelectItem>
+                          <SelectItem value="Well">Well</SelectItem>
+                          <SelectItem value="Spring">Spring</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Electrical Panel</Label>
+                      <Select
+                        value={editForm.electricalPanelType || ""}
+                        onValueChange={(v) => setEditForm({ ...editForm, electricalPanelType: v })}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select..." />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="Circuit Breaker">Circuit Breaker</SelectItem>
+                          <SelectItem value="Fuse Box">Fuse Box</SelectItem>
+                          <SelectItem value="Sub-Panel">Sub-Panel</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Panel Age (years)</Label>
+                      <Input
+                        type="number"
+                        value={editForm.electricalPanelAge}
+                        onChange={(e) =>
+                          setEditForm({ ...editForm, electricalPanelAge: e.target.value })
+                        }
+                        placeholder="e.g. 20"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Wiring Type</Label>
+                      <Select
+                        value={editForm.wiringType || ""}
+                        onValueChange={(v) => setEditForm({ ...editForm, wiringType: v })}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select..." />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="Copper">Copper</SelectItem>
+                          <SelectItem value="Aluminum">Aluminum</SelectItem>
+                          <SelectItem value="Knob & Tube">Knob & Tube</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
                   </div>
-                  <div className="space-y-2">
-                    <Label>Water Heater Age (years)</Label>
-                    <Input
-                      type="number"
-                      value={editForm.waterHeaterAge}
-                      onChange={(e) => setEditForm({ ...editForm, waterHeaterAge: e.target.value })}
-                      placeholder="e.g. 5"
-                    />
+                </fieldset>
+
+                {/* ── Foundation ── */}
+                <fieldset className="rounded-lg border p-4">
+                  <legend className="flex items-center gap-2 px-2 text-sm font-semibold">
+                    🧱 Foundation
+                  </legend>
+                  <div className="grid gap-4 pt-2 md:grid-cols-2 lg:grid-cols-4">
+                    <div className="space-y-2">
+                      <Label>Foundation Type</Label>
+                      <Select
+                        value={editForm.foundationType || ""}
+                        onValueChange={(v) => setEditForm({ ...editForm, foundationType: v })}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select..." />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="Slab">Slab</SelectItem>
+                          <SelectItem value="Crawl Space">Crawl Space</SelectItem>
+                          <SelectItem value="Basement">Basement</SelectItem>
+                          <SelectItem value="Pier & Beam">Pier & Beam</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Foundation Age (years)</Label>
+                      <Input
+                        type="number"
+                        value={editForm.foundationAge}
+                        onChange={(e) =>
+                          setEditForm({ ...editForm, foundationAge: e.target.value })
+                        }
+                        placeholder="e.g. 30"
+                      />
+                    </div>
                   </div>
-                  <div className="space-y-2">
-                    <Label>Stories</Label>
-                    <Input
-                      type="number"
-                      value={editForm.stories}
-                      onChange={(e) => setEditForm({ ...editForm, stories: e.target.value })}
-                      placeholder="e.g. 2"
-                    />
+                </fieldset>
+
+                {/* ── Features & Energy ── */}
+                <fieldset className="rounded-lg border p-4">
+                  <legend className="flex items-center gap-2 px-2 text-sm font-semibold">
+                    ⚡ Features & Energy
+                  </legend>
+                  <div className="grid gap-4 pt-2 md:grid-cols-2 lg:grid-cols-4">
+                    <div className="space-y-2">
+                      <Label>Window Type</Label>
+                      <Select
+                        value={editForm.windowType || ""}
+                        onValueChange={(v) => setEditForm({ ...editForm, windowType: v })}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select..." />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="Single Pane">Single Pane</SelectItem>
+                          <SelectItem value="Double Pane">Double Pane</SelectItem>
+                          <SelectItem value="Triple Pane">Triple Pane</SelectItem>
+                          <SelectItem value="Impact Rated">Impact Rated</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Insulation Rating</Label>
+                      <Select
+                        value={editForm.insulationRating || ""}
+                        onValueChange={(v) => setEditForm({ ...editForm, insulationRating: v })}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select..." />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="R-13">R-13</SelectItem>
+                          <SelectItem value="R-19">R-19</SelectItem>
+                          <SelectItem value="R-30">R-30</SelectItem>
+                          <SelectItem value="R-38">R-38</SelectItem>
+                          <SelectItem value="R-49">R-49</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Flood Zone</Label>
+                      <Input
+                        value={editForm.floodZone}
+                        onChange={(e) => setEditForm({ ...editForm, floodZone: e.target.value })}
+                        placeholder="e.g. Zone X"
+                      />
+                    </div>
                   </div>
-                  <div className="space-y-2">
-                    <Label>Foundation Type</Label>
-                    <Select
-                      value={editForm.foundationType || ""}
-                      onValueChange={(v) => setEditForm({ ...editForm, foundationType: v })}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select..." />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="Slab">Slab</SelectItem>
-                        <SelectItem value="Crawl Space">Crawl Space</SelectItem>
-                        <SelectItem value="Basement">Basement</SelectItem>
-                        <SelectItem value="Pier & Beam">Pier & Beam</SelectItem>
-                      </SelectContent>
-                    </Select>
+                  <div className="mt-4 grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+                    <label className="flex cursor-pointer items-center gap-2 text-sm">
+                      <input
+                        type="checkbox"
+                        checked={!!editForm.hasGeneratorHookup}
+                        onChange={(e) =>
+                          setEditForm({ ...editForm, hasGeneratorHookup: e.target.checked })
+                        }
+                        className="h-4 w-4 rounded border-gray-300"
+                      />
+                      Generator Hookup
+                    </label>
+                    <label className="flex cursor-pointer items-center gap-2 text-sm">
+                      <input
+                        type="checkbox"
+                        checked={!!editForm.hasSmartHome}
+                        onChange={(e) =>
+                          setEditForm({ ...editForm, hasSmartHome: e.target.checked })
+                        }
+                        className="h-4 w-4 rounded border-gray-300"
+                      />
+                      Smart Home
+                    </label>
+                    <label className="flex cursor-pointer items-center gap-2 text-sm">
+                      <input
+                        type="checkbox"
+                        checked={!!editForm.hasLowEWindows}
+                        onChange={(e) =>
+                          setEditForm({ ...editForm, hasLowEWindows: e.target.checked })
+                        }
+                        className="h-4 w-4 rounded border-gray-300"
+                      />
+                      Low-E Windows
+                    </label>
+                    <label className="flex cursor-pointer items-center gap-2 text-sm">
+                      <input
+                        type="checkbox"
+                        checked={!!editForm.hasSolarPanels}
+                        onChange={(e) =>
+                          setEditForm({ ...editForm, hasSolarPanels: e.target.checked })
+                        }
+                        className="h-4 w-4 rounded border-gray-300"
+                      />
+                      Solar Panels
+                    </label>
                   </div>
-                </div>
+                </fieldset>
               </CardContent>
             </Card>
           )}
@@ -470,8 +1038,24 @@ export default function PropertyProfileClient({
                   <span className="font-medium">
                     {property.squareFootage?.toLocaleString() || "N/A"}
                   </span>
-                  <span className="text-muted-foreground">Property Type:</span>
-                  <span className="font-medium">{property.propertyType || "N/A"}</span>
+                  <span className="text-muted-foreground">Lot Size:</span>
+                  <span className="font-medium">
+                    {property.lotSize?.toLocaleString() || "N/A"} sq ft
+                  </span>
+                  <span className="text-muted-foreground">Stories:</span>
+                  <span className="font-medium">{property.numStories || "N/A"}</span>
+                  <span className="text-muted-foreground">Bedrooms:</span>
+                  <span className="font-medium">{property.numBedrooms || "N/A"}</span>
+                  <span className="text-muted-foreground">Bathrooms:</span>
+                  <span className="font-medium">{property.numBathrooms || "N/A"}</span>
+                  <span className="text-muted-foreground">Garage:</span>
+                  <span className="font-medium">
+                    {property.garageSpaces ? `${property.garageSpaces} spaces` : "N/A"}
+                  </span>
+                  <span className="text-muted-foreground">Foundation:</span>
+                  <span className="font-medium">{property.foundationType || "N/A"}</span>
+                  <span className="text-muted-foreground">County:</span>
+                  <span className="font-medium">{property.county || "N/A"}</span>
                   <span className="text-muted-foreground">Risk Level:</span>
                   <Badge variant={riskColor as any}>{riskLevel}</Badge>
                 </div>
@@ -504,14 +1088,25 @@ export default function PropertyProfileClient({
                   <span className="font-medium">
                     {property.roofAge ? `${property.roofAge} years` : "N/A"}
                   </span>
+                  <span className="text-muted-foreground">Roof Squares:</span>
+                  <span className="font-medium">{property.roofSquares || "N/A"}</span>
+                  <span className="text-muted-foreground">HVAC Type:</span>
+                  <span className="font-medium">{property.hvacType || "N/A"}</span>
                   <span className="text-muted-foreground">HVAC Age:</span>
                   <span className="font-medium">
                     {property.hvacAge ? `${property.hvacAge} years` : "N/A"}
                   </span>
-                  <span className="text-muted-foreground">Water Heater Age:</span>
+                  <span className="text-muted-foreground">Water Heater:</span>
                   <span className="font-medium">
-                    {property.waterHeaterAge ? `${property.waterHeaterAge} years` : "N/A"}
+                    {property.waterHeaterType || "N/A"}
+                    {property.waterHeaterAge ? ` (${property.waterHeaterAge} yrs)` : ""}
                   </span>
+                  <span className="text-muted-foreground">Plumbing:</span>
+                  <span className="font-medium">{property.plumbingType || "N/A"}</span>
+                  <span className="text-muted-foreground">Electrical:</span>
+                  <span className="font-medium">{property.electricalPanelType || "N/A"}</span>
+                  <span className="text-muted-foreground">Windows:</span>
+                  <span className="font-medium">{property.windowType || "N/A"}</span>
                 </div>
                 {!editing && (
                   <Button
