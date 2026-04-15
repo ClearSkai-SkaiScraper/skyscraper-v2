@@ -195,7 +195,7 @@ const ROUTE_THEME_MAP: [string, SectionTheme][] = [
   ["/weather-chains", "claims"],
   ["/weather-report", "claims"],
   ["/weather", "claims"],
-  ["/quick-dol", "claims"],
+  ["/quick-dol", "leads"],
 
   // ── Field & Sales (emerald→teal) ───────────────────────────────────
   ["/field", "leads"],
@@ -242,7 +242,8 @@ const ROUTE_THEME_MAP: [string, SectionTheme][] = [
   ["/vendor-network", "build"],
   ["/vendors", "build"],
   ["/trades-hub", "build"],
-  ["/trades", "build"],
+  ["/trades/profile", "settings"],
+  ["/trades", "network"],
 
   // ── Documents & Reports (purple→fuchsia) ───────────────────────────
   ["/reports", "reports"],
@@ -268,8 +269,6 @@ const ROUTE_THEME_MAP: [string, SectionTheme][] = [
   ["/commissions", "finance"],
   ["/mortgage-checks", "finance"],
   ["/billing", "finance"],
-  ["/sms", "finance"],
-  ["/inbox", "finance"],
 
   // ── Network & Comms (indigo→blue) ──────────────────────────────────
   ["/clients", "network"],
@@ -285,8 +284,11 @@ const ROUTE_THEME_MAP: [string, SectionTheme][] = [
   ["/reviews", "network"],
   ["/marketing", "network"],
   ["/connections", "network"],
+  ["/sms", "network"],
+  ["/inbox", "network"],
 
   // ── Company (slate→zinc) ───────────────────────────────────────────
+  ["/settings/billing", "finance"],
   ["/settings", "settings"],
   ["/company", "settings"],
   ["/company-map", "settings"],

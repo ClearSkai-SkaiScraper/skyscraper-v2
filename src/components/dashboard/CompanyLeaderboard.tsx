@@ -65,6 +65,7 @@ export function CompanyLeaderboard({ className }: CompanyLeaderboardProps) {
   const [entries, setEntries] = useState<LeaderboardEntry[]>([]);
   const [summary, setSummary] = useState<LeaderboardSummary | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [tab, setTab] = useState<TabKey>("revenue");
   const [expanded, setExpanded] = useState(false);
@@ -73,7 +74,9 @@ export function CompanyLeaderboard({ className }: CompanyLeaderboardProps) {
 
   useEffect(() => {
     const fetchLeaderboard = async () => {
-      setLoading(true);
+      // Only show skeleton on initial load, not on period/filter changes
+      if (entries.length === 0) setLoading(true);
+      else setIsRefreshing(true);
       setError(null);
       try {
         const params = new URLSearchParams({ period });
@@ -95,9 +98,11 @@ export function CompanyLeaderboard({ className }: CompanyLeaderboardProps) {
         logger.error("Leaderboard fetch failed:", e);
       } finally {
         setLoading(false);
+        setIsRefreshing(false);
       }
     };
     void fetchLeaderboard();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [period, sourceFilter]);
 
   // Sorted + max value for progress bars
@@ -176,10 +181,17 @@ export function CompanyLeaderboard({ className }: CompanyLeaderboardProps) {
   return (
     <div
       className={cn(
-        "flex flex-col overflow-hidden rounded-2xl border border-[color:var(--border)] bg-white/80 shadow-[0_0_40px_-12px_rgba(0,0,0,0.12)] backdrop-blur-xl dark:bg-slate-900/80",
+        "relative flex flex-col overflow-hidden rounded-2xl border border-[color:var(--border)] bg-white/80 shadow-[0_0_40px_-12px_rgba(0,0,0,0.12)] backdrop-blur-xl transition-opacity duration-200 dark:bg-slate-900/80",
+        isRefreshing && "opacity-80",
         className
       )}
     >
+      {/* Refresh indicator */}
+      {isRefreshing && (
+        <div className="absolute inset-x-0 top-0 z-10 h-0.5 overflow-hidden">
+          <div className="animate-indeterminate h-full w-1/3 bg-gradient-to-r from-transparent via-blue-500 to-transparent" />
+        </div>
+      )}
       {/* Gradient top stripe */}
       <div className="h-1.5 bg-gradient-to-r from-yellow-400 via-orange-500 to-red-500" />
 

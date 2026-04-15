@@ -264,6 +264,28 @@ export function GoalProgressBar() {
         body: JSON.stringify({ goals: goalsArray }),
       });
 
+      if (res.status === 503) {
+        // Migration not applied yet — save to localStorage as fallback
+        const lsFallback: Record<string, { weekly: number; monthly: number }> = {};
+        const rMap: Record<string, string> = {
+          doors_knocked: "doorsKnocked",
+          claims_signed: "claimsSigned",
+          revenue: "revenue",
+          jobs_posted: "jobsPosted",
+          leads_generated: "leadsGenerated",
+        };
+        editGoals.forEach((val, cat) => {
+          lsFallback[rMap[cat] || cat] = val;
+        });
+        try {
+          localStorage.setItem("skai-goal-settings", JSON.stringify(lsFallback));
+        } catch {}
+        setGoals(goalsArray);
+        setEditing(false);
+        toast.success("Goals saved locally (DB migration pending)");
+        return;
+      }
+
       if (!res.ok) throw new Error("Failed to save");
 
       setGoals(goalsArray);

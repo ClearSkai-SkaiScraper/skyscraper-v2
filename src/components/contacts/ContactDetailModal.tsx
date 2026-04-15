@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  Archive,
   ArrowRight,
   Briefcase,
   Building2,
@@ -10,6 +11,7 @@ import {
   MessageSquare,
   Phone,
   Send,
+  Trash2,
   User,
   UserPlus,
   X,
@@ -17,6 +19,7 @@ import {
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback, useState } from "react";
+import { toast } from "sonner";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -86,6 +89,10 @@ interface ContactDetailModalProps {
   onMessage?: (contact: UniversalContact) => void;
   /** Callback when invite is sent */
   onInvite?: (contact: UniversalContact, email: string) => void;
+  /** Callback when contact is deleted */
+  onDelete?: (contact: UniversalContact) => void;
+  /** Callback when contact is archived */
+  onArchive?: (contact: UniversalContact) => void;
 }
 
 export function ContactDetailModal({
@@ -94,12 +101,16 @@ export function ContactDetailModal({
   onOpenChange,
   onMessage,
   onInvite,
+  onDelete,
+  onArchive,
 }: ContactDetailModalProps) {
   const router = useRouter();
   const [inviteOpen, setInviteOpen] = useState(false);
   const [inviteEmail, setInviteEmail] = useState(contact.email || "");
   const [inviteSending, setInviteSending] = useState(false);
   const [inviteSent, setInviteSent] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   // ── Derived values ──
   const displayName =
@@ -172,6 +183,50 @@ export function ContactDetailModal({
       setInviteSending(false);
     }
   }, [contact, displayName, inviteEmail, onInvite]);
+
+  const handleDelete = useCallback(async () => {
+    if (!confirmDelete) {
+      setConfirmDelete(true);
+      return;
+    }
+    setDeleting(true);
+    try {
+      if (onDelete) {
+        onDelete(contact);
+      } else {
+        const res = await fetch(`/api/contacts/${contact.id}`, { method: "DELETE" });
+        if (!res.ok) throw new Error("Failed to delete contact");
+      }
+      toast.success("Contact deleted");
+      onOpenChange(false);
+      router.refresh();
+    } catch {
+      toast.error("Failed to delete contact");
+    } finally {
+      setDeleting(false);
+      setConfirmDelete(false);
+    }
+  }, [confirmDelete, contact, onDelete, onOpenChange, router]);
+
+  const handleArchive = useCallback(async () => {
+    try {
+      if (onArchive) {
+        onArchive(contact);
+      } else {
+        const res = await fetch(`/api/contacts/${contact.id}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ status: "archived" }),
+        });
+        if (!res.ok) throw new Error("Failed to archive contact");
+      }
+      toast.success("Contact archived");
+      onOpenChange(false);
+      router.refresh();
+    } catch {
+      toast.error("Failed to archive contact");
+    }
+  }, [contact, onArchive, onOpenChange, router]);
 
   // Determine navigation link
   const navHref = contact.href || contact.claimId ? `/claims/${contact.claimId}` : null;
@@ -257,7 +312,7 @@ export function ContactDetailModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="overflow-hidden p-0 sm:max-w-md">
+      <DialogContent hideClose className="overflow-hidden p-0 sm:max-w-md">
         {/* iPhone-style Contact Card Header */}
         <div className="bg-gradient-to-b from-slate-100 to-white px-6 pb-6 pt-8 dark:from-slate-800 dark:to-slate-900">
           {/* Close button */}
@@ -477,6 +532,53 @@ export function ContactDetailModal({
             </Link>
           </div>
         )}
+
+        {/* ── Actions: Archive / Delete ── */}
+        <div
+          className={cn(
+            "flex items-center gap-2 border-t border-slate-200 px-6 py-3 dark:border-slate-700",
+            !(navHref && navLabel) && "border-t"
+          )}
+        >
+          <Button
+            variant="ghost"
+            size="sm"
+            className="gap-1.5 text-slate-500 hover:text-slate-700 dark:text-slate-400"
+            onClick={handleArchive}
+          >
+            <Archive className="h-4 w-4" />
+            Archive
+          </Button>
+          <div className="flex-1" />
+          {confirmDelete ? (
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-red-600 dark:text-red-400">Are you sure?</span>
+              <Button variant="ghost" size="sm" onClick={() => setConfirmDelete(false)}>
+                Cancel
+              </Button>
+              <Button
+                variant="destructive"
+                size="sm"
+                disabled={deleting}
+                onClick={handleDelete}
+                className="gap-1.5"
+              >
+                <Trash2 className="h-3.5 w-3.5" />
+                {deleting ? "Deleting…" : "Delete"}
+              </Button>
+            </div>
+          ) : (
+            <Button
+              variant="ghost"
+              size="sm"
+              className="gap-1.5 text-red-500 hover:bg-red-50 hover:text-red-700 dark:hover:bg-red-900/20"
+              onClick={handleDelete}
+            >
+              <Trash2 className="h-4 w-4" />
+              Delete
+            </Button>
+          )}
+        </div>
       </DialogContent>
     </Dialog>
   );

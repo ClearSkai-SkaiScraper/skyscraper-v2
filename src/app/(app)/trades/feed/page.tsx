@@ -16,7 +16,7 @@ export default async function TradesFeedPage() {
         title="Trades Network"
         description="Connect with contractors, share projects, and discover opportunities"
         icon={<Network className="h-6 w-6" />}
-        section="build"
+        section="network"
       />
       <TradesFeed isAuthenticated={!!userId} />
     </PageContainer>

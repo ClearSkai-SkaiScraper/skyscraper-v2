@@ -16,7 +16,7 @@ export default async function WeatherChainsPage() {
   return (
     <PageContainer>
       <PageHero
-        section="claims"
+        section="leads"
         title="Weather Maps & Storm Research"
         subtitle="Research historical weather events by location for storm damage verification"
         icon={<CloudRain className="h-5 w-5" />}

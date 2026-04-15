@@ -72,7 +72,7 @@ export default function QuickDOLPage() {
   return (
     <PageContainer>
       <PageHero
-        section="claims"
+        section="leads"
         title="Quick DOL Pull"
         subtitle="Rapid date-of-loss verification for claim intake. Find historical weather events for any property."
         icon={<Calendar className="h-5 w-5" />}

@@ -197,7 +197,7 @@ export default async function BadgesPage() {
           title="Badges & Certifications"
           subtitle="Set up your trades profile to earn badges"
           icon={<Award className="h-5 w-5" />}
-          section="build"
+          section="network"
         />
         <PageSectionCard>
           <div className="py-10 text-center">
@@ -258,7 +258,7 @@ export default async function BadgesPage() {
         title="Badges & Certifications"
         subtitle="Earn badges to build trust and stand out to homeowners"
         icon={<Award className="h-5 w-5" />}
-        section="build"
+        section="network"
       >
         <Link
           href="/trades/analytics"

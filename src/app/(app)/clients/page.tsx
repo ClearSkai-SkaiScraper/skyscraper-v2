@@ -55,7 +55,7 @@ const TAB_TYPES = [
 
 // ─── Main Export ───────────────────────────────────────────────────────────
 interface PageProps {
-  searchParams: Promise<{ search?: string; tab?: string }>;
+  searchParams: { search?: string; tab?: string } | Promise<{ search?: string; tab?: string }>;
 }
 
 export default async function ClientsAndConnectionsPage({ searchParams }: PageProps) {
@@ -94,10 +94,13 @@ export default async function ClientsAndConnectionsPage({ searchParams }: PagePr
 
 // ─── Render Logic ──────────────────────────────────────────────────────────
 
-async function renderPage(searchParams: Promise<{ search?: string; tab?: string }>) {
+async function renderPage(
+  searchParams: { search?: string; tab?: string } | Promise<{ search?: string; tab?: string }>
+) {
   let searchQuery = "";
   try {
-    const params = await searchParams;
+    // Support both Next.js 14 (plain object) and 15 (Promise)
+    const params = searchParams instanceof Promise ? await searchParams : searchParams;
     searchQuery = params?.search || "";
   } catch {
     // continue without search

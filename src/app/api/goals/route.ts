@@ -77,6 +77,19 @@ export async function GET() {
   } catch (err) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     if ((err as any)?.digest?.startsWith?.("NEXT_REDIRECT")) throw err;
+    // Handle missing table gracefully (migration not yet applied)
+    const errMsg = String(err);
+    if (
+      errMsg.includes("org_goals") &&
+      (errMsg.includes("does not exist") || errMsg.includes("relation"))
+    ) {
+      logger.warn("[API] goals GET — org_goals table not yet created, returning empty");
+      return NextResponse.json({
+        success: true,
+        data: { goals: [], raw: [] },
+        _migrationNeeded: "20260616_create_org_goals.sql",
+      });
+    }
     logger.error("[API] goals GET error:", err);
     return NextResponse.json({ error: "Internal error" }, { status: 500 });
   }
@@ -144,6 +157,21 @@ export async function POST(req: NextRequest) {
   } catch (err) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     if ((err as any)?.digest?.startsWith?.("NEXT_REDIRECT")) throw err;
+    // Handle missing table gracefully
+    const errMsg = String(err);
+    if (
+      errMsg.includes("org_goals") &&
+      (errMsg.includes("does not exist") || errMsg.includes("relation"))
+    ) {
+      logger.warn("[API] goals POST — org_goals table not yet created");
+      return NextResponse.json(
+        {
+          error: "Goals table not yet initialized. Run migration: 20260616_create_org_goals.sql",
+          _migrationNeeded: "20260616_create_org_goals.sql",
+        },
+        { status: 503 }
+      );
+    }
     logger.error("[API] goals POST error:", err);
     return NextResponse.json({ error: "Internal error" }, { status: 500 });
   }

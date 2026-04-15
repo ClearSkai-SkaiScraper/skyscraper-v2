@@ -120,7 +120,7 @@ export default async function CalendarPage({
           title="Schedule & Calendar"
           subtitle="Set up your trades profile to use the calendar"
           icon={<CalendarIcon className="h-5 w-5" />}
-          section="build"
+          section="network"
         />
         <PageSectionCard>
           <div className="py-10 text-center">
@@ -232,7 +232,7 @@ export default async function CalendarPage({
         title="Schedule & Calendar"
         subtitle={`${MONTH_NAMES[viewMonth]} ${viewYear} — ${jobs.length} scheduled job${jobs.length !== 1 ? "s" : ""}`}
         icon={<CalendarIcon className="h-5 w-5" />}
-        section="build"
+        section="network"
       >
         <Link
           href="/trades/jobs"

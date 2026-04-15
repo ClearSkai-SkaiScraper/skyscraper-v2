@@ -471,7 +471,7 @@ export default function TradesMessagesPage() {
         title="Messages"
         subtitle="Connect with clients and contractors in your network"
         icon={<MessageSquare className="h-5 w-5" />}
-        section="build"
+        section="network"
         actions={
           <Button
             variant="secondary"

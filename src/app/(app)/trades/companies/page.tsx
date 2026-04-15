@@ -65,7 +65,7 @@ export default function TradesCompaniesPage() {
       <PageHero
         title="Network Companies"
         subtitle="Verified roofing, solar, and restoration professionals in the Skai Network"
-        section="build"
+        section="network"
       />
 
       <PageSectionCard title="Companies Directory">
