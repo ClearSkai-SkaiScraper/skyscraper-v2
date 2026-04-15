@@ -33,21 +33,77 @@ export default function GoalSettingsPage() {
   const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
-    // Load from localStorage
-    try {
-      const saved = localStorage.getItem("skai-goal-settings");
-      if (saved) setGoals(JSON.parse(saved));
-    } catch {}
-    setLoaded(true);
+    // Load from API (DB-backed) first, fall back to localStorage
+    void (async () => {
+      try {
+        const res = await fetch("/api/goals");
+        if (res.ok) {
+          const data = await res.json();
+          if (data.success && data.data?.goals?.length > 0) {
+            const dbGoals = data.data.goals;
+            const categoryMap: Record<string, string> = {
+              doors_knocked: "doorsKnocked",
+              claims_signed: "claimsSigned",
+              revenue: "revenue",
+              jobs_posted: "jobsPosted",
+              leads_generated: "leadsGenerated",
+            };
+            const merged = { ...DEFAULT_GOALS };
+            for (const g of dbGoals) {
+              const key = categoryMap[g.category] as keyof GoalSettings | undefined;
+              if (key && merged[key]) {
+                merged[key] = { weekly: g.weekly, monthly: g.monthly };
+              }
+            }
+            setGoals(merged);
+            setLoaded(true);
+            return;
+          }
+        }
+      } catch {
+        // Fall through to localStorage
+      }
+      try {
+        const saved = localStorage.getItem("skai-goal-settings");
+        if (saved) setGoals(JSON.parse(saved));
+      } catch {}
+      setLoaded(true);
+    })();
   }, []);
 
   const handleSave = async () => {
     setSaving(true);
     try {
+      // Save to DB via API
+      const keyMap: Record<string, string> = {
+        doorsKnocked: "doors_knocked",
+        claimsSigned: "claims_signed",
+        revenue: "revenue",
+        jobsPosted: "jobs_posted",
+        leadsGenerated: "leads_generated",
+      };
+      const apiGoals = Object.entries(keyMap).map(([lsKey, dbCategory]) => ({
+        category: dbCategory,
+        weekly: goals[lsKey as keyof GoalSettings]?.weekly ?? 0,
+        monthly: goals[lsKey as keyof GoalSettings]?.monthly ?? 0,
+      }));
+      const res = await fetch("/api/goals", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ goals: apiGoals }),
+      });
+      if (!res.ok) throw new Error("API save failed");
+      // Also sync to localStorage for backward compat
       localStorage.setItem("skai-goal-settings", JSON.stringify(goals));
       toast.success("Goals saved successfully!");
     } catch {
-      toast.error("Failed to save goals");
+      // Fallback: at least save to localStorage
+      try {
+        localStorage.setItem("skai-goal-settings", JSON.stringify(goals));
+        toast.success("Goals saved locally (server sync pending)");
+      } catch {
+        toast.error("Failed to save goals");
+      }
     } finally {
       setSaving(false);
     }

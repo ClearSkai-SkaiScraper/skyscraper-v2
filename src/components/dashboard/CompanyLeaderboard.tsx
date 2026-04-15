@@ -168,7 +168,7 @@ export function CompanyLeaderboard({ className }: CompanyLeaderboardProps) {
   const tabConfig: { key: TabKey; label: string; icon: typeof Trophy }[] = [
     { key: "revenue", label: "Revenue", icon: TrendingUp },
     { key: "claims", label: "Claims", icon: Target },
-    { key: "doors", label: "Lead Sources", icon: Filter },
+    { key: "doors", label: "Doors Knocked", icon: Filter },
   ];
 
   const displayed = expanded ? sorted : sorted.slice(0, 5);
@@ -293,7 +293,7 @@ export function CompanyLeaderboard({ className }: CompanyLeaderboardProps) {
             label:
               sourceFilter !== "all"
                 ? sourceFilter.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase())
-                : "Lead Sources",
+                : "Doors Knocked",
             value: effectiveSummary.totalDoors.toLocaleString(),
             icon: Filter,
             color: "text-orange-600 dark:text-orange-400",
@@ -317,7 +317,7 @@ export function CompanyLeaderboard({ className }: CompanyLeaderboardProps) {
         <span>Rep</span>
         <span className="hidden w-24 text-right sm:block">Close Rate</span>
         <span className="w-28 text-right">
-          {tab === "revenue" ? "Revenue" : tab === "claims" ? "Claims" : "Leads"}
+          {tab === "revenue" ? "Revenue" : tab === "claims" ? "Claims" : "Doors"}
         </span>
       </div>
 
@@ -452,7 +452,7 @@ export function CompanyLeaderboard({ className }: CompanyLeaderboardProps) {
                     {displayValue}
                   </p>
                   <p className="text-[10px] text-slate-400">
-                    {tab === "revenue" ? "revenue" : tab === "claims" ? "signed" : "leads"}
+                    {tab === "revenue" ? "revenue" : tab === "claims" ? "signed" : "doors"}
                   </p>
                 </div>
               </div>

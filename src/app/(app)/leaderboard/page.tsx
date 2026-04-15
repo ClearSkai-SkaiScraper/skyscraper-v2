@@ -12,28 +12,30 @@ export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
 export const metadata: Metadata = {
-  title: "Team Analytics & Leaderboard | SkaiScraper",
-  description: "Team performance analytics — revenue, claims, close rates, and rep rankings.",
+  title: "Leaderboard & Goal Tracking | SkaiScraper",
+  description:
+    "Team performance leaderboard with goal tracking — revenue, claims, door knocking, and rep rankings.",
 };
 
 /**
- * /leaderboard — Full-page Team Analytics & Leaderboard
- * Shows team KPIs + goal progress + full leaderboard component with filtering.
+ * /leaderboard — Leaderboard & Goal Tracking
+ * DB-backed goal progress + full leaderboard component with filtering.
+ * Goals are org-scoped (Prisma org_goals model), door knocks are real canvass_pins.
  */
 export default async function LeaderboardAnalyticsPage() {
   const ctx = await getOrgContext();
-  if (!ctx.orgId) return <NoOrgMembershipBanner title="Team Leaderboard" />;
+  if (!ctx.orgId) return <NoOrgMembershipBanner title="Leaderboard & Goal Tracking" />;
 
   return (
     <PageContainer maxWidth="7xl">
       <PageHero
         section="settings"
-        title="Team Analytics & Leaderboard"
-        subtitle="Track revenue, signed claims, and rep performance across your entire team"
+        title="Leaderboard & Goal Tracking"
+        subtitle="Track team revenue, signed claims, door knocking activity, and hit your goals"
         icon={<Trophy className="h-5 w-5" />}
       />
 
-      {/* Goal Progress Bars — client component reads localStorage goals */}
+      {/* Goal Progress Bars — DB-backed (org_goals) with inline editing + presets */}
       <GoalProgressBar />
 
       {/* Full Leaderboard Component with all tabs, filtering, and analytics */}

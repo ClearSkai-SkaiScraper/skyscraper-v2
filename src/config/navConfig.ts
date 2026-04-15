@@ -139,7 +139,7 @@ export const navSections: NavSection[] = [
       { label: "My Profile & Company", href: "/trades/profile" },
       { label: "Company Branding", href: "/settings/branding" },
       { label: "Company Settings", href: "/settings" },
-      { label: "Team Leaderboard", href: "/leaderboard" },
+      { label: "Leaderboard & Goals", href: "/leaderboard" },
       { label: "Team & Company Seats", href: "/teams" },
       { label: "Notifications", href: "/notifications" },
       { label: "Help & Support", href: "/support" },

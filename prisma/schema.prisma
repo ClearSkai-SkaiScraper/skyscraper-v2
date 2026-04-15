@@ -1028,6 +1028,7 @@ model Org {
   migration_jobs            migration_jobs[]
   support_tickets           support_tickets[]
   canvass_pins              canvass_pins[]
+  org_goals                 org_goals[]
   hoa_notice_packs          hoa_notice_packs[]
   storm_evidence            storm_evidence[]
   claim_outcomes            claim_outcomes[]
@@ -3267,6 +3268,24 @@ model door_knocks {
   @@index([knockedBy])
   @@index([outcome])
   @@index([routeId])
+}
+
+/// Org-scoped goal targets — replaces localStorage with DB persistence.
+/// Each row = one goal category for an org (optionally per-user).
+model org_goals {
+  id        String   @id
+  orgId     String
+  userId    String   @default("") // "" = org-wide default; set = user-specific override
+  category  String // doors_knocked | claims_signed | revenue | jobs_posted | leads_generated
+  weekly    Int      @default(0)
+  monthly   Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  Org       Org      @relation(fields: [orgId], references: [id], onDelete: Cascade)
+
+  @@unique([orgId, userId, category])
+  @@index([orgId])
+  @@index([orgId, userId])
 }
 
 /// Standalone door-knocking / canvassing pin tracker.

@@ -334,6 +334,27 @@ export const GET = withAuth(async (req: NextRequest, ctx) => {
     });
     const allSources = allSourcesQuery.map((s) => s.source).filter(Boolean) as string[];
 
+    // ── Real door-knocking data from canvass_pins ──
+    const canvassPins = await prisma.canvass_pins.groupBy({
+      by: ["userId"],
+      where: {
+        orgId: ctx.orgId,
+        knockedAt: { gte: periodStart },
+      },
+      _count: { id: true },
+    });
+    const doorKnocksByUser = new Map<string, number>();
+    for (const pin of canvassPins) {
+      doorKnocksByUser.set(pin.userId, pin._count.id);
+    }
+    // Total org-wide door knocks for summary
+    const totalOrgDoorKnocks = await prisma.canvass_pins.count({
+      where: {
+        orgId: ctx.orgId,
+        knockedAt: { gte: periodStart },
+      },
+    });
+
     // Build leaderboard entries for each member — per-user attribution
     const leaderboard = allUsers.map((user) => {
       // Attribute claims by assignedTo
@@ -382,7 +403,8 @@ export const GET = withAuth(async (req: NextRequest, ctx) => {
         revenue: totalRevenue,
         claimsSigned: effectiveClaims.filter((c) => c.signingStatus === "signed").length,
         claimsApproved: approvedClaims,
-        doorsKnocked: effectiveLeads.length,
+        doorsKnocked:
+          (doorKnocksByUser.get(user.clerkUserId) || 0) + (doorKnocksByUser.get(user.id) || 0),
         closeRate,
         commissionEarned: totalRevenue * 0.1,
         commissionPaid: 0,
@@ -409,7 +431,7 @@ export const GET = withAuth(async (req: NextRequest, ctx) => {
 
     const totalRevenue = cleanLeaderboard.reduce((s, r) => s + r.revenue, 0);
     const totalClaims = cleanLeaderboard.reduce((s, r) => s + r.claimsSigned, 0);
-    const totalDoors = cleanLeaderboard.reduce((s, r) => s + r.doorsKnocked, 0);
+    const totalDoors = totalOrgDoorKnocks;
     const signedClaimsCount = signedClaims.length;
 
     return NextResponse.json({
