@@ -156,7 +156,7 @@ export default function PerformanceDashboardPage() {
   return (
     <PageContainer maxWidth="7xl">
       <PageHero
-        section="reports"
+        section="command"
         title="Performance Dashboard"
         subtitle="Claims performance, team productivity, and feature usage analytics"
         icon={<TrendingUp className="h-6 w-6" />}

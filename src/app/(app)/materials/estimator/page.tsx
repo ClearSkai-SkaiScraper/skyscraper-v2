@@ -1171,7 +1171,7 @@ export default function MaterialEstimatorPage() {
   return (
     <PageContainer maxWidth="5xl">
       <PageHero
-        section="trades"
+        section="build"
         title="Material Estimator"
         subtitle="Calculate materials for any trade — roofing, siding, flooring, electrical, and more. Route orders to suppliers with one click."
         icon={<Calculator className="h-7 w-7" />}

@@ -88,7 +88,7 @@ export default async function ClaimsTimelinePage() {
     return (
       <PageContainer>
         <PageHero
-          section="claims"
+          section="command"
           title="Claims Timeline"
           subtitle="Visualize claim lifecycle stages and identify bottlenecks across your pipeline"
           icon={<Clock className="h-5 w-5" />}
@@ -183,7 +183,7 @@ export default async function ClaimsTimelinePage() {
   return (
     <PageContainer>
       <PageHero
-        section="claims"
+        section="command"
         title="Claims Timeline"
         subtitle="Visualize claim lifecycle stages and identify bottlenecks across your pipeline"
         icon={<Clock className="h-5 w-5" />}

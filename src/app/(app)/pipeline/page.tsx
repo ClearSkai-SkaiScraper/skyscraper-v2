@@ -282,7 +282,7 @@ export default async function PipelinePage({
   return (
     <PageContainer maxWidth="full">
       <PageHero
-        section="jobs"
+        section="command"
         title="Job Pipeline"
         subtitle="Central hub for all active jobs — claims, retail, financed, and repairs"
         icon={<TrendingUp className="h-5 w-5" />}

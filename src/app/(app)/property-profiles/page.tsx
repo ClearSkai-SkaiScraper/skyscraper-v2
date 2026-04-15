@@ -91,7 +91,7 @@ export default async function PropertyProfilesPage() {
   return (
     <PageContainer>
       <PageHero
-        section="jobs"
+        section="leads"
         title="Property Profiles"
         subtitle="Manage property intelligence, digital twins, and health scores"
         icon={<Home className="h-5 w-5" />}
@@ -131,7 +131,7 @@ export default async function PropertyProfilesPage() {
                         // eslint-disable-next-line @typescript-eslint/no-explicit-any
                         (sum: number, p: any) => sum + (p.healthScores[0]?.overallScore || 0),
                         0
-                      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
                       ) / properties.filter((p: any) => p.healthScores?.length > 0).length
                   )
                 : 0}

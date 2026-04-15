@@ -30,7 +30,7 @@ export default function DoorKnockingPage() {
   return (
     <PageContainer maxWidth="full">
       <PageHero
-        section="trades"
+        section="leads"
         title="Door Knocking Tracker"
         subtitle="Drop pins on houses you visit, track outcomes, tag areas, and plan your next moves"
         icon={<DoorOpen className="h-5 w-5" />}

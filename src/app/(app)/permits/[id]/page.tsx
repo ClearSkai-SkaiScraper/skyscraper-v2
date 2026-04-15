@@ -158,7 +158,7 @@ export default function PermitDetailPage() {
   useEffect(() => {
     void fetchPermit();
     void fetchDocuments();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [fetchPermit]);
 
   const fetchDocuments = async () => {
@@ -323,7 +323,7 @@ export default function PermitDetailPage() {
 
       {/* Hero */}
       <PageHero
-        section="jobs"
+        section="reports"
         title={`Permit #${permit.permitNumber}`}
         subtitle={`${permit.permitType} · ${permit.jurisdiction || "No jurisdiction"} · ${daysSinceApplied} days since applied`}
         icon={<FileCheck className="h-5 w-5" />}

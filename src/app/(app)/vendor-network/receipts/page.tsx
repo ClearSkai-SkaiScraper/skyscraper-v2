@@ -14,7 +14,7 @@ export default function ReceiptsPage() {
   return (
     <PageContainer>
       <PageHero
-        section="network"
+        section="build"
         title="Material Receipts"
         subtitle="Upload material receipts and invoices. AI auto-parses vendor, items, and totals."
       />

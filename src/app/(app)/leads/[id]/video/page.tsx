@@ -63,7 +63,7 @@ export default async function LeadVideoReportPage({ params }: Props) {
   return (
     <PageContainer>
       <PageHero
-        section="jobs"
+        section="leads"
         title="AI Video Report"
         subtitle="Generate cinematic damage assessment videos with AI narration"
         icon={<Video className="h-5 w-5" />}

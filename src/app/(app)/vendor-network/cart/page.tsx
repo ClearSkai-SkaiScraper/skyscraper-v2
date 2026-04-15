@@ -14,7 +14,7 @@ export default function MaterialsCartPage() {
   return (
     <PageContainer>
       <PageHero
-        section="network"
+        section="build"
         title="Materials Cart"
         subtitle="Build material orders from the vendor network, review line items, and submit to suppliers."
       />

@@ -93,7 +93,7 @@ export default function HoaNoticesPage() {
   return (
     <PageContainer maxWidth="7xl">
       <PageHero
-        section="reports"
+        section="jobs"
         title="HOA Notice Packs"
         subtitle="Community-level storm intelligence packages"
         icon={<Building2 className="h-6 w-6" />}

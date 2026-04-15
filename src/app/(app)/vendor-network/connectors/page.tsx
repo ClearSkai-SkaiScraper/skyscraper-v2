@@ -14,7 +14,7 @@ export default function ConnectorsPage() {
   return (
     <PageContainer>
       <PageHero
-        section="network"
+        section="build"
         title="Supplier Connectors"
         subtitle="Connect your accounts with major suppliers for streamlined ordering, real-time pricing, and inventory checks."
       />

@@ -89,7 +89,7 @@ export default async function PermitsPage() {
   return (
     <PageContainer maxWidth="7xl">
       <PageHero
-        section="jobs"
+        section="reports"
         title="Permit Tracker"
         subtitle="Track building permits, inspections, and approvals for your jobs"
         icon={<ClipboardList className="h-5 w-5" />}

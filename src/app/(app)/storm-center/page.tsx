@@ -271,7 +271,7 @@ export default async function StormCenterPage() {
   return (
     <PageContainer>
       <PageHero
-        section="claims"
+        section="command"
         icon={<CloudLightning className="h-7 w-7" />}
         title="Storm Command Center"
         subtitle="Your real-time war room for storm season. Claims, supplements, revenue, and materials — all in one view."

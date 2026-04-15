@@ -14,7 +14,7 @@ export default function AiMatchPage() {
   return (
     <PageContainer>
       <PageHero
-        section="network"
+        section="build"
         title="AI Vendor Match"
         subtitle="Enter your project requirements and let AI find the best-fit vendors from the network."
       />

@@ -178,7 +178,7 @@ export default function SmartActionsPage() {
   return (
     <PageContainer maxWidth="7xl">
       <PageHero
-        section="command"
+        section="claims"
         title="Smart Actions Hub"
         subtitle="AI recommendations, stalled claims, goals tracking — your command center for what needs attention"
         icon={<Brain className="h-5 w-5" />}

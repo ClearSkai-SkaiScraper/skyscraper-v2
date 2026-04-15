@@ -120,7 +120,7 @@ export function GoalProgressBar() {
         const res = await fetch("/api/finance/leaderboard");
         if (!res.ok) return;
         const data = await res.json();
-        const members = data.leaderboard || data.data || [];
+        const members = data.data?.leaderboard || data.leaderboard || [];
 
         let totalRevenue = 0;
         let totalClaims = 0;

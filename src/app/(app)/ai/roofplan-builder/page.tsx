@@ -421,7 +421,7 @@ export default function ProjectPlanBuilderPage() {
       />
 
       <PageHero
-        section="claims"
+        section="build"
         title="Project Plan Builder"
         subtitle="Build AI-powered project plans for any trade — exported as professional PDFs"
         icon={<Layers className="h-5 w-5" />}

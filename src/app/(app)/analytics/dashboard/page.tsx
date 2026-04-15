@@ -176,7 +176,7 @@ export default async function AnalyticsDashboardPage() {
   return (
     <PageContainer maxWidth="7xl">
       <PageHero
-        section="reports"
+        section="command"
         title="Analytics Dashboard"
         subtitle="Track performance metrics, pipeline health, and conversion rates"
         icon={<BarChart3 className="h-6 w-6" />}

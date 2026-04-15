@@ -307,7 +307,7 @@ export default async function MapViewPage() {
     return (
       <PageContainer>
         <PageHero
-          section="jobs"
+          section="leads"
           title="Map View"
           subtitle="Interactive map of your claims, leads, and vendor locations"
           icon={<Map className="h-6 w-6" />}
@@ -343,7 +343,7 @@ export default async function MapViewPage() {
   return (
     <PageContainer maxWidth="full">
       <PageHero
-        section="jobs"
+        section="leads"
         title="Map View"
         subtitle={`${markers.length} location${markers.length === 1 ? "" : "s"} — claims, leads, retail jobs & vendors`}
         icon={<Map className="h-6 w-6" />}

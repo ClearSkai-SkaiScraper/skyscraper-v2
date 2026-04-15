@@ -14,7 +14,7 @@ export default function VendorAdminPage() {
   return (
     <PageContainer>
       <PageHero
-        section="network"
+        section="build"
         title="Vendor Administration"
         subtitle="Create, edit, and manage all vendors in the network. Toggle featured/verified status and manage trade assignments."
       />

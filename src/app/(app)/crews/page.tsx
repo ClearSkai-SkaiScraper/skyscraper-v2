@@ -131,7 +131,7 @@ export default async function CrewsPage() {
         title="Crew Manager"
         subtitle="Schedule labor crews, material deliveries, and track availability"
         icon={<HardHat className="h-5 w-5" />}
-        section="trades"
+        section="jobs"
       >
         <div className="flex gap-3">
           <Button

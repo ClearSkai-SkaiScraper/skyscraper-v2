@@ -48,7 +48,7 @@ export default async function PortfolioPage() {
           title="Project Portfolio"
           subtitle="Set up your trades profile first"
           icon={<Camera className="h-5 w-5" />}
-          section="trades"
+          section="build"
         />
         <PageSectionCard>
           <div className="py-10 text-center">
@@ -100,7 +100,7 @@ export default async function PortfolioPage() {
           title="Project Portfolio"
           subtitle={`${totalItems} project${totalItems !== 1 ? "s" : ""} showcasing your best work`}
           icon={<Camera className="h-5 w-5" />}
-          section="trades"
+          section="build"
         >
           <Link
             href="/trades/portfolio/upload"

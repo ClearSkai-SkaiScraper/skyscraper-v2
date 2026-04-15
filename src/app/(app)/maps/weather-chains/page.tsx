@@ -184,7 +184,7 @@ export default function WeatherMapsPage() {
   return (
     <PageContainer>
       <PageHero
-        section="claims"
+        section="leads"
         title="Weather Map"
         subtitle="View storm activity, score properties for damage likelihood, and build door knocking routes"
         icon={<CloudRain className="h-5 w-5" />}

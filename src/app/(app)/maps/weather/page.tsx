@@ -194,7 +194,7 @@ export default async function WeatherMapsPage() {
   return (
     <PageContainer>
       <PageHero
-        section="claims"
+        section="leads"
         title="Weather Intelligence"
         subtitle="Storm damage heatmap and forensic weather data for all claims"
         icon={<CloudRain className="h-6 w-6 text-blue-500" />}

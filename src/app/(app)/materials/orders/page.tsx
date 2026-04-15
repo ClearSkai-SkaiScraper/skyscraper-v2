@@ -103,7 +103,7 @@ export default function MaterialOrdersPage() {
       </div>
 
       <PageHero
-        section="trades"
+        section="build"
         title="Material Orders"
         subtitle="Track orders, deliveries, and order history across all suppliers"
         icon={<Truck className="h-7 w-7" />}

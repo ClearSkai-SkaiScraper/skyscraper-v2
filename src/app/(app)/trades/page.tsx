@@ -33,7 +33,7 @@ export default async function TradesNetworkPage() {
             title="Trades Network Hub"
             subtitle="Sign in to connect with contractors"
             icon={<Users className="h-5 w-5" />}
-            section="trades"
+            section="build"
           />
           <AuthRequiredState
             redirectUrl="/trades"
@@ -105,7 +105,7 @@ export default async function TradesNetworkPage() {
           title="Trades Network Hub"
           subtitle="Connect with contractors in your area"
           icon={<Users className="h-5 w-5" />}
-          section="trades"
+          section="build"
         />
         <PageSectionCard>
           <div className="py-8 text-center">

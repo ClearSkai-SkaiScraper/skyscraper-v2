@@ -32,7 +32,7 @@ export default async function MaterialsPage() {
   return (
     <div className="container mx-auto max-w-7xl p-6">
       <PageHero
-        section="trades"
+        section="build"
         title="Material Intelligence"
         subtitle="AI-powered material cost analysis, ordering, and vendor intelligence"
         icon={<Package className="h-6 w-6" />}

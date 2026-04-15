@@ -274,7 +274,7 @@ export default function BidOpportunitiesPage() {
   return (
     <PageContainer>
       <PageHero
-        section="jobs"
+        section="leads"
         title="Bid Opportunities"
         description="Find projects from clients and submit your bids"
         icon={<Briefcase className="h-8 w-8" />}

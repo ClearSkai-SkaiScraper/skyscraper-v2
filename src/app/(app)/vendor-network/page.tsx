@@ -42,7 +42,7 @@ export default async function VendorNetworkPage() {
 
       <PageContainer maxWidth="7xl">
         <PageHero
-          section="network"
+          section="build"
           title="Vendor Intelligence Network"
           subtitle="Dealers, distributors, and suppliers — place orders, compare pricing, and manage vendor relationships across every trade"
           icon={<Network className="h-6 w-6" />}

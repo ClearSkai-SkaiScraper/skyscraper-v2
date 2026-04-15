@@ -146,7 +146,7 @@ export default function CRMPage() {
     return (
       <div className="container mx-auto space-y-6 p-6">
         <PageHero
-          section="leads"
+          section="jobs"
           title="CRM Dashboard"
           subtitle="Overview of your sales pipeline and team activity"
           icon={<Users className="h-6 w-6" />}
@@ -169,7 +169,7 @@ export default function CRMPage() {
     <div className="container mx-auto space-y-6 p-6">
       {/* Header */}
       <PageHero
-        section="leads"
+        section="jobs"
         title="CRM Dashboard"
         subtitle="Overview of your sales pipeline and team activity"
         icon={<Users className="h-6 w-6" />}

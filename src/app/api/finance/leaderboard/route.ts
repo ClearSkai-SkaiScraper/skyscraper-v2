@@ -1,10 +1,10 @@
 // eslint-disable-next-line no-restricted-imports
 import { clerkClient } from "@clerk/nextjs/server";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
+import { withAuth } from "@/lib/auth/withAuth";
 import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
-import { safeOrgContext } from "@/lib/safeOrgContext";
 
 export const dynamic = "force-dynamic";
 
@@ -46,15 +46,9 @@ function isDemoUser(user: { name?: string | null; email?: string | null; userId?
  *
  * Supports ?period=month|3month|6month|year (default: month)
  */
-export async function GET(req: Request) {
+export const GET = withAuth(async (req: NextRequest, ctx) => {
   try {
-    const ctx = await safeOrgContext();
-    if (ctx.status !== "ok" || !ctx.orgId)
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-
-    // RBAC: All authenticated org members can view the leaderboard
-    // (Managers+ can see full data, members see limited view)
-    // Removed requireRole("manager") to allow all team members access
+    // withAuth guarantees orgId + userId are DB-backed
 
     const { searchParams } = new URL(req.url);
     const period = searchParams.get("period") || "month";
@@ -451,4 +445,4 @@ export async function GET(req: Request) {
     logger.error("[API] leaderboard error:", err);
     return NextResponse.json({ error: "Internal error" }, { status: 500 });
   }
-}
+});

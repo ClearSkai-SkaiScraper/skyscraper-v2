@@ -15,7 +15,7 @@ export default async function GovernancePage() {
   return (
     <PageContainer maxWidth="7xl">
       <PageHero
-        section="settings"
+        section="jobs"
         title="Governance"
         subtitle="Permissions, audit logs, and compliance settings"
         icon={<Shield className="h-5 w-5" />}

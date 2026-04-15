@@ -136,7 +136,7 @@ export default function WeatherReportsPage() {
   return (
     <PageContainer>
       <PageHero
-        section="claims"
+        section="leads"
         title="Weather Reports"
         subtitle="Generate and view AI-powered weather verification reports for insurance claims"
         icon={<CloudRain className="h-6 w-6" />}

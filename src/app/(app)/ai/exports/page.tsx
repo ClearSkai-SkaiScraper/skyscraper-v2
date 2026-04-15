@@ -216,7 +216,7 @@ export default function CarrierExportsPage() {
   return (
     <PageContainer maxWidth="5xl">
       <PageHero
-        section="reports"
+        section="claims"
         title="Carrier Export Builder"
         subtitle="Generate carrier-specific export formats for insurance submissions — Xactimate, Symbility, and more"
         icon={<Package className="h-5 w-5" />}

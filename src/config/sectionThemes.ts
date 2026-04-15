@@ -3,31 +3,39 @@
  * MASTER SECTION COLOR SYSTEM — ENTITY-CODED
  * ============================================================================
  *
- * Brand-cohesive gradients that visually distinguish each platform area:
+ * 9 sidebar sections, each with a unique gradient.
+ * These colors appear in:
+ *   1. PageHero banners (auto-detected via ROUTE_THEME_MAP or explicit section= prop)
+ *   2. AppSidebar section headers (consumed via SIDEBAR_SECTION_STYLES)
+ *   3. AppSidebar chevron icons
  *
- * — command (Dashboard, overview)  → Deep teal (brand anchor)
- * — claims (Insurance claims)     → Blue family (sky → blue)
- * — jobs (Retail / Jobs / Leads)  → Teal → cyan
- * — trades (Crews, materials)     → Amber → orange
- * — reports (Docs, proposals)     → Purple → violet
- * — network (Vendors, contacts)   → Indigo → blue
- * — finance (Invoices, billing)   → Emerald → green
- * — settings (Admin, account)     → Slate → cool gray
- * — leads (Sales pipeline)        → Emerald → teal (green family)
+ * ⚠️  DO NOT hardcode section colors anywhere else — import from here.
+ *
+ * Section → Color mapping:
+ *   command  (Dashboard & Intel)    → Teal → Cyan
+ *   claims   (Claims & Insurance)   → Blue → Sky
+ *   leads    (Field & Sales)        → Emerald → Teal
+ *   jobs     (Jobs & Operations)    → Amber → Orange
+ *   build    (Build & Design)       → Violet → Purple
+ *   reports  (Documents & Reports)  → Purple → Fuchsia
+ *   network  (Network & Comms)      → Indigo → Blue
+ *   finance  (Finance & Billing)    → Emerald → Green
+ *   settings (Company)              → Slate → Zinc
  *
  * ============================================================================
  */
 
 export type SectionTheme =
-  | "command" // Deep Teal — Dashboard, overview, KPIs
-  | "jobs" // Teal/Cyan — Retail jobs, pipeline
-  | "claims" // Blue — Claims workspace, AI claims tools
-  | "leads" // Green — Sales leads pipeline
-  | "trades" // Warm Orange — Crews, trades, field tools
-  | "reports" // Purple — Reports, docs, proposals, templates
-  | "network" // Indigo — Vendor network, invitations, contacts
-  | "finance" // Emerald Green — Finance, invoices, commissions
-  | "settings"; // Slate — Billing, integrations, security, org settings
+  | "command" // Teal/Cyan  — Dashboard & Intel
+  | "claims" // Blue/Sky   — Claims & Insurance
+  | "leads" // Emerald    — Field & Sales
+  | "jobs" // Amber/Org  — Jobs & Operations
+  | "build" // Violet/Pur — Build & Design
+  | "reports" // Purple/Fch — Documents & Reports
+  | "network" // Indigo/Blu — Network & Comms
+  | "finance" // Emerald/Grn— Finance & Billing
+  | "settings" // Slate/Zinc — Company
+  | "trades"; // Alias → same as jobs (backward compat)
 
 export interface ThemeConfig {
   gradient: string;
@@ -39,10 +47,6 @@ export const SECTION_THEMES: Record<SectionTheme, ThemeConfig> = {
     gradient: "bg-gradient-to-r from-teal-600 via-teal-600 to-cyan-600",
     subtitleColor: "text-teal-200/80",
   },
-  jobs: {
-    gradient: "bg-gradient-to-r from-teal-600 via-teal-600 to-cyan-600",
-    subtitleColor: "text-teal-200/80",
-  },
   claims: {
     gradient: "bg-gradient-to-r from-blue-600 via-blue-600 to-sky-600",
     subtitleColor: "text-blue-200/80",
@@ -51,12 +55,16 @@ export const SECTION_THEMES: Record<SectionTheme, ThemeConfig> = {
     gradient: "bg-gradient-to-r from-emerald-600 via-emerald-600 to-teal-600",
     subtitleColor: "text-emerald-200/80",
   },
-  trades: {
+  jobs: {
     gradient: "bg-gradient-to-r from-amber-600 via-amber-600 to-orange-600",
     subtitleColor: "text-amber-200/80",
   },
+  build: {
+    gradient: "bg-gradient-to-r from-violet-600 via-violet-600 to-purple-600",
+    subtitleColor: "text-violet-200/80",
+  },
   reports: {
-    gradient: "bg-gradient-to-r from-purple-600 via-purple-600 to-violet-600",
+    gradient: "bg-gradient-to-r from-purple-600 via-purple-600 to-fuchsia-600",
     subtitleColor: "text-purple-200/80",
   },
   network: {
@@ -68,10 +76,78 @@ export const SECTION_THEMES: Record<SectionTheme, ThemeConfig> = {
     subtitleColor: "text-emerald-200/80",
   },
   settings: {
-    gradient: "bg-gradient-to-r from-slate-600 via-slate-600 to-slate-500",
+    gradient: "bg-gradient-to-r from-slate-600 via-slate-600 to-zinc-600",
     subtitleColor: "text-slate-300/80",
   },
+  // Backward-compat alias — "trades" resolves identically to "jobs"
+  trades: {
+    gradient: "bg-gradient-to-r from-amber-600 via-amber-600 to-orange-600",
+    subtitleColor: "text-amber-200/80",
+  },
 };
+
+/**
+ * Sidebar section label → theme key mapping.
+ * Used by AppSidebar to look up gradient + icon colors dynamically.
+ */
+export const SIDEBAR_SECTION_STYLES: Record<
+  string,
+  { theme: SectionTheme; borderColor: string; chevronColor: string }
+> = {
+  "Dashboard & Intel": {
+    theme: "command",
+    borderColor: "border-teal-500",
+    chevronColor: "text-teal-500",
+  },
+  "Claims & Insurance": {
+    theme: "claims",
+    borderColor: "border-blue-500",
+    chevronColor: "text-blue-500",
+  },
+  "Field & Sales": {
+    theme: "leads",
+    borderColor: "border-emerald-500",
+    chevronColor: "text-emerald-500",
+  },
+  "Jobs & Operations": {
+    theme: "jobs",
+    borderColor: "border-amber-500",
+    chevronColor: "text-amber-500",
+  },
+  "Build & Design": {
+    theme: "build",
+    borderColor: "border-violet-500",
+    chevronColor: "text-violet-500",
+  },
+  "Documents & Reports": {
+    theme: "reports",
+    borderColor: "border-purple-500",
+    chevronColor: "text-purple-500",
+  },
+  "Finance & Billing": {
+    theme: "finance",
+    borderColor: "border-emerald-500",
+    chevronColor: "text-emerald-500",
+  },
+  "Network & Comms": {
+    theme: "network",
+    borderColor: "border-indigo-500",
+    chevronColor: "text-indigo-500",
+  },
+  Company: { theme: "settings", borderColor: "border-slate-500", chevronColor: "text-slate-500" },
+};
+
+/**
+ * Helper: get sidebar gradient text class for a section label.
+ * Returns the `bg-gradient-to-r … bg-clip-text text-transparent` classes.
+ */
+export function getSidebarGradient(sectionLabel: string): string {
+  const style = SIDEBAR_SECTION_STYLES[sectionLabel];
+  if (!style) return "bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent";
+  const cfg = SECTION_THEMES[style.theme];
+  // Convert "bg-gradient-to-r from-X via-Y to-Z" → same string + clip
+  return `${cfg.gradient} bg-clip-text text-transparent`;
+}
 
 /**
  * Route prefix → section theme mapping
@@ -81,81 +157,94 @@ export const SECTION_THEMES: Record<SectionTheme, ThemeConfig> = {
  * PageHero auto-detects the section from usePathname().
  */
 const ROUTE_THEME_MAP: [string, SectionTheme][] = [
-  // ── Command Center ─────────────────────────────────────────────────
+  // ── Dashboard & Intel (teal→cyan) ─────────────────────────────────
   ["/dashboard", "command"],
   ["/admin", "command"],
   ["/analytics", "command"],
   ["/performance", "command"],
   ["/search", "command"],
   ["/storm-center", "command"],
+  ["/pipeline", "command"],
+  ["/tools", "command"],
 
-  // ── Claims Toolkit (must be before /claims general) ────────────────
+  // ── Claims & Insurance (blue→sky) ──────────────────────────────────
   ["/claims/ready", "claims"],
   ["/claims/new", "claims"],
   ["/claims/rebuttal", "claims"],
-  ["/ai/", "claims"],
+  ["/claims", "claims"],
+  ["/claims-ready-folder", "claims"],
+  ["/claimiq", "claims"],
   ["/evidence", "claims"],
-  ["/quick-dol", "claims"],
-  ["/vision-lab", "claims"],
   ["/measurements", "claims"],
+  ["/ai/bad-faith", "claims"],
+  ["/ai/tools", "claims"],
+  ["/ai/claims", "claims"],
+  ["/ai/smart-actions", "claims"],
+  ["/ai/recommendations", "claims"],
+  ["/ai/damage-builder", "claims"],
+  ["/ai/exports", "claims"],
   ["/agent", "claims"],
   ["/box-summary", "claims"],
-  ["/builder", "claims"],
   ["/carrier", "claims"],
   ["/correlate", "claims"],
   ["/damage", "claims"],
   ["/depreciation", "claims"],
   ["/intelligence", "claims"],
   ["/scopes", "claims"],
+  ["/scope-editor", "claims"],
   ["/weather-chains", "claims"],
   ["/weather-report", "claims"],
+  ["/weather", "claims"],
+  ["/quick-dol", "claims"],
 
-  // ── Claims (list + detail pages) ───────────────────────────────────
-  ["/claims", "claims"],
-
-  // ── Leads (sales pipeline) — green family ──────────────────────────
+  // ── Field & Sales (emerald→teal) ───────────────────────────────────
+  ["/field", "leads"],
+  ["/storm-leads", "leads"],
   ["/leads", "leads"],
   ["/client-leads", "leads"],
   ["/opportunities", "leads"],
+  ["/maps/door-knocking", "leads"],
+  ["/maps/weather-chains", "leads"],
+  ["/maps/map-view", "leads"],
+  ["/maps/routes", "leads"],
+  ["/maps/weather", "leads"],
+  ["/maps-weather", "leads"],
+  ["/maps", "leads"],
+  ["/property-profiles", "leads"],
+  ["/route-optimization", "leads"],
 
-  // ── Jobs & Operations (retail, pipeline, misc) ─────────────────────
-  ["/pipeline", "jobs"],
+  // ── Jobs & Operations (amber→orange) ───────────────────────────────
   ["/jobs", "jobs"],
   ["/work-orders", "jobs"],
-  ["/property-profiles", "jobs"],
   ["/appointments", "jobs"],
-  ["/permits", "jobs"],
-  ["/mortgage-checks", "jobs"],
+  ["/tasks", "jobs"],
+  ["/crews", "jobs"],
+  ["/time-tracking", "jobs"],
   ["/archive", "jobs"],
   ["/bids", "jobs"],
-  ["/claims-ready-folder", "jobs"],
-  ["/clients", "jobs"],
   ["/crm", "jobs"],
   ["/inspections", "jobs"],
   ["/job-board", "jobs"],
-  ["/maps-weather", "jobs"],
-  ["/marketing", "jobs"],
   ["/meetings", "jobs"],
   ["/operations", "jobs"],
   ["/projects", "jobs"],
   ["/quality", "jobs"],
-  ["/route-optimization", "jobs"],
-  ["/tasks", "jobs"],
-  ["/time-tracking", "jobs"],
+  ["/hoa", "jobs"],
+  ["/governance", "jobs"],
 
-  // ── Field & Sales ──────────────────────────────────────────────────
-  ["/field", "trades"],
-  ["/storm-leads", "trades"],
-  ["/maps/door-knocking", "trades"],
-  ["/maps/weather-chains", "claims"],
+  // ── Build & Design (violet→purple) ─────────────────────────────────
+  ["/ai/roofplan-builder", "build"],
+  ["/ai/mockup", "build"],
+  ["/ai", "claims"], // all other /ai/ routes → claims
+  ["/vision-lab", "build"],
+  ["/builder", "build"],
+  ["/materials", "build"],
+  ["/vendor-network", "build"],
+  ["/vendors", "build"],
+  ["/trades-hub", "build"],
+  ["/trades", "build"],
 
-  // ── Trades Toolkit ─────────────────────────────────────────────────
-  ["/trades", "trades"],
-  ["/trades-hub", "trades"],
-  ["/crews", "trades"],
-  ["/materials", "trades"],
-
-  // ── Reports & Documents ────────────────────────────────────────────
+  // ── Documents & Reports (purple→fuchsia) ───────────────────────────
   ["/reports", "reports"],
   ["/proposals", "reports"],
   ["/smart-docs", "reports"],
@@ -168,33 +257,36 @@ const ROUTE_THEME_MAP: [string, SectionTheme][] = [
   ["/report-workbench", "reports"],
   ["/sign", "reports"],
   ["/templates", "reports"],
+  ["/supplements", "reports"],
+  ["/contracts", "reports"],
+  ["/permits", "reports"],
 
-  // ── Network ────────────────────────────────────────────────────────
-  ["/vendor-network", "network"],
-  ["/network", "network"],
-  ["/invitations", "network"],
-  ["/vendors", "network"],
+  // ── Finance & Billing (emerald→green) ──────────────────────────────
+  ["/finance", "finance"],
+  ["/financial", "finance"],
+  ["/invoices", "finance"],
+  ["/commissions", "finance"],
+  ["/mortgage-checks", "finance"],
+  ["/billing", "finance"],
+  ["/sms", "finance"],
+  ["/inbox", "finance"],
+
+  // ── Network & Comms (indigo→blue) ──────────────────────────────────
+  ["/clients", "network"],
   ["/contacts", "network"],
   ["/company/connections", "network"],
+  ["/messages", "network"],
+  ["/invitations", "network"],
+  ["/network", "network"],
   ["/pro/", "network"],
   ["/directory", "network"],
   ["/marketplace", "network"],
   ["/referrals", "network"],
   ["/reviews", "network"],
+  ["/marketing", "network"],
+  ["/connections", "network"],
 
-  // ── Finance & Communications ───────────────────────────────────────
-  ["/finance", "finance"],
-  ["/invoices", "finance"],
-  ["/commissions", "finance"],
-  ["/messages", "finance"],
-  ["/sms", "finance"],
-  ["/notifications", "settings"],
-  ["/billing", "finance"],
-  ["/contracts", "finance"],
-  ["/financial", "finance"],
-  ["/inbox", "finance"],
-
-  // ── Settings & Admin ───────────────────────────────────────────────
+  // ── Company (slate→zinc) ───────────────────────────────────────────
   ["/settings", "settings"],
   ["/company", "settings"],
   ["/company-map", "settings"],
@@ -213,18 +305,12 @@ const ROUTE_THEME_MAP: [string, SectionTheme][] = [
   ["/help", "settings"],
   ["/integrations", "settings"],
   ["/mobile", "settings"],
+  ["/notifications", "settings"],
   ["/onboarding", "settings"],
   ["/resources", "settings"],
   ["/support", "settings"],
   ["/system", "settings"],
   ["/trial", "settings"],
-
-  // ── Weather / Maps → Claims toolkit ────────────────────────────────
-  ["/maps", "jobs"],
-
-  // ── HOA / Governance ───────────────────────────────────────────────
-  ["/hoa", "jobs"],
-  ["/governance", "jobs"],
 ];
 
 /**

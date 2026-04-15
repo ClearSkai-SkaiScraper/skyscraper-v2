@@ -274,7 +274,7 @@ export default function VisionLabPage() {
   return (
     <PageContainer maxWidth="7xl">
       <PageHero
-        section="claims"
+        section="build"
         title="Vision Lab"
         subtitle="Transform video inspections into professional written reports with AI-powered damage analysis"
         icon={<Scan className="h-6 w-6" />}

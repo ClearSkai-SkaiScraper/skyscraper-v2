@@ -7,6 +7,7 @@ import { useEffect, useState } from "react";
 
 import { RemoteViewSelector } from "@/components/remote-view/RemoteViewSelector";
 import { isNavItemVisible, navSections } from "@/config/navConfig";
+import { getSidebarGradient, SIDEBAR_SECTION_STYLES } from "@/config/sectionThemes";
 import { getUiTheme } from "@/config/uiTheme";
 import { logger } from "@/lib/logger";
 import { cn } from "@/lib/utils";
@@ -144,25 +145,8 @@ export function AppSidebar() {
                   !isCollapsed || sectionHasActive
                     ? cn(
                         "border-b-2",
-                        section.label === "Claims & Insurance"
-                          ? "border-blue-500 bg-gradient-to-r from-blue-600 to-sky-600 bg-clip-text text-transparent"
-                          : section.label === "Field & Sales"
-                            ? "border-emerald-500 bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent"
-                            : section.label === "Jobs & Operations"
-                              ? "border-amber-500 bg-gradient-to-r from-amber-600 to-orange-600 bg-clip-text text-transparent"
-                              : section.label === "Dashboard & Intel"
-                                ? "border-teal-500 bg-gradient-to-r from-teal-600 to-cyan-600 bg-clip-text text-transparent"
-                                : section.label === "Build & Design"
-                                  ? "border-violet-500 bg-gradient-to-r from-violet-600 to-purple-600 bg-clip-text text-transparent"
-                                  : section.label === "Documents & Reports"
-                                    ? "border-purple-500 bg-gradient-to-r from-purple-600 to-fuchsia-600 bg-clip-text text-transparent"
-                                    : section.label === "Finance & Billing"
-                                      ? "border-emerald-500 bg-gradient-to-r from-emerald-600 to-green-600 bg-clip-text text-transparent"
-                                      : section.label === "Network & Comms"
-                                        ? "border-indigo-500 bg-gradient-to-r from-indigo-600 to-blue-600 bg-clip-text text-transparent"
-                                        : section.label === "Company"
-                                          ? "border-slate-500 bg-gradient-to-r from-slate-600 to-zinc-600 bg-clip-text text-transparent"
-                                          : "border-blue-500 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent"
+                        SIDEBAR_SECTION_STYLES[section.label]?.borderColor ?? "border-blue-500",
+                        getSidebarGradient(section.label)
                       )
                     : "border-b border-transparent bg-gradient-to-r from-slate-400 to-slate-500 bg-clip-text text-transparent hover:from-blue-500 hover:to-purple-500"
                 )}
@@ -174,25 +158,7 @@ export function AppSidebar() {
                     "h-3.5 w-3.5 shrink-0 text-slate-400 transition-transform duration-200",
                     isCollapsed ? "-rotate-90" : "rotate-0",
                     (!isCollapsed || sectionHasActive) &&
-                      (section.label === "Claims & Insurance"
-                        ? "text-blue-500"
-                        : section.label === "Field & Sales"
-                          ? "text-emerald-500"
-                          : section.label === "Jobs & Operations"
-                            ? "text-amber-500"
-                            : section.label === "Dashboard & Intel"
-                              ? "text-teal-500"
-                              : section.label === "Build & Design"
-                                ? "text-violet-500"
-                                : section.label === "Documents & Reports"
-                                  ? "text-purple-500"
-                                  : section.label === "Finance & Billing"
-                                    ? "text-emerald-500"
-                                    : section.label === "Network & Comms"
-                                      ? "text-indigo-500"
-                                      : section.label === "Company"
-                                        ? "text-slate-500"
-                                        : "text-blue-500")
+                      (SIDEBAR_SECTION_STYLES[section.label]?.chevronColor ?? "text-blue-500")
                   )}
                   fill="none"
                   viewBox="0 0 24 24"

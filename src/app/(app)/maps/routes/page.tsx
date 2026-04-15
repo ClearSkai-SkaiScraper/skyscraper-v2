@@ -45,7 +45,7 @@ function RoutesOptimizerClient() {
   return (
     <PageContainer>
       <PageHero
-        section="jobs"
+        section="leads"
         title="Route Optimizer"
         subtitle="Plan efficient multi-stop field routes"
         icon={<Navigation className="h-5 w-5" />}

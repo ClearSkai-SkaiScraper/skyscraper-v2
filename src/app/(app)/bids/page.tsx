@@ -275,7 +275,7 @@ export default function ProMyBidsPage() {
     <div className="min-h-screen bg-gradient-to-br from-blue-50/50 to-white py-8 dark:from-slate-950 dark:to-slate-900">
       <div className="container mx-auto max-w-4xl px-4">
         <PageHero
-          section="trades"
+          section="jobs"
           title="My Quotes"
           subtitle="Track all your submitted quotes and their status"
           icon={<FileText className="h-6 w-6" />}

@@ -47,7 +47,7 @@ export default async function TradesJoinPage({
       <PageHero
         title="Create Your Trades Profile"
         description="Join the SkaiTrades Network and connect with opportunities"
-        section="trades"
+        section="build"
       />
 
       <div className="mx-auto max-w-2xl">

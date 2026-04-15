@@ -153,7 +153,7 @@ export default function AIToolsPage() {
   return (
     <PageContainer maxWidth="7xl">
       <PageHero
-        section="reports"
+        section="claims"
         title="AI Tools Hub"
         subtitle="AI-powered tools to accelerate claims processing, analysis, and reporting"
         icon={<Brain className="h-6 w-6" />}

@@ -36,7 +36,7 @@ export default async function MaterialOrdersPage() {
   return (
     <PageContainer maxWidth="7xl">
       <PageHero
-        section="network"
+        section="build"
         title="Material Orders"
         subtitle="Order materials from vendors, track deliveries, and link to jobs"
         icon={<Package className="h-6 w-6" />}

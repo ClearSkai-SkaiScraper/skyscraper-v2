@@ -258,7 +258,7 @@ export default async function ReportAnalyticsPage() {
   return (
     <PageContainer maxWidth="7xl">
       <PageHero
-        section="reports"
+        section="command"
         title="Report Analytics"
         subtitle="Track report generation, types, and usage metrics across your organization"
         icon={<FileBarChart className="h-6 w-6" />}

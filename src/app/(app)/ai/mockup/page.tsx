@@ -23,7 +23,7 @@ export default async function AIMockupPage() {
   return (
     <PageContainer>
       <PageHero
-        section="claims"
+        section="build"
         title="Project Mockup Generator"
         subtitle="Generate before/after visualizations for all trade projects"
         icon={<ImageIcon className="h-5 w-5" />}

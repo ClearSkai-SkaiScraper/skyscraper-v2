@@ -120,7 +120,7 @@ export default async function VendorAnalyticsPage() {
           title="Vendor Analytics"
           subtitle="Set up your trades profile to see analytics"
           icon={<BarChart3 className="h-5 w-5" />}
-          section="trades"
+          section="build"
         />
         <PageSectionCard>
           <div className="py-10 text-center">
@@ -243,7 +243,7 @@ export default async function VendorAnalyticsPage() {
         title="Vendor Analytics"
         subtitle={`Performance dashboard for ${member.company?.name || `${member.firstName ?? ""} ${member.lastName ?? ""}`.trim() || "your business"}`}
         icon={<BarChart3 className="h-5 w-5" />}
-        section="trades"
+        section="build"
       >
         <Link
           href="/trades/profile"

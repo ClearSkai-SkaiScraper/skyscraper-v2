@@ -140,7 +140,7 @@ function LegacyVendorsPage() {
     <div className="container mx-auto max-w-7xl px-4 py-8">
       {/* Raven UI Header */}
       <PageHero
-        section="network"
+        section="build"
         title="Vendor Network"
         subtitle="Connect with trusted roofing manufacturers, suppliers, and distributors in Arizona"
         icon={<Building2 className="h-6 w-6" />}
