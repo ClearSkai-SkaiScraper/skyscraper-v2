@@ -12,6 +12,7 @@
 
 import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
+import { isAdminRole, roleEquals } from "@/lib/auth/roleCompare";
 
 export async function getVisibleUserIds(
   clerkUserId: string,
@@ -31,12 +32,7 @@ export async function getVisibleUserIds(
     });
 
     // 2. If admin or owner → no filter (see everything)
-    if (member?.isAdmin || member?.isOwner) {
-      return null;
-    }
-
-    const role = (member?.role ?? "").toLowerCase();
-    if (role === "admin" || role === "owner") {
+    if (member?.isAdmin || member?.isOwner || isAdminRole(member?.role)) {
       return null;
     }
 
@@ -46,8 +42,7 @@ export async function getVisibleUserIds(
         where: { clerkUserId, orgId },
         select: { role: true },
       });
-      const userRole = (dbUser?.role ?? "").toUpperCase();
-      if (userRole === "ADMIN" || userRole === "OWNER") {
+      if (isAdminRole(dbUser?.role)) {
         return null;
       }
       // Non-admin without tradesCompanyMember record → own data only
@@ -55,7 +50,7 @@ export async function getVisibleUserIds(
     }
 
     // 4. Manager → own userId + direct reports' userIds
-    if (member.isManager || role === "manager") {
+    if (member.isManager || roleEquals(member.role, "manager")) {
       const directReports = await prisma.tradesCompanyMember.findMany({
         where: { managerId: member.id },
         select: { userId: true },

@@ -10,6 +10,7 @@ export const dynamic = "force-dynamic";
 
 import { NextRequest, NextResponse } from "next/server";
 
+import { isAdminRole } from "@/lib/auth/roleCompare";
 import { withAdmin, withAuth } from "@/lib/auth/withAuth";
 import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
@@ -112,8 +113,7 @@ export const PATCH = withAuth(
       }
 
       const isSelf = member.clerkUserId === userId;
-      const role = typeof authRole === "string" ? authRole.toLowerCase() : "";
-      const isOrgAdmin = role === "owner" || role === "admin";
+      const isOrgAdmin = isAdminRole(authRole);
       if (!isSelf && !isOrgAdmin) {
         return NextResponse.json({ error: "Forbidden" }, { status: 403 });
       }
@@ -181,8 +181,7 @@ export const PUT = withAdmin(
       }
 
       // Only admins/owners can change roles
-      const role = typeof authRole === "string" ? authRole.toLowerCase() : "";
-      const isOrgAdmin = role === "owner" || role === "admin";
+      const isOrgAdmin = isAdminRole(authRole);
       if (!isOrgAdmin) {
         return NextResponse.json({ error: "Only admins can change member roles" }, { status: 403 });
       }

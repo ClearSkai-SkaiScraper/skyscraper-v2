@@ -3,6 +3,7 @@ export const dynamic = "force-dynamic";
 import { NextRequest, NextResponse } from "next/server";
 
 import { withAuth } from "@/lib/auth/withAuth";
+import { roleIn } from "@/lib/auth/roleCompare";
 import { prismaModel } from "@/lib/db/prismaModel";
 import { sendInvitationEmail } from "@/lib/email/invitations";
 import { logger } from "@/lib/logger";
@@ -61,7 +62,7 @@ export const POST = withAuth(async (req: NextRequest, { orgId, userId }, routePa
         to: invitation.email,
         inviterName: "Your team admin",
         orgName: "the team",
-        role: invitation.role === "admin" || invitation.role === "org:admin" ? "Admin" : "Member",
+        role: roleIn(invitation.role, ["admin", "org:admin", "owner", "ADMIN", "OWNER"]) ? "Admin" : "Member",
         token: invitation.token,
       });
       logger.info(`📧 Invitation resent to ${invitation.email} via Resend`);

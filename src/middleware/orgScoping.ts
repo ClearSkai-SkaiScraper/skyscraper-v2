@@ -39,7 +39,7 @@ export async function enforceOrgScope(_req: NextRequest): Promise<OrgScopeContex
   return {
     orgId: permissions.orgId,
     userId: permissions.userId,
-    userRole: permissions.role,
+    userRole: permissions.role ?? undefined,
     prisma: prisma,
   };
 }

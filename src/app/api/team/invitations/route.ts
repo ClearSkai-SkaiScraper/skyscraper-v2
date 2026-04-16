@@ -12,6 +12,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 
 import { createForbiddenResponse, requirePermission } from "@/lib/auth/rbac";
+import { roleIn } from "@/lib/auth/roleCompare";
 import { withManager } from "@/lib/auth/withAuth";
 import { sendInvitationEmail } from "@/lib/email/invitations";
 import { logger } from "@/lib/logger";
@@ -39,7 +40,7 @@ export const POST = withManager(async (req: NextRequest, { userId, orgId }) => {
     // 🛡️ RBAC: Check permission to invite team members
     try {
       await requirePermission("team:invite");
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (_error) {
       logger.warn("[TEAM_INVITATIONS] Permission denied", {
         userId,
@@ -108,7 +109,7 @@ export const POST = withManager(async (req: NextRequest, { userId, orgId }) => {
         ${crypto.randomUUID()},
         ${orgId},
         ${normalizedEmail},
-        ${role === "admin" || role === "org:admin" ? "admin" : "member"},
+        ${roleIn(role, ["admin", "org:admin", "owner", "ADMIN", "OWNER"]) ? "admin" : "member"},
         ${token},
         'pending',
         ${userId},
@@ -125,7 +126,7 @@ export const POST = withManager(async (req: NextRequest, { userId, orgId }) => {
         to: normalizedEmail,
         inviterName,
         orgName: org.name || "the team",
-        role: role === "admin" || role === "org:admin" ? "Admin" : "Member",
+        role: roleIn(role, ["admin", "org:admin", "owner", "ADMIN", "OWNER"]) ? "Admin" : "Member",
         token,
         message,
       });
@@ -137,11 +138,13 @@ export const POST = withManager(async (req: NextRequest, { userId, orgId }) => {
         invitation: {
           id: token.slice(0, 8), // Return partial token as ID
           email: normalizedEmail,
-          role: role === "admin" || role === "org:admin" ? "admin" : "member",
+          role: roleIn(role, ["admin", "org:admin", "owner", "ADMIN", "OWNER"])
+            ? "admin"
+            : "member",
           status: "pending",
         },
       });
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (emailError: any) {
       logger.error("[TEAM_INVITATIONS] Failed to send email:", emailError);
 
@@ -159,7 +162,7 @@ export const POST = withManager(async (req: NextRequest, { userId, orgId }) => {
         { status: 500 }
       );
     }
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (error: any) {
     logger.error("Failed to send invitation:", error);
     return NextResponse.json(

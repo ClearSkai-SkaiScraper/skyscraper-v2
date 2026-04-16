@@ -43,21 +43,52 @@ type PrismaWithUserOrgs = typeof prisma & {
 /**
  * Check if user has any pending team invitations.
  * If yes, we must NOT auto-create an org — let them accept the invite first.
+ *
+ * CRITICAL: Brand-new signups have NO `users` row yet (it's populated lazily
+ * by webhook or first-login hooks). So we must resolve emails from Clerk
+ * directly rather than relying on the DB row to exist.
  */
 async function checkPendingInvites(userId: string): Promise<boolean> {
   try {
-    const pendingInvites = await prisma.$queryRaw<Array<{ id: string }>>` 
+    // Collect every email the user could be invited under
+    const emails = new Set<string>();
+
+    // Source 1: Clerk (authoritative, always populated post-signup)
+    try {
+      const { clerkClient } = await import("@clerk/nextjs/server");
+      const client = await clerkClient();
+      const cu = await client.users.getUser(userId);
+      for (const e of cu.emailAddresses ?? []) {
+        if (e?.emailAddress) emails.add(e.emailAddress.toLowerCase());
+      }
+    } catch (clerkErr) {
+      logger.warn("[ORG_SAFE] Clerk email lookup failed in pending-invite check:", clerkErr);
+    }
+
+    // Source 2: users table (may exist for returning users)
+    try {
+      const dbUser = await prisma.users.findUnique({
+        where: { clerkUserId: userId },
+        select: { email: true },
+      });
+      if (dbUser?.email) emails.add(dbUser.email.toLowerCase());
+    } catch {
+      // Non-fatal
+    }
+
+    if (emails.size === 0) return false;
+
+    const emailList = Array.from(emails);
+    const pendingInvites = await prisma.$queryRaw<Array<{ id: string }>>`
       SELECT id FROM team_invitations
       WHERE status = 'pending'
         AND expires_at > NOW()
-        AND email IN (
-          SELECT email FROM users WHERE "clerkUserId" = ${userId}
-        )
+        AND LOWER(email) = ANY(${emailList}::text[])
       LIMIT 1
     `;
     return pendingInvites.length > 0;
-  } catch {
-    // Non-fatal: table may not exist
+  } catch (err) {
+    logger.warn("[ORG_SAFE] checkPendingInvites failed (non-fatal):", err);
     return false;
   }
 }

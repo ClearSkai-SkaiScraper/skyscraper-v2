@@ -169,15 +169,30 @@ export async function POST(req: NextRequest) {
       ON CONFLICT (org_id, user_id) DO NOTHING
     `;
 
-    // ── 7. Update users.orgId legacy linkage (for fallback resolvers) ─
-    // Only update if the user exists and their orgId doesn't match
-    await prisma.$executeRaw`
-      UPDATE users SET "orgId" = ${org.id}
-      WHERE "clerkUserId" = ${userId}
-        AND ("orgId" IS NULL OR "orgId" = '' OR "orgId" LIKE 'org_%')
-    `.catch((err) => {
-      logger.warn("[INVITE_ACCEPT] Failed to update users.orgId (non-fatal):", err);
-    });
+    // ── 7. Upsert users row + set legacy orgId linkage ───────────────
+    // Brand-new signups have no `users` row yet (webhook-populated lazily).
+    // Without this upsert, downstream resolvers that read `users.orgId` will
+    // miss this user and fall through to auto-creating a phantom org.
+    try {
+      const email = clerkUser.emailAddresses[0]?.emailAddress ?? invitation.email;
+      const displayName =
+        [clerkUser.firstName, clerkUser.lastName].filter(Boolean).join(" ").trim() || null;
+      // Map our role string to the Role enum allowed by prisma schema
+      const usersRoleEnum = canonicalRole === "ADMIN" ? "ADMIN" : "USER";
+      await prisma.$executeRaw`
+        INSERT INTO users ("id", "clerkUserId", "email", "name", "orgId", "role")
+        VALUES (${createId()}, ${userId}, ${email}, ${displayName}, ${org.id}, ${usersRoleEnum}::"Role")
+        ON CONFLICT ("clerkUserId") DO UPDATE
+          SET "orgId" = CASE
+                WHEN users."orgId" IS NULL OR users."orgId" = '' OR users."orgId" LIKE 'org_%'
+                  THEN EXCLUDED."orgId"
+                ELSE users."orgId"
+              END,
+              "email" = COALESCE(users.email, EXCLUDED.email)
+      `;
+    } catch (err) {
+      logger.warn("[INVITE_ACCEPT] users upsert failed (non-fatal):", err);
+    }
 
     // ── 8. Mark invitation as accepted ────────────────────────────────
     await prisma.$executeRaw`

@@ -273,8 +273,9 @@ export const GET = withAuth(async (req: NextRequest, { orgId, userId, role }, ro
       organization: { id: orgId, name: orgName, role: role || "ADMIN" },
       stats: { evidenceCount, documentsCount, reportCount, timelineEventCount },
       permissions: {
-        canEdit: role === "ADMIN" || role === "EDITOR",
-        canDelete: role === "ADMIN",
+        // Canonical role comparison — case-insensitive + treat OWNER as admin
+        canEdit: ["ADMIN", "OWNER", "EDITOR", "MANAGER"].includes((role || "").toUpperCase()),
+        canDelete: ["ADMIN", "OWNER"].includes((role || "").toUpperCase()),
         canGenerateReports: true,
       },
     };

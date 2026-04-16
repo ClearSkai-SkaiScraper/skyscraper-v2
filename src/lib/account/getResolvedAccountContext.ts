@@ -249,7 +249,7 @@ export async function getResolvedAccountContext(): Promise<ResolvedAccountContex
 
     const state: AccountState = orgOnboardingComplete
       ? "ORG_MEMBER_ACTIVE"
-      : m.role === "ADMIN" || m.role === "owner"
+      : ["ADMIN", "OWNER"].includes((m.role || "").toString().toUpperCase())
         ? "OWNER_NO_SETUP"
         : "ORG_MEMBER_ACTIVE"; // Non-owner members shouldn't be blocked by incomplete onboarding
 
