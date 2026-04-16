@@ -41,7 +41,7 @@ interface DailyStats {
 
 interface GoalProgress {
   doorsKnocked: { current: number; weekly: number; monthly: number };
-  jobsPosted: { current: number; weekly: number; monthly: number };
+  coldCalls: { current: number; weekly: number; monthly: number };
   revenue: { current: number; weekly: number; monthly: number };
 }
 
@@ -121,7 +121,7 @@ export function AIDailyBriefing({ className }: AIDailyBriefingProps) {
               weekly: leadsGoal?.target ?? 50,
               monthly: (leadsGoal?.target ?? 50) * 4,
             },
-            jobsPosted: {
+            coldCalls: {
               current: claimsGoal?.current ?? 0,
               weekly: claimsGoal?.target ?? 20,
               monthly: (claimsGoal?.target ?? 20) * 4,
@@ -193,7 +193,7 @@ export function AIDailyBriefing({ className }: AIDailyBriefingProps) {
 
   const getFallbackGoals = (): GoalProgress => ({
     doorsKnocked: { current: 45, weekly: 100, monthly: 400 },
-    jobsPosted: { current: 8, weekly: 15, monthly: 60 },
+    coldCalls: { current: 8, weekly: 15, monthly: 60 },
     revenue: { current: 47500, weekly: 75000, monthly: 300000 },
   });
 
@@ -379,21 +379,21 @@ export function AIDailyBriefing({ className }: AIDailyBriefingProps) {
               </div>
             </div>
 
-            {/* Jobs Posted */}
+            {/* Cold Calls */}
             <div>
               <div className="mb-1 flex items-center justify-between text-xs">
                 <div className="flex items-center gap-1.5">
                   <FileText className="h-3.5 w-3.5 text-amber-500" />
-                  <span className="font-medium">Jobs Posted</span>
+                  <span className="font-medium">Cold Calls</span>
                 </div>
                 <span className="text-muted-foreground">
-                  {goals.jobsPosted.current} / {getGoalTarget(goals.jobsPosted)}
+                  {goals.coldCalls.current} / {getGoalTarget(goals.coldCalls)}
                 </span>
               </div>
               <div className="h-2 overflow-hidden rounded-full bg-amber-200 dark:bg-amber-900/50">
                 <div
                   className="h-full rounded-full bg-amber-500 transition-all"
-                  style={{ width: `${getGoalPercent(goals.jobsPosted)}%` }}
+                  style={{ width: `${getGoalPercent(goals.coldCalls)}%` }}
                 />
               </div>
             </div>

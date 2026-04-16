@@ -83,11 +83,10 @@ export async function GET() {
           tradeType: wr.category || "General",
           location:
             [wr.Client?.city, wr.Client?.state].filter(Boolean).join(", ") ||
-            wr.propertyAddress ||
             "Location not specified",
           status: wr.status,
           budget: wr.budget || null,
-          postedBy: wr.Client?.name || "Client",
+          postedBy: wr.Client?.name ? wr.Client.name.split(" ")[0] : "Client",
           createdAt: wr.createdAt,
           urgency:
             wr.urgency === "emergency" ? "high" : wr.urgency === "soon" ? "medium" : "normal",

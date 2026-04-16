@@ -11,6 +11,7 @@ import { randomUUID } from "crypto";
 import { NextRequest, NextResponse } from "next/server";
 
 import { withAuth } from "@/lib/auth/withAuth";
+import { checkSeatAvailability } from "@/lib/billing/seat-enforcement";
 import { getResend } from "@/lib/email/resend";
 import { APP_URL } from "@/lib/env";
 import { logger } from "@/lib/logger";
@@ -21,7 +22,7 @@ import { checkRateLimit } from "@/lib/rate-limit";
 /*  POST — Send invite                                           */
 /* ────────────────────────────────────────────────────────────── */
 
-export const POST = withAuth(async (req: NextRequest, { userId }) => {
+export const POST = withAuth(async (req: NextRequest, { userId, orgId }) => {
   try {
     const rl = await checkRateLimit(userId, "API");
     if (!rl.success) {
@@ -52,6 +53,19 @@ export const POST = withAuth(async (req: NextRequest, { userId }) => {
 
     const companyId = membership.company.id;
     const companyName = membership.company.name;
+
+    // Enforce seat limits before allowing invite
+    if (membership.company.orgId) {
+      const seatCheck = await checkSeatAvailability(membership.company.orgId);
+      if (!seatCheck.allowed) {
+        return NextResponse.json(
+          {
+            error: `Seat limit reached (${seatCheck.seatsUsed}/${seatCheck.seatsPurchased}). Upgrade your plan to add more seats.`,
+          },
+          { status: 403 }
+        );
+      }
+    }
 
     // Check if already a member
     const existing = await prisma.tradesCompanyMember.findFirst({
@@ -85,6 +99,7 @@ export const POST = withAuth(async (req: NextRequest, { userId }) => {
           userId: existing.status !== "pending" ? pendingUserId : existing.userId,
           companyId,
           companyName,
+          orgId: orgId || existing.orgId,
           firstName: firstName || existing.firstName,
           lastName: lastName || existing.lastName,
           jobTitle: title || existing.jobTitle,
@@ -106,6 +121,7 @@ export const POST = withAuth(async (req: NextRequest, { userId }) => {
           userId: pendingUserId,
           companyId,
           companyName,
+          orgId: orgId || null,
           email: email.toLowerCase(),
           firstName: firstName || null,
           lastName: lastName || null,

@@ -17,8 +17,12 @@ import { checkRateLimit } from "@/lib/rate-limit";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-export const POST = withAuth(async (req: NextRequest, { userId }) => {
+export const POST = withAuth(async (req: NextRequest, { userId, orgId }) => {
   try {
+    if (!orgId) {
+      return NextResponse.json({ error: "Organization context required" }, { status: 403 });
+    }
+
     // B-24: Rate limit PDF exports (CPU-intensive)
     const rl = await checkRateLimit(userId, "API");
     if (!rl.success) {
@@ -42,7 +46,9 @@ export const POST = withAuth(async (req: NextRequest, { userId }) => {
       );
     }
 
-    logger.debug(`[PDF_EXPORT] Starting export for ${mode} - ID: ${packetId || reportId}`);
+    logger.debug(
+      `[PDF_EXPORT] Starting export for ${mode} - ID: ${packetId || reportId} - Org: ${orgId}`
+    );
 
     // Check LibreOffice availability
     const hasLibreOffice = await isLibreOfficeAvailable();
@@ -60,7 +66,7 @@ export const POST = withAuth(async (req: NextRequest, { userId }) => {
       if (brandingRes.ok) {
         branding = await brandingRes.json();
       }
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (_e) {
       logger.warn("[PDF_EXPORT] Branding fetch failed, continuing without branding");
     }

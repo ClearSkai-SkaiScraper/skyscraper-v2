@@ -532,12 +532,20 @@ export async function POST(req: Request) {
           });
 
           if (Org) {
-            await prisma.org.update({
-              where: { id: Org.id },
-              data: { subscriptionStatus: "past_due" },
-            });
+            await prisma.$transaction([
+              prisma.org.update({
+                where: { id: Org.id },
+                data: { subscriptionStatus: "past_due" },
+              }),
+              prisma.subscription.updateMany({
+                where: { orgId: Org.id, status: "active" },
+                data: { status: "past_due" },
+              }),
+            ]);
 
-            logger.debug(`[SUBSCRIPTION:PAST_DUE] Updated Org ${Org.id} to past_due`);
+            logger.debug(
+              `[SUBSCRIPTION:PAST_DUE] Updated Org ${Org.id} + Subscription to past_due`
+            );
           }
         }
         break;

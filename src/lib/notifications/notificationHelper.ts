@@ -42,20 +42,77 @@ export async function markNotificationRead(notificationId: string, userId: strin
 }
 
 /**
- * Mark all notifications as read for an org
+ * Mark all notifications as read for an org (across all notification sources).
+ * Clears: projectNotification, tradeNotification, notifications_reads (raw
+ * notifications table), and unread message rows addressed to this user.
  */
-export async function markAllNotificationsRead(orgId: string): Promise<number> {
+export async function markAllNotificationsRead(orgId: string, userId?: string): Promise<number> {
   logger.debug(`[NotificationHelper] Marking all notifications read for org ${orgId}`);
+  let total = 0;
+
+  // 1) ProjectNotification (org-scoped)
   try {
     const result = await prisma.projectNotification.updateMany({
       where: { orgId, read: false },
       data: { read: true, readAt: new Date() },
     });
-    return result.count;
+    total += result.count;
   } catch (error) {
-    logger.error("[NotificationHelper] Error marking all as read:", error);
-    return 0;
+    logger.error("[NotificationHelper] projectNotification error:", error);
   }
+
+  // 2) TradeNotification — recipientId can be userId, orgId, or companyId
+  if (userId) {
+    try {
+      const recipients: string[] = [userId, orgId];
+      const result = await prisma.tradeNotification.updateMany({
+        where: { recipientId: { in: recipients }, isRead: false },
+        data: { isRead: true, readAt: new Date() },
+      });
+      total += result.count;
+    } catch (error) {
+      logger.error("[NotificationHelper] tradeNotification error:", error);
+    }
+  }
+
+  // 3) Raw "notifications" table — insert read-receipts into notifications_reads.
+  //    The GET route checks `notifications_reads` join for read status.
+  if (userId) {
+    try {
+      await prisma.$executeRawUnsafe(
+        `INSERT INTO notifications_reads (notification_id, clerk_user_id, read_at)
+         SELECT n.id, $1, NOW() FROM notifications n
+          WHERE (n.clerk_user_id = $1 OR (n.org_id = $2 AND n.clerk_user_id IS NULL))
+            AND NOT EXISTS (
+              SELECT 1 FROM notifications_reads r
+               WHERE r.notification_id = n.id AND r.clerk_user_id = $1
+            )`,
+        userId,
+        orgId
+      );
+    } catch (error) {
+      // Table may not exist in all environments — non-fatal
+      const msg = (error as Error)?.message || "";
+      if (!msg.includes("does not exist")) {
+        logger.warn("[NotificationHelper] notifications_reads upsert warn:", error);
+      }
+    }
+  }
+
+  // 4) Unread messages addressed to this user (appear as notifications in GET)
+  if (userId) {
+    try {
+      const result = await prisma.message.updateMany({
+        where: { senderUserId: { not: userId }, read: false },
+        data: { read: true },
+      });
+      total += result.count;
+    } catch (error) {
+      logger.error("[NotificationHelper] message mark-read error:", error);
+    }
+  }
+
+  return total;
 }
 
 /**
@@ -66,7 +123,7 @@ export async function getUnreadCount(orgId: string): Promise<number> {
     return await prisma.projectNotification.count({
       where: { orgId, read: false },
     });
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
   } catch (_error) {
     return 0;
   }

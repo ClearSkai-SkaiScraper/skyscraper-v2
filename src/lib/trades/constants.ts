@@ -236,10 +236,10 @@ export const URGENCY_LEVELS = [
 ];
 
 export const CONNECTION_STATUS = [
-  { value: "PENDING", label: "Pending", description: "Waiting for pro response" },
-  { value: "ACCEPTED", label: "Accepted", description: "Pro accepted connection" },
-  { value: "DECLINED", label: "Declined", description: "Pro declined request" },
-  { value: "REVOKED", label: "Revoked", description: "Client cancelled request" },
+  { value: "pending", label: "Pending", description: "Waiting for pro response" },
+  { value: "accepted", label: "Accepted", description: "Pro accepted connection" },
+  { value: "declined", label: "Declined", description: "Pro declined request" },
+  { value: "revoked", label: "Revoked", description: "Client cancelled request" },
 ];
 
 export const CONTACT_METHODS = [

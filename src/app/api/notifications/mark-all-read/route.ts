@@ -10,9 +10,9 @@ import { withAuth } from "@/lib/auth/withAuth";
 import { logger } from "@/lib/logger";
 import { markAllNotificationsRead } from "@/lib/notifications/notificationHelper";
 
-export const POST = withAuth(async (req: NextRequest, { orgId }) => {
+export const POST = withAuth(async (req: NextRequest, { userId, orgId }) => {
   try {
-    const count = await markAllNotificationsRead(orgId);
+    const count = await markAllNotificationsRead(orgId, userId);
 
     if (count === 0) {
       // 0 updated is fine — maybe all were already read

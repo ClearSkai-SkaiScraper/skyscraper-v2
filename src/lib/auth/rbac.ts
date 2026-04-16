@@ -215,17 +215,39 @@ export async function getCurrentUserRole(): Promise<{
       // Determine role from user_organizations or default to admin
       let determinedRole: TeamRole;
 
-      if (userOrg?.role === "ADMIN") {
+      // Normalize case-insensitively; OWNER and ADMIN both map to "admin"
+      const rawRole = (userOrg?.role || "").toString().toUpperCase();
+
+      if (rawRole === "OWNER" || rawRole === "ADMIN") {
         determinedRole = "admin";
-      } else if (userOrg?.role === "MANAGER") {
+      } else if (rawRole === "MANAGER") {
         determinedRole = "manager";
-      } else if (userOrg?.role === "MEMBER") {
+      } else if (rawRole === "MEMBER") {
         determinedRole = "member";
-      } else if (userOrg?.role === "VIEWER") {
+      } else if (rawRole === "VIEWER") {
         determinedRole = "viewer";
       } else {
-        // Default to member — admin must be explicitly assigned
-        determinedRole = "member";
+        // Fallback: check users.role (legacy column) before defaulting to member.
+        // This prevents org owners from being silently demoted when user_organizations.role
+        // is null or some legacy value like "OWNER" / "owner".
+        try {
+          const legacyUser = await prisma.users.findFirst({
+            where: { clerkUserId: userId, orgId: effectiveOrgId },
+            select: { role: true },
+          });
+          const legacyRaw = (legacyUser?.role || "").toString().toUpperCase();
+          if (legacyRaw === "OWNER" || legacyRaw === "ADMIN") {
+            determinedRole = "admin";
+          } else if (legacyRaw === "MANAGER") {
+            determinedRole = "manager";
+          } else if (legacyRaw === "VIEWER") {
+            determinedRole = "viewer";
+          } else {
+            determinedRole = "member";
+          }
+        } catch {
+          determinedRole = "member";
+        }
       }
 
       // Auto-update user_organizations role for future queries (lazy initialization)

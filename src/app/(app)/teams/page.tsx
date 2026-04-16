@@ -40,8 +40,8 @@ export default async function CompanySeatsPage() {
   }
 
   // RBAC Gate: Only admins/owners can manage team seats
-  const userRole = orgCtx.role; // "owner" | "admin" | "member"
-  const isAdmin = userRole === "owner" || userRole === "admin" || userRole === "ADMIN";
+  const userRole = (orgCtx.role || "").toString().toLowerCase();
+  const isAdmin = userRole === "owner" || userRole === "admin";
   if (!isAdmin) {
     return (
       <PageContainer maxWidth="5xl">
@@ -79,13 +79,29 @@ export default async function CompanySeatsPage() {
 
   if (orgId && userId) {
     try {
-      // TENANT ISOLATION: Filter by BOTH userId AND orgId
-      const membership = userId
-        ? await prisma.tradesCompanyMember.findFirst({
-            where: { userId, orgId },
-            select: { companyId: true },
-          })
-        : null;
+      // TENANT ISOLATION: try {userId,orgId} first, then fall back to userId-only
+      // (legacy tradesCompanyMember rows may have orgId=null for the original owner).
+      let membership = await prisma.tradesCompanyMember.findFirst({
+        where: { userId, orgId },
+        select: { companyId: true },
+      });
+
+      if (!membership?.companyId) {
+        membership = await prisma.tradesCompanyMember.findFirst({
+          where: { userId },
+          select: { companyId: true },
+        });
+
+        // Backfill orgId on the legacy row so future queries are properly scoped.
+        if (membership?.companyId) {
+          await prisma.tradesCompanyMember
+            .updateMany({
+              where: { userId, orgId: null },
+              data: { orgId },
+            })
+            .catch((e) => logger.warn("[teams] Backfill orgId failed (non-fatal):", e));
+        }
+      }
 
       if (membership?.companyId) {
         const companyMembers = await prisma.tradesCompanyMember.findMany({
