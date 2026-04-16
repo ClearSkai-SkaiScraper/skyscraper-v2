@@ -15,6 +15,7 @@ const VALID_CATEGORIES = [
   "revenue",
   "jobs_posted",
   "leads_generated",
+  "repairs_landed",
 ] as const;
 
 const logSchema = z.object({
@@ -54,6 +55,7 @@ export async function POST(req: NextRequest) {
       revenue: "totalRevenueGenerated",
       jobs_posted: "inspectionsCompleted",
       leads_generated: "contactsMade",
+      repairs_landed: "jobsCompleted",
     };
 
     const field = fieldMap[category];

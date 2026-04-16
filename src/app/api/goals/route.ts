@@ -15,6 +15,7 @@ const VALID_CATEGORIES = [
   "revenue",
   "jobs_posted",
   "leads_generated",
+  "repairs_landed",
 ] as const;
 
 const upsertGoalSchema = z.object({
@@ -108,15 +109,16 @@ export async function POST(req: NextRequest) {
     }
 
     // Only managers+ can set org-wide goals
-    // Skip role check for single-user orgs (they're implicitly admin)
+    // Allow through if RBAC cannot resolve (single-user orgs, missing membership)
     try {
-      const { requireRole } = await import("@/lib/auth/rbac");
-      await requireRole("manager");
-    } catch (roleErr: unknown) {
-      if ((roleErr as { statusCode?: number })?.statusCode === 403) {
+      const { checkRole } = await import("@/lib/auth/rbac");
+      const { hasAccess, role } = await checkRole("manager");
+      // If role resolved and access denied, block. If role is null, allow (no membership table).
+      if (role && !hasAccess) {
         return NextResponse.json({ error: "Manager role required to set goals" }, { status: 403 });
       }
-      // If RBAC fails for other reasons (e.g., no membership table), allow through
+    } catch {
+      // If RBAC fails entirely (e.g., no membership table), allow through
     }
 
     const body = await req.json();

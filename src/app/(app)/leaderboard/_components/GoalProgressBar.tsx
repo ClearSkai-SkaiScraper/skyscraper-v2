@@ -11,6 +11,7 @@ import {
   Save,
   Target,
   TrendingUp,
+  Wrench,
   X,
 } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
@@ -33,6 +34,7 @@ interface TeamStats {
   totalLeads: number;
   totalDoors: number;
   totalJobs: number;
+  totalRepairs: number;
 }
 
 interface GoalMetric {
@@ -87,6 +89,14 @@ const GOAL_METRICS: GoalMetric[] = [
     gradient: "from-rose-500 to-rose-600",
     bgColor: "bg-rose-100 dark:bg-rose-900/30",
   },
+  {
+    category: "repairs_landed",
+    statKey: "totalRepairs",
+    label: "Repairs Landed",
+    icon: <Wrench className="h-4 w-4" />,
+    gradient: "from-teal-500 to-teal-600",
+    bgColor: "bg-teal-100 dark:bg-teal-900/30",
+  },
 ];
 
 // Quick presets
@@ -99,6 +109,7 @@ const PRESETS = [
       revenue: { w: 30000, m: 120000 },
       jobs_posted: { w: 8, m: 32 },
       leads_generated: { w: 15, m: 60 },
+      repairs_landed: { w: 2, m: 8 },
     },
   },
   {
@@ -109,6 +120,7 @@ const PRESETS = [
       revenue: { w: 75000, m: 300000 },
       jobs_posted: { w: 15, m: 60 },
       leads_generated: { w: 25, m: 100 },
+      repairs_landed: { w: 4, m: 16 },
     },
   },
   {
@@ -119,6 +131,7 @@ const PRESETS = [
       revenue: { w: 150000, m: 600000 },
       jobs_posted: { w: 30, m: 120 },
       leads_generated: { w: 50, m: 200 },
+      repairs_landed: { w: 8, m: 32 },
     },
   },
   {
@@ -129,6 +142,7 @@ const PRESETS = [
       revenue: { w: 250000, m: 1000000 },
       jobs_posted: { w: 50, m: 200 },
       leads_generated: { w: 100, m: 400 },
+      repairs_landed: { w: 15, m: 60 },
     },
   },
 ];
@@ -184,6 +198,7 @@ export function GoalProgressBar() {
             revenue: "revenue",
             jobsPosted: "jobs_posted",
             leadsGenerated: "leads_generated",
+            repairsLanded: "repairs_landed",
           };
           for (const [key, category] of Object.entries(keyMap)) {
             if (parsed[key]) {
@@ -230,12 +245,14 @@ export function GoalProgressBar() {
         let totalClaims = 0;
         let totalLeads = 0;
         let totalJobs = 0;
+        let totalRepairs = 0;
 
         for (const m of members) {
           totalRevenue += m.revenue || m.totalRevenue || 0;
           totalClaims += m.claimsSigned || m.signedClaims || m.claims || 0;
           totalLeads += m.leadsGenerated || m.leads || 0;
           totalJobs += m.jobsCompleted || m.jobs || 0;
+          totalRepairs += m.repairsLanded || m.repairs || m.completedJobs || 0;
         }
 
         // Use summary totals as fallback (more accurate for org-wide counts)
@@ -251,7 +268,7 @@ export function GoalProgressBar() {
             0
           );
 
-        setStats({ totalRevenue, totalClaims, totalLeads, totalJobs, totalDoors });
+        setStats({ totalRevenue, totalClaims, totalLeads, totalJobs, totalDoors, totalRepairs });
       } catch {
         // Use zeros if API fails
       }
@@ -281,6 +298,7 @@ export function GoalProgressBar() {
           revenue: "revenue",
           jobs_posted: "jobsPosted",
           leads_generated: "leadsGenerated",
+          repairs_landed: "repairsLanded",
         };
         editGoals.forEach((val, cat) => {
           lsFallback[rMap[cat] || cat] = val;
@@ -306,6 +324,7 @@ export function GoalProgressBar() {
         revenue: "revenue",
         jobs_posted: "jobsPosted",
         leads_generated: "leadsGenerated",
+        repairs_landed: "repairsLanded",
       };
       editGoals.forEach((val, cat) => {
         const key = reverseMap[cat] || cat;
@@ -361,7 +380,7 @@ export function GoalProgressBar() {
               prev ? { ...prev, [metric.statKey]: prev[metric.statKey] + delta } : prev
             );
           }
-          toast.success(`+${delta.toLocaleString()} logged!`);
+          toast.success(`${delta > 0 ? "+" : ""}${delta.toLocaleString()} logged!`);
         } else {
           toast.error("Failed to log progress");
         }
@@ -394,6 +413,7 @@ export function GoalProgressBar() {
             defaults.set("revenue", { weekly: 75000, monthly: 300000 });
             defaults.set("jobs_posted", { weekly: 15, monthly: 60 });
             defaults.set("leads_generated", { weekly: 25, monthly: 100 });
+            defaults.set("repairs_landed", { weekly: 4, monthly: 16 });
             setEditGoals(defaults);
             setEditing(true);
           }}
@@ -545,67 +565,75 @@ export function GoalProgressBar() {
                     />
                   </div>
 
-                  {/* Quick-log buttons */}
-                  {quickLog === metric.category ? (
-                    <div className="mt-1.5 flex items-center gap-1">
-                      <button
-                        type="button"
-                        onClick={() =>
-                          setQuickLogValue((v) =>
-                            Math.max(0, v - (metric.format === "currency" ? 1000 : 1))
-                          )
-                        }
-                        className="flex h-6 w-6 items-center justify-center rounded bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700"
-                      >
-                        <Minus className="h-3 w-3" />
-                      </button>
-                      <input
-                        type="number"
-                        min={0}
-                        value={quickLogValue}
-                        onChange={(e) => setQuickLogValue(parseInt(e.target.value) || 0)}
-                        className="h-6 w-16 rounded border border-slate-200 px-1 text-center text-xs dark:border-slate-600 dark:bg-slate-800"
-                        autoFocus
-                      />
-                      <button
-                        type="button"
-                        onClick={() =>
-                          setQuickLogValue((v) => v + (metric.format === "currency" ? 1000 : 1))
-                        }
-                        className="flex h-6 w-6 items-center justify-center rounded bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700"
-                      >
-                        <Plus className="h-3 w-3" />
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => handleQuickLog(metric.category, quickLogValue)}
-                        className="ml-1 flex h-6 items-center gap-0.5 rounded bg-blue-600 px-2 text-[10px] font-semibold text-white hover:bg-blue-700"
-                      >
-                        <Save className="h-2.5 w-2.5" /> Log
-                      </button>
+                  {/* Always-visible +/- quick-log */}
+                  <div className="mt-1.5 flex items-center gap-1">
+                    <button
+                      type="button"
+                      onClick={() =>
+                        handleQuickLog(metric.category, -(metric.format === "currency" ? 1000 : 1))
+                      }
+                      className="flex h-6 w-6 items-center justify-center rounded bg-slate-100 text-slate-600 hover:bg-red-100 hover:text-red-600 dark:bg-slate-800 dark:hover:bg-red-900/30 dark:hover:text-red-400"
+                      title={`Subtract ${metric.format === "currency" ? "$1,000" : "1"}`}
+                    >
+                      <Minus className="h-3 w-3" />
+                    </button>
+
+                    {quickLog === metric.category ? (
+                      <>
+                        <input
+                          type="number"
+                          min={0}
+                          value={quickLogValue}
+                          onChange={(e) => setQuickLogValue(parseInt(e.target.value) || 0)}
+                          className="h-6 w-16 rounded border border-slate-200 px-1 text-center text-xs dark:border-slate-600 dark:bg-slate-800"
+                          autoFocus
+                        />
+                        <button
+                          type="button"
+                          onClick={() => {
+                            handleQuickLog(metric.category, quickLogValue);
+                            setQuickLog(null);
+                            setQuickLogValue(0);
+                          }}
+                          className="flex h-6 items-center gap-0.5 rounded bg-blue-600 px-2 text-[10px] font-semibold text-white hover:bg-blue-700"
+                        >
+                          <Save className="h-2.5 w-2.5" /> Log
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setQuickLog(null);
+                            setQuickLogValue(0);
+                          }}
+                          className="flex h-6 w-6 items-center justify-center rounded text-slate-400 hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-800"
+                        >
+                          <X className="h-3 w-3" />
+                        </button>
+                      </>
+                    ) : (
                       <button
                         type="button"
                         onClick={() => {
-                          setQuickLog(null);
-                          setQuickLogValue(0);
+                          setQuickLog(metric.category);
+                          setQuickLogValue(metric.format === "currency" ? 1000 : 1);
                         }}
-                        className="flex h-6 w-6 items-center justify-center rounded text-slate-400 hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-800"
+                        className="h-6 flex-1 rounded border border-dashed border-slate-200 text-[10px] font-medium text-muted-foreground hover:border-blue-300 hover:bg-blue-50/50 hover:text-blue-600 dark:border-slate-700 dark:hover:border-blue-700 dark:hover:bg-blue-900/20"
                       >
-                        <X className="h-3 w-3" />
+                        Custom
                       </button>
-                    </div>
-                  ) : (
+                    )}
+
                     <button
                       type="button"
-                      onClick={() => {
-                        setQuickLog(metric.category);
-                        setQuickLogValue(metric.format === "currency" ? 1000 : 1);
-                      }}
-                      className="mt-1 flex w-full items-center justify-center gap-1 rounded-md border border-dashed border-slate-200 py-0.5 text-[10px] font-medium text-muted-foreground hover:border-blue-300 hover:bg-blue-50/50 hover:text-blue-600 dark:border-slate-700 dark:hover:border-blue-700 dark:hover:bg-blue-900/20"
+                      onClick={() =>
+                        handleQuickLog(metric.category, metric.format === "currency" ? 1000 : 1)
+                      }
+                      className="flex h-6 w-6 items-center justify-center rounded bg-slate-100 text-slate-600 hover:bg-emerald-100 hover:text-emerald-600 dark:bg-slate-800 dark:hover:bg-emerald-900/30 dark:hover:text-emerald-400"
+                      title={`Add ${metric.format === "currency" ? "$1,000" : "1"}`}
                     >
-                      <Plus className="h-2.5 w-2.5" /> Log Progress
+                      <Plus className="h-3 w-3" />
                     </button>
-                  )}
+                  </div>
                 </>
               )}
 
