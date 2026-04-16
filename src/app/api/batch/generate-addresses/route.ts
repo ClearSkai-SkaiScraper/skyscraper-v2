@@ -1,5 +1,5 @@
 export const dynamic = "force-dynamic";
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 
 import { withOrgScope } from "@/lib/auth/tenant";
 import { logger } from "@/lib/logger";
@@ -17,7 +17,7 @@ import { logger } from "@/lib/logger";
  * For MVP, we generate realistic mock addresses
  */
 export const POST = withOrgScope(async (req, { userId, orgId }) => {
-
+  try {
     const body = await req.json();
     const { polygon, estimatedHomes = 100 } = body;
 
@@ -54,10 +54,7 @@ export const POST = withOrgScope(async (req, { userId, orgId }) => {
     });
   } catch (error) {
     logger.error("[GenerateAddresses] Error:", error);
-    return NextResponse.json(
-      { error: "Failed to generate addresses" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Failed to generate addresses" }, { status: 500 });
   }
 });
 

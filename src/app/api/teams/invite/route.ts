@@ -19,7 +19,7 @@ const TeamInviteSchema = z.object({
  * Requires manager+ role.
  */
 const basePOST = async (req: Request) => {
-  const roleCheck = await requireRole("MANAGER");
+  const roleCheck = await requireRole("manager");
   if (roleCheck instanceof NextResponse) return roleCheck;
   const { orgId, userId } = roleCheck;
 
@@ -57,7 +57,7 @@ const basePOST = async (req: Request) => {
  * GET /api/teams/invite — List pending Clerk organization invitations
  */
 const baseGET = async () => {
-  const roleCheck = await requireRole("MANAGER");
+  const roleCheck = await requireRole("manager");
   if (roleCheck instanceof NextResponse) return roleCheck;
   const { orgId } = roleCheck;
 

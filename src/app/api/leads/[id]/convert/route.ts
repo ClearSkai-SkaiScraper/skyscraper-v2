@@ -213,7 +213,7 @@ export const POST = withOrgScope(async (request, { orgId, userId }, routeCtx) =>
       return NextResponse.json({ error: `Validation failed: ${fieldErrors}` }, { status: 400 });
     }
 
-    logger.error(`[POST /api/leads/${params.id}/convert] Error:`, error);
+    logger.error(`[POST /api/leads/[id]/convert] Error:`, error);
     return NextResponse.json({ error: "Failed to convert lead" }, { status: 500 });
   }
 });
