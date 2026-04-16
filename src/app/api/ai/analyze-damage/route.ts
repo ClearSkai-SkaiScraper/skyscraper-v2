@@ -14,7 +14,7 @@ import {
   SubscriptionRequiredError,
 } from "@/lib/billing/requireActiveSubscription";
 import { logger } from "@/lib/logger";
-import { getRateLimitIdentifier, rateLimiters } from "@/lib/rate-limit";
+import { checkRateLimit } from "@/lib/rate-limit";
 import { analyzeDamageFormDataSchema, validateAIRequest } from "@/lib/validation/aiSchemas";
 
 // Retry configuration for AI service calls
@@ -40,11 +40,9 @@ export const POST = withAuth(async (request, { orgId, userId }) => {
       throw error;
     }
 
-    // Rate limiting check (10 requests per minute for AI endpoints)
-    const identifier = getRateLimitIdentifier(userId, request);
-    const allowed = await rateLimiters.ai.check(10, identifier);
-
-    if (!allowed) {
+    // Rate limit — AI preset (5/min via Upstash)
+    const rl = await checkRateLimit(userId, "AI");
+    if (!rl.success) {
       return NextResponse.json(
         { error: "Rate limit exceeded. Please wait a moment and try again." },
         { status: 429 }

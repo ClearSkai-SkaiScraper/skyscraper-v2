@@ -13,7 +13,7 @@ import { Label } from "@/components/ui/label";
 
 interface GoalSettings {
   doorsKnocked: { weekly: number; monthly: number };
-  jobsPosted: { weekly: number; monthly: number };
+  coldCalls: { weekly: number; monthly: number };
   revenue: { weekly: number; monthly: number };
   claimsSigned: { weekly: number; monthly: number };
   leadsGenerated: { weekly: number; monthly: number };
@@ -21,7 +21,7 @@ interface GoalSettings {
 
 const DEFAULT_GOALS: GoalSettings = {
   doorsKnocked: { weekly: 100, monthly: 400 },
-  jobsPosted: { weekly: 15, monthly: 60 },
+  coldCalls: { weekly: 15, monthly: 60 },
   revenue: { weekly: 75000, monthly: 300000 },
   claimsSigned: { weekly: 5, monthly: 20 },
   leadsGenerated: { weekly: 25, monthly: 100 },
@@ -45,7 +45,7 @@ export default function GoalSettingsPage() {
               doors_knocked: "doorsKnocked",
               claims_signed: "claimsSigned",
               revenue: "revenue",
-              jobs_posted: "jobsPosted",
+              cold_calls: "coldCalls",
               leads_generated: "leadsGenerated",
             };
             const merged = { ...DEFAULT_GOALS };
@@ -79,7 +79,7 @@ export default function GoalSettingsPage() {
         doorsKnocked: "doors_knocked",
         claimsSigned: "claims_signed",
         revenue: "revenue",
-        jobsPosted: "jobs_posted",
+        coldCalls: "cold_calls",
         leadsGenerated: "leads_generated",
       };
       const apiGoals = Object.entries(keyMap).map(([lsKey, dbCategory]) => ({
@@ -130,8 +130,8 @@ export default function GoalSettingsPage() {
       color: "text-blue-500",
     },
     {
-      key: "jobsPosted",
-      label: "Jobs Posted",
+      key: "coldCalls",
+      label: "Cold Calls",
       icon: <FileText className="h-5 w-5" />,
       color: "text-amber-500",
     },
@@ -248,7 +248,7 @@ export default function GoalSettingsPage() {
                 onClick={() =>
                   setGoals({
                     doorsKnocked: { weekly: 50, monthly: 200 },
-                    jobsPosted: { weekly: 8, monthly: 32 },
+                    coldCalls: { weekly: 8, monthly: 32 },
                     revenue: { weekly: 30000, monthly: 120000 },
                     claimsSigned: { weekly: 3, monthly: 12 },
                     leadsGenerated: { weekly: 15, monthly: 60 },
@@ -263,7 +263,7 @@ export default function GoalSettingsPage() {
                 onClick={() =>
                   setGoals({
                     doorsKnocked: { weekly: 100, monthly: 400 },
-                    jobsPosted: { weekly: 15, monthly: 60 },
+                    coldCalls: { weekly: 15, monthly: 60 },
                     revenue: { weekly: 75000, monthly: 300000 },
                     claimsSigned: { weekly: 5, monthly: 20 },
                     leadsGenerated: { weekly: 25, monthly: 100 },
@@ -278,7 +278,7 @@ export default function GoalSettingsPage() {
                 onClick={() =>
                   setGoals({
                     doorsKnocked: { weekly: 200, monthly: 800 },
-                    jobsPosted: { weekly: 30, monthly: 120 },
+                    coldCalls: { weekly: 30, monthly: 120 },
                     revenue: { weekly: 150000, monthly: 600000 },
                     claimsSigned: { weekly: 10, monthly: 40 },
                     leadsGenerated: { weekly: 50, monthly: 200 },
@@ -293,7 +293,7 @@ export default function GoalSettingsPage() {
                 onClick={() =>
                   setGoals({
                     doorsKnocked: { weekly: 350, monthly: 1400 },
-                    jobsPosted: { weekly: 50, monthly: 200 },
+                    coldCalls: { weekly: 50, monthly: 200 },
                     revenue: { weekly: 250000, monthly: 1000000 },
                     claimsSigned: { weekly: 20, monthly: 80 },
                     leadsGenerated: { weekly: 100, monthly: 400 },

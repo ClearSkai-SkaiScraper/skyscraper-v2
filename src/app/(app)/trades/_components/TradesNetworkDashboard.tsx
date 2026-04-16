@@ -177,12 +177,9 @@ export default function TradesNetworkDashboard({ userProfile, stats }: Dashboard
           const received = data.received || [];
           setConnections({
             total: received.length,
-            pending: received.filter(
-              (c: { status: string }) => c.status === "pending" || c.status === "PENDING"
-            ).length,
+            pending: received.filter((c: { status: string }) => c.status === "pending").length,
             accepted: received.filter(
-              (c: { status: string }) =>
-                c.status === "accepted" || c.status === "ACCEPTED" || c.status === "connected"
+              (c: { status: string }) => c.status === "accepted" || c.status === "connected"
             ).length,
           });
         }

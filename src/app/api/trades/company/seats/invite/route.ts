@@ -11,6 +11,7 @@ import { randomUUID } from "crypto";
 import { NextRequest, NextResponse } from "next/server";
 
 import { withAuth } from "@/lib/auth/withAuth";
+import { getResend } from "@/lib/email/resend";
 import { APP_URL } from "@/lib/env";
 import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
@@ -68,18 +69,35 @@ export const POST = withAuth(async (req: NextRequest, { userId }) => {
     const token = randomUUID();
     const inviteLink = `${APP_URL}/trades/join?token=${token}`;
 
-    if (existing && existing.status === "pending") {
-      // Update existing pending invite with new token
+    if (
+      existing &&
+      (existing.status === "pending" ||
+        existing.status === "removed" ||
+        existing.status === "inactive")
+    ) {
+      // Re-invite: update existing record back to pending with new token
+      const pendingUserId = `pending_${token.replace(/-/g, "").slice(0, 20)}`;
       await prisma.tradesCompanyMember.update({
         where: { id: existing.id },
         data: {
+          status: "pending",
           pendingCompanyToken: token,
+          userId: existing.status !== "pending" ? pendingUserId : existing.userId,
+          companyId,
+          companyName,
           firstName: firstName || existing.firstName,
           lastName: lastName || existing.lastName,
           jobTitle: title || existing.jobTitle,
+          isAdmin: false,
+          canEditCompany: false,
         },
       });
-    } else {
+      logger.info("[Seats] Re-invited previously removed member", {
+        companyId,
+        email,
+        previousStatus: existing.status,
+      });
+    } else if (!existing) {
       // Create new pending member
       // userId is required — use a placeholder that gets replaced on accept
       const pendingUserId = `pending_${token.replace(/-/g, "").slice(0, 20)}`;
@@ -106,8 +124,44 @@ export const POST = withAuth(async (req: NextRequest, { userId }) => {
     let emailError: string | null = null;
 
     try {
-      // Email sending would go here — for now just log
-      logger.info("[Seats] Invite created", {
+      const resend = getResend();
+      if (resend) {
+        await resend.emails.send({
+          from: process.env.RESEND_FROM_EMAIL || "noreply@skaiscrape.com",
+          to: email.toLowerCase(),
+          subject: `You're invited to join ${companyName} on Skai`,
+          html: `
+<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
+<body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin:0; padding:0; background:#f4f4f5;">
+  <div style="max-width:600px; margin:0 auto; padding:40px 20px;">
+    <div style="background:linear-gradient(135deg,#117CFF 0%,#00C2FF 100%); padding:32px; border-radius:16px 16px 0 0; text-align:center;">
+      <h1 style="color:white; margin:0; font-size:28px; font-weight:700;">You're Invited!</h1>
+    </div>
+    <div style="background:white; padding:32px; border-radius:0 0 16px 16px; box-shadow:0 4px 6px rgba(0,0,0,0.05);">
+      <p style="color:#374151; font-size:16px; line-height:1.6;">
+        Hi${firstName ? ` ${firstName}` : ""},
+      </p>
+      <p style="color:#374151; font-size:16px; line-height:1.6;">
+        <strong>${companyName}</strong> has invited you to join their team on Skai — the storm restoration platform.
+      </p>
+      <div style="text-align:center; margin:32px 0;">
+        <a href="${inviteLink}" style="display:inline-block; background:linear-gradient(135deg,#117CFF 0%,#00C2FF 100%); color:white; text-decoration:none; padding:14px 32px; border-radius:8px; font-weight:600; font-size:16px;">
+          Accept Invitation
+        </a>
+      </div>
+      <p style="color:#6b7280; font-size:14px;">This invite link is unique to you. If you didn't expect this, you can safely ignore it.</p>
+    </div>
+    <p style="color:#9ca3af; font-size:12px; text-align:center; margin:24px 0 0;">
+      Powered by <a href="https://skaiscrape.com" style="color:#117CFF; text-decoration:none;">Skai</a>
+    </p>
+  </div>
+</body>
+</html>`,
+        });
+      }
+      logger.info("[Seats] Invite email sent", {
         companyId,
         email,
         token: token.slice(0, 8) + "...",

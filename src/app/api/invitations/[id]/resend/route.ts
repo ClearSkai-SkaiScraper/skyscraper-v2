@@ -5,6 +5,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { withAuth } from "@/lib/auth/withAuth";
 import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
+import { checkRateLimit } from "@/lib/rate-limit";
 
 /**
  * POST /api/invitations/:id/resend
@@ -12,6 +13,11 @@ import prisma from "@/lib/prisma";
  */
 export const POST = withAuth(async (req: NextRequest, { userId }, routeParams) => {
   try {
+    const rl = await checkRateLimit(userId, "API");
+    if (!rl.success) {
+      return NextResponse.json({ error: "Rate limit exceeded" }, { status: 429 });
+    }
+
     const { id: invitationId } = await routeParams.params;
 
     // Verify this invitation belongs to the requesting pro's company

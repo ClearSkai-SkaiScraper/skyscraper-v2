@@ -76,7 +76,7 @@ export async function verifyClientClaimAccess(userId: string, claimId: string): 
       where: {
         claimId,
         clientUserId: userId,
-        status: "CONNECTED",
+        status: "connected",
       },
     });
 

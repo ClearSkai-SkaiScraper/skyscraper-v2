@@ -48,7 +48,7 @@ function AcceptInviteContent() {
       })
       .then((data) => {
         setInvite(data);
-        if (data.status === "CONNECTED") {
+        if (data.status === "connected") {
           setSuccess(true);
         }
       })

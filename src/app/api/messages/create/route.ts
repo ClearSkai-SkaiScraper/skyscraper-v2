@@ -218,7 +218,7 @@ export const POST = withAuth(async (req: NextRequest, { userId, orgId }) => {
                 some: {
                   // Scope to the current company if possible
                   ...(tradesCompanyId ? { contractorId: tradesCompanyId } : {}),
-                  status: { in: ["accepted", "ACCEPTED", "connected", "pending", "PENDING"] },
+                  status: { in: ["accepted", "connected", "pending"] },
                 },
               },
             },
@@ -235,7 +235,7 @@ export const POST = withAuth(async (req: NextRequest, { userId, orgId }) => {
           firstName: clientRecord.name?.split(" ")[0] || clientRecord.name || "Client",
           lastName: clientRecord.name?.split(" ").slice(1).join(" ") || "",
           email: clientRecord.email,
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } as any;
       }
     }
@@ -304,7 +304,7 @@ export const POST = withAuth(async (req: NextRequest, { userId, orgId }) => {
         createdAt: message.createdAt,
       },
     });
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (error: any) {
     const errMsg = error?.message || error?.toString?.() || "Unknown error";
     logger.error("[API] /api/messages/create error:", { error: errMsg, stack: error?.stack });

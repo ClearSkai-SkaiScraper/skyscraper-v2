@@ -59,7 +59,7 @@ export async function GET(req: Request) {
         where: {
           contractorId: membership.companyId,
           status: {
-            in: ["connected", "ACCEPTED", "accepted", "pending"],
+            in: ["connected", "accepted", "pending"],
           },
         },
         include: {

@@ -13,14 +13,14 @@ const VALID_CATEGORIES = [
   "doors_knocked",
   "claims_signed",
   "revenue",
-  "jobs_posted",
+  "cold_calls",
   "leads_generated",
   "repairs_landed",
 ] as const;
 
 const logSchema = z.object({
   category: z.enum(VALID_CATEGORIES),
-  value: z.number().min(0),
+  value: z.number(),
 });
 
 /**
@@ -53,7 +53,7 @@ export async function POST(req: NextRequest) {
       doors_knocked: "doorsKnocked",
       claims_signed: "claimsSigned",
       revenue: "totalRevenueGenerated",
-      jobs_posted: "inspectionsCompleted",
+      cold_calls: "inspectionsCompleted",
       leads_generated: "contactsMade",
       repairs_landed: "jobsCompleted",
     };
@@ -77,9 +77,10 @@ export async function POST(req: NextRequest) {
 
     if (existing) {
       const currentVal = Number((existing as Record<string, unknown>)[field]) || 0;
+      const newVal = Math.max(0, currentVal + value);
       await prisma.team_performance.update({
         where: { id: existing.id },
-        data: { [field]: currentVal + value },
+        data: { [field]: newVal },
       });
     } else {
       await prisma.team_performance.create({

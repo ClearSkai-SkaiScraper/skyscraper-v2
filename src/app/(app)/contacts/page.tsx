@@ -410,7 +410,7 @@ async function renderContactsPage() {
           const portalClients = await prisma.clientProConnection.findMany({
             where: {
               contractorId: membership.companyId,
-              status: { in: ["accepted", "ACCEPTED"] },
+              status: "accepted",
             },
             include: {
               Client: {

@@ -109,7 +109,7 @@ export const POST = withAuth(async (req: NextRequest, { orgId, userId }) => {
         where: {
           clientId: client.id,
           contractorId: companyId,
-          status: { in: ["accepted", "ACCEPTED", "connected", "pending", "PENDING"] },
+          status: { in: ["accepted", "connected", "pending"] },
         },
       });
       if (connection) hasConnection = true;

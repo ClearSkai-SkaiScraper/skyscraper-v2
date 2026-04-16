@@ -30,7 +30,7 @@ interface TradeInvite {
   projectTitle: string;
   message?: string;
   createdAt: string;
-  status: "PENDING" | "ACCEPTED" | "DECLINED";
+  status: "pending" | "accepted" | "declined";
 }
 
 const fetcher = async (url: string) => {
@@ -50,7 +50,7 @@ export default function WorkOpportunityNotifications() {
   const opportunities = data?.opportunities || [];
   const invites = data?.invites || [];
   const totalCount =
-    opportunities.length + invites.filter((i: TradeInvite) => i.status === "PENDING").length;
+    opportunities.length + invites.filter((i: TradeInvite) => i.status === "pending").length;
 
   const handleInviteResponse = async (inviteId: string, accept: boolean) => {
     setProcessing(inviteId);
@@ -67,7 +67,7 @@ export default function WorkOpportunityNotifications() {
 
       toast.success(accept ? "Invitation accepted!" : "Invitation declined");
       void mutate();
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (_err) {
       toast.error("Failed to respond to invitation");
     } finally {
@@ -139,7 +139,7 @@ export default function WorkOpportunityNotifications() {
         <div className="space-y-3">
           {/* Pending Invites */}
           {invites
-            .filter((invite: TradeInvite) => invite.status === "PENDING")
+            .filter((invite: TradeInvite) => invite.status === "pending")
             .slice(0, 2)
             .map((invite: TradeInvite) => (
               <div
@@ -185,7 +185,7 @@ export default function WorkOpportunityNotifications() {
           {opportunities
             .slice(
               0,
-              3 - Math.min(invites.filter((i: TradeInvite) => i.status === "PENDING").length, 2)
+              3 - Math.min(invites.filter((i: TradeInvite) => i.status === "pending").length, 2)
             )
             .map((opp: WorkOpportunity) => (
               <div

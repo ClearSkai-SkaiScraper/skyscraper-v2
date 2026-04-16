@@ -60,7 +60,7 @@ export async function GET(req: NextRequest) {
     const connections = await prisma.clientProConnection.findMany({
       where: {
         clientId: client.id,
-        status: { in: ["accepted", "ACCEPTED", "pending", "PENDING"] },
+        status: { in: ["accepted", "pending"] },
       },
       include: {
         tradesCompany: {
@@ -154,9 +154,6 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ connections: pros });
   } catch (error) {
     logger.error("[client/connections] Error:", error);
-    return NextResponse.json(
-      { error: "Failed to fetch connections" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Failed to fetch connections" }, { status: 500 });
   }
 }

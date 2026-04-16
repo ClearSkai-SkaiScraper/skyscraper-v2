@@ -63,7 +63,7 @@ export const POST = withAuth(async (req: NextRequest, { userId, orgId }) => {
         where: {
           contractorId: membership.companyId,
           clientId: existingPortalUser.id,
-          status: { in: ["accepted", "ACCEPTED", "connected", "pending", "PENDING"] },
+          status: { in: ["accepted", "connected", "pending"] },
         },
       });
 
@@ -136,7 +136,7 @@ export const POST = withAuth(async (req: NextRequest, { userId, orgId }) => {
         ? "Connection request sent to existing SkaiScraper user."
         : "Invite sent! They'll receive an email to create their account.",
     });
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (error: any) {
     logger.error("[CONTACTS_INVITE] Error:", {
       message: error.message,

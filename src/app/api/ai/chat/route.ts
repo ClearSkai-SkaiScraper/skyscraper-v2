@@ -12,7 +12,7 @@ import { aiFail, aiOk, classifyOpenAiError } from "@/lib/api/aiResponse";
 import { withAuth } from "@/lib/auth/withAuth";
 import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
-import { getRateLimitIdentifier, rateLimiters } from "@/lib/rate-limit";
+import { checkRateLimit } from "@/lib/rate-limit";
 import { chatSchema, validateAIRequest } from "@/lib/validation/aiSchemas";
 
 // Store user conversation memory (in production, use Redis or database)
@@ -54,11 +54,9 @@ export const POST = withAuth(async (request, { userId, orgId }) => {
   const startTime = Date.now();
 
   try {
-    // Rate limiting check (10 requests per minute for AI endpoints)
-    const identifier = getRateLimitIdentifier(userId, request);
-    const allowed = await rateLimiters.ai.check(10, identifier);
-
-    if (!allowed) {
+    // Rate limit — AI preset (5/min via Upstash)
+    const rl = await checkRateLimit(userId, "AI");
+    if (!rl.success) {
       return NextResponse.json(
         { error: "Rate limit exceeded. Please wait a moment and try again." },
         { status: 429 }

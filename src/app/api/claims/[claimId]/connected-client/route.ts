@@ -30,7 +30,7 @@ export const GET = withAuth(
       // ── Try 0: Check ClaimClientLink first (invite-based connections never set clientId) ──
       if (!clientId) {
         const link = await prisma.claimClientLink.findFirst({
-          where: { claimId, status: "CONNECTED" },
+          where: { claimId, status: "connected" },
           select: {
             clientEmail: true,
             clientName: true,

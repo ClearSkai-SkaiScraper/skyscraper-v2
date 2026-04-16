@@ -65,11 +65,10 @@ export default async function MyClientsPage() {
   }
 
   // Get all client connections — use companyId (tradesCompany.id) and uppercase status
-  // Accept both "ACCEPTED" and legacy lowercase "accepted"/"connected"
   const connections = await prisma.clientProConnection.findMany({
     where: {
       contractorId: contractorProfile.companyId,
-      status: { in: ["ACCEPTED", "accepted", "connected"] },
+      status: { in: ["accepted", "connected"] },
     },
     orderBy: { connectedAt: "desc" },
   });

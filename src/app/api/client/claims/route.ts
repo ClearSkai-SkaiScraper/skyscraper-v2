@@ -13,12 +13,12 @@ import prisma from "@/lib/prisma";
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export const GET = withAuth(async (req, { userId, orgId }) => {
   try {
-    // Find all CONNECTED claim links for this client
+    // Find all connected claim links for this client
     // Scoped by userId (clientUserId) — no cross-tenant risk
     const links = await prisma.claimClientLink.findMany({
       where: {
         clientUserId: userId,
-        status: "CONNECTED",
+        status: "connected",
       },
       orderBy: { acceptedAt: "desc" },
     });

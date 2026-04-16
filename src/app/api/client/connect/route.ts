@@ -102,7 +102,7 @@ export async function POST(req: Request) {
       }
 
       // If declined, allow re-requesting
-      if (existingConnection.status === "DECLINED" || existingConnection.status === "declined") {
+      if (existingConnection.status === "declined") {
         const updatedConnection = await prisma.clientProConnection.update({
           where: { id: existingConnection.id },
           data: {

@@ -19,7 +19,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { logger } from "@/lib/logger";
 
-type ConnectionStatus = "PENDING" | "ACCEPTED" | "DECLINED" | "REVOKED";
+type ConnectionStatus = "pending" | "accepted" | "declined" | "revoked";
 
 interface ContractorData {
   id: string;

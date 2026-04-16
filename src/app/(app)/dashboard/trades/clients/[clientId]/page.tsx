@@ -58,7 +58,7 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
     where: {
       clientId,
       contractorId: contractorProfile.companyId,
-      status: { in: ["ACCEPTED", "accepted", "connected"] },
+      status: { in: ["accepted", "connected"] },
     },
   });
 

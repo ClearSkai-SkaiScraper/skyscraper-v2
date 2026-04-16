@@ -148,7 +148,7 @@ export async function POST(request: NextRequest) {
             clientEmail: clientEmail,
             clientName: insuredName,
             clientUserId: client.id,
-            status: "ACCEPTED",
+            status: "accepted",
             invitedBy: userId,
             acceptedAt: new Date(),
           },

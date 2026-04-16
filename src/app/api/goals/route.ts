@@ -13,7 +13,7 @@ const VALID_CATEGORIES = [
   "doors_knocked",
   "claims_signed",
   "revenue",
-  "jobs_posted",
+  "cold_calls",
   "leads_generated",
   "repairs_landed",
 ] as const;

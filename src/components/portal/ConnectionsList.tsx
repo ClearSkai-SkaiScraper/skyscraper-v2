@@ -69,7 +69,7 @@ export function ConnectionsList({
           // Filter to only show accepted connections
           const accepted = (data.connections || []).filter(
             (c: Connection) =>
-              c.connectionStatus === "ACCEPTED" || c.connectionStatus === "connected"
+              c.connectionStatus === "accepted" || c.connectionStatus === "connected"
           );
           setConnections(accepted);
         }
@@ -261,7 +261,7 @@ export function ConnectionsListCompact({ maxDisplay = 3 }: { maxDisplay?: number
           const data = await res.json();
           const accepted = (data.connections || []).filter(
             (c: Connection) =>
-              c.connectionStatus === "ACCEPTED" || c.connectionStatus === "connected"
+              c.connectionStatus === "accepted" || c.connectionStatus === "connected"
           );
           setConnections(accepted);
         }

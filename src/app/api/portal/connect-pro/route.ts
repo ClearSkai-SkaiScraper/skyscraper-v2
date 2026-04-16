@@ -287,7 +287,7 @@ export async function GET(req: NextRequest) {
     const connections = await prisma.clientProConnection.findMany({
       where: {
         clientId: client.id,
-        status: { in: ["ACCEPTED", "PENDING", "accepted", "pending", "connected"] },
+        status: { in: ["accepted", "pending", "connected"] },
       },
       select: {
         contractorId: true,

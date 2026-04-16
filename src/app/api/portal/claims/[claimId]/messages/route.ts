@@ -51,7 +51,7 @@ async function resolveClaimOrgId(
       where: {
         claimId,
         OR: [{ clientUserId: client.id }, { clientEmail: userEmail }],
-        status: { in: ["ACCEPTED", "CONNECTED", "PENDING"] },
+        status: { in: ["accepted", "connected", "pending"] },
       },
       include: { claims: { select: { orgId: true } } },
     });

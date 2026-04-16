@@ -138,7 +138,7 @@ export async function assertPortalAccess({
       where: {
         claimId,
         OR: [{ clientUserId: client.id }, ...(client.email ? [{ clientEmail: client.email }] : [])],
-        status: { in: ["ACCEPTED", "CONNECTED", "PENDING"] },
+        status: { in: ["accepted", "connected", "pending"] },
       },
     });
 

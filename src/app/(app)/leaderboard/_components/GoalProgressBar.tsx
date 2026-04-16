@@ -7,10 +7,10 @@ import {
   FileText,
   Minus,
   Pencil,
+  Phone,
   Plus,
   Save,
   Target,
-  TrendingUp,
   Wrench,
   X,
 } from "lucide-react";
@@ -74,10 +74,10 @@ const GOAL_METRICS: GoalMetric[] = [
     format: "currency",
   },
   {
-    category: "jobs_posted",
+    category: "cold_calls",
     statKey: "totalJobs",
-    label: "Jobs Posted",
-    icon: <TrendingUp className="h-4 w-4" />,
+    label: "Cold Calls",
+    icon: <Phone className="h-4 w-4" />,
     gradient: "from-purple-500 to-purple-600",
     bgColor: "bg-purple-100 dark:bg-purple-900/30",
   },
@@ -107,7 +107,7 @@ const PRESETS = [
       doors_knocked: { w: 50, m: 200 },
       claims_signed: { w: 3, m: 12 },
       revenue: { w: 30000, m: 120000 },
-      jobs_posted: { w: 8, m: 32 },
+      cold_calls: { w: 8, m: 32 },
       leads_generated: { w: 15, m: 60 },
       repairs_landed: { w: 2, m: 8 },
     },
@@ -118,7 +118,7 @@ const PRESETS = [
       doors_knocked: { w: 100, m: 400 },
       claims_signed: { w: 5, m: 20 },
       revenue: { w: 75000, m: 300000 },
-      jobs_posted: { w: 15, m: 60 },
+      cold_calls: { w: 15, m: 60 },
       leads_generated: { w: 25, m: 100 },
       repairs_landed: { w: 4, m: 16 },
     },
@@ -129,7 +129,7 @@ const PRESETS = [
       doors_knocked: { w: 200, m: 800 },
       claims_signed: { w: 10, m: 40 },
       revenue: { w: 150000, m: 600000 },
-      jobs_posted: { w: 30, m: 120 },
+      cold_calls: { w: 30, m: 120 },
       leads_generated: { w: 50, m: 200 },
       repairs_landed: { w: 8, m: 32 },
     },
@@ -140,7 +140,7 @@ const PRESETS = [
       doors_knocked: { w: 350, m: 1400 },
       claims_signed: { w: 20, m: 80 },
       revenue: { w: 250000, m: 1000000 },
-      jobs_posted: { w: 50, m: 200 },
+      cold_calls: { w: 50, m: 200 },
       leads_generated: { w: 100, m: 400 },
       repairs_landed: { w: 15, m: 60 },
     },
@@ -196,7 +196,7 @@ export function GoalProgressBar() {
             doorsKnocked: "doors_knocked",
             claimsSigned: "claims_signed",
             revenue: "revenue",
-            jobsPosted: "jobs_posted",
+            coldCalls: "cold_calls",
             leadsGenerated: "leads_generated",
             repairsLanded: "repairs_landed",
           };
@@ -296,7 +296,7 @@ export function GoalProgressBar() {
           doors_knocked: "doorsKnocked",
           claims_signed: "claimsSigned",
           revenue: "revenue",
-          jobs_posted: "jobsPosted",
+          cold_calls: "coldCalls",
           leads_generated: "leadsGenerated",
           repairs_landed: "repairsLanded",
         };
@@ -322,7 +322,7 @@ export function GoalProgressBar() {
         doors_knocked: "doorsKnocked",
         claims_signed: "claimsSigned",
         revenue: "revenue",
-        jobs_posted: "jobsPosted",
+        cold_calls: "coldCalls",
         leads_generated: "leadsGenerated",
         repairs_landed: "repairsLanded",
       };
@@ -411,7 +411,7 @@ export function GoalProgressBar() {
             defaults.set("doors_knocked", { weekly: 100, monthly: 400 });
             defaults.set("claims_signed", { weekly: 5, monthly: 20 });
             defaults.set("revenue", { weekly: 75000, monthly: 300000 });
-            defaults.set("jobs_posted", { weekly: 15, monthly: 60 });
+            defaults.set("cold_calls", { weekly: 15, monthly: 60 });
             defaults.set("leads_generated", { weekly: 25, monthly: 100 });
             defaults.set("repairs_landed", { weekly: 4, monthly: 16 });
             setEditGoals(defaults);

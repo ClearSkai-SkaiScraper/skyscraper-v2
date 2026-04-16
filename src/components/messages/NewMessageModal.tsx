@@ -78,7 +78,7 @@ export default function NewMessageModal({
         teamMemberId: "",
       });
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     open,
     orgId,
@@ -117,10 +117,7 @@ export default function NewMessageModal({
         const connectedClients = (clientData.clients || [])
           .filter(
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            (c: any) =>
-              c.connection?.status === "connected" ||
-              c.connection?.status === "ACCEPTED" ||
-              c.connection?.status === "accepted"
+            (c: any) => c.connection?.status === "connected" || c.connection?.status === "accepted"
           )
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           .map((c: any) => ({
@@ -303,7 +300,7 @@ export default function NewMessageModal({
       });
       onOpenChange(false);
       onSuccess?.();
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       logger.error("Failed to send message:", error);
       toast.error(error.message || "Failed to send message");

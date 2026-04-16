@@ -8,17 +8,16 @@ import { NextResponse } from "next/server";
 import { analyzeImage } from "@/lib/ai/openai-vision";
 import { withAuth } from "@/lib/auth/withAuth";
 import { logger } from "@/lib/logger";
-import { getRateLimitIdentifier, rateLimiters } from "@/lib/rate-limit";
+import { checkRateLimit } from "@/lib/rate-limit";
 
 export const dynamic = "force-dynamic";
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export const POST = withAuth(async (request, { userId, orgId }) => {
   try {
-    // Rate limit AI photo analysis (expensive operation)
-    const identifier = getRateLimitIdentifier(userId, request);
-    const allowed = await rateLimiters.ai.check(5, identifier);
-    if (!allowed) {
+    // Rate limit — AI preset (5/min via Upstash)
+    const rl = await checkRateLimit(userId, "AI");
+    if (!rl.success) {
       return NextResponse.json({ error: "Rate limit exceeded" }, { status: 429 });
     }
 

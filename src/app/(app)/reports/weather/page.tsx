@@ -1,6 +1,6 @@
 "use client";
 
-import { Clock, CloudRain, Download } from "lucide-react";
+import { AlertTriangle, CheckCircle, Clock, CloudRain, Download, Zap } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
@@ -54,6 +54,8 @@ export default function WeatherReportsPage() {
   const [claimLiteMap, setClaimLiteMap] = useState<Record<string, ClaimLite>>({});
   const [isRunning, setIsRunning] = useState(false);
   const [latestDoc, setLatestDoc] = useState<ClaimDocument | null>(null);
+  const [weatherVerified, setWeatherVerified] = useState<boolean | null>(null);
+  const [runningQuickDol, setRunningQuickDol] = useState(false);
 
   const resolvedClaimId = selection.resolvedClaimId;
 
@@ -92,6 +94,55 @@ export default function WeatherReportsPage() {
 
   const finalAddress = addressOverride.trim() || derivedAddress;
   const finalDol = dolOverride.trim() || derivedDol;
+
+  // Check if claim has weather verification data
+  useEffect(() => {
+    if (!resolvedClaimId) {
+      setWeatherVerified(null);
+      return;
+    }
+    let cancelled = false;
+    void (async () => {
+      try {
+        const res = await fetch(`/api/claims/${resolvedClaimId}/documents?aiReportsOnly=true`, {
+          cache: "no-store",
+        });
+        if (!res.ok) return;
+        const data = await res.json();
+        const docs: ClaimDocument[] = Array.isArray(data?.documents) ? data.documents : [];
+        const hasWeather = docs.some((d) => d.type === "WEATHER" && d.publicUrl);
+        if (!cancelled) setWeatherVerified(hasWeather);
+      } catch {
+        if (!cancelled) setWeatherVerified(null);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [resolvedClaimId]);
+
+  const runQuickDol = async () => {
+    if (!resolvedClaimId || !finalAddress) return;
+    setRunningQuickDol(true);
+    try {
+      const res = await fetch(`/api/claims/${resolvedClaimId}/weather/quick-verify`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ address: finalAddress, dol: finalDol }),
+      });
+      if (res.ok) {
+        toast.success("Quick DOL verification complete — weather data is now available");
+        setWeatherVerified(true);
+      } else {
+        const data = await res.json().catch(() => ({}));
+        toast.error(data?.error || "Quick DOL verification failed");
+      }
+    } catch {
+      toast.error("Quick DOL verification failed");
+    } finally {
+      setRunningQuickDol(false);
+    }
+  };
 
   const runWeather = async () => {
     setLatestDoc(null);
@@ -167,8 +218,8 @@ export default function WeatherReportsPage() {
     <PageContainer maxWidth="7xl">
       <PageHero
         section="reports"
-        title="Weather Reports"
-        subtitle="Storm verification using real weather data and claim context"
+        title="Weather & Loss Justification Reports"
+        subtitle="Storm verification using real weather data, claim context, and loss justification"
         icon={<CloudRain className="h-5 w-5" />}
       >
         <Button variant="outline" size="sm" asChild>
@@ -190,6 +241,37 @@ export default function WeatherReportsPage() {
                     <ClaimJobSelect value={selection} onValueChange={setSelection} />
                     {!resolvedClaimId && selection.jobId && (
                       <p className="text-xs text-destructive">Selected job has no linked claim.</p>
+                    )}
+                    {resolvedClaimId && weatherVerified === false && (
+                      <div className="mt-2 rounded-lg border border-amber-300 bg-amber-50 p-3 dark:border-amber-700 dark:bg-amber-950">
+                        <div className="flex items-start gap-2">
+                          <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-amber-600" />
+                          <div>
+                            <p className="text-xs font-medium text-amber-700 dark:text-amber-300">
+                              No weather data found for this claim
+                            </p>
+                            <p className="mt-0.5 text-xs text-amber-600 dark:text-amber-400">
+                              Run a Quick DOL Pull to fetch NOAA storm data and enhance the report
+                              with verified weather events.
+                            </p>
+                            <button
+                              onClick={runQuickDol}
+                              disabled={runningQuickDol || !finalAddress}
+                              className="mt-2 inline-flex items-center gap-1.5 rounded-md bg-amber-600 px-3 py-1.5 text-xs font-medium text-white transition hover:bg-amber-700 disabled:opacity-50"
+                            >
+                              <Zap className="h-3 w-3" />
+                              {runningQuickDol
+                                ? "Running DOL Verification..."
+                                : "Run Quick DOL Pull"}
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                    {resolvedClaimId && weatherVerified === true && (
+                      <p className="mt-1 flex items-center gap-1 text-xs text-emerald-600 dark:text-emerald-400">
+                        <CheckCircle className="h-3 w-3" /> Weather data verified for this claim
+                      </p>
                     )}
                   </div>
 
@@ -295,8 +377,10 @@ export default function WeatherReportsPage() {
                 )}
 
                 <div className="text-xs text-muted-foreground">
-                  No mock weather data is generated; this uses live weather tooling and claim
-                  context.
+                  This generates a combined Weather & Loss Justification report using live NOAA
+                  weather data, storm event databases, and your claim&apos;s property details. The
+                  report includes storm verification, damage correlation, and loss justification
+                  analysis.
                 </div>
               </div>
             </Card>

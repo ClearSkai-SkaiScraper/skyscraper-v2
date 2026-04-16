@@ -40,7 +40,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Invite not found or has expired" }, { status: 404 });
     }
 
-    if (link.status === "CONNECTED") {
+    if (link.status === "connected") {
       // Already accepted — just redirect
       return NextResponse.json({
         ok: true,
@@ -50,7 +50,7 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    if (link.status !== "PENDING") {
+    if (link.status !== "pending") {
       return NextResponse.json(
         { error: `This invite is no longer valid (status: ${link.status})` },
         { status: 410 }
@@ -59,11 +59,11 @@ export async function POST(req: NextRequest) {
 
     const email = userEmail || link.clientEmail;
 
-    // Update the ClaimClientLink → CONNECTED
+    // Update the ClaimClientLink → connected
     await prisma.claimClientLink.update({
       where: { id: token },
       data: {
-        status: "CONNECTED",
+        status: "connected",
         clientUserId: userId,
         acceptedAt: new Date(),
       },

@@ -30,7 +30,7 @@ import { TradesNetworkClient } from "./TradesNetworkClient";
 
 export const dynamic = "force-dynamic";
 
-type ConnectionStatus = "PENDING" | "ACCEPTED" | "DECLINED" | "REVOKED";
+type ConnectionStatus = "pending" | "accepted" | "declined" | "revoked";
 
 // Featured categories for the network
 const FEATURED_CATEGORIES = [

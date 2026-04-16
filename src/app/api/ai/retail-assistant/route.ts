@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 import { getOpenAI } from "@/lib/ai/client";
 import { withAuth } from "@/lib/auth/withAuth";
 import { logger } from "@/lib/logger";
-import { getRateLimitIdentifier, rateLimiters } from "@/lib/rate-limit";
+import { checkRateLimit } from "@/lib/rate-limit";
 import { retailAssistantSchema, validateAIRequest } from "@/lib/validation/aiSchemas";
 
 // Force Node.js runtime for OpenAI SDK
@@ -13,10 +13,9 @@ export const dynamic = "force-dynamic";
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export const POST = withAuth(async (request, { userId, orgId }) => {
   try {
-    // Rate limit AI requests
-    const identifier = getRateLimitIdentifier(userId, request);
-    const allowed = await rateLimiters.ai.check(10, identifier);
-    if (!allowed) {
+    // Rate limit — AI preset (5/min via Upstash)
+    const rl = await checkRateLimit(userId, "AI");
+    if (!rl.success) {
       return NextResponse.json({ error: "Rate limit exceeded" }, { status: 429 });
     }
 

@@ -58,9 +58,9 @@ export default async function InviteAcceptancePage({ params }: InvitePageProps) 
   }
 
   // Check if already accepted or revoked
-  if (invite.status !== "PENDING") {
-    // Already accepted - redirect to claim portal (accept-invite API writes CONNECTED, page writes CONNECTED)
-    if ((invite.status === "ACCEPTED" || invite.status === "CONNECTED") && invite.clientUserId) {
+  if (invite.status !== "pending") {
+    // Already accepted - redirect to claim portal
+    if ((invite.status === "accepted" || invite.status === "connected") && invite.clientUserId) {
       redirect(`/portal/claims/${invite.claimId}`);
     }
     return (
@@ -118,7 +118,7 @@ export default async function InviteAcceptancePage({ params }: InvitePageProps) 
   await prisma.claimClientLink.update({
     where: { id: invite.id },
     data: {
-      status: "CONNECTED",
+      status: "connected",
       clientUserId: userId,
       acceptedAt: new Date(),
     },

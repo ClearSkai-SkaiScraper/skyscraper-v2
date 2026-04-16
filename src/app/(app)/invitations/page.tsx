@@ -279,11 +279,9 @@ export default function InvitationsPage() {
       case "viewed":
         return <AlertCircle className="h-4 w-4" />;
       case "accepted":
-      case "ACCEPTED":
         return <Check className="h-4 w-4" />;
       case "expired":
         return <X className="h-4 w-4" />;
-      case "DECLINED":
       case "declined":
         return <XCircle className="h-4 w-4" />;
       default:

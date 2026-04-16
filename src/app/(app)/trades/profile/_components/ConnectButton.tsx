@@ -28,9 +28,9 @@ export default function ConnectButton({ userId }: ConnectButtonProps) {
         const res = await fetch(`/api/portal/connect-pro?proId=${userId}`);
         if (res.ok) {
           const data = await res.json();
-          if (data.status === "accepted" || data.status === "ACCEPTED") {
+          if (data.status === "accepted") {
             setStatus("accepted");
-          } else if (data.status === "pending" || data.status === "PENDING") {
+          } else if (data.status === "pending") {
             setStatus("pending");
           }
         }

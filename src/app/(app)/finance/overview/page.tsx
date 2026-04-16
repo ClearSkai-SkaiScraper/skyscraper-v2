@@ -212,7 +212,20 @@ export default function FinancialOverviewPage() {
 
   return (
     <RBACGuard
-      minimumRole="manager"
+      minimumRole="admin"
+      loadingFallback={
+        <PageContainer maxWidth="5xl">
+          <PageHero
+            title="Financial Overview"
+            subtitle="Loading access…"
+            icon={<TrendingUp className="h-5 w-5" />}
+            section="finance"
+          />
+          <div className="flex items-center justify-center py-20">
+            <RefreshCw className="h-6 w-6 animate-spin text-muted-foreground" />
+          </div>
+        </PageContainer>
+      }
       fallback={
         <PageContainer maxWidth="5xl">
           <PageHero
@@ -223,10 +236,11 @@ export default function FinancialOverviewPage() {
           />
           <div className="mx-auto max-w-xl rounded-xl border border-amber-500/40 bg-amber-50 p-8 shadow dark:bg-amber-950">
             <h2 className="mb-2 flex items-center gap-2 text-xl font-semibold text-amber-700 dark:text-amber-200">
-              <Shield className="h-5 w-5" /> Manager Access Required
+              <Shield className="h-5 w-5" /> Admin Access Required
             </h2>
             <p className="text-sm text-amber-600 dark:text-amber-300">
-              Financial data is restricted to managers, admins, and owners.
+              Financial data is restricted to company admins and owners. Contact your admin to
+              request access.
             </p>
             <div className="mt-4">
               <Link href="/dashboard">
@@ -844,6 +858,41 @@ export default function FinancialOverviewPage() {
               </div>
             </div>
           )}
+          {/* ─── QuickBooks Integration ─────────────────────────── */}
+          <div className="mx-auto mt-8 max-w-7xl px-4 md:px-6">
+            <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-700 dark:bg-slate-900">
+              <div className="flex items-start justify-between">
+                <div>
+                  <h3 className="flex items-center gap-2 text-lg font-semibold text-slate-900 dark:text-white">
+                    <Wallet className="h-5 w-5 text-emerald-500" />
+                    QuickBooks Integration
+                  </h3>
+                  <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+                    Connect your QuickBooks account to see real-time company financial data,
+                    invoices, expenses, and P&L — all synced automatically.
+                  </p>
+                </div>
+              </div>
+              <div className="mt-4 rounded-lg border border-dashed border-slate-300 bg-slate-50 p-6 text-center dark:border-slate-600 dark:bg-slate-800/50">
+                <Wallet className="mx-auto h-10 w-10 text-slate-400" />
+                <p className="mt-3 text-sm font-medium text-slate-700 dark:text-slate-300">
+                  QuickBooks OAuth Token
+                </p>
+                <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+                  Your QuickBooks OAuth connection will appear here. Once connected, real-time
+                  financial data from QuickBooks will sync to this dashboard.
+                </p>
+                <button
+                  className="mt-4 inline-flex items-center gap-2 rounded-lg bg-emerald-600 px-5 py-2.5 text-sm font-medium text-white shadow-sm transition hover:bg-emerald-700 disabled:opacity-50"
+                  disabled
+                  title="QuickBooks OAuth integration coming soon"
+                >
+                  <Wallet className="h-4 w-4" />
+                  Connect QuickBooks (Coming Soon)
+                </button>
+              </div>
+            </div>
+          </div>
         </main>
       </div>
     </RBACGuard>

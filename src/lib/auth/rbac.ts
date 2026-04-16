@@ -41,6 +41,7 @@ import { NextResponse } from "next/server";
 
 import { getDelegate } from "@/lib/db/modelAliases";
 import { logger } from "@/lib/logger";
+import { normalizeRole } from "@/lib/permissions/constants";
 import prisma from "@/lib/prisma";
 
 // Role types matching team_members schema
@@ -254,7 +255,7 @@ export async function getCurrentUserRole(): Promise<{
     return {
       userId,
       orgId: effectiveOrgId,
-      role: (teamMember.role?.toLowerCase() || "member") as TeamRole,
+      role: normalizeRole(teamMember.role) as TeamRole,
     };
   } catch (error) {
     logger.error("[RBAC] Failed to get current user role:", error);
@@ -277,7 +278,7 @@ export function hasMinimumRole(
   minimumRole: TeamRole
 ): boolean {
   if (!userRole) return false;
-  const normalized = userRole.toLowerCase() as TeamRole;
+  const normalized = normalizeRole(userRole) as TeamRole;
   const level = ROLE_LEVELS[normalized];
   if (level === undefined) return false;
   return level >= ROLE_LEVELS[minimumRole];

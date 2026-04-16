@@ -134,10 +134,7 @@ export const GET = withAuth(async (req: NextRequest, { orgId, userId }) => {
             isRegistered: !!pc.Client.userId,
             connection: {
               clientId: pc.Client.id,
-              status:
-                pc.status === "ACCEPTED" || pc.status === "accepted"
-                  ? "connected"
-                  : pc.status.toLowerCase(),
+              status: pc.status === "accepted" ? "connected" : pc.status.toLowerCase(),
               invitedAt: pc.invitedAt,
               connectedAt: pc.connectedAt,
             },

@@ -28,7 +28,7 @@ async function getConnectedPros(clientSlug: string) {
   const connections = await prisma.clientProConnection.findMany({
     where: {
       clientId: client.id,
-      status: { in: ["connected", "ACCEPTED", "accepted"] }, // Handle different status values
+      status: { in: ["connected", "accepted"] },
     },
     include: {
       tradesCompany: {

@@ -46,7 +46,7 @@ async function resolveClaimAccess(
       where: {
         claimId,
         OR: [{ clientUserId: client.id }, { clientEmail: userEmail }],
-        status: "ACCEPTED",
+        status: "accepted",
       },
       include: { claims: { select: { orgId: true } } },
     });

@@ -7,12 +7,18 @@ import { prismaModel } from "@/lib/db/prismaModel";
 import { sendInvitationEmail } from "@/lib/email/invitations";
 import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
+import { checkRateLimit } from "@/lib/rate-limit";
 
 // Activity model for logging (soft-fail if not available)
 const Activity = prismaModel("activities");
 
 export const POST = withAuth(async (req: NextRequest, { orgId, userId }, routeParams) => {
   try {
+    const rl = await checkRateLimit(userId, "API");
+    if (!rl.success) {
+      return NextResponse.json({ error: "Rate limit exceeded" }, { status: 429 });
+    }
+
     const { id: invitationId } = await routeParams.params;
 
     // Find invitation (team_invitations is a raw SQL table, not in Prisma schema)
