@@ -52,7 +52,7 @@ export async function POST(req: NextRequest) {
 
     // Send email notification to ops
     await safeSendEmail({
-      to: "ops@skaiscrape.com",
+      to: process.env.OPS_EMAIL || "ops@skaiscrape.com",
       subject: `Feedback: ${category || "General"} - ${name}`,
       html: `
         <!DOCTYPE html>

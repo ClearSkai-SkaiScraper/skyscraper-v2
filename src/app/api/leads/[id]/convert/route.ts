@@ -158,7 +158,7 @@ export const POST = withOrgScope(async (request, { orgId, userId }, routeCtx) =>
 
     // Update the lead to link it to the claim
     await prisma.leads.update({
-      where: { id: params.id },
+      where: { id: params.id, orgId },
       data: {
         claimId: claim.id,
         stage: "converted",

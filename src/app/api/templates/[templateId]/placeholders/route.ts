@@ -17,22 +17,27 @@ export const dynamic = "force-dynamic";
  * same path level (e.g. `[slug]` and `[templateId]`). The URL is identical.
  */
 export async function GET(_: Request, { params }: { params: { templateId: string } }) {
-  const idOrSlug = params.templateId;
-  logger.info("[TEMPLATES_PLACEHOLDERS]", { idOrSlug });
+  try {
+    const idOrSlug = params.templateId;
+    logger.info("[TEMPLATES_PLACEHOLDERS]", { idOrSlug });
 
-  const reg = getTemplateById(idOrSlug) ?? getTemplateBySlug(idOrSlug);
-  const slug = reg?.slug ?? idOrSlug;
+    const reg = getTemplateById(idOrSlug) ?? getTemplateBySlug(idOrSlug);
+    const slug = reg?.slug ?? idOrSlug;
 
-  const entry = getPremiumRegistryBySlug(slug);
-  if (!entry) {
-    return NextResponse.json({ ok: false, error: "Template slug not found" }, { status: 404 });
+    const entry = getPremiumRegistryBySlug(slug);
+    if (!entry) {
+      return NextResponse.json({ ok: false, error: "Template slug not found" }, { status: 404 });
+    }
+
+    return NextResponse.json({
+      ok: true,
+      slug: entry.slug,
+      required: entry.requiredPlaceholderPaths,
+      optional: entry.optionalPlaceholderPaths,
+      groups: entry.groups,
+    });
+  } catch (error) {
+    logger.error("[TEMPLATES_PLACEHOLDERS_GET]", error);
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
-
-  return NextResponse.json({
-    ok: true,
-    slug: entry.slug,
-    required: entry.requiredPlaceholderPaths,
-    optional: entry.optionalPlaceholderPaths,
-    groups: entry.groups,
-  });
 }

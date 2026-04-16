@@ -305,7 +305,7 @@ export const PATCH = withAuth(
           }
           if (Object.keys(propertyUpdateData).length > 0) {
             await prisma.properties.update({
-              where: { id: propertyId },
+              where: { id: propertyId, orgId },
               data: propertyUpdateData,
             });
           }

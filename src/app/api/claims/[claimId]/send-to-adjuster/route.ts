@@ -86,7 +86,7 @@ export async function POST(req: Request, { params }: { params: { claimId: string
     }
 
     await resendClient.emails.send({
-      from: "SkaiScraper Claims <claims@skaiscrape.com>",
+      from: process.env.RESEND_FROM_EMAIL || "noreply@skaiscrape.com",
       to: recipientEmail,
       subject: `Claim Documents - ${claim.claimNumber}`,
       html: emailHtml,

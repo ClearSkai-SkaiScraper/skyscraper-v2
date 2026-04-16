@@ -15,6 +15,7 @@ import { NextRequest, NextResponse } from "next/server";
 
 import { withAuth } from "@/lib/auth/withAuth";
 import { getResend } from "@/lib/email/resend";
+import { APP_URL } from "@/lib/env";
 import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 
@@ -72,14 +73,14 @@ export const POST = withAuth(async (req: NextRequest, { orgId, userId }) => {
 
     // Generate invite link
     // eslint-disable-next-line no-restricted-syntax
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://skaiscrape.com";
+    const baseUrl = APP_URL;
     const inviteLink = `${baseUrl}/portal/${network.slug}/join?token=${inviteToken}`;
 
     // Send email via Resend
     const resend = getResend();
     try {
       await resend.emails.send({
-        from: "Skai <noreply@skaiscrape.com>",
+        from: process.env.RESEND_FROM_EMAIL || "noreply@skaiscrape.com",
         to: email,
         subject: `${senderName} invited you to view your project`,
         html: `

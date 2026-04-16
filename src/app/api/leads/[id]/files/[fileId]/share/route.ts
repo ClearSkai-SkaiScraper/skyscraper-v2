@@ -58,7 +58,7 @@ export const PATCH = withAuth(async (req: NextRequest, { orgId }, routeParams) =
     }
 
     const updatedFile = await prisma.file_assets.update({
-      where: { id: fileId },
+      where: { id: fileId, orgId },
       data: {
         note: newNote,
         updatedAt: new Date(),

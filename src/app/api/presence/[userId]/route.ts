@@ -66,60 +66,65 @@ function computePresence(lastSeen: Date | null): {
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export const GET = withAuth(async (req, { userId: callerUserId, orgId }, routeParams) => {
-  const { userId: targetUserId } = await routeParams.params;
-  logger.info("[PRESENCE_LOOKUP]", { callerUserId, targetUserId });
+  try {
+    const { userId: targetUserId } = await routeParams.params;
+    logger.info("[PRESENCE_LOOKUP]", { callerUserId, targetUserId });
 
-  // Parallel lookup: pro member + client
-  const [member, client] = await Promise.allSettled([
-    prisma.tradesCompanyMember.findFirst({
-      where: { userId: targetUserId },
-      select: {
-        firstName: true,
-        lastName: true,
-        avatar: true,
-        customStatus: true,
-        statusEmoji: true,
-        lastSeenAt: true,
-        companyName: true,
-      },
-    }),
-    prisma.client.findUnique({
-      where: { userId: targetUserId },
-      select: {
-        firstName: true,
-        lastName: true,
-        avatarUrl: true,
-        customStatus: true,
-        statusEmoji: true,
-        lastActiveAt: true,
-        category: true,
-      },
-    }),
-  ]);
+    // Parallel lookup: pro member + client
+    const [member, client] = await Promise.allSettled([
+      prisma.tradesCompanyMember.findFirst({
+        where: { userId: targetUserId },
+        select: {
+          firstName: true,
+          lastName: true,
+          avatar: true,
+          customStatus: true,
+          statusEmoji: true,
+          lastSeenAt: true,
+          companyName: true,
+        },
+      }),
+      prisma.client.findUnique({
+        where: { userId: targetUserId },
+        select: {
+          firstName: true,
+          lastName: true,
+          avatarUrl: true,
+          customStatus: true,
+          statusEmoji: true,
+          lastActiveAt: true,
+          category: true,
+        },
+      }),
+    ]);
 
-  const memberData = member.status === "fulfilled" ? member.value : null;
-  const clientData = client.status === "fulfilled" ? client.value : null;
+    const memberData = member.status === "fulfilled" ? member.value : null;
+    const clientData = client.status === "fulfilled" ? client.value : null;
 
-  if (!memberData && !clientData) {
-    return NextResponse.json({ error: "User not found" }, { status: 404 });
+    if (!memberData && !clientData) {
+      return NextResponse.json({ error: "User not found" }, { status: 404 });
+    }
+
+    // Prefer pro data if both exist
+    const lastSeen = memberData?.lastSeenAt || clientData?.lastActiveAt || null;
+    const presence = computePresence(lastSeen);
+
+    return NextResponse.json({
+      userId: targetUserId,
+      userType: memberData ? "pro" : "client",
+      name: memberData
+        ? `${memberData.firstName || ""} ${memberData.lastName || ""}`.trim()
+        : `${clientData?.firstName || ""} ${clientData?.lastName || ""}`.trim(),
+      avatar: memberData?.avatar || clientData?.avatarUrl || null,
+      companyName: memberData?.companyName || null,
+      category: clientData?.category || null,
+      customStatus: memberData?.customStatus || clientData?.customStatus || null,
+      statusEmoji: memberData?.statusEmoji || clientData?.statusEmoji || null,
+      ...presence,
+      lastSeenAt: lastSeen,
+    });
+  } catch (error) {
+    logger.error("[PRESENCE_GET]", error);
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
-
-  // Prefer pro data if both exist
-  const lastSeen = memberData?.lastSeenAt || clientData?.lastActiveAt || null;
-  const presence = computePresence(lastSeen);
-
-  return NextResponse.json({
-    userId: targetUserId,
-    userType: memberData ? "pro" : "client",
-    name: memberData
-      ? `${memberData.firstName || ""} ${memberData.lastName || ""}`.trim()
-      : `${clientData?.firstName || ""} ${clientData?.lastName || ""}`.trim(),
-    avatar: memberData?.avatar || clientData?.avatarUrl || null,
-    companyName: memberData?.companyName || null,
-    category: clientData?.category || null,
-    customStatus: memberData?.customStatus || clientData?.customStatus || null,
-    statusEmoji: memberData?.statusEmoji || clientData?.statusEmoji || null,
-    ...presence,
-    lastSeenAt: lastSeen,
-  });
 });

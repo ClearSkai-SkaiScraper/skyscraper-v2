@@ -87,6 +87,11 @@ export const GET = withOrgScope(async (req, { userId, orgId }) => {
       }
     } else {
       // Fallback: use user_organizations if no trades company
+      // Admins can see everyone; managers see nobody (no hierarchy data available)
+      if (!hasMinRole(user.role, "admin")) {
+        return NextResponse.json({ members: [] });
+      }
+
       const orgMembers = await prisma.user_organizations.findMany({
         where: {
           organizationId: user.orgId,

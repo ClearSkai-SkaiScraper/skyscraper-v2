@@ -6,6 +6,7 @@ import { NextRequest, NextResponse } from "next/server";
 
 import { withAuth } from "@/lib/auth/withAuth";
 import { FROM_EMAIL, getResend, REPLY_TO_EMAIL, TEMPLATES } from "@/lib/email/resend";
+import { APP_URL } from "@/lib/env";
 import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 import { checkRateLimit } from "@/lib/rate-limit";
@@ -85,8 +86,7 @@ export const POST = withAuth(async (req: NextRequest, { userId, orgId }) => {
     });
 
     // Send magic-link email with Resend (uses Clerk magic link flow)
-    // eslint-disable-next-line no-restricted-syntax
-    const magicLink = `${process.env.NEXT_PUBLIC_APP_URL || "https://skaiscrape.com"}/client/sign-in?email=${encodeURIComponent(email)}`;
+    const magicLink = `${APP_URL}/client/sign-in?email=${encodeURIComponent(email)}`;
 
     try {
       const resend = getResend();

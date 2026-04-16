@@ -228,7 +228,7 @@ const basePATCH = async (request: Request, { params }: { params: { id: string } 
 
     // Update the lead
     const lead = await prisma.leads.update({
-      where: { id: params.id },
+      where: { id: params.id, orgId },
       data: updateData,
       include: {
         contacts: {
@@ -346,7 +346,7 @@ const baseDELETE = async (request: Request, { params }: { params: { id: string }
 
     // Check if lead has been converted to a project
     const hasProject = await prisma.projects.findFirst({
-      where: { leadId: lead.id },
+      where: { leadId: lead.id, orgId },
     });
 
     if (hasProject) {
@@ -358,7 +358,7 @@ const baseDELETE = async (request: Request, { params }: { params: { id: string }
 
     // Soft delete (archive) — preserve original stage, just mark as archived
     await prisma.leads.update({
-      where: { id: params.id },
+      where: { id: params.id, orgId },
       data: {
         closedAt: new Date(),
         archivedAt: new Date(),

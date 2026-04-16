@@ -7,6 +7,7 @@ import { withAuth } from "@/lib/auth/withAuth";
 import { getDelegate } from "@/lib/db/modelAliases";
 import { sendPacketEmail } from "@/lib/email/sendPacketEmail";
 import type { SendPacketRequestBody } from "@/lib/email/types";
+import { APP_URL } from "@/lib/env";
 import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 
@@ -39,7 +40,7 @@ export const POST = withAuth(async (req: NextRequest, { orgId, userId }, routePa
     }
 
     // Determine packet URL
-    const packetUrl = `${process.env.NEXT_PUBLIC_APP_URL || "https://skaiscrape.com"}/exports/estimates/${estimateId}/adjuster`;
+    const packetUrl = `${APP_URL}/exports/estimates/${estimateId}/adjuster`;
 
     // Send email
     const emailResult = await sendPacketEmail({

@@ -620,6 +620,39 @@ export default function WeatherMapDashboard({ markers, center, mapboxToken }: Pr
 
   return (
     <div className="flex flex-col gap-4">
+      {/* ── Quick Actions Bar ─── */}
+      <div className="flex flex-wrap items-center gap-3 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 dark:border-slate-700 dark:bg-slate-800/50">
+        <span className="text-xs font-medium text-muted-foreground">Quick Actions:</span>
+        <Button size="sm" variant="outline" asChild>
+          <Link href="/weather">
+            <CloudRain className="mr-1.5 h-3.5 w-3.5" />
+            Generate Weather Report
+          </Link>
+        </Button>
+        <Button size="sm" variant="outline" asChild>
+          <Link href="/quick-dol">
+            <Sunrise className="mr-1.5 h-3.5 w-3.5" />
+            Quick DOL Pull
+          </Link>
+        </Button>
+        <Button size="sm" variant="outline" asChild>
+          <Link href="/storm-center">
+            <CloudLightning className="mr-1.5 h-3.5 w-3.5" />
+            Storm Center
+          </Link>
+        </Button>
+        <Button size="sm" variant="outline" asChild>
+          <Link href="/maps/door-knocking">
+            <MapPin className="mr-1.5 h-3.5 w-3.5" />
+            Door Knocking
+          </Link>
+        </Button>
+        <Button size="sm" variant="ghost" onClick={() => void fetchAllData()} className="ml-auto">
+          <RefreshCw className="mr-1.5 h-3.5 w-3.5" />
+          Refresh
+        </Button>
+      </div>
+
       {/* ── Current Conditions Bar ─── */}
       {currentWeather && (
         <div className="flex items-center gap-6 rounded-2xl border border-slate-200 bg-gradient-to-r from-blue-950/90 via-slate-900/90 to-indigo-950/90 px-6 py-4 text-white shadow-lg dark:border-slate-700">
@@ -1136,39 +1169,6 @@ export default function WeatherMapDashboard({ markers, center, mapboxToken }: Pr
           )}
         </div>
       )}
-
-      {/* ── Quick Actions Footer ─── */}
-      <div className="flex flex-wrap items-center gap-3 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 dark:border-slate-700 dark:bg-slate-800/50">
-        <span className="text-xs font-medium text-muted-foreground">Quick Actions:</span>
-        <Button size="sm" variant="outline" asChild>
-          <Link href="/weather">
-            <CloudRain className="mr-1.5 h-3.5 w-3.5" />
-            Generate Weather Report
-          </Link>
-        </Button>
-        <Button size="sm" variant="outline" asChild>
-          <Link href="/quick-dol">
-            <Sunrise className="mr-1.5 h-3.5 w-3.5" />
-            Quick DOL Pull
-          </Link>
-        </Button>
-        <Button size="sm" variant="outline" asChild>
-          <Link href="/storm-center">
-            <CloudLightning className="mr-1.5 h-3.5 w-3.5" />
-            Storm Center
-          </Link>
-        </Button>
-        <Button size="sm" variant="outline" asChild>
-          <Link href="/maps/door-knocking">
-            <MapPin className="mr-1.5 h-3.5 w-3.5" />
-            Door Knocking
-          </Link>
-        </Button>
-        <Button size="sm" variant="ghost" onClick={() => void fetchAllData()} className="ml-auto">
-          <RefreshCw className="mr-1.5 h-3.5 w-3.5" />
-          Refresh
-        </Button>
-      </div>
     </div>
   );
 }

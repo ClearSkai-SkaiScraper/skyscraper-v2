@@ -20,6 +20,7 @@ import { NextResponse } from "next/server";
 
 import { withOrgScope } from "@/lib/auth/tenant";
 import { validateSeatCount } from "@/lib/billing/seat-pricing";
+import { APP_URL } from "@/lib/env";
 import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 import { getStripeClient } from "@/lib/stripe";
@@ -88,8 +89,7 @@ export const POST = withOrgScope(async (req, { userId, orgId }) => {
       });
     }
 
-    // eslint-disable-next-line no-restricted-syntax
-    const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://www.skaiscrape.com";
+    const appUrl = APP_URL;
 
     // Create Stripe Checkout Session
     const session = await stripe.checkout.sessions.create({

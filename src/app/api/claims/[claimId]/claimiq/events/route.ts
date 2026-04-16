@@ -20,20 +20,25 @@ export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ claimId: string }> }
 ) {
-  const auth = await requireAuth();
-  if (isAuthError(auth)) return auth;
+  try {
+    const auth = await requireAuth();
+    if (isAuthError(auth)) return auth;
 
-  const { claimId } = await params;
-  logger.info("[CLAIMIQ_EVENTS]", { claimId });
-  const { searchParams } = new URL(request.url);
-  const since = searchParams.get("since") || undefined;
+    const { claimId } = await params;
+    logger.info("[CLAIMIQ_EVENTS]", { claimId });
+    const { searchParams } = new URL(request.url);
+    const since = searchParams.get("since") || undefined;
 
-  const events = await getRecentReadinessEvents(claimId, since);
+    const events = await getRecentReadinessEvents(claimId, since);
 
-  return NextResponse.json({
-    success: true,
-    events,
-    hasChanges: events.length > 0,
-    lastEvent: events[events.length - 1] || null,
-  });
+    return NextResponse.json({
+      success: true,
+      events,
+      hasChanges: events.length > 0,
+      lastEvent: events[events.length - 1] || null,
+    });
+  } catch (error) {
+    logger.error("[CLAIMIQ_EVENTS_GET]", error);
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+  }
 }

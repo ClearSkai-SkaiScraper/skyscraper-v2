@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { Resend } from "resend";
 import { z } from "zod";
 
+import { APP_URL } from "@/lib/env";
 import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 import { safeOrgContext } from "@/lib/safeOrgContext";
@@ -54,12 +55,12 @@ export async function POST(req: Request) {
     });
 
     // Send email via Resend
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://skaiscrape.com";
+    const baseUrl = APP_URL;
     const signUrl = `${baseUrl}/portal/contracts/sign/${contractId}?token=${signingToken}`;
 
     const resend = new Resend(process.env.RESEND_API_KEY);
     const emailResult = await resend.emails.send({
-      from: process.env.RESEND_FROM_EMAIL || "contracts@skaiscrape.com",
+      from: process.env.RESEND_FROM_EMAIL || "noreply@skaiscrape.com",
       to: validated.clientEmail,
       subject: `Contract from ${org?.name || "SkaiScraper"} - Signature Required`,
       html: `

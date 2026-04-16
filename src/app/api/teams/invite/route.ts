@@ -1,58 +1,87 @@
 export const dynamic = "force-dynamic";
 
-// eslint-disable-next-line no-restricted-imports
-import { auth } from "@clerk/nextjs/server";
+import { clerkClient } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
 import { compose, withRateLimit, withSentryApi } from "@/lib/api/wrappers";
+import { requireRole } from "@/lib/auth/rbac";
 import { withOrgScope } from "@/lib/auth/tenant";
+import { logger } from "@/lib/logger";
 
 const TeamInviteSchema = z.object({
   email: z.string().email("Invalid email address"),
-  role: z.enum(["ADMIN", "MANAGER", "MEMBER"]).default("MEMBER"),
-  name: z.string().optional(),
+  role: z.enum(["admin", "basic_member", "org:member"]).default("basic_member"),
 });
 
+/**
+ * POST /api/teams/invite — Send a Clerk organization invitation
+ * Requires manager+ role.
+ */
 const basePOST = async (req: Request) => {
-  // eslint-disable-next-line @typescript-eslint/await-thenable
-  const { userId, orgId } = await auth();
-  // eslint-disable-next-line @typescript-eslint/await-thenable
-  if (!userId || !orgId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const roleCheck = await requireRole("MANAGER");
+  if (roleCheck instanceof NextResponse) return roleCheck;
+  const { orgId, userId } = roleCheck;
+
   const body = await req.json();
-  const { email, role, name } = TeamInviteSchema.parse(body);
-  // Placeholder: would persist invitation & send email
-  const mockInvitation = {
-    id: `inv_${Date.now()}`,
-    email,
-    role,
-    name,
-    invitedBy: userId,
-    orgId,
-    status: "pending",
-    expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
-    // eslint-disable-next-line no-restricted-syntax
-    inviteUrl: `${process.env.NEXT_PUBLIC_APP_URL}/invite/accept?token=mock_token_${Date.now()}`,
-  };
-  return NextResponse.json(mockInvitation, { status: 201 });
+  const { email, role } = TeamInviteSchema.parse(body);
+
+  try {
+    const clerk = await clerkClient();
+    const invitation = await clerk.organizations.createOrganizationInvitation({
+      organizationId: orgId,
+      emailAddress: email,
+      role,
+      inviterUserId: userId,
+    });
+
+    logger.info("[TEAMS_INVITE] Invitation sent", { orgId, email, role });
+    return NextResponse.json(
+      {
+        id: invitation.id,
+        email: invitation.emailAddress,
+        role: invitation.role,
+        status: invitation.status,
+        createdAt: invitation.createdAt,
+      },
+      { status: 201 }
+    );
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : "Failed to send invitation";
+    logger.error("[TEAMS_INVITE] Error", { orgId, email, error: message });
+    return NextResponse.json({ error: message }, { status: 500 });
+  }
 };
 
-// GET endpoint to list pending invitations
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-const baseGET = async (req: Request) => {
-  // eslint-disable-next-line @typescript-eslint/await-thenable
-  const { userId, orgId } = await auth();
-  if (!userId || !orgId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  const mockInvitations = [
-    {
-      id: "inv_1",
-      email: "newuser@example.com",
-      role: "MEMBER",
-      status: "pending",
-      createdAt: new Date().toISOString(),
-    },
-  ];
-  return NextResponse.json({ invitations: mockInvitations });
+/**
+ * GET /api/teams/invite — List pending Clerk organization invitations
+ */
+const baseGET = async () => {
+  const roleCheck = await requireRole("MANAGER");
+  if (roleCheck instanceof NextResponse) return roleCheck;
+  const { orgId } = roleCheck;
+
+  try {
+    const clerk = await clerkClient();
+    const { data: invitations } = await clerk.organizations.getOrganizationInvitationList({
+      organizationId: orgId,
+      status: ["pending"],
+    });
+
+    return NextResponse.json({
+      invitations: invitations.map((inv) => ({
+        id: inv.id,
+        email: inv.emailAddress,
+        role: inv.role,
+        status: inv.status,
+        createdAt: inv.createdAt,
+      })),
+    });
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : "Failed to list invitations";
+    logger.error("[TEAMS_INVITE_LIST] Error", { orgId, error: message });
+    return NextResponse.json({ error: message }, { status: 500 });
+  }
 };
 
 const wrap = compose(withSentryApi, withRateLimit);

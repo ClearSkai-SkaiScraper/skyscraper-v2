@@ -11,6 +11,7 @@ import { randomUUID } from "crypto";
 import { NextRequest, NextResponse } from "next/server";
 
 import { withAuth } from "@/lib/auth/withAuth";
+import { APP_URL } from "@/lib/env";
 import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 
@@ -59,8 +60,7 @@ export const POST = withAuth(async (req: NextRequest, { userId }) => {
 
     // Create invite token
     const token = randomUUID();
-    // eslint-disable-next-line no-restricted-syntax
-    const inviteLink = `${process.env.NEXT_PUBLIC_APP_URL || "https://skaiscrape.com"}/trades/join?token=${token}`;
+    const inviteLink = `${APP_URL}/trades/join?token=${token}`;
 
     if (existing && existing.status === "pending") {
       // Update existing pending invite with new token

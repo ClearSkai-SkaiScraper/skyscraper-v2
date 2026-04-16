@@ -128,6 +128,7 @@ export const navSections: NavSection[] = [
       { label: "Clients & Connections", href: "/clients" },
       { label: "Contacts", href: "/contacts" },
       { label: "Trades Network Hub", href: "/trades" },
+      { label: "My Profile & Company", href: "/trades/profile" },
       { label: "Work Requests", href: "/network/work-requests" },
       { label: "Messages Hub", href: "/messages" },
       { label: "Invitations", href: "/invitations" },
@@ -136,7 +137,6 @@ export const navSections: NavSection[] = [
   {
     label: "Company",
     items: [
-      { label: "My Profile & Company", href: "/trades/profile" },
       { label: "Company Branding", href: "/settings/branding" },
       { label: "Company Settings", href: "/settings" },
       { label: "Leaderboard & Goals", href: "/leaderboard" },

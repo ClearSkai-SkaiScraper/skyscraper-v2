@@ -28,7 +28,7 @@ export const DELETE = withAuth(async (req: NextRequest, { userId, orgId }, route
     }
 
     await prisma.notification.delete({
-      where: { id },
+      where: { id, userId, orgId },
     });
 
     return NextResponse.json({ success: true });

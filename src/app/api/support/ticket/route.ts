@@ -3,6 +3,7 @@ export const dynamic = "force-dynamic";
 import { NextRequest, NextResponse } from "next/server";
 
 import { withAuth } from "@/lib/auth/withAuth";
+import { APP_URL } from "@/lib/env";
 import { logger } from "@/lib/logger";
 
 /**
@@ -40,8 +41,7 @@ export const POST = withAuth(async (req: NextRequest, { userId, orgId }) => {
       const supportEmail = process.env.SUPPORT_EMAIL || "damien.willingham@outlook.com";
 
       // This is a placeholder - in production, use your email service
-      // eslint-disable-next-line no-restricted-syntax
-      await fetch(`${process.env.NEXT_PUBLIC_APP_URL || "https://skaiscrape.com"}/api/email/send`, {
+      await fetch(`${APP_URL}/api/email/send`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

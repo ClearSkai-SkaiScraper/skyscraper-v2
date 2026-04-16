@@ -6,6 +6,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { withAuth } from "@/lib/auth/withAuth";
 import { draftPacketEmail } from "@/lib/email/draftPacketEmail";
 import type { PacketRecipientType } from "@/lib/email/types";
+import { APP_URL } from "@/lib/env";
 import { buildEstimatePacketPayload } from "@/lib/export/payloads";
 import { logger } from "@/lib/logger";
 
@@ -23,8 +24,7 @@ export const POST = withAuth(async (req: NextRequest, { orgId, userId }, routePa
       return NextResponse.json({ error: "Estimate or claim not found" }, { status: 404 });
     }
 
-    // eslint-disable-next-line no-restricted-syntax
-    const packetUrl = `${process.env.NEXT_PUBLIC_APP_URL || "https://skaiscrape.com"}/exports/estimates/${estimateId}/adjuster`;
+    const packetUrl = `${APP_URL}/exports/estimates/${estimateId}/adjuster`;
 
     // Draft email using AI
     const draft = await draftPacketEmail({

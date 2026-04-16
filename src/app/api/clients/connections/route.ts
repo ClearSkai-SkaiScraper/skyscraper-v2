@@ -3,6 +3,7 @@ import { z } from "zod";
 
 import { withAuth } from "@/lib/auth/withAuth";
 import { sendEmail, TEMPLATES } from "@/lib/email/resend";
+import { APP_URL } from "@/lib/env";
 import { log } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 
@@ -148,7 +149,7 @@ export const GET = withAuth(async (req: NextRequest, { orgId, userId }) => {
     }
 
     return NextResponse.json({ clients: clientsWithStatus });
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
   } catch (_error) {
     log.error("[clients/connections] Failed to fetch", { error: "Internal server error" });
     return NextResponse.json({ error: "Failed to fetch clients" }, { status: 500 });
@@ -239,8 +240,7 @@ export const POST = withAuth(async (req: NextRequest, { orgId, userId }) => {
         });
         const companyName = branding?.companyName || "SkaiScraper";
 
-        // eslint-disable-next-line no-restricted-syntax
-        const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://skaiscrape.com";
+        const appUrl = APP_URL;
         const portalLink = `${appUrl}/portal/${newClient.slug}`;
 
         await sendEmail({
@@ -280,7 +280,7 @@ export const POST = withAuth(async (req: NextRequest, { orgId, userId }) => {
       status: "created",
       emailSent,
     });
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
   } catch (_error) {
     log.error("[clients/connections] Failed to invite", { error: "Internal server error" });
     return NextResponse.json({ error: "Failed to invite client" }, { status: 500 });

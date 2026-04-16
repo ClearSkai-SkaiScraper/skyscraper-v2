@@ -22,6 +22,15 @@ export default async function ProfileSettingsPage() {
       name: true,
       email: true,
       headshot_url: true,
+      phone: true,
+      title: true,
+      bio: true,
+      years_experience: true,
+      certifications: true,
+      specialties: true,
+      license_number: true,
+      license_state: true,
+      signature_url: true,
     },
   });
 
@@ -29,15 +38,15 @@ export default async function ProfileSettingsPage() {
     redirect("/");
   }
 
-  // Augment user data with empty values for fields not in the model
+  // Map DB fields to what the client component expects
   const userWithDefaults = {
     ...user,
-    phone: null,
-    title: null,
-    bio: null,
-    years_experience: null,
-    public_skills: null,
-    certifications: null,
+    phone: user.phone ?? null,
+    title: user.title ?? null,
+    bio: user.bio ?? null,
+    years_experience: user.years_experience ?? null,
+    public_skills: user.specialties ?? null,
+    certifications: user.certifications ?? null,
   };
 
   return (

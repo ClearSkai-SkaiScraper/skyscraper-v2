@@ -38,7 +38,7 @@ export const POST = withOrgScope(
 
       // Mark as completed
       const updatedTask = await prisma.tasks.update({
-        where: { id: taskId },
+        where: { id: taskId, orgId },
         data: {
           status: "DONE",
           completedAt: new Date(),
@@ -61,7 +61,7 @@ export const POST = withOrgScope(
                 title: `Task Completed: ${task.title}`,
                 taskId: task.id,
                 completedAt: new Date().toISOString(),
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
               } as unknown as any,
             },
           });

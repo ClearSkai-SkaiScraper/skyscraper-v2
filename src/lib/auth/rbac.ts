@@ -254,7 +254,7 @@ export async function getCurrentUserRole(): Promise<{
     return {
       userId,
       orgId: effectiveOrgId,
-      role: teamMember.role as TeamRole,
+      role: (teamMember.role?.toLowerCase() || "member") as TeamRole,
     };
   } catch (error) {
     logger.error("[RBAC] Failed to get current user role:", error);

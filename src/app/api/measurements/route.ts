@@ -6,6 +6,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
 import { withAuth } from "@/lib/auth/withAuth";
+import { APP_URL } from "@/lib/env";
 import { getGAFClient } from "@/lib/integrations/gaf";
 import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
@@ -102,8 +103,7 @@ export const POST = withAuth(async (req: NextRequest, { orgId, userId }) => {
             zip: body.zip ?? "",
           },
           orderType: orderType as "roof" | "siding" | "gutters" | "full",
-          // eslint-disable-next-line no-restricted-syntax
-          callbackUrl: `${process.env.NEXT_PUBLIC_APP_URL || "https://skaiscrape.com"}/api/measurements/webhook`,
+          callbackUrl: `${APP_URL}/api/measurements/webhook`,
           customerRef: order.id,
           urgency: body.urgency ?? "standard",
         });

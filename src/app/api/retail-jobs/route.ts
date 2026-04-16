@@ -2,7 +2,6 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 import { createId } from "@paralleldrive/cuid2";
-import { NextRequest } from "next/server";
 import { z } from "zod";
 
 import { withOrgScope } from "@/lib/auth/tenant";
@@ -141,7 +140,6 @@ export const POST = withOrgScope(async (request, { userId, orgId }) => {
 
 export const GET = withOrgScope(async (request, { userId, orgId }) => {
   try {
-
     const { searchParams } = new URL(request.url);
     const category = searchParams.get("category");
     const stage = searchParams.get("stage");

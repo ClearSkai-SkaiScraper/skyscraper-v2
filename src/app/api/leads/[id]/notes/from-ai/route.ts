@@ -66,7 +66,7 @@ const basePOST = async (req: Request, { params }: { params: { id: string } }) =>
 
     // Append to lead description or notes field
     const updatedLead = await prisma.leads.update({
-      where: { id: leadId },
+      where: { id: leadId, orgId },
       data: {
         description: (lead.description || "") + formattedNote,
       },

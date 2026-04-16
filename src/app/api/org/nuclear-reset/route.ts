@@ -55,7 +55,9 @@ export const POST = withAuth(
       const userName = user
         ? [user.firstName, user.lastName].filter(Boolean).join(" ") || "User"
         : "User";
-      const userEmail = user?.emailAddresses?.[0]?.emailAddress || `${userId}@skaiscrape.com`;
+      const userEmail =
+        user?.emailAddresses?.[0]?.emailAddress ||
+        `${userId}@${process.env.EMAIL_DOMAIN || "skaiscrape.com"}`;
 
       logger.debug("[NUCLEAR RESET] Starting for user:", userId);
 
@@ -212,7 +214,7 @@ async function seedDemoData(orgId: string) {
       propertyType: "residential",
       createdAt: now,
       updatedAt: now,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } as any,
   });
 
@@ -263,7 +265,7 @@ export const GET = withAuth(async (req: NextRequest, { userId }) => {
         orgName: m.Org?.name || "DELETED",
       })),
     });
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
   } catch (_error) {
     return NextResponse.json({ ok: false, error: "Internal server error" }, { status: 500 });
   }

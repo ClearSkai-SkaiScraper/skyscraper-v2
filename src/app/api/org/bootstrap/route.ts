@@ -87,7 +87,9 @@ export async function POST(req: Request) {
     const userName = user
       ? [user.firstName, user.lastName].filter(Boolean).join(" ") || "User"
       : "User";
-    const userEmail = user?.emailAddresses?.[0]?.emailAddress || `${userId}@skaiscrape.com`;
+    const userEmail =
+      user?.emailAddresses?.[0]?.emailAddress ||
+      `${userId}@${process.env.EMAIL_DOMAIN || "skaiscrape.com"}`;
 
     logger.debug(`[bootstrap] Starting for user: ${userId} clerkOrgId: ${clerkOrgId}`);
 
@@ -224,12 +226,12 @@ export async function POST(req: Request) {
           },
           update: { orgId: org.id, name: userName },
         });
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } catch (userErr: any) {
         // Handle email unique constraint conflict — another clerk user might have same email
         if (userErr?.code === "P2002" && userErr?.meta?.target?.includes?.("email")) {
           logger.warn(`[bootstrap] Email conflict for ${userEmail}, using fallback email`);
-          const fallbackEmail = `${userId}@skaiscrape.com`;
+          const fallbackEmail = `${userId}@${process.env.EMAIL_DOMAIN || "skaiscrape.com"}`;
           await tx.users.upsert({
             where: { clerkUserId: userId },
             create: {
@@ -260,7 +262,7 @@ export async function POST(req: Request) {
       orgName: result.org.name,
       created: result.created,
     });
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (error: any) {
     const errorMessage = error?.message || "Unknown error";
     const errorCode = error?.code || "UNKNOWN";

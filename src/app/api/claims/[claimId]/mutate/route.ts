@@ -36,6 +36,7 @@ import { canInviteClients } from "@/lib/auth/claimAccess";
 import { getOrgClaimOrThrow, OrgScopeError } from "@/lib/auth/orgScope";
 import { withAuth } from "@/lib/auth/withAuth";
 import { sendEmail, TEMPLATES } from "@/lib/email/resend";
+import { APP_URL } from "@/lib/env";
 import { logger } from "@/lib/logger";
 import { sendTemplatedNotification } from "@/lib/notifications/templates";
 import prisma from "@/lib/prisma";
@@ -248,7 +249,7 @@ async function handleUpdate(
   // Update property address if provided
   if (fields.propertyAddress !== undefined && updatedClaim.propertyId) {
     await prisma.properties.update({
-      where: { id: updatedClaim.propertyId },
+      where: { id: updatedClaim.propertyId, orgId },
       data: { street: fields.propertyAddress },
     });
   }
@@ -457,8 +458,7 @@ async function handleInviteClient(
   }
 
   // Send email
-  // eslint-disable-next-line no-restricted-syntax
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://skaiscrape.com";
+  const appUrl = APP_URL;
   const magicLink = `${appUrl}/client/accept-invite?token=${link.id}`;
 
   await sendEmail({

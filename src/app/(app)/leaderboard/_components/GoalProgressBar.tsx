@@ -488,7 +488,7 @@ export function GoalProgressBar() {
         </div>
       )}
 
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-5">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
         {GOAL_METRICS.map((metric) => {
           const source = editing ? editGoals.get(metric.category) : goalMap.get(metric.category);
           const goalValue = source?.[period] ?? 0;
@@ -535,7 +535,7 @@ export function GoalProgressBar() {
 
               {!editing && (
                 <>
-                  <div className="mb-1 h-2.5 w-full overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800">
+                  <div className="mb-1 h-3.5 w-full overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800">
                     <div
                       className={cn(
                         "h-full rounded-full bg-gradient-to-r transition-all duration-700",

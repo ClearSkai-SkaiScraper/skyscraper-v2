@@ -140,7 +140,7 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
 
       if (teamEmails.length > 0) {
         await resend.emails.send({
-          from: `${orgName} Orders <orders@skaiscrape.com>`,
+          from: process.env.RESEND_FROM_EMAIL || "noreply@skaiscrape.com",
           to: teamEmails.slice(0, 5), // Limit to 5 recipients
           subject: `Material Order Submitted: ${order.orderNumber}`,
           html: `
