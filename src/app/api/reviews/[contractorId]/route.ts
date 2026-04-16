@@ -12,8 +12,11 @@ import prisma from "@/lib/prisma";
 export async function GET(req: NextRequest, { params }: { params: { contractorId: string } }) {
   try {
     const { contractorId } = await params;
-    const page = parseInt(req.nextUrl.searchParams.get("page") || "1");
-    const limit = parseInt(req.nextUrl.searchParams.get("limit") || "10");
+    const page = Math.max(1, parseInt(req.nextUrl.searchParams.get("page") || "1") || 1);
+    const limit = Math.min(
+      50,
+      Math.max(1, parseInt(req.nextUrl.searchParams.get("limit") || "10") || 10)
+    );
     const skip = (page - 1) * limit;
 
     const [reviews, total] = await Promise.all([

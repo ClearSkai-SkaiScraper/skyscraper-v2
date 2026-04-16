@@ -67,3 +67,38 @@ export function calculateClientStrength(p: Record<string, unknown>): {
   const percent = Math.round((filled / checks.length) * 100);
   return { percent, missing: checks.filter((c) => !c.filled).map((c) => c.label) };
 }
+
+/**
+ * Inspector profile completeness — checks all editable fields on the inspector model.
+ */
+export function calculateInspectorStrength(p: Record<string, unknown>): {
+  percent: number;
+  missing: string[];
+} {
+  const checks: FieldCheck[] = [
+    { label: "First name", filled: !!p.firstName },
+    { label: "Last name", filled: !!p.lastName },
+    { label: "Email", filled: !!p.email },
+    { label: "Phone", filled: !!p.phone },
+    { label: "License number", filled: !!p.licenseNumber },
+    { label: "Certification level", filled: !!p.certificationLevel },
+    {
+      label: "Specialties",
+      filled: Array.isArray(p.specialties) && (p.specialties as unknown[]).length > 0,
+    },
+    { label: "Bio", filled: !!p.bio },
+    {
+      label: "Service area",
+      filled: Array.isArray(p.serviceArea) && (p.serviceArea as unknown[]).length > 0,
+    },
+    {
+      label: "Certifications",
+      filled: Array.isArray(p.certifications) && (p.certifications as unknown[]).length > 0,
+    },
+    { label: "Insurance info", filled: !!p.insuranceInfo },
+  ];
+
+  const filled = checks.filter((c) => c.filled).length;
+  const percent = Math.round((filled / checks.length) * 100);
+  return { percent, missing: checks.filter((c) => !c.filled).map((c) => c.label) };
+}

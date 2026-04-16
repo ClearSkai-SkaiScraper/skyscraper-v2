@@ -9,6 +9,7 @@ import { z } from "zod";
 
 import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
+import { checkRateLimit } from "@/lib/rate-limit";
 import { safeOrgContext } from "@/lib/safeOrgContext";
 
 const reviewSchema = z.object({
@@ -24,6 +25,12 @@ export async function POST(req: NextRequest) {
     const ctx = await safeOrgContext();
     if (!ctx.ok || !ctx.userId) {
       return NextResponse.json({ error: "Authentication required" }, { status: 401 });
+    }
+
+    // Rate limit: standard preset
+    const rl = await checkRateLimit(`reviews:create:${ctx.userId}`, "API");
+    if (!rl.success) {
+      return NextResponse.json({ error: "Too many requests" }, { status: 429 });
     }
 
     const body = await req.json();
@@ -45,6 +52,11 @@ export async function POST(req: NextRequest) {
 
     if (!profile) {
       return NextResponse.json({ error: "Contractor profile not found" }, { status: 404 });
+    }
+
+    // Prevent self-review
+    if (profile.userId === ctx.userId) {
+      return NextResponse.json({ error: "Cannot review yourself" }, { status: 400 });
     }
 
     // Check for duplicate review

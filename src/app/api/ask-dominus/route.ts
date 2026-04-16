@@ -6,6 +6,7 @@ import { z } from "zod";
 import { getOpenAI } from "@/lib/ai/client";
 import { saveChatMessage } from "@/lib/dominus/chat";
 import { logger } from "@/lib/logger";
+import { checkRateLimit } from "@/lib/rate-limit";
 
 export const dynamic = "force-dynamic";
 
@@ -18,7 +19,14 @@ const RequestSchema = z.object({
 });
 
 export async function POST(req: NextRequest) {
-  const { userId, orgId } = auth();
+  const { userId, orgId } = await auth();
+  if (!userId || !orgId) {
+    return NextResponse.json({ error: "Authentication required" }, { status: 401 });
+  }
+  const rl = await checkRateLimit(`dominus:${userId}`, "AI");
+  if (!rl.success) {
+    return NextResponse.json({ error: "Rate limit exceeded" }, { status: 429 });
+  }
   const isStreamHeader = req.headers.get("accept") === "text/event-stream";
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let bodyRaw: any = null;
