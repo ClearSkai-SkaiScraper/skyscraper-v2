@@ -57,7 +57,7 @@ export function calculateClientStrength(p: Record<string, unknown>): {
     { label: "Address", filled: !!p.address },
     { label: "City", filled: !!p.city },
     { label: "State", filled: !!p.state },
-    { label: "Zip", filled: !!p.zip },
+    { label: "Zip", filled: !!(p.postal || p.zip) },
     { label: "Bio", filled: !!p.bio },
     { label: "Profile photo", filled: !!p.avatarUrl },
     { label: "Property photo", filled: !!p.propertyPhotoUrl },
