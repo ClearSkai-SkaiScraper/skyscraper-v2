@@ -10,15 +10,11 @@ import {
   Building2,
   CheckCircle,
   Clock,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  Copy,
   ExternalLink,
   Globe,
   Mail,
   MapPin,
   Phone,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  Share2,
   Shield,
   Star,
   Users,
@@ -235,6 +231,7 @@ export default async function PublicCompanyPage({ params }: PublicCompanyPagePro
             fill
             className="object-cover"
             priority
+            unoptimized
           />
         ) : (
           <div className="absolute inset-0 bg-[url('/grid.svg')] opacity-20" />
@@ -573,16 +570,30 @@ export default async function PublicCompanyPage({ params }: PublicCompanyPagePro
             </Card>
 
             {/* Service Area */}
-            {company.serviceArea && (
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-sm">Service Area</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-sm text-slate-600">{company.serviceArea}</p>
-                </CardContent>
-              </Card>
-            )}
+            {company.serviceArea &&
+              (Array.isArray(company.serviceArea) ? company.serviceArea.length > 0 : true) && (
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-sm">Service Area</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    {Array.isArray(company.serviceArea) ? (
+                      <div className="flex flex-wrap gap-1.5">
+                        {company.serviceArea.map((area: string) => (
+                          <span
+                            key={area}
+                            className="inline-flex rounded-full bg-blue-50 px-2.5 py-0.5 text-xs font-medium text-blue-700 dark:bg-blue-900/30 dark:text-blue-300"
+                          >
+                            {area}
+                          </span>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="text-sm text-slate-600">{company.serviceArea}</p>
+                    )}
+                  </CardContent>
+                </Card>
+              )}
 
             {/* Services */}
             {company.specialties && company.specialties.length > 0 && (

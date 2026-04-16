@@ -87,6 +87,7 @@ interface CompanyData {
     address?: string;
     zip?: string;
     specialties?: string[];
+    serviceArea?: string[];
     yearsInBusiness?: number;
     licenseNumber?: string;
     verified?: boolean;
@@ -623,6 +624,30 @@ export default function CompanyPage() {
                           >
                             {s}
                           </Badge>
+                        ))}
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
+
+                {/* Service Area */}
+                {company.serviceArea && company.serviceArea.length > 0 && (
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2 text-lg">
+                        <MapPin className="h-5 w-5 text-green-600" />
+                        Service Area
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="flex flex-wrap gap-2">
+                        {company.serviceArea.map((area) => (
+                          <span
+                            key={area}
+                            className="inline-flex items-center rounded-full bg-green-50 px-3 py-1 text-sm font-medium text-green-700 ring-1 ring-inset ring-green-600/20 dark:bg-green-900/30 dark:text-green-300 dark:ring-green-500/30"
+                          >
+                            {area}
+                          </span>
                         ))}
                       </div>
                     </CardContent>

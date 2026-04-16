@@ -5,7 +5,9 @@ import {
   DollarSign,
   DoorOpen,
   FileText,
+  Minus,
   Pencil,
+  Plus,
   Save,
   Target,
   TrendingUp,
@@ -144,6 +146,8 @@ export function GoalProgressBar() {
   );
   const [saving, setSaving] = useState(false);
   const [loaded, setLoaded] = useState(false);
+  const [quickLog, setQuickLog] = useState<string | null>(null);
+  const [quickLogValue, setQuickLogValue] = useState(0);
 
   // Load goals from API (DB-backed) with localStorage fallback for migration
   useEffect(() => {
@@ -340,6 +344,36 @@ export function GoalProgressBar() {
     return value.toLocaleString();
   };
 
+  const handleQuickLog = useCallback(
+    async (category: string, delta: number) => {
+      if (delta === 0) return;
+      try {
+        const res = await fetch("/api/goals/log", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ category, value: delta, period }),
+        });
+        if (res.ok) {
+          // Optimistically update local stats
+          const metric = GOAL_METRICS.find((m) => m.category === category);
+          if (metric && stats) {
+            setStats((prev) =>
+              prev ? { ...prev, [metric.statKey]: prev[metric.statKey] + delta } : prev
+            );
+          }
+          toast.success(`+${delta.toLocaleString()} logged!`);
+        } else {
+          toast.error("Failed to log progress");
+        }
+      } catch {
+        toast.error("Failed to log progress");
+      }
+      setQuickLog(null);
+      setQuickLogValue(0);
+    },
+    [period, stats]
+  );
+
   if (!loaded) return null;
 
   if (goals.length === 0 && !editing) {
@@ -500,15 +534,79 @@ export function GoalProgressBar() {
               </div>
 
               {!editing && (
-                <div className="mb-1 h-2.5 w-full overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800">
-                  <div
-                    className={cn(
-                      "h-full rounded-full bg-gradient-to-r transition-all duration-700",
-                      progress >= 100 ? "from-emerald-500 to-emerald-400" : metric.gradient
-                    )}
-                    style={{ width: `${progress}%` }}
-                  />
-                </div>
+                <>
+                  <div className="mb-1 h-2.5 w-full overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800">
+                    <div
+                      className={cn(
+                        "h-full rounded-full bg-gradient-to-r transition-all duration-700",
+                        progress >= 100 ? "from-emerald-500 to-emerald-400" : metric.gradient
+                      )}
+                      style={{ width: `${progress}%` }}
+                    />
+                  </div>
+
+                  {/* Quick-log buttons */}
+                  {quickLog === metric.category ? (
+                    <div className="mt-1.5 flex items-center gap-1">
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setQuickLogValue((v) =>
+                            Math.max(0, v - (metric.format === "currency" ? 1000 : 1))
+                          )
+                        }
+                        className="flex h-6 w-6 items-center justify-center rounded bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700"
+                      >
+                        <Minus className="h-3 w-3" />
+                      </button>
+                      <input
+                        type="number"
+                        min={0}
+                        value={quickLogValue}
+                        onChange={(e) => setQuickLogValue(parseInt(e.target.value) || 0)}
+                        className="h-6 w-16 rounded border border-slate-200 px-1 text-center text-xs dark:border-slate-600 dark:bg-slate-800"
+                        autoFocus
+                      />
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setQuickLogValue((v) => v + (metric.format === "currency" ? 1000 : 1))
+                        }
+                        className="flex h-6 w-6 items-center justify-center rounded bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700"
+                      >
+                        <Plus className="h-3 w-3" />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleQuickLog(metric.category, quickLogValue)}
+                        className="ml-1 flex h-6 items-center gap-0.5 rounded bg-blue-600 px-2 text-[10px] font-semibold text-white hover:bg-blue-700"
+                      >
+                        <Save className="h-2.5 w-2.5" /> Log
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setQuickLog(null);
+                          setQuickLogValue(0);
+                        }}
+                        className="flex h-6 w-6 items-center justify-center rounded text-slate-400 hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-800"
+                      >
+                        <X className="h-3 w-3" />
+                      </button>
+                    </div>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setQuickLog(metric.category);
+                        setQuickLogValue(metric.format === "currency" ? 1000 : 1);
+                      }}
+                      className="mt-1 flex w-full items-center justify-center gap-1 rounded-md border border-dashed border-slate-200 py-0.5 text-[10px] font-medium text-muted-foreground hover:border-blue-300 hover:bg-blue-50/50 hover:text-blue-600 dark:border-slate-700 dark:hover:border-blue-700 dark:hover:bg-blue-900/20"
+                    >
+                      <Plus className="h-2.5 w-2.5" /> Log Progress
+                    </button>
+                  )}
+                </>
               )}
 
               {editing ? (

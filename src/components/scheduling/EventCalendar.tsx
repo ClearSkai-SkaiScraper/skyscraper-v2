@@ -100,7 +100,7 @@ export function EventCalendar({
   renderEventTooltip,
 }: EventCalendarProps) {
   const [currentDate, setCurrentDate] = useState(new Date());
-  const [viewMode, setViewMode] = useState<"month" | "week">("month");
+  const [viewMode, setViewMode] = useState<"month" | "week" | "day">("month");
   const [hoveredEvent, setHoveredEvent] = useState<CalendarEvent | null>(null);
   const [tooltipPos, setTooltipPos] = useState({ x: 0, y: 0 });
 
@@ -162,7 +162,8 @@ export function EventCalendar({
       setCurrentDate((prev) => {
         const d = new Date(prev);
         if (viewMode === "month") d.setMonth(d.getMonth() + dir);
-        else d.setDate(d.getDate() + dir * 7);
+        else if (viewMode === "week") d.setDate(d.getDate() + dir * 7);
+        else d.setDate(d.getDate() + dir);
         return d;
       });
     },
@@ -215,9 +216,14 @@ export function EventCalendar({
         {/* Day number */}
         <div className="flex items-center justify-between px-2.5 pt-2">
           <span
+            onClick={(e) => {
+              e.stopPropagation();
+              setCurrentDate(date);
+              setViewMode("day");
+            }}
             className={cn(
-              "flex h-7 w-7 items-center justify-center rounded-full text-xs font-semibold transition-colors",
-              isToday && "bg-blue-600 text-white shadow-sm shadow-blue-600/30",
+              "flex h-7 w-7 cursor-pointer items-center justify-center rounded-full text-xs font-semibold transition-colors hover:bg-blue-100 dark:hover:bg-blue-900/40",
+              isToday && "bg-blue-600 text-white shadow-sm shadow-blue-600/30 hover:bg-blue-700",
               !isToday && isCurrentMonth && "text-slate-700 dark:text-slate-300",
               !isCurrentMonth && "text-slate-400 dark:text-slate-600"
             )}
@@ -306,7 +312,14 @@ export function EventCalendar({
           <h2 className="min-w-[180px] text-center text-[15px] font-semibold text-slate-800 dark:text-slate-100">
             {viewMode === "month"
               ? monthLabel
-              : `Week of ${weekStart.toLocaleDateString("default", { month: "short", day: "numeric" })}`}
+              : viewMode === "week"
+                ? `Week of ${weekStart.toLocaleDateString("default", { month: "short", day: "numeric" })}`
+                : currentDate.toLocaleDateString("default", {
+                    weekday: "long",
+                    month: "long",
+                    day: "numeric",
+                    year: "numeric",
+                  })}
           </h2>
           <button
             onClick={() => navigate(1)}
@@ -324,7 +337,7 @@ export function EventCalendar({
             Today
           </button>
           <div className="flex overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm dark:border-white/10 dark:bg-white/5">
-            {(["week", "month"] as const).map((mode) => (
+            {(["day", "week", "month"] as const).map((mode) => (
               <button
                 key={mode}
                 onClick={() => setViewMode(mode)}
@@ -342,24 +355,181 @@ export function EventCalendar({
         </div>
       </div>
 
-      {/* ── Day-of-week headers ── */}
-      <div className="grid grid-cols-7 border-b border-slate-200/80 bg-slate-50/60 dark:border-white/[0.06] dark:bg-white/[0.015]">
-        {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((day) => (
-          <div
-            key={day}
-            className="px-2.5 py-2 text-center text-[11px] font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500"
-          >
-            {day}
-          </div>
-        ))}
-      </div>
+      {/* ── Day-of-week headers (month/week only) ── */}
+      {viewMode !== "day" && (
+        <div className="grid grid-cols-7 border-b border-slate-200/80 bg-slate-50/60 dark:border-white/[0.06] dark:bg-white/[0.015]">
+          {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((day) => (
+            <div
+              key={day}
+              className="px-2.5 py-2 text-center text-[11px] font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500"
+            >
+              {day}
+            </div>
+          ))}
+        </div>
+      )}
 
       {/* ── Grid body ── */}
-      <div className="grid grid-cols-7">
-        {viewMode === "month"
-          ? monthGrid.map((d) => renderDayCell(d, false))
-          : weekDays.map((d) => renderDayCell(d, true))}
-      </div>
+      {viewMode === "day" ? (
+        /* ── Apple-style Day View with hourly slots ── */
+        (() => {
+          const dayStr = currentDate.toISOString().split("T")[0];
+          const dayEvents = eventsByDate.get(dayStr) || [];
+          const hours = Array.from({ length: 24 }, (_, i) => i);
+          const now = new Date();
+          const isToday = dayStr === today;
+          const currentHour = now.getHours();
+          const currentMinute = now.getMinutes();
+
+          // Parse event time to hour
+          const getEventHour = (ev: CalendarEvent) => {
+            if (!ev.time) return -1;
+            const [h] = ev.time.split(":").map(Number);
+            return h;
+          };
+
+          // Group events by hour
+          const eventsByHour = new Map<number, CalendarEvent[]>();
+          const allDayEvents: CalendarEvent[] = [];
+          for (const ev of dayEvents) {
+            const h = getEventHour(ev);
+            if (h < 0) {
+              allDayEvents.push(ev);
+            } else {
+              if (!eventsByHour.has(h)) eventsByHour.set(h, []);
+              eventsByHour.get(h)!.push(ev);
+            }
+          }
+
+          const formatHour = (h: number) => {
+            if (h === 0) return "12 AM";
+            if (h < 12) return `${h} AM`;
+            if (h === 12) return "12 PM";
+            return `${h - 12} PM`;
+          };
+
+          return (
+            <div className="max-h-[700px] overflow-y-auto">
+              {/* All-day events */}
+              {allDayEvents.length > 0 && (
+                <div className="border-b border-slate-200/80 bg-slate-50/40 px-4 py-2 dark:border-white/[0.06] dark:bg-white/[0.02]">
+                  <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-400">
+                    All Day
+                  </span>
+                  <div className="mt-1 flex flex-wrap gap-1.5">
+                    {allDayEvents.map((ev) => {
+                      const colors = statusColors[ev.status] || FALLBACK_COLOR;
+                      return (
+                        <div
+                          key={ev.id}
+                          onClick={() => onEventClick?.(ev)}
+                          className={cn(
+                            "flex items-center gap-1.5 rounded-md px-2.5 py-1 text-[11px] font-medium",
+                            colors.bg,
+                            colors.text,
+                            onEventClick && "cursor-pointer hover:ring-1 hover:ring-blue-400/40"
+                          )}
+                        >
+                          <span className={cn("h-1.5 w-1.5 shrink-0 rounded-full", colors.dot)} />
+                          {ev.title}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
+              {/* Hourly grid */}
+              <div className="relative">
+                {/* Current time indicator */}
+                {isToday && (
+                  <div
+                    className="pointer-events-none absolute left-0 right-0 z-10 flex items-center"
+                    style={{ top: `${(currentHour * 60 + currentMinute) * (64 / 60)}px` }}
+                  >
+                    <div className="h-2.5 w-2.5 rounded-full bg-red-500 shadow-sm shadow-red-500/40" />
+                    <div className="h-[2px] flex-1 bg-red-500/70" />
+                  </div>
+                )}
+
+                {hours.map((hour) => {
+                  const hourEvents = eventsByHour.get(hour) || [];
+                  const isPast = isToday && hour < currentHour;
+
+                  return (
+                    <div
+                      key={hour}
+                      className={cn(
+                        "group flex min-h-[64px] border-b border-slate-100 dark:border-white/[0.04]",
+                        isPast && "opacity-60"
+                      )}
+                    >
+                      {/* Time label */}
+                      <div className="flex w-[72px] shrink-0 items-start justify-end border-r border-slate-200/60 pr-3 pt-1 dark:border-white/[0.06]">
+                        <span className="text-[11px] font-medium text-slate-400 dark:text-slate-500">
+                          {formatHour(hour)}
+                        </span>
+                      </div>
+
+                      {/* Events in this hour */}
+                      <div
+                        className={cn(
+                          "flex-1 px-3 py-1 transition-colors",
+                          "hover:bg-blue-50/30 dark:hover:bg-blue-500/[0.03]",
+                          onDateClick && "cursor-pointer"
+                        )}
+                        onClick={() => onDateClick?.(currentDate, hourEvents)}
+                      >
+                        {hourEvents.map((ev) => {
+                          const colors = statusColors[ev.status] || FALLBACK_COLOR;
+                          const duration = ev.duration || 1;
+
+                          return (
+                            <div
+                              key={ev.id}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                onEventClick?.(ev);
+                              }}
+                              onMouseEnter={(e) => handleChipEnter(e, ev)}
+                              onMouseLeave={handleChipLeave}
+                              className={cn(
+                                "mb-1 flex items-center gap-2 rounded-lg border-l-[3px] px-3 py-2 text-xs font-medium transition-all",
+                                colors.bg,
+                                colors.text,
+                                "border-l-blue-500",
+                                onEventClick &&
+                                  "cursor-pointer hover:shadow-md hover:ring-1 hover:ring-blue-400/30"
+                              )}
+                              style={{ minHeight: `${Math.max(duration * 56, 40)}px` }}
+                            >
+                              <span className={cn("h-2 w-2 shrink-0 rounded-full", colors.dot)} />
+                              <div className="min-w-0 flex-1">
+                                <p className="truncate font-semibold">{ev.title}</p>
+                                <p className="text-[10px] opacity-70">
+                                  {ev.time}
+                                  {ev.duration ? ` · ${ev.duration}h` : ""}
+                                  {ev.type ? ` · ${ev.type.replace(/_/g, " ")}` : ""}
+                                </p>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          );
+        })()
+      ) : (
+        <div className="grid grid-cols-7">
+          {viewMode === "month"
+            ? monthGrid.map((d) => renderDayCell(d, false))
+            : weekDays.map((d) => renderDayCell(d, true))}
+        </div>
+      )}
 
       {/* ── Floating tooltip (portal to body so it escapes overflow) ── */}
       {hoveredEvent &&

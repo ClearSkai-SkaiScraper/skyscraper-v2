@@ -111,7 +111,13 @@ export default async function CompanyDetailPage({
           {/* Cover Image */}
           <div className="relative h-48 overflow-hidden rounded-t-xl bg-gradient-to-r from-blue-600 to-indigo-700">
             {company.coverimage && (
-              <Image src={company.coverimage} alt={company.name} fill className="object-cover" />
+              <Image
+                src={company.coverimage}
+                alt={company.name}
+                fill
+                className="object-cover"
+                unoptimized
+              />
             )}
             {company.isVerified && (
               <div className="absolute right-4 top-4 flex items-center gap-2 rounded-full bg-white/90 px-3 py-1 text-sm font-medium text-blue-700">
@@ -403,16 +409,30 @@ export default async function CompanyDetailPage({
               </CardContent>
             </Card>
 
-            {company.serviceArea && (
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-sm">Service Area</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-sm text-slate-600">{company.serviceArea}</p>
-                </CardContent>
-              </Card>
-            )}
+            {company.serviceArea &&
+              (Array.isArray(company.serviceArea) ? company.serviceArea.length > 0 : true) && (
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-sm">Service Area</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    {Array.isArray(company.serviceArea) ? (
+                      <div className="flex flex-wrap gap-1.5">
+                        {company.serviceArea.map((area: string) => (
+                          <span
+                            key={area}
+                            className="inline-flex rounded-full bg-blue-50 px-2.5 py-0.5 text-xs font-medium text-blue-700 dark:bg-blue-900/30 dark:text-blue-300"
+                          >
+                            {area}
+                          </span>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="text-sm text-slate-600">{company.serviceArea}</p>
+                    )}
+                  </CardContent>
+                </Card>
+              )}
 
             {company.specialties && company.specialties.length > 0 && (
               <Card>

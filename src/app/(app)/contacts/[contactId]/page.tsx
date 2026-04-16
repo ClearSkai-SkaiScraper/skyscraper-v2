@@ -28,6 +28,7 @@ import prisma from "@/lib/prisma";
 import { safeOrgContext } from "@/lib/safeOrgContext";
 
 import { ContactBlockButton } from "./_components/ContactBlockButton";
+import { ContactDeleteButton } from "./_components/ContactDeleteButton";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -523,11 +524,7 @@ export default async function ContactDetailPage({ params }: Props) {
       {/* Block / Remove / Report Actions */}
       <div className="mt-4 flex gap-3 border-t border-slate-200 pt-4 dark:border-slate-700">
         <ContactBlockButton contactId={contact.id} isBlocked={isBlocked} />
-        <Link href={`/contacts/${contact.id}/edit`} className="flex-1">
-          <Button variant="destructive" size="sm" className="w-full gap-2 text-xs">
-            Remove Contact
-          </Button>
-        </Link>
+        <ContactDeleteButton contactId={contact.id} />
       </div>
     </div>
   );

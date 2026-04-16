@@ -35,11 +35,13 @@ export default async function LeaderboardAnalyticsPage() {
         icon={<Trophy className="h-5 w-5" />}
       />
 
-      {/* Goal Progress Bars — DB-backed (org_goals) with inline editing + presets */}
-      <GoalProgressBar />
-
       {/* Full Leaderboard Component with all tabs, filtering, and analytics */}
       <CompanyLeaderboard />
+
+      {/* Goal Progress Bars — DB-backed (org_goals) with inline editing + presets */}
+      <div className="mt-6">
+        <GoalProgressBar />
+      </div>
     </PageContainer>
   );
 }

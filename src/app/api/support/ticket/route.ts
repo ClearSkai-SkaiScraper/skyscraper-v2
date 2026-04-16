@@ -37,7 +37,7 @@ export const POST = withAuth(async (req: NextRequest, { userId, orgId }) => {
     try {
       // Try to send notification email to support team
       // eslint-disable-next-line no-restricted-syntax
-      const supportEmail = process.env.SUPPORT_EMAIL || "support@skaiscrape.com";
+      const supportEmail = process.env.SUPPORT_EMAIL || "damien.willingham@outlook.com";
 
       // This is a placeholder - in production, use your email service
       // eslint-disable-next-line no-restricted-syntax

@@ -15,6 +15,7 @@ import { getOrgLocation } from "@/lib/org/getOrgLocation";
 import { safeOrgContext } from "@/lib/safeOrgContext";
 import { getDashboardWeather } from "@/lib/weather/weatherstack";
 
+import { GoalProgressBar } from "@/app/(app)/leaderboard/_components/GoalProgressBar";
 import AIInsightsWidget from "./_components/AIInsightsWidget";
 import CompanyBrandingPreview from "./_components/CompanyBrandingPreview";
 import DOLWeatherWidget from "./_components/DOLWeatherWidget";
@@ -202,6 +203,19 @@ export default async function DashboardPage() {
               <CompanyLeaderboard className="max-h-[500px] overflow-y-auto" />
             </div>
           </AsyncBoundary>
+
+          {/* Goal Progress — Directly below Leaderboard */}
+          <div className="rounded-2xl border border-slate-200/40 bg-white/80 p-6 shadow-sm backdrop-blur-sm dark:border-slate-800/60 dark:bg-slate-900/60">
+            <GoalProgressBar />
+            <div className="mt-2 text-right">
+              <Link
+                href="/leaderboard"
+                className="text-xs font-medium text-blue-600 hover:text-blue-700 dark:text-blue-400"
+              >
+                View Full Leaderboard & Goals →
+              </Link>
+            </div>
+          </div>
 
           {/* AI Insights — Full Width Below Leaderboard */}
           <AsyncBoundary
