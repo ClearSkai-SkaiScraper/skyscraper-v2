@@ -4,6 +4,7 @@ import { z } from "zod";
 import { withAuth } from "@/lib/auth/withAuth";
 import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
+import { checkRateLimit } from "@/lib/rate-limit";
 
 /**
  * POST /api/agents/claims-analysis
@@ -19,6 +20,12 @@ const requestSchema = z.object({
 
 export const POST = withAuth(async (req, { userId, orgId }) => {
   try {
+    // Rate limit — AI preset (5/min)
+    const rl = await checkRateLimit(userId, "AI");
+    if (!rl.success) {
+      return NextResponse.json({ error: "Rate limit exceeded", retryAfter: 60 }, { status: 429 });
+    }
+
     // Parse and validate request body
     let body;
     try {

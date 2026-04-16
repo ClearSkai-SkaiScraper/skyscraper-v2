@@ -5,11 +5,18 @@ import { NextRequest, NextResponse } from "next/server";
 import { withAuth } from "@/lib/auth/withAuth";
 import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
+import { checkRateLimit } from "@/lib/rate-limit";
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export const POST = withAuth(async (request: NextRequest, { orgId, userId }) => {
   try {
+    // Rate limit — AI preset (5/min)
+    const rl = await checkRateLimit(userId, "AI");
+    if (!rl.success) {
+      return NextResponse.json({ error: "Rate limit exceeded", retryAfter: 60 }, { status: 429 });
+    }
+
     const body = await request.json();
     const { claimId } = body;
 

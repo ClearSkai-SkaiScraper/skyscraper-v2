@@ -61,11 +61,26 @@ export default async function TeamPage() {
     "team-stats",
     async () => {
       try {
-        const members = organizationId
+        // Count members from both users table AND user_organizations join table
+        const directMembers = organizationId
           ? await prisma.users.count({ where: { orgId: organizationId } }).catch(() => 0)
           : 0;
-        // user_organizations doesn't have status field - pending invites need different model
-        const invites = 0;
+        const orgMembers = organizationId
+          ? await prisma.user_organizations
+              .count({ where: { organizationId: organizationId } })
+              .catch(() => 0)
+          : 0;
+        const members = Math.max(directMembers, orgMembers);
+
+        // Count pending invitations from team_invitations table
+        const invites = organizationId
+          ? await prisma.$queryRaw<[{ count: number }]>`
+              SELECT count(*)::int as count FROM team_invitations
+              WHERE org_id = ${organizationId} AND status = 'pending' AND expires_at > NOW()
+            `
+              .then((r) => r[0]?.count ?? 0)
+              .catch(() => 0)
+          : 0;
         const startOfDay = new Date();
         startOfDay.setHours(0, 0, 0, 0);
         const activity =

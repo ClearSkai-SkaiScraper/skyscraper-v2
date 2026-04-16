@@ -9,19 +9,20 @@ export function getResend() {
     // eslint-disable-next-line no-restricted-syntax
     const apiKey = process.env.RESEND_API_KEY;
 
-    // During build time, return null if API key is missing
+    // During build time only, return null if API key is missing
     if (!apiKey) {
       if (
         // eslint-disable-next-line no-restricted-syntax
         process.env.NEXT_PHASE === "phase-production-build" ||
         // eslint-disable-next-line no-restricted-syntax
-        process.env.NODE_ENV === "production"
+        process.env.BUILD_PHASE === "1"
       ) {
         // Return a null placeholder during build
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         return null as any;
       }
-      throw new Error("RESEND_API_KEY is not set");
+      // In runtime (dev or production), throw so the error is visible
+      throw new Error("RESEND_API_KEY is not set — email delivery will fail");
     }
 
     try {

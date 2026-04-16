@@ -15,6 +15,7 @@ import { logCriticalAction } from "@/lib/audit/criticalActions";
 import { withOrgScope } from "@/lib/auth/tenant";
 import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
+import { checkRateLimit } from "@/lib/rate-limit";
 
 export const dynamic = "force-dynamic";
 
@@ -27,6 +28,12 @@ export const POST = withOrgScope(
     const { claimId } = params;
 
     try {
+      // Rate limit — AI preset (5/min)
+      const rl = await checkRateLimit(userId, "AI");
+      if (!rl.success) {
+        return NextResponse.json({ error: "Rate limit exceeded", retryAfter: 60 }, { status: 429 });
+      }
+
       // 1. Fetch the claim and carrier info (with property relation for location)
       const claim = await prisma.claims.findFirst({
         where: { id: claimId, orgId },
@@ -139,7 +146,7 @@ Be specific, practical, and actionable. Focus on information that helps contract
 
       // Redirect back to carrier tab
       return NextResponse.redirect(new URL(`/claims/${claimId}/carrier`, req.url), 303);
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       logger.error("[CARRIER_INTELLIGENCE] Error", { error: err.message, claimId });
       return apiError(500, "INTERNAL_ERROR", "Failed to generate carrier intelligence.");

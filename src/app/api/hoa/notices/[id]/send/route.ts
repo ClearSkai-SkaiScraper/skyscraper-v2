@@ -8,6 +8,7 @@ import { getOpenAI } from "@/lib/ai/client";
 import { withAuth } from "@/lib/auth/withAuth";
 import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
+import { checkRateLimit } from "@/lib/rate-limit";
 
 const sendNoticeSchema = z.object({
   deliveryMethod: z.enum(["email", "print", "door-to-door"]).default("print"),
@@ -20,6 +21,11 @@ const sendNoticeSchema = z.object({
  */
 export const POST = withAuth(async (request: NextRequest, { orgId, userId }, routeParams) => {
   try {
+    const rl = await checkRateLimit(userId, "AI");
+    if (!rl.success) {
+      return NextResponse.json({ error: "Rate limit exceeded" }, { status: 429 });
+    }
+
     const { id } = await routeParams.params;
 
     // Parse request body

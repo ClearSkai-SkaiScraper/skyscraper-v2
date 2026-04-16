@@ -14,6 +14,7 @@ import { withAuth } from "@/lib/auth/withAuth";
 import { APP_URL } from "@/lib/env";
 import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
+import { checkRateLimit } from "@/lib/rate-limit";
 
 /* ────────────────────────────────────────────────────────────── */
 /*  POST — Send invite                                           */
@@ -21,6 +22,11 @@ import prisma from "@/lib/prisma";
 
 export const POST = withAuth(async (req: NextRequest, { userId }) => {
   try {
+    const rl = await checkRateLimit(userId, "API");
+    if (!rl.success) {
+      return NextResponse.json({ error: "Rate limit exceeded" }, { status: 429 });
+    }
+
     const body = await req.json();
     const { email, firstName, lastName, role, title } = body;
 

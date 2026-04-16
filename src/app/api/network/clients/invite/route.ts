@@ -18,10 +18,16 @@ import { getResend } from "@/lib/email/resend";
 import { APP_URL } from "@/lib/env";
 import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
+import { checkRateLimit } from "@/lib/rate-limit";
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export const POST = withAuth(async (req: NextRequest, { orgId, userId }) => {
   try {
+    const rl = await checkRateLimit(userId, "API");
+    if (!rl.success) {
+      return NextResponse.json({ error: "Rate limit exceeded" }, { status: 429 });
+    }
+
     const body = await req.json();
     const { email, name, networkId } = body;
 

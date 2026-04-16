@@ -14,6 +14,7 @@ import { z } from "zod";
 import { withManager } from "@/lib/auth/withAuth";
 import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
+import { checkRateLimit } from "@/lib/rate-limit";
 
 const cancelSchema = z.object({
   reason: z
@@ -30,6 +31,11 @@ const cancelSchema = z.object({
 
 export const POST = withManager(async (req: NextRequest, { orgId, userId }) => {
   try {
+    const rl = await checkRateLimit(userId, "API");
+    if (!rl.success) {
+      return NextResponse.json({ error: "Rate limit exceeded" }, { status: 429 });
+    }
+
     const raw = await req.json();
     const parsed = cancelSchema.safeParse(raw);
     if (!parsed.success) {
@@ -48,7 +54,7 @@ export const POST = withManager(async (req: NextRequest, { orgId, userId }) => {
         cancellationFeedback: feedback || null,
         cancellationRequestedAt: new Date(),
         cancellationRequestedBy: userId,
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } as any,
     });
 

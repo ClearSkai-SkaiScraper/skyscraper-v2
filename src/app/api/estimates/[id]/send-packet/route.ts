@@ -10,10 +10,16 @@ import type { SendPacketRequestBody } from "@/lib/email/types";
 import { APP_URL } from "@/lib/env";
 import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
+import { checkRateLimit } from "@/lib/rate-limit";
 
 export const POST = withAuth(async (req: NextRequest, { orgId, userId }, routeParams) => {
   const { id: estimateId } = await routeParams!.params;
   try {
+    const rl = await checkRateLimit(userId, "API");
+    if (!rl.success) {
+      return NextResponse.json({ error: "Rate limit exceeded" }, { status: 429 });
+    }
+
     const body: SendPacketRequestBody = await req.json();
     const { to, cc, subject, message, recipientType } = body;
 

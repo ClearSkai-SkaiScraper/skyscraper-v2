@@ -13,11 +13,18 @@ import { withOrgScope } from "@/lib/auth/tenant";
 import { buildClaimContext } from "@/lib/claim/buildClaimContext";
 import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
+import { checkRateLimit } from "@/lib/rate-limit";
 
 const openai = getOpenAI();
 
 export const POST = withOrgScope(async (req, { userId, orgId }) => {
   try {
+    // Rate limit — AI preset (5/min)
+    const rl = await checkRateLimit(userId, "AI");
+    if (!rl.success) {
+      return NextResponse.json({ error: "Rate limit exceeded", retryAfter: 60 }, { status: 429 });
+    }
+
     const { claimId, message, threadId } = await req.json();
 
     if (!claimId || !message) {

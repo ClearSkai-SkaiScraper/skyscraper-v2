@@ -12,9 +12,15 @@ import { logCriticalAction } from "@/lib/audit/criticalActions";
 import { withAuth } from "@/lib/auth/withAuth";
 import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
+import { checkRateLimit } from "@/lib/rate-limit";
 
 export const POST = withAuth(async (request: NextRequest, { userId, orgId }) => {
   try {
+    const rl = await checkRateLimit(userId, "API");
+    if (!rl.success) {
+      return NextResponse.json({ error: "Rate limit exceeded" }, { status: 429 });
+    }
+
     const body = await request.json();
     const { type, email, emails, firstName, lastName, message } = body;
 
@@ -95,7 +101,7 @@ export const POST = withAuth(async (request: NextRequest, { userId, orgId }) => 
         });
 
         results.push({ email: invitee.email, status: "sent" });
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
       } catch (_err) {
         results.push({ email: invitee.email, status: "error", error: "Internal server error" });
       }

@@ -12,6 +12,7 @@ import type OpenAI from "openai";
 import { getOpenAI } from "@/lib/ai/client";
 import { requireAuth } from "@/lib/auth/requireAuth";
 import { logger } from "@/lib/observability/logger";
+import { checkRateLimit } from "@/lib/rate-limit";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -58,6 +59,12 @@ export async function POST(req: Request) {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { orgId, userId } = auth;
+
+    // Rate limit — AI preset (5/min)
+    const rl = await checkRateLimit(userId, "AI");
+    if (!rl.success) {
+      return NextResponse.json({ error: "Rate limit exceeded", retryAfter: 60 }, { status: 429 });
+    }
 
     const formData = await req.formData();
     const file = formData.get("file") as File | null;
@@ -185,9 +192,6 @@ export async function POST(req: Request) {
     return NextResponse.json({ success: true, data: parsed });
   } catch (error) {
     logger.error("[parse-scope] Error:", error);
-    return NextResponse.json(
-      { error: "Failed to parse scope of work" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Failed to parse scope of work" }, { status: 500 });
   }
 }

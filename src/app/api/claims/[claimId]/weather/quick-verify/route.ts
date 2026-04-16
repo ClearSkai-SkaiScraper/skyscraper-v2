@@ -34,6 +34,7 @@ import { getOrgClaimOrThrow, OrgScopeError } from "@/lib/auth/orgScope";
 import { withAuth } from "@/lib/auth/withAuth";
 import { onWeatherVerified } from "@/lib/claimiq/readiness-hooks";
 import prisma from "@/lib/prisma";
+import { checkRateLimit } from "@/lib/rate-limit";
 import { htmlToPdfBuffer } from "@/lib/reports/pdf-utils";
 import { capToEvents, fetchCAPAlerts } from "@/lib/weather/cap";
 import { fetchMesonetReports, mesonetToEvents } from "@/lib/weather/mesonet";
@@ -48,6 +49,12 @@ export const POST = withAuth(
     routeParams: { params: Promise<{ claimId: string }> }
   ) => {
     try {
+      // Rate limit — AI preset (5/min)
+      const rl = await checkRateLimit(userId, "AI");
+      if (!rl.success) {
+        return NextResponse.json({ error: "Rate limit exceeded", retryAfter: 60 }, { status: 429 });
+      }
+
       const { claimId } = await routeParams.params;
       await getOrgClaimOrThrow(orgId, claimId);
 

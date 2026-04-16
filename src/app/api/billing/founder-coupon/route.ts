@@ -12,12 +12,18 @@ import { NextRequest, NextResponse } from "next/server";
 
 import { withManager } from "@/lib/auth/withAuth";
 import { logger } from "@/lib/logger";
+import { checkRateLimit } from "@/lib/rate-limit";
 import { getStripeClient } from "@/lib/stripe";
 
 const COUPON_ID = "FOUNDER50";
 
 export const POST = withManager(async (req: NextRequest, { orgId, userId }) => {
   try {
+    const rl = await checkRateLimit(userId, "API");
+    if (!rl.success) {
+      return NextResponse.json({ error: "Rate limit exceeded" }, { status: 429 });
+    }
+
     const stripe = getStripeClient();
     if (!stripe) {
       return NextResponse.json({ error: "Stripe not configured" }, { status: 503 });

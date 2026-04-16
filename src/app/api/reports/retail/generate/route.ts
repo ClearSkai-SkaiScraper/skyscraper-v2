@@ -16,6 +16,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getOpenAI } from "@/lib/ai/client";
 import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
+import { checkRateLimit } from "@/lib/rate-limit";
 import { safeOrgContext } from "@/lib/safeOrgContext";
 
 export async function POST(req: NextRequest) {
@@ -23,6 +24,12 @@ export async function POST(req: NextRequest) {
     const ctx = await safeOrgContext();
     if (!ctx.ok || !ctx.orgId || !ctx.userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    // Rate limit — AI preset (5/min)
+    const rl = await checkRateLimit(ctx.userId, "AI");
+    if (!rl.success) {
+      return NextResponse.json({ error: "Rate limit exceeded", retryAfter: 60 }, { status: 429 });
     }
 
     const body = await req.json();
