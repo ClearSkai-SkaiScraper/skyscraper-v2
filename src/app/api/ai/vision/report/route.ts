@@ -20,6 +20,7 @@ import { getOpenAI } from "@/lib/ai/client";
 import { withAuth } from "@/lib/auth/withAuth";
 import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
+import { checkRateLimit } from "@/lib/rate-limit";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // SCHEMA
@@ -72,6 +73,10 @@ const ReportInputSchema = z.object({
 // ─────────────────────────────────────────────────────────────────────────────
 
 export const POST = withAuth(async (req: NextRequest, { orgId, userId }) => {
+  const rl = await checkRateLimit(userId, "AI");
+  if (!rl.success)
+    return NextResponse.json({ ok: false, error: "Rate limit exceeded" }, { status: 429 });
+
   const start = Date.now();
 
   try {

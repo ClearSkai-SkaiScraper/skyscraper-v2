@@ -1,9 +1,10 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 
+import { withOrgScope } from "@/lib/auth/tenant";
 import { onStageChange } from "@/lib/automation";
 import { getUserName } from "@/lib/clerk-utils";
 import { logger } from "@/lib/logger";
-import { getCurrentUserPermissions, requirePermission } from "@/lib/permissions";
+import { requirePermission } from "@/lib/permissions";
 import prisma from "@/lib/prisma";
 import { validateBody } from "@/lib/validation/middleware";
 import { moveStageSchema } from "@/lib/validation/pipeline-schemas";
@@ -14,14 +15,9 @@ export const revalidate = 0;
 // Prisma singleton imported from @/lib/db/prisma
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-export async function GET(request: NextRequest) {
+export const GET = withOrgScope(async (request, { userId, orgId }) => {
   try {
     await requirePermission("view_projects");
-    const { orgId } = await getCurrentUserPermissions();
-
-    if (!orgId) {
-      return Response.json({ error: "Organization not found" }, { status: 404 });
-    }
 
     // Get all projects grouped by stage
     const projects = await prisma.projects.findMany({
@@ -131,16 +127,11 @@ export async function GET(request: NextRequest) {
     logger.error("Error fetching pipeline:", error);
     return Response.json({ error: "Failed to fetch pipeline" }, { status: 500 });
   }
-}
+});
 
-export async function PUT(request: NextRequest) {
+export const PUT = withOrgScope(async (request, { userId, orgId }) => {
   try {
     await requirePermission("edit_projects");
-    const { orgId, userId } = await getCurrentUserPermissions();
-
-    if (!orgId || !userId) {
-      return Response.json({ error: "Authentication required" }, { status: 401 });
-    }
 
     const body = await validateBody(request, moveStageSchema);
     if (body instanceof NextResponse) return body;
@@ -173,7 +164,7 @@ export async function PUT(request: NextRequest) {
           description: `Project moved from ${oldStage || project.status} to ${newStage}`,
           userId,
           userName,
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } as any,
       });
 
@@ -191,4 +182,4 @@ export async function PUT(request: NextRequest) {
     logger.error("Error updating project stage:", error);
     return Response.json({ error: "Failed to update project stage" }, { status: 500 });
   }
-}
+});

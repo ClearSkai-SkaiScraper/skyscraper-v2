@@ -5,8 +5,9 @@ import { createId } from "@paralleldrive/cuid2";
 import { NextRequest } from "next/server";
 import { z } from "zod";
 
+import { withOrgScope } from "@/lib/auth/tenant";
 import { logger } from "@/lib/logger";
-import { getCurrentUserPermissions, requirePermission } from "@/lib/permissions";
+import { requirePermission } from "@/lib/permissions";
 import prisma from "@/lib/prisma";
 
 /**
@@ -39,16 +40,10 @@ const createRetailJobSchema = z.object({
     .optional(),
 });
 
-export async function POST(request: NextRequest) {
+export const POST = withOrgScope(async (request, { userId, orgId }) => {
   try {
     // Enforce RBAC — require permission to create leads/retail jobs
     await requirePermission("create_projects");
-
-    const { userId, orgId } = await getCurrentUserPermissions();
-
-    if (!orgId) {
-      return Response.json({ error: "Organization not found" }, { status: 404 });
-    }
 
     const body = await request.json();
     const validation = createRetailJobSchema.safeParse(body);
@@ -142,15 +137,10 @@ export async function POST(request: NextRequest) {
     logger.error("[RETAIL_JOBS] Error creating retail job:", error);
     return Response.json({ error: "Failed to create retail job" }, { status: 500 });
   }
-}
+});
 
-export async function GET(request: NextRequest) {
+export const GET = withOrgScope(async (request, { userId, orgId }) => {
   try {
-    const { orgId } = await getCurrentUserPermissions();
-
-    if (!orgId) {
-      return Response.json({ error: "Organization not found" }, { status: 404 });
-    }
 
     const { searchParams } = new URL(request.url);
     const category = searchParams.get("category");
@@ -188,4 +178,4 @@ export async function GET(request: NextRequest) {
     logger.error("[RETAIL_JOBS] Error fetching retail jobs:", error);
     return Response.json({ error: "Failed to fetch retail jobs" }, { status: 500 });
   }
-}
+});

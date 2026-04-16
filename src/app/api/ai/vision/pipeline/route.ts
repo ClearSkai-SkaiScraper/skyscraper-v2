@@ -32,6 +32,7 @@ import { type ComponentType, detectByComponent, type NormalizedDetection } from 
 import { withAuth } from "@/lib/auth/withAuth";
 import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
+import { checkRateLimit } from "@/lib/rate-limit";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // INPUT SCHEMA
@@ -143,6 +144,10 @@ interface PipelineResult {
 // ─────────────────────────────────────────────────────────────────────────────
 
 export const POST = withAuth(async (req: NextRequest, { orgId, userId }) => {
+  const rl = await checkRateLimit(userId, "AI");
+  if (!rl.success)
+    return NextResponse.json({ ok: false, error: "Rate limit exceeded" }, { status: 429 });
+
   const start = Date.now();
 
   try {

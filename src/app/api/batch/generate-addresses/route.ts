@@ -1,7 +1,7 @@
 export const dynamic = "force-dynamic";
 import { NextRequest, NextResponse } from "next/server";
 
-import { requireApiAuth } from "@/lib/auth/apiAuth";
+import { withOrgScope } from "@/lib/auth/tenant";
 import { logger } from "@/lib/logger";
 
 /**
@@ -16,9 +16,7 @@ import { logger } from "@/lib/logger";
  *
  * For MVP, we generate realistic mock addresses
  */
-export async function POST(req: NextRequest) {
-  try {
-    await requireApiAuth();
+export const POST = withOrgScope(async (req, { userId, orgId }) => {
 
     const body = await req.json();
     const { polygon, estimatedHomes = 100 } = body;
@@ -61,7 +59,7 @@ export async function POST(req: NextRequest) {
       { status: 500 }
     );
   }
-}
+});
 
 // Helper: Get city/state from coordinates (simplified)
 function getCityStateFromCoords(lat: number, lng: number) {

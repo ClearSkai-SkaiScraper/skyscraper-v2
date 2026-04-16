@@ -19,6 +19,7 @@ import { checkFailSafe, estimateMultiPassCost } from "@/lib/ai/damage-confidence
 import { analyzeImage } from "@/lib/ai/openai-vision";
 import { withAuth } from "@/lib/auth/withAuth";
 import { logger } from "@/lib/logger";
+import { checkRateLimit } from "@/lib/rate-limit";
 
 // Zod validation schema
 const BenchmarkRequestSchema = z.object({
@@ -52,6 +53,9 @@ interface BenchmarkResult {
 }
 
 export const POST = withAuth(async (req, { userId }) => {
+  const rl = await checkRateLimit(userId, "AI");
+  if (!rl.success) return NextResponse.json({ error: "Rate limit exceeded" }, { status: 429 });
+
   try {
     const body = await req.json();
 

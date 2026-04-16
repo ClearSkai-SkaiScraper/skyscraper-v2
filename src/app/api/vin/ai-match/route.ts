@@ -3,22 +3,17 @@
  * POST /api/vin/ai-match — Get AI-powered vendor suggestions
  */
 
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 
+import { withOrgScope } from "@/lib/auth/tenant";
 import { logger } from "@/lib/logger";
-import { getActiveOrgContext } from "@/lib/org/getActiveOrgContext";
 import prisma from "@/lib/prisma";
 import type { AiVendorSuggestion } from "@/lib/vendors/vin-types";
 
 export const dynamic = "force-dynamic";
 
-export async function POST(request: NextRequest) {
+export const POST = withOrgScope(async (request, { userId, orgId }) => {
   try {
-    const ctx = await getActiveOrgContext();
-    if (!ctx.ok) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
     const body = await request.json();
     const {
       tradeType,
@@ -140,7 +135,9 @@ export async function POST(request: NextRequest) {
       s.vendor.vendor_programs.some((p) => p.programType === "rebate")
     );
     if (vendorWithRebate) {
-      const rebate = vendorWithRebate.vendor.vendor_programs.find((p) => p.programType === "rebate");
+      const rebate = vendorWithRebate.vendor.vendor_programs.find(
+        (p) => p.programType === "rebate"
+      );
       suggestions.push({
         type: "material",
         title: `Manufacturer rebate available`,
@@ -202,7 +199,7 @@ export async function POST(request: NextRequest) {
     // Create workflow event for AI suggestion
     await prisma.vendor_workflow_events.create({
       data: {
-        orgId: ctx.orgId,
+        orgId,
         eventType: "ai_suggestion",
         entityType: "vendor",
         entityId: topVendor?.vendor.id || "none",
@@ -243,4 +240,4 @@ export async function POST(request: NextRequest) {
     logger.error("[VIN AI Match] Error:", error);
     return NextResponse.json({ error: "Failed to generate vendor matches" }, { status: 500 });
   }
-}
+});

@@ -6,28 +6,23 @@
  * DELETE /api/vin/cart — Remove cart item
  */
 
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 
+import { withOrgScope } from "@/lib/auth/tenant";
 import { logger } from "@/lib/logger";
-import { getActiveOrgContext } from "@/lib/org/getActiveOrgContext";
 import prisma from "@/lib/prisma";
 
 export const dynamic = "force-dynamic";
 
-export async function GET(request: NextRequest) {
+export const GET = withOrgScope(async (request, { userId, orgId }) => {
   try {
-    const ctx = await getActiveOrgContext();
-    if (!ctx.ok) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
     const { searchParams } = new URL(request.url);
     const status = searchParams.get("status") || "open";
     const claimId = searchParams.get("claimId");
 
     const where: Record<string, unknown> = {
-      orgId: ctx.orgId,
-      userId: ctx.userId,
+      orgId,
+      userId,
     };
 
     if (status !== "all") where.status = status;
@@ -81,15 +76,10 @@ export async function GET(request: NextRequest) {
     logger.error("[VIN Cart] Error:", error);
     return NextResponse.json({ error: "Failed to fetch carts" }, { status: 500 });
   }
-}
+});
 
-export async function POST(request: NextRequest) {
+export const POST = withOrgScope(async (request, { userId, orgId }) => {
   try {
-    const ctx = await getActiveOrgContext();
-    if (!ctx.ok) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
     const body = await request.json();
     const { action } = body;
 
@@ -97,8 +87,8 @@ export async function POST(request: NextRequest) {
     if (action === "create_cart") {
       const cart = await prisma.material_carts.create({
         data: {
-          orgId: ctx.orgId,
-          userId: ctx.userId,
+          orgId,
+          userId,
           name: body.name || "Untitled Cart",
           claimId: body.claimId,
           jobId: body.jobId,
@@ -134,7 +124,7 @@ export async function POST(request: NextRequest) {
 
       // Verify cart belongs to caller's org
       const ownerCart = await prisma.material_carts.findFirst({
-        where: { id: cartId, orgId: ctx.orgId },
+        where: { id: cartId, orgId },
       });
       if (!ownerCart) {
         return NextResponse.json({ error: "Cart not found" }, { status: 404 });
@@ -176,7 +166,7 @@ export async function POST(request: NextRequest) {
 
       // Verify cart belongs to caller's org
       const cart = await prisma.material_carts.findFirst({
-        where: { id: cartId, orgId: ctx.orgId },
+        where: { id: cartId, orgId },
         include: { material_cart_items: true },
       });
 
@@ -192,7 +182,7 @@ export async function POST(request: NextRequest) {
       let claimId = cart.claimId;
       if (!claimId) {
         const claim = await prisma.claims.findFirst({
-          where: { orgId: ctx.orgId },
+          where: { orgId },
           select: { id: true },
         });
         claimId = claim?.id || null;
@@ -202,7 +192,7 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: "No claim found to link order" }, { status: 400 });
       }
 
-      const orderCount = await prisma.materialOrder.count({ where: { orgId: ctx.orgId } });
+      const orderCount = await prisma.materialOrder.count({ where: { orgId } });
       const orderNumber = `MO-${new Date().getFullYear()}-${String(orderCount + 1).padStart(3, "0")}`;
 
       const total = cart.material_cart_items.reduce(
@@ -213,7 +203,7 @@ export async function POST(request: NextRequest) {
       const order = await prisma.materialOrder.create({
         data: {
           id: crypto.randomUUID(),
-          orgId: ctx.orgId,
+          orgId,
           claimId,
           orderNumber,
           vendor: cart.supplier || "custom",
@@ -250,7 +240,7 @@ export async function POST(request: NextRequest) {
       // Workflow event
       await prisma.vendor_workflow_events.create({
         data: {
-          orgId: ctx.orgId,
+          orgId,
           eventType: "cart_submitted",
           entityType: "material_cart",
           entityId: cartId,
@@ -272,15 +262,10 @@ export async function POST(request: NextRequest) {
     logger.error("[VIN Cart] Error:", error);
     return NextResponse.json({ error: "Failed to process cart action" }, { status: 500 });
   }
-}
+});
 
-export async function PUT(request: NextRequest) {
+export const PUT = withOrgScope(async (request, { orgId }) => {
   try {
-    const ctx = await getActiveOrgContext();
-    if (!ctx.ok) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
     const body = await request.json();
     const { itemId, quantity, unitPrice, notes } = body;
 
@@ -292,7 +277,7 @@ export async function PUT(request: NextRequest) {
     const existingItem = await prisma.material_cart_items.findFirst({
       where: {
         id: itemId,
-        material_carts: { orgId: ctx.orgId },
+        material_carts: { orgId },
       },
     });
     if (!existingItem) {
@@ -316,15 +301,10 @@ export async function PUT(request: NextRequest) {
     logger.error("[VIN Cart] Update error:", error);
     return NextResponse.json({ error: "Failed to update item" }, { status: 500 });
   }
-}
+});
 
-export async function DELETE(request: NextRequest) {
+export const DELETE = withOrgScope(async (request, { orgId }) => {
   try {
-    const ctx = await getActiveOrgContext();
-    if (!ctx.ok) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
     const { searchParams } = new URL(request.url);
     const itemId = searchParams.get("itemId");
     const cartId = searchParams.get("cartId");
@@ -332,7 +312,7 @@ export async function DELETE(request: NextRequest) {
     if (cartId) {
       // Verify cart belongs to caller's org before deleting
       const existing = await prisma.material_carts.findFirst({
-        where: { id: cartId, orgId: ctx.orgId },
+        where: { id: cartId, orgId },
       });
       if (!existing) {
         return NextResponse.json({ error: "Cart not found" }, { status: 404 });
@@ -346,7 +326,7 @@ export async function DELETE(request: NextRequest) {
       const existingItem = await prisma.material_cart_items.findFirst({
         where: {
           id: itemId,
-          material_carts: { orgId: ctx.orgId },
+          material_carts: { orgId },
         },
       });
       if (!existingItem) {
@@ -361,4 +341,4 @@ export async function DELETE(request: NextRequest) {
     logger.error("[VIN Cart] Delete error:", error);
     return NextResponse.json({ error: "Failed to delete" }, { status: 500 });
   }
-}
+});

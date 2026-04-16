@@ -10,12 +10,13 @@ export const dynamic = "force-dynamic";
 
 import { NextResponse } from "next/server";
 
+import { withOrgScope } from "@/lib/auth/tenant";
 import { logger } from "@/lib/logger";
 import { canUseRemoteView, hasMinRole, normalizeRole } from "@/lib/permissions/constants";
 import { resolveUserRole } from "@/lib/permissions/server";
 import prisma from "@/lib/prisma";
 
-export async function GET() {
+export const GET = withOrgScope(async (req, { userId, orgId }) => {
   try {
     const user = await resolveUserRole();
     if (!user) {
@@ -122,9 +123,9 @@ export async function GET() {
     }));
 
     return NextResponse.json({ members });
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (error: any) {
     logger.error("[RemoteView] Team fetch failed:", error);
     return NextResponse.json({ error: "Failed to load team members" }, { status: 500 });
   }
-}
+});

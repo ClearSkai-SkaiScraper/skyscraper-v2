@@ -8,9 +8,9 @@ export const dynamic = "force-dynamic";
  * claims, contacts, properties, pipeline stages, and leaderboard data.
  * RBAC: admin only.
  */
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 
-import { requireApiAuth } from "@/lib/auth/apiAuth";
+import { withAdmin } from "@/lib/auth/withAuth";
 import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 import { checkRateLimit } from "@/lib/rate-limit";
@@ -140,7 +140,7 @@ const LEAD_SOURCES = [
 ];
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-export async function POST(req: NextRequest) {
+export const POST = withAdmin(async (req, { userId, orgId }) => {
   // Block demo seeding in production
   // eslint-disable-next-line no-restricted-syntax
   if (process.env.NODE_ENV === "production" && process.env.ALLOW_DEMO_SEED !== "true") {
@@ -148,13 +148,6 @@ export async function POST(req: NextRequest) {
       { error: "Demo seeding is not available in production" },
       { status: 403 }
     );
-  }
-
-  const authResult = await requireApiAuth();
-  if (authResult instanceof NextResponse) return authResult;
-  const { orgId, userId } = authResult;
-  if (!orgId) {
-    return NextResponse.json({ error: "Organization required" }, { status: 400 });
   }
 
   const rl = await checkRateLimit(userId, "API");
@@ -251,7 +244,7 @@ export async function POST(req: NextRequest) {
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           leadSource: pick(LEAD_SOURCES) as any,
           updatedAt: daysAgo(Math.max(daysBack - 5, 1)),
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } as any,
       });
       counts.claims++;
@@ -274,7 +267,7 @@ export async function POST(req: NextRequest) {
             address: `${street}, ${city}, AZ`,
             notes: "DEMO_SEED",
             updatedAt: daysAgo(daysBack),
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
           } as any,
         });
         counts.leads++;
@@ -294,12 +287,12 @@ export async function POST(req: NextRequest) {
     logger.error("[SEED_DEMO] Error:", error);
     return NextResponse.json({ error: "Failed to seed demo data" }, { status: 500 });
   }
-}
+});
 
 /**
  * DELETE — Remove all demo seed data for the org
  */
-export async function DELETE(req: NextRequest) {
+export const DELETE = withAdmin(async (req, { orgId }) => {
   // Block demo deletion in production
   // eslint-disable-next-line no-restricted-syntax
   if (process.env.NODE_ENV === "production" && process.env.ALLOW_DEMO_SEED !== "true") {
@@ -307,13 +300,6 @@ export async function DELETE(req: NextRequest) {
       { error: "Demo operations are not available in production" },
       { status: 403 }
     );
-  }
-
-  const authResult = await requireApiAuth();
-  if (authResult instanceof NextResponse) return authResult;
-  const { orgId } = authResult;
-  if (!orgId) {
-    return NextResponse.json({ error: "Organization required" }, { status: 400 });
   }
 
   const url = new URL(req.url);
@@ -374,4 +360,4 @@ export async function DELETE(req: NextRequest) {
     logger.error("[SEED_DEMO] Delete error:", error);
     return NextResponse.json({ error: "Failed to delete demo data" }, { status: 500 });
   }
-}
+});

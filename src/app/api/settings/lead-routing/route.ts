@@ -6,6 +6,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 
 import { apiError } from "@/lib/apiError";
+import { withOrgScope } from "@/lib/auth/tenant";
 import { logger } from "@/lib/logger";
 import { requirePermission } from "@/lib/permissions";
 
@@ -29,7 +30,7 @@ const DEFAULT_SETTINGS = {
 };
 
 // GET - Fetch current settings
-export async function GET() {
+export const GET = withOrgScope(async (req, { userId, orgId }) => {
   try {
     await requirePermission("manage_users");
 
@@ -39,10 +40,10 @@ export async function GET() {
     logger.error("[GET /api/settings/lead-routing] Error:", error);
     return apiError(500, "INTERNAL_ERROR", "Failed to fetch settings");
   }
-}
+});
 
 // PUT - Update settings
-export async function PUT(request: Request) {
+export const PUT = withOrgScope(async (request, { userId, orgId }) => {
   try {
     await requirePermission("manage_users");
 
@@ -65,4 +66,4 @@ export async function PUT(request: Request) {
     logger.error("[PUT /api/settings/lead-routing] Error:", error);
     return apiError(500, "INTERNAL_ERROR", "Failed to save settings");
   }
-}
+});

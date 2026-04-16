@@ -20,6 +20,7 @@ import { getOpenAI } from "@/lib/ai/client";
 import { type ComponentType, detectByComponent, type NormalizedDetection } from "@/lib/ai/roboflow";
 import { withAuth } from "@/lib/auth/withAuth";
 import { logger } from "@/lib/logger";
+import { checkRateLimit } from "@/lib/rate-limit";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // SCHEMA
@@ -259,6 +260,10 @@ function getSuggestedFolder(category: string, subCategory?: string): string {
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export const POST = withAuth(async (req: NextRequest, { orgId, userId }) => {
+  const rl = await checkRateLimit(userId, "AI");
+  if (!rl.success)
+    return NextResponse.json({ ok: false, error: "Rate limit exceeded" }, { status: 429 });
+
   const start = Date.now();
 
   try {

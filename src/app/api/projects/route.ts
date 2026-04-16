@@ -2,26 +2,19 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 
+import { withOrgScope } from "@/lib/auth/tenant";
 import { onStageChange } from "@/lib/automation";
 import { logger } from "@/lib/logger";
-import { getCurrentUserPermissions, requirePermission } from "@/lib/permissions";
 import prisma from "@/lib/prisma";
 import { validateBody } from "@/lib/validation/middleware";
 import { createProjectSchema } from "@/lib/validation/pipeline-schemas";
 
 // Prisma singleton imported from @/lib/db/prisma
 
-export async function GET(request: NextRequest) {
+export const GET = withOrgScope(async (request, { orgId }) => {
   try {
-    await requirePermission("view_projects");
-    const { orgId } = await getCurrentUserPermissions();
-
-    if (!orgId) {
-      return Response.json({ error: "Organization not found" }, { status: 404 });
-    }
-
     const { searchParams } = new URL(request.url);
     const status = searchParams.get("status");
     const assignedTo = searchParams.get("assignedTo");
@@ -99,17 +92,10 @@ export async function GET(request: NextRequest) {
     logger.error("Error fetching projects:", error);
     return Response.json({ error: "Failed to fetch projects" }, { status: 500 });
   }
-}
+});
 
-export async function POST(request: NextRequest) {
+export const POST = withOrgScope(async (request, { orgId, userId }) => {
   try {
-    await requirePermission("create_projects");
-    const { orgId, userId } = await getCurrentUserPermissions();
-
-    if (!orgId || !userId) {
-      return Response.json({ error: "Authentication required" }, { status: 401 });
-    }
-
     const body = await validateBody(request, createProjectSchema);
     if (body instanceof NextResponse) return body;
     const {
@@ -184,4 +170,4 @@ export async function POST(request: NextRequest) {
     logger.error("Error creating project:", error);
     return Response.json({ error: "Failed to create project" }, { status: 500 });
   }
-}
+});

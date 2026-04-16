@@ -5,25 +5,19 @@ export const dynamic = "force-dynamic";
  * Replaces the old /api/copilot endpoint
  */
 
-// eslint-disable-next-line no-restricted-imports
-import { currentUser } from "@clerk/nextjs/server";
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 
 import { getOpenAI } from "@/lib/ai/client";
 import { ASSISTANT_SYSTEM_PROMPT } from "@/lib/ai/prompts/assistantPrompt";
+import { withOrgScope } from "@/lib/auth/tenant";
 import { buildClaimContext } from "@/lib/claim/buildClaimContext";
 import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 
 const openai = getOpenAI();
 
-export async function POST(req: NextRequest) {
+export const POST = withOrgScope(async (req, { userId, orgId }) => {
   try {
-    const user = await currentUser();
-    if (!user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
     const { claimId, message, threadId } = await req.json();
 
     if (!claimId || !message) {
@@ -34,11 +28,7 @@ export async function POST(req: NextRequest) {
     const claim = await prisma.claims.findFirst({
       where: {
         id: claimId,
-        Org: {
-          users: {
-            some: { clerkUserId: user.id },
-          },
-        },
+        orgId,
       },
     });
 
@@ -72,13 +62,13 @@ export async function POST(req: NextRequest) {
     // Poll for completion
     let runStatus = await openai.beta.threads.runs.retrieve(run.id, {
       thread_id: actualThreadId,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } as any);
     while (runStatus.status === "in_progress" || runStatus.status === "queued") {
       await new Promise((resolve) => setTimeout(resolve, 1000));
       runStatus = await openai.beta.threads.runs.retrieve(run.id, {
         thread_id: actualThreadId,
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } as any);
     }
 
@@ -101,4 +91,4 @@ export async function POST(req: NextRequest) {
     logger.error("[AI Assistant] Error:", error);
     return NextResponse.json({ error: "Failed to process AI request" }, { status: 500 });
   }
-}
+});

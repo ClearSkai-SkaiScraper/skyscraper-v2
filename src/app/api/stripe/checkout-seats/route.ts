@@ -16,15 +16,15 @@ export const dynamic = "force-dynamic";
 
 // eslint-disable-next-line no-restricted-imports
 import { currentUser } from "@clerk/nextjs/server";
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 
+import { withOrgScope } from "@/lib/auth/tenant";
 import { validateSeatCount } from "@/lib/billing/seat-pricing";
 import { logger } from "@/lib/logger";
-import { resolveOrgSafe } from "@/lib/org/resolveOrg";
 import prisma from "@/lib/prisma";
 import { getStripeClient } from "@/lib/stripe";
 
-export async function POST(req: NextRequest) {
+export const POST = withOrgScope(async (req, { userId, orgId }) => {
   try {
     const body = await req.json();
     const seatCount = Number(body.seatCount);
@@ -35,24 +35,8 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: v.error }, { status: 400 });
     }
 
-    // Check if user is authenticated
+    // Auth and org are already resolved by withOrgScope
     const user = await currentUser();
-    if (!user) {
-      return NextResponse.json({ requiresAuth: true, seats: seatCount });
-    }
-
-    // Resolve org
-    const orgCtx = await resolveOrgSafe();
-    const orgId = orgCtx?.orgId;
-
-    if (!orgId) {
-      // User is signed in but has no org yet — redirect to sign-up/onboarding
-      return NextResponse.json({
-        requiresAuth: true,
-        seats: seatCount,
-        message: "Please complete onboarding first",
-      });
-    }
 
     // Check for existing active subscription
     const existing = await prisma.subscription.findUnique({
@@ -90,11 +74,11 @@ export async function POST(req: NextRequest) {
     let stripeCustomerId = org?.stripeCustomerId;
 
     if (!stripeCustomerId) {
-      const email = user.emailAddresses[0]?.emailAddress || "";
+      const email = user?.emailAddresses[0]?.emailAddress || "";
       const customer = await stripe.customers.create({
         email,
         name: org?.name || `Org ${orgId}`,
-        metadata: { orgId, userId: user.id },
+        metadata: { orgId, userId },
       });
       stripeCustomerId = customer.id;
 
@@ -130,14 +114,14 @@ export async function POST(req: NextRequest) {
       cancel_url: `${appUrl}/pricing?checkout=cancelled`,
       metadata: {
         orgId,
-        userId: user.id,
+        userId,
         seatCount: String(seatCount),
       },
     });
 
     logger.info("[STRIPE_CHECKOUT_SEATS]", {
       orgId,
-      userId: user.id,
+      userId,
       seatCount,
       sessionId: session.id,
     });
@@ -150,4 +134,4 @@ export async function POST(req: NextRequest) {
       { status: 500 }
     );
   }
-}
+});

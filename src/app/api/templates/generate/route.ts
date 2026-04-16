@@ -4,10 +4,10 @@
  */
 
 import fs from "fs/promises";
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import path from "path";
 
-import { requireApiAuth } from "@/lib/auth/apiAuth";
+import { withOrgScope } from "@/lib/auth/tenant";
 import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 import { renderTemplateToPdf } from "@/lib/templates/renderer";
@@ -22,20 +22,8 @@ interface GenerateRequestBody {
   customTitle?: string;
 }
 
-export async function POST(req: NextRequest) {
+export const POST = withOrgScope(async (req, { userId, orgId }) => {
   try {
-    // Authenticate
-    const authResult = await requireApiAuth();
-    if (authResult instanceof NextResponse) {
-      return authResult;
-    }
-
-    const { orgId, userId } = authResult;
-
-    if (!orgId || !userId) {
-      return NextResponse.json({ error: "Organization and user required" }, { status: 400 });
-    }
-
     // Parse request body
     const body: GenerateRequestBody = await req.json();
     const { templateId, claimId, customTitle } = body;
@@ -135,7 +123,7 @@ export async function POST(req: NextRequest) {
     let templateHtml: string;
     try {
       templateHtml = await fs.readFile(templateHtmlPath, "utf-8");
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (_error) {
       return NextResponse.json({ error: "Template HTML not found" }, { status: 500 });
     }
@@ -146,7 +134,7 @@ export async function POST(req: NextRequest) {
     try {
       pdfThemeCss = await fs.readFile(pdfThemePath, "utf-8");
       templateHtml = templateHtml.replace("/* INJECT: pdf-theme.css */", pdfThemeCss);
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (_error) {
       logger.warn("PDF theme CSS not found, continuing without it");
     }
@@ -225,4 +213,4 @@ export async function POST(req: NextRequest) {
       { status: 500 }
     );
   }
-}
+});

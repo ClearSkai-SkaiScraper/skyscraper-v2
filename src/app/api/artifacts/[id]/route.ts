@@ -1,25 +1,20 @@
 export const dynamic = "force-dynamic";
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 
+import { withOrgScope } from "@/lib/auth/tenant";
 import { logger } from "@/lib/logger";
-import { getActiveOrgContext } from "@/lib/org/getActiveOrgContext";
 import prisma from "@/lib/prisma";
 
 /**
  * GET /api/artifacts/[id]
  * Get a single artifact by ID
  */
-export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+export const GET = withOrgScope(async (req, { orgId }, routeCtx) => {
   try {
-    const orgResult = await getActiveOrgContext();
-    if (!orgResult.ok) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    const { id } = await params;
+    const { id } = await (routeCtx as { params: Promise<{ id: string }> }).params;
 
     const artifact = await prisma.generatedArtifact.findFirst({
-      where: { id, orgId: orgResult.orgId! },
+      where: { id, orgId },
     });
 
     if (!artifact) {
@@ -31,24 +26,19 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
     logger.error("Error fetching artifact:", error);
     return NextResponse.json({ error: "Failed to fetch artifact" }, { status: 500 });
   }
-}
+});
 
 /**
  * PATCH /api/artifacts/[id]
  * Update an artifact
  */
-export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+export const PATCH = withOrgScope(async (req, { orgId }, routeCtx) => {
   try {
-    const orgResult = await getActiveOrgContext();
-    if (!orgResult.ok) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    const { id } = await params;
+    const { id } = await (routeCtx as { params: Promise<{ id: string }> }).params;
     const body = await req.json();
 
     const artifact = await prisma.generatedArtifact.updateMany({
-      where: { id, orgId: orgResult.orgId! },
+      where: { id, orgId },
       data: {
         ...(body.title && { title: body.title }),
         ...(body.content !== undefined && { content: body.content }),
@@ -67,23 +57,18 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     logger.error("Error updating artifact:", error);
     return NextResponse.json({ error: "Failed to update artifact" }, { status: 500 });
   }
-}
+});
 
 /**
  * DELETE /api/artifacts/[id]
  * Delete an artifact
  */
-export async function DELETE(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+export const DELETE = withOrgScope(async (req, { orgId }, routeCtx) => {
   try {
-    const orgResult = await getActiveOrgContext();
-    if (!orgResult.ok) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    const { id } = await params;
+    const { id } = await (routeCtx as { params: Promise<{ id: string }> }).params;
 
     const result = await prisma.generatedArtifact.deleteMany({
-      where: { id, orgId: orgResult.orgId! },
+      where: { id, orgId },
     });
 
     if (result.count === 0) {
@@ -95,4 +80,4 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
     logger.error("Error deleting artifact:", error);
     return NextResponse.json({ error: "Failed to delete artifact" }, { status: 500 });
   }
-}
+});

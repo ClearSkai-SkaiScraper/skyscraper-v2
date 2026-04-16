@@ -2,7 +2,7 @@ export const dynamic = "force-dynamic";
 
 import { NextResponse } from "next/server";
 
-import { requireApiAuth } from "@/lib/auth/apiAuth";
+import { withOrgScope } from "@/lib/auth/tenant";
 import { generateContactSlug } from "@/lib/generateContactSlug";
 import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
@@ -13,15 +13,7 @@ import { checkRateLimit } from "@/lib/rate-limit";
  * Creates sample client + property + claim for testing
  * Clearly marked as "SAMPLE" to avoid confusion
  */
-export async function POST() {
-  const authResult = await requireApiAuth();
-  if (authResult instanceof NextResponse) return authResult;
-
-  const { orgId, userId } = authResult;
-  if (!orgId) {
-    return NextResponse.json({ error: "Organization required." }, { status: 400 });
-  }
-
+export const POST = withOrgScope(async (req, { userId, orgId }) => {
   const rl = await checkRateLimit(userId, "AUTH");
   if (!rl.success) {
     return NextResponse.json(
@@ -108,21 +100,13 @@ export async function POST() {
     logger.error("[CREATE_SAMPLE] Error:", error);
     return NextResponse.json({ error: "Failed to create sample data" }, { status: 500 });
   }
-}
+});
 
 /**
  * DELETE /api/onboarding/create-sample
  * Deletes all sample data for the organization
  */
-export async function DELETE() {
-  const authResult = await requireApiAuth();
-  if (authResult instanceof NextResponse) return authResult;
-
-  const { orgId } = authResult;
-  if (!orgId) {
-    return NextResponse.json({ error: "Organization required." }, { status: 400 });
-  }
-
+export const DELETE = withOrgScope(async (req, { orgId }) => {
   try {
     // Find sample contact
     const sampleContact = await prisma.contacts.findFirst({
@@ -157,4 +141,4 @@ export async function DELETE() {
     logger.error("[DELETE_SAMPLE] Error:", error);
     return NextResponse.json({ error: "Failed to delete sample data" }, { status: 500 });
   }
-}
+});

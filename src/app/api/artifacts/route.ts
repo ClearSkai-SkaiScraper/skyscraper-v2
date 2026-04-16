@@ -1,27 +1,22 @@
 export const dynamic = "force-dynamic";
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 
+import { withOrgScope } from "@/lib/auth/tenant";
 import { logger } from "@/lib/logger";
-import { getActiveOrgContext } from "@/lib/org/getActiveOrgContext";
 import prisma from "@/lib/prisma";
 
 /**
  * GET /api/artifacts
  * List artifacts with optional filters
  */
-export async function GET(req: NextRequest) {
+export const GET = withOrgScope(async (req, { orgId }) => {
   try {
-    const orgResult = await getActiveOrgContext();
-    if (!orgResult.ok) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
     const { searchParams } = new URL(req.url);
     const claimId = searchParams.get("claimId");
     const type = searchParams.get("type");
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const where: any = { orgId: orgResult.orgId };
+    const where: any = { orgId };
     if (claimId) where.claimId = claimId;
     if (type) where.type = type;
 
@@ -39,19 +34,14 @@ export async function GET(req: NextRequest) {
     logger.error("Error fetching artifacts:", error);
     return NextResponse.json({ error: "Failed to fetch artifacts" }, { status: 500 });
   }
-}
+});
 
 /**
  * POST /api/artifacts
  * Create a new artifact
  */
-export async function POST(req: NextRequest) {
+export const POST = withOrgScope(async (req, { orgId }) => {
   try {
-    const orgResult = await getActiveOrgContext();
-    if (!orgResult.ok) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
     const body = await req.json();
     const { claimId, type, title, content, fileUrl, model, tokensUsed } = body;
 
@@ -61,7 +51,7 @@ export async function POST(req: NextRequest) {
 
     const artifact = await prisma.generatedArtifact.create({
       data: {
-        orgId: orgResult.orgId!,
+        orgId,
         claimId: claimId || null,
         type,
         title,
@@ -78,4 +68,4 @@ export async function POST(req: NextRequest) {
     logger.error("Error creating artifact:", error);
     return NextResponse.json({ error: "Failed to create artifact" }, { status: 500 });
   }
-}
+});

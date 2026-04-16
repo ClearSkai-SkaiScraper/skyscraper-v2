@@ -9,8 +9,6 @@
  * Returns: raw YOLO detections + timing + config status
  */
 
-// eslint-disable-next-line no-restricted-imports
-import { auth } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
 
 import {
@@ -20,18 +18,17 @@ import {
   isRoboflowConfigured,
   type NormalizedDetection,
 } from "@/lib/ai/roboflow";
+import { withAdmin } from "@/lib/auth/withAuth";
 import { logger } from "@/lib/logger";
+import { checkRateLimit } from "@/lib/rate-limit";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
 
-export async function POST(request: NextRequest) {
+export const POST = withAdmin(async (request: NextRequest, { userId }) => {
   try {
-    // eslint-disable-next-line @typescript-eslint/await-thenable
-    const { userId } = await auth();
-    if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    const rl = await checkRateLimit(userId, "AI");
+    if (!rl.success) return NextResponse.json({ error: "Rate limit exceeded" }, { status: 429 });
 
     const body = await request.json();
     const {
@@ -46,29 +43,9 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "imageUrl is required" }, { status: 400 });
     }
 
-    // ── Config status ──────────────────────────────────────────────────────
     const config = {
       roboflowConfigured: isRoboflowConfigured(),
-      // eslint-disable-next-line no-restricted-syntax
       apiKeySet: !!process.env.ROBOFLOW_API_KEY,
-      // eslint-disable-next-line no-restricted-syntax
-      apiKeyPrefix: process.env.ROBOFLOW_API_KEY
-        // eslint-disable-next-line no-restricted-syntax
-        ? `${process.env.ROBOFLOW_API_KEY.slice(0, 4)}...`
-        : null,
-      // eslint-disable-next-line no-restricted-syntax
-      roofModel: process.env.ROBOFLOW_ROOF_MODEL || "roof-damage-detection/3 (default)",
-      // eslint-disable-next-line no-restricted-syntax
-      hailModel: process.env.ROBOFLOW_HAIL_MODEL || "roof-hail-damage/3 (default)",
-      // eslint-disable-next-line no-restricted-syntax
-      windModel: process.env.ROBOFLOW_WIND_MODEL || "roof-wind-damage/5 (default)",
-      // eslint-disable-next-line no-restricted-syntax
-      shingleModel: process.env.ROBOFLOW_SHINGLE_MODEL || "roof-damage/1 (default)",
-      // eslint-disable-next-line no-restricted-syntax
-      useLocalInference: process.env.USE_LOCAL_INFERENCE !== "false",
-      // eslint-disable-next-line no-restricted-syntax
-      inferenceUrl: process.env.ROBOFLOW_INFERENCE_URL || "http://localhost:9001",
-      // eslint-disable-next-line no-restricted-syntax
       demoMode: process.env.ROBOFLOW_DEMO_MODE === "true",
     };
 
@@ -148,78 +125,15 @@ export async function POST(request: NextRequest) {
       { status: 500 }
     );
   }
-}
+});
 
 /**
- * GET /api/ai/debug/yolo — quick config check (no image required)
+ * GET /api/ai/debug/yolo — quick config check (admin only)
  */
-export async function GET() {
-  // eslint-disable-next-line @typescript-eslint/await-thenable
-  const { userId } = await auth();
-  if (!userId) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
-
+export const GET = withAdmin(async () => {
   return NextResponse.json({
     roboflowConfigured: isRoboflowConfigured(),
-    // eslint-disable-next-line no-restricted-syntax
     apiKeySet: !!process.env.ROBOFLOW_API_KEY,
-    // eslint-disable-next-line no-restricted-syntax
-    apiKeyPrefix: process.env.ROBOFLOW_API_KEY
-      // eslint-disable-next-line no-restricted-syntax
-      ? `${process.env.ROBOFLOW_API_KEY.slice(0, 4)}...`
-      : null,
-    // eslint-disable-next-line no-restricted-syntax
-    roofModel: process.env.ROBOFLOW_ROOF_MODEL || "roof-damage-detection/3 (default)",
-    // eslint-disable-next-line no-restricted-syntax
-    hailModel: process.env.ROBOFLOW_HAIL_MODEL || "roof-hail-damage/3 (default)",
-    // eslint-disable-next-line no-restricted-syntax
-    windModel: process.env.ROBOFLOW_WIND_MODEL || "roof-wind-damage/5 (default)",
-    // eslint-disable-next-line no-restricted-syntax
-    shingleModel: process.env.ROBOFLOW_SHINGLE_MODEL || "roof-damage/1 (default)",
-    // eslint-disable-next-line no-restricted-syntax
-    useLocalInference: process.env.USE_LOCAL_INFERENCE !== "false",
-    // eslint-disable-next-line no-restricted-syntax
-    inferenceUrl: process.env.ROBOFLOW_INFERENCE_URL || "http://localhost:9001",
-    // eslint-disable-next-line no-restricted-syntax
     demoMode: process.env.ROBOFLOW_DEMO_MODE === "true",
-    availableModels: [
-      "roof_damage",
-      "roof_hail",
-      "roof_wind",
-      "roof_shingle",
-      "soft_metal_damage",
-      "gutter_damage",
-      "crack_wall",
-      "crack_concrete",
-      "window",
-      "door",
-      "hvac_rooftop",
-      "water_damage",
-      "mold",
-      "siding_damage",
-      "general_damage",
-    ],
-    availableComponents: [
-      "roof",
-      "siding",
-      "stucco",
-      "gutter",
-      "hvac",
-      "window",
-      "screen",
-      "fence",
-      "deck",
-      "soffit_fascia",
-      "chimney",
-      "skylight",
-      "door",
-      "wall",
-      "floor",
-      "ceiling",
-      "interior",
-      "foundation",
-      "general",
-    ],
   });
-}
+});

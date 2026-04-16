@@ -3,7 +3,7 @@ export const dynamic = "force-dynamic";
 
 import { NextResponse } from "next/server";
 
-import { requireApiAuth } from "@/lib/auth/apiAuth";
+import { withOrgScope } from "@/lib/auth/tenant";
 import { logger } from "@/lib/logger";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { pool } from "@/server/db";
@@ -12,15 +12,7 @@ import { pool } from "@/server/db";
  * POST /api/support/tickets
  * Create a new support ticket (bug report, feature request, or general support)
  */
-export async function POST(req: Request) {
-  const authResult = await requireApiAuth();
-  if (authResult instanceof NextResponse) return authResult;
-
-  const { orgId, userId } = authResult;
-  if (!orgId) {
-    return NextResponse.json({ error: "Organization required." }, { status: 400 });
-  }
-
+export const POST = withOrgScope(async (req, { userId, orgId }) => {
   // Rate limit to prevent spam
   const rl = await checkRateLimit(userId, "AI");
   if (!rl.success) {
@@ -110,21 +102,13 @@ export async function POST(req: Request) {
     logger.error("[SUPPORT_TICKET] Error:", error);
     return NextResponse.json({ error: "Failed to create support ticket" }, { status: 500 });
   }
-}
+});
 
 /**
  * GET /api/support/tickets
  * Get support tickets for current org
  */
-export async function GET() {
-  const authResult = await requireApiAuth();
-  if (authResult instanceof NextResponse) return authResult;
-
-  const { orgId } = authResult;
-  if (!orgId) {
-    return NextResponse.json({ error: "Organization required." }, { status: 400 });
-  }
-
+export const GET = withOrgScope(async (req, { orgId }) => {
   try {
     const result = await pool.query(
       `
@@ -143,4 +127,4 @@ export async function GET() {
     logger.error("[SUPPORT_TICKETS_GET] Error:", error);
     return NextResponse.json({ tickets: [] });
   }
-}
+});

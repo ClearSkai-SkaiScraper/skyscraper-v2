@@ -8,18 +8,11 @@ export const dynamic = "force-dynamic";
 import { Prisma } from "@prisma/client";
 import { NextResponse } from "next/server";
 
-import { requireApiAuth } from "@/lib/auth/apiAuth";
+import { withOrgScope } from "@/lib/auth/tenant";
 import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 
-export async function POST(req: Request) {
-  const authResult = await requireApiAuth();
-  if (authResult instanceof NextResponse) return authResult;
-  const { orgId } = authResult;
-  if (!orgId) {
-    return NextResponse.json({ error: "Organization required" }, { status: 400 });
-  }
-
+export const POST = withOrgScope(async (req, { userId, orgId }) => {
   try {
     const body = await req.json();
     const step = Number(body.step) || 0;
@@ -32,7 +25,7 @@ export async function POST(req: Request) {
         data: {
           ...(step > 0 ? { onboardingStep: step } : {}),
           ...(complete ? { onboardingComplete: true } : {}),
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } as any, // Fields may not be in generated client yet
       })
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -55,4 +48,4 @@ export async function POST(req: Request) {
     logger.error("[ONBOARDING_TRACK] Error:", error);
     return NextResponse.json({ error: "Failed to track step" }, { status: 500 });
   }
-}
+});

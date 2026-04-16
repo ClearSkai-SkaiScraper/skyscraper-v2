@@ -3,7 +3,7 @@ export const dynamic = "force-dynamic";
 import { Prisma } from "@prisma/client";
 import { NextResponse } from "next/server";
 
-import { requireApiAuth } from "@/lib/auth/apiAuth";
+import { withOrgScope } from "@/lib/auth/tenant";
 import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 import { checkRateLimit } from "@/lib/rate-limit";
@@ -12,15 +12,7 @@ import { checkRateLimit } from "@/lib/rate-limit";
  * GET /api/onboarding/progress
  * Returns onboarding checklist completion status based on real data
  */
-export async function GET() {
-  const authResult = await requireApiAuth();
-  if (authResult instanceof NextResponse) return authResult;
-
-  const { orgId, userId } = authResult;
-  if (!orgId) {
-    return NextResponse.json({ error: "Organization required." }, { status: 400 });
-  }
-
+export const GET = withOrgScope(async (req, { userId, orgId }) => {
   const rl = await checkRateLimit(userId, "AUTH");
   if (!rl.success) {
     return NextResponse.json(
@@ -118,4 +110,4 @@ export async function GET() {
     logger.error("[ONBOARDING_PROGRESS] Error:", error);
     return NextResponse.json({ error: "Failed to fetch onboarding progress" }, { status: 500 });
   }
-}
+});

@@ -2,20 +2,15 @@ export const dynamic = "force-dynamic";
 
 import { NextResponse } from "next/server";
 
-import { getTenant } from "@/lib/auth/tenant";
+import { withOrgScope } from "@/lib/auth/tenant";
 import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 
 // Cache map data for 5 minutes (300 seconds) - properties don't change frequently
 export const revalidate = 300;
 
-export async function GET() {
+export const GET = withOrgScope(async (req, { orgId }) => {
   try {
-    const orgId = await getTenant();
-    if (!orgId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let properties: any[] = [];
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -122,4 +117,4 @@ export async function GET() {
     // Return empty array with 200 status to prevent UI crash
     return NextResponse.json([], { status: 200 });
   }
-}
+});

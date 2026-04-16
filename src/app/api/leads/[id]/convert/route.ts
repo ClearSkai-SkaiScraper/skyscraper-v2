@@ -10,11 +10,11 @@
  * 4. Copies relevant data (contact info, property, description)
  */
 
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { z } from "zod";
 
+import { withOrgScope } from "@/lib/auth/tenant";
 import { logger } from "@/lib/logger";
-import { getCurrentUserPermissions, requirePermission } from "@/lib/permissions";
 import prisma from "@/lib/prisma";
 
 export const runtime = "nodejs";
@@ -32,14 +32,9 @@ const convertLeadSchema = z.object({
 /**
  * POST /api/leads/[id]/convert - Convert lead to claim
  */
-export async function POST(request: NextRequest, { params }: { params: { id: string } }) {
+export const POST = withOrgScope(async (request, { orgId, userId }, routeCtx) => {
   try {
-    await requirePermission("edit_projects");
-    const { orgId, userId } = await getCurrentUserPermissions();
-
-    if (!orgId) {
-      return NextResponse.json({ error: "Organization not found" }, { status: 404 });
-    }
+    const params = (routeCtx as { params: { id: string } }).params;
 
     // Get the lead with contact info
     const lead = await prisma.leads.findFirst({
@@ -221,4 +216,4 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
     logger.error(`[POST /api/leads/${params.id}/convert] Error:`, error);
     return NextResponse.json({ error: "Failed to convert lead" }, { status: 500 });
   }
-}
+});

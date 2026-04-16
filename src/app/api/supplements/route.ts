@@ -1,9 +1,10 @@
 export const dynamic = "force-dynamic";
 
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { z } from "zod";
 
-import { requireApiOrg, verifyClaimAccess } from "@/lib/auth/apiAuth";
+import { verifyClaimAccess } from "@/lib/auth/apiAuth";
+import { withOrgScope } from "@/lib/auth/tenant";
 import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 
@@ -33,16 +34,8 @@ const createSupplementSchema = z.object({
  * POST /api/supplements
  * Create a new supplement from the Supplement Builder
  */
-export async function POST(req: NextRequest) {
+export const POST = withOrgScope(async (req, { userId, orgId }) => {
   try {
-    const authResult = await requireApiOrg();
-    if (authResult instanceof NextResponse) return authResult;
-
-    const { userId, orgId } = authResult;
-    if (!orgId) {
-      return NextResponse.json({ error: "Organization required." }, { status: 400 });
-    }
-
     const body = await req.json();
     const validated = createSupplementSchema.parse(body);
 
@@ -62,8 +55,8 @@ export async function POST(req: NextRequest) {
         status:
           validated.status.toUpperCase() === "DRAFT"
             ? "REQUESTED"
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            : (validated.status.toUpperCase() as any),
+            : // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              (validated.status.toUpperCase() as any),
         data: {
           title: validated.title || `Supplement - ${new Date().toLocaleDateString()}`,
           items: validated.items,
@@ -118,22 +111,14 @@ export async function POST(req: NextRequest) {
     logger.error("[SUPPLEMENT_CREATE_ERROR]", error);
     return NextResponse.json({ error: "Failed to create supplement" }, { status: 500 });
   }
-}
+});
 
 /**
  * GET /api/supplements
  * List all supplements for the organization
  */
-export async function GET(req: NextRequest) {
+export const GET = withOrgScope(async (req, { orgId }) => {
   try {
-    const authResult = await requireApiOrg();
-    if (authResult instanceof NextResponse) return authResult;
-
-    const { orgId } = authResult;
-    if (!orgId) {
-      return NextResponse.json({ error: "Organization required." }, { status: 400 });
-    }
-
     const { searchParams } = new URL(req.url);
     const claimId = searchParams.get("claimId");
     const status = searchParams.get("status");
@@ -190,4 +175,4 @@ export async function GET(req: NextRequest) {
     logger.error("[SUPPLEMENT_LIST_ERROR]", error);
     return NextResponse.json({ error: "Failed to list supplements" }, { status: 500 });
   }
-}
+});

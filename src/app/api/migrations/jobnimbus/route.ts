@@ -15,28 +15,15 @@
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 
+import { withAdmin } from "@/lib/auth/withAuth";
 import { logger } from "@/lib/logger";
 import { JobNimbusMigrationEngine } from "@/lib/migrations/jobnimbus-engine";
-import { getCurrentUserPermissions } from "@/lib/permissions";
 
-export async function POST(req: NextRequest) {
+export const POST = withAdmin(async (req, { userId, orgId, role }) => {
   try {
-    // 1. Auth + permissions
-    const { userId, orgId, role } = await getCurrentUserPermissions();
-
-    if (!userId || !orgId) {
-      return NextResponse.json({ ok: false, error: "Unauthorized" }, { status: 401 });
-    }
-
-    // Only ADMIN/OWNER can run migrations
-    if (role !== "ADMIN") {
-      return NextResponse.json(
-        { ok: false, error: "Only organization admins can run migrations" },
-        { status: 403 }
-      );
-    }
+    // Only ADMIN/OWNER can run migrations (enforced by withAdmin)
 
     // 2. Parse body
     const body = await req.json().catch(() => ({}));
@@ -78,12 +65,9 @@ export async function POST(req: NextRequest) {
     });
   } catch (err) {
     logger.error("[API] /api/migrations/jobnimbus error:", err);
-    return NextResponse.json(
-      { ok: false, error: "Migration failed" },
-      { status: 500 }
-    );
+    return NextResponse.json({ ok: false, error: "Migration failed" }, { status: 500 });
   }
-}
+});
 
 /** GET — health check / info */
 export async function GET() {

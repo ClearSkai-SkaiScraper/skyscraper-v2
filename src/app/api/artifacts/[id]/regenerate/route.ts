@@ -1,26 +1,23 @@
 export const dynamic = "force-dynamic";
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 
+import { withOrgScope } from "@/lib/auth/tenant";
 import { logger } from "@/lib/logger";
-import { getActiveOrgContext } from "@/lib/org/getActiveOrgContext";
 import prisma from "@/lib/prisma";
 
 /**
  * POST /api/artifacts/[id]/regenerate
  * Create a new version of an artifact
  */
-export async function POST(req: NextRequest, { params }: { params: { id: string } }) {
+export const POST = withOrgScope(async (req, { userId, orgId }, routeCtx) => {
   try {
-    const orgResult = await getActiveOrgContext();
-    if (!orgResult.ok) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    const params = (routeCtx as { params: { id: string } }).params;
 
     // Get the existing artifact
     const existing = await prisma.ai_reports.findFirst({
       where: {
         id: params.id,
-        orgId: orgResult.orgId,
+        orgId,
       },
     });
 
@@ -36,7 +33,7 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
         id: crypto.randomUUID(),
         orgId: existing.orgId,
         claimId: existing.claimId,
-        userId: orgResult.userId,
+        userId,
         userName: "System", // Will be resolved from user lookup if needed
         type: existing.type,
         title: `${existing.title} (regenerated)`,
@@ -59,4 +56,4 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
     logger.error("Error regenerating artifact:", error);
     return NextResponse.json({ error: "Failed to regenerate artifact" }, { status: 500 });
   }
-}
+});

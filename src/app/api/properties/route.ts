@@ -2,17 +2,12 @@ export const dynamic = "force-dynamic";
 
 import { NextResponse } from "next/server";
 
-import { getTenant } from "@/lib/auth/tenant";
+import { withOrgScope } from "@/lib/auth/tenant";
 import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 
-export async function GET() {
+export const GET = withOrgScope(async (req, { orgId }) => {
   try {
-    const orgId = await getTenant();
-    if (!orgId) {
-      return NextResponse.json({ error: "Organization not found" }, { status: 403 });
-    }
-
     const properties = await prisma.properties.findMany({
       where: { orgId },
       orderBy: { street: "asc" },
@@ -39,4 +34,4 @@ export async function GET() {
     logger.error("Error fetching properties:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
-}
+});

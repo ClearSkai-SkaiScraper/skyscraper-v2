@@ -1,10 +1,10 @@
 import { renderToStream } from "@react-pdf/renderer";
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 
 import { generatePdfDocument } from "@/lib/artifacts/pdfGenerator";
 import { verifyClaimAccess } from "@/lib/auth/apiAuth";
+import { withOrgScope } from "@/lib/auth/tenant";
 import { logger } from "@/lib/logger";
-import { getActiveOrgContext } from "@/lib/org/getActiveOrgContext";
 import { fetchBrandingData } from "@/lib/pdf/brandedHeader";
 import prisma from "@/lib/prisma";
 
@@ -15,14 +15,9 @@ export const runtime = "nodejs";
  * POST /api/artifacts/[id]/export-pdf
  * Generate and download PDF for any artifact
  */
-export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+export const POST = withOrgScope(async (req, { userId, orgId }, routeCtx) => {
   try {
-    const orgResult = await getActiveOrgContext();
-    if (!orgResult.ok) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    const { id } = await params;
+    const { id } = await (routeCtx as { params: Promise<{ id: string }> }).params;
 
     // Fetch artifact
     const artifact = await prisma.ai_reports.findUnique({
@@ -34,24 +29,20 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     }
 
     // Verify access (org scoping)
-    if (artifact.orgId !== orgResult.orgId) {
+    if (artifact.orgId !== orgId) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
     // If claim-specific, verify claim access
     if (artifact.claimId) {
-      const accessResult = await verifyClaimAccess(
-        artifact.claimId,
-        orgResult.orgId,
-        orgResult.userId
-      );
+      const accessResult = await verifyClaimAccess(artifact.claimId, orgId, userId);
       if (accessResult instanceof NextResponse) {
         return accessResult;
       }
     }
 
     // Fetch company branding for PDF header
-    const branding = await fetchBrandingData(orgResult.orgId, orgResult.userId);
+    const branding = await fetchBrandingData(orgId, userId);
 
     // Generate PDF document using available fields
     const pdfDoc = generatePdfDocument({
@@ -97,7 +88,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     logger.error("Error exporting PDF:", error);
     return NextResponse.json({ error: "Failed to export PDF" }, { status: 500 });
   }
-}
+});
 
 // Helper functions
 function sanitizeFilename(filename: string): string {

@@ -3,32 +3,17 @@
  * Auth required - adds marketplace template to org library
  */
 
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 
-import { requireApiAuth } from "@/lib/auth/apiAuth";
+import { withOrgScope } from "@/lib/auth/tenant";
 import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-export async function POST(req: NextRequest) {
+export const POST = withOrgScope(async (req, { userId, orgId }) => {
   try {
-    const authResult = await requireApiAuth();
-    if (authResult instanceof NextResponse) {
-      return authResult;
-    }
-
-    const { orgId } = authResult;
-
-    // Require orgId for adding templates (can't add to "personal" library)
-    if (!orgId) {
-      return NextResponse.json(
-        { ok: false, error: "No org selected. Cannot add template without a company." },
-        { status: 400 }
-      );
-    }
-
     const body = await req.json();
     const { slug } = body;
 
@@ -80,9 +65,6 @@ export async function POST(req: NextRequest) {
     });
   } catch (error) {
     logger.error("[POST /api/templates/org/add] Error:", error);
-    return NextResponse.json(
-      { ok: false, error: "Failed to add template" },
-      { status: 500 }
-    );
+    return NextResponse.json({ ok: false, error: "Failed to add template" }, { status: 500 });
   }
-}
+});

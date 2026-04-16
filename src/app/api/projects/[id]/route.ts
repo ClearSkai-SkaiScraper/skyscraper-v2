@@ -2,23 +2,16 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
-import { NextRequest } from "next/server";
-
+import { withOrgScope } from "@/lib/auth/tenant";
 import { onStageChange } from "@/lib/automation";
 import { logger } from "@/lib/logger";
-import { getCurrentUserPermissions, requirePermission } from "@/lib/permissions";
 import prisma from "@/lib/prisma";
 
 // Prisma singleton imported from @/lib/db/prisma
 
-export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
+export const GET = withOrgScope(async (request, { orgId }, routeCtx) => {
   try {
-    await requirePermission("view_projects");
-    const { orgId } = await getCurrentUserPermissions();
-
-    if (!orgId) {
-      return Response.json({ error: "Organization not found" }, { status: 404 });
-    }
+    const params = (routeCtx as { params: { id: string } }).params;
 
     const project = await prisma.projects.findFirst({
       where: {
@@ -76,16 +69,11 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
     logger.error("Error fetching project:", error);
     return Response.json({ error: "Failed to fetch project" }, { status: 500 });
   }
-}
+});
 
-export async function PUT(request: NextRequest, { params }: { params: { id: string } }) {
+export const PUT = withOrgScope(async (request, { orgId, userId }, routeCtx) => {
   try {
-    await requirePermission("edit_projects");
-    const { orgId, userId } = await getCurrentUserPermissions();
-
-    if (!orgId || !userId) {
-      return Response.json({ error: "Authentication required" }, { status: 401 });
-    }
+    const params = (routeCtx as { params: { id: string } }).params;
 
     const body = await request.json();
     const {
@@ -156,16 +144,11 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
     logger.error("Error updating project:", error);
     return Response.json({ error: "Failed to update project" }, { status: 500 });
   }
-}
+});
 
-export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
+export const DELETE = withOrgScope(async (request, { orgId, userId }, routeCtx) => {
   try {
-    await requirePermission("delete_projects");
-    const { orgId, userId } = await getCurrentUserPermissions();
-
-    if (!orgId || !userId) {
-      return Response.json({ error: "Authentication required" }, { status: 401 });
-    }
+    const params = (routeCtx as { params: { id: string } }).params;
 
     const project = await prisma.projects.findFirst({
       where: { id: params.id, orgId },
@@ -206,4 +189,4 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
     logger.error("Error archiving project:", error);
     return Response.json({ error: "Failed to archive project" }, { status: 500 });
   }
-}
+});

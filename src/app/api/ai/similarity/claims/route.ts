@@ -25,6 +25,7 @@ import {
 } from "@/lib/ai/intelligence/claimSimilarity";
 import { apiError } from "@/lib/apiError";
 import { logger } from "@/lib/logger";
+import { checkRateLimit } from "@/lib/rate-limit";
 import { safeOrgContext } from "@/lib/safeOrgContext";
 
 export const dynamic = "force-dynamic";
@@ -46,6 +47,9 @@ export async function GET(req: NextRequest) {
       return apiError(401, "UNAUTHORIZED", "Not authenticated");
     }
 
+    const rl = await checkRateLimit(orgCtx.orgId, "AI");
+    if (!rl.success) return apiError(429, "RATE_LIMITED", "Rate limit exceeded");
+
     const status = await getEmbeddingStatus(orgCtx.orgId);
     return NextResponse.json({ success: true, ...status });
   } catch (error) {
@@ -61,6 +65,9 @@ export async function POST(req: NextRequest) {
     if (!orgCtx.ok || !orgCtx.orgId) {
       return apiError(401, "UNAUTHORIZED", "Not authenticated");
     }
+
+    const rl = await checkRateLimit(orgCtx.orgId, "AI");
+    if (!rl.success) return apiError(429, "RATE_LIMITED", "Rate limit exceeded");
 
     const body = await req.json();
     const parsed = SearchSchema.safeParse(body);
