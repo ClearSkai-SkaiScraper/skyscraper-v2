@@ -511,29 +511,50 @@ export async function POST(request: NextRequest) {
       // Pattern 7: Grid layout (2+ rows × 2+ columns of evenly spaced boxes)
       const gridLayout = uniformXSpacing && sameYRow;
 
+      // Count how many hallucination signals fire — require 2+ for confidence
+      let signalCount = 0;
+      const signals: string[] = [];
+
       if (sameYRow) {
-        hallucinationDetected = true;
-        hallucinationReason = "same-Y-row";
-      } else if (sameXCol) {
-        hallucinationDetected = true;
-        hallucinationReason = "same-X-column";
-      } else if (diagonalStaircase) {
-        hallucinationDetected = true;
-        hallucinationReason = "diagonal-staircase";
-      } else if (gridLayout) {
-        hallucinationDetected = true;
-        hallucinationReason = "grid-layout";
-      } else if (uniformXSpacing && cookieCutter) {
-        hallucinationDetected = true;
-        hallucinationReason = "uniform-spacing+cookie-cutter";
-      } else if (uniformYSpacing && cookieCutter) {
-        hallucinationDetected = true;
-        hallucinationReason = "uniform-y-spacing+cookie-cutter";
+        signalCount++;
+        signals.push("same-Y-row");
       }
-      // Cookie-cutter alone with 4+ boxes is suspicious
-      else if (cookieCutter && rawAnnotations.length >= 4) {
+      if (sameXCol) {
+        signalCount++;
+        signals.push("same-X-column");
+      }
+      if (diagonalStaircase) {
+        signalCount++;
+        signals.push("diagonal-staircase");
+      }
+      if (gridLayout) {
+        signalCount++;
+        signals.push("grid-layout");
+      }
+      if (uniformXSpacing && cookieCutter) {
+        signalCount++;
+        signals.push("uniform-spacing+cookie-cutter");
+      }
+      if (uniformYSpacing && cookieCutter) {
+        signalCount++;
+        signals.push("uniform-y-spacing+cookie-cutter");
+      }
+      // Cookie-cutter alone is NOT a hallucination signal for hail/storm
+      // because hail impacts genuinely ARE all similar size
+      if (cookieCutter && rawAnnotations.length >= 6 && !isHailClaim) {
+        signalCount++;
+        signals.push("cookie-cutter-6+");
+      }
+
+      // Require 2+ independent signals to declare hallucination
+      // Single signal (like cookie-cutter alone) is not enough
+      if (signalCount >= 2) {
         hallucinationDetected = true;
-        hallucinationReason = "cookie-cutter-4+";
+        hallucinationReason = signals.join("+");
+      } else if (signalCount === 1 && (sameYRow || sameXCol || diagonalStaircase || gridLayout)) {
+        // Strong spatial patterns (row/column/diagonal) can trigger alone
+        hallucinationDetected = true;
+        hallucinationReason = signals[0];
       }
     }
 
@@ -565,11 +586,12 @@ export async function POST(request: NextRequest) {
         widths,
         heights,
       });
-      // For GPT-4o fabricated boxes, keep only top 2 highest confidence detections
-      // This prevents the "LINE of boxes" issue
+      // For GPT-4o fabricated boxes, keep top 10 highest confidence detections
+      // Previously limited to 2 which was far too aggressive — real hail photos
+      // can have 10-20+ legitimate impacts visible
       if (rawAnnotations.length > 0) {
         const sorted = [...rawAnnotations].sort((a, b) => b.confidence - a.confidence);
-        filteredAnnotations = sorted.slice(0, 2);
+        filteredAnnotations = sorted.slice(0, 10);
         logger.info(
           `[PHOTO_ANNOTATE] Keeping top ${filteredAnnotations.length} detections (${hallucinationReason})`
         );
