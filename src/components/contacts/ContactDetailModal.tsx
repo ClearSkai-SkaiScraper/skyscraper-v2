@@ -326,7 +326,7 @@ export function ContactDetailModal({
           {/* Avatar */}
           <div className="mb-4 flex justify-center">
             {contact.avatarUrl ? (
-              {/* eslint-disable-next-line @next/next/no-img-element */}
+              // eslint-disable-next-line @next/next/no-img-element
               <img
                 src={contact.avatarUrl}
                 alt={displayName}

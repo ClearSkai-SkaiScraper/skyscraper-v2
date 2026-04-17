@@ -721,7 +721,23 @@ function FieldModeContent() {
     } finally {
       setSubmitting(false);
     }
-  }, [photos, propertyAddress, homeownerName, homeownerEmail, homeownerPhone, notes, scopeItems, linkedRecord, urlPropertyId, jobType, addressStreet, addressCity, addressState, addressZip, gpsCoords]);
+  }, [
+    photos,
+    propertyAddress,
+    homeownerName,
+    homeownerEmail,
+    homeownerPhone,
+    notes,
+    scopeItems,
+    linkedRecord,
+    urlPropertyId,
+    jobType,
+    addressStreet,
+    addressCity,
+    addressState,
+    addressZip,
+    gpsCoords,
+  ]);
 
   const selectedCount = scopeItems.filter((s) => s.selected).length;
   const unanalyzedCount = photos.filter((p) => !p.aiLabel && !p.analyzing).length;
@@ -925,7 +941,9 @@ function FieldModeContent() {
           {validationErrors.length > 0 && (
             <div className="rounded-lg border border-red-200 bg-red-50 p-2 dark:border-red-800 dark:bg-red-950/30">
               {validationErrors.map((err) => (
-                <p key={err} className="text-xs text-red-600 dark:text-red-400">⚠️ {err}</p>
+                <p key={err} className="text-xs text-red-600 dark:text-red-400">
+                  ⚠️ {err}
+                </p>
               ))}
             </div>
           )}

@@ -56,7 +56,7 @@ export async function ClientPhotosPanel({ claimId }: ClientPhotosPanelProps) {
                 >
                   {/* Image preview */}
                   {photo.mimeType?.startsWith("image/") ? (
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    // eslint-disable-next-line @next/next/no-img-element
                     <img
                       src={photo.publicUrl}
                       alt={photo.filename}

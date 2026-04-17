@@ -61,7 +61,7 @@ export function BrandingUpload({ type, currentUrl, onUploadComplete }: BrandingU
       } else {
         throw new Error("No URL returned from upload");
       }
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       logger.error("[BrandingUpload] Error:", err);
       setError(err.message || "Upload failed");
@@ -80,7 +80,7 @@ export function BrandingUpload({ type, currentUrl, onUploadComplete }: BrandingU
       </label>
       <div className="rounded-lg border-2 border-dashed border-slate-300 p-6 text-center dark:border-slate-700">
         {currentUrl ? (
-          {/* eslint-disable-next-line @next/next/no-img-element */}
+          // eslint-disable-next-line @next/next/no-img-element
           <img
             src={currentUrl}
             alt={label}

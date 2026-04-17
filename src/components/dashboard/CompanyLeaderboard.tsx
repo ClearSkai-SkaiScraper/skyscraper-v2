@@ -189,7 +189,7 @@ export function CompanyLeaderboard({ className }: CompanyLeaderboardProps) {
       {/* Refresh indicator */}
       {isRefreshing && (
         <div className="absolute inset-x-0 top-0 z-10 h-0.5 overflow-hidden">
-          <div className="animate-indeterminate h-full w-1/3 bg-gradient-to-r from-transparent via-blue-500 to-transparent" />
+          <div className="h-full w-1/3 animate-indeterminate bg-gradient-to-r from-transparent via-blue-500 to-transparent" />
         </div>
       )}
       {/* Gradient top stripe */}
@@ -408,7 +408,7 @@ export function CompanyLeaderboard({ className }: CompanyLeaderboardProps) {
                   <div className="flex items-center gap-3">
                     {/* Avatar */}
                     {entry.avatar ? (
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      // eslint-disable-next-line @next/next/no-img-element
                       <img
                         src={entry.avatar}
                         alt=""

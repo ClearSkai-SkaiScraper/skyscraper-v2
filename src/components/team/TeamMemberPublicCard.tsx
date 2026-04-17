@@ -28,7 +28,7 @@ export function TeamMemberPublicCard({ member }: { member: PublicMemberProfile }
       <div className="flex items-center gap-4">
         <div className="relative">
           {member.headshotUrl ? (
-            {/* eslint-disable-next-line @next/next/no-img-element */}
+            // eslint-disable-next-line @next/next/no-img-element
             <img
               src={member.headshotUrl}
               alt={member.name || "Profile"}
@@ -49,13 +49,23 @@ export function TeamMemberPublicCard({ member }: { member: PublicMemberProfile }
               </span>
             )}
           </h3>
-          {member.bio && <p className="mt-1 line-clamp-2 text-sm text-muted-foreground">{member.bio}</p>}
-          <p className="mt-1 text-xs text-muted-foreground">Experience: {years} yr{years === 1 ? "" : "s"}</p>
+          {member.bio && (
+            <p className="mt-1 line-clamp-2 text-sm text-muted-foreground">{member.bio}</p>
+          )}
+          <p className="mt-1 text-xs text-muted-foreground">
+            Experience: {years} yr{years === 1 ? "" : "s"}
+          </p>
           {skills.length > 0 && (
-            <p className="mt-1 text-xs text-muted-foreground">Skills: {skills.slice(0,5).join(", ")}{skills.length>5?"…":""}</p>
+            <p className="mt-1 text-xs text-muted-foreground">
+              Skills: {skills.slice(0, 5).join(", ")}
+              {skills.length > 5 ? "…" : ""}
+            </p>
           )}
           {certs.length > 0 && (
-            <p className="mt-1 text-[10px] uppercase tracking-wide text-muted-foreground">Certifications: {certs.slice(0,4).join(", ")}{certs.length>4?"…":""}</p>
+            <p className="mt-1 text-[10px] uppercase tracking-wide text-muted-foreground">
+              Certifications: {certs.slice(0, 4).join(", ")}
+              {certs.length > 4 ? "…" : ""}
+            </p>
           )}
         </div>
         <div className="rounded-lg p-2 text-muted-foreground opacity-0 transition group-hover:opacity-100">
@@ -66,13 +76,19 @@ export function TeamMemberPublicCard({ member }: { member: PublicMemberProfile }
         // eslint-disable-next-line react/jsx-no-comment-textnodes
         <div className="mt-4 space-y-2">
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          {testimonials.slice(0,2).map((t: any, i: number) => (
-            <blockquote key={i} className="rounded-md bg-muted/40 p-3 text-xs italic text-muted-foreground">
-              “{typeof t === 'string' ? t : t?.quote || ''}”
+          {testimonials.slice(0, 2).map((t: any, i: number) => (
+            <blockquote
+              key={i}
+              className="rounded-md bg-muted/40 p-3 text-xs italic text-muted-foreground"
+            >
+              “{typeof t === "string" ? t : t?.quote || ""}”
             </blockquote>
           ))}
           {testimonials.length > 2 && (
-            <Link href={`/network/member/${member.id}`} className="text-[10px] font-medium text-primary hover:underline">
+            <Link
+              href={`/network/member/${member.id}`}
+              className="text-[10px] font-medium text-primary hover:underline"
+            >
               View all testimonials →
             </Link>
           )}
