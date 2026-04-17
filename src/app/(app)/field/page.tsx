@@ -154,6 +154,8 @@ function FieldModeContent() {
   );
   const [propertyAddress, setPropertyAddress] = useState(urlAddress);
   const [homeownerName, setHomeownerName] = useState("");
+  const [homeownerEmail, setHomeownerEmail] = useState("");
+  const [homeownerPhone, setHomeownerPhone] = useState("");
   const [notes, setNotes] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
@@ -163,6 +165,23 @@ function FieldModeContent() {
   const [bulkAnalyzing, setBulkAnalyzing] = useState(false);
   const [draggedPhotoId, setDraggedPhotoId] = useState<string | null>(null);
   const [dragOverPhotoId, setDragOverPhotoId] = useState<string | null>(null);
+
+  // ── GPS + Address fields ──
+  const [gpsCoords, setGpsCoords] = useState<{ latitude: number; longitude: number } | null>(null);
+  const [addressStreet, setAddressStreet] = useState("");
+  const [addressCity, setAddressCity] = useState("");
+  const [addressState, setAddressState] = useState("");
+  const [addressZip, setAddressZip] = useState("");
+  const [reverseGeocoding, setReverseGeocoding] = useState(false);
+  const [addressConfirmed, setAddressConfirmed] = useState(false);
+
+  // ── Job routing type ──
+  const [jobType, setJobType] = useState<
+    "insurance_claim" | "repair" | "out_of_pocket" | "financing"
+  >("insurance_claim");
+
+  // ── Validation errors ──
+  const [validationErrors, setValidationErrors] = useState<string[]>([]);
 
   // Linked record — existing claim or job to associate with
   const [linkedRecord, setLinkedRecord] = useState<LinkedRecord | null>(null);
@@ -373,11 +392,43 @@ function FieldModeContent() {
     }
   }, [urlClaimId, urlJobId]);
 
-  // Check GPS on mount — with retry
+  // Check GPS on mount — with retry + reverse geocode
   useEffect(() => {
-    void getGPS(2).then((result) => {
+    void getGPS(2).then(async (result) => {
       setGpsStatus(result ? "active" : "unavailable");
+      if (!result) return;
+      setGpsCoords(result);
+      // Reverse geocode if address is empty
+      if (!propertyAddress && !addressStreet) {
+        setReverseGeocoding(true);
+        try {
+          const res = await fetch(
+            `https://nominatim.openstreetmap.org/reverse?lat=${result.latitude}&lon=${result.longitude}&format=json&addressdetails=1`,
+            { headers: { "User-Agent": "SkaiScraper/1.0" } }
+          );
+          if (res.ok) {
+            const data = await res.json();
+            const addr = data.address || {};
+            const street = [addr.house_number, addr.road].filter(Boolean).join(" ");
+            if (street) setAddressStreet(street);
+            if (addr.city || addr.town || addr.village)
+              setAddressCity(addr.city || addr.town || addr.village);
+            if (addr.state) setAddressState(addr.state);
+            if (addr.postcode) setAddressZip(addr.postcode);
+            // Also set the combined address for backward compat
+            const full = [street, addr.city || addr.town || addr.village, addr.state, addr.postcode]
+              .filter(Boolean)
+              .join(", ");
+            if (full) setPropertyAddress(full);
+          }
+        } catch {
+          // Non-fatal — user can still type address manually
+        } finally {
+          setReverseGeocoding(false);
+        }
+      }
     });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Search claims/jobs for linking
@@ -584,10 +635,18 @@ function FieldModeContent() {
 
   // ---- Submit ----
   const handleSubmit = useCallback(async () => {
-    if (photos.length === 0) {
-      toast.error("Take at least one photo before submitting");
+    // ── Required field validation ──
+    const errors: string[] = [];
+    if (photos.length === 0) errors.push("Take at least one photo");
+    if (!homeownerName.trim()) errors.push("Homeowner name is required");
+    if (!propertyAddress.trim() && !addressStreet.trim())
+      errors.push("Property address is required");
+    if (errors.length > 0) {
+      setValidationErrors(errors);
+      toast.error(errors[0]);
       return;
     }
+    setValidationErrors([]);
 
     setSubmitting(true);
     try {
@@ -597,9 +656,24 @@ function FieldModeContent() {
       const formData = new FormData();
       formData.append("propertyAddress", propertyAddress);
       formData.append("homeownerName", homeownerName);
+      formData.append("homeownerEmail", homeownerEmail);
+      formData.append("homeownerPhone", homeownerPhone);
       formData.append("notes", notes);
       formData.append("source", "field_mode");
       formData.append("quickScope", JSON.stringify(selectedScope.map((s) => s.label)));
+      formData.append("jobType", jobType);
+
+      // Structured address fields
+      if (addressStreet) formData.append("street", addressStreet);
+      if (addressCity) formData.append("city", addressCity);
+      if (addressState) formData.append("state", addressState);
+      if (addressZip) formData.append("zipCode", addressZip);
+
+      // GPS coordinates
+      if (gpsCoords) {
+        formData.append("latitude", String(gpsCoords.latitude));
+        formData.append("longitude", String(gpsCoords.longitude));
+      }
 
       // Pass linked record info
       if (linkedRecord) {
@@ -647,7 +721,7 @@ function FieldModeContent() {
     } finally {
       setSubmitting(false);
     }
-  }, [photos, propertyAddress, homeownerName, notes, scopeItems, linkedRecord, urlPropertyId]);
+  }, [photos, propertyAddress, homeownerName, homeownerEmail, homeownerPhone, notes, scopeItems, linkedRecord, urlPropertyId, jobType, addressStreet, addressCity, addressState, addressZip, gpsCoords]);
 
   const selectedCount = scopeItems.filter((s) => s.selected).length;
   const unanalyzedCount = photos.filter((p) => !p.aiLabel && !p.analyzing).length;
@@ -689,10 +763,19 @@ function FieldModeContent() {
               setScopeItems((prev) => prev.map((s) => ({ ...s, selected: false })));
               setPropertyAddress("");
               setHomeownerName("");
+              setHomeownerEmail("");
+              setHomeownerPhone("");
               setNotes("");
               setSubmitted(false);
               setSubmittedClaimId(null);
               setLinkedRecord(null);
+              setJobType("insurance_claim");
+              setAddressStreet("");
+              setAddressCity("");
+              setAddressState("");
+              setAddressZip("");
+              setGpsCoords(null);
+              setValidationErrors([]);
             }}
             className="rounded-xl border border-slate-200 bg-white px-6 py-3 text-sm font-bold text-slate-700 shadow-sm hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300"
           >
@@ -772,18 +855,80 @@ function FieldModeContent() {
         <div className="mb-4 space-y-3">
           <AddressAutocomplete
             value={propertyAddress}
-            onChange={setPropertyAddress}
-            onSelect={(suggestion: AddressSuggestion) => setPropertyAddress(suggestion.fullAddress)}
+            onChange={(val: string) => {
+              setPropertyAddress(val);
+              setAddressConfirmed(false);
+            }}
+            onSelect={(suggestion: AddressSuggestion) => {
+              setPropertyAddress(suggestion.fullAddress);
+              if (suggestion.address) setAddressStreet(suggestion.address);
+              if (suggestion.city) setAddressCity(suggestion.city);
+              if (suggestion.state) setAddressState(suggestion.state);
+              if (suggestion.zip) setAddressZip(suggestion.zip);
+              setAddressConfirmed(true);
+            }}
             placeholder="Property address..."
-            className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm dark:border-slate-700 dark:bg-slate-800"
+            className={cn(
+              "w-full rounded-xl border bg-white px-4 py-3 text-sm dark:bg-slate-800",
+              validationErrors.includes("Property address is required")
+                ? "border-red-400 dark:border-red-600"
+                : "border-slate-200 dark:border-slate-700"
+            )}
           />
+          {reverseGeocoding && (
+            <p className="flex items-center gap-1 text-xs text-muted-foreground">
+              <Loader2 className="h-3 w-3 animate-spin" /> Auto-detecting address from GPS...
+            </p>
+          )}
           <input
             type="text"
             value={homeownerName}
             onChange={(e) => setHomeownerName(e.target.value)}
-            placeholder="Homeowner name (optional)"
-            className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm dark:border-slate-700 dark:bg-slate-800"
+            placeholder="Homeowner name *"
+            className={cn(
+              "w-full rounded-xl border bg-white px-4 py-3 text-sm dark:bg-slate-800",
+              validationErrors.includes("Homeowner name is required")
+                ? "border-red-400 dark:border-red-600"
+                : "border-slate-200 dark:border-slate-700"
+            )}
           />
+          <div className="grid grid-cols-2 gap-2">
+            <input
+              type="email"
+              value={homeownerEmail}
+              onChange={(e) => setHomeownerEmail(e.target.value)}
+              placeholder="Email (optional)"
+              className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm dark:border-slate-700 dark:bg-slate-800"
+            />
+            <input
+              type="tel"
+              value={homeownerPhone}
+              onChange={(e) => setHomeownerPhone(e.target.value)}
+              placeholder="Phone (optional)"
+              className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm dark:border-slate-700 dark:bg-slate-800"
+            />
+          </div>
+
+          {/* Job type routing */}
+          <select
+            value={jobType}
+            onChange={(e) => setJobType(e.target.value as typeof jobType)}
+            className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm dark:border-slate-700 dark:bg-slate-800"
+          >
+            <option value="insurance_claim">🛡️ Insurance Claim</option>
+            <option value="repair">🔧 Repair</option>
+            <option value="out_of_pocket">💰 Out-of-Pocket</option>
+            <option value="financing">🏦 Financing</option>
+          </select>
+
+          {/* Validation errors */}
+          {validationErrors.length > 0 && (
+            <div className="rounded-lg border border-red-200 bg-red-50 p-2 dark:border-red-800 dark:bg-red-950/30">
+              {validationErrors.map((err) => (
+                <p key={err} className="text-xs text-red-600 dark:text-red-400">⚠️ {err}</p>
+              ))}
+            </div>
+          )}
 
           {/* Link to existing Claim or Job */}
           <div className="relative">

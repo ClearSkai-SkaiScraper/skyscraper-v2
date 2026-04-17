@@ -26,6 +26,22 @@ export async function POST(req: Request) {
     const homeownerName = String(formData.get("homeownerName") || "").trim();
     const notes = String(formData.get("notes") || "").trim();
     const quickScopeRaw = String(formData.get("quickScope") || "[]");
+    // New fields: GPS, address components, routing, linked records
+    const latitude = formData.get("latitude") ? parseFloat(String(formData.get("latitude"))) : null;
+    const longitude = formData.get("longitude")
+      ? parseFloat(String(formData.get("longitude")))
+      : null;
+    const street = String(formData.get("street") || propertyAddress || "").trim();
+    const city = String(formData.get("city") || "").trim();
+    const state = String(formData.get("state") || "").trim();
+    const zipCode = String(formData.get("zipCode") || "").trim();
+    const jobType = String(formData.get("jobType") || "insurance_claim").trim();
+    const homeownerEmail = String(formData.get("homeownerEmail") || "").trim();
+    const homeownerPhone = String(formData.get("homeownerPhone") || "").trim();
+    const linkedRecordId = String(formData.get("linkedRecordId") || "").trim() || null;
+    const linkedRecordType = String(formData.get("linkedRecordType") || "").trim() || null;
+    const existingPropertyId = String(formData.get("propertyId") || "").trim() || null;
+
     const quickScope: string[] = (() => {
       try {
         const parsed = JSON.parse(quickScopeRaw);
@@ -35,7 +51,33 @@ export async function POST(req: Request) {
       }
     })();
 
+    // ── Server-side validation ──
+    if (!homeownerName) {
+      return NextResponse.json({ error: "Homeowner name is required" }, { status: 400 });
+    }
+    if (!propertyAddress && !street) {
+      return NextResponse.json({ error: "Property address is required" }, { status: 400 });
+    }
+
     const uploadedPhotos = formData.getAll("photos");
+
+    // ── Reuse existing property or create new one ──
+    let propertyId = existingPropertyId;
+
+    if (existingPropertyId) {
+      // Verify the property belongs to this org
+      const existing = await prisma.properties.findFirst({
+        where: { id: existingPropertyId, orgId },
+        select: { id: true },
+      });
+      if (!existing) {
+        logger.warn("[FIELD_INTAKE] Provided propertyId not found in org, creating new", {
+          existingPropertyId,
+          orgId,
+        });
+        propertyId = null;
+      }
+    }
 
     // Ensure we have a contact record (required by properties)
     const contact = await prisma.contacts.create({
@@ -44,55 +86,100 @@ export async function POST(req: Request) {
         orgId,
         firstName: homeownerName.split(" ")[0] || "Field",
         lastName: homeownerName.split(" ").slice(1).join(" ") || "Homeowner",
+        email: homeownerEmail || null,
+        phone: homeownerPhone || null,
         slug: `field-${Date.now()}`,
         createdAt: new Date(),
         updatedAt: new Date(),
       },
     });
 
-    const property = await prisma.properties.create({
-      data: {
-        id: createId(),
-        orgId,
-        contactId: contact.id,
-        name: propertyAddress || "Field Inspection Property",
-        propertyType: "residential",
-        street: propertyAddress || "Unknown",
-        city: "",
-        state: "",
-        zipCode: "",
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      },
-    });
+    if (!propertyId) {
+      const property = await prisma.properties.create({
+        data: {
+          id: createId(),
+          orgId,
+          contactId: contact.id,
+          name: propertyAddress || "Field Inspection Property",
+          propertyType: "residential",
+          street: street || propertyAddress || "Unknown",
+          city,
+          state,
+          zipCode,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+      });
+      propertyId = property.id;
+    }
+
+    // ── Map job type to claim defaults ──
+    const jobTypeDefaults: Record<
+      string,
+      { status: string; damageType: string; priority: string }
+    > = {
+      insurance_claim: { status: "intake", damageType: "storm", priority: "high" },
+      repair: { status: "estimate_needed", damageType: "general", priority: "medium" },
+      out_of_pocket: { status: "estimate_needed", damageType: "general", priority: "medium" },
+      financing: { status: "intake", damageType: "general", priority: "medium" },
+    };
+    const defaults = jobTypeDefaults[jobType] || jobTypeDefaults.insurance_claim;
 
     const claimNumber = `FIELD-${Date.now().toString().slice(-8)}`;
+
+    const descriptionParts = [
+      notes,
+      quickScope.length ? `Quick scope: ${quickScope.join(", ")}` : "",
+      jobType !== "insurance_claim" ? `Job type: ${jobType.replace(/_/g, " ")}` : "",
+      latitude && longitude ? `GPS: ${latitude.toFixed(6)}, ${longitude.toFixed(6)}` : "",
+    ].filter(Boolean);
 
     const claim = await prisma.claims.create({
       data: {
         id: createId(),
         orgId,
-        propertyId: property.id,
+        propertyId,
         claimNumber,
-        title: `Field Inspection — ${propertyAddress || "Unknown Address"}`,
-        description: [notes, quickScope.length ? `Quick scope: ${quickScope.join(", ")}` : ""]
-          .filter(Boolean)
-          .join("\n\n"),
-        damageType: "storm",
+        title: `Field Inspection — ${propertyAddress || street || "Unknown Address"}`,
+        description: descriptionParts.join("\n\n"),
+        damageType: defaults.damageType,
         dateOfLoss: new Date(),
-        status: "intake",
-        priority: "high",
+        status: defaults.status,
+        priority: defaults.priority,
         insured_name: homeownerName || null,
+        homeownerEmail: homeownerEmail || null,
         createdAt: new Date(),
         updatedAt: new Date(),
       },
     });
 
+    // ── Link to existing record if specified ──
+    if (linkedRecordId && linkedRecordType === "claim") {
+      logger.info("[FIELD_INTAKE] Linked to existing claim", {
+        linkedRecordId,
+        newClaimId: claim.id,
+      });
+      // Store link in description for now (claim_activities could be used later)
+      try {
+        await prisma.claims.update({
+          where: { id: claim.id },
+          data: {
+            description: `${claim.description || ""}\n\nLinked from claim: ${linkedRecordId}`,
+          },
+        });
+      } catch {
+        // Non-fatal
+      }
+    }
+
     logger.info("[FIELD_INTAKE] Created field claim", {
       orgId,
       userId,
       claimId: claim.id,
+      jobType,
       photoCount: uploadedPhotos.length,
+      hasGPS: !!(latitude && longitude),
+      linkedRecordId,
     });
 
     // ── Persist uploaded photos to Supabase + file_assets ──
@@ -170,6 +257,12 @@ export async function POST(req: Request) {
                   publicUrl,
                   category: "damage",
                   source: "field_intake",
+                  metadata: {
+                    latitude: latitude || null,
+                    longitude: longitude || null,
+                    jobType,
+                    capturedAt: new Date().toISOString(),
+                  },
                   updatedAt: new Date(),
                 },
               });
