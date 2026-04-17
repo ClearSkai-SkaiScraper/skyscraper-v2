@@ -22,9 +22,10 @@ import {
   CheckCircle2,
   ChevronDown,
   ChevronUp,
+  FlipHorizontal2,
+  Image,
   Loader2,
   MapPin,
-  Plus,
   RefreshCw,
   RotateCcw,
   Ruler,
@@ -172,6 +173,192 @@ function FieldModeContent() {
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const cameraInputRef = useRef<HTMLInputElement>(null);
+
+  // ── Native Camera Viewfinder State ──
+  const [cameraOpen, setCameraOpen] = useState(false);
+  const [cameraReady, setCameraReady] = useState(false);
+  const [facingMode, setFacingMode] = useState<"environment" | "user">("environment");
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const streamRef = useRef<MediaStream | null>(null);
+
+  // ── Measurement Tool State ──
+  const [measureMode, setMeasureMode] = useState(false);
+  const [measurePoints, setMeasurePoints] = useState<{ x: number; y: number }[]>([]);
+  const [measureLines, setMeasureLines] = useState<
+    { p1: { x: number; y: number }; p2: { x: number; y: number }; px: number }[]
+  >([]);
+  const measureOverlayRef = useRef<HTMLDivElement>(null);
+
+  // ── Open native camera via getUserMedia ──
+  const openCamera = useCallback(async () => {
+    try {
+      // First try getUserMedia for true native camera
+      if (navigator.mediaDevices?.getUserMedia) {
+        const stream = await navigator.mediaDevices.getUserMedia({
+          video: { facingMode, width: { ideal: 1920 }, height: { ideal: 1080 } },
+          audio: false,
+        });
+        streamRef.current = stream;
+        setCameraOpen(true);
+        setCameraReady(false);
+        // Attach stream after render
+        setTimeout(() => {
+          if (videoRef.current) {
+            videoRef.current.srcObject = stream;
+            videoRef.current.onloadedmetadata = () => {
+              videoRef.current?.play();
+              setCameraReady(true);
+            };
+          }
+        }, 50);
+        return;
+      }
+    } catch (err) {
+      console.warn("getUserMedia failed, falling back to file input:", err);
+    }
+    // Fallback: use file input with capture
+    cameraInputRef.current?.click();
+  }, [facingMode]);
+
+  // ── Close camera & cleanup stream ──
+  const closeCamera = useCallback(() => {
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach((t) => t.stop());
+      streamRef.current = null;
+    }
+    setCameraOpen(false);
+    setCameraReady(false);
+    setMeasureMode(false);
+    setMeasurePoints([]);
+  }, []);
+
+  // ── Flip camera ──
+  const flipCamera = useCallback(async () => {
+    const newMode = facingMode === "environment" ? "user" : "environment";
+    setFacingMode(newMode);
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach((t) => t.stop());
+    }
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: newMode, width: { ideal: 1920 }, height: { ideal: 1080 } },
+        audio: false,
+      });
+      streamRef.current = stream;
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream;
+      }
+    } catch {
+      toast.error("Could not switch camera");
+    }
+  }, [facingMode]);
+
+  // ── Snap photo from live video ──
+  const snapPhoto = useCallback(async () => {
+    if (!videoRef.current || !canvasRef.current) return;
+    const video = videoRef.current;
+    const canvas = canvasRef.current;
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+    ctx.drawImage(video, 0, 0);
+
+    // Draw measurement lines onto the photo if any
+    if (measureLines.length > 0) {
+      const scaleX = video.videoWidth / video.clientWidth;
+      const scaleY = video.videoHeight / video.clientHeight;
+      ctx.strokeStyle = "#22d3ee";
+      ctx.lineWidth = 3;
+      ctx.font = "bold 24px sans-serif";
+      ctx.fillStyle = "#22d3ee";
+      for (const line of measureLines) {
+        const x1 = line.p1.x * scaleX,
+          y1 = line.p1.y * scaleY;
+        const x2 = line.p2.x * scaleX,
+          y2 = line.p2.y * scaleY;
+        ctx.beginPath();
+        ctx.moveTo(x1, y1);
+        ctx.lineTo(x2, y2);
+        ctx.stroke();
+        // Label
+        const midX = (x1 + x2) / 2,
+          midY = (y1 + y2) / 2;
+        const inches = (line.px * 0.15).toFixed(1); // rough estimate
+        ctx.fillText(`~${inches}"`, midX + 8, midY - 8);
+      }
+    }
+
+    canvas.toBlob(
+      async (blob) => {
+        if (!blob) return;
+        const file = new File([blob], `field_${Date.now()}.jpg`, { type: "image/jpeg" });
+        const gps = await getGPS();
+        const isMeasure = measureMode || measureLines.length > 0;
+        const newPhoto: FieldPhoto = {
+          id: `${isMeasure ? "measure" : "field"}_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+          file,
+          preview: URL.createObjectURL(blob),
+          latitude: gps?.latitude,
+          longitude: gps?.longitude,
+          timestamp: new Date().toISOString(),
+          note: isMeasure ? "📏 Measurement photo" : "",
+          aiLabel: isMeasure
+            ? `Measurement (${measureLines.length} line${measureLines.length !== 1 ? "s" : ""})`
+            : undefined,
+          analyzing: false,
+        };
+        setPhotos((prev) => [...prev, newPhoto]);
+        if (!isMeasure) void quickAnalyze(newPhoto);
+        toast.success(isMeasure ? "📏 Measurement photo captured!" : "📸 Photo captured!");
+        // Clear measurements after snap
+        setMeasureLines([]);
+        setMeasurePoints([]);
+      },
+      "image/jpeg",
+      0.92
+    );
+  }, [measureMode, measureLines]);
+
+  // ── Handle measurement tap on viewfinder ──
+  const handleMeasureTap = useCallback(
+    (e: React.MouseEvent | React.TouchEvent) => {
+      if (!measureMode || !measureOverlayRef.current) return;
+      const rect = measureOverlayRef.current.getBoundingClientRect();
+      let clientX: number, clientY: number;
+      if ("touches" in e) {
+        clientX = e.touches[0].clientX;
+        clientY = e.touches[0].clientY;
+      } else {
+        clientX = e.clientX;
+        clientY = e.clientY;
+      }
+      const x = clientX - rect.left;
+      const y = clientY - rect.top;
+      setMeasurePoints((prev) => {
+        const next = [...prev, { x, y }];
+        if (next.length === 2) {
+          const dx = next[1].x - next[0].x;
+          const dy = next[1].y - next[0].y;
+          const px = Math.sqrt(dx * dx + dy * dy);
+          setMeasureLines((lines) => [...lines, { p1: next[0], p2: next[1], px }]);
+          return []; // reset for next measurement
+        }
+        return next;
+      });
+    },
+    [measureMode]
+  );
+
+  // Cleanup camera on unmount
+  useEffect(() => {
+    return () => {
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach((t) => t.stop());
+      }
+    };
+  }, []);
 
   // Pre-link if URL has claimId or jobId
   useEffect(() => {
@@ -833,9 +1020,218 @@ function FieldModeContent() {
         </div>
       </div>
 
-      {/* Fixed bottom bar — Enhanced field tools */}
+      {/* ═══ FULL-SCREEN NATIVE CAMERA VIEWFINDER ═══ */}
+      {cameraOpen && (
+        <div className="fixed inset-0 z-50 flex flex-col bg-black">
+          {/* Video feed */}
+          <div className="relative flex-1 overflow-hidden">
+            <video
+              ref={videoRef}
+              autoPlay
+              playsInline
+              muted
+              className="h-full w-full object-cover"
+            />
+            <canvas ref={canvasRef} className="hidden" />
+
+            {/* Loading overlay */}
+            {!cameraReady && (
+              <div className="absolute inset-0 flex items-center justify-center bg-black/80">
+                <Loader2 className="h-10 w-10 animate-spin text-white" />
+              </div>
+            )}
+
+            {/* Measurement overlay — tap to place points */}
+            <div
+              ref={measureOverlayRef}
+              className="absolute inset-0"
+              onClick={handleMeasureTap}
+              onTouchStart={measureMode ? handleMeasureTap : undefined}
+            >
+              {/* Measurement mode banner */}
+              {measureMode && (
+                <div className="absolute left-0 right-0 top-0 z-10 bg-cyan-500/90 px-4 py-2 text-center text-sm font-bold text-white">
+                  📏 TAP TWO POINTS TO MEASURE — place a reference object (coin/card) for scale
+                </div>
+              )}
+
+              {/* Render measurement points */}
+              {measurePoints.map((pt, i) => (
+                <div
+                  key={i}
+                  className="absolute z-20 h-5 w-5 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-white bg-cyan-400 shadow-lg"
+                  style={{ left: pt.x, top: pt.y }}
+                />
+              ))}
+
+              {/* Render completed measurement lines */}
+              {measureLines.map((line, i) => {
+                const dx = line.p2.x - line.p1.x;
+                const dy = line.p2.y - line.p1.y;
+                const length = Math.sqrt(dx * dx + dy * dy);
+                const angle = Math.atan2(dy, dx) * (180 / Math.PI);
+                const midX = (line.p1.x + line.p2.x) / 2;
+                const midY = (line.p1.y + line.p2.y) / 2;
+                // Rough estimate: assume a credit card width (3.37") maps to ~200px at arm's length
+                const estInches = (line.px * 0.15).toFixed(1);
+                return (
+                  <div key={i}>
+                    {/* Line */}
+                    <div
+                      className="absolute z-10 origin-left border-t-2 border-cyan-400"
+                      style={{
+                        left: line.p1.x,
+                        top: line.p1.y,
+                        width: length,
+                        transform: `rotate(${angle}deg)`,
+                      }}
+                    />
+                    {/* Endpoints */}
+                    <div
+                      className="absolute z-20 h-4 w-4 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-white bg-cyan-400"
+                      style={{ left: line.p1.x, top: line.p1.y }}
+                    />
+                    <div
+                      className="absolute z-20 h-4 w-4 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-white bg-cyan-400"
+                      style={{ left: line.p2.x, top: line.p2.y }}
+                    />
+                    {/* Label */}
+                    <div
+                      className="absolute z-30 -translate-x-1/2 -translate-y-full rounded-lg bg-black/80 px-2 py-1 text-xs font-bold text-cyan-300 shadow-lg"
+                      style={{ left: midX, top: midY - 8 }}
+                    >
+                      {Math.round(line.px)}px · ~{estInches}&quot;
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Top controls */}
+            <div className="absolute left-0 right-0 top-0 z-40 flex items-center justify-between px-4 py-3">
+              <button
+                type="button"
+                onClick={closeCamera}
+                className="rounded-full bg-black/50 p-2 text-white backdrop-blur-sm"
+              >
+                <X className="h-6 w-6" />
+              </button>
+              <div className="flex items-center gap-3">
+                <button
+                  type="button"
+                  onClick={flipCamera}
+                  className="rounded-full bg-black/50 p-2 text-white backdrop-blur-sm"
+                >
+                  <FlipHorizontal2 className="h-5 w-5" />
+                </button>
+              </div>
+            </div>
+
+            {/* Photo count badge */}
+            {photos.length > 0 && (
+              <div className="absolute left-4 top-16 z-40 rounded-full bg-blue-500/90 px-3 py-1 text-xs font-bold text-white">
+                {photos.length} photo{photos.length !== 1 ? "s" : ""}
+              </div>
+            )}
+          </div>
+
+          {/* Bottom camera controls */}
+          <div className="safe-area-bottom bg-black/90 px-4 pb-8 pt-4">
+            <div className="mx-auto flex max-w-sm items-center justify-between">
+              {/* Gallery — open photo library */}
+              <button
+                type="button"
+                onClick={() => {
+                  fileInputRef.current?.click();
+                }}
+                className="flex h-12 w-12 items-center justify-center rounded-full bg-white/20 text-white"
+              >
+                <Image className="h-6 w-6" />
+              </button>
+
+              {/* Shutter button */}
+              <button
+                type="button"
+                onClick={snapPhoto}
+                className={cn(
+                  "flex h-20 w-20 items-center justify-center rounded-full border-4 transition-transform active:scale-90",
+                  measureMode
+                    ? "border-cyan-400 bg-cyan-500 shadow-lg shadow-cyan-500/40"
+                    : "border-white bg-white shadow-lg shadow-white/30"
+                )}
+              >
+                <div
+                  className={cn("h-16 w-16 rounded-full", measureMode ? "bg-cyan-400" : "bg-white")}
+                />
+              </button>
+
+              {/* Measure toggle */}
+              <button
+                type="button"
+                onClick={() => {
+                  setMeasureMode(!measureMode);
+                  setMeasurePoints([]);
+                  if (!measureMode) {
+                    toast.info("Measure mode ON — tap two points on screen", { duration: 2000 });
+                  }
+                }}
+                className={cn(
+                  "flex h-12 w-12 items-center justify-center rounded-full transition-colors",
+                  measureMode
+                    ? "bg-cyan-500 text-white shadow-lg shadow-cyan-500/40"
+                    : "bg-white/20 text-white"
+                )}
+              >
+                <Ruler className="h-6 w-6" />
+              </button>
+            </div>
+
+            {/* Measure instructions */}
+            {measureMode && (
+              <p className="mt-3 text-center text-xs text-cyan-300">
+                Tap 2 points to draw a line · Place a credit card or coin for scale reference · Snap
+                to save
+              </p>
+            )}
+
+            {/* Clear measurements */}
+            {measureLines.length > 0 && (
+              <button
+                type="button"
+                onClick={() => {
+                  setMeasureLines([]);
+                  setMeasurePoints([]);
+                }}
+                className="mx-auto mt-2 flex items-center gap-1 rounded-full bg-white/10 px-3 py-1 text-xs text-white"
+              >
+                <RotateCcw className="h-3 w-3" /> Clear {measureLines.length} measurement
+                {measureLines.length !== 1 ? "s" : ""}
+              </button>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Hidden file inputs */}
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept="image/*,.heic,.heif"
+        multiple
+        onChange={handleCapture}
+        className="hidden"
+      />
+      <input
+        ref={cameraInputRef}
+        type="file"
+        accept="image/*"
+        capture="environment"
+        onChange={handleCapture}
+        className="hidden"
+      />
+
+      {/* Fixed bottom bar */}
       <div className="fixed bottom-0 left-0 right-0 z-30 border-t border-slate-200 bg-white/95 backdrop-blur-lg dark:border-slate-800 dark:bg-slate-900/95">
-        {/* Main action row */}
         <div className="mx-auto flex max-w-lg items-center justify-between gap-2 px-4 py-3">
           {/* Search Claims */}
           <Link
@@ -846,81 +1242,33 @@ function FieldModeContent() {
             <span className="text-[10px] font-medium">Search</span>
           </Link>
 
-          {/* Gallery upload */}
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept="image/*,.heic,.heif"
-            multiple
-            onChange={handleCapture}
-            className="hidden"
-          />
+          {/* Gallery — opens device photo library */}
           <button
             type="button"
             onClick={() => fileInputRef.current?.click()}
             className="flex flex-col items-center gap-1 rounded-xl px-3 py-2 text-slate-600 transition-colors hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800"
           >
-            <Plus className="h-5 w-5" />
+            <Image className="h-5 w-5" />
             <span className="text-[10px] font-medium">Gallery</span>
           </button>
 
-          {/* CAMERA BUTTON — THE BIG ONE */}
-          <input
-            ref={cameraInputRef}
-            type="file"
-            accept="image/*"
-            capture="environment"
-            onChange={handleCapture}
-            className="hidden"
-          />
+          {/* CAMERA — Opens native viewfinder */}
           <button
             type="button"
-            onClick={() => cameraInputRef.current?.click()}
+            onClick={openCamera}
             className="flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-b from-blue-500 to-blue-600 shadow-xl shadow-blue-500/30 transition-transform active:scale-95"
           >
             <Camera className="h-7 w-7 text-white" />
           </button>
 
-          {/* Measure — opens camera for reference measurement photo */}
-          <input
-            id="measure-camera-input"
-            type="file"
-            accept="image/*"
-            capture="environment"
-            onChange={(e) => {
-              // Tag the photo as a measurement reference
-              const handleMeasure = async (ev: React.ChangeEvent<HTMLInputElement>) => {
-                const files = Array.from(ev.target.files || []);
-                if (files.length === 0) return;
-                const gps = await getGPS();
-                const newPhotos: FieldPhoto[] = files.map((file) => ({
-                  id: `measure_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
-                  file,
-                  preview: URL.createObjectURL(file),
-                  latitude: gps?.latitude,
-                  longitude: gps?.longitude,
-                  timestamp: new Date().toISOString(),
-                  note: "📏 Measurement reference photo",
-                  analyzing: false,
-                  aiLabel: "Measurement Reference",
-                }));
-                setPhotos((prev) => [...prev, ...newPhotos]);
-                toast.success("Measurement photo captured! Add notes with dimensions.");
-                ev.target.value = "";
-              };
-              void handleMeasure(e);
-            }}
-            className="hidden"
-          />
+          {/* Measure — opens camera with measure mode active */}
           <button
             type="button"
             onClick={() => {
-              toast.info("Place a coin, card, or tape measure next to damage for scale reference", {
-                duration: 3000,
-              });
-              setTimeout(() => {
-                document.getElementById("measure-camera-input")?.click();
-              }, 500);
+              setMeasureMode(true);
+              setMeasurePoints([]);
+              setMeasureLines([]);
+              void openCamera();
             }}
             className="flex flex-col items-center gap-1 rounded-xl px-3 py-2 text-slate-600 transition-colors hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800"
           >
