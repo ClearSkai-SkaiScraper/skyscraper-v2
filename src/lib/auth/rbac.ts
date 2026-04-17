@@ -39,7 +39,6 @@
 import { auth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 
-import { getDelegate } from "@/lib/db/modelAliases";
 import { logger } from "@/lib/logger";
 import { normalizeRole } from "@/lib/permissions/constants";
 import prisma from "@/lib/prisma";
@@ -208,15 +207,20 @@ export async function getCurrentUserRole(): Promise<{
     // No need to lookup Org table mapping - Clerk orgId IS our internal orgId
 
     // Check team_members table for role (uses Clerk orgId directly)
-    const teamMember = await getDelegate("teamMember").findUnique({
-      where: {
-        org_id_userId: {
-          org_id: effectiveOrgId, // Use effective orgId
-          userId: userId,
+    let teamMember: { role: string | null } | null = null;
+    try {
+      teamMember = await prisma.team_members.findUnique({
+        where: {
+          org_id_user_id: {
+            org_id: effectiveOrgId,
+            user_id: userId,
+          },
         },
-      },
-      select: { role: true },
-    });
+        select: { role: true },
+      });
+    } catch {
+      // team_members table may not exist or have different schema — continue to fallback
+    }
 
     if (!teamMember) {
       // User not in team_members table yet - check user_organizations

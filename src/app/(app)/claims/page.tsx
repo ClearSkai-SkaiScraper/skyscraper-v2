@@ -317,34 +317,34 @@ export default async function ClaimsPage({ searchParams }: ClaimsPageProps) {
         </PageHero>
 
         {/* Stats Row */}
-        <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-4">
+        <div className="mb-8 grid grid-cols-1 gap-5 sm:grid-cols-2 md:grid-cols-4">
           {/* Total Value */}
-          <Card className="border-blue-200 bg-gradient-to-br from-blue-50 to-indigo-50 dark:border-blue-800 dark:from-blue-900/30 dark:to-indigo-900/30">
-            <CardHeader className="pb-2">
-              <CardTitle className="flex items-center gap-2 text-sm font-medium text-blue-800 dark:text-blue-200">
-                <DollarSign className="h-4 w-4" />
+          <Card className="border-blue-200 bg-gradient-to-br from-blue-50 to-indigo-50 shadow-sm dark:border-blue-800 dark:from-blue-900/30 dark:to-indigo-900/30">
+            <CardHeader className="pb-3 pt-5">
+              <CardTitle className="flex items-center gap-2 text-sm font-semibold text-blue-800 dark:text-blue-200">
+                <DollarSign className="h-5 w-5" />
                 Total Value
               </CardTitle>
             </CardHeader>
-            <CardContent>
-              <p className="text-2xl font-bold text-blue-700 dark:text-blue-300">
+            <CardContent className="pb-5">
+              <p className="text-3xl font-bold text-blue-700 dark:text-blue-300">
                 ${(totalValue / 100).toLocaleString()}
               </p>
-              <p className="text-xs text-blue-600">{total} claims</p>
+              <p className="mt-1 text-sm text-blue-600">{total} claims</p>
             </CardContent>
           </Card>
 
           {/* Signing Status Card */}
-          <Card className="border-sky-200 bg-gradient-to-br from-sky-50 to-blue-50 dark:border-sky-800 dark:from-sky-900/30 dark:to-blue-900/30">
-            <CardHeader className="pb-2">
-              <CardTitle className="flex items-center gap-2 text-sm font-medium text-sky-800 dark:text-sky-200">
-                <ShieldCheck className="h-4 w-4" />
+          <Card className="border-sky-200 bg-gradient-to-br from-sky-50 to-blue-50 shadow-sm dark:border-sky-800 dark:from-sky-900/30 dark:to-blue-900/30">
+            <CardHeader className="pb-3 pt-5">
+              <CardTitle className="flex items-center gap-2 text-sm font-semibold text-sky-800 dark:text-sky-200">
+                <ShieldCheck className="h-5 w-5" />
                 Signed
               </CardTitle>
             </CardHeader>
-            <CardContent>
-              <p className="text-2xl font-bold text-sky-700 dark:text-sky-300">{signedCount}</p>
-              <p className="text-xs text-sky-600">{pendingSignatureCount} pending</p>
+            <CardContent className="pb-5">
+              <p className="text-3xl font-bold text-sky-700 dark:text-sky-300">{signedCount}</p>
+              <p className="mt-1 text-sm text-sky-600">{pendingSignatureCount} pending</p>
             </CardContent>
           </Card>
 
@@ -355,18 +355,20 @@ export default async function ClaimsPage({ searchParams }: ClaimsPageProps) {
             const Icon = status.icon;
 
             return (
-              <Card key={status.id}>
-                <CardHeader className="pb-2">
-                  <CardTitle className="flex items-center gap-2 text-sm font-medium">
-                    <div className={`rounded-full ${status.color} p-1.5`}>
-                      <Icon className="h-3 w-3 text-white" />
+              <Card key={status.id} className="shadow-sm">
+                <CardHeader className="pb-3 pt-5">
+                  <CardTitle className="flex items-center gap-2 text-sm font-semibold">
+                    <div className={`rounded-full ${status.color} p-2`}>
+                      <Icon className="h-4 w-4 text-white" />
                     </div>
                     {status.label}
                   </CardTitle>
                 </CardHeader>
-                <CardContent>
-                  <p className="text-2xl font-bold">{statusClaims.length}</p>
-                  <p className="text-xs text-slate-500">${(statusValue / 100).toLocaleString()}</p>
+                <CardContent className="pb-5">
+                  <p className="text-3xl font-bold">{statusClaims.length}</p>
+                  <p className="mt-1 text-sm text-slate-500">
+                    ${(statusValue / 100).toLocaleString()}
+                  </p>
                 </CardContent>
               </Card>
             );
