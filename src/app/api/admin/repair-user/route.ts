@@ -19,6 +19,7 @@ import { clerkClient } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
 
 import { logCriticalAction } from "@/lib/audit/criticalActions";
+import { isAdminRole } from "@/lib/auth/roleCompare";
 import { withAdmin } from "@/lib/auth/withAuth";
 import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
@@ -117,10 +118,16 @@ export const POST = withAdmin(async (req: NextRequest, { orgId, userId: adminUse
               create: {
                 userId,
                 organizationId: orgIdToAdd,
-                role: membership.role === "org:admin" ? "admin" : "member",
+                role:
+                  isAdminRole(membership.role) || membership.role === "org:admin"
+                    ? "admin"
+                    : "member",
               },
               update: {
-                role: membership.role === "org:admin" ? "admin" : "member",
+                role:
+                  isAdminRole(membership.role) || membership.role === "org:admin"
+                    ? "admin"
+                    : "member",
               },
             });
           }

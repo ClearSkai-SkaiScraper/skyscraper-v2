@@ -26,6 +26,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Progress } from "@/components/ui/progress";
+import { isAdminRole } from "@/lib/auth/roleCompare";
 
 // ── Types ──────────────────────────────────────────────────────────────────
 interface ParsedRow {
@@ -415,7 +416,7 @@ export function CSVUploadDialog() {
                         </td>
                         <td className="px-3 py-2">
                           <Badge
-                            variant={row.role === "admin" ? "default" : "secondary"}
+                            variant={isAdminRole(row.role) ? "default" : "secondary"}
                             className="text-xs"
                           >
                             {row.role}

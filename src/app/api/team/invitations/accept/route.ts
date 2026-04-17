@@ -5,6 +5,7 @@ import { auth } from "@clerk/nextjs/server";
 import { createId } from "@paralleldrive/cuid2";
 import { NextRequest, NextResponse } from "next/server";
 
+import { isAdminRole } from "@/lib/auth/roleCompare";
 import { prismaMaybeModel } from "@/lib/db/prismaModel";
 import { sendWelcomeEmail } from "@/lib/email/invitations";
 import { logger } from "@/lib/logger";
@@ -141,7 +142,7 @@ export async function POST(req: NextRequest) {
 
     // Map invite role to canonical role
     const canonicalRole =
-      invitation.role === "admin" || invitation.role === "org:admin" ? "ADMIN" : "MEMBER";
+      isAdminRole(invitation.role) || invitation.role === "org:admin" ? "ADMIN" : "MEMBER";
 
     // ── 5. Create CANONICAL membership (user_organizations) ───────────
     // THIS IS THE CRITICAL FIX: Without this row, safeOrgContext/resolveOrg

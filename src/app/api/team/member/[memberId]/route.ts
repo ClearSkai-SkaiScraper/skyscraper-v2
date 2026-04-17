@@ -251,7 +251,7 @@ export const DELETE = withAdmin(
 
       // Only admins/owners can remove members
       const role = typeof authRole === "string" ? authRole.toLowerCase() : "";
-      const isOrgAdmin = role === "owner" || role === "admin";
+      const isOrgAdmin = isAdminRole(role);
       if (!isOrgAdmin) {
         return NextResponse.json({ error: "Only admins can remove team members" }, { status: 403 });
       }

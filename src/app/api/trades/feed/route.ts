@@ -10,6 +10,7 @@
 
 import { NextRequest, NextResponse } from "next/server";
 
+import { isAdminRole } from "@/lib/auth/roleCompare";
 import { withAuth } from "@/lib/auth/withAuth";
 import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
@@ -176,8 +177,7 @@ export const POST = withAuth(async (req: NextRequest, { userId }) => {
     const companyId = member?.companyId || null;
 
     // Determine display identity: "company" or "personal"
-    const isAdmin =
-      member?.isOwner || member?.isAdmin || member?.role === "owner" || member?.role === "admin";
+    const isAdmin = member?.isOwner || member?.isAdmin || isAdminRole(member?.role);
     const useCompanyIdentity = postAs === "company" && isAdmin && companyId;
 
     const authorDisplayName = useCompanyIdentity

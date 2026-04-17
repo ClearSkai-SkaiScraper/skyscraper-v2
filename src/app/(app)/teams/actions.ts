@@ -4,6 +4,7 @@
 import { currentUser } from "@clerk/nextjs/server";
 import { cache } from "react";
 
+import { isAdminRole, isManagerOrAbove } from "@/lib/auth/roleCompare";
 import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 
@@ -62,9 +63,9 @@ export const getTeamMembers = cache(async (): Promise<TeamMember[]> => {
       id: dbUser.id,
       name: dbUser.name || "Team Member",
       email: dbUser.email,
-      role: (dbUser.role === "ADMIN"
+      role: (isAdminRole(dbUser.role)
         ? "admin"
-        : dbUser.role === "MANAGER"
+        : isManagerOrAbove(dbUser.role) && !isAdminRole(dbUser.role)
           ? "manager"
           : "rep") as TeamMember["role"],
       status: "active" as const,

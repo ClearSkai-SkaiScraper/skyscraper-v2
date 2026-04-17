@@ -12,6 +12,7 @@ import crypto from "crypto";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 
+import { isAdminRole } from "@/lib/auth/roleCompare";
 import { withAuth } from "@/lib/auth/withAuth";
 import { logger } from "@/lib/observability/logger";
 import prisma from "@/lib/prisma";
@@ -40,11 +41,7 @@ export const GET = withAuth(async (req: NextRequest, { userId }) => {
       return NextResponse.json({ requests: [], message: "No company found" });
     }
 
-    const isAdmin =
-      membership.role === "owner" ||
-      membership.role === "admin" ||
-      membership.isAdmin ||
-      membership.isOwner;
+    const isAdmin = isAdminRole(membership.role) || membership.isAdmin || membership.isOwner;
 
     if (!isAdmin) {
       return NextResponse.json({ requests: [], message: "Admin access required" });
@@ -236,10 +233,7 @@ export const PATCH = withAuth(async (req: NextRequest, { userId }) => {
     }
 
     const isAdmin =
-      adminMembership.role === "owner" ||
-      adminMembership.role === "admin" ||
-      adminMembership.isAdmin ||
-      adminMembership.isOwner;
+      isAdminRole(adminMembership.role) || adminMembership.isAdmin || adminMembership.isOwner;
 
     if (!isAdmin) {
       return NextResponse.json({ error: "Admin access required" }, { status: 403 });

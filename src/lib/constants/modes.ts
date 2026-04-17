@@ -7,6 +7,8 @@
  * - Admin: Administrative tools and feature flags
  */
 
+import { isAdminRole } from "@/lib/auth/roleCompare";
+
 export type AppMode = "retail" | "claims" | "admin";
 
 export interface ModeConfig {
@@ -91,7 +93,7 @@ export function getAvailableModes(userRoles: string[] = []): AppMode[] {
   modes.push("claims");
 
   // Admin only for specific roles
-  const hasAdminRole = userRoles.some((role) => role === "admin" || role.startsWith("org:admin"));
+  const hasAdminRole = userRoles.some((role) => isAdminRole(role) || role.startsWith("org:admin"));
   if (hasAdminRole) {
     modes.push("admin");
   }

@@ -13,6 +13,7 @@ import crypto from "crypto";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 
+import { isAdminRole } from "@/lib/auth/roleCompare";
 import { withAuth } from "@/lib/auth/withAuth";
 import { logger } from "@/lib/observability/logger";
 import prisma from "@/lib/prisma";
@@ -169,8 +170,8 @@ async function handleAddEmployee(
           companyId,
           role,
           isOwner: false,
-          isAdmin: role === "admin",
-          canEditCompany: role === "admin",
+          isAdmin: isAdminRole(role),
+          canEditCompany: isAdminRole(role),
           isActive: true,
           status: "active",
           updatedAt: new Date(),
@@ -198,8 +199,8 @@ async function handleAddEmployee(
         role,
         email: input.email,
         isOwner: false,
-        isAdmin: role === "admin",
-        canEditCompany: role === "admin",
+        isAdmin: isAdminRole(role),
+        canEditCompany: isAdminRole(role),
         isActive: true,
         status: "active",
         onboardingStep: "complete",

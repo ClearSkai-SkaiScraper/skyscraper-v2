@@ -126,7 +126,7 @@ export default function CompanySeatsClient({ members, orgId }: CompanySeatsClien
 
   // Filter managers (active members who are marked as managers or admins)
   const availableManagers = memberList.filter(
-    (m) => (m.isManager || m.role === "Admin" || m.role === "admin") && m.status === "active"
+    (m) => (m.isManager || isAdminRole(m.role)) && m.status === "active"
   );
 
   /* ── Derived billing values ───────────────────────────────────── */

@@ -18,6 +18,8 @@ export async function requireAdmin(): Promise<{ userId: string; orgId: string }>
 // eslint-disable-next-line no-restricted-imports
 import { auth } from "@clerk/nextjs/server";
 
+import { isAdminRole, roleEquals, roleIn } from "@/lib/auth/roleCompare";
+
 export type UserRole = "contractor" | "adjuster" | "admin";
 
 // Platform admin emails - these users get full admin access + forever free
@@ -156,7 +158,7 @@ export async function requireOrgOwnership(orgId: string): Promise<boolean> {
  */
 export async function canEdit(): Promise<boolean> {
   const role = await getUserRole();
-  return role === "contractor" || role === "admin";
+  return roleIn(role, ["contractor", "admin"]);
 }
 
 /**
@@ -164,7 +166,7 @@ export async function canEdit(): Promise<boolean> {
  */
 export async function isAdjuster(): Promise<boolean> {
   const role = await getUserRole();
-  return role === "adjuster";
+  return roleEquals(role, "adjuster");
 }
 
 /**
@@ -172,5 +174,5 @@ export async function isAdjuster(): Promise<boolean> {
  */
 export async function isAdmin(): Promise<boolean> {
   const role = await getUserRole();
-  return role === "admin";
+  return isAdminRole(role);
 }

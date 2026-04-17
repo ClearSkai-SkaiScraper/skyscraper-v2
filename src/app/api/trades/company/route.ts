@@ -2,6 +2,7 @@ export const dynamic = "force-dynamic";
 
 import { NextRequest, NextResponse } from "next/server";
 
+import { isAdminRole } from "@/lib/auth/roleCompare";
 import { withAuth } from "@/lib/auth/withAuth";
 import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
@@ -297,7 +298,7 @@ export const GET = withAuth(async (req: NextRequest, { orgId, userId }) => {
         select: { planKey: true },
       });
       planKey = org?.planKey || "solo";
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (_e) {
       // Org lookup may fail for edge cases, use default
     }
@@ -511,11 +512,7 @@ export const GET = withAuth(async (req: NextRequest, { orgId, userId }) => {
       // Include member-level extended settings
       memberSettings: memberExtended || {},
       hasCompany: true,
-      isAdmin:
-        membership.role === "admin" ||
-        membership.role === "owner" ||
-        membership.isOwner ||
-        membership.isAdmin,
+      isAdmin: isAdminRole(membership.role) || membership.isOwner || membership.isAdmin,
       isOwner: membership.isOwner,
       canEditCompany: membership.isOwner || membership.isAdmin || membership.canEditCompany,
       companyPageUnlocked,
@@ -578,11 +575,7 @@ export const PATCH = withAuth(async (req: NextRequest, { orgId, userId }) => {
     }
 
     // Check if user has admin privileges
-    const isAdminUser =
-      membership.role === "admin" ||
-      membership.role === "owner" ||
-      membership.isOwner ||
-      membership.isAdmin;
+    const isAdminUser = isAdminRole(membership.role) || membership.isOwner || membership.isAdmin;
     if (!isAdminUser) {
       return NextResponse.json({ error: "Only admins can edit company details" }, { status: 403 });
     }
