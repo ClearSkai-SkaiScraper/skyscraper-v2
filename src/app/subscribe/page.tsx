@@ -1,6 +1,7 @@
 /* eslint-disable no-restricted-syntax */
 // eslint-disable-next-line no-restricted-imports
 import { currentUser } from "@clerk/nextjs/server";
+import { isRedirectError } from "next/dist/client/components/redirect";
 import { redirect } from "next/navigation";
 
 import { logger } from "@/lib/logger";
@@ -73,6 +74,7 @@ export default async function SubscribePage() {
       redirect("/dashboard");
     }
   } catch (e) {
+    if (isRedirectError(e)) throw e;
     logger.warn("[SUBSCRIBE] Subscription check failed", { error: e });
     // Continue to checkout — better to let them subscribe than block
   }
@@ -154,6 +156,7 @@ export default async function SubscribePage() {
       redirect(session.url);
     }
   } catch (e) {
+    if (isRedirectError(e)) throw e;
     logger.error("[SUBSCRIBE] Checkout session creation failed", { error: e });
   }
 
