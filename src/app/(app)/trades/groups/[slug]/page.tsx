@@ -11,6 +11,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
+import { roleEquals } from "@/lib/auth/roleCompare";
 import prisma from "@/lib/prisma";
 
 import GroupActions from "./_components/GroupActions";
@@ -66,8 +67,8 @@ export default async function GroupDetailPage({ params }: Props) {
     : null;
 
   const isMember = membership?.status === "active";
-  const isAdmin = membership?.role === "admin";
-  const isModerator = membership?.role === "moderator";
+  const isAdmin = roleEquals(membership?.role, "admin");
+  const isModerator = roleEquals(membership?.role, "moderator");
   const canPost = isMember && membership?.status !== "muted";
   const canManage = isAdmin || isModerator;
 

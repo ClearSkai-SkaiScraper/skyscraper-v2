@@ -1,5 +1,6 @@
 "use client";
 
+import { isAdminRole, isManagerOrAbove } from "@/lib/auth/roleCompare";
 import { AlertCircle, MoreVertical, Plus, Users } from "lucide-react";
 import Link from "next/link";
 import { useMemo, useState } from "react";
@@ -79,7 +80,7 @@ export default function TeamsClient({
             {filtered.length} member{filtered.length !== 1 && "s"}
           </div>
         </div>
-        {role === "admin" || role === "manager" ? (
+        {isManagerOrAbove(role) ? (
           <Button asChild className="rounded-xl shadow-lg shadow-sky-500/20">
             <Link href="/teams/invite">
               <Plus className="mr-2 h-4 w-4" /> Invite Member
@@ -156,9 +157,9 @@ export default function TeamsClient({
                 <div className="text-right">
                   <div
                     className={`rounded-xl px-3 py-1 text-xs font-medium capitalize ${
-                      member.role === "admin"
+                      isAdminRole(member.role)
                         ? "bg-purple-500/10 text-purple-700 dark:text-purple-300"
-                        : member.role === "manager"
+                        : isManagerOrAbove(member.role)
                           ? "bg-sky-500/10 text-sky-700 dark:text-sky-300"
                           : "bg-slate-500/10 text-slate-700 dark:text-slate-300"
                     }`}

@@ -1,6 +1,7 @@
 "use client";
 /* eslint-disable react/jsx-no-comment-textnodes */
 
+import { isAdminRole, roleEquals } from "@/lib/auth/roleCompare";
 import {
   ArrowLeft,
   GitBranch,
@@ -87,14 +88,12 @@ export default function ManageEmployeesPage() {
 
   // Filter managers (employees who are admins/managers or marked as manager)
   const availableManagers = employees.filter(
-    (e) =>
-      (e.isManager || e.isAdmin || e.role === "admin" || e.role === "owner") &&
-      e.status === "active"
+    (e) => (e.isManager || e.isAdmin || isAdminRole(e.role)) && e.status === "active"
   );
 
   useEffect(() => {
     void loadEmployees();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const loadEmployees = async () => {
@@ -114,7 +113,9 @@ export default function ManageEmployeesPage() {
       setCurrentUserId(data.currentUserId);
       // Detect if current user is a manager (for read-only mode)
       const currentEmp = (data.employees || []).find((e: Employee) => e.id === data.currentUserId);
-      setCurrentUserIsManager(currentEmp?.isManager || currentEmp?.role === "manager" || false);
+      setCurrentUserIsManager(
+        currentEmp?.isManager || roleEquals(currentEmp?.role, "manager") || false
+      );
     } catch (error) {
       logger.error("Failed to load employees:", error);
       toast.error("Failed to load employees");
@@ -388,14 +389,13 @@ export default function ManageEmployeesPage() {
                   "Unknown";
                 const initials =
                   (employee.firstName?.[0] || "") + (employee.lastName?.[0] || "") || "?";
-                const isOwner = employee.role === "owner";
+                const isOwner = roleEquals(employee.role, "owner");
                 const isSelf = employee.id === currentUserId;
 
                 return (
                   <div
                     key={employee.id}
                     className="flex items-center gap-4 rounded-lg border border-gray-200 bg-white p-4 dark:border-slate-700 dark:bg-slate-900"
-                  // eslint-disable-next-line react/jsx-no-comment-textnodes
                   >
                     <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center overflow-hidden rounded-full bg-gradient-to-br from-blue-500 to-blue-600 text-lg font-bold text-white">
                       {employee.avatar ? (
@@ -631,7 +631,7 @@ export default function ManageEmployeesPage() {
                   "Unknown";
                 const initials =
                   (employee.firstName?.[0] || "") + (employee.lastName?.[0] || "") || "?";
-                const isOwner = employee.role === "owner";
+                const isOwner = roleEquals(employee.role, "owner");
                 const isSelf = employee.id === currentUserId;
 
                 return (

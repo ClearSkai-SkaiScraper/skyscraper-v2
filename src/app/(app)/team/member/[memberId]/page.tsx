@@ -10,6 +10,7 @@
  * - Trades Network readiness
  */
 
+import { isAdminRole, isManagerOrAbove } from "@/lib/auth/roleCompare";
 import {
   Activity,
   AlertCircle,
@@ -188,9 +189,9 @@ export default async function TeamMemberProfilePage({ params }: PageProps) {
                 <div className="flex justify-center">
                   <Badge
                     className={`px-4 py-1 text-sm font-semibold ${
-                      member.role === "ADMIN"
+                      isAdminRole(member.role)
                         ? "bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300"
-                        : member.role === "MANAGER"
+                        : isManagerOrAbove(member.role)
                           ? "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300"
                           : "bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300"
                     }`}

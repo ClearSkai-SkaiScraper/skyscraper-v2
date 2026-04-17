@@ -8,6 +8,7 @@ import { CSVUploadDialog } from "@/components/team/CSVUploadDialog";
 import TeamInviteForm from "@/components/team/TeamInviteForm";
 import { TeamMemberActions } from "@/components/team/TeamMemberActions";
 import { Button } from "@/components/ui/button";
+import { isAdminRole } from "@/lib/auth/roleCompare";
 import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 import { safeOrgContext } from "@/lib/safeOrgContext";
@@ -122,7 +123,7 @@ export default async function TeamSettingsPage() {
                     <div>
                       <h3 className="flex items-center gap-2 font-semibold text-[color:var(--text)]">
                         {member.name}
-                        {member.role === "admin" && (
+                        {isAdminRole(member.role) && (
                           <span title="Admin">
                             <Crown className="h-4 w-4 text-amber-500" />
                           </span>

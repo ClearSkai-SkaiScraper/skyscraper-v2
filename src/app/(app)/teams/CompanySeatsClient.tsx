@@ -1,6 +1,7 @@
 "use client";
 /* eslint-disable react/jsx-no-comment-textnodes, no-restricted-syntax */
 
+import { isAdminRole } from "@/lib/auth/roleCompare";
 import {
   ArrowRight,
   Check,
@@ -437,7 +438,7 @@ export default function CompanySeatsClient({ members, orgId }: CompanySeatsClien
   };
 
   const handleToggleAdmin = async (member: Member) => {
-    const isCurrentlyAdmin = member.role === "Admin" || member.role === "admin";
+    const isCurrentlyAdmin = isAdminRole(member.role);
     try {
       const res = await fetch("/api/trades/company/employees", {
         method: "PATCH",
@@ -982,9 +983,7 @@ export default function CompanySeatsClient({ members, orgId }: CompanySeatsClien
                               </DropdownMenuItem>
                               <DropdownMenuItem onClick={() => handleToggleAdmin(member)}>
                                 <Shield className="mr-2 h-4 w-4" />
-                                {member.role === "Admin" || member.role === "admin"
-                                  ? "Revoke Admin"
-                                  : "Grant Admin"}
+                                {isAdminRole(member.role) ? "Revoke Admin" : "Grant Admin"}
                               </DropdownMenuItem>
                               <DropdownMenuSeparator />
                             </>
