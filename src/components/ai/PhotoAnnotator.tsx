@@ -134,7 +134,7 @@ export function PhotoAnnotator() {
               {photos.map((photo, index) => (
                 // eslint-disable-next-line react/jsx-no-comment-textnodes
                 <div key={index} className="group relative">
-                  // eslint-disable-next-line @next/next/no-img-element
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     src={URL.createObjectURL(photo)}
                     alt={`Upload ${index + 1}`}
@@ -191,7 +191,7 @@ export function PhotoAnnotator() {
                 {/* Photo */}
                 // eslint-disable-next-line react/jsx-no-comment-textnodes
                 <div className="md:col-span-1">
-                  // eslint-disable-next-line @next/next/no-img-element
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     src={result.photoUrl}
                     alt={`Analysis ${index + 1}`}

@@ -50,7 +50,7 @@ export default function TeamLibraryTab({ orgId }: { orgId?: string }) {
         {tiles.slice(0, 12).map((t) => (
           // eslint-disable-next-line react/jsx-no-comment-textnodes
           <div key={t.id} className="border p-2">
-            // eslint-disable-next-line @next/next/no-img-element
+            {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={t.photo_url}
               alt={t.display_name}

@@ -46,7 +46,7 @@ export default function LogosTab({ orgId }: { orgId?: string }) {
         />
         <div className="mt-4">Current co-logo:</div>
         {branding?.secondary_logo_url ? (
-          // eslint-disable-next-line @next/next/no-img-element
+          {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src={branding.secondary_logo_url} alt="Co logo" className="max-w-[200px]" />
         ) : (
           <div className="border p-6">Your Company Logo Here</div>

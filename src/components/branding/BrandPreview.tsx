@@ -8,7 +8,7 @@ export default function BrandPreview() {
   return (
     // eslint-disable-next-line react/jsx-no-comment-textnodes
     <div style={{ display: "flex", gap: 16, alignItems: "center", padding: 16 }}>
-      // eslint-disable-next-line @next/next/no-img-element
+      {/* eslint-disable-next-line @next/next/no-img-element */}
       <img src={`/branding/${b.org_id}/logo.svg`} alt="logo" style={{ height: 64 }} />
       <div>
         <div style={{ fontSize: 18, fontWeight: 700 }}>{b.company_name}</div>
@@ -25,7 +25,7 @@ export default function BrandPreview() {
         </div>
       // eslint-disable-next-line react/jsx-no-comment-textnodes
       </div>
-      // eslint-disable-next-line @next/next/no-img-element
+      {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
         src={`/branding/${b.org_id}/headshot.svg`}
         alt="headshot"

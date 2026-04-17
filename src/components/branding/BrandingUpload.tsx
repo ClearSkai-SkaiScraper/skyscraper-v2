@@ -80,7 +80,7 @@ export function BrandingUpload({ type, currentUrl, onUploadComplete }: BrandingU
       </label>
       <div className="rounded-lg border-2 border-dashed border-slate-300 p-6 text-center dark:border-slate-700">
         {currentUrl ? (
-          // eslint-disable-next-line @next/next/no-img-element
+          {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={currentUrl}
             alt={label}

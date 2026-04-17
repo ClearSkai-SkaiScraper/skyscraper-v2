@@ -241,7 +241,7 @@ export function UniversalContactCard({
       >
         {/* Avatar */}
         {contact.avatarUrl ? (
-          // eslint-disable-next-line @next/next/no-img-element
+          {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={contact.avatarUrl}
             alt={displayName}
@@ -314,7 +314,7 @@ export function UniversalContactCard({
           {/* Header: Avatar + Name + Badge */}
           <div className="mb-4 flex items-start gap-3">
             {contact.avatarUrl ? (
-              // eslint-disable-next-line @next/next/no-img-element
+              {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={contact.avatarUrl}
                 alt={displayName}

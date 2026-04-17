@@ -408,7 +408,7 @@ export function CompanyLeaderboard({ className }: CompanyLeaderboardProps) {
                   <div className="flex items-center gap-3">
                     {/* Avatar */}
                     {entry.avatar ? (
-                      // eslint-disable-next-line @next/next/no-img-element
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img
                         src={entry.avatar}
                         alt=""

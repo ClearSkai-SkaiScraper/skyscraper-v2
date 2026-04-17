@@ -529,7 +529,7 @@ export function CoverPageCanvas({
                 {selectedElement.src && (
                   // eslint-disable-next-line react/jsx-no-comment-textnodes
                   <div className="rounded-lg border p-2">
-                    // eslint-disable-next-line @next/next/no-img-element
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
                       src={selectedElement.src}
                       alt="Preview"
@@ -671,7 +671,7 @@ function CanvasElementRenderer({
       case "image":
       case "logo":
         return element.src ? (
-          // eslint-disable-next-line @next/next/no-img-element
+          {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={element.src}
             alt=""

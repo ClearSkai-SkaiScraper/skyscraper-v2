@@ -52,7 +52,7 @@ export function PhotoGallery({ portfolioUrls, editable = false, onRemove }: Phot
             onClick={() => openLightbox(index)}
           // eslint-disable-next-line react/jsx-no-comment-textnodes
           >
-            // eslint-disable-next-line @next/next/no-img-element
+            {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={url}
               alt={`Portfolio ${index + 1}`}
@@ -102,7 +102,7 @@ export function PhotoGallery({ portfolioUrls, editable = false, onRemove }: Phot
           {/* Image */}
           // eslint-disable-next-line react/jsx-no-comment-textnodes
           <div className="max-h-[90vh] max-w-[90vw]" onClick={(e) => e.stopPropagation()}>
-            // eslint-disable-next-line @next/next/no-img-element
+            {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={portfolioUrls[lightboxIndex]}
               alt={`Portfolio ${lightboxIndex + 1}`}

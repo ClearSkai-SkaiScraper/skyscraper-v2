@@ -28,7 +28,7 @@ export function TeamMemberPublicCard({ member }: { member: PublicMemberProfile }
       <div className="flex items-center gap-4">
         <div className="relative">
           {member.headshotUrl ? (
-            // eslint-disable-next-line @next/next/no-img-element
+            {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={member.headshotUrl}
               alt={member.name || "Profile"}

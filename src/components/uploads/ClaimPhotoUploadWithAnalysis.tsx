@@ -448,7 +448,7 @@ export function ClaimPhotoUploadWithAnalysis({
               <div className="flex min-w-0 flex-1 items-center gap-3">
                 <div className="h-10 w-10 flex-shrink-0 overflow-hidden rounded bg-gray-200 dark:bg-gray-700">
                   {previewUrls[index] ? (
-                    // eslint-disable-next-line @next/next/no-img-element
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
                       src={previewUrls[index]}
                       alt={file.name}

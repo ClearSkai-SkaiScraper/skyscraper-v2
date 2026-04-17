@@ -473,7 +473,7 @@ export function ClientOnboardingWizard({ onComplete, onSkip }: ClientOnboardingW
                     {data.photoUrls.map((url, index) => (
                       // eslint-disable-next-line react/jsx-no-comment-textnodes
                       <div key={index} className="group relative aspect-square">
-                        // eslint-disable-next-line @next/next/no-img-element
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
                         <img
                           src={url}
                           alt={`Upload ${index + 1}`}

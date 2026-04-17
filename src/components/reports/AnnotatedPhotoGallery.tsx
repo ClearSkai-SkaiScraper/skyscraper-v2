@@ -176,7 +176,7 @@ export function AnnotatedPhotoGallery({ photos, onExport }: AnnotatedPhotoGaller
               {/* Thumbnail */}
               // eslint-disable-next-line react/jsx-no-comment-textnodes
               <div className="relative h-24 w-36 flex-shrink-0 overflow-hidden rounded-md bg-slate-100">
-                // eslint-disable-next-line @next/next/no-img-element
+                {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={photo.photoUrl}
                   alt={photo.caption}
@@ -277,7 +277,7 @@ export function AnnotatedPhotoGallery({ photos, onExport }: AnnotatedPhotoGaller
           {/* Photo */}
           // eslint-disable-next-line react/jsx-no-comment-textnodes
           <div className="relative max-h-[80vh] max-w-[80vw] overflow-auto">
-            // eslint-disable-next-line @next/next/no-img-element
+            {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={selectedPhoto.photoUrl}
               alt={selectedPhoto.caption}

@@ -201,7 +201,7 @@ export function VisionAnalyzerPanel({ claimId, onAnalysisComplete }: VisionAnaly
 
           // eslint-disable-next-line react/jsx-no-comment-textnodes
           <div className="relative">
-            // eslint-disable-next-line @next/next/no-img-element
+            {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               ref={imageRef}
               src={imageUrl}

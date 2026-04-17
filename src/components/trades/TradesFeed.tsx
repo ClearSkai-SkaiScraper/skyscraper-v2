@@ -407,7 +407,7 @@ export function TradesFeed({ isAuthenticated }: TradesFeedProps) {
               {post.images && post.images.length > 0 && (
                 <div className="grid grid-cols-2 gap-2">
                   {post.images.slice(0, 4).map((image, index) => (
-                    // eslint-disable-next-line @next/next/no-img-element
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
                       key={index}
                       src={image}
