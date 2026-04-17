@@ -30,7 +30,7 @@ const DEFAULT_SETTINGS = {
 };
 
 // GET - Fetch current settings
-export const GET = withOrgScope(async (req, { userId, orgId }) => {
+export const GET = withOrgScope(async (_req: Request, { userId: _userId, orgId: _orgId }) => {
   try {
     await requirePermission("manage_users");
 
@@ -43,7 +43,7 @@ export const GET = withOrgScope(async (req, { userId, orgId }) => {
 });
 
 // PUT - Update settings
-export const PUT = withOrgScope(async (request, { userId, orgId }) => {
+export const PUT = withOrgScope(async (request, { userId: _userId, orgId: _orgId }) => {
   try {
     await requirePermission("manage_users");
 

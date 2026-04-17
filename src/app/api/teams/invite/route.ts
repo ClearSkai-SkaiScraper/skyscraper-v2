@@ -1,5 +1,6 @@
 export const dynamic = "force-dynamic";
 
+// eslint-disable-next-line no-restricted-imports
 import { clerkClient } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 import { z } from "zod";
@@ -27,6 +28,7 @@ const basePOST = async (req: Request) => {
   const { email, role } = TeamInviteSchema.parse(body);
 
   try {
+    // eslint-disable-next-line @typescript-eslint/await-thenable
     const clerk = await clerkClient();
     const invitation = await clerk.organizations.createOrganizationInvitation({
       organizationId: orgId,
@@ -62,6 +64,7 @@ const baseGET = async () => {
   const { orgId } = roleCheck;
 
   try {
+    // eslint-disable-next-line @typescript-eslint/await-thenable
     const clerk = await clerkClient();
     const { data: invitations } = await clerk.organizations.getOrganizationInvitationList({
       organizationId: orgId,

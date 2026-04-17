@@ -12,7 +12,7 @@ import { resolveUserRole } from "@/lib/permissions/server";
  * GET /api/permissions
  * Returns current user's role and permissions (Sprint 27 unified system)
  */
-export const GET = withOrgScope(async (req, { userId, orgId }) => {
+export const GET = withOrgScope(async (_req: Request, { userId: _userId, orgId: _orgId }) => {
   try {
     const user = await resolveUserRole();
 

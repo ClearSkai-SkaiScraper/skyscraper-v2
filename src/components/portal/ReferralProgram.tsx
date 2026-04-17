@@ -46,7 +46,7 @@ export function ReferralProgram({ stats, className }: ReferralProgramProps) {
         // User cancelled or error
       }
     } else {
-      handleCopy();
+      void handleCopy();
     }
   };
 

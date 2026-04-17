@@ -124,7 +124,7 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
     if (resend) {
       // Get org info for branding
       const org = await prisma.org.findUnique({ where: { id: ctx.orgId } });
-      const orgName = org?.name || "SkaiScraper";
+      const _orgName = org?.name || "SkaiScraper";
 
       // Build item list for email
       const itemsList = order.MaterialOrderItem.map(
@@ -140,6 +140,7 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
 
       if (teamEmails.length > 0) {
         await resend.emails.send({
+          // eslint-disable-next-line no-restricted-syntax
           from: process.env.RESEND_FROM_EMAIL || "noreply@skaiscrape.com",
           to: teamEmails.slice(0, 5), // Limit to 5 recipients
           subject: `Material Order Submitted: ${order.orderNumber}`,

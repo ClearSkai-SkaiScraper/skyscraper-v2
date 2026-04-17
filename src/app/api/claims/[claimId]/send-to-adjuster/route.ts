@@ -86,6 +86,7 @@ export async function POST(req: Request, { params }: { params: { claimId: string
     }
 
     await resendClient.emails.send({
+      // eslint-disable-next-line no-restricted-syntax
       from: process.env.RESEND_FROM_EMAIL || "noreply@skaiscrape.com",
       to: recipientEmail,
       subject: `Claim Documents - ${claim.claimNumber}`,

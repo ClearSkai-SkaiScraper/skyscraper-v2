@@ -12,7 +12,7 @@ import prisma from "@/lib/prisma";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-export const POST = withOrgScope(async (req, { userId, orgId }) => {
+export const POST = withOrgScope(async (req, { userId: _userId, orgId }) => {
   try {
     const body = await req.json();
     const { slug } = body;

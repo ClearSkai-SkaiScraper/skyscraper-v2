@@ -4,7 +4,7 @@ import { Clock, FileText, Loader2 } from "lucide-react";
 import { useEffect, useState } from "react";
 
 import PortalPageHero from "@/components/portal/portal-page-hero";
-import { ProgressTimeline, type ClaimStage } from "@/components/portal/ProgressTimeline";
+import { type ClaimStage,ProgressTimeline } from "@/components/portal/ProgressTimeline";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
 interface ClaimWithStage {
@@ -57,7 +57,7 @@ export default function TimelinePage() {
         setLoading(false);
       }
     }
-    fetchClaims();
+    void fetchClaims();
   }, []);
 
   function mapStatusToStage(status: string): ClaimStage {

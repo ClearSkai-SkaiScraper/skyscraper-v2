@@ -21,7 +21,7 @@ import { withAdmin } from "@/lib/auth/withAuth";
 import { logger } from "@/lib/logger";
 import { runAccuLynxMigration } from "@/lib/migrations/migration-engine";
 
-export const POST = withAdmin(async (req, { userId, orgId, role }) => {
+export const POST = withAdmin(async (req, { userId, orgId, role: _role }) => {
   try {
     // Only ADMIN/OWNER can run migrations (enforced by withAdmin)
 

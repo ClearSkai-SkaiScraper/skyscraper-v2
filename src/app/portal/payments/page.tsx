@@ -40,7 +40,7 @@ export default function PaymentsPage() {
         setLoading(false);
       }
     }
-    fetchInvoices();
+    void fetchInvoices();
   }, []);
 
   return (

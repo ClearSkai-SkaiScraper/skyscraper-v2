@@ -167,6 +167,24 @@ export async function getCurrentUserRole(): Promise<{
       } catch (e) {
         logger.warn("[RBAC] Failed membership org fallback lookup", e);
       }
+
+      // Fallback 2: derive orgId from tradesCompanyMember → company.orgId
+      if (!effectiveOrgId) {
+        try {
+          const tcm = await prisma.tradesCompanyMember.findFirst({
+            where: { userId, status: "active" },
+            select: { company: { select: { orgId: true } } },
+          });
+          if (tcm?.company?.orgId) {
+            effectiveOrgId = tcm.company.orgId;
+            logger.debug(
+              `[RBAC] Derived orgId ${effectiveOrgId} for user ${userId} via tradesCompanyMember fallback`
+            );
+          }
+        } catch (e) {
+          logger.warn("[RBAC] Failed tradesCompanyMember org fallback lookup", e);
+        }
+      }
     }
     if (!userId || !effectiveOrgId) {
       return null;
@@ -243,7 +261,16 @@ export async function getCurrentUserRole(): Promise<{
           } else if (legacyRaw === "VIEWER") {
             determinedRole = "viewer";
           } else {
-            determinedRole = "member";
+            // Last resort: check if user is a trades company owner for this org
+            try {
+              const isCompanyOwner = await prisma.tradesCompanyMember.findFirst({
+                where: { userId, isOwner: true, company: { orgId: effectiveOrgId } },
+                select: { id: true },
+              });
+              determinedRole = isCompanyOwner ? "admin" : "member";
+            } catch {
+              determinedRole = "member";
+            }
           }
         } catch {
           determinedRole = "member";

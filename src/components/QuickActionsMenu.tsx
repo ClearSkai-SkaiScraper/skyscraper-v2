@@ -49,7 +49,7 @@ export function QuickActionsMenu({
   className?: string;
 }) {
   const [isOpen, setIsOpen] = useState(false);
-  const [showHelp, setShowHelp] = useState(false);
+  const [_showHelp, _setShowHelp] = useState(false);
   const { openTaskPanel } = useTaskSlideOver();
 
   const handleSearch = useCallback(() => {

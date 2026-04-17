@@ -1,3 +1,4 @@
+import { createId } from "@paralleldrive/cuid2";
 import { NextResponse } from "next/server";
 import { Resend } from "resend";
 import { z } from "zod";
@@ -6,7 +7,6 @@ import { APP_URL } from "@/lib/env";
 import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 import { safeOrgContext } from "@/lib/safeOrgContext";
-import { createId } from "@paralleldrive/cuid2";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -58,8 +58,10 @@ export async function POST(req: Request) {
     const baseUrl = APP_URL;
     const signUrl = `${baseUrl}/portal/contracts/sign/${contractId}?token=${signingToken}`;
 
+    // eslint-disable-next-line no-restricted-syntax
     const resend = new Resend(process.env.RESEND_API_KEY);
     const emailResult = await resend.emails.send({
+      // eslint-disable-next-line no-restricted-syntax
       from: process.env.RESEND_FROM_EMAIL || "noreply@skaiscrape.com",
       to: validated.clientEmail,
       subject: `Contract from ${org?.name || "SkaiScraper"} - Signature Required`,

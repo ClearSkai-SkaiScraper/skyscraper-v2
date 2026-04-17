@@ -138,7 +138,7 @@ export const POST = withOrgScope(async (request, { userId, orgId }) => {
   }
 });
 
-export const GET = withOrgScope(async (request, { userId, orgId }) => {
+export const GET = withOrgScope(async (request, { userId: _userId, orgId }) => {
   try {
     const { searchParams } = new URL(request.url);
     const category = searchParams.get("category");

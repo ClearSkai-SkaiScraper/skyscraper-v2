@@ -36,7 +36,8 @@ export const GET = withAuth(async (request: NextRequest, { orgId, userId }) => {
     // We handle this gracefully for first-time orgs that haven't set up RBAC
     try {
       await requirePermission("view_tasks");
-    } catch (permError) {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    } catch (_permError) {
       // If permission check fails, still allow if user is in an org
       // (new orgs don't have RBAC set up, but users should still see tasks)
       if (!orgId) {

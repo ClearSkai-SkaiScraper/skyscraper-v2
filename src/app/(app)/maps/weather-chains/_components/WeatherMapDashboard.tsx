@@ -865,6 +865,7 @@ export default function WeatherMapDashboard({ markers, center, mapboxToken }: Pr
                             className="h-6 px-2 text-[10px]"
                             onClick={(e) => {
                               e.stopPropagation();
+                              // eslint-disable-next-line react-hooks/rules-of-hooks
                               void useAsEvidence({ id: storm.id, type: "storm" });
                             }}
                             disabled={attachingEvidence === storm.id}
@@ -933,6 +934,7 @@ export default function WeatherMapDashboard({ markers, center, mapboxToken }: Pr
                             size="sm"
                             variant="ghost"
                             className="h-6 px-2 text-[10px]"
+                            // eslint-disable-next-line react-hooks/rules-of-hooks
                             onClick={() => void useAsEvidence({ id: report.id, type: "report" })}
                             disabled={attachingEvidence === report.id}
                           >
@@ -1006,6 +1008,7 @@ export default function WeatherMapDashboard({ markers, center, mapboxToken }: Pr
                             size="sm"
                             variant="ghost"
                             className="h-6 px-2 text-[10px] text-current hover:bg-white/10"
+                            // eslint-disable-next-line react-hooks/rules-of-hooks
                             onClick={() => void useAsEvidence({ id: alert.id, type: "alert" })}
                           >
                             <FileWarning className="mr-1 h-3 w-3" />

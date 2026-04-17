@@ -70,7 +70,7 @@ export function useOfflineStatus() {
     const handleOnline = () => {
       setState((prev) => ({ ...prev, isOnline: true }));
       toast.success("Back online! Syncing pending changes...");
-      syncOfflineQueue();
+      void syncOfflineQueue();
     };
 
     const handleOffline = () => {

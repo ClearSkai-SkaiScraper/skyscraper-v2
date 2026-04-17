@@ -16,7 +16,7 @@ import { logger } from "@/lib/logger";
  *
  * For MVP, we generate realistic mock addresses
  */
-export const POST = withOrgScope(async (req, { userId, orgId }) => {
+export const POST = withOrgScope(async (req, { userId: _userId, orgId: _orgId }) => {
   try {
     const body = await req.json();
     const { polygon, estimatedHomes = 100 } = body;

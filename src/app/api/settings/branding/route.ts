@@ -123,6 +123,7 @@ export async function PUT(req: NextRequest) {
   } catch (error) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     if ((error as any)?.digest?.startsWith?.("NEXT_REDIRECT")) throw error;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const statusCode = (error as any)?.statusCode;
     if (statusCode === 403) {
       return NextResponse.json({ error: (error as Error).message }, { status: 403 });

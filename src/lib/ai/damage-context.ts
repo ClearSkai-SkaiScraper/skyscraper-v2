@@ -42,7 +42,7 @@ export async function buildDamageContext(params: {
   dateOfLoss?: string;
   address?: string;
 }): Promise<DamageAnalysisContext> {
-  const { claimId, orgId, propertyId, dateOfLoss, address } = params;
+  const { claimId, orgId, propertyId } = params;
 
   let weatherContext = "";
   let propertyContext = "";

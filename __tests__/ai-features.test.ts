@@ -372,8 +372,8 @@ describe("AI Features", () => {
     it("returns 429 when rate limited", async () => {
       if (!POST) return;
       mockAuthenticatedPro();
-      // Chat route uses rateLimiters.ai.check() which returns false when rate limited
-      mockRateLimiterCheck.mockResolvedValue(false);
+      // Chat route uses checkRateLimit(userId, "AI") which returns { success: false } when rate limited
+      mockCheckRateLimit.mockResolvedValueOnce({ success: false });
 
       const req = makeRequest("/api/ai/chat", {
         message: "What are the signs of hail damage?",

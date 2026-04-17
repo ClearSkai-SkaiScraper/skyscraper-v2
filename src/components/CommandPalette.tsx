@@ -329,7 +329,7 @@ export function CommandPalette({ className }: CommandPaletteProps) {
         <div className="max-h-[60vh] overflow-y-auto p-2">
           {filteredCommands.length === 0 ? (
             <div className="px-4 py-8 text-center text-sm text-muted-foreground">
-              No results found for "{search}"
+              No results found for &ldquo;{search}&rdquo;
             </div>
           ) : (
             <>

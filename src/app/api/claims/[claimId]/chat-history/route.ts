@@ -15,7 +15,7 @@ import { getRouteParams, withAuth } from "@/lib/auth/withAuth";
 import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 
-export const GET = withAuth(async (_req, { userId, orgId }, routeContext) => {
+export const GET = withAuth(async (_req: Request, { userId: _userId, orgId }, routeContext) => {
   const { claimId } = await getRouteParams<{ claimId: string }>(routeContext);
 
   try {

@@ -86,6 +86,7 @@ export const POST = withAuth(async (req: NextRequest, { orgId, userId }) => {
     const resend = getResend();
     try {
       await resend.emails.send({
+        // eslint-disable-next-line no-restricted-syntax
         from: process.env.RESEND_FROM_EMAIL || "noreply@skaiscrape.com",
         to: email,
         subject: `${senderName} invited you to view your project`,

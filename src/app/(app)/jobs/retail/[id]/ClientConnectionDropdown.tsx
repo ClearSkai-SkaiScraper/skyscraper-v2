@@ -315,8 +315,8 @@ export function ClientConnectionDropdown({ jobId, contactId }: ClientConnectionD
                   <AlertDialogTitle>Block this client?</AlertDialogTitle>
                   <AlertDialogDescription>
                     This will disconnect and block <strong>{connectedClient.name}</strong> from your
-                    network. They won't be able to reconnect automatically. You can unblock them
-                    later from your connections settings.
+                    network. They won&apos;t be able to reconnect automatically. You can unblock
+                    them later from your connections settings.
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>

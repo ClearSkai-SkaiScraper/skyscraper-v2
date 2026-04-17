@@ -80,7 +80,7 @@ export default function PropertyProfileClient({
   const [autofillSuggestions, setAutofillSuggestions] = useState<Record<string, unknown>>({});
   const [autofillConfidence, setAutofillConfidence] = useState<Record<string, string>>({});
   const [autofillReasoning, setAutofillReasoning] = useState("");
-  const [acceptedFields, setAcceptedFields] = useState<Set<string>>(new Set());
+  const [_acceptedFields, setAcceptedFields] = useState<Set<string>>(new Set());
   const [editForm, setEditForm] = useState({
     // Structure
     yearBuilt: initialProperty.yearBuilt || "",
@@ -1184,7 +1184,9 @@ export default function PropertyProfileClient({
                         </div>
                       </div>
                       <div className="text-right">
-                        {event.hailSize && <p className="text-sm">🧊 {event.hailSize}" hail</p>}
+                        {event.hailSize && (
+                          <p className="text-sm">🧊 {event.hailSize}&quot; hail</p>
+                        )}
                         {event.windSpeed && (
                           <p className="text-sm">💨 {event.windSpeed} mph winds</p>
                         )}

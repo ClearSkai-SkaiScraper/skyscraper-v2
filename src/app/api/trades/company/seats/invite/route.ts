@@ -143,6 +143,7 @@ export const POST = withAuth(async (req: NextRequest, { userId, orgId }) => {
       const resend = getResend();
       if (resend) {
         await resend.emails.send({
+          // eslint-disable-next-line no-restricted-syntax
           from: process.env.RESEND_FROM_EMAIL || "noreply@skaiscrape.com",
           to: email.toLowerCase(),
           subject: `You're invited to join ${companyName} on Skai`,

@@ -65,7 +65,7 @@ export function AIDailyBriefing({ className }: AIDailyBriefingProps) {
     else setGreeting("Good evening");
 
     // Fetch briefing data
-    fetchBriefing();
+    void fetchBriefing();
   }, []);
 
   const getIconForType = (type: string): React.ReactNode => {

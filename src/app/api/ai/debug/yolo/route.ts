@@ -45,7 +45,9 @@ export const POST = withAdmin(async (request: NextRequest, { userId }) => {
 
     const config = {
       roboflowConfigured: isRoboflowConfigured(),
+      // eslint-disable-next-line no-restricted-syntax
       apiKeySet: !!process.env.ROBOFLOW_API_KEY,
+      // eslint-disable-next-line no-restricted-syntax
       demoMode: process.env.ROBOFLOW_DEMO_MODE === "true",
     };
 
@@ -133,7 +135,9 @@ export const POST = withAdmin(async (request: NextRequest, { userId }) => {
 export const GET = withAdmin(async () => {
   return NextResponse.json({
     roboflowConfigured: isRoboflowConfigured(),
+    // eslint-disable-next-line no-restricted-syntax
     apiKeySet: !!process.env.ROBOFLOW_API_KEY,
+    // eslint-disable-next-line no-restricted-syntax
     demoMode: process.env.ROBOFLOW_DEMO_MODE === "true",
   });
 });

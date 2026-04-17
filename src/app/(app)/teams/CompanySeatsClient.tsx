@@ -505,6 +505,17 @@ export default function CompanySeatsClient({ members, orgId }: CompanySeatsClien
         </div>
       )}
 
+      {/* ── Quick Actions ────────────────────────────────────────── */}
+      <div className="flex items-center justify-end gap-3">
+        <Link
+          href="/trades/company/employees"
+          className="inline-flex items-center gap-2 rounded-xl bg-indigo-600 px-4 py-2.5 text-sm font-medium text-white shadow-sm transition hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600"
+        >
+          <Users className="h-4 w-4" />
+          Manage Employees
+        </Link>
+      </div>
+
       {/* ── Beta Banner ──────────────────────────────────────────── */}
       {process.env.NEXT_PUBLIC_BETA_MODE === "true" && !hasSubscription && (
         <div className="rounded-2xl border border-blue-200 bg-blue-50/80 p-5 backdrop-blur-xl dark:border-blue-800 dark:bg-blue-950/30">

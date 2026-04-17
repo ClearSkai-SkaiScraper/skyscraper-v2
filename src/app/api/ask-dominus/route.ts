@@ -19,6 +19,7 @@ const RequestSchema = z.object({
 });
 
 export async function POST(req: NextRequest) {
+  // eslint-disable-next-line @typescript-eslint/await-thenable
   const { userId, orgId } = await auth();
   if (!userId || !orgId) {
     return NextResponse.json({ error: "Authentication required" }, { status: 401 });

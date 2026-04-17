@@ -75,13 +75,16 @@ describe("vin/cart — org isolation", () => {
 
   it("DELETE verifies cart ownership with orgId before deleting", () => {
     // The DELETE handler must use findFirst with orgId before calling delete
-    const deleteSection = src.slice(src.lastIndexOf("async function DELETE"));
+    // Route uses `export const DELETE = withOrgScope(...)` pattern
+    const deleteStart = src.lastIndexOf("export const DELETE");
+    const deleteSection = src.slice(deleteStart);
     expect(deleteSection).toContain("findFirst");
     expect(deleteSection).toContain("orgId");
   });
 
   it("DELETE does NOT use bare delete without ownership check", () => {
-    const deleteSection = src.slice(src.lastIndexOf("async function DELETE"));
+    const deleteStart = src.lastIndexOf("export const DELETE");
+    const deleteSection = src.slice(deleteStart);
     // Should not have a delete call that isn't preceded by a findFirst
     const lines = deleteSection.split("\n");
     const deleteLines = lines.filter((l) => l.includes(".delete(") && !l.trim().startsWith("//"));
@@ -93,10 +96,10 @@ describe("vin/cart — org isolation", () => {
   });
 
   it("PUT verifies item ownership with orgId before updating", () => {
-    const putSection = src.slice(
-      src.indexOf("async function PUT"),
-      src.indexOf("async function DELETE")
-    );
+    // Route uses `export const PUT = withOrgScope(...)` pattern
+    const putStart = src.indexOf("export const PUT");
+    const deleteStart = src.lastIndexOf("export const DELETE");
+    const putSection = src.slice(putStart, deleteStart);
     expect(putSection).toContain("findFirst");
     expect(putSection).toContain("orgId");
   });

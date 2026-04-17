@@ -71,11 +71,13 @@ export const GET = withAuth(async (req: NextRequest, { orgId }, routeParams) => 
         companyId: string;
         status: string;
         assignedAt: Date;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         data: any;
       }
     >();
 
     for (const event of assignments) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const data = event.metadata as any;
       const companyId = data?.companyId;
       if (companyId && !contractorMap.has(companyId)) {
@@ -239,6 +241,8 @@ export const POST = withAuth(async (req: NextRequest, { orgId, userId }, routePa
     // Send notification email to contractor
     if (company.email) {
       try {
+        // eslint-disable-next-line no-restricted-syntax
+        const appUrl = process.env.NEXT_PUBLIC_APP_URL || "";
         await safeSendEmail({
           to: company.email,
           subject: `New Job Assignment - ${claim.claimNumber || claim.title}`,
@@ -257,7 +261,7 @@ export const POST = withAuth(async (req: NextRequest, { orgId, userId }, routePa
               
               <p>Log in to your Trades Network dashboard to view the full details and accept this assignment.</p>
               
-              <p><a href="${process.env.NEXT_PUBLIC_APP_URL}/trades/jobs">View Your Jobs</a></p>
+              <p><a href="${appUrl}/trades/jobs">View Your Jobs</a></p>
             `,
         });
       } catch (e) {

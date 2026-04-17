@@ -94,7 +94,7 @@ const STEPS = [
   { key: "packet", label: "Claim Packet", icon: FileText, description: "Generate & export" },
 ] as const;
 
-type StepKey = (typeof STEPS)[number]["key"];
+type _StepKey = (typeof STEPS)[number]["key"];
 
 // ---------------------------------------------------------------------------
 // Component
@@ -223,7 +223,7 @@ export default function ClaimPipelinePage() {
   // ---- Auto-start scan when entering step 2 ----
   useEffect(() => {
     if (currentStep === 1 && !state.analysisComplete && !scanning) {
-      runAIScan();
+      void runAIScan();
     }
   }, [currentStep, state.analysisComplete, scanning, runAIScan]);
 

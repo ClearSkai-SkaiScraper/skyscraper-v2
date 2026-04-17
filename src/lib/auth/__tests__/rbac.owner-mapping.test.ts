@@ -41,11 +41,13 @@ vi.mock("@/lib/permissions/constants", () => ({
   normalizeRole: (r: string) => (r || "").toLowerCase(),
 }));
 
+// eslint-disable-next-line no-restricted-imports
 import { auth } from "@clerk/nextjs/server";
-// @ts-expect-error — resolved via vitest "@" alias at runtime
-import prisma from "@/lib/prisma";
+
 // @ts-expect-error — resolved via vitest "@" alias at runtime
 import { getCurrentUserRole } from "@/lib/auth/rbac";
+// @ts-expect-error — resolved via vitest "@" alias at runtime
+import prisma from "@/lib/prisma";
 
 describe("getCurrentUserRole — OWNER mapping regression", () => {
   const mockAuth = auth as unknown as ReturnType<typeof vi.fn>;

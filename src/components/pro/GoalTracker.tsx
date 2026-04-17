@@ -71,7 +71,7 @@ export function GoalTracker({ className }: GoalTrackerProps) {
 
   useEffect(() => {
     // Fetch goals from API
-    fetchGoals();
+    void fetchGoals();
   }, []);
 
   const fetchGoals = async () => {

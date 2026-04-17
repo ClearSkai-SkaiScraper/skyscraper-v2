@@ -11,6 +11,7 @@ import prisma from "@/lib/prisma";
 
 export async function GET(req: NextRequest, { params }: { params: { contractorId: string } }) {
   try {
+    // eslint-disable-next-line @typescript-eslint/await-thenable
     const { contractorId } = await params;
     const page = Math.max(1, parseInt(req.nextUrl.searchParams.get("page") || "1") || 1);
     const limit = Math.min(

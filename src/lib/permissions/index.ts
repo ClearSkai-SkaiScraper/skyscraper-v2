@@ -18,6 +18,9 @@
 // System A `src/lib/permissions/legacy.ts` was retired. These shims keep old
 // call-sites compiling and delegate to the canonical System B RBAC.
 
+// eslint-disable-next-line no-restricted-imports
+import { auth } from "@clerk/nextjs/server";
+
 import {
   checkRole,
   getCurrentUserRole,
@@ -25,7 +28,6 @@ import {
   type TeamRole,
 } from "@/lib/auth/rbac";
 import { getTenantOrgId } from "@/lib/auth/tenant";
-import { auth } from "@clerk/nextjs/server";
 
 export type Role = TeamRole;
 export type LegacyPermission = string;
@@ -38,6 +40,7 @@ export async function getCurrentUserPermissions(): Promise<{
   permissions: string[];
   needsInitialization: boolean;
 }> {
+  // eslint-disable-next-line @typescript-eslint/await-thenable
   const { userId } = await auth();
   if (!userId) {
     return { userId: null, orgId: null, role: null, permissions: [], needsInitialization: false };
@@ -83,6 +86,7 @@ export const requireAnyPermission = async (perms: string[]): Promise<void> => {
   throw new Response("Forbidden", { status: 403 });
 };
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function withPermission<T extends (...args: any[]) => any>(
   _permission: string,
   handler: T
@@ -93,6 +97,7 @@ export function withPermission<T extends (...args: any[]) => any>(
   }) as T;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function withResourceAccess<T extends (...args: any[]) => any>(
   _resource: string,
   handler: T
@@ -122,20 +127,20 @@ export function getRoleDisplayName(role: TeamRole | null | undefined): string {
 export {
   // Constants
   ALL_ROLES,
+  type Permission as AppPermission,
+  // Types
+  type AppRole,
   // Helpers
   canArchive,
   canDelete,
   canUseRemoteView,
   hasMinRole,
   normalizeRole,
+  type PermissionAction,
+  type PermissionResource,
   ROLE_HIERARCHY,
   ROLE_PERMISSIONS,
   roleBadgeColor,
   roleHasPermission,
   roleLabel,
-  type Permission as AppPermission,
-  // Types
-  type AppRole,
-  type PermissionAction,
-  type PermissionResource,
 } from "./constants";

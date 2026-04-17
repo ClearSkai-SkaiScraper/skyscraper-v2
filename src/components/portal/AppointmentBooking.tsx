@@ -7,7 +7,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
-interface TimeSlot {
+interface _TimeSlot {
   date: string;
   time: string;
   available: boolean;

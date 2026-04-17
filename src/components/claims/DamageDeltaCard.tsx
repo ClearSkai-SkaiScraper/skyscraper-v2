@@ -63,7 +63,7 @@ interface DamageDeltaCardProps {
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
-function formatCurrency(cents: number): string {
+function _formatCurrency(cents: number): string {
   return new Intl.NumberFormat("en-US", {
     style: "currency",
     currency: "USD",
@@ -113,7 +113,7 @@ export function DamageDeltaCard({ claimId, className }: DamageDeltaCardProps) {
       }
     }
 
-    fetchDelta();
+    void fetchDelta();
     return () => {
       cancelled = true;
     };

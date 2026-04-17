@@ -10,14 +10,15 @@ export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
 import crypto from "crypto";
-
 import { NextRequest, NextResponse } from "next/server";
 
 import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 
 const SHARE_SECRET =
+  // eslint-disable-next-line no-restricted-syntax
   process.env.REPORT_SHARE_SECRET ||
+  // eslint-disable-next-line no-restricted-syntax
   process.env.WEATHER_SHARE_SECRET ||
   "skaiscraper-share-secret-fallback";
 

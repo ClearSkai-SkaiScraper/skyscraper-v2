@@ -89,6 +89,7 @@ export async function POST(req: Request) {
       : "User";
     const userEmail =
       user?.emailAddresses?.[0]?.emailAddress ||
+      // eslint-disable-next-line no-restricted-syntax
       `${userId}@${process.env.EMAIL_DOMAIN || "skaiscrape.com"}`;
 
     logger.debug(`[bootstrap] Starting for user: ${userId} clerkOrgId: ${clerkOrgId}`);
@@ -231,6 +232,7 @@ export async function POST(req: Request) {
         // Handle email unique constraint conflict — another clerk user might have same email
         if (userErr?.code === "P2002" && userErr?.meta?.target?.includes?.("email")) {
           logger.warn(`[bootstrap] Email conflict for ${userEmail}, using fallback email`);
+          // eslint-disable-next-line no-restricted-syntax
           const fallbackEmail = `${userId}@${process.env.EMAIL_DOMAIN || "skaiscrape.com"}`;
           await tx.users.upsert({
             where: { clerkUserId: userId },

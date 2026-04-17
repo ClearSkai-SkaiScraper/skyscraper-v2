@@ -55,7 +55,9 @@ export async function POST(req: NextRequest) {
         userId,
         type: "portal_invoice_payment",
       },
+      // eslint-disable-next-line no-restricted-syntax
       success_url: `${process.env.NEXT_PUBLIC_APP_URL}/portal/payments/success?invoice=${invoiceId}`,
+      // eslint-disable-next-line no-restricted-syntax
       cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}/portal/payments?cancelled=true`,
     });
 

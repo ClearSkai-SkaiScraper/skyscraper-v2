@@ -2,8 +2,8 @@ export const dynamic = "force-dynamic";
 
 import { NextRequest, NextResponse } from "next/server";
 
-import { withAuth } from "@/lib/auth/withAuth";
 import { roleIn } from "@/lib/auth/roleCompare";
+import { withAuth } from "@/lib/auth/withAuth";
 import { prismaModel } from "@/lib/db/prismaModel";
 import { sendInvitationEmail } from "@/lib/email/invitations";
 import { logger } from "@/lib/logger";

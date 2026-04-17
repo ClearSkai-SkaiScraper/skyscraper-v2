@@ -88,7 +88,7 @@ export async function POST(req: NextRequest) {
       city,
       state,
       zipCode,
-      county,
+      // county unused
       squareFootage,
       yearBuilt,
       roofType,

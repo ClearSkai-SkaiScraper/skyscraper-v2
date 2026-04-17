@@ -142,7 +142,7 @@ function SignaturePad({ onSave, onClear }: SignaturePadProps) {
   );
 }
 
-export function ContractBuilderClient({ orgId, userId }: ContractBuilderClientProps) {
+export function ContractBuilderClient({ orgId, userId: _userId }: ContractBuilderClientProps) {
   const [selectedType, setSelectedType] = useState<ContractType | null>(null);
   const [selectedJobOrClaim, setSelectedJobOrClaim] = useState<string>("");
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);

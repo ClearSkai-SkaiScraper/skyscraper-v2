@@ -14,7 +14,6 @@ export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
 import crypto from "crypto";
-
 import { NextRequest, NextResponse } from "next/server";
 
 import { logger } from "@/lib/logger";
@@ -22,7 +21,9 @@ import prisma from "@/lib/prisma";
 import { safeOrgContext } from "@/lib/safeOrgContext";
 
 const SHARE_SECRET =
+  // eslint-disable-next-line no-restricted-syntax
   process.env.REPORT_SHARE_SECRET ||
+  // eslint-disable-next-line no-restricted-syntax
   process.env.WEATHER_SHARE_SECRET ||
   "skaiscraper-share-secret-fallback";
 
@@ -55,7 +56,9 @@ export async function POST(
 
     const token = generateToken(claimId);
     const baseUrl =
+      // eslint-disable-next-line no-restricted-syntax
       process.env.NEXT_PUBLIC_APP_URL ||
+      // eslint-disable-next-line no-restricted-syntax
       (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "http://localhost:3000");
     const shareUrl = `${baseUrl}/share/claim/${token}`;
 

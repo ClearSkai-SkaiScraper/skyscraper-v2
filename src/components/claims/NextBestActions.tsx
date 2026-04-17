@@ -144,7 +144,7 @@ export function NextBestActions({ claimId, className }: NextBestActionsProps) {
       }
     }
 
-    fetchActions();
+    void fetchActions();
     return () => {
       cancelled = true;
     };

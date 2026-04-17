@@ -157,6 +157,7 @@ export default function ClaimsPipeline({ claims: initialClaims = [] }: { claims:
             return;
           }
         }
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       } catch (_err) {
         logger.debug("AI suggestion unavailable, proceeding with manual update");
       }

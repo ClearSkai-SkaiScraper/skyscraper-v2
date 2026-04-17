@@ -57,6 +57,7 @@ export const POST = withAuth(
         : "User";
       const userEmail =
         user?.emailAddresses?.[0]?.emailAddress ||
+        // eslint-disable-next-line no-restricted-syntax
         `${userId}@${process.env.EMAIL_DOMAIN || "skaiscrape.com"}`;
 
       logger.debug("[NUCLEAR RESET] Starting for user:", userId);

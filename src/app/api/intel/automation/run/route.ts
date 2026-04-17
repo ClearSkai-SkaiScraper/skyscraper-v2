@@ -6,7 +6,7 @@ import { withOrgScope } from "@/lib/auth/tenant";
 import { runSkaiAutomations } from "@/lib/intel/automation/engine";
 import { logger } from "@/lib/logger";
 
-export const POST = withOrgScope(async (req, { userId, orgId }) => {
+export const POST = withOrgScope(async (req, { userId: _userId, orgId }) => {
   try {
     const { claimId } = await req.json();
 

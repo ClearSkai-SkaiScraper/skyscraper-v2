@@ -16,7 +16,7 @@ import { canUseRemoteView, hasMinRole, normalizeRole } from "@/lib/permissions/c
 import { resolveUserRole } from "@/lib/permissions/server";
 import prisma from "@/lib/prisma";
 
-export const GET = withOrgScope(async (req, { userId, orgId }) => {
+export const GET = withOrgScope(async (_req: Request, { userId: _userId, orgId: _orgId }) => {
   try {
     const user = await resolveUserRole();
     if (!user) {

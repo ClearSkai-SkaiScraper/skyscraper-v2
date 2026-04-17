@@ -48,7 +48,7 @@ export async function POST(_req: Request, { params }: { params: Promise<{ id: st
     const propertyId = profile?.propertyId ?? id;
 
     // 2. Gather all related records in parallel
-    const [baseProp, claims, jobs, inspections, measurementOrders] = await Promise.all([
+    const [baseProp, claims, jobs, inspections, _measurementOrders] = await Promise.all([
       prisma.properties.findUnique({ where: { id: propertyId } }).catch(() => null),
       prisma.claims
         .findMany({

@@ -188,7 +188,7 @@ function FieldModeContent() {
 
   // Check GPS on mount — with retry
   useEffect(() => {
-    getGPS(2).then((result) => {
+    void getGPS(2).then((result) => {
       setGpsStatus(result ? "active" : "unavailable");
     });
   }, []);
@@ -367,7 +367,7 @@ function FieldModeContent() {
     setDragOverPhotoId(null);
   }, []);
 
-  const updatePhotoNote = useCallback((id: string, note: string) => {
+  const _updatePhotoNote = useCallback((id: string, note: string) => {
     setPhotos((prev) => prev.map((p) => (p.id === id ? { ...p, note } : p)));
   }, []);
 

@@ -12,7 +12,7 @@ import type { AiVendorSuggestion } from "@/lib/vendors/vin-types";
 
 export const dynamic = "force-dynamic";
 
-export const POST = withOrgScope(async (request, { userId, orgId }) => {
+export const POST = withOrgScope(async (request, { userId: _userId, orgId }) => {
   try {
     const body = await request.json();
     const {

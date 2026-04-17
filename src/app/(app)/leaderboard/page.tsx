@@ -6,6 +6,7 @@ import { NoOrgMembershipBanner } from "@/components/guards/NoOrgMembershipBanner
 import { PageContainer } from "@/components/layout/PageContainer";
 import { PageHero } from "@/components/layout/PageHero";
 import { getOrgContext } from "@/lib/org/getOrgContext";
+
 import { GoalProgressBar } from "./_components/GoalProgressBar";
 
 export const dynamic = "force-dynamic";

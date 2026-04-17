@@ -59,6 +59,31 @@ export const POST = withAuth(async (req: NextRequest, { userId }) => {
 
     const companyName = member.company?.name || "your company";
 
+    // Ensure user has a user_organizations record for the company's org
+    // This is critical for safeOrgContext / RBAC / Remote View to work
+    if (member.company?.orgId) {
+      try {
+        const existingUo = await prisma.user_organizations.findFirst({
+          where: { userId, organizationId: member.company.orgId },
+        });
+        if (!existingUo) {
+          await prisma.user_organizations.create({
+            data: {
+              userId,
+              organizationId: member.company.orgId,
+              role: "MEMBER",
+            },
+          });
+          logger.info("[Seats] Created user_organizations record for new member", {
+            userId,
+            orgId: member.company.orgId,
+          });
+        }
+      } catch (uoErr) {
+        logger.warn("[Seats] user_organizations upsert failed (non-blocking):", uoErr);
+      }
+    }
+
     // Find the company owner (via isOwner flag on tradesCompanyMember)
     const ownerMember = await prisma.tradesCompanyMember.findFirst({
       where: { companyId: member.companyId, isOwner: true },

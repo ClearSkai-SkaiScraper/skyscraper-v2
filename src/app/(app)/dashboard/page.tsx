@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
+import { GoalProgressBar } from "@/app/(app)/leaderboard/_components/GoalProgressBar";
 import { AsyncBoundary } from "@/components/AsyncBoundary";
 import { CompanyLeaderboard } from "@/components/dashboard/CompanyLeaderboard";
 import { WeatherSummaryCard } from "@/components/dashboard/WeatherSummaryCard";
@@ -15,7 +16,6 @@ import { getOrgLocation } from "@/lib/org/getOrgLocation";
 import { safeOrgContext } from "@/lib/safeOrgContext";
 import { getDashboardWeather } from "@/lib/weather/weatherstack";
 
-import { GoalProgressBar } from "@/app/(app)/leaderboard/_components/GoalProgressBar";
 import AIInsightsWidget from "./_components/AIInsightsWidget";
 import CompanyBrandingPreview from "./_components/CompanyBrandingPreview";
 import DOLWeatherWidget from "./_components/DOLWeatherWidget";

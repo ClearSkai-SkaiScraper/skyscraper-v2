@@ -52,7 +52,9 @@ function severityLabel(s: string | null): string {
 
 export default function WeatherMapClient({ markers, center, mapboxToken }: Props) {
   const mapContainer = useRef<HTMLDivElement>(null);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const mapRef = useRef<any>(null);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const mapboxRef = useRef<any>(null);
   const [mapReady, setMapReady] = useState(false);
   const [selected, setSelected] = useState<WeatherClaimMarker | null>(null);
@@ -170,6 +172,7 @@ export default function WeatherMapClient({ markers, center, mapboxToken }: Props
     });
 
     // Click handler
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     map.on("click", "weather-claims-layer", (e: any) => {
       const feature = e.features?.[0];
       if (!feature) return;

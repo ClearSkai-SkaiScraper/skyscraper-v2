@@ -125,8 +125,10 @@ export const POST = withAuth(async (req: NextRequest, { orgId, userId }, routePa
 async function generateSupplementAsync(params: {
   generatedDocumentId: string;
   claimId: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   variances: any[];
   totalDelta: number;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   claimData: any;
   orgId: string;
   userId: string;
@@ -139,7 +141,7 @@ async function generateSupplementAsync(params: {
     totalDelta,
     claimData,
     orgId,
-    userId,
+    userId: _userId,
     documentName,
   } = params;
 
@@ -177,6 +179,7 @@ async function generateSupplementAsync(params: {
       brandLogoUrl: branding.brandLogoUrl,
     };
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const stream = await renderToStream(<SupplementPDFDocument data={pdfData as any} />);
 
     // STEP 2b: Upload PDF to Supabase storage

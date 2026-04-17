@@ -12,7 +12,7 @@ import { withOrgScope } from "@/lib/auth/tenant";
 import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 
-export const POST = withOrgScope(async (req, { userId, orgId }) => {
+export const POST = withOrgScope(async (req, { userId: _userId, orgId }) => {
   try {
     const body = await req.json();
     const step = Number(body.step) || 0;

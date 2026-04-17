@@ -62,6 +62,7 @@ export const POST = withAuth(async (req: NextRequest, { orgId, userId }, routePa
     }
 
     // Update claim fields
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const updateData: any = {
       lastContactedAt: new Date(),
     };

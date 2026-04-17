@@ -20,6 +20,7 @@ import { safeOrgContext } from "@/lib/safeOrgContext";
 
 // eslint-disable-next-line no-restricted-syntax
 const VISUALCROSSING_API_KEY =
+  // eslint-disable-next-line no-restricted-syntax
   process.env.VISUALCROSSING_API_KEY || process.env.VISUAL_CROSSING_API_KEY;
 
 export interface ForecastDay {

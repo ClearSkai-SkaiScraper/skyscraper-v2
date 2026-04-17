@@ -10,9 +10,9 @@
  * Returns string[] of clerkUserIds when scoping is needed.
  */
 
+import { isAdminRole, roleEquals } from "@/lib/auth/roleCompare";
 import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
-import { isAdminRole, roleEquals } from "@/lib/auth/roleCompare";
 
 export async function getVisibleUserIds(
   clerkUserId: string,

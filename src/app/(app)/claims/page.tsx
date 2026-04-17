@@ -317,7 +317,7 @@ export default async function ClaimsPage({ searchParams }: ClaimsPageProps) {
         </PageHero>
 
         {/* Stats Row */}
-        <div className="mb-6 grid grid-cols-1 gap-4 md:grid-cols-6">
+        <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-4">
           {/* Total Value */}
           <Card className="border-blue-200 bg-gradient-to-br from-blue-50 to-indigo-50 dark:border-blue-800 dark:from-blue-900/30 dark:to-indigo-900/30">
             <CardHeader className="pb-2">

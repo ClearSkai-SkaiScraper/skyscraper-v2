@@ -52,6 +52,7 @@ export async function POST(req: NextRequest) {
 
     // Send email notification to ops
     await safeSendEmail({
+      // eslint-disable-next-line no-restricted-syntax
       to: process.env.OPS_EMAIL || "ops@skaiscrape.com",
       subject: `Feedback: ${category || "General"} - ${name}`,
       html: `

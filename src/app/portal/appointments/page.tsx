@@ -51,7 +51,7 @@ export default function AppointmentsPage() {
         setLoading(false);
       }
     }
-    fetchClaims();
+    void fetchClaims();
   }, []);
 
   const selectedClaim = claims.find((c) => c.id === selectedClaimId);

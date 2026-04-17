@@ -52,6 +52,7 @@ export function ClientRowActions({
       }
       toast.success(`"${name}" has been deleted.`);
       router.refresh();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       toast.error(error.message || "Failed to delete contact");
     } finally {
@@ -77,6 +78,7 @@ export function ClientRowActions({
       }
       toast.success(`"${name}" has been removed from your connections.`);
       router.refresh();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       toast.error(error.message || "Failed to remove connection");
     } finally {
@@ -104,6 +106,7 @@ export function ClientRowActions({
       }
       toast.success(`"${name}" has been blocked.`);
       router.refresh();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       toast.error(error.message || "Failed to block user");
     } finally {

@@ -15,7 +15,9 @@ import { useParams, useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 
+import { DamageDeltaCard } from "@/components/claims/DamageDeltaCard";
 import { EditableField } from "@/components/claims/EditableField";
+import { NextBestActions } from "@/components/claims/NextBestActions";
 import {
   type UniversalContact,
   UniversalContactCard,
@@ -27,9 +29,6 @@ import { ClaimWorkspaceSkeleton } from "@/components/loading/LoadingStates";
 import { retryQueue } from "@/lib/client/retryQueue";
 import { logger } from "@/lib/logger";
 import { getWorkflowStatusInfo, mapToWorkflowStatus, WORKFLOW_STATUSES } from "@/lib/statusMapping";
-
-import { DamageDeltaCard } from "@/components/claims/DamageDeltaCard";
-import { NextBestActions } from "@/components/claims/NextBestActions";
 
 import { CarrierExportButton } from "../_components/CarrierExportButton";
 import { ClaimsSidebar } from "../_components/ClaimsSidebar";

@@ -69,6 +69,7 @@ export const POST = withAuth(async (req: NextRequest, { orgId }) => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     if ((error as any)?.digest?.startsWith?.("NEXT_REDIRECT")) throw error;
     // Propagate RBAC 403 errors
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const statusCode = (error as any)?.statusCode;
     if (statusCode === 403) {
       return NextResponse.json({ error: (error as Error).message }, { status: 403 });

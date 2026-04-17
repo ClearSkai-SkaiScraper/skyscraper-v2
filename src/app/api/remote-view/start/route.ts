@@ -19,7 +19,7 @@ import { canUseRemoteView, hasMinRole } from "@/lib/permissions/constants";
 import { resolveUserRole } from "@/lib/permissions/server";
 import prisma from "@/lib/prisma";
 
-export const POST = withOrgScope(async (req, { userId, orgId }) => {
+export const POST = withOrgScope(async (req, { userId: _userId, orgId: _orgId }) => {
   try {
     const user = await resolveUserRole();
     if (!user) {
@@ -45,7 +45,7 @@ export const POST = withOrgScope(async (req, { userId, orgId }) => {
       return NextResponse.json({ error: "Cannot Remote View yourself" }, { status: 400 });
     }
 
-    // Verify target user is in the same org
+    // Verify target user is in the same org (check user_organizations first, then tradesCompanyMember)
     const targetMembership = await prisma.user_organizations.findFirst({
       where: {
         userId: targetUserId,
@@ -54,10 +54,20 @@ export const POST = withOrgScope(async (req, { userId, orgId }) => {
     });
 
     if (!targetMembership) {
-      return NextResponse.json(
-        { error: "Target user not found in your organization" },
-        { status: 404 }
-      );
+      // Fallback: check if target is a trades company member in the same org
+      const targetTradesMember = await prisma.tradesCompanyMember.findFirst({
+        where: {
+          userId: targetUserId,
+          company: { orgId: user.orgId },
+        },
+      });
+
+      if (!targetTradesMember) {
+        return NextResponse.json(
+          { error: "Target user not found in your organization" },
+          { status: 404 }
+        );
+      }
     }
 
     // If manager (not admin/owner), verify the target is a direct report

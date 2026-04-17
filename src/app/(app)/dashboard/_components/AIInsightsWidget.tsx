@@ -176,7 +176,7 @@ export default function AIInsightsWidget() {
 
   // Compute badge counts
   const stalledCount = stalledSummary?.total ?? 0;
-  const recCount = visibleRecommendations.length;
+  const _recCount = visibleRecommendations.length;
   const urgentRecCount = recSummary?.high ?? 0;
 
   return (

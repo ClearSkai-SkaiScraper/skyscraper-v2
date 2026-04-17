@@ -41,7 +41,7 @@ What would you like help with?`,
   const [messages, setMessages] = useState<Message[]>([welcomeMessage]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [historyLoaded, setHistoryLoaded] = useState(false);
+  const [_historyLoaded, setHistoryLoaded] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   // Scroll to bottom on new messages
@@ -72,7 +72,7 @@ What would you like help with?`,
       }
     }
 
-    loadHistory();
+    void loadHistory();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [claimId]);
 

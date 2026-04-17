@@ -591,7 +591,7 @@ export function GoalProgressBar() {
                         <button
                           type="button"
                           onClick={() => {
-                            handleQuickLog(metric.category, quickLogValue);
+                            void handleQuickLog(metric.category, quickLogValue);
                             setQuickLog(null);
                             setQuickLogValue(0);
                           }}

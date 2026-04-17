@@ -195,6 +195,75 @@ export async function safeOrgContext(): Promise<SafeOrgContext> {
       }
     }
 
+    // 3) TRADES COMPANY FALLBACK: derive org from tradesCompanyMember → company.orgId
+    if (memberships.length === 0) {
+      try {
+        const tcm = await prisma.tradesCompanyMember.findFirst({
+          where: { userId, status: "active" },
+          select: {
+            company: { select: { orgId: true } },
+            role: true,
+            isOwner: true,
+          },
+        });
+        if (tcm?.company?.orgId) {
+          const orgId = tcm.company.orgId;
+          const org = await prisma.org.findUnique({
+            where: { id: orgId },
+            select: { id: true },
+          });
+          if (org) {
+            logger.warn(
+              "[SAFE_ORG_CONTEXT] Fallback activated: using tradesCompanyMember → company.orgId (missing UserOrganization row)",
+              { userId, orgId }
+            );
+
+            // Auto-heal: create the missing user_organizations row
+            try {
+              await prisma.user_organizations.create({
+                data: {
+                  userId,
+                  organizationId: orgId,
+                  role: tcm.isOwner ? "ADMIN" : "MEMBER",
+                },
+              });
+              logger.info("[SAFE_ORG_CONTEXT] Auto-created user_organizations record", {
+                userId,
+                orgId,
+              });
+            } catch {
+              // Might already exist (race condition) — ignore
+            }
+
+            await ensureWorkspaceForOrg({ orgId, userId }).catch((err) => {
+              logger.error("[safeOrgContext] ensureWorkspace failed (non-fatal):", err);
+            });
+
+            const determinedRole = tcm.isOwner ? "admin" : tcm.role || "member";
+            return {
+              status: "ok",
+              userId,
+              orgId,
+              role: determinedRole,
+              membership: {
+                id: `synthetic_tcm_${orgId}_${userId}`,
+                userId,
+                organizationId: orgId,
+                role: determinedRole,
+                synthetic: true,
+                reason: "tradesCompanyMember-fallback",
+              },
+              ok: true,
+              reason: null,
+              organizationId: orgId,
+            };
+          }
+        }
+      } catch (tcmErr) {
+        logger.warn("[SAFE_ORG_CONTEXT] tradesCompanyMember fallback failed:", tcmErr);
+      }
+    }
+
     // ── Check for pending invitations BEFORE auto-creating an org ──────
     // If the user was invited to a team but hasn't accepted yet,
     // do NOT auto-create a phantom org. Instead, return noMembership
@@ -275,7 +344,7 @@ export async function safeOrgContext(): Promise<SafeOrgContext> {
       reason: "auto-onboard-failed",
       organizationId: null,
     };
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (e: any) {
     logger.error("[SAFE_ORG_CONTEXT] Membership lookup failed", { error: e?.message, userId });
     return {
